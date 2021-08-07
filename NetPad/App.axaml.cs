@@ -1,10 +1,16 @@
+using System.Linq;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.DependencyInjection;
+using NetPad.Queries;
+using NetPad.Sessions;
 using NetPad.ViewModels;
 using NetPad.Views;
 using ReactiveUI;
 using Splat;
+using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace NetPad
 {
@@ -17,29 +23,56 @@ namespace NetPad
 
         public override void OnFrameworkInitializationCompleted()
         {
+            var services = new ServiceCollection();
+            services.AddSingleton<Settings>();
+            services.AddSingleton<Session>();
+            services.AddSingleton<IQueryManager, QueryManager>();
+
+            RegisterViewsAndViewModels(services);
+            
+            // services.AddSingleton<IViewLocator>(new ViewLocator());
+            // Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetExecutingAssembly());
+            // Locator.CurrentMutable.RegisterLazySingleton(() => new ViewLocator(), typeof(IViewLocator));
+            
+            services.UseMicrosoftDependencyResolver();
+            Locator.CurrentMutable.InitializeSplat();
+            Locator.CurrentMutable.InitializeReactiveUI();
+            
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = Locator.Current.GetRequiredService<MainWindowViewModel>()
                 };
             }
 
             base.OnFrameworkInitializationCompleted();
         }
-    }
 
-    public static class DIExtensions
-    {
-        public static TService GetRequiredService<TService>(this IReadonlyDependencyResolver resolver)
+        private void RegisterViewsAndViewModels(IServiceCollection services)
         {
-            var service = resolver.GetService<TService>();
-            if (service is null)
-            {
-                throw new System.InvalidOperationException($"Failed to resolve object of type {typeof(TService)}");
-            }
+            var assemblies = new[] { Assembly.GetExecutingAssembly() };
 
-            return service; 
+            foreach (var assembly in assemblies)
+            {
+                var types = Assembly.GetExecutingAssembly().GetTypes()
+                    .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic)
+                    .ToArray();
+                
+                var views = types.Where(t => typeof(IViewFor).IsAssignableFrom(t));
+                var viewModels = types.Where(t => typeof(ReactiveObject).IsAssignableFrom(t));
+
+                foreach (var view in views)
+                {
+                    services.AddTransient(view);
+                }
+
+                foreach (var viewModel in viewModels)
+                {
+                    services.AddTransient(viewModel);
+                }
+            }
         }
     }
 }

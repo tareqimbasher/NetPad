@@ -21,7 +21,7 @@ namespace NetPad.Queries
             var path = Path.Combine(directory.FullName, GetNewQueryName());
 
             var query = new Query(path);
-            await query.SaveAsync();
+            await query.SaveAsync().ConfigureAwait(false);
 
             _session.Add(query);
 
@@ -34,7 +34,7 @@ namespace NetPad.Queries
                 throw new FileNotFoundException($"File {filePath} was not found.");
 
             var query = new Query(filePath);
-            await query.LoadAsync();
+            await query.LoadAsync().ConfigureAwait(false);
             
             _session.Add(query);
 

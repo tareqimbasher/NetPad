@@ -6,4 +6,9 @@
         <RootNamespace>NetPad</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="OmniSharp" />
+      <Folder Include="Runtimes" />
+    </ItemGroup>
+
 </Project>

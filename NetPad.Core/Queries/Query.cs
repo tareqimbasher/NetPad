@@ -1,5 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using NetPad.Exceptions;
@@ -12,7 +13,8 @@ namespace NetPad.Queries
         {
             FilePath = filePath;
             Config = new QueryConfig(); 
-            Code = string.Empty;
+            // Code = string.Empty;
+            Code = "Console.WriteLine(\"Hello World\");";
         }
 
         public string FilePath { get; set; }
@@ -26,7 +28,7 @@ namespace NetPad.Queries
 
         public async Task LoadAsync()
         {
-            var text = await File.ReadAllTextAsync(FilePath);
+            var text = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
 
             var parts = text.Split("#Query");
             if (parts.Length != 2)
@@ -42,7 +44,8 @@ namespace NetPad.Queries
 
             await File.WriteAllTextAsync(FilePath, $"{config}\n" +
                                                    $"#Query\n" +
-                                                   $"{Code}");
+                                                   $"{Code}")
+                .ConfigureAwait(false);
             IsDirty = false;
         }
 
@@ -50,6 +53,59 @@ namespace NetPad.Queries
         {
             Code = newCode ?? string.Empty;
             IsDirty = true;
+        }
+
+        public async Task GetRunnableCodeAsync()
+        {
+            var defaultNs = new[]
+            {
+                "System",
+                "System.IO",
+                "System.Collections",
+                "System.Collections.Generic",
+                "System.Linq",
+                "System.Text",
+                "System.Threading.Tasks",
+            };
+
+            var code = new StringBuilder();
+
+            foreach (var ns in defaultNs.Union(Config.Namespaces).Distinct())
+            {
+                code.AppendLine($"using {ns};");
+            }
+
+            // Namespace
+            code.AppendLine("namespace QueryRuntime");
+            code.AppendLine("{");
+
+            // Class
+            code.AppendLine("public class Program");
+            code.AppendLine("{");
+            
+            // Properties
+            code.AppendLine("public Exception? Exception { get; }");
+            
+            // Main method
+            code.AppendLine("public async Task Main()");
+            code.AppendLine("{");
+            
+            
+            code.AppendLine("try");
+            code.AppendLine("{");
+            
+            code.AppendLine(Code);
+
+            code.AppendLine("}");
+            code.AppendLine("catch (Exception ex)");
+            code.AppendLine("{");
+            code.AppendLine("this.Exception = ex;");
+            code.AppendLine("}");
+            
+            
+            code.AppendLine("}"); // Main method
+            code.AppendLine("}"); // Class
+            code.AppendLine("}"); // Namespace
         }
     }
 }

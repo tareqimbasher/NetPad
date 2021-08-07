@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace NetPad.Queries
 {
     public class QueryConfig
@@ -5,9 +7,11 @@ namespace NetPad.Queries
         public QueryConfig()
         {
             QueryKind = QueryKind.Expression;
+            Namespaces = new List<string>();
         }
     
         public QueryKind QueryKind { get; private set; }
+        public List<string> Namespaces { get; private set; }
 
         public void SetKind(QueryKind kind)
         {
@@ -16,5 +20,7 @@ namespace NetPad.Queries
 
             QueryKind = kind;
         }
+        
+        
     }
 }

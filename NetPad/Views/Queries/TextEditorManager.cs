@@ -2,83 +2,40 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
-using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Highlighting;
+using AvaloniaEdit.Indentation.CSharp;
 
-namespace NetPad.Views
+namespace NetPad.Views.Queries
 {
-    using Pair = KeyValuePair<int, IControl>;
-    
-    public partial class MainWindowScratchPad : Window
+    public class TextEditorManager
     {
-        private readonly TextEditor _textEditor;
         private CompletionWindow _completionWindow;
         private OverloadInsightWindow _insightWindow;
-        private Button _addControlBtn;
-        private Button _clearControlBtn;
-        private ElementGenerator _generator = new ElementGenerator();
+
+        public TextEditorManager(TextEditor textEditor)
+        {
+            TextEditor = textEditor;
+        }
+
+        public TextEditor TextEditor { get; }
         
-        public MainWindowScratchPad()
+        public void Setup()
         {
-            InitializeComponent();
-            
-            _textEditor = this.FindControl<TextEditor>("Editor");
-            _textEditor.Background = Brushes.Transparent;
-            _textEditor.ShowLineNumbers = true;
-            //_textEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
-            _textEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
-            _textEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            //_textEditor.TextArea.IndentationStrategy = new Indentation.CSharp.CSharpIndentationStrategy();
-            
-            _addControlBtn = this.FindControl<Button>("addControlBtn");
-            _addControlBtn.Click += _addControlBtn_Click;
-
-            _clearControlBtn = this.FindControl<Button>("clearControlBtn");
-            _clearControlBtn.Click += _clearControlBtn_Click; ;
-
-            _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
-            
-            this.AddHandler(PointerWheelChangedEvent, (o, i) =>
-            {
-                if (i.KeyModifiers != KeyModifiers.Control) return;
-                if (i.Delta.Y > 0) _textEditor.FontSize++;
-                else _textEditor.FontSize = _textEditor.FontSize > 1 ? _textEditor.FontSize - 1 : 1;
-            }, RoutingStrategies.Bubble, true);
-            
-#if DEBUG
-            this.AttachDevTools();
-#endif
+            // TextEditor.Background = Brushes.Transparent;
+            TextEditor.ShowLineNumbers = true;
+            TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
+            TextEditor.TextArea.IndentationStrategy = new CSharpIndentationStrategy();
+            TextEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            TextEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
         }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-        
-        void _addControlBtn_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            _generator.controls.Add(new Pair(_textEditor.CaretOffset, new Button() { Content = "Click me" }));
-            _textEditor.TextArea.TextView.Redraw();
-        }
-
-        void _clearControlBtn_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            //TODO: delete elements using back key
-            _generator.controls.Clear();
-            _textEditor.TextArea.TextView.Redraw();
-        }
-
-        void textEditor_TextArea_TextEntering(object sender, TextInputEventArgs e)
+        void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
         {
             if (e.Text.Length > 0 && _completionWindow != null)
             {
@@ -96,12 +53,11 @@ namespace NetPad.Views
             // We still want to insert the character that was typed.
         }
 
-        void textEditor_TextArea_TextEntered(object sender, TextInputEventArgs e)
+        void textEditor_TextArea_TextEntered(object? sender, TextInputEventArgs e)
         {
             if (e.Text == ".")
             {
-
-                _completionWindow = new CompletionWindow(_textEditor.TextArea);
+                _completionWindow = new CompletionWindow(TextEditor.TextArea);
                 _completionWindow.Closed += (o, args) => _completionWindow = null;
 
                 var data = _completionWindow.CompletionList.CompletionData;
@@ -124,7 +80,7 @@ namespace NetPad.Views
             }
             else if (e.Text == "(")
             {
-                _insightWindow = new OverloadInsightWindow(_textEditor.TextArea);
+                _insightWindow = new OverloadInsightWindow(TextEditor.TextArea);
                 _insightWindow.Closed += (o, args) => _insightWindow = null;
 
                 _insightWindow.Provider = new MyOverloadProvider(new[]
@@ -137,6 +93,7 @@ namespace NetPad.Views
                 _insightWindow.Show();
             }
         }
+
 
         private class MyOverloadProvider : IOverloadProvider
         {
@@ -198,41 +155,6 @@ namespace NetPad.Views
                 EventArgs insertionRequestEventArgs)
             {
                 textArea.Document.Replace(completionSegment, Text);
-            }
-        }
-
-        class ElementGenerator : VisualLineElementGenerator, IComparer<Pair>
-        {
-            public List<Pair> controls = new List<Pair>();
-
-            /// <summary>
-            /// Gets the first interested offset using binary search
-            /// </summary>
-            /// <returns>The first interested offset.</returns>
-            /// <param name="startOffset">Start offset.</param>
-            public override int GetFirstInterestedOffset(int startOffset)
-            {
-                int pos = controls.BinarySearch(new Pair(startOffset, null), this);
-                if (pos < 0)
-                    pos = ~pos;
-                if (pos < controls.Count)
-                    return controls[pos].Key;
-                else
-                    return -1;
-            }
-
-            public override VisualLineElement ConstructElement(int offset)
-            {
-                int pos = controls.BinarySearch(new Pair(offset, null), this);
-                if (pos >= 0)
-                    return new InlineObjectElement(0, controls[pos].Value);
-                else
-                    return null;
-            }
-
-            int IComparer<Pair>.Compare(Pair x, Pair y)
-            {
-                return x.Key.CompareTo(y.Key);
             }
         }
     }

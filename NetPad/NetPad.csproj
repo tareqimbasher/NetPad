@@ -14,5 +14,15 @@
         <PackageReference Include="Avalonia.Desktop" Version="0.10.4" />
         <PackageReference Include="Avalonia.Diagnostics" Version="0.10.4" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.4" />
+        <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="12.1.1" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Views\Queries\QueryView.axaml.cs">
+        <DependentUpon>QueryView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>

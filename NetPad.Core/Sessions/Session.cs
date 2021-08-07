@@ -1,18 +1,19 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using NetPad.Queries;
 
 namespace NetPad.Sessions
 {
     public class Session
     {
-        private readonly HashSet<Query> _openQueries;
+        private readonly ObservableCollection<Query> _openQueries;
         
         public Session()
         {
-            _openQueries = new HashSet<Query>();
+            _openQueries = new ObservableCollection<Query>();
+            OpenQueries = new ReadOnlyObservableCollection<Query>(_openQueries);
         }
 
-        public IReadOnlySet<Query> OpenQueries => _openQueries;
+        public ReadOnlyObservableCollection<Query> OpenQueries { get; }
 
         public void Add(Query query)
         {

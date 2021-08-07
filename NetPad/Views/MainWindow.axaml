@@ -6,33 +6,32 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="NetPad.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="NetPad"
-        xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
-        Foreground="Black">
+        Title="NetPad">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <DockPanel>
-        <StackPanel Orientation="Horizontal"
-                    DockPanel.Dock="Top"
-                    Spacing="5"
-                    Margin="10">
-            <Button Content="Run" />
-        </StackPanel>
-        
-        <AvalonEdit:TextEditor Name="Editor"
-                               FontFamily="Consolas"
-                               Background="Gray"
-                               Margin="0"
-                               SyntaxHighlighting="C#"
-                               HorizontalScrollBarVisibility="Auto"
-                               VerticalScrollBarVisibility="Auto"
-                               FontWeight="Normal"
-                               FontSize="14"
-                               Text="Console.WriteLine(&quot;Hello World&quot;);"
-                               />
-    </DockPanel>
+    <Panel x:Name="Panel">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="3"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Grid Grid.Column="0">
+                <TextBlock>Sidebar</TextBlock>
+            </Grid>
+            
+            <GridSplitter Grid.Column="1"
+                          Width="3"
+                          Background="LightGray"></GridSplitter>
+            
+            <Grid Grid.Column="2">
+                <ContentControl Content="{Binding Queries}"></ContentControl>
+            </Grid>
+        </Grid>
+    </Panel>
     
 </Window>
