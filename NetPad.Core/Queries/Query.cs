@@ -22,7 +22,7 @@ namespace NetPad.Queries
         public string DirectoryPath => Path.GetDirectoryName(FilePath)!;
         
         public QueryConfig Config { get; private set; }
-        public string Code { get; private set; }
+        public string Code { get; set; }
         public bool IsDirty { get; private set; }
 
 

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad", "NetPad\NetPad.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core", "NetPad.Core\NetPad.Core.csproj", "{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.UI", "NetPad.UI\NetPad.UI.csproj", "{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

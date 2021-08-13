@@ -3,7 +3,7 @@ using NetPad.Queries;
 
 namespace NetPad.Sessions
 {
-    public class Session
+    public class Session : ISession
     {
         private readonly ObservableCollection<Query> _openQueries;
         

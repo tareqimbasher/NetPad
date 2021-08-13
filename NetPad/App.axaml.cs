@@ -25,7 +25,7 @@ namespace NetPad
         {
             var services = new ServiceCollection();
             services.AddSingleton<Settings>();
-            services.AddSingleton<Session>();
+            services.AddSingleton<ISession, Session>();
             services.AddSingleton<IQueryManager, QueryManager>();
 
             RegisterViewsAndViewModels(services);

@@ -7,9 +7,9 @@ namespace NetPad.Queries
     public class QueryManager : IQueryManager
     {
         private readonly Settings _settings;
-        private readonly Session _session;
+        private readonly ISession _session;
 
-        public QueryManager(Settings settings, Session session)
+        public QueryManager(Settings settings, ISession session)
         {
             _settings = settings;
             _session = session;

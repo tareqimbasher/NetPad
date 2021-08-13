@@ -7,12 +7,12 @@ namespace NetPad.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private readonly IQueryManager _queryManager;
-
+        
         public MainWindowViewModel()
         {
         }
         
-        public MainWindowViewModel(IQueryManager queryManager, Session session, QueriesViewModel queriesViewModel)
+        public MainWindowViewModel(IQueryManager queryManager, ISession session, QueriesViewModel queriesViewModel)
         {
             Session = session;
             Queries = queriesViewModel;
@@ -30,7 +30,7 @@ namespace NetPad.ViewModels
         // private readonly ObservableAsPropertyHelper<IReadOnlyCollection<Query>> _openQueries;
         // public IReadOnlyCollection<Query> OpenQueries => _openQueries.Value;
         
-        public Session Session { get; }
+        public ISession Session { get; }
         public QueriesViewModel Queries { get; }
     }
 }

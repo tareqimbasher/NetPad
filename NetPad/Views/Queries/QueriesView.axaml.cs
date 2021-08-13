@@ -7,8 +7,6 @@ namespace NetPad.Views.Queries
 {
     public class QueriesView : ReactiveUserControl<QueriesViewModel>
     {
-        public Button NewQueryButton;
-        
         public QueriesView()
         {
             InitializeComponent();

@@ -11,14 +11,14 @@ using AvaloniaEdit.Editing;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Indentation.CSharp;
 
-namespace NetPad.Views.Queries
+namespace NetPad.UI.TextEditing
 {
-    public class TextEditorManager
+    public class TextEditorConfigurator
     {
-        private CompletionWindow _completionWindow;
-        private OverloadInsightWindow _insightWindow;
+        private CompletionWindow? _completionWindow;
+        private OverloadInsightWindow? _insightWindow;
 
-        public TextEditorManager(TextEditor textEditor)
+        public TextEditorConfigurator(TextEditor textEditor)
         {
             TextEditor = textEditor;
         }
@@ -31,13 +31,13 @@ namespace NetPad.Views.Queries
             TextEditor.ShowLineNumbers = true;
             TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
             TextEditor.TextArea.IndentationStrategy = new CSharpIndentationStrategy();
-            TextEditor.TextArea.TextEntered += textEditor_TextArea_TextEntered;
+            TextEditor.TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
         }
 
         void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
         {
-            if (e.Text.Length > 0 && _completionWindow != null)
+            if (e.Text?.Length > 0 && _completionWindow != null)
             {
                 if (!char.IsLetterOrDigit(e.Text[0]))
                 {
@@ -53,12 +53,12 @@ namespace NetPad.Views.Queries
             // We still want to insert the character that was typed.
         }
 
-        void textEditor_TextArea_TextEntered(object? sender, TextInputEventArgs e)
+        private void TextEditor_TextArea_TextEntered(object? sender, TextInputEventArgs e)
         {
             if (e.Text == ".")
             {
                 _completionWindow = new CompletionWindow(TextEditor.TextArea);
-                _completionWindow.Closed += (o, args) => _completionWindow = null;
+                _completionWindow.Closed += (_, _) => _completionWindow = null;
 
                 var data = _completionWindow.CompletionList.CompletionData;
                 data.Add(new MyCompletionData("Item1"));
@@ -81,7 +81,7 @@ namespace NetPad.Views.Queries
             else if (e.Text == "(")
             {
                 _insightWindow = new OverloadInsightWindow(TextEditor.TextArea);
-                _insightWindow.Closed += (o, args) => _insightWindow = null;
+                _insightWindow.Closed += (_, _) => _insightWindow = null;
 
                 _insightWindow.Provider = new MyOverloadProvider(new[]
                 {
@@ -121,13 +121,13 @@ namespace NetPad.Views.Queries
             }
 
             public int Count => _items.Count;
-            public string CurrentIndexText => null;
+            public string? CurrentIndexText => null;
             public object CurrentHeader => _items[SelectedIndex].header;
             public object CurrentContent => _items[SelectedIndex].content;
 
-            public event PropertyChangedEventHandler PropertyChanged;
+            public event PropertyChangedEventHandler? PropertyChanged;
 
-            private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
@@ -140,7 +140,7 @@ namespace NetPad.Views.Queries
                 Text = text;
             }
 
-            public IBitmap Image => null;
+            public IBitmap? Image => null;
 
             public string Text { get; }
 

@@ -4,6 +4,11 @@ namespace NetPad.ViewModels.Queries
 {
     public class QueryViewModel : ViewModelBase
     {
-        public Query Query { get; set; }
+        public QueryViewModel(Query query)
+        {
+            Query = query;
+        }
+
+        public Query Query { get; }
     }
 }

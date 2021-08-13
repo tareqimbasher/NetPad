@@ -21,7 +21,6 @@
                                HorizontalScrollBarVisibility="Auto"
                                VerticalScrollBarVisibility="Auto"
                                FontWeight="Normal"
-                               FontSize="14"
-                               Text="Console.WriteLine(&quot;Hello World&quot;);" />
+                               FontSize="14" />
     </DockPanel>
 </UserControl>

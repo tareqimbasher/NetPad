@@ -3,11 +3,9 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <RootNamespace>NetPad</RootNamespace>
     </PropertyGroup>
-
     <ItemGroup>
-      <Folder Include="OmniSharp" />
+        <PackageReference Include="Avalonia" Version="0.10.4" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.4" />
     </ItemGroup>
-
 </Project>

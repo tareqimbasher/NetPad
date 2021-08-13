@@ -20,17 +20,14 @@ namespace NetPad.ViewModels.Queries
         {
         }
 
-        public QueriesViewModel(IQueryManager queryManager, Session session)
+        public QueriesViewModel(IQueryManager queryManager, ISession session)
         {
             _queryManager = queryManager;
             
             _queries = session.OpenQueries
                 .ToObservableChangeSet().ToCollection()
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Select(queries => queries.Select(query => new QueryViewModel()
-                {
-                    Query = query
-                }))
+                .Select(queries => queries.Select(query => new QueryViewModel(query)))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ToProperty(this, x => x.Queries, scheduler: RxApp.MainThreadScheduler);
             
@@ -43,9 +40,19 @@ namespace NetPad.ViewModels.Queries
         private readonly ObservableAsPropertyHelper<IEnumerable<QueryViewModel>> _queries;
         public List<QueryViewModel> Queries => _queries.Value.ToList();
         
+        public QueryViewModel? SelectedQuery { get; set; }
+        
         public async Task CreateNewQueryAsync()
         {
             await _queryManager.CreateNewQueryAsync();
+        }
+
+        public async Task SaveQueryAsync()
+        {
+            if (SelectedQuery != null)
+            {
+                await SelectedQuery.Query.SaveAsync();
+            }
         }
     }
 }
