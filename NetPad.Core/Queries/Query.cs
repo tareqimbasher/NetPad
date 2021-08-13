@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -9,25 +10,37 @@ namespace NetPad.Queries
 {
     public class Query
     {
-        public Query(string filePath)
+        private bool _isDirty = false;
+        
+        public Query(string name)
         {
-            FilePath = filePath;
-            Config = new QueryConfig(); 
+            Name = name;
+            Config = new QueryConfig();
             // Code = string.Empty;
             Code = "Console.WriteLine(\"Hello World\");";
         }
 
-        public string FilePath { get; set; }
-        public string Name => Path.GetFileNameWithoutExtension(FilePath);
-        public string DirectoryPath => Path.GetDirectoryName(FilePath)!;
-        
+        public Query(FileInfo fileInfo) : this(fileInfo.Name)
+        {
+            this.FilePath = fileInfo.FullName;
+        }
+
+        public string Name { get; private set; }
+        public string? FilePath { get; private set; }
+        public string? DirectoryPath => FilePath == null ? null : Path.GetDirectoryName(FilePath);
+
         public QueryConfig Config { get; private set; }
-        public string Code { get; set; }
-        public bool IsDirty { get; private set; }
+        public string Code { get; private set; }
+
+        public bool IsDirty => _isDirty || IsNew;
+        public bool IsNew => FilePath == null;
 
 
         public async Task LoadAsync()
         {
+            if (FilePath == null)
+                throw new InvalidOperationException($"{FilePath} is null. Cannot load query.");
+
             var text = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
 
             var parts = text.Split("#Query");
@@ -40,19 +53,30 @@ namespace NetPad.Queries
 
         public async Task SaveAsync()
         {
+            if (FilePath == null)
+                throw new InvalidOperationException($"{FilePath} is null. Cannot save query.");
+
             var config = JsonSerializer.Serialize(Config);
 
             await File.WriteAllTextAsync(FilePath, $"{config}\n" +
                                                    $"#Query\n" +
                                                    $"{Code}")
                 .ConfigureAwait(false);
-            IsDirty = false;
+            _isDirty = false;
         }
 
-        public async Task UpdateCodeAsync(string newCode)
+        public void SetFilePath(string filePath)
+        {
+            FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+
+            FilePath = filePath;
+            Name = Path.GetFileNameWithoutExtension(filePath);
+        }
+
+        public void UpdateCodeAsync(string newCode)
         {
             Code = newCode ?? string.Empty;
-            IsDirty = true;
+            _isDirty = true;
         }
 
         public async Task GetRunnableCodeAsync()
@@ -82,18 +106,18 @@ namespace NetPad.Queries
             // Class
             code.AppendLine("public class Program");
             code.AppendLine("{");
-            
+
             // Properties
             code.AppendLine("public Exception? Exception { get; }");
-            
+
             // Main method
             code.AppendLine("public async Task Main()");
             code.AppendLine("{");
-            
-            
+
+
             code.AppendLine("try");
             code.AppendLine("{");
-            
+
             code.AppendLine(Code);
 
             code.AppendLine("}");
@@ -101,8 +125,8 @@ namespace NetPad.Queries
             code.AppendLine("{");
             code.AppendLine("this.Exception = ex;");
             code.AppendLine("}");
-            
-            
+
+
             code.AppendLine("}"); // Main method
             code.AppendLine("}"); // Class
             code.AppendLine("}"); // Namespace

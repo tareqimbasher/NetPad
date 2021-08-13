@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using AvaloniaEdit;
+using DynamicData.Binding;
 using NetPad.UI.TextEditing;
 using NetPad.ViewModels.Queries;
 
@@ -19,7 +20,8 @@ namespace NetPad.Views.Queries
             
             _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"));
             _textEditorConfigurator.Setup();
-            _textEditorConfigurator.TextEditor.TextChanged += (sender,  args) => ViewModel!.Query.Code = _textEditorConfigurator.TextEditor.Text;
+            
+            // this.WhenChanged(x => )
 
             AddHandler(PointerWheelChangedEvent, (o, i) =>
             {
@@ -33,6 +35,15 @@ namespace NetPad.Views.Queries
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnInitialized()
+        {
+            _textEditorConfigurator.TextEditor.Text = ViewModel!.Query.Code;
+            _textEditorConfigurator.TextEditor.TextChanged += (sender,  args) => 
+                ViewModel!.Code = _textEditorConfigurator.TextEditor.Text;
+            // _textEditorConfigurator.TextEditor.TextArea.TextEntered += (_, args) =>
+            //     ViewModel!.Code = _textEditorConfigurator.TextEditor.Text ?? string.Empty;
         }
     }
 }

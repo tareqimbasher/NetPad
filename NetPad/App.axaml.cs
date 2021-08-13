@@ -34,6 +34,8 @@ namespace NetPad
             // Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetExecutingAssembly());
             // Locator.CurrentMutable.RegisterLazySingleton(() => new ViewLocator(), typeof(IViewLocator));
             
+            services.AddSingleton(x => (IClassicDesktopStyleApplicationLifetime)ApplicationLifetime);
+            
             services.UseMicrosoftDependencyResolver();
             Locator.CurrentMutable.InitializeSplat();
             Locator.CurrentMutable.InitializeReactiveUI();
@@ -47,6 +49,8 @@ namespace NetPad
                 };
             }
 
+            
+            
             base.OnFrameworkInitializationCompleted();
         }
 

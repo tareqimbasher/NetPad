@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NetPad.Sessions;
 
@@ -15,25 +16,23 @@ namespace NetPad.Queries
             _session = session;
         }
         
-        public async Task<Query> CreateNewQueryAsync()
+        public Task<Query> CreateNewQueryAsync()
         {
-            var directory = GetQueriesDirectory();
-            var path = Path.Combine(directory.FullName, GetNewQueryName());
-
-            var query = new Query(path);
-            await query.SaveAsync().ConfigureAwait(false);
+            var query = new Query(GetNewQueryName());
 
             _session.Add(query);
 
-            return query;
+            return Task.FromResult(query);
         }
 
         public async Task<Query> OpenQueryAsync(string filePath)
         {
-            if (!File.Exists(filePath))
+            var fileInfo = new FileInfo(filePath);
+            
+            if (!fileInfo.Exists)
                 throw new FileNotFoundException($"File {filePath} was not found.");
 
-            var query = new Query(filePath);
+            var query = new Query(fileInfo);
             await query.LoadAsync().ConfigureAwait(false);
             
             _session.Add(query);
@@ -57,22 +56,21 @@ namespace NetPad.Queries
             return Task.FromResult(query);
         }
 
-        private DirectoryInfo GetQueriesDirectory()
+        public Task<DirectoryInfo> GetQueriesDirectoryAsync()
         {
             var directory = new DirectoryInfo(_settings.QueriesDirectoryPath);
             
             directory.Create();
 
-            return directory;
+            return Task.FromResult(directory);
         }
         
         private string GetNewQueryName()
         {
-            var directory = GetQueriesDirectory();
-            string baseName = "Query";
+            const string baseName = "Query";
             int number = 1;
             
-            while (File.Exists(Path.Combine(directory.FullName, $"{baseName} {number}.netpad")))
+            while (_session.OpenQueries.Any(q => q.Name == $"{baseName} {number}"))
             {
                 number++;
             }
