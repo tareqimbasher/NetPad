@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetPad.OmniSharpWrapper.Utilities;
 
 namespace NetPad.OmniSharpWrapper.Http
@@ -9,8 +10,11 @@ namespace NetPad.OmniSharpWrapper.Http
         private readonly IOmniSharpServerProcessAccessor<string> _omniSharpServerProcessAccessor;
         private string? _uri;
 
-        public OmniSharpHttpServer(OmniSharpHttpServerConfiguration configuration, IOmniSharpServerProcessAccessor<string> omniSharpServerProcessAccessor) :
-            base(configuration)
+        public OmniSharpHttpServer(
+            OmniSharpHttpServerConfiguration configuration, 
+            IOmniSharpServerProcessAccessor<string> omniSharpServerProcessAccessor,
+            ILogger<OmniSharpHttpServer> logger) :
+            base(configuration, logger)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
         }

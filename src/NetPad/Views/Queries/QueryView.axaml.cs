@@ -6,26 +6,25 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using AvaloniaEdit;
-using DynamicData.Binding;
-using NetPad.TextEditing;
-using NetPad.TextEditing.OmniSharp;
+using NetPad.OmniSharpWrapper;
 using NetPad.UI.TextEditing;
 using NetPad.ViewModels.Queries;
+using OmniSharp.Models.v1.Completion;
 
 namespace NetPad.Views.Queries
 {
     public class QueryView : ReactiveUserControl<QueryViewModel>
     {
-        private readonly ITextEditingEngine _textEditingEngine;
+        private readonly IOmniSharpServer _omniSharpServer;
         private readonly TextEditorConfigurator _textEditorConfigurator;
 
         public QueryView()
         {
         }
         
-        public QueryView(ITextEditingEngine textEditingEngine)
+        public QueryView(IOmniSharpServer omniSharpServer)
         {
-            _textEditingEngine = textEditingEngine;
+            _omniSharpServer = omniSharpServer;
             InitializeComponent();
             
             _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"));
@@ -63,7 +62,7 @@ namespace NetPad.Views.Queries
 
                 try
                 {
-                    await _textEditingEngine.LoadAsync(query);
+                    await _omniSharpServer.StartAsync();
                 }
                 catch (Exception e)
                 {
@@ -75,8 +74,20 @@ namespace NetPad.Views.Queries
             
             Task.Run(async () =>
             {
-                await Task.Delay(5000);
-                await _textEditingEngine.Autocomplete();
+                await Task.Delay(7000);
+                try
+                {
+                    await _omniSharpServer.Send<CompletionRequest, object>(new CompletionRequest()
+                    {
+                        Line = 9,
+                        Column = 21,
+                        FileName = "/home/tips/Source/tmp/test-project/Program.cs"
+                    });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             });
         }
     }

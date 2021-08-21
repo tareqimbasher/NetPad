@@ -18,9 +18,12 @@ namespace NetPad.OmniSharpWrapper.Http
         {
             if (_configuration.ShouldCreateNewProcess)
             {
+                if (_processHandler != null)
+                    throw new Exception("OmniSharp server is already initialized.");
+                
                 _processHandler = new ProcessHandler(_configuration.ExecutablePath!, _configuration.ExecutableArgs!);
                 
-                if (!await _processHandler.RunAsync() || _processHandler.Process == null || _processHandler.ProcessIO == null)
+                if (!await _processHandler.RunAsync(false) || _processHandler.Process == null || _processHandler.ProcessIO == null)
                 {
                     throw new Exception($"Could not run process at: {_configuration.ExecutablePath}. " +
                                         $"Args: {_configuration.ExecutableArgs}");

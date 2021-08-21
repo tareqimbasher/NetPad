@@ -22,6 +22,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />
+        <ProjectReference Include="..\NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj" />
         <ProjectReference Include="..\NetPad.UI\NetPad.UI.csproj" />
     </ItemGroup>
     <ItemGroup>
