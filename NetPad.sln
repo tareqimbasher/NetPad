@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core", "NetPad.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.UI", "NetPad.UI\NetPad.UI.csproj", "{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.OmniSharpWrapper", "NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj", "{4CBE796E-6968-4410-A003-C8E33A0BF35C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBA8DB1D-30C6-4739-90DC-22FEA7F567A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CBE796E-6968-4410-A003-C8E33A0BF35C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CBE796E-6968-4410-A003-C8E33A0BF35C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CBE796E-6968-4410-A003-C8E33A0BF35C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CBE796E-6968-4410-A003-C8E33A0BF35C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
