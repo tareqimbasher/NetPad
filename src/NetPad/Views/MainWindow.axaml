@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:NetPad.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="NetPad.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="NetPad">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Panel x:Name="Panel">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="3"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Grid Grid.Column="0">
+                <TextBlock>Sidebar</TextBlock>
+            </Grid>
+            
+            <GridSplitter Grid.Column="1"
+                          Width="3"
+                          Background="LightGray"></GridSplitter>
+            
+            <Grid Grid.Column="2">
+                <ContentControl Content="{Binding Queries}"></ContentControl>
+            </Grid>
+        </Grid>
+    </Panel>
+    
+</Window>

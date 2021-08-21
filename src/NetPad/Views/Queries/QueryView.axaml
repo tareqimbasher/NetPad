@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:NetPad.ViewModels.Queries"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             x:Class="NetPad.Views.Queries.QueryView"
+             Background="#a1a1a7">
+    
+    <Design.DataContext>
+        <vm:QueryViewModel/>
+    </Design.DataContext>
+    
+    <DockPanel>
+        <AvalonEdit:TextEditor Name="Editor"
+                               FontFamily="Consolas"
+                               Margin="0"
+                               Padding="5 10"
+                               SyntaxHighlighting="C#"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Auto"
+                               FontWeight="Normal"
+                               FontSize="14"/>
+    </DockPanel>
+</UserControl>

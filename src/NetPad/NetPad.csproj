@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Folder Include="Models\" />
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="0.10.4" />
+        <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.4" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.4" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.4" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+        <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="12.1.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />
+        <ProjectReference Include="..\NetPad.UI\NetPad.UI.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Views\Queries\QueryView.axaml.cs">
+        <DependentUpon>QueryView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+</Project>
