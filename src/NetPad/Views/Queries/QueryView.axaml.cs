@@ -16,7 +16,6 @@ namespace NetPad.Views.Queries
 {
     public class QueryView : ReactiveUserControl<QueryViewModel>
     {
-        private readonly IOmniSharpServer _omniSharpServer;
         private readonly TextEditorConfigurator _textEditorConfigurator;
 
         public QueryView()
@@ -25,10 +24,9 @@ namespace NetPad.Views.Queries
         
         public QueryView(IOmniSharpServer omniSharpServer)
         {
-            _omniSharpServer = omniSharpServer;
             InitializeComponent();
             
-            _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"));
+            _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"), omniSharpServer);
             _textEditorConfigurator.Setup();
             
             // this.WhenChanged(x => )
@@ -49,49 +47,14 @@ namespace NetPad.Views.Queries
 
         protected override void OnInitialized()
         {
-            _textEditorConfigurator.TextEditor.Text = ViewModel!.Query.Code;
-            _textEditorConfigurator.TextEditor.TextChanged += (sender,  args) => 
-                ViewModel!.Code = _textEditorConfigurator.TextEditor.Text;
-            // _textEditorConfigurator.TextEditor.TextArea.TextEntered += (_, args) =>
-            //     ViewModel!.Code = _textEditorConfigurator.TextEditor.Text ?? string.Empty;
-
-            var vm = ViewModel!;
-
-            Task.Run(async () =>
+            if (_textEditorConfigurator != null)
             {
-                var query = vm.Query;
-
-                try
-                {
-                    await _omniSharpServer.StartAsync();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                
-            });
-            
-            
-            Task.Run(async () =>
-            {
-                await Task.Delay(7000);
-                try
-                {
-                    var completionResponse = await _omniSharpServer.Send<CompletionRequest, CompletionResponse>(new CompletionRequest()
-                    {
-                        Line = 9,
-                        Column = 22,
-                        FileName = "/home/tips/Source/tmp/test-project/Program.cs"
-                    });
-
-                    var str = completionResponse.Items.Select(i => i.Label).ToArray();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-            });
+                _textEditorConfigurator.TextEditor.Text = ViewModel!.Query.Code;
+                _textEditorConfigurator.TextEditor.TextChanged += (sender,  args) => 
+                    ViewModel!.Code = _textEditorConfigurator.TextEditor.Text;
+                // _textEditorConfigurator.TextEditor.TextArea.TextEntered += (_, args) =>
+                //     ViewModel!.Code = _textEditorConfigurator.TextEditor.Text ?? string.Empty;
+            }
         }
     }
 }

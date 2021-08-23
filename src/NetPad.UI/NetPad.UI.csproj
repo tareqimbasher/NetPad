@@ -8,4 +8,7 @@
         <PackageReference Include="Avalonia" Version="0.10.4" />
         <PackageReference Include="Avalonia.AvaloniaEdit" Version="0.10.4" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj" />
+    </ItemGroup>
 </Project>
