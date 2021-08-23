@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -77,12 +78,14 @@ namespace NetPad.Views.Queries
                 await Task.Delay(7000);
                 try
                 {
-                    await _omniSharpServer.Send<CompletionRequest, object>(new CompletionRequest()
+                    var completionResponse = await _omniSharpServer.Send<CompletionRequest, CompletionResponse>(new CompletionRequest()
                     {
                         Line = 9,
-                        Column = 21,
+                        Column = 22,
                         FileName = "/home/tips/Source/tmp/test-project/Program.cs"
                     });
+
+                    var str = completionResponse.Items.Select(i => i.Label).ToArray();
                 }
                 catch (Exception e)
                 {

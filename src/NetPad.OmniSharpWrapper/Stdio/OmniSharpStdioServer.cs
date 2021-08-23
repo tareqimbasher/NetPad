@@ -1,9 +1,11 @@
 using System;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.OmniSharpWrapper.Stdio.Models;
 using NetPad.OmniSharpWrapper.Utilities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OmniSharp.Mef;
 
 namespace NetPad.OmniSharpWrapper.Stdio
@@ -12,6 +14,7 @@ namespace NetPad.OmniSharpWrapper.Stdio
     {
         private readonly IOmniSharpServerProcessAccessor<ProcessIOHandler> _omniSharpServerProcessAccessor;
         private ProcessIOHandler? _processIo;
+        private readonly RequestResponseQueue _requestResponseQueue;
 
         public OmniSharpStdioServer(
             OmniSharpStdioServerConfiguration configuration,
@@ -20,6 +23,7 @@ namespace NetPad.OmniSharpWrapper.Stdio
             base(configuration, logger)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
+            _requestResponseQueue = new RequestResponseQueue();
         }
 
         public override async Task StartAsync()
@@ -39,94 +43,98 @@ namespace NetPad.OmniSharpWrapper.Stdio
             if (_processIo == null)
                 throw new Exception("OmniSharp Server is not started.");
 
-            var endpointAttribute = request.GetType().GetCustomAttribute(typeof(OmniSharpEndpointAttribute)) as OmniSharpEndpointAttribute;
+            var endpointAttribute = 
+                (
+                    request.GetType().GetCustomAttribute(typeof(OmniSharpEndpointAttribute))
+                        ?? typeof(TRequest).GetCustomAttribute(typeof(OmniSharpEndpointAttribute))
+                ) as OmniSharpEndpointAttribute;
+            
             if (endpointAttribute == null)
                 throw new Exception($"Could not get endpoint name of OmniSharp request type: {request.GetType().FullName}");
 
-            var requestPacket = new
-            {
-                Command = endpointAttribute.EndpointName,
-                Seq = ++Sequence,
-                Arguments = request
-            };
+            var requestPacket = new RequestPacket(++Sequence, endpointAttribute.EndpointName, request);
 
-            await _processIo.StandardInput.WriteLineAsync(JsonSerializer.Serialize(requestPacket));
+            var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
+            
+            await _processIo.StandardInput.WriteLineAsync(JsonConvert.SerializeObject(requestPacket)).ConfigureAwait(false);
 
-            return null;
+            var responseJToken = await responsePromise.ConfigureAwait(false);
+
+            var response = responseJToken.ToObject<TResponse>();
+
+            if (response == null)
+                throw new Exception("Bad response");
+
+            return response;
         }
-        
-        
         
         private async Task HandleOmniSharpOutput(string output)
         {
+            if (string.IsNullOrEmpty(output)) return;
+            
             output = StringUtils.RemoveBOMString(output);
 
             if (output[0] != '{')
             {
-                Logger.LogInformation($"OMNISHARP OUTPUT RAW: {output}");
                 return;
             }
-                
-            var packetType = JsonSerializer.Deserialize<OmniSharpPacket>(output)?.Type;
+
+            var outputPacket = JObject.Parse(output);
+            var packetType = (string?)outputPacket["Type"];
+            
             if (packetType == null)
             {
                 // Bogus packet
                 return;
             }
 
-            switch (packetType)
+            try
             {
-                case "response":
-                    await HandleResponsePacketReceived(output);
-                    break;
-                case "event":
-                    await HandleEventPacketReceived(output);
-                    break;
-                default:
+                if (packetType == "response")
+                    await HandleResponsePacketReceived(outputPacket);
+                else if (packetType == "event")
+                    await HandleEventPacketReceived(outputPacket);
+                else
                     Logger.LogError($"Unknown packet type: ${packetType}");
-                    break;
             }
-                
-            Logger.LogInformation($"OMNISHARP OUTPUT: {output}");
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error while handling omnisharp output. {ex}");
+            }
         }
         
-        private async Task HandleOmniSharpError(string error)
+        private Task HandleOmniSharpError(string error)
         {
+            if (string.IsNullOrEmpty(error)) return Task.CompletedTask;
+            
             error = StringUtils.RemoveBOMString(error);
             Logger.LogError($"OMNISHARP ERROR: {error}");
+
+            return Task.CompletedTask;
         }
 
-        private async Task HandleEventPacketReceived(string json)
+        private Task HandleEventPacketReceived(JObject eventPacket)
         {
-            try
-            {
-                var packet = JsonSerializer.Deserialize<OmniSharpEventPacket>(json);
-                if (packet.Event == "log")
-                {
-                    Logger.LogDebug($"OMNISHARP LOG: {json}");
-                }
-                else if (packet.Event == "Error")
-                {
-                    Logger.LogDebug($"OMNISHARP LOG ERROR: {json}");
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e.ToString());
-            }
+            var @event = (string?)eventPacket["Event"];
+                
+            if (@event == "log")
+                Logger.LogDebug($"OMNISHARP LOG: {eventPacket}");
+            else if (@event == "Error")
+                Logger.LogDebug($"OMNISHARP LOG ERROR: {eventPacket}");
+
+            return Task.CompletedTask;
         }
         
-        private async Task HandleResponsePacketReceived(string json)
+        private Task HandleResponsePacketReceived(JObject response)
         {
-            try
-            {
-                var packet = JsonSerializer.Deserialize<OmniSharpResponsePacket>(json);
-                Logger.LogInformation($"OMNISHARP RESPONSE: {json}");
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e.ToString());
-            }
+            Logger.LogDebug($"OMNISHARP RESPONSE: {response}");
+                
+            var requestSeq = (int)(response["Request_seq"] ?? throw new Exception("Response did not have a value for 'Request_seq'"));
+            var responseJToken = response["Body"] ?? throw new Exception("Response did not have a value for 'Body'");
+                
+            _requestResponseQueue.HandleResponse(requestSeq, responseJToken);
+
+            return Task.CompletedTask;
         }
     }
 }

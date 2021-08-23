@@ -14,6 +14,7 @@ using NetPad.TextEditing.OmniSharp;
 using ReactiveUI;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NetPad
 {
@@ -44,6 +45,7 @@ namespace NetPad
                 configure.ClearProviders();
                 configure.AddConfiguration(configuration);
                 configure.AddConsole();
+                configure.SetMinimumLevel(LogLevel.Debug);
             });
             
             // Register application services
