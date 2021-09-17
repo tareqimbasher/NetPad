@@ -10,10 +10,10 @@ namespace NetPad.OmniSharpWrapper
     public abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
         where TConfiguration : OmniSharpServerConfiguration
     {
-        public OmniSharpServer(TConfiguration configuration, ILogger logger)
+        public OmniSharpServer(TConfiguration configuration, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger("OmniSharpServer");
             Sequence = 1000;
         }
         

@@ -13,8 +13,8 @@ namespace NetPad.OmniSharpWrapper.Http
         public OmniSharpHttpServer(
             OmniSharpHttpServerConfiguration configuration, 
             IOmniSharpServerProcessAccessor<string> omniSharpServerProcessAccessor,
-            ILogger<OmniSharpHttpServer> logger) :
-            base(configuration, logger)
+            ILoggerFactory loggerFactory) :
+            base(configuration, loggerFactory)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
         }

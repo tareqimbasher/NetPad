@@ -19,8 +19,8 @@ namespace NetPad.OmniSharpWrapper.Stdio
         public OmniSharpStdioServer(
             OmniSharpStdioServerConfiguration configuration,
             IOmniSharpServerProcessAccessor<ProcessIOHandler> omniSharpServerProcessAccessor,
-            ILogger<OmniSharpStdioServer> logger) :
-            base(configuration, logger)
+            ILoggerFactory loggerFactory) :
+            base(configuration, loggerFactory)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
