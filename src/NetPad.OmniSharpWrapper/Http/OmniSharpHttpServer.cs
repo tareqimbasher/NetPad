@@ -29,7 +29,7 @@ namespace NetPad.OmniSharpWrapper.Http
             await _omniSharpServerProcessAccessor.StopProcessAsync();
         }
 
-        public override async Task<TResponse> Send<TRequest, TResponse>(TRequest request)
+        public override async Task<TResponse> Send<TResponse>(object request)
         {
             throw new NotImplementedException();
         }

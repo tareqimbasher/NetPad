@@ -84,7 +84,7 @@ namespace NetPad.UI.TextEditing
 
                 try
                 {
-                    var completionResponse = await _omniSharpServer.Send<CompletionRequest, CompletionResponse>(new CompletionRequest()
+                    var completionResponse = await _omniSharpServer.Send<CompletionResponse>(new CompletionRequest()
                     {
                         Line = 9,
                         Column = 22,

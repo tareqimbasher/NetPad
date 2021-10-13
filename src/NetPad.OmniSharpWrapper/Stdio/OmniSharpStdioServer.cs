@@ -38,18 +38,12 @@ namespace NetPad.OmniSharpWrapper.Stdio
             await _omniSharpServerProcessAccessor.StopProcessAsync();
         }
 
-        public override async Task<TResponse> Send<TRequest, TResponse>(TRequest request)
+        public override async Task<TResponse> Send<TResponse>(object request)
         {
             if (_processIo == null)
                 throw new Exception("OmniSharp Server is not started.");
 
-            var endpointAttribute = 
-                (
-                    request.GetType().GetCustomAttribute(typeof(OmniSharpEndpointAttribute))
-                        ?? typeof(TRequest).GetCustomAttribute(typeof(OmniSharpEndpointAttribute))
-                ) as OmniSharpEndpointAttribute;
-            
-            if (endpointAttribute == null)
+            if (request.GetType().GetCustomAttribute(typeof(OmniSharpEndpointAttribute), true) is not OmniSharpEndpointAttribute endpointAttribute)
                 throw new Exception($"Could not get endpoint name of OmniSharp request type: {request.GetType().FullName}");
 
             var requestPacket = new RequestPacket(++Sequence, endpointAttribute.EndpointName, request);

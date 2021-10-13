@@ -9,8 +9,7 @@ namespace NetPad.OmniSharpWrapper
         Task StartAsync();
         Task StopAsync();
 
-        Task<TResponse> Send<TRequest, TResponse>(TRequest request)
-            where TRequest : Request
+        Task<TResponse> Send<TResponse>(object request)
             where TResponse : class;
     }
 }

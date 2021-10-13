@@ -25,15 +25,8 @@ namespace NetPad.OmniSharpWrapper
 
         public abstract Task StopAsync();
 
-        public abstract Task<TResponse> Send<TRequest, TResponse>(TRequest request)
-            where TRequest : Request
-            where TResponse : class;
+        public abstract Task<TResponse> Send<TResponse>(object request) where TResponse : class;
         
-
-        private async Task Test()
-        {
-            var response = await Send<GotoDefinitionRequest, object>(new GotoDefinitionRequest());
-        }
 
         public virtual void Dispose()
         {
