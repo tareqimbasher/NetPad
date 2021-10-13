@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              x:Class="NetPad.Views.Queries.QueryView"
-             Background="#a1a1a7">
+             Background="#eee">
     
     <Design.DataContext>
         <vm:QueryViewModel/>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
@@ -34,6 +35,7 @@ namespace NetPad.UI.TextEditing
         public void Setup()
         {
             // TextEditor.Background = Brushes.Transparent;
+            TextEditor.Foreground = Brushes.Black;
             TextEditor.ShowLineNumbers = true;
             TextEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("C#");
             TextEditor.TextArea.IndentationStrategy = new CSharpIndentationStrategy();
