@@ -6,11 +6,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetPad.OmniSharpWrapper;
 using NetPad.Queries;
 using NetPad.Sessions;
-using NetPad.TextEditing;
-using NetPad.TextEditing.OmniSharp;
+using OmniSharp;
 using ReactiveUI;
 using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
@@ -53,29 +51,28 @@ namespace NetPad
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<IQueryManager, QueryManager>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();
-            services.AddOmniSharpServer(config =>
+            
+            
+            services.AddStdioOmniSharpServer(config =>
             {
-                config.UseStdio(stdio =>
+                var cmd = "/home/tips/X/tmp/Omnisharp/omnisharp-linux-x64/run";
+
+                var args = new List<string>
                 {
-                    var omnisharpCmd = "/home/tips/X/tmp/Omnisharp/omnisharp-linux-x64/run";
+                    // "-z", // Zero-based indicies
+                    "-s", "/home/tips/Source/tmp/test-project",
+                    "--hostPID", Process.GetCurrentProcess().Id.ToString(),
+                    "DotNet:enablePackageRestore=false",
+                    "--encoding", "utf-8",
+                    //"--loglevel", "LogLevel.Debug", // replace with actual enum
+                    "-v", // Sets --loglevel to debug
+                };
 
-                    var args = new List<string>
-                    {
-                        // "-z", // Zero-based indicies
-                        "-s", "/home/tips/Source/tmp/test-project",
-                        "--hostPID", Process.GetCurrentProcess().Id.ToString(),
-                        "DotNet:enablePackageRestore=false",
-                        "--encoding", "utf-8",
-                        //"--loglevel", "LogLevel.Debug", // replace with actual enum
-                        "-v", // Sets --loglevel to debug
-                    };
-
-                    args.Add("RoslynExtensionsOptions:EnableImportCompletion=true");
-                    args.Add("RoslynExtensionsOptions:EnableAnalyzersSupport=true");
-                    args.Add("RoslynExtensionsOptions:EnableAsyncCompletion=true");
-                    
-                    stdio.UseNewInstance(omnisharpCmd, string.Join(" ", args));
-                });
+                args.Add("RoslynExtensionsOptions:EnableImportCompletion=true");
+                args.Add("RoslynExtensionsOptions:EnableAnalyzersSupport=true");
+                args.Add("RoslynExtensionsOptions:EnableAsyncCompletion=true");
+                
+                config.UseNewInstance(cmd, string.Join(" ", args));
             });
             
             RegisterViewsAndViewModels(services);

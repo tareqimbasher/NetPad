@@ -7,9 +7,9 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using AvaloniaEdit;
-using NetPad.OmniSharpWrapper;
 using NetPad.UI.TextEditing;
 using NetPad.ViewModels.Queries;
+using OmniSharp;
 using OmniSharp.Models.v1.Completion;
 
 namespace NetPad.Views.Queries

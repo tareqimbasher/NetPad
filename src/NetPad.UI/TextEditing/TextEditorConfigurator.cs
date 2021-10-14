@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -13,7 +12,7 @@ using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Indentation.CSharp;
-using NetPad.OmniSharpWrapper;
+using OmniSharp;
 using OmniSharp.Models.v1.Completion;
 
 namespace NetPad.UI.TextEditing

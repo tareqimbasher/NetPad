@@ -22,8 +22,8 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />
-        <ProjectReference Include="..\NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj" />
         <ProjectReference Include="..\NetPad.UI\NetPad.UI.csproj" />
+        <ProjectReference Include="..\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>
     <ItemGroup>
       <Compile Update="Views\Queries\QueryView.axaml.cs">
