@@ -73,7 +73,7 @@ namespace NetPad.Queries
             Name = Path.GetFileNameWithoutExtension(filePath);
         }
 
-        public void UpdateCodeAsync(string newCode)
+        public void UpdateCode(string newCode)
         {
             Code = newCode ?? string.Empty;
             _isDirty = true;

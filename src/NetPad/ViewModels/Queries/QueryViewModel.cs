@@ -22,7 +22,7 @@ namespace NetPad.ViewModels.Queries
 
             this.WhenAnyValue(x => x.Code)
                 .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(x => Query.UpdateCodeAsync(x));
+                .Subscribe(x => Query.UpdateCode(x));
         }
 
         public Query Query => _query;

@@ -3,32 +3,34 @@ using NetPad.Queries;
 
 namespace NetPad.Runtimes
 {
-    public class QueryAppDomain
+    public sealed class QueryAppDomain : IDisposable
     {
-        private AppDomain _appDomain;
-        private string _name;
+        private AppDomain? _appDomain;
+        private readonly string _name;
 
         public QueryAppDomain()
         {
             _name = $"QueryAppDomain_{Guid.NewGuid()}";
-            ResetAppDomain();
         }
 
-        public AppDomain AppDomain => _appDomain;
-        
-        public void ResetAppDomain()
+        public AppDomain AppDomain => _appDomain ??= CreateNewAppDomain();
+
+        private AppDomain CreateNewAppDomain()
         {
-            UnloadAppDomain();
-
-            _appDomain = AppDomain.CreateDomain(_name);
+            return AppDomain.CreateDomain(_name);
         }
-        
+
         private void UnloadAppDomain()
         {
             if (_appDomain != null)
             {
                 AppDomain.Unload(_appDomain);
             }
+        }
+
+        public void Dispose()
+        {
+            UnloadAppDomain();
         }
     }
 }

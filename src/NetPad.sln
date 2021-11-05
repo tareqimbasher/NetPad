@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.OmniSharpWrapper", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmniSharp.NET", "OmniSharp.NET\OmniSharp.NET.csproj", "{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6DD496D9-D5F3-4985-854C-165CD1B2691E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core.Tests", "Tests\NetPad.Core.Tests\NetPad.Core.Tests.csproj", "{33C5E114-F156-49AC-9713-038676189BD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,12 @@ Global
 		{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33C5E114-F156-49AC-9713-038676189BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33C5E114-F156-49AC-9713-038676189BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33C5E114-F156-49AC-9713-038676189BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33C5E114-F156-49AC-9713-038676189BD2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{33C5E114-F156-49AC-9713-038676189BD2} = {6DD496D9-D5F3-4985-854C-165CD1B2691E}
 	EndGlobalSection
 EndGlobal

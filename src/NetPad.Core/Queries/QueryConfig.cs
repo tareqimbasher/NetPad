@@ -20,7 +20,5 @@ namespace NetPad.Queries
 
             QueryKind = kind;
         }
-        
-        
     }
 }

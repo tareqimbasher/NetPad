@@ -41,18 +41,18 @@ namespace NetPad.UI.TextEditing
             TextEditor.TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
             
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await _omniSharpServer.StartAsync();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-                
-            });
+            // Task.Run(async () =>
+            // {
+            //     try
+            //     {
+            //         await _omniSharpServer.StartAsync();
+            //     }
+            //     catch (Exception e)
+            //     {
+            //         Console.WriteLine(e);
+            //     }
+            //     
+            // });
         }
 
         void textEditor_TextArea_TextEntering(object? sender, TextInputEventArgs e)
@@ -81,28 +81,28 @@ namespace NetPad.UI.TextEditing
                 _completionWindow.Closed += (_, _) => _completionWindow = null;
                 var data = _completionWindow.CompletionList.CompletionData;
 
-                try
-                {
-                    var completionResponse = await _omniSharpServer.Send<CompletionResponse>(new CompletionRequest()
-                    {
-                        Line = 9,
-                        Column = 22,
-                        FileName = "/home/tips/Source/tmp/test-project/Program.cs"
-                    });
-
-                    foreach (var item in completionResponse.Items)
-                    {
-                        data.Add(new MyCompletionData(item.Label)
-                        {
-                            Description = item.Documentation ?? "Documentation for: " + item.Label,
-                            Priority = 0
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
+                // try
+                // {
+                //     var completionResponse = await _omniSharpServer.Send<CompletionResponse>(new CompletionRequest()
+                //     {
+                //         Line = 9,
+                //         Column = 22,
+                //         FileName = "/home/tips/Source/tmp/test-project/Program.cs"
+                //     });
+                //
+                //     foreach (var item in completionResponse.Items)
+                //     {
+                //         data.Add(new MyCompletionData(item.Label)
+                //         {
+                //             Description = item.Documentation ?? "Documentation for: " + item.Label,
+                //             Priority = 0
+                //         });
+                //     }
+                // }
+                // catch (Exception ex)
+                // {
+                //     Console.WriteLine(ex);
+                // }
 
                 _completionWindow.Show();
             }
