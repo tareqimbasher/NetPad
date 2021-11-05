@@ -10,10 +10,9 @@ namespace NetPad.Sessions
         public Session()
         {
             _openQueries = new ObservableCollection<Query>();
-            OpenQueries = new ReadOnlyObservableCollection<Query>(_openQueries);
         }
 
-        public ReadOnlyObservableCollection<Query> OpenQueries { get; }
+        public ObservableCollection<Query> OpenQueries => _openQueries;
 
         public void Add(Query query)
         {

@@ -16,6 +16,7 @@ namespace NetPad
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .LogToTrace();
     }
 }

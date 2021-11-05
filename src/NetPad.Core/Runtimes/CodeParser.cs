@@ -23,11 +23,11 @@ public class NetPad_Query_Program
 }}
 ";
             
-            if (query.Config.QueryKind == QueryKind.Expression)
+            if (query.Config.Kind == QueryKind.Expression)
             {
                 throw new NotImplementedException("Expression code parsing is not implemented yet.");
             }
-            else if (query.Config.QueryKind == QueryKind.Statements)
+            else if (query.Config.Kind == QueryKind.Statements)
             {
                 code = $@"
 public void Main()
@@ -36,13 +36,13 @@ public void Main()
 }}
 ";
             }
-            else if (query.Config.QueryKind == QueryKind.Program)
+            else if (query.Config.Kind == QueryKind.Program)
             {
                 code = queryCode;
             }
             else
             {
-                throw new NotImplementedException($"Code parsing is not implemented yet for query kind: {query.Config.QueryKind}");
+                throw new NotImplementedException($"Code parsing is not implemented yet for query kind: {query.Config.Kind}");
             }
 
             return string.Format(program, code);

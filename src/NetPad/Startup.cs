@@ -52,7 +52,6 @@ namespace NetPad
             services.AddSingleton<IQueryManager, QueryManager>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();
             
-            
             services.AddStdioOmniSharpServer(config =>
             {
                 var cmd = "/home/tips/X/tmp/Omnisharp/omnisharp-linux-x64/run";
@@ -102,12 +101,12 @@ namespace NetPad
 
                 foreach (var view in views)
                 {
-                    services.AddTransient(view);
+                    services.AddSingleton(view);
                 }
 
                 foreach (var viewModel in viewModels)
                 {
-                    services.AddTransient(viewModel);
+                    services.AddSingleton(viewModel);
                 }
             }
         }

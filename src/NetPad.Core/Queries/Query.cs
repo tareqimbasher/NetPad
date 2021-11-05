@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,7 @@ namespace NetPad.Queries
         public Query(string name)
         {
             Name = name;
-            Config = new QueryConfig();
+            Config = new QueryConfig(QueryKind.Statements, new List<string>());
             // Code = string.Empty;
             Code = "Console.WriteLine(\"Hello World\");";
         }

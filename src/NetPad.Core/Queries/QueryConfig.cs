@@ -4,21 +4,21 @@ namespace NetPad.Queries
 {
     public class QueryConfig
     {
-        public QueryConfig()
+        public QueryConfig(QueryKind kind, List<string> namespaces)
         {
-            QueryKind = QueryKind.Expression;
-            Namespaces = new List<string>();
+            Kind = kind;
+            Namespaces = namespaces;
         }
     
-        public QueryKind QueryKind { get; private set; }
-        public List<string> Namespaces { get; private set; }
+        public QueryKind Kind { get; set; }
+        public List<string> Namespaces { get; set; }
 
         public void SetKind(QueryKind kind)
         {
-            if (kind == QueryKind)
+            if (kind == Kind)
                 return;
 
-            QueryKind = kind;
+            Kind = kind;
         }
     }
 }

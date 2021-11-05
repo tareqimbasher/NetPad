@@ -14,11 +14,13 @@
         <PackageReference Include="Avalonia.Desktop" Version="0.10.4" />
         <PackageReference Include="Avalonia.Diagnostics" Version="0.10.4" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.4" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.11.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="5.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
         <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="12.1.1" />
+        <PackageReference Include="TinyMessenger" Version="1.0.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />

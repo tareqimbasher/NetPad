@@ -15,7 +15,7 @@
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" x:Name="Test">
             <Button Command="{Binding CreateNewQueryAsync}">New</Button>
             <Button Margin="5 0 0 0" Command="{Binding SaveQueryAsync}">Save</Button>
-            <Button Margin="5 0 0 0">Run</Button>
+            <Button Margin="5 0 0 0" Command="{Binding RunQueryAsync}">Run</Button>
         </StackPanel>
         
         <TabControl Items="{Binding Queries}" 

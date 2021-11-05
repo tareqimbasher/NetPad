@@ -29,8 +29,6 @@ namespace NetPad.Views.Queries
             _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"), omniSharpServer);
             _textEditorConfigurator.Setup();
             
-            // this.WhenChanged(x => )
-
             AddHandler(PointerWheelChangedEvent, (o, i) =>
             {
                 var textEditor = _textEditorConfigurator.TextEditor;

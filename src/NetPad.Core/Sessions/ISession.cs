@@ -5,7 +5,7 @@ namespace NetPad.Sessions
 {
     public interface ISession
     {
-        ReadOnlyObservableCollection<Query> OpenQueries { get; }
+        ObservableCollection<Query> OpenQueries { get; }
         void Add(Query query);
         void Remove(Query query);
     }
