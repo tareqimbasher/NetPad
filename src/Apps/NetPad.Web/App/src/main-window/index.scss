@@ -1,0 +1,49 @@
+.window {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  .window-body {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
+}
+
+#sidebar {
+  background-color: dodgerblue;
+  flex: 0 0 15em;
+  display: flex;
+}
+
+#content {
+  background-color: gray;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+#header {
+  background: #e0a800;
+}
+
+#statusbar {
+  background-color: blue;
+}
+
+.query {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-editor {
+  background-color: #0c5460;
+  height: 300px;
+  flex: 1;
+}
+
+.results {
+  background-color: salmon;
+  flex: 1;
+}
