@@ -1,10 +1,13 @@
+using System;
+using System.IO;
+
 namespace NetPad
 {
     public class Settings
     {
         public Settings()
         {
-            QueriesDirectoryPath = "/home/tips/X/tmp/NetPad/Queries";
+            QueriesDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         }
         
         public string QueriesDirectoryPath { get; set; }

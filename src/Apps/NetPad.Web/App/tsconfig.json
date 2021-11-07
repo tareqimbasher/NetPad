@@ -1,15 +1,22 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["DOM", "ESNext", "DOM.Iterable"],
+    "lib": ["DOM", "ESNext"],
     "moduleResolution": "node",
     "skipLibCheck": true,
     "target": "ES2017",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@domain": ["core/@domain"],
+      "@domain/*": ["core/@domain/*"],
+      "@common": ["core/@common"],
+      "@common/*": ["core/@common/*"],
+    }
   },
   "include": [
     "test",

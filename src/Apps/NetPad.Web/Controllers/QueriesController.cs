@@ -1,4 +1,7 @@
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Queries;
 
 namespace NetPad.Controllers
 {
@@ -6,10 +9,18 @@ namespace NetPad.Controllers
     [Route("[controller]")]
     public class QueriesController : Controller
     {
-        [HttpGet]
-        public string[] Index()
+        private readonly IQueryManager _queryManager;
+
+        public QueriesController(IQueryManager queryManager)
         {
-            return new[] { "Query 1", "Query 2" };
+            _queryManager = queryManager;
+        }
+        
+        [HttpGet]
+        public async Task<string[]> Index()
+        {
+            var directory = await _queryManager.GetQueriesDirectoryAsync();
+            return directory.GetFiles("*.netpad").Select(f => f.Name).ToArray();
         }
     }
 }

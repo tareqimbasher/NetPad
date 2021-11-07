@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetPad.Queries;
+using NetPad.Sessions;
+using Session = ElectronNET.API.Session;
 
 namespace NetPad
 {
@@ -22,8 +25,12 @@ namespace NetPad
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            // In production, the Angular files will be served from this directory
+            // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
+            
+            services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
+            services.AddSingleton<ISession, NetPad.Sessions.Session>();
+            services.AddSingleton<IQueryManager, QueryManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

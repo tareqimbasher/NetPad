@@ -1,6 +1,13 @@
 <div class="window">
     <div class="window-body">
-        <div id="sidebar">Sidebar</div>
+        <div id="sidebar">
+            <div class="list-group" style="width: 100%">
+                <button class="list-group-item list-group-item-action"
+                    repeat.for="query of queries">
+                    ${query.name}
+                </button>
+            </div>
+        </div>
         <div id="content">
             <div id="header">
                 <div class="btn-group">

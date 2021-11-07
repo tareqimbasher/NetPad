@@ -1,15 +1,19 @@
 import {IHttpClient} from "aurelia";
 import * as monaco from "monaco-editor";
+import {Query, Settings} from "@domain";
+import {Mapper} from "@common";
 
 export class Index {
-  public queries: string[] = [];
+  public queries: Query[] = [];
   
-  constructor(@IHttpClient readonly httpClient: IHttpClient) {
+  constructor(@IHttpClient readonly httpClient: IHttpClient, private settings: Settings) {
   }
   
   public async attached() {
     const response = await this.httpClient.get("queries");
-    console.log(response.ok, await response.json());
+    this.queries = (await response.json() as string[]).map(name => {return {name: name}}).map(o => Mapper.toModel(Query, o));
+    console.log(this.queries);
+    
     const el = document.querySelector('.text-editor') as HTMLElement;
     const editor = monaco.editor.create(el, {
       value: 'Console.WriteLine("Hello World");',
