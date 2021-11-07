@@ -24,9 +24,8 @@
         <PackageReference Include="TinyMessenger" Version="1.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\NetPad.Core\NetPad.Core.csproj" />
-        <ProjectReference Include="..\NetPad.UI\NetPad.UI.csproj" />
-        <ProjectReference Include="..\OmniSharp.NET\OmniSharp.NET.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Core\NetPad.Core.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>
     <ItemGroup>
       <Compile Update="Views\Queries\QueryView.axaml.cs">

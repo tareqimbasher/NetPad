@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Avalonia", "NetPad.Avalonia\NetPad.Avalonia.csproj", "{261E43D0-F810-4162-925B-044B9F77EF80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Avalonia", "Apps\NetPad.Avalonia\NetPad.Avalonia.csproj", "{261E43D0-F810-4162-925B-044B9F77EF80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core", "NetPad.Core\NetPad.Core.csproj", "{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core", "Core\NetPad.Core\NetPad.Core.csproj", "{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.OmniSharpWrapper", "NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj", "{4CBE796E-6968-4410-A003-C8E33A0BF35C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.OmniSharpWrapper", "Infrastructure\NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj", "{4CBE796E-6968-4410-A003-C8E33A0BF35C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmniSharp.NET", "OmniSharp.NET\OmniSharp.NET.csproj", "{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OmniSharp.NET", "Infrastructure\OmniSharp.NET\OmniSharp.NET.csproj", "{FFC839AF-56DA-44A0-BEDF-58D50DF333B4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6DD496D9-D5F3-4985-854C-165CD1B2691E}"
 EndProject
