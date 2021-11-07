@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -24,92 +25,42 @@ namespace NetPad.ViewModels.Queries
         public readonly ISession _session;
         private readonly IClassicDesktopStyleApplicationLifetime _appLifetime;
         private ReadOnlyObservableCollection<QueryViewModel> _queries;
+        private QueryViewModel? _selectedQuery;
 
         public QueriesViewModel()
         {
         }
 
         public QueriesViewModel(
-            IQueryManager queryManager, 
-            ISession session, 
+            IQueryManager queryManager,
+            ISession session,
             IClassicDesktopStyleApplicationLifetime appLifetime) : this()
         {
             _queryManager = queryManager;
             _session = session;
             _appLifetime = appLifetime;
 
-            // _queries = session.OpenQueries
-            //     .ToObservableChangeSet().ToCollection()
-            //     .ObserveOn(RxApp.MainThreadScheduler)
-            //     .Select(queries => queries.Select(query =>
-            //     {
-            //         // var qq = this.Queries.Any(q => q.Query == query);
-            //         // if (qq != null)
-            //         //     return 
-            //         //     
-            //         return new QueryViewModel(query);
-            //     }))
-            //     .ObserveOn(RxApp.MainThreadScheduler)
-            //     .ToProperty(this, x => x.Queries, scheduler: RxApp.MainThreadScheduler);
-            
-            // _queries.ThrownExceptions.Subscribe(ex =>
-            // {
-            //     Trace.TraceError($"TIPS-TRACE ERROR: {ex}");
-            // });
-
-            // var sourceCache = new SourceCache<Query, string>(q => q.Name);
-            // var disposable = sourceCache
-            //     .Connect()
-            //     .Transform(q => new QueryViewModel(q))
-            //     .ObserveOn(RxApp.MainThreadScheduler)
-            //     .Bind(out _queries)
-            //     .Subscribe();
 
             session.OpenQueries
-                .ToObservableChangeSet(q => q.Name)
+                .ToObservableChangeSet()
                 .Transform(q => new QueryViewModel(q))
-                .AsObservableCache()
+                .AsObservableList()
                 .Connect()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _queries)
                 .Subscribe();
-                
-            
-            // Queries = session.OpenQueries
-            //     .ToObservableChangeSet()
-            //     .Select(q =>
-            //     {
-            //     })
-            //     .AsObservableList();
-            //
-            // this.WhenAnyValue(x => x._session.OpenQueries.Count)
-            //     .Subscribe(x =>
-            //     {
-            //         foreach (var query in session.OpenQueries)
-            //         {
-            //             if (Queries.Any(qq => qq.Query == query)) continue;
-            //             Queries.Add(new QueryViewModel(query));   
-            //         }
-            //     });
-            
-            // session.OpenQueries.ToObservable()
-            //     .Subscribe(Observer.Create<Query>(q => Queries.Add(new QueryViewModel(q))));
-            
-            _queryManager.OpenQueryAsync("/home/tips/X/tmp/NetPad/Queries/Query 1.netpad").Wait();
-            _queryManager.OpenQueryAsync("/home/tips/X/tmp/NetPad/Queries/Query 2.netpad").Wait();
-            // Queries = new ObservableCollection<QueryViewModel>(
-            //     session.OpenQueries.Select(q => new QueryViewModel(q)));
-        }
 
-        // private readonly ObservableAsPropertyHelper<IEnumerable<QueryViewModel>> _queries;
-        // public List<QueryViewModel> Queries => _queries.Value.ToList();
+            _queryManager.OpenQueryAsync("/home/tips/X/tmp/NetPad/Queries/Query 1.netpad").Wait();
+        }
 
         public ReadOnlyObservableCollection<QueryViewModel> Queries => _queries;
         public QueryViewModel? SelectedQuery { get; set; }
-        
+
+
         public async Task CreateNewQueryAsync()
         {
             await _queryManager.CreateNewQueryAsync();
+            Console.WriteLine("Queries: " + _session.OpenQueries.Count);
         }
 
         public async Task SaveQueryAsync()
@@ -131,12 +82,12 @@ namespace NetPad.ViewModels.Queries
                     Directory = (await _queryManager.GetQueriesDirectoryAsync()).FullName,
                     DefaultExtension = "netpad"
                 };
-            
+
                 var selectedPath = await dialog.ShowAsync(_appLifetime.MainWindow);
                 if (selectedPath == null)
                     return;
 
-                SelectedQuery.Query.SetFilePath(selectedPath);;
+                SelectedQuery.Query.SetFilePath(selectedPath);
             }
 
             try

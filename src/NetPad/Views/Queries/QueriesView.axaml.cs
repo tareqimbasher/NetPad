@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using NetPad.ViewModels.Queries;
+using ReactiveUI;
 
 namespace NetPad.Views.Queries
 {
@@ -9,6 +10,7 @@ namespace NetPad.Views.Queries
     {
         public QueriesView()
         {
+            this.WhenActivated(disposables => { /* Handle interactions etc. */ });
             InitializeComponent();
         }
 

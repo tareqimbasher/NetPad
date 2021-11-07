@@ -14,6 +14,7 @@ namespace NetPad.ViewModels.Queries
         private readonly Query _query;
         private string _code;
         private string _results = string.Empty;
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         public QueryViewModel()
         {

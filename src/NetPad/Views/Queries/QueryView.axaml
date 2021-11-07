@@ -32,9 +32,13 @@
         <GridSplitter Grid.Row="1"></GridSplitter>
         <ScrollViewer Grid.Row="2"
                       HorizontalScrollBarVisibility="Hidden">
-            <TextBlock x:Name="Results"
-                       Text="{Binding Results, Mode=TwoWay}"
-                       Foreground="Black"></TextBlock>
+            <StackPanel>
+                <TextBlock Text="{Binding Id}"
+                           Foreground="Black"></TextBlock>
+                <TextBlock x:Name="Results"
+                           Text="{Binding Results, Mode=TwoWay}"
+                           Foreground="Black"></TextBlock>
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

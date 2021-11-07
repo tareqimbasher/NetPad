@@ -17,10 +17,10 @@
             <Button Margin="5 0 0 0" Command="{Binding SaveQueryAsync}">Save</Button>
             <Button Margin="5 0 0 0" Command="{Binding RunQueryAsync}">Run</Button>
         </StackPanel>
-        
-        <TabControl Items="{Binding Queries}" 
+    
+        <TabControl Items="{Binding Queries}"
                     DockPanel.Dock="Bottom"
-                    SelectedItem="{Binding SelectedQuery}">
+                    SelectedItem="{Binding SelectedQuery, Mode=TwoWay}">
             <TabControl.Styles>
                 <Style Selector="TabControl">
                     <!-- <Setter Property="Background" Value="#F0F0F0"/> -->
@@ -28,7 +28,7 @@
                 <Style Selector="TabControl WrapPanel">
                     <!-- <Setter Property="Background" Value="#2B579A"/> -->
                 </Style>
-
+    
                 <Style Selector="TabItem">
                     <Setter Property="FontSize" Value="12"/>
                     <Setter Property="Height" Value="25"/>
@@ -42,7 +42,7 @@
                 <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                     <Setter Property="Background" Value="#124078"/>
                 </Style>
-
+    
                 <Style Selector="TabItem:focus">
                     <!-- <Setter Property="Foreground" Value="#2B579A"/> -->
                     <Setter Property="Margin" Value="0 0 0 0"/>
@@ -51,7 +51,7 @@
                 <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
                     <!-- <Setter Property="Background" Value="#f0f0f0"/> -->
                 </Style>
-
+    
                 <Style Selector="TabItem:selected">
                     <!-- <Setter Property="Foreground" Value="#2B579A"/> -->
                     <Setter Property="Margin" Value="0 0 0 0"/>
@@ -70,6 +70,11 @@
                     <TextBlock Text="{Binding Query.Name}" />
                 </DataTemplate>
             </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <ContentControl Content="{Binding}" />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
         </TabControl>
     </DockPanel>
 

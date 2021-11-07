@@ -11,6 +11,7 @@ using NetPad.UI.TextEditing;
 using NetPad.ViewModels.Queries;
 using OmniSharp;
 using OmniSharp.Models.v1.Completion;
+using ReactiveUI;
 
 namespace NetPad.Views.Queries
 {
@@ -22,9 +23,12 @@ namespace NetPad.Views.Queries
         {
         }
         
-        public QueryView(IOmniSharpServer omniSharpServer)
+        public QueryView(IOmniSharpServer omniSharpServer) : this()
         {
             InitializeComponent();
+            
+            // Needed so WhenActivated is called on viewmodel
+            this.WhenActivated(disposables => { });
             
             _textEditorConfigurator = new TextEditorConfigurator(this.FindControl<TextEditor>("Editor"), omniSharpServer);
             _textEditorConfigurator.Setup();

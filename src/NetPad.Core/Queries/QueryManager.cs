@@ -70,7 +70,7 @@ namespace NetPad.Queries
             const string baseName = "Query";
             int number = 1;
             
-            while (_session.OpenQueries.Any(q => q.Name == $"{baseName} {number}"))
+            while (_session.OpenQueries.Any(q => q.Name == $"{baseName} {number}.netpad"))
             {
                 number++;
             }
