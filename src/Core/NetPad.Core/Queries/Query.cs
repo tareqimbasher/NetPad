@@ -12,7 +12,7 @@ namespace NetPad.Queries
     public class Query
     {
         private bool _isDirty = false;
-        
+
         public Query(string name)
         {
             Name = name;

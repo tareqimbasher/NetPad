@@ -17,7 +17,6 @@
 }
 
 #content {
-  background-color: gray;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -31,7 +30,7 @@
   background-color: blue;
 }
 
-.query {
+.query, query-view {
   flex: 1;
   display: flex;
   flex-direction: column;

@@ -1,17 +1,15 @@
-import Aurelia, {IHttpClient, Registration} from 'aurelia';
+import Aurelia, {Registration} from 'aurelia';
 import "bootstrap";
 import './styles/main.scss';
 import {Index} from './main-window';
-import {Settings} from "@domain";
-import {Mapper} from "@common";
+import {IQueryManager, QueryManager, ISession, Session} from "@domain";
 
 Aurelia
-    .register(Registration.cachedCallback(Settings, async (container) =>
-    {
-        const httpClient = container.get<IHttpClient>(IHttpClient);
-        const response = await httpClient.get("settings");
-        return Mapper.toModel(Settings, await response.json());
-    }))
+    .register(
+        Registration.instance(String, "http://localhost:8001"),
+        Registration.singleton(ISession, Session),
+        Registration.singleton(IQueryManager, QueryManager),
+    )
     .app({
         host: document.getElementsByTagName("main-window")[0],
         component: Index

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using Microsoft.AspNetCore.Builder;
@@ -9,25 +12,57 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.Queries;
 using NetPad.Sessions;
+using NSwag;
+using NSwag.CodeGeneration.TypeScript;
 using Session = ElectronNET.API.Session;
 
 namespace NetPad
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             Configuration = configuration;
+            WebHostEnvironment = webHostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment WebHostEnvironment { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
-            
+            services.AddSwaggerDocument(config =>
+            {
+                config.Title = "NetPad";
+                config.PostProcess = document =>
+                {
+                    var settings = new TypeScriptClientGeneratorSettings
+                    {
+                        ClassName = "{controller}Client",
+                        Template = TypeScriptTemplate.Aurelia,
+                    };
+
+                    var generator = new TypeScriptClientGenerator(document, settings);
+
+                    var lines = generator.GenerateFile()
+                        .Replace("private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };", "private http: IHttpClient;")
+                        .Replace("http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }", "@IHttpClient http?: IHttpClient")
+                        .Split(Environment.NewLine)
+                        .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
+                        .ToList();
+
+                    lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
+
+
+                    File.WriteAllText(
+                        Path.Combine(WebHostEnvironment.ContentRootPath, "App", "src", "core", "@domain", "api.ts"),
+                        string.Join(Environment.NewLine, lines));
+                };
+            });
+
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
             services.AddSingleton<ISession, NetPad.Sessions.Session>();
             services.AddSingleton<IQueryManager, QueryManager>();
@@ -52,6 +87,9 @@ namespace NetPad
             {
                 app.UseSpaStaticFiles();
             }
+
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
 
             app.UseRouting();
 
@@ -78,7 +116,7 @@ namespace NetPad
             if (HybridSupport.IsElectronActive)
             {
                 Task.Run(async () => await Electron.WindowManager.CreateWindowAsync());
-                
+
                 // var options = new BrowserWindowOptions()
                 // {
                 //     Show = false

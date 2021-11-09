@@ -1,10 +1,13 @@
+<require from="./query-view/query-view"></require>
+
 <div class="window">
     <div class="window-body">
         <div id="sidebar">
             <div class="list-group" style="width: 100%">
                 <button class="list-group-item list-group-item-action"
-                    repeat.for="query of queries">
-                    ${query.name}
+                    repeat.for="name of queryList"
+                    click.trigger="openQuery(name)">
+                    ${name}
                 </button>
             </div>
         </div>
@@ -16,9 +19,17 @@
                     <button class="btn btn-secondary">Run</button>
                 </div>
             </div>
-            <div class="query">
-                <div class="text-editor"></div>
-                <div class="results">Results</div>
+            <ul class="nav nav-tabs">
+                <li class="nav-item"
+                    repeat.for="query of session.queries"
+                    click.trigger="session.activeQuery = query">
+                    <a class="nav-link ${session.activeQuery === query ? 'active' : ''}" href="#">${query.name}</a>
+                </li>
+            </ul>
+            <div class="query"
+                 repeat.for="query of session.queries"
+                 show.bind="session.activeQuery === query">
+                <query-view query.bind="query"></query-view>
             </div>
         </div>
     </div>

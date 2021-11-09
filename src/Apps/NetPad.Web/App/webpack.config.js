@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const Dotenv = require('dotenv-webpack');
+const tsNameof = require("ts-nameof");
 
 const cssLoader = 'css-loader';
 
@@ -29,7 +30,7 @@ console.warn("__dirname", path.resolve(__dirname, 'src/core'));
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
     return {
-        target: 'web',
+        target: 'electron-renderer',
         mode: production ? 'production' : 'development',
         devtool: production ? undefined : 'eval-cheap-source-map',
         entry: {
@@ -59,7 +60,19 @@ module.exports = function (env, {analyze}) {
                 {test: /\.(woff|woff2|ttf|eot|svg|otf)(\?v=[0-9]\.[0-9]\.[0-9])?$/i, type: 'asset'},
                 {test: /\.css$/i, use: ['style-loader', cssLoader, postcssLoader]},
                 {test: /\.scss$/i, use: ['style-loader', cssLoader, postcssLoader, sassLoader]},
-                {test: /\.ts$/i, use: ['ts-loader', '@aurelia/webpack-loader'], exclude: /node_modules/},
+                {
+                    test: /\.ts$/i,
+                    use: [
+                        {
+                            loader: 'ts-loader',
+                            options: {
+                                getCustomTransformers: () => ({before: [tsNameof]}),
+                            },
+                        },
+                        '@aurelia/webpack-loader'
+                    ],
+                    exclude: /node_modules/
+                },
                 {
                     test: /[/\\]src[/\\].+\.html$/i,
                     use: '@aurelia/webpack-loader',

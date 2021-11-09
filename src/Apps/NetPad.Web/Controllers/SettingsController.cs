@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NetPad.Controllers
 {
+    [ApiController]
+    [Route("settings")]
     public class SettingsController : Controller
     {
         private readonly Settings _settings;
@@ -10,7 +12,7 @@ namespace NetPad.Controllers
         {
             _settings = settings;
         }
-        
+
         public Settings Index()
         {
             return _settings;

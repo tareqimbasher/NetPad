@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace NetPad.Queries
             _settings = settings;
             _session = session;
         }
-        
+
         public Task<Query> CreateNewQueryAsync()
         {
             var query = new Query(GetNewQueryName());
@@ -27,14 +28,18 @@ namespace NetPad.Queries
 
         public async Task<Query> OpenQueryAsync(string filePath)
         {
+            var query = _session.OpenQueries.FirstOrDefault(q => !q.IsNew && q.FilePath == filePath);
+            if (query != null)
+                return query;
+
             var fileInfo = new FileInfo(filePath);
-            
+
             if (!fileInfo.Exists)
                 throw new FileNotFoundException($"File {filePath} was not found.");
 
-            var query = new Query(fileInfo);
+            query = new Query(fileInfo);
             await query.LoadAsync().ConfigureAwait(false);
-            
+
             _session.Add(query);
 
             return query;
@@ -59,17 +64,17 @@ namespace NetPad.Queries
         public Task<DirectoryInfo> GetQueriesDirectoryAsync()
         {
             var directory = new DirectoryInfo(_settings.QueriesDirectoryPath);
-            
+
             directory.Create();
 
             return Task.FromResult(directory);
         }
-        
+
         private string GetNewQueryName()
         {
             const string baseName = "Query";
             int number = 1;
-            
+
             while (_session.OpenQueries.Any(q => q.Name == $"{baseName} {number}.netpad"))
             {
                 number++;
