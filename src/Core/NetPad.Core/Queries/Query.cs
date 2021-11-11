@@ -13,7 +13,7 @@ namespace NetPad.Queries
     {
         private bool _isDirty = false;
 
-        public Query(string name)
+        public Query(Guid id, string name)
         {
             Name = name;
             Config = new QueryConfig(QueryKind.Statements, new List<string>());
@@ -21,18 +21,21 @@ namespace NetPad.Queries
             Code = "Console.WriteLine(\"Hello World\");";
         }
 
-        public Query(FileInfo fileInfo) : this(fileInfo.Name)
+        public Query(string name) : this(Guid.NewGuid(), name)
         {
-            this.FilePath = fileInfo.FullName;
+            Name = name;
+            Config = new QueryConfig(QueryKind.Statements, new List<string>());
+            // Code = string.Empty;
+            Code = "Console.WriteLine(\"Hello World\");";
         }
 
+        public Guid Id { get; private set; }
         public string Name { get; private set; }
         public string? FilePath { get; private set; }
-        public string? DirectoryPath => FilePath == null ? null : Path.GetDirectoryName(FilePath);
-
         public QueryConfig Config { get; private set; }
         public string Code { get; private set; }
 
+        public string? DirectoryPath => FilePath == null ? null : Path.GetDirectoryName(FilePath);
         public bool IsDirty => _isDirty || IsNew;
         public bool IsNew => FilePath == null;
 
@@ -40,7 +43,7 @@ namespace NetPad.Queries
         public async Task LoadAsync()
         {
             if (FilePath == null)
-                throw new InvalidOperationException($"{FilePath} is null. Cannot load query.");
+                throw new InvalidOperationException($"FilePath: '{FilePath}' is null. Cannot load query.");
 
             var text = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
 
@@ -48,8 +51,15 @@ namespace NetPad.Queries
             if (parts.Length != 2)
                 throw new InvalidQueryFormat(FilePath);
 
-            Config = JsonSerializer.Deserialize<QueryConfig>(parts[0]) ?? throw new InvalidQueryFormat(FilePath);
-            Code = parts[1].TrimStart();
+            var part1 = parts[0];
+            var part1Lines = part1.Split(Environment.NewLine);
+            var part2 = parts[1];
+
+            Id = Guid.Parse(part1Lines.First());
+            Name = Path.GetFileName(FilePath);
+            Config = JsonSerializer.Deserialize<QueryConfig>(
+                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidQueryFormat(FilePath);
+            Code = part2.TrimStart();
         }
 
         public async Task SaveAsync()
@@ -59,7 +69,8 @@ namespace NetPad.Queries
 
             var config = JsonSerializer.Serialize(Config);
 
-            await File.WriteAllTextAsync(FilePath, $"{config}\n" +
+            await File.WriteAllTextAsync(FilePath, $"{Id}\n" +
+                                                   $"{config}\n" +
                                                    $"#Query\n" +
                                                    $"{Code}")
                 .ConfigureAwait(false);

@@ -25,8 +25,6 @@ const postcssLoader = {
     }
 };
 
-console.warn("__dirname", path.resolve(__dirname, 'src/core'));
-
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
     return {
@@ -51,7 +49,7 @@ module.exports = function (env, {analyze}) {
         },
         devServer: {
             historyApiFallback: true,
-            open: !process.env.CI,
+            //open: !process.env.CI,
             port: 9000
         },
         module: {

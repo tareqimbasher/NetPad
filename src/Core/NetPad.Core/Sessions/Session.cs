@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using NetPad.Queries;
@@ -15,6 +16,16 @@ namespace NetPad.Sessions
 
         public ObservableCollection<Query> OpenQueries => _openQueries;
 
+        public Query? Get(Guid id)
+        {
+            return _openQueries.FirstOrDefault(q => q.Id == id);
+        }
+
+        public Query? Get(string filePath)
+        {
+            return _openQueries.FirstOrDefault(q => q.FilePath == filePath);
+        }
+
         public void Add(Query query)
         {
             if (_openQueries.Contains(query) ||
@@ -24,12 +35,12 @@ namespace NetPad.Sessions
             _openQueries.Add(query);
         }
 
-        public void Remove(Query query)
+        public void Remove(Guid id)
         {
-            if (!_openQueries.Contains(query))
-                return;
+            var query = _openQueries.FirstOrDefault(q => q.Id == id);
 
-            _openQueries.Remove(query);
+            if (query != null)
+                _openQueries.Remove(query);
         }
     }
 }

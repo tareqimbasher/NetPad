@@ -9,7 +9,15 @@
 
 import {IHttpClient} from "aurelia";
 
-export class QueriesClient {
+export interface IQueriesService {
+    empty(): Promise<Query>;
+    getQueries(): Promise<string[]>;
+    create(): Promise<void>;
+    open(filePath: string | null | undefined): Promise<void>;
+    close(id: string | undefined): Promise<void>;
+}
+
+export class QueriesService implements IQueriesService {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -19,12 +27,48 @@ export class QueriesClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getQueries(): Promise<string[]> {
+    empty(signal?: AbortSignal | undefined): Promise<Query> {
+        let url_ = this.baseUrl + "/queries/empty";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processEmpty(_response);
+        });
+    }
+
+    protected processEmpty(response: Response): Promise<Query> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Query.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Query>(<any>null);
+    }
+
+    getQueries(signal?: AbortSignal | undefined): Promise<string[]> {
         let url_ = this.baseUrl + "/queries";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
+            signal,
             headers: {
                 "Accept": "application/json"
             }
@@ -60,44 +104,111 @@ export class QueriesClient {
         return Promise.resolve<string[]>(<any>null);
     }
 
-    openQuery(filePath: string | null | undefined): Promise<Query> {
-        let url_ = this.baseUrl + "/queries/open?";
-        if (filePath !== undefined && filePath !== null)
-            url_ += "filePath=" + encodeURIComponent("" + filePath) + "&";
+    create(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/queries/create";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
-            method: "GET",
+            method: "PATCH",
+            signal,
             headers: {
-                "Accept": "application/json"
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOpenQuery(_response);
+            return this.processCreate(_response);
         });
     }
 
-    protected processOpenQuery(response: Response): Promise<Query> {
+    protected processCreate(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Query.fromJS(resultData200);
-            return result200;
+            return;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Query>(<any>null);
+        return Promise.resolve<void>(<any>null);
+    }
+
+    open(filePath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/queries/open?";
+        if (filePath !== undefined && filePath !== null)
+            url_ += "filePath=" + encodeURIComponent("" + filePath) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpen(_response);
+        });
+    }
+
+    protected processOpen(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    close(id: string | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/queries/close?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processClose(_response);
+        });
+    }
+
+    protected processClose(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
     }
 }
 
-export class SettingsClient {
+export interface ISessionService {
+    getOpenQueries(): Promise<Query[]>;
+}
+
+export class SessionService implements ISessionService {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -107,23 +218,81 @@ export class SettingsClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    index(): Promise<Settings> {
-        let url_ = this.baseUrl + "/settings";
+    getOpenQueries(signal?: AbortSignal | undefined): Promise<Query[]> {
+        let url_ = this.baseUrl + "/session/queries";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
+            signal,
             headers: {
                 "Accept": "application/json"
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processIndex(_response);
+            return this.processGetOpenQueries(_response);
         });
     }
 
-    protected processIndex(response: Response): Promise<Settings> {
+    protected processGetOpenQueries(response: Response): Promise<Query[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Query.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Query[]>(<any>null);
+    }
+}
+
+export interface ISettingsService {
+    get(): Promise<Settings>;
+}
+
+export class SettingsService implements ISettingsService {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    get(signal?: AbortSignal | undefined): Promise<Settings> {
+        let url_ = this.baseUrl + "/settings";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGet(_response);
+        });
+    }
+
+    protected processGet(response: Response): Promise<Settings> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -143,11 +312,12 @@ export class SettingsClient {
 }
 
 export class Query implements IQuery {
+    id!: string;
     name!: string;
     filePath?: string | undefined;
-    directoryPath?: string | undefined;
     config!: QueryConfig;
     code!: string;
+    directoryPath?: string | undefined;
     isDirty!: boolean;
     isNew!: boolean;
 
@@ -165,11 +335,12 @@ export class Query implements IQuery {
 
     init(_data?: any) {
         if (_data) {
+            this.id = _data["id"];
             this.name = _data["name"];
             this.filePath = _data["filePath"];
-            this.directoryPath = _data["directoryPath"];
             this.config = _data["config"] ? QueryConfig.fromJS(_data["config"]) : new QueryConfig();
             this.code = _data["code"];
+            this.directoryPath = _data["directoryPath"];
             this.isDirty = _data["isDirty"];
             this.isNew = _data["isNew"];
         }
@@ -184,23 +355,32 @@ export class Query implements IQuery {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
         data["name"] = this.name;
         data["filePath"] = this.filePath;
-        data["directoryPath"] = this.directoryPath;
         data["config"] = this.config ? this.config.toJSON() : <any>undefined;
         data["code"] = this.code;
+        data["directoryPath"] = this.directoryPath;
         data["isDirty"] = this.isDirty;
         data["isNew"] = this.isNew;
         return data; 
     }
+
+    clone(): Query {
+        const json = this.toJSON();
+        let result = new Query();
+        result.init(json);
+        return result;
+    }
 }
 
 export interface IQuery {
+    id: string;
     name: string;
     filePath?: string | undefined;
-    directoryPath?: string | undefined;
     config: QueryConfig;
     code: string;
+    directoryPath?: string | undefined;
     isDirty: boolean;
     isNew: boolean;
 }
@@ -249,6 +429,13 @@ export class QueryConfig implements IQueryConfig {
         }
         return data; 
     }
+
+    clone(): QueryConfig {
+        const json = this.toJSON();
+        let result = new QueryConfig();
+        result.init(json);
+        return result;
+    }
 }
 
 export interface IQueryConfig {
@@ -256,11 +443,7 @@ export interface IQueryConfig {
     namespaces: string[];
 }
 
-export enum QueryKind {
-    Expression = 0,
-    Statements = 1,
-    Program = 2,
-}
+export type QueryKind = 0 | 1 | 2;
 
 export class Settings implements ISettings {
     queriesDirectoryPath!: string;
@@ -291,6 +474,13 @@ export class Settings implements ISettings {
         data = typeof data === 'object' ? data : {};
         data["queriesDirectoryPath"] = this.queriesDirectoryPath;
         return data; 
+    }
+
+    clone(): Settings {
+        const json = this.toJSON();
+        let result = new Settings();
+        result.init(json);
+        return result;
     }
 }
 

@@ -26,6 +26,6 @@ export class QueryView {
             window.addEventListener("resize", () => this.editor.layout());
             // const ob = new ResizeObserver(entries => editor.layout());
             // ob.observe(document.querySelector(".content"));
-        }, { delay: 10 });
+        }, { delay: 100 });
     }
 }

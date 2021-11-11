@@ -19,7 +19,7 @@ namespace NetPad.Queries
 
         public Task<Query> CreateNewQueryAsync()
         {
-            var query = new Query(GetNewQueryName());
+            var query = new Query( Guid.NewGuid(), GetNewQueryName());
 
             _session.Add(query);
 
@@ -28,7 +28,7 @@ namespace NetPad.Queries
 
         public async Task<Query> OpenQueryAsync(string filePath)
         {
-            var query = _session.OpenQueries.FirstOrDefault(q => !q.IsNew && q.FilePath == filePath);
+            var query = _session.Get(filePath);
             if (query != null)
                 return query;
 
@@ -37,7 +37,8 @@ namespace NetPad.Queries
             if (!fileInfo.Exists)
                 throw new FileNotFoundException($"File {filePath} was not found.");
 
-            query = new Query(fileInfo);
+            query = new Query(Guid.NewGuid(), fileInfo.Name);
+            query.SetFilePath(filePath);
             await query.LoadAsync().ConfigureAwait(false);
 
             _session.Add(query);
@@ -55,10 +56,10 @@ namespace NetPad.Queries
             throw new System.NotImplementedException();
         }
 
-        public Task<Query> CloseQueryAsync(Query query)
+        public Task CloseQueryAsync(Guid id)
         {
-            _session.Remove(query);
-            return Task.FromResult(query);
+            _session.Remove(id);
+            return Task.CompletedTask;
         }
 
         public Task<DirectoryInfo> GetQueriesDirectoryAsync()

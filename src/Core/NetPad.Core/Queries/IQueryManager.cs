@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace NetPad.Queries
         Task<Query> OpenQueryAsync(string filePath);
         Task<Query> DuplicateQueryAsync(Query query, QueryDuplicationOptions options);
         Task<Query> DeleteQueryAsync(Query query);
-        Task<Query> CloseQueryAsync(Query query);
+        Task CloseQueryAsync(Guid id);
         Task<DirectoryInfo> GetQueriesDirectoryAsync();
     }
 }

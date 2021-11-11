@@ -24,6 +24,7 @@
                     repeat.for="query of session.queries"
                     click.trigger="session.activeQuery = query">
                     <a class="nav-link ${session.activeQuery === query ? 'active' : ''}" href="#">${query.name}</a>
+                    <i class="icon" click.trigger="closeQuery(query)">x</i>
                 </li>
             </ul>
             <div class="query"

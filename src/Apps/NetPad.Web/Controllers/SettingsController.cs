@@ -13,7 +13,7 @@ namespace NetPad.Controllers
             _settings = settings;
         }
 
-        public Settings Index()
+        public Settings Get()
         {
             return _settings;
         }
