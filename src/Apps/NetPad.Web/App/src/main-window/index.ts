@@ -7,7 +7,8 @@ import {QueriesService} from "@domain/api";
 const {ipcRenderer} = require("electron");
 
 export class Index {
-    private queryList: string[] = [];
+    private queryList: { name: string, path: string }[] = [];
+    public results: string = "";
 
     constructor(
         @ISession readonly session: ISession,
@@ -33,17 +34,27 @@ export class Index {
         return Mapper.toInstance(this.settings, await response.json());
     }
 
-    public async openQuery(queryName: string) {
-        await this.queryManager.open(path.join(this.settings.queriesDirectoryPath, queryName));
+    public async openQuery(queryPath: string) {
+        await this.queryManager.open(queryPath);
     }
 
     public async closeQuery(query: Query) {
         await this.queryManager.close(query.id);
     }
 
+    public async runQuery() {
+        if (!this.session.activeQuery) return;
+        this.results = await this.queryManager.run(this.session.activeQuery.id);
+    }
+
     public async attached() {
         const response = await this.httpClient.get("queries");
-        this.queryList = (await response.json() as string[]);
+        this.queryList = (await response.json() as string[]).map(q => {
+            return {
+                name: path.parse(q).name,
+                path: q
+            }
+        });
         const openQueries = await this.sessionService.getOpenQueries();
         this.session.add(...openQueries);
     }

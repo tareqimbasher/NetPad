@@ -3,8 +3,11 @@ import {Mapper} from "@common";
 import {ISession, QueriesService, Query} from "@domain";
 
 export interface IQueryManager {
+    create(): Promise<void>;
     open(filePath: string): Promise<void>;
     close(id: string): Promise<void>;
+    run(id: string): Promise<string>;
+    updateCode(id: string, code: string): Promise<void>;
 }
 
 export const IQueryManager = DI.createInterface<IQueryManager>(nameof("IQueryManager"));

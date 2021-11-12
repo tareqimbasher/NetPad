@@ -78,7 +78,7 @@ namespace NetPad.ViewModels.Queries
                 var dialog = new SaveFileDialog
                 {
                     Title = "Save Query",
-                    InitialFileName = SelectedQuery.Query.Name,
+                    InitialFileName = SelectedQuery.Query.Name + ".netpad",
                     Directory = (await _queryManager.GetQueriesDirectoryAsync()).FullName,
                     DefaultExtension = "netpad"
                 };

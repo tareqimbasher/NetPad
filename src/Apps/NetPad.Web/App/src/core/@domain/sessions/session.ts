@@ -28,7 +28,7 @@ export class Session implements ISession {
                 this.queries.splice(ix, 1);
         }
 
-        this.makeActive(this.queries.length ? this.queries[queries.length - 1] : null);
+        this.makeActive(this.queries.length > 0 ? this.queries[0] : null);
     }
 
     public makeActive(query: Query | null | undefined) {

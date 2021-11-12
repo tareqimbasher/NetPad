@@ -23,10 +23,6 @@ namespace NetPad.Queries
 
         public Query(string name) : this(Guid.NewGuid(), name)
         {
-            Name = name;
-            Config = new QueryConfig(QueryKind.Statements, new List<string>());
-            // Code = string.Empty;
-            Code = "Console.WriteLine(\"Hello World\");";
         }
 
         public Guid Id { get; private set; }
@@ -56,7 +52,7 @@ namespace NetPad.Queries
             var part2 = parts[1];
 
             Id = Guid.Parse(part1Lines.First());
-            Name = Path.GetFileName(FilePath);
+            Name = Path.GetFileNameWithoutExtension(FilePath);
             Config = JsonSerializer.Deserialize<QueryConfig>(
                 string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidQueryFormat(FilePath);
             Code = part2.TrimStart();

@@ -1,6 +1,8 @@
 import Aurelia, {Registration} from 'aurelia';
-import "bootstrap";
+// import "bootstrap";
+// import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
+import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {Index} from './main-window';
 import {IQueryManager, QueryManager, ISession, Session} from "@domain";
 

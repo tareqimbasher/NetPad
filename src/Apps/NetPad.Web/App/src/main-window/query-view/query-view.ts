@@ -1,14 +1,15 @@
 import {bindable, PLATFORM} from "aurelia";
-import {Query} from "@domain";
+import {IQueryManager, Query} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
 export class QueryView {
     @bindable public query: Query;
+    @bindable public results: string;
     public id: string;
     private editor: monaco.editor.IStandaloneCodeEditor;
 
-    constructor() {
+    constructor(@IQueryManager readonly queryManager: IQueryManager) {
         this.id = Util.newGuid();
     }
 
@@ -21,11 +22,13 @@ export class QueryView {
                 theme: "vs-dark"
             });
 
-            this.editor.setValue(this.query.code);
+            this.editor.onDidChangeModelContent(ev => Util.debounce(this, async (ev) => {
+                await this.queryManager.updateCode(this.query.id, this.editor.getValue());
+            }, 1000)(ev));
 
             window.addEventListener("resize", () => this.editor.layout());
             // const ob = new ResizeObserver(entries => editor.layout());
             // ob.observe(document.querySelector(".content"));
-        }, { delay: 100 });
+        }, {delay: 100});
     }
 }

@@ -1,36 +1,40 @@
+<link rel="stylesheet" href="../../node_modules/bootstrap-icons/font/bootstrap-icons.scss">
 <require from="./query-view/query-view"></require>
 
-<div class="window">
-    <div class="window-body">
+<div class="window d-flex flex-column">
+    <div class="window-body flex-grow-1 d-flex flex-row">
         <div id="sidebar">
-            <div class="list-group" style="width: 100%">
-                <button class="list-group-item list-group-item-action"
-                    repeat.for="name of queryList"
-                    click.trigger="openQuery(name)">
-                    ${name}
+            <h4 class="text-center">Queries</h4>
+            <div class="list-group" style="width: 100%; display: block">
+                <button class="list-group-item list-group-item-action list-group-item-dark"
+                        repeat.for="query of queryList"
+                        click.trigger="openQuery(query.path)">
+                    ${query.name}
                 </button>
             </div>
         </div>
-        <div id="content">
+        <div id="content" class="flex-grow-1 d-flex flex-column">
             <div id="header">
                 <div class="btn-group">
-                    <button class="btn btn-secondary">New</button>
+                    <button class="btn btn-secondary" click.trigger="queryManager.create()">New</button>
                     <button class="btn btn-secondary">Save</button>
-                    <button class="btn btn-secondary">Run</button>
+                    <button class="btn btn-primary" click.trigger="runQuery()">Run</button>
                 </div>
             </div>
-            <ul class="nav nav-tabs">
+            <ul id="tabs" class="nav nav-tabs bg-dark">
                 <li class="nav-item"
                     repeat.for="query of session.queries"
                     click.trigger="session.activeQuery = query">
-                    <a class="nav-link ${session.activeQuery === query ? 'active' : ''}" href="#">${query.name}</a>
-                    <i class="icon" click.trigger="closeQuery(query)">x</i>
+                    <a class="nav-link position-relative ${session.activeQuery === query ? 'active' : ''}" href="#">
+                        ${query.name}
+                        <i class="bi bi-x action-danger" click.trigger="closeQuery(query)"></i>
+                    </a>
                 </li>
             </ul>
             <div class="query"
                  repeat.for="query of session.queries"
                  show.bind="session.activeQuery === query">
-                <query-view query.bind="query"></query-view>
+                <query-view query.bind="query" results.bind="results"></query-view>
             </div>
         </div>
     </div>
