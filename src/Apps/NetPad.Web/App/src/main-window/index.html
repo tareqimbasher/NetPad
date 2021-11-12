@@ -1,18 +1,10 @@
 <link rel="stylesheet" href="../../node_modules/bootstrap-icons/font/bootstrap-icons.scss">
 <require from="./query-view/query-view"></require>
+<require from="./sidebar/sidebar"></require>
 
 <div class="window d-flex flex-column">
     <div class="window-body flex-grow-1 d-flex flex-row">
-        <div id="sidebar">
-            <h4 class="text-center">Queries</h4>
-            <div class="list-group" style="width: 100%; display: block">
-                <button class="list-group-item list-group-item-action list-group-item-dark"
-                        repeat.for="query of queryList"
-                        click.trigger="openQuery(query.path)">
-                    ${query.name}
-                </button>
-            </div>
-        </div>
+        <sidebar></sidebar>
         <div id="content" class="flex-grow-1 d-flex flex-column">
             <div id="header">
                 <div class="btn-group">
@@ -27,7 +19,7 @@
                     click.trigger="session.activeQuery = query">
                     <a class="nav-link position-relative ${session.activeQuery === query ? 'active' : ''}" href="#">
                         ${query.name}
-                        <i class="bi bi-x action-danger" click.trigger="closeQuery(query)"></i>
+                        <i class="bi bi-x action-danger" click.trigger="queryManager.close(query.id)"></i>
                     </a>
                 </li>
             </ul>

@@ -1,0 +1,8 @@
+<h4 class="text-center">Queries</h4>
+<div class="list-group" style="width: 100%; display: block">
+    <button class="list-group-item list-group-item-action list-group-item-dark"
+            repeat.for="query of queries"
+            click.trigger="queryManager.open(query.path)">
+        ${query.name}
+    </button>
+</div>
