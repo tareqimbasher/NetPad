@@ -29,7 +29,7 @@ namespace NetPad.Sessions
         public void Add(Query query)
         {
             if (_openQueries.Contains(query) ||
-                _openQueries.Any(q => q.FilePath == query.FilePath || (q.IsNew && q.Name == query.Name)))
+                _openQueries.Any(q => (!q.IsNew && q.FilePath == query.FilePath) || (q.IsNew && q.Name == query.Name)))
                 return;
 
             _openQueries.Add(query);

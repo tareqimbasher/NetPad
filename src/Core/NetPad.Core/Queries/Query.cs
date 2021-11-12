@@ -15,6 +15,7 @@ namespace NetPad.Queries
 
         public Query(Guid id, string name)
         {
+            Id = id;
             Name = name;
             Config = new QueryConfig(QueryKind.Statements, new List<string>());
             // Code = string.Empty;

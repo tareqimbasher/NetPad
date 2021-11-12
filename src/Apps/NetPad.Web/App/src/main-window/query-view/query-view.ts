@@ -1,5 +1,5 @@
-import {bindable, PLATFORM} from "aurelia";
-import {IQueryManager, Query} from "@domain";
+import {bindable, PLATFORM, watch} from "aurelia";
+import {IQueryManager, ISession, Query} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
@@ -9,7 +9,9 @@ export class QueryView {
     public id: string;
     private editor: monaco.editor.IStandaloneCodeEditor;
 
-    constructor(@IQueryManager readonly queryManager: IQueryManager) {
+    constructor(
+        @IQueryManager readonly queryManager: IQueryManager,
+        @ISession readonly session: ISession) {
         this.id = Util.newGuid();
     }
 
@@ -29,6 +31,14 @@ export class QueryView {
             window.addEventListener("resize", () => this.editor.layout());
             // const ob = new ResizeObserver(entries => editor.layout());
             // ob.observe(document.querySelector(".content"));
+        }, {delay: 100});
+    }
+
+    @watch<QueryView>(vm => vm.session.activeQuery)
+    private adjustEditorLayout()
+    {
+        PLATFORM.taskQueue.queueTask(() => {
+            this.editor.layout();
         }, {delay: 100});
     }
 }

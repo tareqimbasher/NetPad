@@ -11,6 +11,11 @@ sidebar {
 }
 
 #content {
+    padding: 0.25rem;
+}
+
+#header {
+    margin-bottom: 0.25rem;
 }
 
 #tabs {
@@ -24,9 +29,6 @@ sidebar {
         color: dodgerblue;
         border-color: dodgerblue;
     }
-}
-
-#header {
 }
 
 statusbar {
