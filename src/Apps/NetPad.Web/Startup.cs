@@ -3,10 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
+using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,9 +13,7 @@ using NetPad.BackgroundServices;
 using NetPad.Queries;
 using NetPad.Sessions;
 using NJsonSchema.CodeGeneration.TypeScript;
-using NSwag;
 using NSwag.CodeGeneration.TypeScript;
-using Session = ElectronNET.API.Session;
 
 namespace NetPad
 {
@@ -82,6 +79,7 @@ namespace NetPad
             services.AddSingleton<IQueryManager, QueryManager>();
 
             services.AddHostedService<SessionBackgroundService>();
+            services.AddHostedService<QueryBackgroundService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -133,7 +131,20 @@ namespace NetPad
 
             if (HybridSupport.IsElectronActive)
             {
-                Task.Run(async () => await Electron.WindowManager.CreateWindowAsync());
+                Task.Run(async () =>
+                {
+                    var display = await Electron.Screen.GetPrimaryDisplayAsync();
+
+                    await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions()
+                    {
+                        Height = display.Bounds.Height * 2 / 3,
+                        Width = display.Bounds.Width * 2 / 3,
+                        MinHeight = 200,
+                        MinWidth = 200,
+                        Center = true
+
+                    });
+                });
 
                 // var options = new BrowserWindowOptions()
                 // {

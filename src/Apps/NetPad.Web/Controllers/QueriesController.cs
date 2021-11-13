@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ElectronNET.API;
+using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Queries;
 using NetPad.Runtimes;
@@ -31,7 +33,10 @@ namespace NetPad.Controllers
         public async Task<string[]> GetQueries()
         {
             var directory = await _queryManager.GetQueriesDirectoryAsync();
-            return directory.GetFiles("*.netpad").Select(f => f.FullName).ToArray();
+            return directory.GetFiles("*.netpad", SearchOption.AllDirectories)
+                .Select(f => f.FullName)
+                .OrderBy(x => x)
+                .ToArray();
         }
 
         [HttpPatch("create")]
@@ -44,6 +49,43 @@ namespace NetPad.Controllers
         public async Task Open([FromQuery] string filePath)
         {
             await _queryManager.OpenQueryAsync(filePath);
+        }
+
+        [HttpPatch("save/{id:guid}")]
+        public async Task Save(Guid id, [FromServices] ISession session, [FromServices] Settings settings)
+        {
+            var query = session.Get(id);
+            if (query == null)
+                throw new Exception("Query not found");
+
+            try
+            {
+                if (query.IsNew)
+                {
+                    var path = await Electron.Dialog.ShowSaveDialogAsync(Electron.WindowManager.BrowserWindows.First(), new SaveDialogOptions()
+                    {
+                        Title = "Save Query",
+                        Message = "Where do you want to save this query?",
+                        NameFieldLabel = query.Name,
+                        Filters = new[] { new FileFilter { Name = "NetPad Queries", Extensions = new[] { "netpad" } } },
+                        DefaultPath = settings.QueriesDirectoryPath,
+                    });
+
+                    if (string.IsNullOrWhiteSpace(path))
+                        return;
+
+                    if (!path.EndsWith(".netpad")) path += ".netpad";
+
+                    query.SetFilePath(path);
+                }
+
+                Console.WriteLine("Saving: " + query.Code);
+                await query.SaveAsync();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         [HttpPatch("close/{id:guid}")]
@@ -84,7 +126,7 @@ namespace NetPad.Controllers
         }
 
         [HttpPut("query/{id:guid}/code")]
-        public void UpdateCode(Guid id, string code, [FromServices] ISession session)
+        public void UpdateCode(Guid id, [FromBody]string code, [FromServices] ISession session)
         {
             var query = session.Get(id);
             if (query == null)

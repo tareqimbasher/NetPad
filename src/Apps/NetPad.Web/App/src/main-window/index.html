@@ -7,10 +7,16 @@
         <sidebar></sidebar>
         <div id="content" class="flex-grow-1 d-flex flex-column">
             <div id="header">
-                <button class="btn btn-sm btn-success" click.trigger="runQuery()" title="Run">
+                <button class="btn btn-sm btn-success"
+                        title="Run"
+                        disabled.bind="!session.activeQuery"
+                        click.trigger="runQuery()">
                     <i class="bi bi-play-fill"></i>
                 </button>
-                <button class="btn btn-sm btn-secondary" title="Save">
+                <button class="btn btn-sm btn-secondary"
+                        title="Save"
+                        disabled.bind="!session.activeQuery"
+                        click.trigger="queryManager.save(session.activeQuery.id)">
                     <i class="bi bi-hdd-fill"></i>
                 </button>
             </div>

@@ -10,6 +10,7 @@
     <BuildServerSideRenderer>false</BuildServerSideRenderer>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <RootNamespace>NetPad</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="13.5.1" />

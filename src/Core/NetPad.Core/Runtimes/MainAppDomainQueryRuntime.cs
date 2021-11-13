@@ -31,7 +31,7 @@ namespace NetPad.Runtimes
                 var compiler = new CodeCompiler();
                 var assemblyBytes = compiler.Compile(new CompilationInput(code));
                 var assembly = AppDomain.CurrentDomain.Load(assemblyBytes);
-                
+
                 var type = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "NetPad_Query_Program");
                 if (type == null)
                     throw new Exception("Could not find proper type");
@@ -39,11 +39,11 @@ namespace NetPad.Runtimes
                 var @object = Activator.CreateInstance(type);
                 if (@object == null)
                     throw new Exception("Could not create instance of type");
-                
+
                 var method = type.GetMethod("Main", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (method == null)
                     throw new Exception("Could not find entry method");
-                
+
                 method.Invoke(@object, Array.Empty<object?>());
             }
             catch (Exception e)
@@ -76,14 +76,14 @@ public class MemoryTextWriter : TextWriter
     {
         _outputReader = outputReader;
     }
-    
+
     public override void Write(string? value)
     {
         _outputReader.ReadAsync(value);
     }
-    
-    public override void WriteLine(string? value)
+
+    public override void WriteLine()
     {
-        _outputReader.ReadAsync(value + "\n");
+        _outputReader.ReadAsync("\n");
     }
 }

@@ -1,6 +1,6 @@
 import {IQueryManager, ISession, ISessionManager, Query} from "@domain";
-
-const {ipcRenderer} = require("electron");
+import {ipcRenderer} from "electron";
+import {QueryBackgroundService} from "./background-services/query-background-service";
 
 export class Index {
     public results: string = "";
@@ -8,10 +8,13 @@ export class Index {
     constructor(
         @ISession readonly session: ISession,
         @ISessionManager readonly sessionManager: ISessionManager,
-        @IQueryManager readonly queryManager: IQueryManager) {
+        @IQueryManager readonly queryManager: IQueryManager,
+        readonly queryBackgroundService: QueryBackgroundService) {
     }
 
     public async binding() {
+        this.queryBackgroundService.start();
+
         ipcRenderer.on('session-query-added', (event, json) => {
             const queries = JSON.parse(json).map(q => Query.fromJS(q)) as Query[];
             this.session.add(...queries);
@@ -25,7 +28,7 @@ export class Index {
 
     public async runQuery() {
         if (!this.session.activeQuery) return;
-        this.results = await this.queryManager.run(this.session.activeQuery.id);
+        this.results = (await this.queryManager.run(this.session.activeQuery.id)).replaceAll("\n", "<br/>");
     }
 
     public async attached() {

@@ -1,39 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using NetPad.Common;
 using NetPad.Exceptions;
 
 namespace NetPad.Queries
 {
-    public class Query
+    public class Query : INotifyOnPropertyChanged
     {
         private bool _isDirty = false;
+        private string _name;
 
         public Query(Guid id, string name)
         {
             Id = id;
-            Name = name;
+            _name = name;
             Config = new QueryConfig(QueryKind.Statements, new List<string>());
-            // Code = string.Empty;
-            Code = "Console.WriteLine(\"Hello World\");";
+            Code = string.Empty;
+            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
         public Query(string name) : this(Guid.NewGuid(), name)
         {
         }
 
+        [JsonIgnore]
+        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+
         public Guid Id { get; private set; }
-        public string Name { get; private set; }
+
+        public string Name
+        {
+            get => _name;
+            set => this.RaiseAndSetIfChanged(ref _name, value);
+        }
+
         public string? FilePath { get; private set; }
         public QueryConfig Config { get; private set; }
         public string Code { get; private set; }
 
         public string? DirectoryPath => FilePath == null ? null : Path.GetDirectoryName(FilePath);
-        public bool IsDirty => _isDirty || IsNew;
+
+        public bool IsDirty
+        {
+            get => _isDirty || IsNew;
+            set => this.RaiseAndSetIfChanged(ref _isDirty, value);
+        }
+
         public bool IsNew => FilePath == null;
 
 
@@ -71,7 +91,7 @@ namespace NetPad.Queries
                                                    $"#Query\n" +
                                                    $"{Code}")
                 .ConfigureAwait(false);
-            _isDirty = false;
+            IsDirty = false;
         }
 
         public void SetFilePath(string filePath)
@@ -85,7 +105,7 @@ namespace NetPad.Queries
         public void UpdateCode(string newCode)
         {
             Code = newCode ?? string.Empty;
-            _isDirty = true;
+            IsDirty = true;
         }
 
         public async Task GetRunnableCodeAsync()

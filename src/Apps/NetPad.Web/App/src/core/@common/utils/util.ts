@@ -56,7 +56,7 @@ export class Util {
         return (...args: any[]) => {
             const later = () => {
                 timeout = null;
-                if (!immediate) func.call(thisArg, ...args);
+                func.call(thisArg, ...args);
             };
 
             const callNow = immediate && !timeout;

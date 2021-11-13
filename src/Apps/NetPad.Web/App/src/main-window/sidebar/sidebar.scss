@@ -1,0 +1,17 @@
+sidebar {
+    background-color: #3e3e3e;
+
+    .connections {
+        min-height: 15rem;
+    }
+
+    .list-group-item {
+        background-color: #3e3e3e;
+        color: white;
+
+        &:hover {
+            background-color: #505050;
+            color: white;
+        }
+    }
+}

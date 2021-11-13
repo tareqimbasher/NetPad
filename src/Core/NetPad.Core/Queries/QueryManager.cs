@@ -51,6 +51,12 @@ namespace NetPad.Queries
             throw new System.NotImplementedException();
         }
 
+        public async Task<Query> SaveQueryAsync(Query query)
+        {
+            await query.SaveAsync();
+            return query;
+        }
+
         public Task<Query> DeleteQueryAsync(Query query)
         {
             throw new System.NotImplementedException();

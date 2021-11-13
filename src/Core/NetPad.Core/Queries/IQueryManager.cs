@@ -9,6 +9,7 @@ namespace NetPad.Queries
         Task<Query> CreateNewQueryAsync();
         Task<Query> OpenQueryAsync(string filePath);
         Task<Query> DuplicateQueryAsync(Query query, QueryDuplicationOptions options);
+        Task<Query> SaveQueryAsync(Query query);
         Task<Query> DeleteQueryAsync(Query query);
         Task CloseQueryAsync(Guid id);
         Task<DirectoryInfo> GetQueriesDirectoryAsync();
