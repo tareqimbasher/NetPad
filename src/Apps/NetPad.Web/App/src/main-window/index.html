@@ -6,20 +6,6 @@
     <div class="window-body flex-grow-1 d-flex flex-row">
         <sidebar></sidebar>
         <div id="content" class="flex-grow-1 d-flex flex-column">
-            <div id="header">
-                <button class="btn btn-sm btn-success"
-                        title="Run"
-                        disabled.bind="!session.activeQuery"
-                        click.trigger="runQuery()">
-                    <i class="bi bi-play-fill"></i>
-                </button>
-                <button class="btn btn-sm btn-secondary"
-                        title="Save"
-                        disabled.bind="!session.activeQuery"
-                        click.trigger="queryManager.save(session.activeQuery.id)">
-                    <i class="bi bi-hdd-fill"></i>
-                </button>
-            </div>
             <ul id="tabs" class="nav nav-tabs bg-dark">
                 <li class="nav-item"
                     repeat.for="query of session.queries"
@@ -36,10 +22,10 @@
                     </div>
                 </li>
             </ul>
-            <div class="query"
+            <div class="queries"
                  repeat.for="query of session.queries"
                  show.bind="session.activeQuery === query">
-                <query-view query.bind="query" results.bind="results"></query-view>
+                <query-view query.bind="query"></query-view>
             </div>
         </div>
     </div>

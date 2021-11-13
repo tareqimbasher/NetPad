@@ -14,10 +14,6 @@ sidebar {
     padding: 0.25rem;
 }
 
-#header {
-    margin-bottom: 0.25rem;
-}
-
 #tabs {
     .nav-link {
         background-color: #333;
@@ -34,22 +30,8 @@ sidebar {
 statusbar {
 }
 
-.query, query-view {
-    flex: 1;
+.queries {
     display: flex;
     flex-direction: column;
-}
-
-query-view {
-    padding-top: 0.5rem;
-    background-color: #1e1e1e;
-}
-
-.text-editor {
-    height: 300px;
-    flex: 1;
-}
-
-.results {
     flex: 1;
 }

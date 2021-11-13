@@ -5,8 +5,10 @@ import {Util} from "@common";
 
 export class QueryView {
     @bindable public query: Query;
-    @bindable public results: string;
     public id: string;
+    public results: string = "";
+    public showResults = true;
+
     private editor: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
@@ -44,6 +46,12 @@ export class QueryView {
 
     public detaching() {
         this.editor.dispose();
+    }
+
+    public async run() {
+        this.showResults = true;
+        this.results = (await this.queryManager.run(this.query.id))
+            .replaceAll("\n", "<br/>") ?? "";
     }
 
     @watch<QueryView>(vm => vm.session.activeQuery)

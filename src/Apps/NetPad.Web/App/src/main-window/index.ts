@@ -3,8 +3,6 @@ import {ipcRenderer} from "electron";
 import {QueryBackgroundService} from "./background-services/query-background-service";
 
 export class Index {
-    public results: string = "";
-
     constructor(
         @ISession readonly session: ISession,
         @ISessionManager readonly sessionManager: ISessionManager,
@@ -26,13 +24,12 @@ export class Index {
         });
     }
 
-    public async runQuery() {
-        if (!this.session.activeQuery) return;
-        this.results = (await this.queryManager.run(this.session.activeQuery.id)).replaceAll("\n", "<br/>");
-    }
-
     public async attached() {
         const openQueries = await this.sessionManager.getOpenQueries();
         this.session.add(...openQueries);
+
+        if (this.session.queries.length === 0) {
+            this.queryManager.create();
+        }
     }
 }
