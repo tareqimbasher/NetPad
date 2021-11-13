@@ -17,10 +17,14 @@ namespace NetPad.Controllers
     public class QueriesController : Controller
     {
         private readonly IQueryManager _queryManager;
+        private readonly ISession _session;
+        private readonly Settings _settings;
 
-        public QueriesController(IQueryManager queryManager)
+        public QueriesController(IQueryManager queryManager, ISession session, Settings settings)
         {
             _queryManager = queryManager;
+            _session = session;
+            _settings = settings;
         }
 
         [HttpGet("empty")]
@@ -52,9 +56,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("save/{id:guid}")]
-        public async Task Save(Guid id, [FromServices] ISession session, [FromServices] Settings settings)
+        public async Task<bool> Save(Guid id)
         {
-            var query = session.Get(id);
+            var query = _session.Get(id);
             if (query == null)
                 throw new Exception("Query not found");
 
@@ -68,11 +72,11 @@ namespace NetPad.Controllers
                         Message = "Where do you want to save this query?",
                         NameFieldLabel = query.Name,
                         Filters = new[] { new FileFilter { Name = "NetPad Queries", Extensions = new[] { "netpad" } } },
-                        DefaultPath = settings.QueriesDirectoryPath,
+                        DefaultPath = _settings.QueriesDirectoryPath,
                     });
 
                     if (string.IsNullOrWhiteSpace(path))
-                        return;
+                        return false;
 
                     if (!path.EndsWith(".netpad")) path += ".netpad";
 
@@ -86,18 +90,43 @@ namespace NetPad.Controllers
             {
                 throw;
             }
+
+            return true;
         }
 
         [HttpPatch("close/{id:guid}")]
         public async Task Close(Guid id)
         {
+            var query = _session.Get(id);
+            if (query == null)
+                throw new Exception("Query not found");
+
+            if (query.IsDirty)
+            {
+                var result = await Electron.Dialog.ShowMessageBoxAsync(Electron.WindowManager.BrowserWindows.First(),
+                    new MessageBoxOptions("Do you want to save?")
+                    {
+                        Title = "Save?",
+                        Buttons = new[] { "Yes", "No", "Cancel" },
+                        Type = MessageBoxType.question
+                    });
+
+                if (result?.Response == 0)
+                {
+                    if (!await Save(query.Id))
+                        return;
+                }
+                else if (result?.Response == 2)
+                    return;
+            }
+
             await _queryManager.CloseQueryAsync(id);
         }
 
         [HttpPatch("run/{id:guid}")]
-        public async Task<string> Run(Guid id, [FromServices] ISession session)
+        public async Task<string> Run(Guid id)
         {
-            var query = session.Get(id);
+            var query = _session.Get(id);
             if (query == null)
                 return "Query not found";
 
@@ -108,10 +137,7 @@ namespace NetPad.Controllers
 
             try
             {
-                await queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output =>
-                {
-                    results += output;
-                }));
+                await queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output => { results += output; }));
             }
             catch (CodeCompilationException ex)
             {
@@ -126,9 +152,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPut("query/{id:guid}/code")]
-        public void UpdateCode(Guid id, [FromBody]string code, [FromServices] ISession session)
+        public void UpdateCode(Guid id, [FromBody] string code)
         {
-            var query = session.Get(id);
+            var query = _session.Get(id);
             if (query == null)
                 return;
 
