@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 
-namespace NetPad.Runtimes.Compilation
+namespace NetPad.Exceptions
 {
     public class CodeCompilationException : Exception
     {
@@ -11,7 +11,7 @@ namespace NetPad.Runtimes.Compilation
         {
             Errors = resultDiagnostics;
         }
-        
+
         public ImmutableArray<Diagnostic> Errors { get; }
         public string ErrorsAsString() => string.Join("\n", Errors.Select(e => e.ToString()));
     }

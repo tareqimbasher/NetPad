@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text.Json;
@@ -23,11 +24,20 @@ namespace NetPad.BackgroundServices
             {
                 if (changes.Action == NotifyCollectionChangedAction.Add || changes.Action == NotifyCollectionChangedAction.Remove)
                 {
-                    Electron.IpcMain.Send(
-                        Electron.WindowManager.BrowserWindows.First(),
-                        "session-query-" + (changes.Action == NotifyCollectionChangedAction.Add ? "added" : "removed"),
-                        Serialize(changes.Action == NotifyCollectionChangedAction.Add ? changes.NewItems : changes.OldItems)
-                    );
+                    try
+                    {
+                        var bw = Electron.WindowManager.BrowserWindows.FirstOrDefault();
+
+                        Electron.IpcMain.Send(
+                            bw,
+                            "session-query-" + (changes.Action == NotifyCollectionChangedAction.Add ? "added" : "removed"),
+                            Serialize(changes.Action == NotifyCollectionChangedAction.Add ? changes.NewItems : changes.OldItems)
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
             };
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using NetPad.Exceptions;
 
 namespace NetPad.Runtimes.Compilation
 {
@@ -29,12 +30,12 @@ namespace NetPad.Runtimes.Compilation
         {
             // Parse code
             var sourceCode = SourceText.From(input.Code);
-            
+
             var parseOptions = CSharpParseOptions.Default
                 .WithLanguageVersion(LanguageVersion.CSharp9)
                 .WithKind(SourceCodeKind.Regular);
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
-            
+
             // Build references
             var assemblyLocations = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly =>
@@ -51,10 +52,9 @@ namespace NetPad.Runtimes.Compilation
                 .Select(location => MetadataReference.CreateFromFile(location));
 
             // Create compilation
-            var compilationOptions = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                optimizationLevel: OptimizationLevel.Release,
-                assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default);
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
+                .WithOptimizationLevel(OptimizationLevel.Debug);
 
             return CSharpCompilation.Create("Hello.dll",
                 new[] { parsedSyntaxTree },

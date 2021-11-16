@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Exceptions;
 using NetPad.Queries;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Compilation;
@@ -124,7 +125,7 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("run/{id:guid}")]
-        public async Task<string> Run(Guid id)
+        public async Task<string> Run(Guid id, [FromServices] IQueryRuntime queryRuntime)
         {
             var query = _session.Get(id);
             if (query == null)
@@ -132,7 +133,6 @@ namespace NetPad.Controllers
 
             var results = string.Empty;
 
-            var queryRuntime = new MainAppDomainQueryRuntime();
             await queryRuntime.InitializeAsync(query);
 
             try

@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using DynamicData.Binding;
+using NetPad.Exceptions;
 using NetPad.Queries;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Compilation;
@@ -12,6 +13,7 @@ namespace NetPad.ViewModels.Queries
     public class QueryViewModel : ViewModelBase
     {
         private readonly Query _query;
+        private readonly IQueryRuntime _queryRuntime;
         private string _code;
         private string _results = string.Empty;
         public string Id { get; } = Guid.NewGuid().ToString();
@@ -20,9 +22,10 @@ namespace NetPad.ViewModels.Queries
         {
         }
 
-        public QueryViewModel(Query query) : this()
+        public QueryViewModel(Query query, IQueryRuntime queryRuntime) : this()
         {
             _query = query;
+            _queryRuntime = queryRuntime;
             Code = query.Code;
 
             this.WhenAnyValue(x => x.Code)
@@ -47,13 +50,12 @@ namespace NetPad.ViewModels.Queries
         public async Task RunQueryAsync()
         {
             Results = string.Empty;
-            
-            var queryRuntime = new MainAppDomainQueryRuntime();
-            await queryRuntime.InitializeAsync(Query);
+
+            await _queryRuntime.InitializeAsync(Query);
 
             try
             {
-                await queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output =>
+                await _queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output =>
                 {
                     Results += output;
                 }));

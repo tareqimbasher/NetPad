@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetPad.Exceptions;
 using NetPad.Queries;
-using NetPad.Runtimes.Compilation;
+using NetPad.Runtimes.Assemblies;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,7 +33,7 @@ namespace NetPad.Runtimes
             query.Config.SetKind(QueryKind.Expression);
             query.UpdateCode($@"Console.Write(5)");
 
-            var runtime = new MainAppDomainQueryRuntime();
+            var runtime = GetQueryRuntime();
             await runtime.InitializeAsync(query);
 
             await Assert.ThrowsAsync<NotImplementedException>(async () =>
@@ -42,7 +43,7 @@ namespace NetPad.Runtimes
                     new TestQueryRuntimeOutputReader(output => { }));
             });
         }
-        
+
         [Theory]
         [MemberData(nameof(ConsoleOutputTestData))]
         public async Task Can_Run_Statements_Kind_Query(string code, string expectedOutput)
@@ -51,7 +52,7 @@ namespace NetPad.Runtimes
             query.Config.SetKind(QueryKind.Statements);
             query.UpdateCode($"Console.Write({code});");
 
-            var runtime = new MainAppDomainQueryRuntime();
+            var runtime = GetQueryRuntime();
             await runtime.InitializeAsync(query);
 
             string? result = null;
@@ -62,7 +63,7 @@ namespace NetPad.Runtimes
 
             Assert.Equal(expectedOutput, result);
         }
-        
+
         [Theory]
         [MemberData(nameof(ConsoleOutputTestData))]
         public async Task Can_Run_Program_Kind_Query(string code, string expectedOutput)
@@ -75,7 +76,7 @@ void Main() {{
 }}
 ");
 
-            var runtime = new MainAppDomainQueryRuntime();
+            var runtime = GetQueryRuntime();
             await runtime.InitializeAsync(query);
 
             string? result = null;
@@ -93,6 +94,11 @@ void Main() {{
             }
 
             Assert.Equal(expectedOutput, result);
+        }
+
+        private IQueryRuntime GetQueryRuntime()
+        {
+            return new QueryRuntime(new MainAppDomainAssemblyLoader());
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.Queries;
+using NetPad.Runtimes.Assemblies;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,7 +16,7 @@ namespace NetPad.Runtimes
         {
             _testOutputHelper = testOutputHelper;
         }
-        
+
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]
         {
             new[] {"\"Hello World\"", "Hello World"},
@@ -23,7 +24,7 @@ namespace NetPad.Runtimes
             new[] {"4.7 * 2", "9.4"},
             new[] {"DateTime.Today", DateTime.Today.ToString()},
         };
-        
+
         [Theory]
         [MemberData(nameof(ConsoleOutputTestData))]
         public async Task QueryRuntime_Redirects_Console_Output(string code, string expectedOutput)
@@ -32,7 +33,7 @@ namespace NetPad.Runtimes
             query.Config.SetKind(QueryKind.Statements);
             query.UpdateCode($"Console.Write({code});");
 
-            var runtime = new MainAppDomainQueryRuntime();
+            var runtime = GetQueryRuntime();
             await runtime.InitializeAsync(query);
 
             string? result = null;
@@ -42,6 +43,11 @@ namespace NetPad.Runtimes
                 new TestQueryRuntimeOutputReader(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
+        }
+
+        private IQueryRuntime GetQueryRuntime()
+        {
+            return new QueryRuntime(new MainAppDomainAssemblyLoader());
         }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Queries;
+using NetPad.Runtimes;
+using NetPad.Runtimes.Assemblies;
 using NetPad.Sessions;
 using OmniSharp;
 using ReactiveUI;
@@ -32,9 +34,9 @@ namespace NetPad
                 .AddJsonFile("appsettings.json", optional: true)
                 .AddJsonFile("appsettings.Local.json", optional: true)
                 .Build();
-            
+
             var services = new ServiceCollection();
-            
+
             // Register foundational services
             services.AddSingleton(x => configuration);
             services.AddSingleton(x => (IClassicDesktopStyleApplicationLifetime)_applicationLifetime);
@@ -45,13 +47,15 @@ namespace NetPad
                 configure.AddConsole();
                 configure.SetMinimumLevel(LogLevel.Debug);
             });
-            
+
             // Register application services
             services.AddSingleton<Settings>();
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<IQueryManager, QueryManager>();
+            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
+            services.AddTransient<IQueryRuntime, QueryRuntime>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();
-            
+
             services.AddStdioOmniSharpServer(config =>
             {
                 var cmd = "/home/tips/X/tmp/Omnisharp/omnisharp-linux-x64/run";
@@ -70,22 +74,22 @@ namespace NetPad
                 args.Add("RoslynExtensionsOptions:EnableImportCompletion=true");
                 args.Add("RoslynExtensionsOptions:EnableAnalyzersSupport=true");
                 args.Add("RoslynExtensionsOptions:EnableAsyncCompletion=true");
-                
+
                 config.UseNewInstance(cmd, string.Join(" ", args));
             });
-            
+
             RegisterViewsAndViewModels(services);
-            
-            
+
+
             // services.AddSingleton<IViewLocator>(new ViewLocator());
             // Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetExecutingAssembly());
             // Locator.CurrentMutable.RegisterLazySingleton(() => new ViewLocator(), typeof(IViewLocator));
-            
+
             services.UseMicrosoftDependencyResolver();
             Locator.CurrentMutable.InitializeSplat();
             Locator.CurrentMutable.InitializeReactiveUI();
         }
-        
+
         private void RegisterViewsAndViewModels(IServiceCollection services)
         {
             var assemblies = new[] { Assembly.GetExecutingAssembly() };
@@ -95,7 +99,7 @@ namespace NetPad
                 var types = Assembly.GetExecutingAssembly().GetTypes()
                     .Where(t => t.IsClass && !t.IsAbstract && t.IsPublic)
                     .ToArray();
-                
+
                 var views = types.Where(t => typeof(IViewFor).IsAssignableFrom(t));
                 var viewModels = types.Where(t => typeof(ReactiveObject).IsAssignableFrom(t));
 

@@ -12,6 +12,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using DynamicData;
 using DynamicData.Binding;
 using DynamicData.PLinq;
+using Microsoft.Extensions.DependencyInjection;
 using NetPad.Queries;
 using NetPad.Runtimes;
 using NetPad.Sessions;
@@ -34,7 +35,8 @@ namespace NetPad.ViewModels.Queries
         public QueriesViewModel(
             IQueryManager queryManager,
             ISession session,
-            IClassicDesktopStyleApplicationLifetime appLifetime) : this()
+            IClassicDesktopStyleApplicationLifetime appLifetime,
+            IServiceProvider serviceProvider) : this()
         {
             _queryManager = queryManager;
             _session = session;
@@ -43,7 +45,7 @@ namespace NetPad.ViewModels.Queries
 
             session.OpenQueries
                 .ToObservableChangeSet()
-                .Transform(q => new QueryViewModel(q))
+                .Transform(q => new QueryViewModel(q, serviceProvider.GetRequiredService<IQueryRuntime>()))
                 .AsObservableList()
                 .Connect()
                 .ObserveOn(RxApp.MainThreadScheduler)

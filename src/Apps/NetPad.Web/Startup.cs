@@ -10,7 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.BackgroundServices;
+using NetPad.Middlewares;
 using NetPad.Queries;
+using NetPad.Runtimes;
+using NetPad.Runtimes.Assemblies;
 using NetPad.Sessions;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag.CodeGeneration.TypeScript;
@@ -77,6 +80,8 @@ namespace NetPad
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
             services.AddSingleton<ISession, NetPad.Sessions.Session>();
             services.AddSingleton<IQueryManager, QueryManager>();
+            services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
+            services.AddTransient<IQueryRuntime, QueryRuntime>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<QueryBackgroundService>();
@@ -106,6 +111,8 @@ namespace NetPad
                 app.UseOpenApi();
                 app.UseSwaggerUi3();
             }
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseRouting();
 

@@ -1,3 +1,4 @@
+using NetPad.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
