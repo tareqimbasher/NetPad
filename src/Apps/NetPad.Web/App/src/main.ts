@@ -5,14 +5,15 @@ import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {Index} from './main-window';
 import {
-    IQueryManager,
-    QueryManager,
     ISession,
     Session,
+    IQueryManager,
+    QueryManager,
     ISettingsManager,
     SettingsManager,
     ISessionManager, SessionManager
 } from "@domain";
+import {IBackgroundService, QueryBackgroundService, SessionBackgroundService} from "./main-window/background-services";
 
 Aurelia
     .register(
@@ -21,6 +22,8 @@ Aurelia
         Registration.singleton(ISessionManager, SessionManager),
         Registration.singleton(IQueryManager, QueryManager),
         Registration.singleton(ISettingsManager, SettingsManager),
+        Registration.singleton(IBackgroundService, SessionBackgroundService),
+        Registration.singleton(IBackgroundService, QueryBackgroundService),
     )
     .app({
         host: document.getElementsByTagName("main-window")[0],

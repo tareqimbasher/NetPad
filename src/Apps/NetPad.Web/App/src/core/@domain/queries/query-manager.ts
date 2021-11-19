@@ -3,7 +3,7 @@ import {IQueriesService, QueriesService, ISession} from "@domain";
 
 export interface IQueryManager extends IQueriesService {}
 
-export const IQueryManager = DI.createInterface<IQueryManager>("IQueryManager");
+export const IQueryManager = DI.createInterface<IQueryManager>();
 
 export class QueryManager extends QueriesService implements IQueryManager {
     constructor(baseUrl: string, @IHttpClient http: IHttpClient, @ISession readonly session: ISession) {

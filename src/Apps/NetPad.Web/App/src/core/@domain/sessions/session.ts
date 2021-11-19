@@ -9,7 +9,7 @@ export interface ISession {
     makeActive(query: Query): void;
 }
 
-export const ISession = DI.createInterface<ISession>(nameof("ISession"));
+export const ISession = DI.createInterface<ISession>();
 
 export class Session implements ISession {
     public activeQuery: Query | null | undefined;

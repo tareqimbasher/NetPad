@@ -1,84 +1,84 @@
 {
-  "dependencies": {
-    "@popperjs/core": "^2.10.2",
-    "@types/ts-nameof": "^4.2.1",
-    "aurelia": "latest",
-    "bootstrap": "^5.1.3",
-    "bootstrap-icons": "^1.7.0",
-    "monaco-editor": "^0.30.0",
-    "ts-nameof": "^5.0.0"
-  },
-  "description": "An Aurelia 2 client application.",
-  "devDependencies": {
-    "@aurelia/testing": "latest",
-    "@aurelia/ts-jest": "latest",
-    "@aurelia/webpack-loader": "latest",
-    "@types/jest": "^27.0.2",
-    "@types/node": "^16.11.6",
-    "@typescript-eslint/eslint-plugin": "^5.3.0",
-    "@typescript-eslint/parser": "^5.3.0",
-    "autoprefixer": "^10.4.0",
-    "cross-env": "^7.0.3",
-    "css-loader": "^6.5.0",
-    "cypress": "^8.7.0",
-    "dotenv-webpack": "^7.0.3",
-    "electron": "^15.3.1",
-    "eslint": "^8.1.0",
-    "eslint-plugin-cypress": "^2.12.1",
-    "html-webpack-plugin": "^5.5.0",
-    "htmlhint": "^0.16.0",
-    "jest": "^27.3.1",
-    "jest-transform-stub": "^2.0.0",
-    "postcss": "^8.3.11",
-    "postcss-loader": "^6.2.0",
-    "rimraf": "^3.0.2",
-    "sass": "^1.43.4",
-    "sass-lint": "^1.13.1",
-    "sass-loader": "^12.3.0",
-    "start-server-and-test": "^1.14.0",
-    "style-loader": "^3.3.1",
-    "ts-loader": "^9.2.6",
-    "typescript": "^4.4.4",
-    "webpack": "^5.61.0",
-    "webpack-bundle-analyzer": "^4.5.0",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.4.0"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "transform": {
-      "\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub",
-      "\\.(ts|html)$": "@aurelia/ts-jest"
+    "name": "netpad",
+    "version": "0.1.0",
+    "description": "A cross-platform C# editor and playground.",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tareqimbasher/NetPad"
     },
-    "collectCoverage": true,
-    "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/**/*.d.ts"
-    ],
-    "globals": {
-      "ts-jest": {
-        "isolatedModules": true
-      }
+    "scripts": {
+        "lint:js": "eslint src test cypress --ext .js,.ts",
+        "lint:css": "sass-lint -c .sass-lint.yml \"src/**/*.scss\"",
+        "lint:html": "htmlhint -c .htmlhintrc src",
+        "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
+        "pretest": "npm run lint",
+        "start": "webpack serve",
+        "build": "rimraf dist && webpack --env production",
+        "analyze": "rimraf dist && webpack --env production --analyze",
+        "test": "jest",
+        "cypress": "cypress run",
+        "test:e2e": "cross-env CI=1 start-server-and-test start http://localhost:9000 cypress"
+    },
+    "jest": {
+        "testEnvironment": "jsdom",
+        "transform": {
+            "\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub",
+            "\\.(ts|html)$": "@aurelia/ts-jest"
+        },
+        "collectCoverage": true,
+        "collectCoverageFrom": [
+            "src/**/*.ts",
+            "!src/**/*.d.ts"
+        ],
+        "globals": {
+            "ts-jest": {
+                "isolatedModules": true
+            }
+        }
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.10.2",
+        "@types/ts-nameof": "^4.2.1",
+        "aurelia": "latest",
+        "bootstrap": "^5.1.3",
+        "bootstrap-icons": "^1.7.0",
+        "monaco-editor": "^0.30.0",
+        "ts-nameof": "^5.0.0"
+    },
+    "devDependencies": {
+        "@aurelia/testing": "latest",
+        "@aurelia/ts-jest": "latest",
+        "@aurelia/webpack-loader": "latest",
+        "@types/jest": "^27.0.2",
+        "@types/node": "^16.11.6",
+        "@typescript-eslint/eslint-plugin": "^5.3.0",
+        "@typescript-eslint/parser": "^5.3.0",
+        "autoprefixer": "^10.4.0",
+        "cross-env": "^7.0.3",
+        "css-loader": "^6.5.0",
+        "cypress": "^8.7.0",
+        "dotenv-webpack": "^7.0.3",
+        "electron": "^15.3.1",
+        "eslint": "^8.1.0",
+        "eslint-plugin-cypress": "^2.12.1",
+        "html-webpack-plugin": "^5.5.0",
+        "htmlhint": "^0.16.0",
+        "jest": "^27.3.1",
+        "jest-transform-stub": "^2.0.0",
+        "postcss": "^8.3.11",
+        "postcss-loader": "^6.2.0",
+        "rimraf": "^3.0.2",
+        "sass": "^1.43.4",
+        "sass-lint": "^1.13.1",
+        "sass-loader": "^12.3.0",
+        "start-server-and-test": "^1.14.0",
+        "style-loader": "^3.3.1",
+        "ts-loader": "^9.2.6",
+        "typescript": "^4.4.4",
+        "webpack": "^5.61.0",
+        "webpack-bundle-analyzer": "^4.5.0",
+        "webpack-cli": "^4.9.1",
+        "webpack-dev-server": "^4.4.0"
     }
-  },
-  "license": "UNLICENSED",
-  "name": "netpad",
-  "repository": {
-    "type": "git",
-    "url": "???"
-  },
-  "scripts": {
-    "lint:js": "eslint src test cypress --ext .js,.ts",
-    "lint:css": "sass-lint -c .sass-lint.yml \"src/**/*.scss\"",
-    "lint:html": "htmlhint -c .htmlhintrc src",
-    "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
-    "pretest": "npm run lint",
-    "start": "webpack serve",
-    "build": "rimraf dist && webpack --env production",
-    "analyze": "rimraf dist && webpack --env production --analyze",
-    "test": "jest",
-    "cypress": "cypress run",
-    "test:e2e": "cross-env CI=1 start-server-and-test start http://localhost:9000 cypress"
-  },
-  "version": "0.1.0"
 }
