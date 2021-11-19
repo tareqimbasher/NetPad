@@ -9,24 +9,11 @@ $input-btn-focus-width: 0.1rem;
 $nav-link-padding-y: .25rem;
 $input-btn-padding-y: .275rem;
 
-// Should be the last line
+// Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
 
-$colors: (
-    blue:       $blue,
-    indigo:     $indigo,
-    purple:     $purple,
-    pink:       $pink,
-    red:        $red,
-    orange:     $orange,
-    yellow:     $yellow,
-    green:      $green,
-    teal:       $teal,
-    cyan:       $cyan,
-);
-
 @each $color in map-keys($colors) {
-    .text-#{$color} {
+    .text-#{"" + $color} {
         color: map-get($colors, $color);
     }
 }
