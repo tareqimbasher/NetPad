@@ -22,7 +22,8 @@ namespace NetPad.BackgroundServices
         {
             _session.OpenQueries.CollectionChanged += (_,  changes) =>
             {
-                if (changes.Action == NotifyCollectionChangedAction.Add || changes.Action == NotifyCollectionChangedAction.Remove)
+                if ((changes.Action == NotifyCollectionChangedAction.Add && changes.NewItems?.Count > 0) ||
+                    (changes.Action == NotifyCollectionChangedAction.Remove && changes.OldItems?.Count > 0))
                 {
                     try
                     {

@@ -149,8 +149,7 @@ namespace NetPad
                         MinHeight = 200,
                         MinWidth = 200,
                         Center = true
-
-                    });
+                    }, "http://localhost:8001?win=main");
                 });
 
                 // var options = new BrowserWindowOptions()

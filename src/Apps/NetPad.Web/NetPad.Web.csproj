@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App" />
+    <Folder Include="App\src\windows" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\NetPad.Core\NetPad.Core.csproj" />

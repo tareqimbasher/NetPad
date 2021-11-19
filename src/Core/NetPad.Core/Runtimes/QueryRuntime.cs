@@ -27,7 +27,7 @@ namespace NetPad.Runtimes
         public Task RunAsync(IQueryRuntimeInputWriter inputReader, IQueryRuntimeOutputReader outputReader)
         {
             EnsureInitialization();
-            HookConsole(inputReader, outputReader);
+            HookConsole(_query.Id, inputReader, outputReader);
 
             string code = CodeParser.GetQueryCode(_query!);
 
@@ -78,7 +78,7 @@ namespace NetPad.Runtimes
             return Task.CompletedTask;
         }
 
-        private void HookConsole(IQueryRuntimeInputWriter queryRuntimeInputReader, IQueryRuntimeOutputReader outputReader)
+        private void HookConsole(Guid runtimeInputReader, IQueryRuntimeInputWriter queryRuntimeInputReader, IQueryRuntimeOutputReader outputReader)
         {
             Console.SetOut(new QueryRuntimeOutputReaderTextWriter(outputReader));
         }
