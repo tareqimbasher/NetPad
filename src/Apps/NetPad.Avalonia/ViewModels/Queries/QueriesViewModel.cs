@@ -22,8 +22,9 @@ namespace NetPad.ViewModels.Queries
 {
     public class QueriesViewModel : ViewModelBase
     {
-        private readonly IQueryManager _queryManager;
+        private readonly IQueryRepository _queryRepository;
         public readonly ISession _session;
+        private readonly Settings _settings;
         private readonly IClassicDesktopStyleApplicationLifetime _appLifetime;
         private ReadOnlyObservableCollection<QueryViewModel> _queries;
         private QueryViewModel? _selectedQuery;
@@ -33,13 +34,15 @@ namespace NetPad.ViewModels.Queries
         }
 
         public QueriesViewModel(
-            IQueryManager queryManager,
+            IQueryRepository queryRepository,
             ISession session,
+            Settings settings,
             IClassicDesktopStyleApplicationLifetime appLifetime,
             IServiceProvider serviceProvider) : this()
         {
-            _queryManager = queryManager;
+            _queryRepository = queryRepository;
             _session = session;
+            _settings = settings;
             _appLifetime = appLifetime;
 
 
@@ -52,7 +55,7 @@ namespace NetPad.ViewModels.Queries
                 .Bind(out _queries)
                 .Subscribe();
 
-            _queryManager.OpenQueryAsync("/home/tips/X/tmp/NetPad/Queries/Query 1.netpad").Wait();
+            _queryRepository.OpenAsync("/home/tips/X/tmp/NetPad/Queries/Query 1.netpad").Wait();
         }
 
         public ReadOnlyObservableCollection<QueryViewModel> Queries => _queries;
@@ -61,7 +64,7 @@ namespace NetPad.ViewModels.Queries
 
         public async Task CreateNewQueryAsync()
         {
-            await _queryManager.CreateNewQueryAsync();
+            await _queryRepository.CreateAsync();
             Console.WriteLine("Queries: " + _session.OpenQueries.Count);
         }
 
@@ -81,7 +84,7 @@ namespace NetPad.ViewModels.Queries
                 {
                     Title = "Save Query",
                     InitialFileName = SelectedQuery.Query.Name + ".netpad",
-                    Directory = (await _queryManager.GetQueriesDirectoryAsync()).FullName,
+                    Directory = _settings.QueriesDirectoryPath,
                     DefaultExtension = "netpad"
                 };
 
@@ -94,7 +97,7 @@ namespace NetPad.ViewModels.Queries
 
             try
             {
-                await SelectedQuery.Query.SaveAsync();
+                await _queryRepository.SaveAsync(SelectedQuery.Query);
             }
             catch (Exception e)
             {

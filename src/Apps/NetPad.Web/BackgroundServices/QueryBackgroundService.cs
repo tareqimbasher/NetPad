@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
-using ElectronNET.API.Entities;
 using NetPad.Common;
 using NetPad.Queries;
 using NetPad.Sessions;
@@ -23,12 +20,22 @@ namespace NetPad.BackgroundServices
             _settings = settings;
         }
 
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            ReactToQueryPropertyChanged();
+
+            // Electron.IpcMain.RemoveAllListeners("save-query");
+            // Electron.IpcMain.On("save-query", async (msg) =>
+            // {
+            //
+            // });
+        }
+
+        private void ReactToQueryPropertyChanged()
         {
             _session.OpenQueries.CollectionChanged += (_,  changes) =>
             {
-                if (changes.Action == NotifyCollectionChangedAction.Add)
+                if (changes.Action == NotifyCollectionChangedAction.Add && changes.NewItems?.Count > 0)
                 {
                     foreach (Query query in changes.NewItems)
                     {
@@ -54,13 +61,6 @@ namespace NetPad.BackgroundServices
                     }
                 }
             };
-
-
-            Electron.IpcMain.RemoveAllListeners("save-query");
-            Electron.IpcMain.On("save-query", async (msg) =>
-            {
-
-            });
         }
     }
 }

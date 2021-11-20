@@ -6,17 +6,17 @@ namespace NetPad.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private readonly IQueryManager _queryManager;
+        private readonly IQueryRepository _queryRepository;
         
         public MainWindowViewModel()
         {
         }
         
-        public MainWindowViewModel(IQueryManager queryManager, ISession session, QueriesViewModel queriesViewModel)
+        public MainWindowViewModel(IQueryRepository queryRepository, ISession session, QueriesViewModel queriesViewModel)
         {
             Session = session;
             Queries = queriesViewModel;
-            _queryManager = queryManager;
+            _queryRepository = queryRepository;
             
             // _openQueries = session.OpenQueries
             //     .ToObservableChangeSet().ToCollection()

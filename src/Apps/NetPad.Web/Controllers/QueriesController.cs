@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,13 +18,13 @@ namespace NetPad.Controllers
     [Route("queries")]
     public class QueriesController : Controller
     {
-        private readonly IQueryManager _queryManager;
+        private readonly IQueryRepository _queryRepository;
         private readonly ISession _session;
         private readonly Settings _settings;
 
-        public QueriesController(IQueryManager queryManager, ISession session, Settings settings)
+        public QueriesController(IQueryRepository queryRepository, ISession session, Settings settings)
         {
-            _queryManager = queryManager;
+            _queryRepository = queryRepository;
             _session = session;
             _settings = settings;
         }
@@ -35,25 +36,21 @@ namespace NetPad.Controllers
         }
 
         [HttpGet]
-        public async Task<string[]> GetQueries()
+        public async Task<IEnumerable<QuerySummary>> GetQueries()
         {
-            var directory = await _queryManager.GetQueriesDirectoryAsync();
-            return directory.GetFiles("*.netpad", SearchOption.AllDirectories)
-                .Select(f => f.FullName)
-                .OrderBy(x => x)
-                .ToArray();
+            return await _queryRepository.GetAllAsync();
         }
 
         [HttpPatch("create")]
         public async Task Create()
         {
-            await _queryManager.CreateNewQueryAsync();
+            await _queryRepository.CreateAsync();
         }
 
         [HttpPatch("open")]
         public async Task Open([FromQuery] string filePath)
         {
-            await _queryManager.OpenQueryAsync(filePath);
+            await _queryRepository.OpenAsync(filePath);
         }
 
         [HttpPatch("save/{id:guid}")]
@@ -63,34 +60,24 @@ namespace NetPad.Controllers
             if (query == null)
                 throw new Exception("Query not found");
 
-            try
+            if (query.IsNew)
             {
-                if (query.IsNew)
+                var path = await Electron.Dialog.ShowSaveDialogAsync(Electron.WindowManager.BrowserWindows.First(), new SaveDialogOptions()
                 {
-                    var path = await Electron.Dialog.ShowSaveDialogAsync(Electron.WindowManager.BrowserWindows.First(), new SaveDialogOptions()
-                    {
-                        Title = "Save Query",
-                        Message = "Where do you want to save this query?",
-                        NameFieldLabel = query.Name,
-                        Filters = new[] { new FileFilter { Name = "NetPad Queries", Extensions = new[] { "netpad" } } },
-                        DefaultPath = _settings.QueriesDirectoryPath,
-                    });
+                    Title = "Save Query",
+                    Message = "Where do you want to save this query?",
+                    NameFieldLabel = query.Name,
+                    Filters = new[] { new FileFilter { Name = "NetPad Queries", Extensions = new[] { "netpad" } } },
+                    DefaultPath = _settings.QueriesDirectoryPath,
+                });
 
-                    if (string.IsNullOrWhiteSpace(path))
-                        return false;
+                if (string.IsNullOrWhiteSpace(path))
+                    return false;
 
-                    if (!path.EndsWith(".netpad")) path += ".netpad";
-
-                    query.SetFilePath(path);
-                }
-
-                Console.WriteLine("Saving: " + query.Code);
-                await query.SaveAsync();
+                query.SetFilePath(path);
             }
-            catch (Exception ex)
-            {
-                throw;
-            }
+
+            await _queryRepository.SaveAsync(query);
 
             return true;
         }
@@ -121,7 +108,7 @@ namespace NetPad.Controllers
                     return;
             }
 
-            await _queryManager.CloseQueryAsync(id);
+            await _queryRepository.CloseAsync(id);
         }
 
         [HttpPatch("run/{id:guid}")]

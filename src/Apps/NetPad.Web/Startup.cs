@@ -79,7 +79,7 @@ namespace NetPad
 
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
             services.AddSingleton<ISession, NetPad.Sessions.Session>();
-            services.AddSingleton<IQueryManager, QueryManager>();
+            services.AddSingleton<IQueryRepository, QueryRepository>();
             services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
             services.AddTransient<IQueryRuntime, QueryRuntime>();
 

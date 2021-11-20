@@ -1,32 +1,43 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using NetPad.Sessions;
 
 namespace NetPad.Queries
 {
-    public class QueryManager : IQueryManager
+    public class QueryRepository : IQueryRepository
     {
         private readonly Settings _settings;
         private readonly ISession _session;
 
-        public QueryManager(Settings settings, ISession session)
+        public QueryRepository(Settings settings, ISession session)
         {
             _settings = settings;
             _session = session;
         }
 
-        public Task<Query> CreateNewQueryAsync()
+        public Task<List<QuerySummary>> GetAllAsync()
         {
-            var query = new Query( Guid.NewGuid(), GetNewQueryName());
+            var summaries = Directory.GetFiles(_settings.QueriesDirectoryPath, "*.netpad", SearchOption.AllDirectories)
+                .Select(f => new QuerySummary(Path.GetFileNameWithoutExtension(f), f))
+                .ToList();
+
+            return Task.FromResult(summaries);
+        }
+
+        public Task<Query> CreateAsync()
+        {
+            var query = new Query(Guid.NewGuid(), GetNewQueryName());
 
             _session.Add(query);
 
             return Task.FromResult(query);
         }
 
-        public async Task<Query> OpenQueryAsync(string filePath)
+        public async Task<Query> OpenAsync(string filePath)
         {
             var query = _session.Get(filePath);
             if (query != null)
@@ -46,35 +57,37 @@ namespace NetPad.Queries
             return query;
         }
 
-        public Task<Query> DuplicateQueryAsync(Query query, QueryDuplicationOptions options)
+        public Task<Query> DuplicateAsync(Query query, QueryDuplicationOptions options)
         {
             throw new System.NotImplementedException();
         }
 
-        public async Task<Query> SaveQueryAsync(Query query)
+        public async Task<Query> SaveAsync(Query query)
         {
-            await query.SaveAsync();
+            if (query.FilePath == null)
+                throw new InvalidOperationException($"{nameof(query.FilePath)} is not set. Cannot save query.");
+
+            var config = JsonSerializer.Serialize(query.Config);
+
+            await File.WriteAllTextAsync(query.FilePath, $"{query.Id}\n" +
+                                                         $"{config}\n" +
+                                                         $"#Query\n" +
+                                                         $"{query.Code}")
+                .ConfigureAwait(false);
+
+            query.IsDirty = false;
             return query;
         }
 
-        public Task<Query> DeleteQueryAsync(Query query)
+        public Task<Query> DeleteAsync(Query query)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task CloseQueryAsync(Guid id)
+        public Task CloseAsync(Guid id)
         {
             _session.Remove(id);
             return Task.CompletedTask;
-        }
-
-        public Task<DirectoryInfo> GetQueriesDirectoryAsync()
-        {
-            var directory = new DirectoryInfo(_settings.QueriesDirectoryPath);
-
-            directory.Create();
-
-            return Task.FromResult(directory);
         }
 
         private string GetNewQueryName()

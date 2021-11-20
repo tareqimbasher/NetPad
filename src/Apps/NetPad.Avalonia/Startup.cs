@@ -51,7 +51,7 @@ namespace NetPad
             // Register application services
             services.AddSingleton<Settings>();
             services.AddSingleton<ISession, Session>();
-            services.AddSingleton<IQueryManager, QueryManager>();
+            services.AddSingleton<IQueryRepository, QueryRepository>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IQueryRuntime, QueryRuntime>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();

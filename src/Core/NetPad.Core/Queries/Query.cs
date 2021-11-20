@@ -79,24 +79,11 @@ namespace NetPad.Queries
             Code = part2.TrimStart();
         }
 
-        public async Task SaveAsync()
-        {
-            if (FilePath == null)
-                throw new InvalidOperationException($"{FilePath} is null. Cannot save query.");
-
-            var config = JsonSerializer.Serialize(Config);
-
-            await File.WriteAllTextAsync(FilePath, $"{Id}\n" +
-                                                   $"{config}\n" +
-                                                   $"#Query\n" +
-                                                   $"{Code}")
-                .ConfigureAwait(false);
-            IsDirty = false;
-        }
-
         public void SetFilePath(string filePath)
         {
             FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+
+            if (!filePath.EndsWith(".netpad")) filePath += ".netpad";
 
             FilePath = filePath;
             Name = Path.GetFileNameWithoutExtension(filePath);
