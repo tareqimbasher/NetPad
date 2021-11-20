@@ -2,13 +2,13 @@ import {Aurelia, Registration} from "aurelia";
 import {
     ISession,
     Session,
-    IQueryManager,
-    QueryManager,
+    IScriptManager,
+    ScriptManager,
     ISettingsManager,
     SettingsManager,
     ISessionManager, SessionManager
 } from "@domain";
-import {IBackgroundService, QueryBackgroundService, SessionBackgroundService} from "./background-services";
+import {IBackgroundService, ScriptBackgroundService, SessionBackgroundService} from "./background-services";
 import {Index} from "./index";
 
 export function register(app: Aurelia): void {
@@ -16,10 +16,10 @@ export function register(app: Aurelia): void {
         .register(
             Registration.singleton(ISession, Session),
             Registration.singleton(ISessionManager, SessionManager),
-            Registration.singleton(IQueryManager, QueryManager),
+            Registration.singleton(IScriptManager, ScriptManager),
             Registration.singleton(ISettingsManager, SettingsManager),
             Registration.singleton(IBackgroundService, SessionBackgroundService),
-            Registration.singleton(IBackgroundService, QueryBackgroundService),
+            Registration.singleton(IBackgroundService, ScriptBackgroundService),
         )
         .app(Index);
 }

@@ -48,7 +48,7 @@ namespace NetPad.Runtimes.Compilation
             foreach (var assemblyReferenceLocation in input.AssemblyReferenceLocations)
                 assemblyLocations.Add(assemblyReferenceLocation);
 
-            assemblyLocations.Add(typeof(IQueryRuntimeOutputWriter).Assembly.Location);
+            assemblyLocations.Add(typeof(IScriptRuntimeOutputWriter).Assembly.Location);
 
             var references = assemblyLocations
                 .Select(location => MetadataReference.CreateFromFile(location));

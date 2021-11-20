@@ -1,13 +1,13 @@
 using System;
-using NetPad.Queries;
+using NetPad.Scripts;
 
 namespace NetPad.Runtimes
 {
     public class CodeParser
     {
-        public static string GetQueryCode(Query query)
+        public static string GetScriptCode(Script script)
         {
-            string queryCode = query.Code;
+            string scriptCode = script.Code;
             string code;
 
             string program = @"
@@ -18,18 +18,18 @@ using System.Threading.Tasks;
 using System.IO;
 using NetPad.Runtimes;
 
-public static class UserQuery
+public static class UserScript
 {{
-    private static IQueryRuntimeOutputWriter OutputWriter {{ get; set; }}
+    private static IScriptRuntimeOutputWriter OutputWriter {{ get; set; }}
     private static Exception? Exception {{ get; set; }}
 
-    private static void Main(IQueryRuntimeOutputWriter outputWriter)
+    private static void Main(IScriptRuntimeOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
 
         try
         {{
-            new UserQuery_Program().Main();
+            new UserScript_Program().Main();
         }}
         catch (Exception ex)
         {{
@@ -48,38 +48,38 @@ public static class UserQuery
     }}
 }}
 
-public class UserQuery_Program
+public class UserScript_Program
 {{
     {0}
 }}
 ";
 
-            if (query.Config.Kind == QueryKind.Expression)
+            if (script.Config.Kind == ScriptKind.Expression)
             {
                 throw new NotImplementedException("Expression code parsing is not implemented yet.");
             }
-            else if (query.Config.Kind == QueryKind.Statements)
+            else if (script.Config.Kind == ScriptKind.Statements)
             {
                 code = $@"
 public void Main()
 {{
-    {queryCode}
+    {scriptCode}
 }}
 ";
             }
-            else if (query.Config.Kind == QueryKind.Program)
+            else if (script.Config.Kind == ScriptKind.Program)
             {
-                code = queryCode;
+                code = scriptCode;
             }
             else
             {
-                throw new NotImplementedException($"Code parsing is not implemented yet for query kind: {query.Config.Kind}");
+                throw new NotImplementedException($"Code parsing is not implemented yet for script kind: {script.Config.Kind}");
             }
 
             code = string.Format(program, code);
             return code
-                .Replace("Console.WriteLine", "UserQuery.ConsoleWriteLine")
-                .Replace("Console.Write", "UserQuery.ConsoleWrite");
+                .Replace("Console.WriteLine", "UserScript.ConsoleWriteLine")
+                .Replace("Console.Write", "UserScript.ConsoleWrite");
         }
     }
 }

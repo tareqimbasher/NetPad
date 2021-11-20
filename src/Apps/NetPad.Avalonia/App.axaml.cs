@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetPad.Queries;
+using NetPad.Scripts;
 using NetPad.Sessions;
 using NetPad.TextEditing;
 using NetPad.TextEditing.OmniSharp;

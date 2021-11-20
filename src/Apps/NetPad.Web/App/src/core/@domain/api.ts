@@ -9,18 +9,18 @@
 
 import {IHttpClient} from "aurelia";
 
-export interface IQueriesService {
-    empty(): Promise<Query>;
-    getQueries(): Promise<string[]>;
+export interface IScriptsService {
+    empty(): Promise<Script>;
+    getScripts(): Promise<ScriptSummary[]>;
     create(): Promise<void>;
     open(filePath: string | null | undefined): Promise<void>;
-    save(id: string): Promise<void>;
+    save(id: string): Promise<boolean>;
     close(id: string): Promise<void>;
     run(id: string): Promise<string>;
     updateCode(id: string, code: string): Promise<void>;
 }
 
-export class QueriesService implements IQueriesService {
+export class ScriptsService implements IScriptsService {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -30,8 +30,8 @@ export class QueriesService implements IQueriesService {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    empty(signal?: AbortSignal | undefined): Promise<Query> {
-        let url_ = this.baseUrl + "/queries/empty";
+    empty(signal?: AbortSignal | undefined): Promise<Script> {
+        let url_ = this.baseUrl + "/scripts/empty";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -47,14 +47,14 @@ export class QueriesService implements IQueriesService {
         });
     }
 
-    protected processEmpty(response: Response): Promise<Query> {
+    protected processEmpty(response: Response): Promise<Script> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Query.fromJS(resultData200);
+            result200 = Script.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -62,11 +62,11 @@ export class QueriesService implements IQueriesService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Query>(<any>null);
+        return Promise.resolve<Script>(<any>null);
     }
 
-    getQueries(signal?: AbortSignal | undefined): Promise<string[]> {
-        let url_ = this.baseUrl + "/queries";
+    getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]> {
+        let url_ = this.baseUrl + "/scripts";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -78,11 +78,11 @@ export class QueriesService implements IQueriesService {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetQueries(_response);
+            return this.processGetScripts(_response);
         });
     }
 
-    protected processGetQueries(response: Response): Promise<string[]> {
+    protected processGetScripts(response: Response): Promise<ScriptSummary[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -92,7 +92,7 @@ export class QueriesService implements IQueriesService {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(item);
+                    result200!.push(ScriptSummary.fromJS(item));
             }
             else {
                 result200 = <any>null;
@@ -104,11 +104,11 @@ export class QueriesService implements IQueriesService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<string[]>(<any>null);
+        return Promise.resolve<ScriptSummary[]>(<any>null);
     }
 
     create(signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/queries/create";
+        let url_ = this.baseUrl + "/scripts/create";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -139,7 +139,7 @@ export class QueriesService implements IQueriesService {
     }
 
     open(filePath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/queries/open?";
+        let url_ = this.baseUrl + "/scripts/open?";
         if (filePath !== undefined && filePath !== null)
             url_ += "filePath=" + encodeURIComponent("" + filePath) + "&";
         url_ = url_.replace(/[?&]$/, "");
@@ -171,8 +171,8 @@ export class QueriesService implements IQueriesService {
         return Promise.resolve<void>(<any>null);
     }
 
-    save(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/queries/save/{id}";
+    save(id: string, signal?: AbortSignal | undefined): Promise<boolean> {
+        let url_ = this.baseUrl + "/scripts/save/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -182,6 +182,7 @@ export class QueriesService implements IQueriesService {
             method: "PATCH",
             signal,
             headers: {
+                "Accept": "application/json"
             }
         };
 
@@ -190,23 +191,26 @@ export class QueriesService implements IQueriesService {
         });
     }
 
-    protected processSave(response: Response): Promise<void> {
+    protected processSave(response: Response): Promise<boolean> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(<any>null);
+        return Promise.resolve<boolean>(<any>null);
     }
 
     close(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/queries/close/{id}";
+        let url_ = this.baseUrl + "/scripts/close/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -240,7 +244,7 @@ export class QueriesService implements IQueriesService {
     }
 
     run(id: string, signal?: AbortSignal | undefined): Promise<string> {
-        let url_ = this.baseUrl + "/queries/run/{id}";
+        let url_ = this.baseUrl + "/scripts/run/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -278,7 +282,7 @@ export class QueriesService implements IQueriesService {
     }
 
     updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/queries/query/{id}/code";
+        let url_ = this.baseUrl + "/scripts/{id}/code";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -317,7 +321,7 @@ export class QueriesService implements IQueriesService {
 }
 
 export interface ISessionService {
-    getOpenQueries(): Promise<Query[]>;
+    getOpenScripts(): Promise<Script[]>;
 }
 
 export class SessionService implements ISessionService {
@@ -330,8 +334,8 @@ export class SessionService implements ISessionService {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getOpenQueries(signal?: AbortSignal | undefined): Promise<Query[]> {
-        let url_ = this.baseUrl + "/session/queries";
+    getOpenScripts(signal?: AbortSignal | undefined): Promise<Script[]> {
+        let url_ = this.baseUrl + "/session/scripts";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -343,11 +347,11 @@ export class SessionService implements ISessionService {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetOpenQueries(_response);
+            return this.processGetOpenScripts(_response);
         });
     }
 
-    protected processGetOpenQueries(response: Response): Promise<Query[]> {
+    protected processGetOpenScripts(response: Response): Promise<Script[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -357,7 +361,7 @@ export class SessionService implements ISessionService {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(Query.fromJS(item));
+                    result200!.push(Script.fromJS(item));
             }
             else {
                 result200 = <any>null;
@@ -369,7 +373,7 @@ export class SessionService implements ISessionService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Query[]>(<any>null);
+        return Promise.resolve<Script[]>(<any>null);
     }
 }
 
@@ -423,17 +427,17 @@ export class SettingsService implements ISettingsService {
     }
 }
 
-export class Query implements IQuery {
+export class Script implements IScript {
     id!: string;
     name!: string;
     filePath?: string | undefined;
-    config!: QueryConfig;
+    config!: ScriptConfig;
     code!: string;
     directoryPath?: string | undefined;
     isDirty!: boolean;
     isNew!: boolean;
 
-    constructor(data?: IQuery) {
+    constructor(data?: IScript) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -441,7 +445,7 @@ export class Query implements IQuery {
             }
         }
         if (!data) {
-            this.config = new QueryConfig();
+            this.config = new ScriptConfig();
         }
     }
 
@@ -450,7 +454,7 @@ export class Query implements IQuery {
             this.id = _data["id"];
             this.name = _data["name"];
             this.filePath = _data["filePath"];
-            this.config = _data["config"] ? QueryConfig.fromJS(_data["config"]) : new QueryConfig();
+            this.config = _data["config"] ? ScriptConfig.fromJS(_data["config"]) : new ScriptConfig();
             this.code = _data["code"];
             this.directoryPath = _data["directoryPath"];
             this.isDirty = _data["isDirty"];
@@ -458,9 +462,9 @@ export class Query implements IQuery {
         }
     }
 
-    static fromJS(data: any): Query {
+    static fromJS(data: any): Script {
         data = typeof data === 'object' ? data : {};
-        let result = new Query();
+        let result = new Script();
         result.init(data);
         return result;
     }
@@ -478,30 +482,30 @@ export class Query implements IQuery {
         return data; 
     }
 
-    clone(): Query {
+    clone(): Script {
         const json = this.toJSON();
-        let result = new Query();
+        let result = new Script();
         result.init(json);
         return result;
     }
 }
 
-export interface IQuery {
+export interface IScript {
     id: string;
     name: string;
     filePath?: string | undefined;
-    config: QueryConfig;
+    config: ScriptConfig;
     code: string;
     directoryPath?: string | undefined;
     isDirty: boolean;
     isNew: boolean;
 }
 
-export class QueryConfig implements IQueryConfig {
-    kind!: QueryKind;
+export class ScriptConfig implements IScriptConfig {
+    kind!: ScriptKind;
     namespaces!: string[];
 
-    constructor(data?: IQueryConfig) {
+    constructor(data?: IScriptConfig) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -524,9 +528,9 @@ export class QueryConfig implements IQueryConfig {
         }
     }
 
-    static fromJS(data: any): QueryConfig {
+    static fromJS(data: any): ScriptConfig {
         data = typeof data === 'object' ? data : {};
-        let result = new QueryConfig();
+        let result = new ScriptConfig();
         result.init(data);
         return result;
     }
@@ -542,23 +546,70 @@ export class QueryConfig implements IQueryConfig {
         return data; 
     }
 
-    clone(): QueryConfig {
+    clone(): ScriptConfig {
         const json = this.toJSON();
-        let result = new QueryConfig();
+        let result = new ScriptConfig();
         result.init(json);
         return result;
     }
 }
 
-export interface IQueryConfig {
-    kind: QueryKind;
+export interface IScriptConfig {
+    kind: ScriptKind;
     namespaces: string[];
 }
 
-export type QueryKind = 0 | 1 | 2;
+export type ScriptKind = 0 | 1 | 2;
+
+export class ScriptSummary implements IScriptSummary {
+    name!: string;
+    path!: string;
+
+    constructor(data?: IScriptSummary) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.path = _data["path"];
+        }
+    }
+
+    static fromJS(data: any): ScriptSummary {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptSummary();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["path"] = this.path;
+        return data; 
+    }
+
+    clone(): ScriptSummary {
+        const json = this.toJSON();
+        let result = new ScriptSummary();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptSummary {
+    name: string;
+    path: string;
+}
 
 export class Settings implements ISettings {
-    queriesDirectoryPath!: string;
+    scriptsDirectoryPath!: string;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -571,7 +622,7 @@ export class Settings implements ISettings {
 
     init(_data?: any) {
         if (_data) {
-            this.queriesDirectoryPath = _data["queriesDirectoryPath"];
+            this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
         }
     }
 
@@ -584,7 +635,7 @@ export class Settings implements ISettings {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["queriesDirectoryPath"] = this.queriesDirectoryPath;
+        data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         return data; 
     }
 
@@ -597,7 +648,7 @@ export class Settings implements ISettings {
 }
 
 export interface ISettings {
-    queriesDirectoryPath: string;
+    scriptsDirectoryPath: string;
 }
 
 export class ApiException extends Error {

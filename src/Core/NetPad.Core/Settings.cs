@@ -7,9 +7,9 @@ namespace NetPad
     {
         public Settings()
         {
-            QueriesDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            ScriptsDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         }
-        
-        public string QueriesDirectoryPath { get; set; }
+
+        public string ScriptsDirectoryPath { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Queries;
+using NetPad.Scripts;
 using NetPad.Sessions;
 
 namespace NetPad.Controllers
@@ -17,10 +17,10 @@ namespace NetPad.Controllers
             _session = session;
         }
 
-        [HttpGet("queries")]
-        public IEnumerable<Query> GetOpenQueries()
+        [HttpGet("scripts")]
+        public IEnumerable<Script> GetOpenScripts()
         {
-            return _session.OpenQueries;
+            return _session.OpenScripts;
         }
     }
 }

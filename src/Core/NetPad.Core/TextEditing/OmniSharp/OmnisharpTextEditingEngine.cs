@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetPad.Queries;
+using NetPad.Scripts;
 using NetPad.Utilities;
 
 namespace NetPad.TextEditing.OmniSharp
@@ -20,7 +20,7 @@ namespace NetPad.TextEditing.OmniSharp
             _logger = logger;
         }
         
-        public async Task LoadAsync(Query query)
+        public async Task LoadAsync(Script script)
         {
             if (_omnisharpProcess != null)
                 throw new Exception("Omnisharp process is already initialized.");

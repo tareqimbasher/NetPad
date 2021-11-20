@@ -20,7 +20,7 @@ namespace NetPad.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _session.OpenQueries.CollectionChanged += (_,  changes) =>
+            _session.OpenScripts.CollectionChanged += (_,  changes) =>
             {
                 if ((changes.Action == NotifyCollectionChangedAction.Add && changes.NewItems?.Count > 0) ||
                     (changes.Action == NotifyCollectionChangedAction.Remove && changes.OldItems?.Count > 0))
@@ -31,7 +31,7 @@ namespace NetPad.BackgroundServices
 
                         Electron.IpcMain.Send(
                             bw,
-                            "session-query-" + (changes.Action == NotifyCollectionChangedAction.Add ? "added" : "removed"),
+                            "session-script-" + (changes.Action == NotifyCollectionChangedAction.Add ? "added" : "removed"),
                             Serialize(changes.Action == NotifyCollectionChangedAction.Add ? changes.NewItems : changes.OldItems)
                         );
                     }

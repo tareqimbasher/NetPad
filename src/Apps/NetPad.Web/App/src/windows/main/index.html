@@ -1,5 +1,5 @@
 <template class="dark">
-    <require from="./query-view/query-view"></require>
+    <require from="./script-view/script-view"></require>
     <require from="./sidebar/sidebar"></require>
     <require from="./statusbar/statusbar"></require>
 
@@ -9,24 +9,24 @@
             <div id="content" class="flex-grow-1 d-flex flex-column">
                 <ul id="tabs" class="nav nav-tabs bg-dark">
                     <li class="nav-item"
-                        repeat.for="query of session.queries"
-                        click.trigger="session.activeQuery = query">
-                        <a class="nav-link ${session.activeQuery === query ? 'active' : ''}" href="#">
-                            ${query.name} ${query.isDirty ? '*' : ''}
-                            <i class="bi bi-x action-danger" click.trigger="queryManager.close(query.id)"></i>
+                        repeat.for="script of session.scripts"
+                        click.trigger="session.activeScript = script">
+                        <a class="nav-link ${session.activeScript === script ? 'active' : ''}" href="#">
+                            ${script.name} ${script.isDirty ? '*' : ''}
+                            <i class="bi bi-x action-danger" click.trigger="scriptManager.close(script.id)"></i>
                         </a>
                     </li>
                     <li class="nav-item"
-                        click.trigger="queryManager.create()">
+                        click.trigger="scriptManager.create()">
                         <div class="nav-link">
                             <i class="bi bi-plus"></i>
                         </div>
                     </li>
                 </ul>
-                <div class="queries"
-                     repeat.for="query of session.queries"
-                     show.bind="session.activeQuery === query">
-                    <query-view query.bind="query"></query-view>
+                <div class="scripts"
+                     repeat.for="script of session.scripts"
+                     show.bind="session.activeScript === script">
+                    <script-view script.bind="script"></script-view>
                 </div>
             </div>
         </div>

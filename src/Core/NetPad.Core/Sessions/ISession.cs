@@ -1,15 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
-using NetPad.Queries;
+using NetPad.Scripts;
 
 namespace NetPad.Sessions
 {
     public interface ISession
     {
-        ObservableCollection<Query> OpenQueries { get; }
-        Query? Get(Guid id);
-        Query? Get(string filePath);
-        void Add(Query query);
+        ObservableCollection<Script> OpenScripts { get; }
+        Script? Get(Guid id);
+        Script? Get(string filePath);
+        void Add(Script script);
         void Remove(Guid id);
     }
 }

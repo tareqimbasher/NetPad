@@ -1,26 +1,26 @@
 import {IBackgroundService} from "./ibackground-service";
 import {ipcRenderer} from "electron";
-import {ISession, Query} from "@domain";
+import {ISession, Script} from "@domain";
 
 export class SessionBackgroundService implements IBackgroundService{
     constructor(@ISession readonly session: ISession) {}
 
     start(): Promise<void> {
-        ipcRenderer.on("session-query-added", (event, json) => {
-            const queries = JSON.parse(json).map(q => Query.fromJS(q)) as Query[];
-            this.session.add(...queries);
+        ipcRenderer.on("session-script-added", (event, json) => {
+            const scripts = JSON.parse(json).map(q => Script.fromJS(q)) as Script[];
+            this.session.add(...scripts);
         });
 
-        ipcRenderer.on("session-query-removed", (event, json) => {
-            const queries = JSON.parse(json).map(q => Query.fromJS(q)) as Query[];
-            this.session.remove(...queries);
+        ipcRenderer.on("session-script-removed", (event, json) => {
+            const scripts = JSON.parse(json).map(q => Script.fromJS(q)) as Script[];
+            this.session.remove(...scripts);
         });
 
         return Promise.resolve();
     }
 
     public stop(): void {
-        ipcRenderer.removeAllListeners("session-query-added");
-        ipcRenderer.removeAllListeners("session-query-removed");
+        ipcRenderer.removeAllListeners("session-script-added");
+        ipcRenderer.removeAllListeners("session-script-removed");
     }
 }

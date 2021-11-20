@@ -1,5 +1,5 @@
 import { render } from './helper';
-import { Index } from '../src/main-window';
+import { Index } from '../src/windows/main';
 
 describe('my-app', () => {
   it('should render message', async () => {

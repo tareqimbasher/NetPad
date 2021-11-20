@@ -6,7 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetPad.Queries;
+using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Sessions;
@@ -51,9 +51,9 @@ namespace NetPad
             // Register application services
             services.AddSingleton<Settings>();
             services.AddSingleton<ISession, Session>();
-            services.AddSingleton<IQueryRepository, QueryRepository>();
+            services.AddSingleton<IScriptRepository, ScriptRepository>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-            services.AddTransient<IQueryRuntime, QueryRuntime>();
+            services.AddTransient<IScriptRuntime, ScriptRuntime>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();
 
             services.AddStdioOmniSharpServer(config =>

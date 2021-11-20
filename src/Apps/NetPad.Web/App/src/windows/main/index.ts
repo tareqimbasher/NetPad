@@ -1,4 +1,4 @@
-import {IQueryManager, ISession, ISessionManager} from "@domain";
+import {IScriptManager, ISession, ISessionManager} from "@domain";
 import {IBackgroundService} from "./background-services";
 import {IContainer} from "aurelia";
 
@@ -8,7 +8,7 @@ export class Index {
     constructor(
         @ISession readonly session: ISession,
         @ISessionManager readonly sessionManager: ISessionManager,
-        @IQueryManager readonly queryManager: IQueryManager,
+        @IScriptManager readonly scriptManager: IScriptManager,
         @IContainer container: IContainer) {
         this.backgroundServices.push(...container.getAll(IBackgroundService));
     }
@@ -20,11 +20,11 @@ export class Index {
     }
 
     public async attached() {
-        const openQueries = await this.sessionManager.getOpenQueries();
-        this.session.add(...openQueries);
+        const openScripts = await this.sessionManager.getOpenScripts();
+        this.session.add(...openScripts);
 
-        if (this.session.queries.length === 0) {
-            this.queryManager.create();
+        if (this.session.scripts.length === 0) {
+            this.scriptManager.create();
         }
     }
 }

@@ -1,36 +1,36 @@
-﻿using NetPad.Queries;
+﻿using NetPad.Scripts;
 using NetPad.Sessions;
-using NetPad.ViewModels.Queries;
+using NetPad.ViewModels.Scripts;
 
 namespace NetPad.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private readonly IQueryRepository _queryRepository;
-        
+        private readonly IScriptRepository _scriptRepository;
+
         public MainWindowViewModel()
         {
         }
-        
-        public MainWindowViewModel(IQueryRepository queryRepository, ISession session, QueriesViewModel queriesViewModel)
+
+        public MainWindowViewModel(IScriptRepository scriptRepository, ISession session, ScriptsViewModel scriptsViewModel)
         {
             Session = session;
-            Queries = queriesViewModel;
-            _queryRepository = queryRepository;
-            
-            // _openQueries = session.OpenQueries
+            Scripts = scriptsViewModel;
+            _scriptRepository = scriptRepository;
+
+            // _openScripts = session.OpenScripts
             //     .ToObservableChangeSet().ToCollection()
-            //     .ToProperty(this, x => x.OpenQueries);
-            // _openQueries.ThrownExceptions.Subscribe(ex =>
+            //     .ToProperty(this, x => x.OpenScripts);
+            // _openScripts.ThrownExceptions.Subscribe(ex =>
             // {
             //     Trace.TraceError($"TIPS-TRACE ERROR: {ex}");
             // });
         }
-        
-        // private readonly ObservableAsPropertyHelper<IReadOnlyCollection<Query>> _openQueries;
-        // public IReadOnlyCollection<Query> OpenQueries => _openQueries.Value;
-        
+
+        // private readonly ObservableAsPropertyHelper<IReadOnlyCollection<Script>> _openScripts;
+        // public IReadOnlyCollection<Script> OpenScripts => _openScripts.Value;
+
         public ISession Session { get; }
-        public QueriesViewModel Queries { get; }
+        public ScriptsViewModel Scripts { get; }
     }
 }

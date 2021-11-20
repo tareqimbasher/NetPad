@@ -1,37 +1,37 @@
-import {Query} from "@domain";
+import {Script} from "@domain";
 import {DI} from "aurelia";
 
 export interface ISession {
-    queries: Query[];
-    activeQuery: Query | undefined;
-    add(...queries: Query[]): void;
-    remove(...queries: Query[]): void;
-    makeActive(query: Query): void;
+    scripts: Script[];
+    activeScript: Script | undefined;
+    add(...scripts: Script[]): void;
+    remove(...scripts: Script[]): void;
+    makeActive(script: Script): void;
 }
 
 export const ISession = DI.createInterface<ISession>();
 
 export class Session implements ISession {
-    public activeQuery: Query | null | undefined;
+    public activeScript: Script | null | undefined;
 
-    public queries: Query[] = [];
+    public scripts: Script[] = [];
 
-    public add(...queries: Query[]) {
-        this.queries.push(...queries);
-        this.makeActive(queries[queries.length - 1]);
+    public add(...scripts: Script[]) {
+        this.scripts.push(...scripts);
+        this.makeActive(scripts[scripts.length - 1]);
     }
 
-    public remove(...queries: Query[]) {
-        for (let query of queries) {
-            const ix = this.queries.findIndex(q => q.id == query.id);
+    public remove(...scripts: Script[]) {
+        for (let script of scripts) {
+            const ix = this.scripts.findIndex(q => q.id == script.id);
             if (ix >= 0)
-                this.queries.splice(ix, 1);
+                this.scripts.splice(ix, 1);
         }
 
-        this.makeActive(this.queries.length > 0 ? this.queries[0] : null);
+        this.makeActive(this.scripts.length > 0 ? this.scripts[0] : null);
     }
 
-    public makeActive(query: Query | null | undefined) {
-        this.activeQuery = query;
+    public makeActive(script: Script | null | undefined) {
+        this.activeScript = script;
     }
 }

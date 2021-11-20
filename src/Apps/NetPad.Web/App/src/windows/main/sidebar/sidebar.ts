@@ -1,19 +1,12 @@
-import path from "path";
-import {IQueryManager} from "@domain";
+import {IScriptManager, ScriptSummary} from "@domain";
 
 export class Sidebar {
-    private queries: { name: string, path: string }[] = [];
+    private scripts: ScriptSummary[] = [];
 
-    constructor(@IQueryManager readonly queryManager: IQueryManager) {
+    constructor(@IScriptManager readonly scriptManager: IScriptManager) {
     }
 
     public async attached() {
-        const queries = await this.queryManager.getQueries();
-        this.queries = queries.map(q => {
-            return {
-                name: path.parse(q).name,
-                path: q
-            }
-        });
+        this.scripts = await this.scriptManager.getScripts();
     }
 }

@@ -28,8 +28,8 @@
         <ProjectReference Include="..\..\Infrastructure\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <Compile Update="Views\Queries\QueryView.axaml.cs">
-        <DependentUpon>QueryView.axaml</DependentUpon>
+      <Compile Update="Views\Scripts\ScriptView.axaml.cs">
+        <DependentUpon>ScriptView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
     </ItemGroup>

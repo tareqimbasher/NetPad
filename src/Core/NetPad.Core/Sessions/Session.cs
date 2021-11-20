@@ -1,46 +1,46 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NetPad.Queries;
+using NetPad.Scripts;
 
 namespace NetPad.Sessions
 {
     public class Session : ISession
     {
-        private readonly ObservableCollection<Query> _openQueries;
+        private readonly ObservableCollection<Script> _openScripts;
 
         public Session()
         {
-            _openQueries = new ObservableCollection<Query>();
+            _openScripts = new ObservableCollection<Script>();
         }
 
-        public ObservableCollection<Query> OpenQueries => _openQueries;
+        public ObservableCollection<Script> OpenScripts => _openScripts;
 
-        public Query? Get(Guid id)
+        public Script? Get(Guid id)
         {
-            return _openQueries.FirstOrDefault(q => q.Id == id);
+            return _openScripts.FirstOrDefault(q => q.Id == id);
         }
 
-        public Query? Get(string filePath)
+        public Script? Get(string filePath)
         {
-            return _openQueries.FirstOrDefault(q => q.FilePath == filePath);
+            return _openScripts.FirstOrDefault(q => q.FilePath == filePath);
         }
 
-        public void Add(Query query)
+        public void Add(Script script)
         {
-            if (_openQueries.Contains(query) ||
-                _openQueries.Any(q => (!q.IsNew && q.FilePath == query.FilePath) || (q.IsNew && q.Name == query.Name)))
+            if (_openScripts.Contains(script) ||
+                _openScripts.Any(q => (!q.IsNew && q.FilePath == script.FilePath) || (q.IsNew && q.Name == script.Name)))
                 return;
 
-            _openQueries.Add(query);
+            _openScripts.Add(script);
         }
 
         public void Remove(Guid id)
         {
-            var query = _openQueries.FirstOrDefault(q => q.Id == id);
+            var script = _openScripts.FirstOrDefault(q => q.Id == id);
 
-            if (query != null)
-                _openQueries.Remove(query);
+            if (script != null)
+                _openScripts.Remove(script);
         }
     }
 }

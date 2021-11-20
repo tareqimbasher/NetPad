@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
-using NetPad.Queries;
+using NetPad.Scripts;
 
 namespace NetPad.TextEditing
 {
     public interface ITextEditingEngine
     {
-        Task LoadAsync(Query query);
+        Task LoadAsync(Script script);
         Task Autocomplete();
     }
 }

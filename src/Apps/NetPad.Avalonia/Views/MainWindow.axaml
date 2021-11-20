@@ -29,7 +29,7 @@
                           Background="LightGray"></GridSplitter>
             
             <Grid Grid.Column="2">
-                <ContentControl Content="{Binding Queries}"></ContentControl>
+                <ContentControl Content="{Binding Scripts}"></ContentControl>
             </Grid>
         </Grid>
     </Panel>

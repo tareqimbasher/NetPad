@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.BackgroundServices;
 using NetPad.Middlewares;
-using NetPad.Queries;
+using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Sessions;
@@ -79,12 +79,12 @@ namespace NetPad
 
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
             services.AddSingleton<ISession, NetPad.Sessions.Session>();
-            services.AddSingleton<IQueryRepository, QueryRepository>();
+            services.AddSingleton<IScriptRepository, ScriptRepository>();
             services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
-            services.AddTransient<IQueryRuntime, QueryRuntime>();
+            services.AddTransient<IScriptRuntime, ScriptRuntime>();
 
             services.AddHostedService<SessionBackgroundService>();
-            services.AddHostedService<QueryBackgroundService>();
+            services.AddHostedService<ScriptBackgroundService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
