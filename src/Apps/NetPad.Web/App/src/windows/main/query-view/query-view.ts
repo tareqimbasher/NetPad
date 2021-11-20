@@ -50,13 +50,13 @@ export class QueryView {
 
     public async run() {
         this.showResults = true;
-        this.results = (await this.queryManager.run(this.query.id))
-            .replaceAll("\n", "<br/>") ?? "";
+        document.querySelector(`query-view[data-id="${this.id}"] .results`).innerHTML =
+            (await this.queryManager.run(this.query.id))
+                .replaceAll("\n", "<br/>") ?? "";
     }
 
     @watch<QueryView>(vm => vm.session.activeQuery)
-    private adjustEditorLayout()
-    {
+    private adjustEditorLayout() {
         PLATFORM.taskQueue.queueTask(() => {
             this.editor.layout();
         }, {delay: 100});
