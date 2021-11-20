@@ -3,16 +3,16 @@ using System.Threading.Tasks;
 
 namespace NetPad.Runtimes
 {
-    public class TestQueryRuntimeOutputReader : IQueryRuntimeOutputReader
+    public class TestQueryRuntimeOutputWriter : IQueryRuntimeOutputWriter
     {
         private readonly Action<object?> _action;
 
-        public TestQueryRuntimeOutputReader(Action<object?> action)
+        public TestQueryRuntimeOutputWriter(Action<object?> action)
         {
             _action = action;
         }
         
-        public Task ReadAsync(object? output)
+        public Task WriteAsync(object? output)
         {
             _action(output);
             return Task.CompletedTask;

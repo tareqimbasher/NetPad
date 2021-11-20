@@ -16,13 +16,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using NetPad.Runtimes;
 
-public class NetPad_Query_Program
+public static class UserQuery
 {{
-    public Exception? Exception {{ get; private set; }}
+    private static IQueryRuntimeOutputWriter OutputWriter {{ get; set; }}
+    private static Exception? Exception {{ get; set; }}
 
-    public void Main()
+    private static void Main(IQueryRuntimeOutputWriter outputWriter)
     {{
+        OutputWriter = outputWriter;
+
         try
         {{
             new UserQuery_Program().Main();
@@ -31,6 +35,16 @@ public class NetPad_Query_Program
         {{
             Exception = ex;
         }}
+    }}
+
+    public static void ConsoleWrite(object? o)
+    {{
+        OutputWriter.WriteAsync(o?.ToString());
+    }}
+
+    public static void ConsoleWriteLine(object? o)
+    {{
+        OutputWriter.WriteAsync(o?.ToString() + ""\n"");
     }}
 }}
 
@@ -62,7 +76,10 @@ public void Main()
                 throw new NotImplementedException($"Code parsing is not implemented yet for query kind: {query.Config.Kind}");
             }
 
-            return string.Format(program, code);
+            code = string.Format(program, code);
+            return code
+                .Replace("Console.WriteLine", "UserQuery.ConsoleWriteLine")
+                .Replace("Console.Write", "UserQuery.ConsoleWrite");
         }
     }
 }

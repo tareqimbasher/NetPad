@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 namespace NetPad.Runtimes
 {
     /// <summary>
-    /// A way to write input to the query runtime when a query requests user input.
+    /// A way to read input from a query runtime.
     /// </summary>
-    public interface IQueryRuntimeInputWriter
+    public interface IQueryRuntimeInputReader
     {
         Task<string> ReadAsync();
     }

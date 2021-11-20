@@ -137,7 +137,7 @@ namespace NetPad.Controllers
 
             try
             {
-                await queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output => { results += output; }));
+                await queryRuntime.RunAsync(null, new TestQueryRuntimeOutputWriter(output => { results += output; }));
             }
             catch (CodeCompilationException ex)
             {
@@ -162,16 +162,16 @@ namespace NetPad.Controllers
         }
     }
 
-    public class TestQueryRuntimeOutputReader : IQueryRuntimeOutputReader
+    public class TestQueryRuntimeOutputWriter : IQueryRuntimeOutputWriter
     {
         private readonly Action<object?> _action;
 
-        public TestQueryRuntimeOutputReader(Action<object?> action)
+        public TestQueryRuntimeOutputWriter(Action<object?> action)
         {
             _action = action;
         }
 
-        public Task ReadAsync(object? output)
+        public Task WriteAsync(object? output)
         {
             _action(output);
             return Task.CompletedTask;

@@ -55,7 +55,7 @@ namespace NetPad.ViewModels.Queries
 
             try
             {
-                await _queryRuntime.RunAsync(null, new TestQueryRuntimeOutputReader(output =>
+                await _queryRuntime.RunAsync(null, new TestQueryRuntimeOutputWriter(output =>
                 {
                     Results += output;
                 }));
@@ -70,16 +70,16 @@ namespace NetPad.ViewModels.Queries
             }
         }
 
-        public class TestQueryRuntimeOutputReader : IQueryRuntimeOutputReader
+        public class TestQueryRuntimeOutputWriter : IQueryRuntimeOutputWriter
         {
             private readonly Action<object?> _action;
 
-            public TestQueryRuntimeOutputReader(Action<object?> action)
+            public TestQueryRuntimeOutputWriter(Action<object?> action)
             {
                 _action = action;
             }
 
-            public Task ReadAsync(object? output)
+            public Task WriteAsync(object? output)
             {
                 _action(output);
                 return Task.CompletedTask;

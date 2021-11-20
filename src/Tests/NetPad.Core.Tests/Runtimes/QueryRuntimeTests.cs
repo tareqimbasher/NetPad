@@ -40,7 +40,7 @@ namespace NetPad.Runtimes
             {
                 await runtime.RunAsync(
                     null,
-                    new TestQueryRuntimeOutputReader(output => { }));
+                    new TestQueryRuntimeOutputWriter(output => { }));
             });
         }
 
@@ -59,7 +59,7 @@ namespace NetPad.Runtimes
 
             await runtime.RunAsync(
                 null,
-                new TestQueryRuntimeOutputReader(output => result = output?.ToString()));
+                new TestQueryRuntimeOutputWriter(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
         }
@@ -85,7 +85,7 @@ void Main() {{
             {
                 await runtime.RunAsync(
                     null,
-                    new TestQueryRuntimeOutputReader(output => result = output?.ToString()));
+                    new TestQueryRuntimeOutputWriter(output => result = output?.ToString()));
             }
             catch (CodeCompilationException ex)
             {

@@ -24,10 +24,9 @@ namespace NetPad.Runtimes
             return Task.CompletedTask;
         }
 
-        public Task RunAsync(IQueryRuntimeInputWriter inputReader, IQueryRuntimeOutputReader outputReader)
+        public Task RunAsync(IQueryRuntimeInputReader inputReader, IQueryRuntimeOutputWriter outputWriter)
         {
             EnsureInitialization();
-            HookConsole(_query.Id, inputReader, outputReader);
 
             string code = CodeParser.GetQueryCode(_query!);
 
@@ -38,23 +37,19 @@ namespace NetPad.Runtimes
 
                 var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
 
-                var type = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "NetPad_Query_Program");
-                if (type == null)
-                    throw new Exception("Could not find proper type");
+                var userQueryType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserQuery");
+                if (userQueryType == null)
+                    throw new Exception("Could not find UserQuery type");
 
-                var program = Activator.CreateInstance(type);
-                if (program == null)
-                    throw new Exception("Could not create instance of type");
-
-                var method = type.GetMethod("Main", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var method = userQueryType.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
                 if (method == null)
-                    throw new Exception("Could not find entry method");
+                    throw new Exception("Could not find entry method on UserQuery");
 
-                method.Invoke(program, Array.Empty<object?>());
+                method.Invoke(null, new object?[] {outputWriter});
 
-                if (type.GetProperty("Exception")?.GetValue(program) is Exception exception)
+                if (userQueryType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
                 {
-                    Console.WriteLine(exception);
+                    outputWriter.WriteAsync(exception);
                 }
 
                 // var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
@@ -64,7 +59,6 @@ namespace NetPad.Runtimes
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw;
             }
 
             // Task.Run(async () =>
@@ -76,11 +70,6 @@ namespace NetPad.Runtimes
             // });
 
             return Task.CompletedTask;
-        }
-
-        private void HookConsole(Guid runtimeInputReader, IQueryRuntimeInputWriter queryRuntimeInputReader, IQueryRuntimeOutputReader outputReader)
-        {
-            Console.SetOut(new QueryRuntimeOutputReaderTextWriter(outputReader));
         }
 
         private void EnsureInitialization()

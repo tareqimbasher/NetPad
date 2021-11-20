@@ -7,6 +7,6 @@ namespace NetPad.Runtimes
     public interface IQueryRuntime : IDisposable
     {
         Task InitializeAsync(Query query);
-        Task RunAsync(IQueryRuntimeInputWriter inputReader, IQueryRuntimeOutputReader outputReader);
+        Task RunAsync(IQueryRuntimeInputReader inputReader, IQueryRuntimeOutputWriter outputWriter);
     }
 }
