@@ -7,7 +7,7 @@
     <div class="list-group" style="width: 100%; display: block">
         <button class="list-group-item list-group-item-action"
                 repeat.for="script of scripts"
-                click.trigger="scriptManager.open(script.path)">
+                click.trigger="scriptRepository.open(script.path)">
             ${script.name}
         </button>
     </div>

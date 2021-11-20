@@ -13,11 +13,11 @@
                         click.trigger="session.activeScript = script">
                         <a class="nav-link ${session.activeScript === script ? 'active' : ''}" href="#">
                             ${script.name} ${script.isDirty ? '*' : ''}
-                            <i class="bi bi-x action-danger" click.trigger="scriptManager.close(script.id)"></i>
+                            <i class="bi bi-x action-danger" click.trigger="scriptRepository.close(script.id)"></i>
                         </a>
                     </li>
                     <li class="nav-item"
-                        click.trigger="scriptManager.create()">
+                        click.trigger="scriptRepository.create()">
                         <div class="nav-link">
                             <i class="bi bi-plus"></i>
                         </div>

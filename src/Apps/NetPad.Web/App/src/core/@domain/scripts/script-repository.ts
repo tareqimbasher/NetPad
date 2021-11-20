@@ -1,11 +1,11 @@
 import {DI, IHttpClient} from "aurelia";
 import {IScriptsService, ScriptsService, ISession} from "@domain";
 
-export interface IScriptManager extends IScriptsService {}
+export interface IScriptRepository extends IScriptsService {}
 
-export const IScriptManager = DI.createInterface<IScriptManager>();
+export const IScriptRepository = DI.createInterface<IScriptRepository>();
 
-export class ScriptManager extends ScriptsService implements IScriptManager {
+export class ScriptRepository extends ScriptsService implements IScriptRepository {
     constructor(baseUrl: string, @IHttpClient http: IHttpClient, @ISession readonly session: ISession) {
         super(baseUrl, http);
     }

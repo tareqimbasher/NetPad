@@ -1,4 +1,4 @@
-import {IScriptManager, ISession, ISessionManager} from "@domain";
+import {IScriptRepository, ISession, ISessionManager} from "@domain";
 import {IBackgroundService} from "./background-services";
 import {IContainer} from "aurelia";
 
@@ -8,7 +8,7 @@ export class Index {
     constructor(
         @ISession readonly session: ISession,
         @ISessionManager readonly sessionManager: ISessionManager,
-        @IScriptManager readonly scriptManager: IScriptManager,
+        @IScriptRepository readonly scriptRepository: IScriptRepository,
         @IContainer container: IContainer) {
         this.backgroundServices.push(...container.getAll(IBackgroundService));
     }
@@ -24,7 +24,7 @@ export class Index {
         this.session.add(...openScripts);
 
         if (this.session.scripts.length === 0) {
-            this.scriptManager.create();
+            this.scriptRepository.create();
         }
     }
 }

@@ -1,12 +1,12 @@
-import {IScriptManager, ScriptSummary} from "@domain";
+import {IScriptRepository, ScriptSummary} from "@domain";
 
 export class Sidebar {
     private scripts: ScriptSummary[] = [];
 
-    constructor(@IScriptManager readonly scriptManager: IScriptManager) {
+    constructor(@IScriptRepository readonly scriptRepository: IScriptRepository) {
     }
 
     public async attached() {
-        this.scripts = await this.scriptManager.getScripts();
+        this.scripts = await this.scriptRepository.getScripts();
     }
 }

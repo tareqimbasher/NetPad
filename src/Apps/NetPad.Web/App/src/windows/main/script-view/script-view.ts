@@ -1,5 +1,5 @@
 import {bindable, PLATFORM, watch} from "aurelia";
-import {IScriptManager, ISession, Script} from "@domain";
+import {IScriptRepository, ISession, Script} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
@@ -12,7 +12,7 @@ export class ScriptView {
     private editor: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
-        @IScriptManager readonly scriptManager: IScriptManager,
+        @IScriptRepository readonly scriptRepository: IScriptRepository,
         @ISession readonly session: ISession) {
         this.id = Util.newGuid();
     }
@@ -27,7 +27,7 @@ export class ScriptView {
             });
 
             const f = Util.debounce(this, async (ev) => {
-                await this.scriptManager.updateCode(this.script.id, this.editor.getValue());
+                await this.scriptRepository.updateCode(this.script.id, this.editor.getValue());
             }, 1000, true);
 
             this.editor.onDidChangeModelContent(ev => f(ev));
@@ -51,7 +51,7 @@ export class ScriptView {
     public async run() {
         this.showResults = true;
         document.querySelector(`script-view[data-id="${this.id}"] .results`).innerHTML =
-            (await this.scriptManager.run(this.script.id))
+            (await this.scriptRepository.run(this.script.id))
                 .replaceAll("\n", "<br/>") ?? "";
     }
 

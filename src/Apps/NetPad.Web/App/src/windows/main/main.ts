@@ -2,8 +2,8 @@ import {Aurelia, Registration} from "aurelia";
 import {
     ISession,
     Session,
-    IScriptManager,
-    ScriptManager,
+    IScriptRepository,
+    ScriptRepository,
     ISettingsManager,
     SettingsManager,
     ISessionManager, SessionManager
@@ -16,7 +16,7 @@ export function register(app: Aurelia): void {
         .register(
             Registration.singleton(ISession, Session),
             Registration.singleton(ISessionManager, SessionManager),
-            Registration.singleton(IScriptManager, ScriptManager),
+            Registration.singleton(IScriptRepository, ScriptRepository),
             Registration.singleton(ISettingsManager, SettingsManager),
             Registration.singleton(IBackgroundService, SessionBackgroundService),
             Registration.singleton(IBackgroundService, ScriptBackgroundService),
