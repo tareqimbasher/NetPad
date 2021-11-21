@@ -61,7 +61,7 @@
     <Folder Include="App\src\windows" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\NetPad.Core\NetPad.Core.csproj" />
+    <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App\dist\**" />

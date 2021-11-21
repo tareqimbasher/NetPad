@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\NetPad.Core\NetPad.Core.csproj" />
+      <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
     </ItemGroup>
 
 </Project>

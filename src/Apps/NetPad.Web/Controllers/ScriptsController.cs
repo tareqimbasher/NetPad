@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes;
-using NetPad.Runtimes.Compilation;
 using NetPad.Sessions;
 
 namespace NetPad.Controllers
@@ -124,7 +122,7 @@ namespace NetPad.Controllers
 
             try
             {
-                await scriptRuntime.RunAsync(null, new TestScriptRuntimeOutputWriter(output => { results += output; }));
+                await scriptRuntime.RunAsync(null, new ActionRuntimeOutputWriter(output => { results += output; }));
             }
             catch (CodeCompilationException ex)
             {
@@ -146,22 +144,6 @@ namespace NetPad.Controllers
                 return;
 
             script.UpdateCode(code);
-        }
-    }
-
-    public class TestScriptRuntimeOutputWriter : IScriptRuntimeOutputWriter
-    {
-        private readonly Action<object?> _action;
-
-        public TestScriptRuntimeOutputWriter(Action<object?> action)
-        {
-            _action = action;
-        }
-
-        public Task WriteAsync(object? output)
-        {
-            _action(output);
-            return Task.CompletedTask;
         }
     }
 }

@@ -24,7 +24,7 @@
         <PackageReference Include="TinyMessenger" Version="1.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\NetPad.Core\NetPad.Core.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
         <ProjectReference Include="..\..\Infrastructure\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>
     <ItemGroup>

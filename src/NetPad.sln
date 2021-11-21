@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Avalonia", "Apps\NetPad.Avalonia\NetPad.Avalonia.csproj", "{261E43D0-F810-4162-925B-044B9F77EF80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Core", "Core\NetPad.Core\NetPad.Core.csproj", "{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Domain", "Core\NetPad.Domain\NetPad.Domain.csproj", "{F297CA80-61A8-4EB2-AAAD-15AE3BA86675}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.OmniSharpWrapper", "Infrastructure\NetPad.OmniSharpWrapper\NetPad.OmniSharpWrapper.csproj", "{4CBE796E-6968-4410-A003-C8E33A0BF35C}"
 EndProject
