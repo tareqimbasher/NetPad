@@ -24,7 +24,7 @@ namespace NetPad.Runtimes
             return Task.CompletedTask;
         }
 
-        public Task RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
+        public async Task RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
         {
             EnsureInitialization();
 
@@ -45,11 +45,13 @@ namespace NetPad.Runtimes
                 if (method == null)
                     throw new Exception("Could not find entry method on UserScript");
 
-                method.Invoke(null, new object?[] {outputWriter});
+                var task = method.Invoke(null, new object?[] {outputWriter}) as Task;
+
+                await task;
 
                 if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
                 {
-                    outputWriter.WriteAsync(exception);
+                    await outputWriter.WriteAsync(exception);
                 }
 
                 // var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
@@ -68,8 +70,6 @@ namespace NetPad.Runtimes
             //         // .Where(x => x.ModuleName?.Contains("Hello") == true)
             //         .ToArray();
             // });
-
-            return Task.CompletedTask;
         }
 
         private void EnsureInitialization()

@@ -23,13 +23,13 @@ public static class UserScript
     private static IScriptRuntimeOutputWriter OutputWriter {{ get; set; }}
     private static Exception? Exception {{ get; set; }}
 
-    private static void Main(IScriptRuntimeOutputWriter outputWriter)
+    private static async Task Main(IScriptRuntimeOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
 
         try
         {{
-            new UserScript_Program().Main();
+            await new UserScript_Program().Main();
         }}
         catch (Exception ex)
         {{
@@ -61,7 +61,7 @@ public class UserScript_Program
             else if (script.Config.Kind == ScriptKind.Statements)
             {
                 code = $@"
-public void Main()
+public async Task Main()
 {{
     {scriptCode}
 }}
