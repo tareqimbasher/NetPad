@@ -18,9 +18,9 @@ namespace NetPad.ViewModels
             Scripts = scriptsViewModel;
             _scriptRepository = scriptRepository;
 
-            // _openScripts = session.OpenScripts
+            // _openScripts = session.Scripts
             //     .ToObservableChangeSet().ToCollection()
-            //     .ToProperty(this, x => x.OpenScripts);
+            //     .ToProperty(this, x => x.Scripts);
             // _openScripts.ThrownExceptions.Subscribe(ex =>
             // {
             //     Trace.TraceError($"TIPS-TRACE ERROR: {ex}");
@@ -28,7 +28,7 @@ namespace NetPad.ViewModels
         }
 
         // private readonly ObservableAsPropertyHelper<IReadOnlyCollection<Script>> _openScripts;
-        // public IReadOnlyCollection<Script> OpenScripts => _openScripts.Value;
+        // public IReadOnlyCollection<Script> Scripts => _openScripts.Value;
 
         public ISession Session { get; }
         public ScriptsViewModel Scripts { get; }

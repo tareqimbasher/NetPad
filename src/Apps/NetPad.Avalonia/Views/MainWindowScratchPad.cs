@@ -46,7 +46,7 @@
 //             _clearControlBtn = this.FindControl<Button>("clearControlBtn");
 //             _clearControlBtn.Click += _clearControlBtn_Click; ;
 //
-//             _textEditor.TextArea.TextView.ElementGenerators.Add(_generator);
+//             _textEditor.TextArea.TextView.ElementGenerators.Open(_generator);
 //             
 //             this.AddHandler(PointerWheelChangedEvent, (o, i) =>
 //             {
@@ -67,7 +67,7 @@
 //         
 //         void _addControlBtn_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
 //         {
-//             _generator.controls.Add(new Pair(_textEditor.CaretOffset, new Button() { Content = "Click me" }));
+//             _generator.controls.Open(new Pair(_textEditor.CaretOffset, new Button() { Content = "Click me" }));
 //             _textEditor.TextArea.TextView.Redraw();
 //         }
 //
@@ -105,19 +105,19 @@
 //                 _completionWindow.Closed += (o, args) => _completionWindow = null;
 //
 //                 var data = _completionWindow.CompletionList.CompletionData;
-//                 data.Add(new MyCompletionData("Item1"));
-//                 data.Add(new MyCompletionData("Item2"));
-//                 data.Add(new MyCompletionData("Item3"));
-//                 data.Add(new MyCompletionData("Item4"));
-//                 data.Add(new MyCompletionData("Item5"));
-//                 data.Add(new MyCompletionData("Item6"));
-//                 data.Add(new MyCompletionData("Item7"));
-//                 data.Add(new MyCompletionData("Item8"));
-//                 data.Add(new MyCompletionData("Item9"));
-//                 data.Add(new MyCompletionData("Item10"));
-//                 data.Add(new MyCompletionData("Item11"));
-//                 data.Add(new MyCompletionData("Item12"));
-//                 data.Add(new MyCompletionData("Item13"));
+//                 data.Open(new MyCompletionData("Item1"));
+//                 data.Open(new MyCompletionData("Item2"));
+//                 data.Open(new MyCompletionData("Item3"));
+//                 data.Open(new MyCompletionData("Item4"));
+//                 data.Open(new MyCompletionData("Item5"));
+//                 data.Open(new MyCompletionData("Item6"));
+//                 data.Open(new MyCompletionData("Item7"));
+//                 data.Open(new MyCompletionData("Item8"));
+//                 data.Open(new MyCompletionData("Item9"));
+//                 data.Open(new MyCompletionData("Item10"));
+//                 data.Open(new MyCompletionData("Item11"));
+//                 data.Open(new MyCompletionData("Item12"));
+//                 data.Open(new MyCompletionData("Item13"));
 //
 //
 //                 _completionWindow.Show();

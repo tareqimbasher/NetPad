@@ -67,7 +67,7 @@
             </TabControl.Styles>
             <TabControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Script.Name}" />
+                    <TextBlock Text="{Binding ScriptEnvironment.Script.Name}" />
                 </DataTemplate>
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>

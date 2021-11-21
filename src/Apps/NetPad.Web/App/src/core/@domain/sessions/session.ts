@@ -1,37 +1,47 @@
-import {Script} from "@domain";
+import {ISessionService, SessionService, ScriptEnvironment} from "@domain";
 import {DI} from "aurelia";
 
-export interface ISession {
-    scripts: Script[];
-    activeScript: Script | undefined;
-    add(...scripts: Script[]): void;
-    remove(...scripts: Script[]): void;
-    makeActive(script: Script): void;
+export interface ISession extends ISessionService {
+    environments: ScriptEnvironment[];
+
+    get active(): ScriptEnvironment | undefined;
+
+    initialize(): Promise<void>;
 }
 
 export const ISession = DI.createInterface<ISession>();
 
-export class Session implements ISession {
-    public activeScript: Script | null | undefined;
+export class Session extends SessionService implements ISession {
+    private _active?: ScriptEnvironment | null | undefined;
+    private _environments?: ScriptEnvironment[] = [];
 
-    public scripts: Script[] = [];
-
-    public add(...scripts: Script[]) {
-        this.scripts.push(...scripts);
-        this.makeActive(scripts[scripts.length - 1]);
+    public get environments(): ScriptEnvironment[] {
+        return this._environments;
     }
 
-    public remove(...scripts: Script[]) {
-        for (let script of scripts) {
-            const ix = this.scripts.findIndex(q => q.id == script.id);
-            if (ix >= 0)
-                this.scripts.splice(ix, 1);
+    public get active(): ScriptEnvironment | null | undefined {
+        return this._active;
+    }
+
+    public async initialize(): Promise<void> {
+        const environments = await this.getEnvironments();
+        this.environments.push(...environments);
+
+        const activeScriptId = await this.getActive();
+        if (activeScriptId) {
+            this._active = this._environments.find(e => e.script.id === activeScriptId);
         }
-
-        this.makeActive(this.scripts.length > 0 ? this.scripts[0] : null);
     }
 
-    public makeActive(script: Script | null | undefined) {
-        this.activeScript = script;
+    public internalSetActive(scriptId: string | null) {
+        if (!scriptId)
+            this._active = null;
+        else {
+            const environment = this._environments.find(e => e.script.id == scriptId);
+            if (environment)
+                this._active = environment;
+            else
+                console.error("No environment found with script id: " + scriptId);
+        }
     }
 }

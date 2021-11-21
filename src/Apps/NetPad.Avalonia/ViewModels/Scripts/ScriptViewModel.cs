@@ -12,7 +12,7 @@ namespace NetPad.ViewModels.Scripts
 {
     public class ScriptViewModel : ViewModelBase
     {
-        private readonly Script _script;
+        private readonly ScriptEnvironment _scriptEnvironment;
         private readonly IScriptRuntime _scriptRuntime;
         private string _code;
         private string _results = string.Empty;
@@ -22,18 +22,18 @@ namespace NetPad.ViewModels.Scripts
         {
         }
 
-        public ScriptViewModel(Script script, IScriptRuntime scriptRuntime) : this()
+        public ScriptViewModel(ScriptEnvironment scriptEnvironment, IScriptRuntime scriptRuntime) : this()
         {
-            _script = script;
+            _scriptEnvironment = scriptEnvironment;
             _scriptRuntime = scriptRuntime;
-            Code = script.Code;
+            Code = scriptEnvironment.Script.Code;
 
             this.WhenAnyValue(x => x.Code)
                 .Throttle(TimeSpan.FromMilliseconds(100))
-                .Subscribe(x => Script.UpdateCode(x));
+                .Subscribe(x => ScriptEnvironment.Script.UpdateCode(x));
         }
 
-        public Script Script => _script;
+        public ScriptEnvironment ScriptEnvironment => _scriptEnvironment;
 
         public string Code
         {
@@ -51,7 +51,7 @@ namespace NetPad.ViewModels.Scripts
         {
             Results = string.Empty;
 
-            await _scriptRuntime.InitializeAsync(Script);
+            await _scriptRuntime.InitializeAsync(ScriptEnvironment.Script);
 
             try
             {

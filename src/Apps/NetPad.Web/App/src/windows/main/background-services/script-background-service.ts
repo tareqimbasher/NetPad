@@ -9,7 +9,14 @@ export class ScriptBackgroundService implements IBackgroundService{
         ipcRenderer.on("script-property-changed", (event, json) =>
         {
             const update = JSON.parse(json);
-            const script = this.session.scripts.find(s => s.id == update.scriptId);
+            const environment = this.session.environments.find(e => e.script.id == update.scriptId);
+
+            if (!environment) {
+                console.error("Could not find an environment for script id: " + update.scriptId);
+                return;
+            }
+
+            const script = environment.script;
             const propName = update.propertyName.charAt(0).toLowerCase() + update.propertyName.slice(1);
             script[propName] = update.newValue;
         });

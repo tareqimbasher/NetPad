@@ -28,7 +28,7 @@ namespace NetPad.UI.TextEditing
         }
 
         public TextEditor TextEditor { get; }
-        
+
         public void Setup()
         {
             // TextEditor.Background = Brushes.Transparent;
@@ -38,7 +38,7 @@ namespace NetPad.UI.TextEditing
             TextEditor.TextArea.IndentationStrategy = new CSharpIndentationStrategy();
             TextEditor.TextArea.TextEntered += TextEditor_TextArea_TextEntered;
             TextEditor.TextArea.TextEntering += textEditor_TextArea_TextEntering;
-            
+
             // Task.Run(async () =>
             // {
             //     try
@@ -49,7 +49,7 @@ namespace NetPad.UI.TextEditing
             //     {
             //         Console.WriteLine(e);
             //     }
-            //     
+            //
             // });
         }
 

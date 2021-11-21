@@ -46,7 +46,7 @@ namespace NetPad.ViewModels.Scripts
             _appLifetime = appLifetime;
 
 
-            session.OpenScripts
+            session.Environments
                 .ToObservableChangeSet()
                 .Transform(q => new ScriptViewModel(q, serviceProvider.GetRequiredService<IScriptRuntime>()))
                 .AsObservableList()
@@ -54,8 +54,6 @@ namespace NetPad.ViewModels.Scripts
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _scripts)
                 .Subscribe();
-
-            _scriptRepository.OpenAsync("/home/tips/X/tmp/NetPad/Scripts/Script 1.netpad").Wait();
         }
 
         public ReadOnlyObservableCollection<ScriptViewModel> Scripts => _scripts;
@@ -64,8 +62,9 @@ namespace NetPad.ViewModels.Scripts
 
         public async Task CreateNewScriptAsync()
         {
-            await _scriptRepository.CreateAsync();
-            Console.WriteLine("Scripts: " + _session.OpenScripts.Count);
+            var name = await _session.GetNewScriptName();
+            await _scriptRepository.CreateAsync(name);
+            Console.WriteLine("Scripts: " + _session.Environments.Count);
         }
 
         public async Task SaveScriptAsync()
@@ -75,29 +74,31 @@ namespace NetPad.ViewModels.Scripts
                 return;
             }
 
-            if (!SelectedScript.Script.IsDirty)
+            var script = SelectedScript.ScriptEnvironment.Script;
+
+            if (!script.IsDirty)
                 return;
 
-            if (SelectedScript.Script.IsNew)
+            if (script.IsNew)
             {
                 var dialog = new SaveFileDialog
                 {
                     Title = "Save Script",
-                    InitialFileName = SelectedScript.Script.Name + ".netpad",
+                    InitialFileName = script.Name + Script.STANARD_EXTENSION,
                     Directory = _settings.ScriptsDirectoryPath,
-                    DefaultExtension = "netpad"
+                    DefaultExtension = Script.STANARD_EXTENSION_WO_DOT
                 };
 
                 var selectedPath = await dialog.ShowAsync(_appLifetime.MainWindow);
                 if (selectedPath == null)
                     return;
 
-                SelectedScript.Script.SetPath(selectedPath.Replace(_settings.ScriptsDirectoryPath, string.Empty));
+                script.SetPath(selectedPath.Replace(_settings.ScriptsDirectoryPath, string.Empty));
             }
 
             try
             {
-                await _scriptRepository.SaveAsync(SelectedScript.Script);
+                await _scriptRepository.SaveAsync(script);
             }
             catch (Exception e)
             {
@@ -112,7 +113,7 @@ namespace NetPad.ViewModels.Scripts
                 return;
             }
 
-            var vm = Scripts.FirstOrDefault(q => q.Script == this.SelectedScript.Script);
+            var vm = Scripts.FirstOrDefault(q => q.ScriptEnvironment == this.SelectedScript.ScriptEnvironment);
             if (vm != null)
             {
                 await vm.RunScriptAsync();

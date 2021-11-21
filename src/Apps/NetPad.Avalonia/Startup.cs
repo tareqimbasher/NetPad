@@ -51,7 +51,7 @@ namespace NetPad
             // Register application services
             services.AddSingleton<Settings>();
             services.AddSingleton<ISession, Session>();
-            services.AddSingleton<IScriptRepository, ScriptRepository>();
+            services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
             // services.AddTransient<ITextEditingEngine, OmniSharpTextEditingEngine>();

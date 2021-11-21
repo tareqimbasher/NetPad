@@ -12,6 +12,8 @@ namespace NetPad.Scripts
 {
     public class Script : INotifyOnPropertyChanged
     {
+        public const string STANARD_EXTENSION_WO_DOT = "netpad";
+        public const string STANARD_EXTENSION = ".netpad";
         private bool _isDirty = false;
         private string _name;
 
@@ -56,21 +58,17 @@ namespace NetPad.Scripts
 
         public async Task LoadAsync(string contents)
         {
-            if (Path == null)
-                throw new InvalidOperationException($"Path: '{Path}' is null. Cannot load script.");
-
             var parts = contents.Split("#Code");
             if (parts.Length != 2)
-                throw new InvalidScriptFormat(Path);
+                throw new InvalidScriptFormat(this);
 
             var part1 = parts[0];
             var part1Lines = part1.Split(Environment.NewLine);
             var part2 = parts[1];
 
             Id = Guid.Parse(part1Lines.First());
-            Name = System.IO.Path.GetFileNameWithoutExtension(Path);
             Config = JsonSerializer.Deserialize<ScriptConfig>(
-                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(Path);
+                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(this);
             Code = part2.TrimStart();
         }
 
@@ -80,7 +78,7 @@ namespace NetPad.Scripts
 
             if (!path.StartsWith("/")) path = "/" + path;
 
-            if (!path.EndsWith(".netpad")) path += ".netpad";
+            if (!path.EndsWith(STANARD_EXTENSION)) path += STANARD_EXTENSION;
 
             Path = path;
             Name = System.IO.Path.GetFileNameWithoutExtension(path);
@@ -90,59 +88,6 @@ namespace NetPad.Scripts
         {
             Code = newCode ?? string.Empty;
             IsDirty = true;
-        }
-
-        public async Task GetRunnableCodeAsync()
-        {
-            var defaultNs = new[]
-            {
-                "System",
-                "System.IO",
-                "System.Collections",
-                "System.Collections.Generic",
-                "System.Linq",
-                "System.Text",
-                "System.Threading.Tasks",
-            };
-
-            var code = new StringBuilder();
-
-            foreach (var ns in defaultNs.Union(Config.Namespaces).Distinct())
-            {
-                code.AppendLine($"using {ns};");
-            }
-
-            // Namespace
-            code.AppendLine("namespace ScriptRuntime");
-            code.AppendLine("{");
-
-            // Class
-            code.AppendLine("public class Program");
-            code.AppendLine("{");
-
-            // Properties
-            code.AppendLine("public Exception? Exception { get; }");
-
-            // Main method
-            code.AppendLine("public async Task Main()");
-            code.AppendLine("{");
-
-
-            code.AppendLine("try");
-            code.AppendLine("{");
-
-            code.AppendLine(Code);
-
-            code.AppendLine("}");
-            code.AppendLine("catch (Exception ex)");
-            code.AppendLine("{");
-            code.AppendLine("this.Exception = ex;");
-            code.AppendLine("}");
-
-
-            code.AppendLine("}"); // Main method
-            code.AppendLine("}"); // Class
-            code.AppendLine("}"); // Namespace
         }
     }
 }

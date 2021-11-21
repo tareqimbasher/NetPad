@@ -8,59 +8,48 @@ using NetPad.Sessions;
 
 namespace NetPad.Scripts
 {
-    public class ScriptRepository : IScriptRepository
+    public class FileSystemScriptRepository : IScriptRepository
     {
         private readonly Settings _settings;
-        private readonly ISession _session;
 
-        public ScriptRepository(Settings settings, ISession session)
+        public FileSystemScriptRepository(Settings settings)
         {
             _settings = settings;
-            _session = session;
         }
 
         public Task<List<ScriptSummary>> GetAllAsync()
         {
-            var summaries = Directory.GetFiles(_settings.ScriptsDirectoryPath, "*.netpad", SearchOption.AllDirectories)
-                .Select(f => new ScriptSummary(Path.GetFileNameWithoutExtension(f), f.Replace(_settings.ScriptsDirectoryPath, String.Empty)))
+            var summaries = Directory.GetFiles(
+                    _settings.ScriptsDirectoryPath,
+                    $"*{Script.STANARD_EXTENSION}",
+                    SearchOption.AllDirectories)
+                .Select(f => new ScriptSummary(
+                    Path.GetFileNameWithoutExtension(f),
+                    f.Replace(_settings.ScriptsDirectoryPath, String.Empty)))
                 .ToList();
 
             return Task.FromResult(summaries);
         }
 
-        public Task<Script> CreateAsync()
+        public Task<Script> CreateAsync(string name)
         {
-            var script = new Script(Guid.NewGuid(), GetNewScriptName());
-
-            _session.Add(script);
-
+            var script = new Script(Guid.NewGuid(), name);
             return Task.FromResult(script);
         }
 
-        public async Task<Script> OpenAsync(string path)
+        public async Task<Script> GetAsync(string path)
         {
             var filePath = GetFullPath(path);
-            var script = _session.Get(filePath);
-            if (script != null)
-                return script;
-
             var fileInfo = new FileInfo(filePath);
 
             if (!fileInfo.Exists)
                 throw new FileNotFoundException($"File {path} was not found.");
 
-            script = new Script(Guid.NewGuid(), fileInfo.Name);
+            var script = new Script(Guid.NewGuid(), Path.GetFileNameWithoutExtension(fileInfo.Name));
             script.SetPath(path);
             await script.LoadAsync(await File.ReadAllTextAsync(filePath).ConfigureAwait(false)).ConfigureAwait(false);
 
-            _session.Add(script);
-
             return script;
-        }
-
-        public Task<Script> DuplicateAsync(Script script, ScriptDuplicationOptions options)
-        {
-            throw new System.NotImplementedException();
         }
 
         public async Task<Script> SaveAsync(Script script)
@@ -82,28 +71,17 @@ namespace NetPad.Scripts
             return script;
         }
 
-        public Task<Script> DeleteAsync(Script script)
+        public Task DeleteAsync(Script script)
         {
-            throw new System.NotImplementedException();
-        }
+            if (script.Path == null)
+                throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot delete script.");
 
-        public Task CloseAsync(Guid id)
-        {
-            _session.Remove(id);
+            var filePath = GetFullPath(script.Path);
+            if (!File.Exists(filePath))
+                throw new InvalidOperationException($"{nameof(script.Path)} does not exist. Cannot delete script.");
+
+            File.Delete(filePath);
             return Task.CompletedTask;
-        }
-
-        private string GetNewScriptName()
-        {
-            const string baseName = "Script";
-            int number = 1;
-
-            while (_session.OpenScripts.Any(q => q.Name == $"{baseName} {number}"))
-            {
-                number++;
-            }
-
-            return $"{baseName} {number}";
         }
 
         private string GetFullPath(string scriptPath) => Path.Combine(_settings.ScriptsDirectoryPath, scriptPath.Trim('/'));

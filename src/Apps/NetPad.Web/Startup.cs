@@ -14,6 +14,7 @@ using NetPad.Middlewares;
 using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
+using NetPad.Services;
 using NetPad.Sessions;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag.CodeGeneration.TypeScript;
@@ -79,9 +80,10 @@ namespace NetPad
 
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
             services.AddSingleton<ISession, NetPad.Sessions.Session>();
-            services.AddSingleton<IScriptRepository, ScriptRepository>();
+            services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
+            services.AddTransient<IUiScriptService, UiScriptService>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();

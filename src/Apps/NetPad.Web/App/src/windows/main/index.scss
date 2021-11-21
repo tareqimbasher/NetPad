@@ -7,13 +7,36 @@ sidebar {
 }
 
 #tabs {
-    .nav-link {
+    .script-tab {
         background-color: #333;
         color: white;
         font-weight: bold;
+        cursor: default;
+        height: 1.6rem;
+        font-size: 0.75rem;
+
+        $padding-vertical: 0.15rem;
+        $padding-horizontal: 0.65rem;
+
+        .text {
+            display: inline-block;
+            padding: $padding-vertical 2px $padding-vertical $padding-horizontal;
+        }
+
+        .bi {
+            padding: $padding-vertical $padding-horizontal $padding-vertical 2px;
+        }
+
+        &.new-script-tab {
+            padding: 0.2rem 0.2rem;
+        }
+
+        &:hover {
+            background-color: #525252;
+        }
     }
 
-    .nav-link.active {
+    .script-tab.active {
         color: dodgerblue;
         border-color: dodgerblue;
     }
@@ -22,7 +45,7 @@ sidebar {
 statusbar {
 }
 
-.scripts {
+.script-environments {
     display: flex;
     flex-direction: column;
     flex: 1;

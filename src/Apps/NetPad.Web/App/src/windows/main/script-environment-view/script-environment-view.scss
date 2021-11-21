@@ -1,4 +1,4 @@
-script-view {
+script-environment-view {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -9,9 +9,14 @@ script-view {
         margin-bottom: 0.25rem;
     }
 
-    .text-editor {
+    .text-editor-container {
+        min-height: 200px;
         background-color: red;
         flex: 1;
+
+        .text-editor {
+            height: 100%;
+        }
     }
 
     .results-container {

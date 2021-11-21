@@ -1,33 +1,34 @@
 import {bindable, PLATFORM, watch} from "aurelia";
-import {IScriptRepository, ISession, Script} from "@domain";
+import {IScriptManager, ISession, ScriptEnvironment} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
-export class ScriptView {
-    @bindable public script: Script;
-    public id: string;
+export class ScriptEnvironmentView {
+    @bindable public environment: ScriptEnvironment;
     public showResults = true;
+    public get id(): string {
+        return this.environment.script.id;
+    }
 
     private editor: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
-        @IScriptRepository readonly scriptRepository: IScriptRepository,
+        @IScriptManager readonly scriptManager: IScriptManager,
         @ISession readonly session: ISession) {
-        this.id = Util.newGuid();
     }
 
     private attached() {
         PLATFORM.taskQueue.queueTask(() => {
             const el = document.querySelector(`[data-text-editor-id="${this.id}"]`) as HTMLElement;
             this.editor = monaco.editor.create(el, {
-                value: this.script.code,
+                value: this.environment.script.code,
                 language: 'csharp',
                 theme: "vs-dark"
             });
 
             const f = Util.debounce(this, async (ev) => {
-                await this.scriptRepository.updateCode(this.script.id, this.editor.getValue());
-            }, 1000, true);
+                await this.scriptManager.updateCode(this.environment.script.id, this.editor.getValue());
+            }, 500, true);
 
             this.editor.onDidChangeModelContent(ev => f(ev));
 
@@ -49,12 +50,12 @@ export class ScriptView {
 
     public async run() {
         this.showResults = true;
-        const resultsEl = document.querySelector(`script-view[data-id="${this.id}"] .results`);
-        resultsEl.innerHTML = (await this.scriptRepository.run(this.script.id))
+        const resultsEl = document.querySelector(`[data-script-results-id="${this.id}"]`);
+        resultsEl.innerHTML = (await this.scriptManager.run(this.environment.script.id))
                 .replaceAll("\n", "<br/>") ?? "";
     }
 
-    @watch<ScriptView>(vm => vm.session.activeScript)
+    @watch<ScriptEnvironmentView>(vm => vm.session.active)
     private adjustEditorLayout() {
         PLATFORM.taskQueue.queueTask(() => {
             this.editor.layout();

@@ -47,7 +47,7 @@ namespace NetPad.Views.Scripts
         {
             if (_textEditorConfigurator != null)
             {
-                _textEditorConfigurator.TextEditor.Text = ViewModel!.Script.Code;
+                _textEditorConfigurator.TextEditor.Text = ViewModel!.ScriptEnvironment.Script.Code;
                 _textEditorConfigurator.TextEditor.TextChanged += (sender,  args) =>
                     ViewModel!.Code = _textEditorConfigurator.TextEditor.Text;
                 // _textEditorConfigurator.TextEditor.TextArea.TextEntered += (_, args) =>

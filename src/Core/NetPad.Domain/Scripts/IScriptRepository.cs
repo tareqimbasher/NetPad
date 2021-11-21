@@ -7,11 +7,9 @@ namespace NetPad.Scripts
     public interface IScriptRepository
     {
         Task<List<ScriptSummary>> GetAllAsync();
-        Task<Script> CreateAsync();
-        Task<Script> OpenAsync(string path);
-        Task CloseAsync(Guid id);
-        Task<Script> DuplicateAsync(Script script, ScriptDuplicationOptions options);
+        Task<Script> CreateAsync(string name);
+        Task<Script> GetAsync(string path);
         Task<Script> SaveAsync(Script script);
-        Task<Script> DeleteAsync(Script script);
+        Task DeleteAsync(Script script);
     }
 }

@@ -1,14 +1,15 @@
 using System;
+using NetPad.Scripts;
 
 namespace NetPad.Exceptions
 {
     public class InvalidScriptFormat : Exception
     {
-        public InvalidScriptFormat(string filePath)
+        public InvalidScriptFormat(Script script)
         {
-            FilePath = filePath;
+            Script = script;
         }
 
-        public string FilePath { get; }
+        public Script Script { get; }
     }
 }

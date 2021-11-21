@@ -33,12 +33,13 @@ namespace NetPad.BackgroundServices
 
         private void ReactToScriptPropertyChanged()
         {
-            _session.OpenScripts.CollectionChanged += (_,  changes) =>
+            _session.Environments.CollectionChanged += (_,  changes) =>
             {
                 if (changes.Action == NotifyCollectionChangedAction.Add && changes.NewItems?.Count > 0)
                 {
-                    foreach (Script script in changes.NewItems)
+                    foreach (ScriptEnvironment environment in changes.NewItems)
                     {
+                        var script = environment.Script;
                         script.OnPropertyChanged.Add(async (args) =>
                         {
                             Electron.IpcMain.Send(BrowserWindow, "script-property-changed", Serialize(new

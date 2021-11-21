@@ -10,12 +10,14 @@ namespace NetPad.Runtimes
             string scriptCode = script.Code;
             string code;
 
-            string program = @"
+            const string program = @"
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using NetPad.Runtimes;
 
 public static class UserScript

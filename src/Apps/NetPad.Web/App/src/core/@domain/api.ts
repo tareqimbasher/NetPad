@@ -13,9 +13,7 @@ export interface IScriptsService {
     empty(): Promise<Script>;
     getScripts(): Promise<ScriptSummary[]>;
     create(): Promise<void>;
-    open(filePath: string | null | undefined): Promise<void>;
-    save(id: string): Promise<boolean>;
-    close(id: string): Promise<void>;
+    save(id: string): Promise<void>;
     run(id: string): Promise<string>;
     updateCode(id: string, code: string): Promise<void>;
 }
@@ -138,40 +136,7 @@ export class ScriptsService implements IScriptsService {
         return Promise.resolve<void>(<any>null);
     }
 
-    open(filePath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/open?";
-        if (filePath !== undefined && filePath !== null)
-            url_ += "filePath=" + encodeURIComponent("" + filePath) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ = <RequestInit>{
-            method: "PATCH",
-            signal,
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOpen(_response);
-        });
-    }
-
-    protected processOpen(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(<any>null);
-    }
-
-    save(id: string, signal?: AbortSignal | undefined): Promise<boolean> {
+    save(id: string, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/save/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -182,7 +147,6 @@ export class ScriptsService implements IScriptsService {
             method: "PATCH",
             signal,
             headers: {
-                "Accept": "application/json"
             }
         };
 
@@ -191,44 +155,7 @@ export class ScriptsService implements IScriptsService {
         });
     }
 
-    protected processSave(response: Response): Promise<boolean> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<boolean>(<any>null);
-    }
-
-    close(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/close/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ = <RequestInit>{
-            method: "PATCH",
-            signal,
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processClose(_response);
-        });
-    }
-
-    protected processClose(response: Response): Promise<void> {
+    protected processSave(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -321,7 +248,11 @@ export class ScriptsService implements IScriptsService {
 }
 
 export interface ISessionService {
-    getOpenScripts(): Promise<Script[]>;
+    getEnvironments(): Promise<ScriptEnvironment[]>;
+    open(scriptPath: string | null | undefined): Promise<void>;
+    close(scriptId: string): Promise<void>;
+    getActive(): Promise<string | null>;
+    setActive(scriptId: string): Promise<void>;
 }
 
 export class SessionService implements ISessionService {
@@ -334,8 +265,8 @@ export class SessionService implements ISessionService {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getOpenScripts(signal?: AbortSignal | undefined): Promise<Script[]> {
-        let url_ = this.baseUrl + "/session/scripts";
+    getEnvironments(signal?: AbortSignal | undefined): Promise<ScriptEnvironment[]> {
+        let url_ = this.baseUrl + "/session/environments";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -347,11 +278,11 @@ export class SessionService implements ISessionService {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetOpenScripts(_response);
+            return this.processGetEnvironments(_response);
         });
     }
 
-    protected processGetOpenScripts(response: Response): Promise<Script[]> {
+    protected processGetEnvironments(response: Response): Promise<ScriptEnvironment[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -361,7 +292,7 @@ export class SessionService implements ISessionService {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(Script.fromJS(item));
+                    result200!.push(ScriptEnvironment.fromJS(item));
             }
             else {
                 result200 = <any>null;
@@ -373,7 +304,143 @@ export class SessionService implements ISessionService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Script[]>(<any>null);
+        return Promise.resolve<ScriptEnvironment[]>(<any>null);
+    }
+
+    open(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/open?";
+        if (scriptPath !== undefined && scriptPath !== null)
+            url_ += "scriptPath=" + encodeURIComponent("" + scriptPath) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpen(_response);
+        });
+    }
+
+    protected processOpen(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    close(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/close/{scriptId}";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processClose(_response);
+        });
+    }
+
+    protected processClose(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    getActive(signal?: AbortSignal | undefined): Promise<string | null> {
+        let url_ = this.baseUrl + "/session/active";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetActive(_response);
+        });
+    }
+
+    protected processGetActive(response: Response): Promise<string | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string | null>(<any>null);
+    }
+
+    setActive(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/set-active/{scriptId}";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetActive(_response);
+        });
+    }
+
+    protected processSetActive(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
     }
 }
 
@@ -430,7 +497,7 @@ export class SettingsService implements ISettingsService {
 export class Script implements IScript {
     id!: string;
     name!: string;
-    filePath?: string | undefined;
+    path?: string | undefined;
     config!: ScriptConfig;
     code!: string;
     directoryPath?: string | undefined;
@@ -453,7 +520,7 @@ export class Script implements IScript {
         if (_data) {
             this.id = _data["id"];
             this.name = _data["name"];
-            this.filePath = _data["filePath"];
+            this.path = _data["path"];
             this.config = _data["config"] ? ScriptConfig.fromJS(_data["config"]) : new ScriptConfig();
             this.code = _data["code"];
             this.directoryPath = _data["directoryPath"];
@@ -473,7 +540,7 @@ export class Script implements IScript {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["name"] = this.name;
-        data["filePath"] = this.filePath;
+        data["path"] = this.path;
         data["config"] = this.config ? this.config.toJSON() : <any>undefined;
         data["code"] = this.code;
         data["directoryPath"] = this.directoryPath;
@@ -493,7 +560,7 @@ export class Script implements IScript {
 export interface IScript {
     id: string;
     name: string;
-    filePath?: string | undefined;
+    path?: string | undefined;
     config: ScriptConfig;
     code: string;
     directoryPath?: string | undefined;
@@ -607,6 +674,58 @@ export interface IScriptSummary {
     name: string;
     path: string;
 }
+
+export class ScriptEnvironment implements IScriptEnvironment {
+    script!: Script;
+    status!: ScriptStatus;
+
+    constructor(data?: IScriptEnvironment) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.script = new Script();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
+            this.status = _data["status"];
+        }
+    }
+
+    static fromJS(data: any): ScriptEnvironment {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptEnvironment();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["script"] = this.script ? this.script.toJSON() : <any>undefined;
+        data["status"] = this.status;
+        return data; 
+    }
+
+    clone(): ScriptEnvironment {
+        const json = this.toJSON();
+        let result = new ScriptEnvironment();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptEnvironment {
+    script: Script;
+    status: ScriptStatus;
+}
+
+export type ScriptStatus = 0 | 1 | 2;
 
 export class Settings implements ISettings {
     scriptsDirectoryPath!: string;

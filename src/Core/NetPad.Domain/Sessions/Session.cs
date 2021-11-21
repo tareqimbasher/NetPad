@@ -1,46 +1,95 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using NetPad.Common;
+using NetPad.Exceptions;
 using NetPad.Scripts;
 
 namespace NetPad.Sessions
 {
     public class Session : ISession
     {
-        private readonly ObservableCollection<Script> _openScripts;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ObservableCollection<ScriptEnvironment> _environments;
+        private ScriptEnvironment? _active;
 
-        public Session()
+        public Session(IServiceProvider serviceProvider)
         {
-            _openScripts = new ObservableCollection<Script>();
+            _serviceProvider = serviceProvider;
+            _environments = new ObservableCollection<ScriptEnvironment>();
+            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
-        public ObservableCollection<Script> OpenScripts => _openScripts;
+        public ObservableCollection<ScriptEnvironment> Environments => _environments;
 
-        public Script? Get(Guid id)
+        public ScriptEnvironment? Active
         {
-            return _openScripts.FirstOrDefault(q => q.Id == id);
+            get => _active;
+            set => this.RaiseAndSetIfChanged(ref _active, value);
+        }
+        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+
+
+        public ScriptEnvironment? Get(Guid scriptId)
+        {
+            return _environments.FirstOrDefault(m => m.Script.Id == scriptId);
         }
 
-        public Script? Get(string filePath)
+        public async Task OpenAsync(Script script)
         {
-            return _openScripts.FirstOrDefault(q => q.Path == filePath);
+            var environment = Get(script.Id);
+            if (environment == null)
+            {
+                environment = new ScriptEnvironment(script, _serviceProvider.CreateScope());
+                _environments.Add(environment);
+            }
+
+            await SetActive(script.Id);
         }
 
-        public void Add(Script script)
+        public async Task CloseAsync(Guid scriptId)
         {
-            if (_openScripts.Contains(script) ||
-                _openScripts.Any(q => (!q.IsNew && q.Path == script.Path) || (q.IsNew && q.Name == script.Name)))
-                return;
+            var environment = Get(scriptId);
+            if (environment != null)
+            {
+                _environments.Remove(environment);
+                await environment.CloseAsync();
+                environment.Dispose();
 
-            _openScripts.Add(script);
+                if (Active == environment)
+                {
+                    await SetActive(null);
+                }
+            }
         }
 
-        public void Remove(Guid id)
+        public Task SetActive(Guid? scriptId)
         {
-            var script = _openScripts.FirstOrDefault(q => q.Id == id);
+            if (scriptId == null)
+                Active = null;
+            else
+            {
+                var environment = Get(scriptId.Value);
+                Active = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
+            }
 
-            if (script != null)
-                _openScripts.Remove(script);
+            return Task.CompletedTask;
+        }
+
+        public Task<string> GetNewScriptName()
+        {
+            const string baseName = "Script";
+            int number = 1;
+
+            while (_environments.Any(m => m.Script.Name == $"{baseName} {number}"))
+            {
+                number++;
+            }
+
+            return Task.FromResult($"{baseName} {number}");
         }
     }
 }

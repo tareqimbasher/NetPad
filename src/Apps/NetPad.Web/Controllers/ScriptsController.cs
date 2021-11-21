@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes;
+using NetPad.Services;
 using NetPad.Sessions;
 
 namespace NetPad.Controllers
@@ -19,12 +20,14 @@ namespace NetPad.Controllers
         private readonly IScriptRepository _scriptRepository;
         private readonly ISession _session;
         private readonly Settings _settings;
+        private readonly IUiScriptService _uiScriptService;
 
-        public ScriptsController(IScriptRepository scriptRepository, ISession session, Settings settings)
+        public ScriptsController(IScriptRepository scriptRepository, ISession session, Settings settings, IUiScriptService uiScriptService)
         {
             _scriptRepository = scriptRepository;
             _session = session;
             _settings = settings;
+            _uiScriptService = uiScriptService;
         }
 
         [HttpGet("empty")]
@@ -42,80 +45,25 @@ namespace NetPad.Controllers
         [HttpPatch("create")]
         public async Task Create()
         {
-            await _scriptRepository.CreateAsync();
-        }
-
-        [HttpPatch("open")]
-        public async Task Open([FromQuery] string filePath)
-        {
-            await _scriptRepository.OpenAsync(filePath);
+            var name = await _session.GetNewScriptName();
+            var script = await _scriptRepository.CreateAsync(name);
+            await _session.OpenAsync(script);
         }
 
         [HttpPatch("save/{id:guid}")]
-        public async Task<bool> Save(Guid id)
+        public async Task Save(Guid id)
         {
-            var script = _session.Get(id);
-            if (script == null)
-                throw new Exception("Script not found");
+            var scriptEnvironment = GetScriptEnvironment(id);
+            var script = scriptEnvironment.Script;
 
-            if (script.IsNew)
-            {
-                var path = await Electron.Dialog.ShowSaveDialogAsync(Electron.WindowManager.BrowserWindows.First(), new SaveDialogOptions()
-                {
-                    Title = "Save Script",
-                    Message = "Where do you want to save this script?",
-                    NameFieldLabel = script.Name,
-                    Filters = new[] { new FileFilter { Name = "NetPad Script", Extensions = new[] { "netpad" } } },
-                    DefaultPath = _settings.ScriptsDirectoryPath,
-                });
-
-                if (string.IsNullOrWhiteSpace(path))
-                    return false;
-
-                script.SetPath(path.Replace(_settings.ScriptsDirectoryPath, string.Empty));
-            }
-
-            await _scriptRepository.SaveAsync(script);
-
-            return true;
-        }
-
-        [HttpPatch("close/{id:guid}")]
-        public async Task Close(Guid id)
-        {
-            var script = _session.Get(id);
-            if (script == null)
-                throw new Exception("Script not found");
-
-            if (script.IsDirty)
-            {
-                var result = await Electron.Dialog.ShowMessageBoxAsync(Electron.WindowManager.BrowserWindows.First(),
-                    new MessageBoxOptions("Do you want to save?")
-                    {
-                        Title = "Save?",
-                        Buttons = new[] { "Yes", "No", "Cancel" },
-                        Type = MessageBoxType.question
-                    });
-
-                if (result?.Response == 0)
-                {
-                    if (!await Save(script.Id))
-                        return;
-                }
-                else if (result?.Response == 2)
-                    return;
-            }
-
-            await _scriptRepository.CloseAsync(id);
+            await SaveAsync(script, _scriptRepository, _uiScriptService, _settings);
         }
 
         [HttpPatch("run/{id:guid}")]
         public async Task<string> Run(Guid id, [FromServices] IScriptRuntime scriptRuntime)
         {
-            var script = _session.Get(id);
-            if (script == null)
-                return "Script not found";
-
+            var scriptEnvironment = GetScriptEnvironment(id);
+            var script = scriptEnvironment.Script;
             var results = string.Empty;
 
             await scriptRuntime.InitializeAsync(script);
@@ -139,11 +87,30 @@ namespace NetPad.Controllers
         [HttpPut("{id:guid}/code")]
         public void UpdateCode(Guid id, [FromBody] string code)
         {
-            var script = _session.Get(id);
-            if (script == null)
-                return;
+            var scriptEnvironment = GetScriptEnvironment(id);
+            var script = scriptEnvironment.Script;
 
             script.UpdateCode(code);
+        }
+
+        public static async Task<bool> SaveAsync(Script script, IScriptRepository scriptRepository, IUiScriptService uiScriptService, Settings settings)
+        {
+            if (script.IsNew)
+            {
+                var path = await uiScriptService.AskUserForSaveLocation(script);
+                if (string.IsNullOrWhiteSpace(path))
+                    return false;
+
+                script.SetPath(path.Replace(settings.ScriptsDirectoryPath, string.Empty));
+            }
+
+            await scriptRepository.SaveAsync(script);
+            return true;
+        }
+
+        private ScriptEnvironment GetScriptEnvironment(Guid id)
+        {
+            return _session.Get(id) ?? throw new ScriptNotFoundException(id);
         }
     }
 }

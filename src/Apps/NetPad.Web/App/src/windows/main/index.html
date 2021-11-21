@@ -1,5 +1,5 @@
 <template class="dark">
-    <require from="./script-view/script-view"></require>
+    <require from="./script-environment-view/script-environment-view"></require>
     <require from="./sidebar/sidebar"></require>
     <require from="./statusbar/statusbar"></require>
 
@@ -9,24 +9,26 @@
             <div id="content" class="flex-grow-1 d-flex flex-column">
                 <ul id="tabs" class="nav nav-tabs bg-dark">
                     <li class="nav-item"
-                        repeat.for="script of session.scripts"
-                        click.trigger="session.activeScript = script">
-                        <a class="nav-link ${session.activeScript === script ? 'active' : ''}" href="#">
-                            ${script.name} ${script.isDirty ? '*' : ''}
-                            <i class="bi bi-x action-danger" click.trigger="scriptRepository.close(script.id)"></i>
-                        </a>
+                        repeat.for="env of session.environments">
+                        <div class="script-tab ${session.active === env ? 'active' : ''}">
+                            <div class="text"
+                                 click.trigger="session.setActive(env.script.id)">
+                                ${env.script.name} ${env.script.isDirty ? '*' : ''}
+                            </div>
+                            <i class="bi bi-x action-danger" click.trigger="session.close(env.script.id)"></i>
+                        </div>
                     </li>
                     <li class="nav-item"
-                        click.trigger="scriptRepository.create()">
-                        <div class="nav-link">
+                        click.trigger="scriptManager.create()">
+                        <div class="script-tab new-script-tab">
                             <i class="bi bi-plus"></i>
                         </div>
                     </li>
                 </ul>
-                <div class="scripts"
-                     repeat.for="script of session.scripts"
-                     show.bind="session.activeScript === script">
-                    <script-view script.bind="script"></script-view>
+                <div class="script-environments"
+                     repeat.for="env of session.environments"
+                     show.bind="session.active === env">
+                    <script-environment-view environment.bind="env"></script-environment-view>
                 </div>
             </div>
         </div>
