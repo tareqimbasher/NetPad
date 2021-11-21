@@ -23,13 +23,13 @@ namespace NetPad.Sessions
 
         public Script? Get(string filePath)
         {
-            return _openScripts.FirstOrDefault(q => q.FilePath == filePath);
+            return _openScripts.FirstOrDefault(q => q.Path == filePath);
         }
 
         public void Add(Script script)
         {
             if (_openScripts.Contains(script) ||
-                _openScripts.Any(q => (!q.IsNew && q.FilePath == script.FilePath) || (q.IsNew && q.Name == script.Name)))
+                _openScripts.Any(q => (!q.IsNew && q.Path == script.Path) || (q.IsNew && q.Name == script.Name)))
                 return;
 
             _openScripts.Add(script);

@@ -74,7 +74,7 @@ namespace NetPad.Controllers
                 if (string.IsNullOrWhiteSpace(path))
                     return false;
 
-                script.SetFilePath(path);
+                script.SetPath(path.Replace(_settings.ScriptsDirectoryPath, string.Empty));
             }
 
             await _scriptRepository.SaveAsync(script);

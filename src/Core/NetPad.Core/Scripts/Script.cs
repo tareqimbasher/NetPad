@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,11 +39,11 @@ namespace NetPad.Scripts
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
-        public string? FilePath { get; private set; }
+        public string? Path { get; private set; }
         public ScriptConfig Config { get; private set; }
         public string Code { get; private set; }
 
-        public string? DirectoryPath => FilePath == null ? null : Path.GetDirectoryName(FilePath);
+        public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
 
         public bool IsDirty
         {
@@ -54,39 +51,39 @@ namespace NetPad.Scripts
             set => this.RaiseAndSetIfChanged(ref _isDirty, value);
         }
 
-        public bool IsNew => FilePath == null;
+        public bool IsNew => Path == null;
 
 
-        public async Task LoadAsync()
+        public async Task LoadAsync(string contents)
         {
-            if (FilePath == null)
-                throw new InvalidOperationException($"FilePath: '{FilePath}' is null. Cannot load script.");
+            if (Path == null)
+                throw new InvalidOperationException($"Path: '{Path}' is null. Cannot load script.");
 
-            var text = await File.ReadAllTextAsync(FilePath).ConfigureAwait(false);
-
-            var parts = text.Split("#Code");
+            var parts = contents.Split("#Code");
             if (parts.Length != 2)
-                throw new InvalidScriptFormat(FilePath);
+                throw new InvalidScriptFormat(Path);
 
             var part1 = parts[0];
             var part1Lines = part1.Split(Environment.NewLine);
             var part2 = parts[1];
 
             Id = Guid.Parse(part1Lines.First());
-            Name = Path.GetFileNameWithoutExtension(FilePath);
+            Name = System.IO.Path.GetFileNameWithoutExtension(Path);
             Config = JsonSerializer.Deserialize<ScriptConfig>(
-                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(FilePath);
+                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(Path);
             Code = part2.TrimStart();
         }
 
-        public void SetFilePath(string filePath)
+        public void SetPath(string path)
         {
-            FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+            Path = path ?? throw new ArgumentNullException(nameof(path));
 
-            if (!filePath.EndsWith(".netpad")) filePath += ".netpad";
+            if (!path.StartsWith("/")) path = "/" + path;
 
-            FilePath = filePath;
-            Name = Path.GetFileNameWithoutExtension(filePath);
+            if (!path.EndsWith(".netpad")) path += ".netpad";
+
+            Path = path;
+            Name = System.IO.Path.GetFileNameWithoutExtension(path);
         }
 
         public void UpdateCode(string newCode)

@@ -8,7 +8,7 @@ namespace NetPad.Scripts
     {
         Task<List<ScriptSummary>> GetAllAsync();
         Task<Script> CreateAsync();
-        Task<Script> OpenAsync(string filePath);
+        Task<Script> OpenAsync(string path);
         Task CloseAsync(Guid id);
         Task<Script> DuplicateAsync(Script script, ScriptDuplicationOptions options);
         Task<Script> SaveAsync(Script script);

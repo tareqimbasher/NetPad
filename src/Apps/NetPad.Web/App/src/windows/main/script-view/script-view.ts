@@ -6,7 +6,6 @@ import {Util} from "@common";
 export class ScriptView {
     @bindable public script: Script;
     public id: string;
-    public results: string = "";
     public showResults = true;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
@@ -50,8 +49,8 @@ export class ScriptView {
 
     public async run() {
         this.showResults = true;
-        document.querySelector(`script-view[data-id="${this.id}"] .results`).innerHTML =
-            (await this.scriptRepository.run(this.script.id))
+        const resultsEl = document.querySelector(`script-view[data-id="${this.id}"] .results`);
+        resultsEl.innerHTML = (await this.scriptRepository.run(this.script.id))
                 .replaceAll("\n", "<br/>") ?? "";
     }
 

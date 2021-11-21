@@ -22,7 +22,7 @@ namespace NetPad.Scripts
         public Task<List<ScriptSummary>> GetAllAsync()
         {
             var summaries = Directory.GetFiles(_settings.ScriptsDirectoryPath, "*.netpad", SearchOption.AllDirectories)
-                .Select(f => new ScriptSummary(Path.GetFileNameWithoutExtension(f), f))
+                .Select(f => new ScriptSummary(Path.GetFileNameWithoutExtension(f), f.Replace(_settings.ScriptsDirectoryPath, String.Empty)))
                 .ToList();
 
             return Task.FromResult(summaries);
@@ -37,8 +37,9 @@ namespace NetPad.Scripts
             return Task.FromResult(script);
         }
 
-        public async Task<Script> OpenAsync(string filePath)
+        public async Task<Script> OpenAsync(string path)
         {
+            var filePath = GetFullPath(path);
             var script = _session.Get(filePath);
             if (script != null)
                 return script;
@@ -46,11 +47,11 @@ namespace NetPad.Scripts
             var fileInfo = new FileInfo(filePath);
 
             if (!fileInfo.Exists)
-                throw new FileNotFoundException($"File {filePath} was not found.");
+                throw new FileNotFoundException($"File {path} was not found.");
 
             script = new Script(Guid.NewGuid(), fileInfo.Name);
-            script.SetFilePath(filePath);
-            await script.LoadAsync().ConfigureAwait(false);
+            script.SetPath(path);
+            await script.LoadAsync(await File.ReadAllTextAsync(filePath).ConfigureAwait(false)).ConfigureAwait(false);
 
             _session.Add(script);
 
@@ -64,15 +65,17 @@ namespace NetPad.Scripts
 
         public async Task<Script> SaveAsync(Script script)
         {
-            if (script.FilePath == null)
-                throw new InvalidOperationException($"{nameof(script.FilePath)} is not set. Cannot save script.");
+            if (script.Path == null)
+                throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
+
+            var filePath = GetFullPath(script.Path);
 
             var config = JsonSerializer.Serialize(script.Config);
 
-            await File.WriteAllTextAsync(script.FilePath, $"{script.Id}\n" +
-                                                         $"{config}\n" +
-                                                         $"#Code\n" +
-                                                         $"{script.Code}")
+            await File.WriteAllTextAsync(filePath, $"{script.Id}\n" +
+                                                   $"{config}\n" +
+                                                   $"#Code\n" +
+                                                   $"{script.Code}")
                 .ConfigureAwait(false);
 
             script.IsDirty = false;
@@ -102,5 +105,7 @@ namespace NetPad.Scripts
 
             return $"{baseName} {number}";
         }
+
+        private string GetFullPath(string scriptPath) => Path.Combine(_settings.ScriptsDirectoryPath, scriptPath.Trim('/'));
     }
 }

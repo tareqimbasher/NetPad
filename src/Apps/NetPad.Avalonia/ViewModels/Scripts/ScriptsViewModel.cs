@@ -92,7 +92,7 @@ namespace NetPad.ViewModels.Scripts
                 if (selectedPath == null)
                     return;
 
-                SelectedScript.Script.SetFilePath(selectedPath);
+                SelectedScript.Script.SetPath(selectedPath.Replace(_settings.ScriptsDirectoryPath, string.Empty));
             }
 
             try
