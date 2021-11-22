@@ -1,4 +1,4 @@
-import {bindable, PLATFORM, watch} from "aurelia";
+import {bindable, IEventAggregator, PLATFORM, watch} from "aurelia";
 import {IScriptManager, ISession, ScriptEnvironment} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
@@ -10,14 +10,25 @@ export class ScriptEnvironmentView {
         return this.environment.script.id;
     }
 
+    private disposables: (() => void)[] = [];
     private editor: monaco.editor.IStandaloneCodeEditor;
+    private resultsEl: HTMLElement;
 
     constructor(
         @IScriptManager readonly scriptManager: IScriptManager,
-        @ISession readonly session: ISession) {
+        @ISession readonly session: ISession,
+        @IEventAggregator readonly eventBus: IEventAggregator) {
     }
 
     private attached() {
+        const token = this.eventBus.subscribe("script-results", (msg: {scriptId: string, output: string}) => {
+            if (msg.scriptId === this.environment.script.id) {
+                this.appendResults(msg?.output);
+            }
+        });
+
+        this.disposables.push(() => token.dispose());
+
         PLATFORM.taskQueue.queueTask(() => {
             const el = document.querySelector(`[data-text-editor-id="${this.id}"]`) as HTMLElement;
             this.editor = monaco.editor.create(el, {
@@ -46,13 +57,23 @@ export class ScriptEnvironmentView {
 
     public detaching() {
         this.editor.dispose();
+        for (const disposable of this.disposables) {
+            disposable();
+        }
     }
 
     public async run() {
+        this.setResults(null);
         this.showResults = true;
-        const resultsEl = document.querySelector(`[data-script-results-id="${this.id}"]`);
-        resultsEl.innerHTML = (await this.scriptManager.run(this.environment.script.id))
-                .replaceAll("\n", "<br/>") ?? "";
+        await this.scriptManager.run(this.environment.script.id);
+    }
+
+    private setResults(results: string | null) {
+        this.resultsEl.innerHTML = results?.replaceAll("\n", "<br/>") ?? "";
+    }
+
+    private appendResults(results: string | null) {
+        this.setResults(this.resultsEl.innerHTML + results);
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.session.active)

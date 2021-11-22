@@ -1,37 +1,61 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using NetPad.Common;
+using NetPad.Exceptions;
 using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    public class ScriptEnvironment : IDisposable
+    public class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
     {
         private readonly IServiceScope _scope;
+        private ScriptStatus _status;
+        private IScriptRuntimeInputReader? _inputReader;
+        private IScriptRuntimeOutputWriter? _outputWriter;
 
         public ScriptEnvironment(Script script, IServiceScope scope)
         {
             _scope = scope;
             Script = script;
             Status = ScriptStatus.Ready;
+            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
         public Script Script { get; }
 
-        public ScriptStatus Status { get; private set; }
+        public ScriptStatus Status
+        {
+            get => _status;
+            set => this.RaiseAndSetIfChanged(ref _status, value);
+        }
 
-        public virtual async Task RunAsync(IScriptRuntimeInputReader? inputReader = null, IScriptRuntimeOutputWriter? outputWriter = null)
+        [JsonIgnore]
+        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+
+        public virtual async Task RunAsync()
         {
             Status = ScriptStatus.Running;
 
-            outputWriter ??= new ActionRuntimeOutputWriter(o => { /* Do nothing */ });
+            if (_outputWriter == null)
+                _outputWriter = new ActionRuntimeOutputWriter(o => { /* Do nothing */ });
 
             try
             {
                 var runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
                 await runtime.InitializeAsync(Script);
 
-                await runtime.RunAsync(inputReader, outputWriter);
+                await runtime.RunAsync(_inputReader, _outputWriter);
+            }
+            catch (CodeCompilationException ex)
+            {
+                await _outputWriter.WriteAsync(ex.ErrorsAsString() + "\n");
+            }
+            catch (Exception ex)
+            {
+                await _outputWriter.WriteAsync(ex + "\n");
             }
             finally
             {
@@ -49,11 +73,18 @@ namespace NetPad.Scripts
 
         }
 
+        public void SetIO(IScriptRuntimeInputReader? inputReader = null, IScriptRuntimeOutputWriter? outputWriter = null)
+        {
+            _inputReader = inputReader;
+            _outputWriter = outputWriter;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _scope.Dispose();
+                this.RemoveAllPropertyChangedHandlers();
             }
         }
 

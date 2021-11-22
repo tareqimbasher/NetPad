@@ -16,6 +16,6 @@
     </div>
     <div class="results-container" show.bind="showResults">
         <i class="bi bi-x-square-fill action-danger float-end" click.trigger="showResults = false"></i>
-        <div class="results" data-script-results-id.bind="id"></div>
+        <div class="results" ref="resultsEl" data-script-results-id.bind="id"></div>
     </div>
 </template>

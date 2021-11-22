@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ElectronNET.API;
-using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Common;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes;
@@ -60,28 +61,10 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("run/{id:guid}")]
-        public async Task<string> Run(Guid id, [FromServices] IScriptRuntime scriptRuntime)
+        public async Task Run(Guid id, [FromServices] IScriptRuntime scriptRuntime)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
-            var script = scriptEnvironment.Script;
-            var results = string.Empty;
-
-            await scriptRuntime.InitializeAsync(script);
-
-            try
-            {
-                await scriptRuntime.RunAsync(null, new ActionRuntimeOutputWriter(output => { results += output; }));
-            }
-            catch (CodeCompilationException ex)
-            {
-                results += ex.ErrorsAsString() + "\n";
-            }
-            catch (Exception ex)
-            {
-                results += ex + "\n";
-            }
-
-            return results;
+            await scriptEnvironment.RunAsync();
         }
 
         [HttpPut("{id:guid}/code")]

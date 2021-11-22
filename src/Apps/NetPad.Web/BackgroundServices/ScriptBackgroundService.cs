@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using NetPad.Common;
+using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
 
@@ -22,7 +25,7 @@ namespace NetPad.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            ReactToScriptPropertyChanged();
+            ReactToEnvironmentsChange();
 
             // Electron.IpcMain.RemoveAllListeners("save-script");
             // Electron.IpcMain.On("save-script", async (msg) =>
@@ -31,7 +34,7 @@ namespace NetPad.BackgroundServices
             // });
         }
 
-        private void ReactToScriptPropertyChanged()
+        private void ReactToEnvironmentsChange()
         {
             _session.Environments.CollectionChanged += (_,  changes) =>
             {
@@ -40,7 +43,19 @@ namespace NetPad.BackgroundServices
                     foreach (ScriptEnvironment environment in changes.NewItems)
                     {
                         var script = environment.Script;
-                        script.OnPropertyChanged.Add(async (args) =>
+
+                        environment.OnPropertyChanged.Add((args) =>
+                        {
+                            Electron.IpcMain.Send(BrowserWindow, "environment-property-changed", Serialize(new
+                            {
+                                ScriptId = script.Id,
+                                PropertyName = args.PropertyName,
+                                NewValue = args.NewValue
+                            }));
+                            return Task.CompletedTask;
+                        });
+
+                        script.OnPropertyChanged.Add((args) =>
                         {
                             Electron.IpcMain.Send(BrowserWindow, "script-property-changed", Serialize(new
                             {
@@ -48,20 +63,49 @@ namespace NetPad.BackgroundServices
                                 PropertyName = args.PropertyName,
                                 NewValue = args.NewValue
                             }));
+                            return Task.CompletedTask;
                         });
+
+                        environment.SetIO(null, new IpcScriptOutputWriter(environment));
                     }
                 }
                 else if (changes.Action == NotifyCollectionChangedAction.Remove)
                 {
-                    var scripts = changes.OldItems as IList<Script>;
-                    if (scripts == null) return;
+                    var environments = changes.OldItems as IList<ScriptEnvironment>;
+                    if (environments == null) return;
 
-                    foreach (var script in scripts)
+                    foreach (var environment in environments)
                     {
-                        script.RemoveAllPropertyChangedHandlers();
+                        environment.RemoveAllPropertyChangedHandlers();
+                        environment.Script.RemoveAllPropertyChangedHandlers();
                     }
                 }
             };
+        }
+    }
+
+    public class IpcScriptOutputWriter : IScriptRuntimeOutputWriter
+    {
+        public ScriptEnvironment Environment { get; }
+
+        public IpcScriptOutputWriter(ScriptEnvironment environment)
+        {
+            Environment = environment;
+        }
+
+        public Task WriteAsync(object? output)
+        {
+            var data = new
+            {
+                ScriptId = Environment.Script.Id,
+                Output = output?.ToString()
+            };
+
+            Electron.IpcMain.Send(Electron.WindowManager.BrowserWindows.First(),
+                "script-results",
+                JsonSerializer.Serialize(data, options: JsonSerializerConfig.DefaultJsonSerializerOptions));
+
+            return Task.CompletedTask;
         }
     }
 }
