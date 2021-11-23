@@ -1,1 +1,7 @@
-Statusbar
+<b style="margin-left: 0.5rem">
+    ${session.active.status}
+</b>
+
+<span show.bind="session.active.status === 'Ready' && session.active.runDurationMilliseconds > 0">
+    (Took: ${session.active.runDurationMilliseconds} ms)
+</span>
