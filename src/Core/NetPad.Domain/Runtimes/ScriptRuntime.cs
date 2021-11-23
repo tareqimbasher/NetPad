@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Runtimes.Compilation;
@@ -24,7 +25,7 @@ namespace NetPad.Runtimes
             return Task.CompletedTask;
         }
 
-        public async Task RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
+        public async Task<bool> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
         {
             EnsureInitialization();
 
@@ -52,16 +53,25 @@ namespace NetPad.Runtimes
                 if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
                 {
                     await outputWriter.WriteAsync(exception);
+                    return false;
                 }
 
                 // var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
                 //     .Where(x => x.ModuleName?.Contains("Hello") == true)
                 //     .ToArray();
             }
-            catch (Exception e)
+            catch (CodeCompilationException ex)
             {
-                Console.WriteLine(e);
+                await outputWriter.WriteAsync(ex.ErrorsAsString() + "\n");
+                return false;
             }
+            catch (Exception ex)
+            {
+                await outputWriter.WriteAsync(ex + "\n");
+                return false;
+            }
+
+            return true;
 
             // Task.Run(async () =>
             // {

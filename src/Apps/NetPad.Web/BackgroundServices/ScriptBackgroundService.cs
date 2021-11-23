@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using NetPad.Common;
-using NetPad.Runtimes;
+using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Sessions;
 
@@ -15,23 +13,22 @@ namespace NetPad.BackgroundServices
     public class ScriptBackgroundService : BackgroundService
     {
         private readonly ISession _session;
-        private readonly Settings _settings;
 
-        public ScriptBackgroundService(ISession session, Settings settings)
+        public ScriptBackgroundService(ISession session)
         {
             _session = session;
-            _settings = settings;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             ReactToEnvironmentsChange();
 
             // Electron.IpcMain.RemoveAllListeners("save-script");
             // Electron.IpcMain.On("save-script", async (msg) =>
             // {
-            //
             // });
+
+            return Task.CompletedTask;
         }
 
         private void ReactToEnvironmentsChange()
@@ -46,23 +43,21 @@ namespace NetPad.BackgroundServices
 
                         environment.OnPropertyChanged.Add((args) =>
                         {
-                            Electron.IpcMain.Send(BrowserWindow, "environment-property-changed", Serialize(new
-                            {
-                                ScriptId = script.Id,
-                                PropertyName = args.PropertyName,
-                                NewValue = args.NewValue
-                            }));
+                            Electron.IpcMain.Send(
+                                BrowserWindow,
+                                nameof(EnvironmentPropertyChanged),
+                                Serialize(new EnvironmentPropertyChanged(script.Id, args.PropertyName, args.NewValue)));
+
                             return Task.CompletedTask;
                         });
 
                         script.OnPropertyChanged.Add((args) =>
                         {
-                            Electron.IpcMain.Send(BrowserWindow, "script-property-changed", Serialize(new
-                            {
-                                ScriptId = script.Id,
-                                PropertyName = args.PropertyName,
-                                NewValue = args.NewValue
-                            }));
+                            Electron.IpcMain.Send(
+                                BrowserWindow,
+                                nameof(ScriptPropertyChanged),
+                                Serialize(new ScriptPropertyChanged(script.Id, args.PropertyName, args.NewValue)));
+
                             return Task.CompletedTask;
                         });
 
@@ -81,31 +76,6 @@ namespace NetPad.BackgroundServices
                     }
                 }
             };
-        }
-    }
-
-    public class IpcScriptOutputWriter : IScriptRuntimeOutputWriter
-    {
-        public ScriptEnvironment Environment { get; }
-
-        public IpcScriptOutputWriter(ScriptEnvironment environment)
-        {
-            Environment = environment;
-        }
-
-        public Task WriteAsync(object? output)
-        {
-            var data = new
-            {
-                ScriptId = Environment.Script.Id,
-                Output = output?.ToString()
-            };
-
-            Electron.IpcMain.Send(Electron.WindowManager.BrowserWindows.First(),
-                "script-results",
-                JsonSerializer.Serialize(data, options: JsonSerializerConfig.DefaultJsonSerializerOptions));
-
-            return Task.CompletedTask;
         }
     }
 }

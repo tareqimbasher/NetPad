@@ -31,12 +31,6 @@ namespace NetPad.Controllers
             _uiScriptService = uiScriptService;
         }
 
-        [HttpGet("empty")]
-        public Task<Script> Empty()
-        {
-            return Task.FromResult(new Script("Empty"));
-        }
-
         [HttpGet]
         public async Task<IEnumerable<ScriptSummary>> GetScripts()
         {

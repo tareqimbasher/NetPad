@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
+using NetPad.Events;
+using NetPad.Scripts;
 using NetPad.Sessions;
 
 namespace NetPad.BackgroundServices
@@ -26,8 +28,8 @@ namespace NetPad.BackgroundServices
                 {
                     Electron.IpcMain.Send(
                         Electron.WindowManager.BrowserWindows.FirstOrDefault(),
-                        "session-active-environment-changed",
-                        Serialize(_session.Active?.Script.Id)
+                        nameof(ActiveEnvironmentChanged),
+                        Serialize(new ActiveEnvironmentChanged(_session.Active?.Script.Id))
                     );
                 }
 
@@ -41,10 +43,14 @@ namespace NetPad.BackgroundServices
                 {
                     try
                     {
+                        object message = changes.Action == NotifyCollectionChangedAction.Add
+                            ? new EnvironmentsAdded(changes.NewItems!.Cast<ScriptEnvironment>().ToArray())
+                            : new EnvironmentsRemoved(changes.OldItems!.Cast<ScriptEnvironment>().ToArray());
+
                         Electron.IpcMain.Send(
                             Electron.WindowManager.BrowserWindows.FirstOrDefault(),
-                            "environment-" + (changes.Action == NotifyCollectionChangedAction.Add ? "added" : "removed"),
-                            Serialize(changes.Action == NotifyCollectionChangedAction.Add ? changes.NewItems : changes.OldItems)
+                            message.GetType().Name,
+                            Serialize(message)
                         );
                     }
                     catch (Exception e)
@@ -53,8 +59,6 @@ namespace NetPad.BackgroundServices
                     }
                 }
             };
-
-
         }
     }
 }

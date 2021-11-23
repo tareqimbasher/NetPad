@@ -13,6 +13,7 @@ namespace NetPad.Scripts
     {
         private readonly IServiceScope _scope;
         private ScriptStatus _status;
+        private int _runDurationMilliseconds;
         private IScriptRuntimeInputReader? _inputReader;
         private IScriptRuntimeOutputWriter? _outputWriter;
 
@@ -32,34 +33,40 @@ namespace NetPad.Scripts
             set => this.RaiseAndSetIfChanged(ref _status, value);
         }
 
-        [JsonIgnore]
-        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        public int RunDurationMilliseconds
+        {
+            get => _runDurationMilliseconds;
+            set => this.RaiseAndSetIfChanged(ref _runDurationMilliseconds, value);
+        }
+
+        [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
 
         public virtual async Task RunAsync()
         {
             Status = ScriptStatus.Running;
 
             if (_outputWriter == null)
-                _outputWriter = new ActionRuntimeOutputWriter(o => { /* Do nothing */ });
+                _outputWriter = new ActionRuntimeOutputWriter(o =>
+                {
+                    /* Do nothing */
+                });
 
             try
             {
                 var runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
                 await runtime.InitializeAsync(Script);
 
-                await runtime.RunAsync(_inputReader, _outputWriter);
-            }
-            catch (CodeCompilationException ex)
-            {
-                await _outputWriter.WriteAsync(ex.ErrorsAsString() + "\n");
+                var start = DateTime.Now;
+
+                var ranWithoutErrors = await runtime.RunAsync(_inputReader, _outputWriter);
+
+                RunDurationMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
+                Status = ranWithoutErrors ? ScriptStatus.Ready : ScriptStatus.Error;
             }
             catch (Exception ex)
             {
                 await _outputWriter.WriteAsync(ex + "\n");
-            }
-            finally
-            {
-                Status = ScriptStatus.Ready;
+                Status = ScriptStatus.Error;
             }
         }
 
@@ -70,7 +77,6 @@ namespace NetPad.Scripts
 
         public virtual async Task CloseAsync()
         {
-
         }
 
         public void SetIO(IScriptRuntimeInputReader? inputReader = null, IScriptRuntimeOutputWriter? outputWriter = null)

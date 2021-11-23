@@ -10,7 +10,6 @@
 import {IHttpClient} from "aurelia";
 
 export interface IScriptsService {
-    empty(): Promise<Script>;
     getScripts(): Promise<ScriptSummary[]>;
     create(): Promise<void>;
     save(id: string): Promise<void>;
@@ -26,41 +25,6 @@ export class ScriptsService implements IScriptsService {
     constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
-    }
-
-    empty(signal?: AbortSignal | undefined): Promise<Script> {
-        let url_ = this.baseUrl + "/scripts/empty";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ = <RequestInit>{
-            method: "GET",
-            signal,
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processEmpty(_response);
-        });
-    }
-
-    protected processEmpty(response: Response): Promise<Script> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Script.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<Script>(<any>null);
     }
 
     getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]> {
@@ -490,6 +454,157 @@ export class SettingsService implements ISettingsService {
     }
 }
 
+export interface ITypesService {
+    getAllTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>;
+}
+
+export class TypesService implements ITypesService {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getAllTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
+        let url_ = this.baseUrl + "/types";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAllTypes(_response);
+        });
+    }
+
+    protected processGetAllTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged.fromJS(resultData200) : <any>null;
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>(<any>null);
+    }
+}
+
+export class ScriptSummary implements IScriptSummary {
+    name!: string;
+    path!: string;
+
+    constructor(data?: IScriptSummary) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.path = _data["path"];
+        }
+    }
+
+    static fromJS(data: any): ScriptSummary {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptSummary();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["path"] = this.path;
+        return data; 
+    }
+
+    clone(): ScriptSummary {
+        const json = this.toJSON();
+        let result = new ScriptSummary();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptSummary {
+    name: string;
+    path: string;
+}
+
+export class ScriptEnvironment implements IScriptEnvironment {
+    script!: Script;
+    status!: ScriptStatus;
+    runDurationMilliseconds!: number;
+
+    constructor(data?: IScriptEnvironment) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.script = new Script();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
+            this.status = _data["status"];
+            this.runDurationMilliseconds = _data["runDurationMilliseconds"];
+        }
+    }
+
+    static fromJS(data: any): ScriptEnvironment {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptEnvironment();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["script"] = this.script ? this.script.toJSON() : <any>undefined;
+        data["status"] = this.status;
+        data["runDurationMilliseconds"] = this.runDurationMilliseconds;
+        return data; 
+    }
+
+    clone(): ScriptEnvironment {
+        const json = this.toJSON();
+        let result = new ScriptEnvironment();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptEnvironment {
+    script: Script;
+    status: ScriptStatus;
+    runDurationMilliseconds: number;
+}
+
 export class Script implements IScript {
     id!: string;
     name!: string;
@@ -622,106 +737,9 @@ export interface IScriptConfig {
     namespaces: string[];
 }
 
-export type ScriptKind = 0 | 1 | 2;
+export type ScriptKind = "Expression" | "Statements" | "Program";
 
-export class ScriptSummary implements IScriptSummary {
-    name!: string;
-    path!: string;
-
-    constructor(data?: IScriptSummary) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.name = _data["name"];
-            this.path = _data["path"];
-        }
-    }
-
-    static fromJS(data: any): ScriptSummary {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptSummary();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["name"] = this.name;
-        data["path"] = this.path;
-        return data; 
-    }
-
-    clone(): ScriptSummary {
-        const json = this.toJSON();
-        let result = new ScriptSummary();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptSummary {
-    name: string;
-    path: string;
-}
-
-export class ScriptEnvironment implements IScriptEnvironment {
-    script!: Script;
-    status!: ScriptStatus;
-
-    constructor(data?: IScriptEnvironment) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.script = new Script();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
-            this.status = _data["status"];
-        }
-    }
-
-    static fromJS(data: any): ScriptEnvironment {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptEnvironment();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["script"] = this.script ? this.script.toJSON() : <any>undefined;
-        data["status"] = this.status;
-        return data; 
-    }
-
-    clone(): ScriptEnvironment {
-        const json = this.toJSON();
-        let result = new ScriptEnvironment();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptEnvironment {
-    script: Script;
-    status: ScriptStatus;
-}
-
-export type ScriptStatus = 0 | 1 | 2;
+export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 export class Settings implements ISettings {
     scriptsDirectoryPath!: string;
@@ -764,6 +782,382 @@ export class Settings implements ISettings {
 
 export interface ISettings {
     scriptsDirectoryPath: string;
+}
+
+export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged implements IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1!: Script;
+    item2!: ScriptPropertyChanged;
+    item3!: ScriptOutputEmitted;
+    item4!: EnvironmentsAdded;
+    item5!: EnvironmentsRemoved;
+    item6!: EnvironmentPropertyChanged;
+    item7!: ActiveEnvironmentChanged;
+
+    constructor(data?: IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.item1 = new Script();
+            this.item2 = new ScriptPropertyChanged();
+            this.item3 = new ScriptOutputEmitted();
+            this.item4 = new EnvironmentsAdded();
+            this.item5 = new EnvironmentsRemoved();
+            this.item6 = new EnvironmentPropertyChanged();
+            this.item7 = new ActiveEnvironmentChanged();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"] ? Script.fromJS(_data["item1"]) : new Script();
+            this.item2 = _data["item2"] ? ScriptPropertyChanged.fromJS(_data["item2"]) : new ScriptPropertyChanged();
+            this.item3 = _data["item3"] ? ScriptOutputEmitted.fromJS(_data["item3"]) : new ScriptOutputEmitted();
+            this.item4 = _data["item4"] ? EnvironmentsAdded.fromJS(_data["item4"]) : new EnvironmentsAdded();
+            this.item5 = _data["item5"] ? EnvironmentsRemoved.fromJS(_data["item5"]) : new EnvironmentsRemoved();
+            this.item6 = _data["item6"] ? EnvironmentPropertyChanged.fromJS(_data["item6"]) : new EnvironmentPropertyChanged();
+            this.item7 = _data["item7"] ? ActiveEnvironmentChanged.fromJS(_data["item7"]) : new ActiveEnvironmentChanged();
+        }
+    }
+
+    static fromJS(data: any): ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1 ? this.item1.toJSON() : <any>undefined;
+        data["item2"] = this.item2 ? this.item2.toJSON() : <any>undefined;
+        data["item3"] = this.item3 ? this.item3.toJSON() : <any>undefined;
+        data["item4"] = this.item4 ? this.item4.toJSON() : <any>undefined;
+        data["item5"] = this.item5 ? this.item5.toJSON() : <any>undefined;
+        data["item6"] = this.item6 ? this.item6.toJSON() : <any>undefined;
+        data["item7"] = this.item7 ? this.item7.toJSON() : <any>undefined;
+        return data; 
+    }
+
+    clone(): ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+        const json = this.toJSON();
+        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1: Script;
+    item2: ScriptPropertyChanged;
+    item3: ScriptOutputEmitted;
+    item4: EnvironmentsAdded;
+    item5: EnvironmentsRemoved;
+    item6: EnvironmentPropertyChanged;
+    item7: ActiveEnvironmentChanged;
+}
+
+export class ScriptPropertyChanged implements IScriptPropertyChanged {
+    scriptId!: string;
+    propertyName!: string;
+    newValue?: any | undefined;
+
+    constructor(data?: IScriptPropertyChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.propertyName = _data["propertyName"];
+            this.newValue = _data["newValue"];
+        }
+    }
+
+    static fromJS(data: any): ScriptPropertyChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptPropertyChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["propertyName"] = this.propertyName;
+        data["newValue"] = this.newValue;
+        return data; 
+    }
+
+    clone(): ScriptPropertyChanged {
+        const json = this.toJSON();
+        let result = new ScriptPropertyChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptPropertyChanged {
+    scriptId: string;
+    propertyName: string;
+    newValue?: any | undefined;
+}
+
+export class ScriptOutputEmitted implements IScriptOutputEmitted {
+    scriptId!: string;
+    output?: string | undefined;
+
+    constructor(data?: IScriptOutputEmitted) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.output = _data["output"];
+        }
+    }
+
+    static fromJS(data: any): ScriptOutputEmitted {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptOutputEmitted();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["output"] = this.output;
+        return data; 
+    }
+
+    clone(): ScriptOutputEmitted {
+        const json = this.toJSON();
+        let result = new ScriptOutputEmitted();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptOutputEmitted {
+    scriptId: string;
+    output?: string | undefined;
+}
+
+export class EnvironmentsAdded implements IEnvironmentsAdded {
+    environments!: ScriptEnvironment[];
+
+    constructor(data?: IEnvironmentsAdded) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.environments = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["environments"])) {
+                this.environments = [] as any;
+                for (let item of _data["environments"])
+                    this.environments!.push(ScriptEnvironment.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): EnvironmentsAdded {
+        data = typeof data === 'object' ? data : {};
+        let result = new EnvironmentsAdded();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.environments)) {
+            data["environments"] = [];
+            for (let item of this.environments)
+                data["environments"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): EnvironmentsAdded {
+        const json = this.toJSON();
+        let result = new EnvironmentsAdded();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEnvironmentsAdded {
+    environments: ScriptEnvironment[];
+}
+
+export class EnvironmentsRemoved implements IEnvironmentsRemoved {
+    environments!: ScriptEnvironment[];
+
+    constructor(data?: IEnvironmentsRemoved) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.environments = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["environments"])) {
+                this.environments = [] as any;
+                for (let item of _data["environments"])
+                    this.environments!.push(ScriptEnvironment.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): EnvironmentsRemoved {
+        data = typeof data === 'object' ? data : {};
+        let result = new EnvironmentsRemoved();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.environments)) {
+            data["environments"] = [];
+            for (let item of this.environments)
+                data["environments"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): EnvironmentsRemoved {
+        const json = this.toJSON();
+        let result = new EnvironmentsRemoved();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEnvironmentsRemoved {
+    environments: ScriptEnvironment[];
+}
+
+export class EnvironmentPropertyChanged implements IEnvironmentPropertyChanged {
+    scriptId!: string;
+    propertyName!: string;
+    newValue?: any | undefined;
+
+    constructor(data?: IEnvironmentPropertyChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.propertyName = _data["propertyName"];
+            this.newValue = _data["newValue"];
+        }
+    }
+
+    static fromJS(data: any): EnvironmentPropertyChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new EnvironmentPropertyChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["propertyName"] = this.propertyName;
+        data["newValue"] = this.newValue;
+        return data; 
+    }
+
+    clone(): EnvironmentPropertyChanged {
+        const json = this.toJSON();
+        let result = new EnvironmentPropertyChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEnvironmentPropertyChanged {
+    scriptId: string;
+    propertyName: string;
+    newValue?: any | undefined;
+}
+
+export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {
+    scriptId?: string | undefined;
+
+    constructor(data?: IActiveEnvironmentChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): ActiveEnvironmentChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActiveEnvironmentChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        return data; 
+    }
+
+    clone(): ActiveEnvironmentChanged {
+        const json = this.toJSON();
+        let result = new ActiveEnvironmentChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IActiveEnvironmentChanged {
+    scriptId?: string | undefined;
 }
 
 export class ApiException extends Error {

@@ -1,5 +1,5 @@
-import {bindable, IEventAggregator, PLATFORM, watch} from "aurelia";
-import {IScriptManager, ISession, ScriptEnvironment} from "@domain";
+import {bindable, PLATFORM, watch} from "aurelia";
+import {IEventBus, IScriptManager, ISession, ScriptEnvironment, ScriptOutputEmitted} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
@@ -17,13 +17,13 @@ export class ScriptEnvironmentView {
     constructor(
         @IScriptManager readonly scriptManager: IScriptManager,
         @ISession readonly session: ISession,
-        @IEventAggregator readonly eventBus: IEventAggregator) {
+        @IEventBus readonly eventBus: IEventBus) {
     }
 
     private attached() {
-        const token = this.eventBus.subscribe("script-results", (msg: {scriptId: string, output: string}) => {
+        const token = this.eventBus.subscribeRemote(ScriptOutputEmitted, msg => {
             if (msg.scriptId === this.environment.script.id) {
-                this.appendResults(msg?.output);
+                this.appendResults(msg.output);
             }
         });
 

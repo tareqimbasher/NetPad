@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -34,7 +35,11 @@ namespace NetPad
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddJsonOptions(config =>
+            {
+                config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
