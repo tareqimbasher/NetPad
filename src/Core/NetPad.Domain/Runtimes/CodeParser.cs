@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NetPad.Scripts;
 
 namespace NetPad.Runtimes
@@ -10,15 +12,17 @@ namespace NetPad.Runtimes
             string scriptCode = script.Code;
             string code;
 
+            var namespaces = new List<string>
+            {
+                "NetPad.Runtimes"
+            };
+
+            namespaces = namespaces.Union(script.Config.Namespaces).Distinct().ToList();
+
+            var usings = string.Join("\n", namespaces.Select(ns => $"using {ns};"));
+
             const string program = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NetPad.Runtimes;
+{1}
 
 public static class UserScript
 {{
@@ -78,7 +82,7 @@ public async Task Main()
                 throw new NotImplementedException($"Code parsing is not implemented yet for script kind: {script.Config.Kind}");
             }
 
-            code = string.Format(program, code);
+            code = string.Format(program, code, usings);
             return code
                 .Replace("Console.WriteLine", "UserScript.ConsoleWriteLine")
                 .Replace("Console.Write", "UserScript.ConsoleWrite");

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using NetPad.Scripts;
+using NetPad.Utils;
 
 namespace NetPad.Services
 {
@@ -22,7 +23,7 @@ namespace NetPad.Services
 
         public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
         {
-            var result = await Electron.Dialog.ShowMessageBoxAsync(Electron.WindowManager.BrowserWindows.First(),
+            var result = await Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
                 new MessageBoxOptions("Do you want to save?")
                 {
                     Title = "Save?",
@@ -35,7 +36,7 @@ namespace NetPad.Services
 
         public async Task<string?> AskUserForSaveLocation(Script script)
         {
-            var path = await Electron.Dialog.ShowSaveDialogAsync(Electron.WindowManager.BrowserWindows.First(), new SaveDialogOptions
+            var path = await Electron.Dialog.ShowSaveDialogAsync(ElectronUtil.MainWindow, new SaveDialogOptions
             {
                 Title = "Save Script",
                 Message = "Where do you want to save this script?",

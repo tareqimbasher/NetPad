@@ -15,6 +15,8 @@ export interface IScriptsService {
     save(id: string): Promise<void>;
     run(id: string): Promise<void>;
     updateCode(id: string, code: string): Promise<void>;
+    openConfig(id: string): Promise<void>;
+    setConfig(id: string, config: ScriptConfig): Promise<FileResponse | null>;
 }
 
 export class ScriptsService implements IScriptsService {
@@ -101,7 +103,7 @@ export class ScriptsService implements IScriptsService {
     }
 
     save(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/save/{id}";
+        let url_ = this.baseUrl + "/scripts/{id}/save";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -135,7 +137,7 @@ export class ScriptsService implements IScriptsService {
     }
 
     run(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/run/{id}";
+        let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -205,9 +207,84 @@ export class ScriptsService implements IScriptsService {
         }
         return Promise.resolve<void>(<any>null);
     }
+
+    openConfig(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/open-config";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpenConfig(_response);
+        });
+    }
+
+    protected processOpenConfig(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    setConfig(id: string, config: ScriptConfig, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/config";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(config);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetConfig(_response);
+        });
+    }
+
+    protected processSetConfig(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
 }
 
 export interface ISessionService {
+    getEnvironment(scriptId: string): Promise<ScriptEnvironment>;
     getEnvironments(): Promise<ScriptEnvironment[]>;
     open(scriptPath: string | null | undefined): Promise<void>;
     close(scriptId: string): Promise<void>;
@@ -223,6 +300,44 @@ export class SessionService implements ISessionService {
     constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getEnvironment(scriptId: string, signal?: AbortSignal | undefined): Promise<ScriptEnvironment> {
+        let url_ = this.baseUrl + "/session/environments/{scriptId}";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetEnvironment(_response);
+        });
+    }
+
+    protected processGetEnvironment(response: Response): Promise<ScriptEnvironment> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ScriptEnvironment.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ScriptEnvironment>(<any>null);
     }
 
     getEnvironments(signal?: AbortSignal | undefined): Promise<ScriptEnvironment[]> {
@@ -551,6 +666,66 @@ export interface IScriptSummary {
     path: string;
 }
 
+export class ScriptConfig implements IScriptConfig {
+    kind!: ScriptKind;
+    namespaces!: string[];
+
+    constructor(data?: IScriptConfig) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.namespaces = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.kind = _data["kind"];
+            if (Array.isArray(_data["namespaces"])) {
+                this.namespaces = [] as any;
+                for (let item of _data["namespaces"])
+                    this.namespaces!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): ScriptConfig {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptConfig();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kind"] = this.kind;
+        if (Array.isArray(this.namespaces)) {
+            data["namespaces"] = [];
+            for (let item of this.namespaces)
+                data["namespaces"].push(item);
+        }
+        return data; 
+    }
+
+    clone(): ScriptConfig {
+        const json = this.toJSON();
+        let result = new ScriptConfig();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptConfig {
+    kind: ScriptKind;
+    namespaces: string[];
+}
+
+export type ScriptKind = "Expression" | "Statements" | "Program";
+
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
     status!: ScriptStatus;
@@ -678,66 +853,6 @@ export interface IScript {
     isDirty: boolean;
     isNew: boolean;
 }
-
-export class ScriptConfig implements IScriptConfig {
-    kind!: ScriptKind;
-    namespaces!: string[];
-
-    constructor(data?: IScriptConfig) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.namespaces = [];
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.kind = _data["kind"];
-            if (Array.isArray(_data["namespaces"])) {
-                this.namespaces = [] as any;
-                for (let item of _data["namespaces"])
-                    this.namespaces!.push(item);
-            }
-        }
-    }
-
-    static fromJS(data: any): ScriptConfig {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptConfig();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["kind"] = this.kind;
-        if (Array.isArray(this.namespaces)) {
-            data["namespaces"] = [];
-            for (let item of this.namespaces)
-                data["namespaces"].push(item);
-        }
-        return data; 
-    }
-
-    clone(): ScriptConfig {
-        const json = this.toJSON();
-        let result = new ScriptConfig();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptConfig {
-    kind: ScriptKind;
-    namespaces: string[];
-}
-
-export type ScriptKind = "Expression" | "Statements" | "Program";
 
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
@@ -1158,6 +1273,13 @@ export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {
 
 export interface IActiveEnvironmentChanged {
     scriptId?: string | undefined;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {

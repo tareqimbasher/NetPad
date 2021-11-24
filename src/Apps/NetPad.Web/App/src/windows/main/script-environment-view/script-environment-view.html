@@ -10,6 +10,11 @@
                 click.trigger="scriptManager.save(environment.script.id)">
             <i class="bi bi-hdd-fill"></i>
         </button>
+        <button class="btn btn-sm btn-secondary"
+                title="Config"
+                click.trigger="scriptManager.openConfig(environment.script.id)">
+            <i class="bi bi-gear-fill"></i>
+        </button>
     </div>
     <div class="text-editor-container">
         <div class="text-editor" data-text-editor-id.bind="id"></div>

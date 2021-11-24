@@ -29,6 +29,12 @@ namespace NetPad.Controllers
             _settings = settings;
         }
 
+        [HttpGet("environments/{scriptId:guid}")]
+        public ScriptEnvironment GetEnvironment(Guid scriptId)
+        {
+            return _session.Get(scriptId) ?? throw new EnvironmentNotFoundException(scriptId);
+        }
+
         [HttpGet("environments")]
         public IEnumerable<ScriptEnvironment> GetEnvironments()
         {

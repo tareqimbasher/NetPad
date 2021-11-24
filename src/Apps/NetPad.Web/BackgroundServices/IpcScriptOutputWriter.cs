@@ -6,6 +6,7 @@ using NetPad.Common;
 using NetPad.Events;
 using NetPad.Runtimes;
 using NetPad.Scripts;
+using NetPad.Utils;
 
 namespace NetPad.BackgroundServices
 {
@@ -26,7 +27,7 @@ namespace NetPad.BackgroundServices
                 Output = output?.ToString()
             };
 
-            Electron.IpcMain.Send(Electron.WindowManager.BrowserWindows.First(),
+            Electron.IpcMain.Send(ElectronUtil.MainWindow,
                 nameof(ScriptOutputEmitted),
                 JsonSerializer.Serialize(new ScriptOutputEmitted(Environment.Script.Id, output?.ToString()), options: JsonSerializerConfig.DefaultJsonSerializerOptions));
 

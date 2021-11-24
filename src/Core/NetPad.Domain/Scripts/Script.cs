@@ -21,7 +21,7 @@ namespace NetPad.Scripts
         {
             Id = id;
             _name = name;
-            Config = new ScriptConfig(ScriptKind.Statements, new List<string>());
+            Config = new ScriptConfig(ScriptKind.Statements, ScriptConfigDefaults.DefaultNamespaces);
             Code = string.Empty;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
@@ -45,13 +45,13 @@ namespace NetPad.Scripts
         public ScriptConfig Config { get; private set; }
         public string Code { get; private set; }
 
-        public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
-
         public bool IsDirty
         {
             get => _isDirty || IsNew;
             set => this.RaiseAndSetIfChanged(ref _isDirty, value);
         }
+
+        public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
 
         public bool IsNew => Path == null;
 

@@ -8,6 +8,7 @@ using ElectronNET.API;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Sessions;
+using NetPad.Utils;
 
 namespace NetPad.BackgroundServices
 {
@@ -27,7 +28,7 @@ namespace NetPad.BackgroundServices
                 if (args.PropertyName == nameof(ISession.Active))
                 {
                     Electron.IpcMain.Send(
-                        Electron.WindowManager.BrowserWindows.FirstOrDefault(),
+                        ElectronUtil.MainWindow,
                         nameof(ActiveEnvironmentChanged),
                         Serialize(new ActiveEnvironmentChanged(_session.Active?.Script.Id))
                     );
@@ -48,7 +49,7 @@ namespace NetPad.BackgroundServices
                             : new EnvironmentsRemoved(changes.OldItems!.Cast<ScriptEnvironment>().ToArray());
 
                         Electron.IpcMain.Send(
-                            Electron.WindowManager.BrowserWindows.FirstOrDefault(),
+                            ElectronUtil.MainWindow,
                             message.GetType().Name,
                             Serialize(message)
                         );

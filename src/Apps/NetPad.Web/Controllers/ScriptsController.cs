@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ElectronNET.API;
+using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Common;
 using NetPad.Exceptions;
@@ -11,6 +12,7 @@ using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Services;
 using NetPad.Sessions;
+using NetPad.Utils;
 
 namespace NetPad.Controllers
 {
@@ -45,7 +47,7 @@ namespace NetPad.Controllers
             await _session.OpenAsync(script);
         }
 
-        [HttpPatch("save/{id:guid}")]
+        [HttpPatch("{id:guid}/save")]
         public async Task Save(Guid id)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
@@ -54,7 +56,7 @@ namespace NetPad.Controllers
             await SaveAsync(script, _scriptRepository, _uiScriptService, _settings);
         }
 
-        [HttpPatch("run/{id:guid}")]
+        [HttpPatch("{id:guid}/run")]
         public async Task Run(Guid id, [FromServices] IScriptRuntime scriptRuntime)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
@@ -69,6 +71,39 @@ namespace NetPad.Controllers
 
             script.UpdateCode(code);
         }
+
+        [HttpPatch("{id:guid}/open-config")]
+        public async Task OpenConfig(Guid id)
+        {
+            var scriptEnvironment = GetScriptEnvironment(id);
+            var script = scriptEnvironment.Script;
+
+            var display = await Electron.Screen.GetPrimaryDisplayAsync();
+
+            var window = await ElectronUtil.CreateWindowAsync("script-config", new BrowserWindowOptions()
+            {
+                Title = script.Name,
+                Height = display.Bounds.Height * 2 / 4,
+                Width = display.Bounds.Width * 2 / 4,
+                MinHeight = 200,
+                MinWidth = 200,
+                Center = true,
+                AutoHideMenuBar = true,
+            }, ("script-id", script.Id));
+
+            window.SetParentWindow(ElectronUtil.MainWindow);
+        }
+
+        [HttpPut("{id:guid}/config")]
+        public IActionResult SetConfig(Guid id, [FromBody] ScriptConfig config)
+        {
+            var script = GetScriptEnvironment(id).Script;
+            script.Config.SetKind(config.Kind);
+            script.Config.SetNamespaces(config.Namespaces);
+
+            return NoContent();
+        }
+
 
         public static async Task<bool> SaveAsync(Script script, IScriptRepository scriptRepository, IUiScriptService uiScriptService, Settings settings)
         {

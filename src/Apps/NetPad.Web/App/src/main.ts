@@ -4,11 +4,12 @@ import Aurelia, {Registration} from 'aurelia';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 
-const startup = new URLSearchParams(window.location.search);
-const win = startup.get("win");
+const startupOptions = new URLSearchParams(window.location.search);
+const win = startupOptions.get("win");
 
 const app = Aurelia.register(
-    Registration.instance(String, "http://localhost:8001"),
+    Registration.instance(URLSearchParams, startupOptions),
+    Registration.instance(String, window.location.origin),
 );
 
 if (win === "main") {
@@ -17,6 +18,9 @@ if (win === "main") {
 } else if (win === "settings") {
     const settingsWindow = require("./windows/settings/main");
     settingsWindow.register(app);
+} else if (win === "script-config") {
+    const scriptConfigWindow = require("./windows/script-config/main");
+    scriptConfigWindow.register(app);
 }
 
 app.start();

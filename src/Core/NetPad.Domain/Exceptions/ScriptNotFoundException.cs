@@ -4,7 +4,7 @@ namespace NetPad.Exceptions
 {
     public class ScriptNotFoundException : Exception
     {
-        public ScriptNotFoundException(Guid id) : base($"No script found with id: {id}")
+        public ScriptNotFoundException(Guid scriptId) : base($"No script found with id: {scriptId}")
         {
         }
 
@@ -15,7 +15,7 @@ namespace NetPad.Exceptions
 
     public class EnvironmentNotFoundException : Exception
     {
-        public EnvironmentNotFoundException(Guid id) : base($"No environment found for script id: {id}")
+        public EnvironmentNotFoundException(Guid scriptId) : base($"No environment found for script id: {scriptId}")
         {
         }
     }

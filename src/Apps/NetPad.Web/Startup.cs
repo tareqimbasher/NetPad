@@ -17,6 +17,7 @@ using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Services;
 using NetPad.Sessions;
+using NetPad.Utils;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag.CodeGeneration.TypeScript;
 
@@ -28,6 +29,7 @@ namespace NetPad
         {
             Configuration = configuration;
             WebHostEnvironment = webHostEnvironment;
+            ElectronUtil.Initialize("http://localhost:8001");
         }
 
         public IConfiguration Configuration { get; }
@@ -45,42 +47,7 @@ namespace NetPad
 
             if (WebHostEnvironment.IsDevelopment())
             {
-                services.AddSwaggerDocument(config =>
-                {
-                    config.Title = "NetPad";
-                    config.PostProcess = document =>
-                    {
-                        var settings = new TypeScriptClientGeneratorSettings
-                        {
-                            ClassName = "{controller}Service",
-                            Template = TypeScriptTemplate.Aurelia,
-                            GenerateClientInterfaces = true,
-                            QueryNullValue = null,
-                            UseAbortSignal = true,
-                            TypeScriptGeneratorSettings =
-                            {
-                                EnumStyle = TypeScriptEnumStyle.StringLiteral,
-                                GenerateCloneMethod = true,
-                                TypeScriptVersion = 4.4m
-                            }
-                        };
-
-                        var generator = new TypeScriptClientGenerator(document, settings);
-
-                        var lines = generator.GenerateFile()
-                            .Replace("private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };", "private http: IHttpClient;")
-                            .Replace("http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }", "@IHttpClient http?: IHttpClient")
-                            .Split(Environment.NewLine)
-                            .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
-                            .ToList();
-
-                        lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
-
-                        File.WriteAllText(
-                            Path.Combine(WebHostEnvironment.ContentRootPath, "App", "src", "core", "@domain", "api.ts"),
-                            string.Join(Environment.NewLine, lines));
-                    };
-                });
+                AddSwagger(services);
             }
 
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
@@ -149,14 +116,14 @@ namespace NetPad
                 {
                     var display = await Electron.Screen.GetPrimaryDisplayAsync();
 
-                    await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions()
+                    await ElectronUtil.CreateWindowAsync("main", new BrowserWindowOptions
                     {
                         Height = display.Bounds.Height * 2 / 3,
                         Width = display.Bounds.Width * 2 / 3,
                         MinHeight = 200,
                         MinWidth = 200,
                         Center = true
-                    }, "http://localhost:8001?win=main");
+                    });
                 });
 
                 // var options = new BrowserWindowOptions()
@@ -170,6 +137,46 @@ namespace NetPad
                 //     browserWindow.OnShow += () => browserWindow.Show();
                 // });
             }
+        }
+
+        private void AddSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerDocument(config =>
+            {
+                config.Title = "NetPad";
+                config.PostProcess = document =>
+                {
+                    var settings = new TypeScriptClientGeneratorSettings
+                    {
+                        ClassName = "{controller}Service",
+                        Template = TypeScriptTemplate.Aurelia,
+                        GenerateClientInterfaces = true,
+                        QueryNullValue = null,
+                        UseAbortSignal = true,
+                        TypeScriptGeneratorSettings =
+                        {
+                            EnumStyle = TypeScriptEnumStyle.StringLiteral,
+                            GenerateCloneMethod = true,
+                            TypeScriptVersion = 4.4m
+                        }
+                    };
+
+                    var generator = new TypeScriptClientGenerator(document, settings);
+
+                    var lines = generator.GenerateFile()
+                        .Replace("private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };", "private http: IHttpClient;")
+                        .Replace("http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }", "@IHttpClient http?: IHttpClient")
+                        .Split(Environment.NewLine)
+                        .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
+                        .ToList();
+
+                    lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
+
+                    File.WriteAllText(
+                        Path.Combine(WebHostEnvironment.ContentRootPath, "App", "src", "core", "@domain", "api.ts"),
+                        string.Join(Environment.NewLine, lines));
+                };
+            });
         }
     }
 }
