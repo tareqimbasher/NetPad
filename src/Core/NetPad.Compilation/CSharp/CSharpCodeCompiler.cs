@@ -5,10 +5,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using NetPad.Exceptions;
+using NetPad.Runtimes;
 
-namespace NetPad.Runtimes.Compilation
+namespace NetPad.Compilation.CSharp
 {
-    public class CodeCompiler
+    public class CSharpCodeCompiler : ICodeCompiler
     {
         public byte[] Compile(CompilationInput input)
         {
@@ -26,7 +27,7 @@ namespace NetPad.Runtimes.Compilation
             return stream.ToArray();
         }
 
-        public CSharpCompilation CreateCompilation(CompilationInput input)
+        private CSharpCompilation CreateCompilation(CompilationInput input)
         {
             // Parse code
             var sourceCode = SourceText.From(input.Code);

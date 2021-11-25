@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetPad.Compilation.CSharp;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
@@ -98,7 +99,7 @@ void Main() {{
 
         private IScriptRuntime GetScriptRuntime()
         {
-            return new ScriptRuntime(new MainAppDomainAssemblyLoader());
+            return new ScriptRuntime(new MainAppDomainAssemblyLoader(), new CSharpCodeParser(), new CSharpCodeCompiler());
         }
     }
 }

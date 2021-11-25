@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using NetPad.Scripts;
 
-namespace NetPad.Runtimes
+namespace NetPad.Compilation.CSharp
 {
-    public class CodeParser
+    public class CSharpCodeParser : ICodeParser
     {
-        public static string GetScriptCode(Script script)
+        public string GetCode(Script script)
         {
             string scriptCode = script.Code;
             string code;

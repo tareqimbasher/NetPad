@@ -2,7 +2,7 @@ using NetPad.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Runtimes.Compilation
+namespace NetPad.Compilation.CSharp
 {
     public class CodeCompilerTests
     {
@@ -19,20 +19,20 @@ namespace NetPad.Runtimes.Compilation
             var code = Wrap("");
 
             var assemblyBytes = Compile(new CompilationInput(code));
-            
+
             Assert.NotEmpty(assemblyBytes);
         }
-        
+
         [Fact]
         public void Can_Compile_SimpleProgram()
         {
             var code = Wrap("Console.WriteLine(\"Hello World\");");
 
             var assemblyBytes = Compile(new CompilationInput(code));
-            
+
             Assert.NotEmpty(assemblyBytes);
         }
-        
+
         [Theory]
         [InlineData("Console.Write(\"Hello World\";")]
         [InlineData("Console.Write(\"Hello World\")")]
@@ -42,7 +42,7 @@ namespace NetPad.Runtimes.Compilation
         [InlineData("foobar")]
         public void Fails_On_Syntax_Error(string code)
         {
-            var compiler = new CodeCompiler();
+            var compiler = new CSharpCodeCompiler();
 
             code = Wrap(code);
 
@@ -58,34 +58,34 @@ namespace NetPad.Runtimes.Compilation
             code = $"{@namespace};\n" + code;
 
             var assemblyBytes = Compile(new CompilationInput(code));
-            
+
             Assert.NotEmpty(assemblyBytes);
         }
-        
+
         [Fact]
         public void Can_Compile_CSharp8_Features()
         {
             var code = Wrap("using var stream = new MemoryStream();");
 
             var assemblyBytes = Compile(new CompilationInput(code));
-            
+
             Assert.NotEmpty(assemblyBytes);
         }
-        
+
         [Fact]
         public void Can_Compile_CSharp9_Features()
         {
             var code = Wrap("DateTime datetime = new();");
 
             var assemblyBytes = Compile(new CompilationInput(code));
-            
+
             Assert.NotEmpty(assemblyBytes);
         }
-        
+
         [Fact]
         public void Can_Not_Compile_CSharp10_Features()
         {
-            var compiler = new CodeCompiler();
+            var compiler = new CSharpCodeCompiler();
 
             var code = Wrap("var point = (1, 2); int x = 0; (x, int y) = point;");
 
@@ -96,7 +96,7 @@ namespace NetPad.Runtimes.Compilation
         {
             try
             {
-                var compiler = new CodeCompiler();
+                var compiler = new CSharpCodeCompiler();
                 return compiler.Compile(input);
             }
             catch (CodeCompilationException ex)
@@ -106,7 +106,7 @@ namespace NetPad.Runtimes.Compilation
             }
         }
 
-        
+
         private string Wrap(string code)
         {
             return $@"

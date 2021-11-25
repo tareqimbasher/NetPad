@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.BackgroundServices;
+using NetPad.Compilation;
+using NetPad.Compilation.CSharp;
 using NetPad.Middlewares;
 using NetPad.Scripts;
 using NetPad.Runtimes;
@@ -51,11 +53,14 @@ namespace NetPad
             }
 
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
-            services.AddSingleton<ISession, NetPad.Sessions.Session>();
+            services.AddSingleton<ISession, Sessions.Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
+            services.AddTransient<IUiScriptService, UiScriptService>();
+
+            services.AddTransient<ICodeParser, CSharpCodeParser>();
+            services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
-            services.AddTransient<IUiScriptService, UiScriptService>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();

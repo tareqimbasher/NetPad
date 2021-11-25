@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using NetPad.Compilation.CSharp;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
 using Xunit;
@@ -47,7 +48,7 @@ namespace NetPad.Runtimes
 
         private IScriptRuntime GetScriptRuntime()
         {
-            return new ScriptRuntime(new MainAppDomainAssemblyLoader());
+            return new ScriptRuntime(new MainAppDomainAssemblyLoader(), new CSharpCodeParser(), new CSharpCodeCompiler());
         }
     }
 }

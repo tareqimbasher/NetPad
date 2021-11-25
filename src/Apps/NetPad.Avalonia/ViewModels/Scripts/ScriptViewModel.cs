@@ -5,7 +5,6 @@ using DynamicData.Binding;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes;
-using NetPad.Runtimes.Compilation;
 using ReactiveUI;
 
 namespace NetPad.ViewModels.Scripts

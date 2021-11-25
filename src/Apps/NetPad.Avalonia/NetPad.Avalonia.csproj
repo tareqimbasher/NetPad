@@ -25,6 +25,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Runtimes\NetPad.Runtimes.csproj" />
         <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
         <ProjectReference Include="..\..\Infrastructure\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>

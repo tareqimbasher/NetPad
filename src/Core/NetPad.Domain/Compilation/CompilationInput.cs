@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NetPad.Runtimes.Compilation
+namespace NetPad.Compilation
 {
     public class CompilationInput
     {

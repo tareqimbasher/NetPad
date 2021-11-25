@@ -2,21 +2,25 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using NetPad.Compilation;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
-using NetPad.Runtimes.Compilation;
 
 namespace NetPad.Runtimes
 {
     public sealed class ScriptRuntime : IScriptRuntime
     {
         private readonly IAssemblyLoader _assemblyLoader;
+        private readonly ICodeParser _codeParser;
+        private readonly ICodeCompiler _codeCompiler;
         private Script? _script;
 
-        public ScriptRuntime(IAssemblyLoader assemblyLoader)
+        public ScriptRuntime(IAssemblyLoader assemblyLoader, ICodeParser codeParser, ICodeCompiler codeCompiler)
         {
             _assemblyLoader = assemblyLoader;
+            _codeParser = codeParser;
+            _codeCompiler = codeCompiler;
         }
 
         public Task InitializeAsync(Script script)
@@ -29,12 +33,11 @@ namespace NetPad.Runtimes
         {
             EnsureInitialization();
 
-            string code = CodeParser.GetScriptCode(_script!);
+            string code = _codeParser.GetCode(_script!);
 
             try
             {
-                var compiler = new CodeCompiler();
-                var assemblyBytes = compiler.Compile(new CompilationInput(code));
+                var assemblyBytes = _codeCompiler.Compile(new CompilationInput(code));
 
                 var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
 

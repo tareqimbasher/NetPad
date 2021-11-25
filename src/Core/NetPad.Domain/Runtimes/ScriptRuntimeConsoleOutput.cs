@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NetPad.Runtimes
 {
-    [Obsolete("Not using method of redirecting Console output.")]
+    [Obsolete("Not using method of redirecting Console output anymore.")]
     public class ScriptRuntimeConsoleOutput : TextWriter
     {
         private readonly IScriptRuntimeOutputWriter _outputWriter;
