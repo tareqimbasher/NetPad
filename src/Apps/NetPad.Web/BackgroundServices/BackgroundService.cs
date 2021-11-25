@@ -12,7 +12,7 @@ namespace NetPad.BackgroundServices
 
         protected string? Serialize<T>(T obj)
         {
-            return JsonSerializer.Serialize(obj, JsonSerializerConfig.DefaultJsonSerializerOptions);
+            return JsonSerializer.Serialize(obj, JsonSerialization.DefaultOptions);
         }
     }
 }

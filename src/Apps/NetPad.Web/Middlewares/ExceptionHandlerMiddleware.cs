@@ -3,8 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using NetPad.Utilities;
+using NetPad.Common;
 
 namespace NetPad.Middlewares
 {
@@ -33,7 +32,7 @@ namespace NetPad.Middlewares
                     JsonSerializer.Serialize(new
                     {
                         Error = ex.ToString()
-                    }, JsonSerialization.DefaultJsonSerializerOptions));
+                    }, JsonSerialization.DefaultOptions));
             }
         }
     }

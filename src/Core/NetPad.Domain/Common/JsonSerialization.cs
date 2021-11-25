@@ -3,11 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace NetPad.Common
 {
-    public static class JsonSerializerConfig
+    public static class JsonSerialization
     {
-        static JsonSerializerConfig()
+        static JsonSerialization()
         {
-            DefaultJsonSerializerOptions = new JsonSerializerOptions
+            DefaultOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 Converters =
@@ -17,6 +17,6 @@ namespace NetPad.Common
             };
         }
 
-        public static JsonSerializerOptions DefaultJsonSerializerOptions { get; }
+        public static JsonSerializerOptions DefaultOptions { get; }
     }
 }

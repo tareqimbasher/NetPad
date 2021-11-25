@@ -29,7 +29,7 @@ namespace NetPad.BackgroundServices
 
             Electron.IpcMain.Send(ElectronUtil.MainWindow,
                 nameof(ScriptOutputEmitted),
-                JsonSerializer.Serialize(new ScriptOutputEmitted(Environment.Script.Id, output?.ToString()), options: JsonSerializerConfig.DefaultJsonSerializerOptions));
+                JsonSerializer.Serialize(new ScriptOutputEmitted(Environment.Script.Id, output?.ToString()), options: JsonSerialization.DefaultOptions));
 
             return Task.CompletedTask;
         }
