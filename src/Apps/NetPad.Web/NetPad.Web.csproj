@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App\dist\**" />
