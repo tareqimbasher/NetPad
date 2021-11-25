@@ -5,8 +5,6 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>NetPad.Runtimes</RootNamespace>
-
         <Nullable>enable</Nullable>
     </PropertyGroup>
 

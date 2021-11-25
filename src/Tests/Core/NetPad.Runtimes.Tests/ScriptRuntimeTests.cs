@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.Compilation.CSharp;
-using NetPad.Exceptions;
-using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
+using NetPad.Scripts;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Runtimes
+namespace NetPad.Runtimes.Tests
 {
     public class ScriptRuntimeTests
     {
@@ -21,16 +20,16 @@ namespace NetPad.Runtimes
 
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]
         {
-            new[] {"\"Hello World\"", "Hello World"},
-            new[] {"4 + 7", "11"},
-            new[] {"4.7 * 2", "9.4"},
-            new[] {"DateTime.Today", DateTime.Today.ToString()},
+            new[] { "\"Hello World\"", "Hello World" },
+            new[] { "4 + 7", "11" },
+            new[] { "4.7 * 2", "9.4" },
+            new[] { "DateTime.Today", DateTime.Today.ToString() },
         };
 
         [Fact]
         public async Task Can_Not_Run_Expression_Kind_Script()
         {
-            var script = new Script("Console Output Test");
+            var script = GetScript();
             script.Config.SetKind(ScriptKind.Expression);
             script.UpdateCode($@"Console.Write(5)");
 
@@ -40,8 +39,8 @@ namespace NetPad.Runtimes
             await Assert.ThrowsAsync<NotImplementedException>(async () =>
             {
                 await runtime.RunAsync(
-                    null,
-                    new TestScriptRuntimeOutputWriter(output => { }));
+                    ActionRuntimeInputReader.Default,
+                    ActionRuntimeOutputWriter.Default);
             });
         }
 
@@ -49,7 +48,7 @@ namespace NetPad.Runtimes
         [MemberData(nameof(ConsoleOutputTestData))]
         public async Task Can_Run_Statements_Kind_Script(string code, string expectedOutput)
         {
-            var script = new Script("Console Output Test");
+            var script = GetScript();
             script.Config.SetKind(ScriptKind.Statements);
             script.UpdateCode($"Console.Write({code});");
 
@@ -59,8 +58,8 @@ namespace NetPad.Runtimes
             string? result = null;
 
             await runtime.RunAsync(
-                null,
-                new TestScriptRuntimeOutputWriter(output => result = output?.ToString()));
+                ActionRuntimeInputReader.Default,
+                new ActionRuntimeOutputWriter(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
         }
@@ -69,10 +68,10 @@ namespace NetPad.Runtimes
         [MemberData(nameof(ConsoleOutputTestData))]
         public async Task Can_Run_Program_Kind_Script(string code, string expectedOutput)
         {
-            var script = new Script("Console Output Test");
+            var script = GetScript();
             script.Config.SetKind(ScriptKind.Program);
             script.UpdateCode($@"
-void Main() {{
+public async System.Threading.Tasks.Task Main() {{
     Console.Write({code});
 }}
 ");
@@ -82,19 +81,22 @@ void Main() {{
 
             string? result = null;
 
-            try
-            {
-                await runtime.RunAsync(
-                    null,
-                    new TestScriptRuntimeOutputWriter(output => result = output?.ToString()));
-            }
-            catch (CodeCompilationException ex)
-            {
-                _testOutputHelper.WriteLine(ex.ErrorsAsString());
-                throw;
-            }
+            await runtime.RunAsync(
+                ActionRuntimeInputReader.Default,
+                new ActionRuntimeOutputWriter(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
+        }
+
+        private Script GetScript()
+        {
+            var script = new Script("Test");
+            script.Config.SetNamespaces(new[]
+            {
+                "System"
+            });
+
+            return script;
         }
 
         private IScriptRuntime GetScriptRuntime()
