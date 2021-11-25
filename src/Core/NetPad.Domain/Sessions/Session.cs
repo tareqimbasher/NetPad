@@ -56,7 +56,6 @@ namespace NetPad.Sessions
             if (environment != null)
             {
                 _environments.Remove(environment);
-                await environment.CloseAsync();
                 environment.Dispose();
 
                 if (Active == environment)

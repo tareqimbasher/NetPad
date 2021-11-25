@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -56,7 +55,7 @@ namespace NetPad.Scripts
         public bool IsNew => Path == null;
 
 
-        public async Task LoadAsync(string contents)
+        public Task LoadAsync(string contents)
         {
             var parts = contents.Split("#Code");
             if (parts.Length != 2)
@@ -70,6 +69,8 @@ namespace NetPad.Scripts
             Config = JsonSerializer.Deserialize<ScriptConfig>(
                 string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(this);
             Code = part2.TrimStart();
+
+            return Task.CompletedTask;
         }
 
         public void SetPath(string path)

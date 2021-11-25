@@ -4,23 +4,26 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Common;
-using NetPad.Exceptions;
 using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    public class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
+    public sealed class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
     {
         private readonly IServiceScope _scope;
         private ScriptStatus _status;
         private int _runDurationMilliseconds;
-        private IScriptRuntimeInputReader? _inputReader;
-        private IScriptRuntimeOutputWriter? _outputWriter;
+        private IScriptRuntime? _runtime;
+        private IScriptRuntimeInputReader _inputReader;
+        private IScriptRuntimeOutputWriter _outputWriter;
 
         public ScriptEnvironment(Script script, IServiceScope scope)
         {
             _scope = scope;
             Script = script;
+            _inputReader = ActionRuntimeInputReader.Default;
+            _outputWriter = ActionRuntimeOutputWriter.Default;
+
             Status = ScriptStatus.Ready;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
@@ -41,24 +44,21 @@ namespace NetPad.Scripts
 
         [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
 
-        public virtual async Task RunAsync()
+        public async Task RunAsync()
         {
             Status = ScriptStatus.Running;
 
-            if (_outputWriter == null)
-                _outputWriter = new ActionRuntimeOutputWriter(o =>
-                {
-                    /* Do nothing */
-                });
-
             try
             {
-                var runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
-                await runtime.InitializeAsync(Script);
+                if (_runtime == null)
+                {
+                    _runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
+                    await _runtime.InitializeAsync(Script);
+                }
 
                 var start = DateTime.Now;
 
-                var ranWithoutErrors = await runtime.RunAsync(_inputReader, _outputWriter);
+                var ranWithoutErrors = await _runtime.RunAsync(_inputReader, _outputWriter);
 
                 RunDurationMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
                 Status = ranWithoutErrors ? ScriptStatus.Ready : ScriptStatus.Error;
@@ -70,34 +70,22 @@ namespace NetPad.Scripts
             }
         }
 
-        public virtual async Task StopAsync()
+        public Task StopAsync()
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public virtual async Task CloseAsync()
+        public void SetIO(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
         {
-        }
-
-        public void SetIO(IScriptRuntimeInputReader? inputReader = null, IScriptRuntimeOutputWriter? outputWriter = null)
-        {
-            _inputReader = inputReader;
-            _outputWriter = outputWriter;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _scope.Dispose();
-                this.RemoveAllPropertyChangedHandlers();
-            }
+            _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
+            _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            StopAsync();
+            _scope.Dispose();
+            this.RemoveAllPropertyChangedHandlers();
         }
     }
 }

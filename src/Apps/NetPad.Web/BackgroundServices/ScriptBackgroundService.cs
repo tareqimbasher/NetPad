@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ElectronNET.API;
 using NetPad.Common;
 using NetPad.Events;
+using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
 
@@ -61,7 +62,7 @@ namespace NetPad.BackgroundServices
                             return Task.CompletedTask;
                         });
 
-                        environment.SetIO(null, new IpcScriptOutputWriter(environment));
+                        environment.SetIO(ActionRuntimeInputReader.Default, new IpcScriptOutputWriter(environment));
                     }
                 }
                 else if (changes.Action == NotifyCollectionChangedAction.Remove)

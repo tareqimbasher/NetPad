@@ -7,6 +7,6 @@ namespace NetPad.Runtimes
     /// </summary>
     public interface IScriptRuntimeInputReader
     {
-        Task<string> ReadAsync();
+        Task<string?> ReadAsync();
     }
 }
