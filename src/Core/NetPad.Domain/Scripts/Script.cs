@@ -20,7 +20,7 @@ namespace NetPad.Scripts
         {
             Id = id;
             _name = name;
-            Config = new ScriptConfig(ScriptKind.Statements, ScriptConfigDefaults.DefaultNamespaces);
+            Config = new ScriptConfig(ScriptKind.Statements);
             Code = string.Empty;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }

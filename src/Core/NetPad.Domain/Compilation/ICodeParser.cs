@@ -4,6 +4,6 @@ namespace NetPad.Compilation
 {
     public interface ICodeParser
     {
-        string GetCode(Script script);
+        CodeParsingResult Parse(Script script, params string[] additionalNamespaces);
     }
 }

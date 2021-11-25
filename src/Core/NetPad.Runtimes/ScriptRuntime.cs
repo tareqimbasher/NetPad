@@ -33,11 +33,11 @@ namespace NetPad.Runtimes
         {
             EnsureInitialization();
 
-            string code = _codeParser.GetCode(_script!);
+            var result = _codeParser.Parse(_script!, "NetPad.Runtimes");
 
             try
             {
-                var assemblyBytes = _codeCompiler.Compile(new CompilationInput(code));
+                var assemblyBytes = _codeCompiler.Compile(new CompilationInput(result.Program));
 
                 var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
 

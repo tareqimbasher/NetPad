@@ -34,6 +34,7 @@ namespace NetPad.Scripts
         public Task<Script> CreateAsync(string name)
         {
             var script = new Script(Guid.NewGuid(), name);
+            script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
             return Task.FromResult(script);
         }
 

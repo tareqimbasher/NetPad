@@ -1,3 +1,4 @@
+using System.Linq;
 using NetPad.Exceptions;
 using Xunit;
 using Xunit.Abstractions;
@@ -40,6 +41,7 @@ namespace NetPad.Compilation.CSharp
         [InlineData("Console.WriteE(\"Hello World\")")]
         [InlineData("Console.write(\"Hello World\");")]
         [InlineData("foobar")]
+        [InlineData("var date = DateTime.Utcnow;")]
         public void Fails_On_Syntax_Error(string code)
         {
             var compiler = new CSharpCodeCompiler();
@@ -65,7 +67,7 @@ namespace NetPad.Compilation.CSharp
         [Fact]
         public void Can_Compile_CSharp8_Features()
         {
-            var code = Wrap("using var stream = new MemoryStream();");
+            var code = Wrap("using var stream = new MemoryStream();", "System.IO");
 
             var assemblyBytes = Compile(new CompilationInput(code));
 
@@ -107,11 +109,15 @@ namespace NetPad.Compilation.CSharp
         }
 
 
-        private string Wrap(string code)
+        private string Wrap(string code, params string[] additionalNamespaces)
         {
+            var namespaces = new[] { "System" }.Union(additionalNamespaces)
+                .Select(ns => $"using {ns};");
+
+            var usings = string.Join("\n", namespaces);
+
             return $@"
-using System;
-using System.IO;
+{usings}
 public class Program
 {{
     public void Main()

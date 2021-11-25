@@ -7,22 +7,71 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
-        public string GetCode(Script script)
+        public CodeParsingResult Parse(Script script, params string[] additionalNamespaces)
         {
-            string scriptCode = script.Code;
-            string code;
-
-            var namespaces = new List<string>
-            {
-                "NetPad.Runtimes"
-            };
-
-            namespaces = namespaces.Union(script.Config.Namespaces).Distinct().ToList();
-
+            var namespaces = GetNamespaces(script, additionalNamespaces);
             var usings = string.Join("\n", namespaces.Select(ns => $"using {ns};"));
 
-            const string program = @"
-{1}
+            var userCode = GetUserCode(script);
+            var userProgramTemplate = GetUserProgramTemplate();
+            var userProgram = string.Format(userProgramTemplate, userCode)
+                // TODO implementation should be improved to use syntax tree instead of a simple string replace
+                .Replace("Console.WriteLine", "UserScript.ConsoleWriteLine")
+                .Replace("Console.Write", "UserScript.ConsoleWrite");
+
+            var baseProgramTemplate = GetBaseProgramTemplate();
+            var program = string.Format(baseProgramTemplate, usings, userProgram);
+
+            return new CodeParsingResult(program)
+            {
+                Namespaces = namespaces.ToList(),
+                UserProgram = userProgram
+            };
+        }
+
+        public IEnumerable<string> GetNamespaces(Script script, params string[] additionalNamespaces)
+        {
+            additionalNamespaces ??= Array.Empty<string>();
+
+            return script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns))
+                .Union(additionalNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
+                .Distinct();
+        }
+
+        public string GetUserCode(Script script)
+        {
+            string userCode;
+            string scriptCode = script.Code;
+
+            if (script.Config.Kind == ScriptKind.Expression)
+            {
+                throw new NotImplementedException("Expression code parsing is not implemented yet.");
+            }
+            else if (script.Config.Kind == ScriptKind.Statements)
+            {
+                userCode = $@"
+public async Task Main()
+{{
+    {scriptCode}
+}}
+";
+            }
+            else if (script.Config.Kind == ScriptKind.Program)
+            {
+                userCode = scriptCode;
+            }
+            else
+            {
+                throw new Exception($"Unrecognized script kind: {script.Config.Kind}");
+            }
+
+            return userCode;
+        }
+
+        public string GetBaseProgramTemplate()
+        {
+            return @"
+{0}
 
 public static class UserScript
 {{
@@ -54,38 +103,18 @@ public static class UserScript
     }}
 }}
 
+{1}
+";
+        }
+
+        public string GetUserProgramTemplate()
+        {
+            return @"
 public class UserScript_Program
 {{
     {0}
 }}
 ";
-
-            if (script.Config.Kind == ScriptKind.Expression)
-            {
-                throw new NotImplementedException("Expression code parsing is not implemented yet.");
-            }
-            else if (script.Config.Kind == ScriptKind.Statements)
-            {
-                code = $@"
-public async Task Main()
-{{
-    {scriptCode}
-}}
-";
-            }
-            else if (script.Config.Kind == ScriptKind.Program)
-            {
-                code = scriptCode;
-            }
-            else
-            {
-                throw new NotImplementedException($"Code parsing is not implemented yet for script kind: {script.Config.Kind}");
-            }
-
-            code = string.Format(program, code, usings);
-            return code
-                .Replace("Console.WriteLine", "UserScript.ConsoleWriteLine")
-                .Replace("Console.Write", "UserScript.ConsoleWrite");
         }
     }
 }
