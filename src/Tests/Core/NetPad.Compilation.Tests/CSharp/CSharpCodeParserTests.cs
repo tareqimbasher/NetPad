@@ -1,10 +1,11 @@
 using System;
 using System.Linq;
+using NetPad.Compilation.CSharp;
 using NetPad.Scripts;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Compilation.CSharp
+namespace NetPad.Compilation.Tests.CSharp
 {
     public class CSharpCodeParserTests
     {
@@ -16,14 +17,14 @@ namespace NetPad.Compilation.CSharp
         }
 
         [Fact]
-        public void GetNamespaces_Does_Not_Add_Its_Own_Namespaces()
+        public void GetNamespaces_Adds_Namespaces_Needed_By_BaseProgram()
         {
             var script = GetScript();
             var parser = new CSharpCodeParser();
 
             var namespaces = parser.GetNamespaces(script);
 
-            Assert.Empty(namespaces);
+            Assert.Equal(namespaces, CSharpCodeParser.NamespacesNeededByBaseProgram);
         }
 
         [Fact]
@@ -38,7 +39,8 @@ namespace NetPad.Compilation.CSharp
             script.Config.SetNamespaces(scriptNamespaces);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script);
+            var namespaces = parser.GetNamespaces(script)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Equal(scriptNamespaces, namespaces);
         }
@@ -54,7 +56,8 @@ namespace NetPad.Compilation.CSharp
             var script = GetScript();
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces);
+            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Equal(additionalNamespaces, namespaces);
         }
@@ -77,7 +80,8 @@ namespace NetPad.Compilation.CSharp
             script.Config.SetNamespaces(scriptNamespaces);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces);
+            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Equal(scriptNamespaces.Union(additionalNamespaces), namespaces);
         }
@@ -93,7 +97,8 @@ namespace NetPad.Compilation.CSharp
             var script = GetScript();
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces);
+            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Equal(new[] { "AdditionalNamespace1" }, namespaces);
         }
@@ -105,7 +110,8 @@ namespace NetPad.Compilation.CSharp
             var script = GetScript();
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces!);
+            var namespaces = parser.GetNamespaces(script, additionalNamespaces!)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Empty(namespaces);
         }
@@ -128,7 +134,8 @@ namespace NetPad.Compilation.CSharp
             script.Config.SetNamespaces(scriptNamespaces!);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces);
+            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
+                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
 
             Assert.Equal(new[]
             {

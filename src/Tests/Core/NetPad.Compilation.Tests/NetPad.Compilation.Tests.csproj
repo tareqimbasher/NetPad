@@ -6,8 +6,6 @@
         <IsPackable>false</IsPackable>
 
         <Nullable>enable</Nullable>
-
-        <RootNamespace>NetPad.Compilation</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

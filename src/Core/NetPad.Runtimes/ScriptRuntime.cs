@@ -2,8 +2,9 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using NetPad.Compilation;
-using NetPad.Exceptions;
+using NetPad.Extensions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
 
@@ -33,13 +34,21 @@ namespace NetPad.Runtimes
         {
             EnsureInitialization();
 
-            var result = _codeParser.Parse(_script!, "NetPad.Runtimes");
+            var result = _codeParser.Parse(_script!);
 
             try
             {
-                var assemblyBytes = _codeCompiler.Compile(new CompilationInput(result.Program));
+                var compilationResult = _codeCompiler.Compile(new CompilationInput(result.Program));
 
-                var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
+                if (!compilationResult.Success)
+                {
+                    await outputWriter.WriteAsync(compilationResult.Diagnostics
+                        .Where(d => d.Severity == DiagnosticSeverity.Error)
+                        .JoinToString("\n") + "\n");
+                    return false;
+                }
+
+                var assembly = _assemblyLoader.LoadFrom(compilationResult.AssemblyBytes);
 
                 var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
                 if (userScriptType == null)
@@ -49,7 +58,7 @@ namespace NetPad.Runtimes
                 if (method == null)
                     throw new Exception("Could not find entry method on UserScript");
 
-                var task = method.Invoke(null, new object?[] {outputWriter}) as Task;
+                var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
 
                 await task;
 
@@ -62,11 +71,6 @@ namespace NetPad.Runtimes
                 // var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
                 //     .Where(x => x.ModuleName?.Contains("Hello") == true)
                 //     .ToArray();
-            }
-            catch (CodeCompilationException ex)
-            {
-                await outputWriter.WriteAsync(ex.ErrorsAsString() + "\n");
-                return false;
             }
             catch (Exception ex)
             {

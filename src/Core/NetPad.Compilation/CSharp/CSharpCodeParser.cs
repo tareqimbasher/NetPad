@@ -7,6 +7,13 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
+        public static readonly string[] NamespacesNeededByBaseProgram = new[]
+        {
+            "System",
+            "System.Threading.Tasks",
+            "NetPad.Runtimes"
+        };
+
         public CodeParsingResult Parse(Script script, params string[] additionalNamespaces)
         {
             var namespaces = GetNamespaces(script, additionalNamespaces);
@@ -33,7 +40,8 @@ namespace NetPad.Compilation.CSharp
         {
             additionalNamespaces ??= Array.Empty<string>();
 
-            return script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns))
+            return NamespacesNeededByBaseProgram
+                .Union(script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
                 .Union(additionalNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
                 .Distinct();
         }

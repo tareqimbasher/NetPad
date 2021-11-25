@@ -11,20 +11,15 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeCompiler : ICodeCompiler
     {
-        public byte[] Compile(CompilationInput input)
+        public CompilationResult Compile(CompilationInput input)
         {
             var compilation = CreateCompilation(input);
 
             using var stream = new MemoryStream();
             var result = compilation.Emit(stream);
 
-            if (!result.Success)
-            {
-                throw new CodeCompilationException("Code compilation failed.", result.Diagnostics);
-            }
-
             stream.Seek(0, SeekOrigin.Begin);
-            return stream.ToArray();
+            return new CompilationResult(result.Success, stream.ToArray(), result.Diagnostics);
         }
 
         private CSharpCompilation CreateCompilation(CompilationInput input)
@@ -32,9 +27,7 @@ namespace NetPad.Compilation.CSharp
             // Parse code
             var sourceCode = SourceText.From(input.Code);
 
-            var parseOptions = CSharpParseOptions.Default
-                .WithLanguageVersion(LanguageVersion.CSharp9)
-                .WithKind(SourceCodeKind.Regular);
+            var parseOptions = GetParseOptions();
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
             // Build references
@@ -59,10 +52,18 @@ namespace NetPad.Compilation.CSharp
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithOptimizationLevel(OptimizationLevel.Debug);
 
-            return CSharpCompilation.Create("Hello.dll",
+            return CSharpCompilation.Create($"NetPadScript_{Guid.NewGuid()}.dll",
                 new[] { parsedSyntaxTree },
                 references: references,
                 options: compilationOptions);
+        }
+
+        public CSharpParseOptions GetParseOptions()
+        {
+            // TODO investigate using SourceKind.Script
+            return CSharpParseOptions.Default
+                .WithLanguageVersion(LanguageVersion.CSharp9)
+                .WithKind(SourceCodeKind.Regular);
         }
     }
 }

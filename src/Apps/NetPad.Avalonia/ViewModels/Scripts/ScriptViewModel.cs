@@ -59,10 +59,6 @@ namespace NetPad.ViewModels.Scripts
                     Results += output;
                 }));
             }
-            catch (CodeCompilationException ex)
-            {
-                Results += ex.ErrorsAsString() + "\n";
-            }
             catch (Exception ex)
             {
                 Results += ex + "\n";
