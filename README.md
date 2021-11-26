@@ -42,4 +42,5 @@ Be sure to edit your script directory in `appsettings.json`
 > Only the first electronize start is slow. Later runs are much faster.
 
 ### Resources:
-* Aurelia app [README](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Web/App)
+* Docs: [Go](https://github.com/tareqimbasher/NetPad/tree/main/docs)
+* More on SPA app startup and running tests: [Go](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Web/App)
