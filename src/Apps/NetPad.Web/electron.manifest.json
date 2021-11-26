@@ -4,7 +4,7 @@
         "imageFile": ""
     },
     "name": "NetPad",
-    "author": "",
+    "author": "Tareq Imbasher",
     "singleInstance": false,
     "environment": "Production",
     "aspCoreBackendPort": 8001,

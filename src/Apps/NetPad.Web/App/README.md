@@ -1,7 +1,5 @@
 # NetPad
 
-This project is bootstrapped by [aurelia/new](https://github.com/aurelia/new).
-
 ## Start dev web server
 
     npm start
