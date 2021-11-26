@@ -22,8 +22,8 @@ export class EventBus extends EventAggregator implements IEventBus {
         const channelName = typeof channel === 'string' ? channel : channel.name;
 
         const handler = (event: IpcRendererEvent, ...args: any[]) => {
-            const arg = args.length > 0 ? args[0] : null;
-            callback(!arg ? null : arg, channelName);
+            const json = args.length > 0 ? args[0] : null;
+            callback(!json ? null : JSON.parse(json), channelName);
         };
 
         ipcRenderer.on(channelName, handler);

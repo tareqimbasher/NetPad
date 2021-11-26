@@ -1,6 +1,8 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ElectronNET.API;
+using NetPad.Common;
 using NetPad.Services;
 
 namespace NetPad.UiInterop
@@ -19,13 +21,12 @@ namespace NetPad.UiInterop
                 Electron.IpcMain.Send(
                     ElectronUtil.MainWindow,
                     channel,
-                    message);
+                    JsonSerializer.Serialize(message, JsonSerialization.DefaultOptions));
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(ex);
             }
-
             return Task.CompletedTask;
         }
     }
