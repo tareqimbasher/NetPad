@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -39,7 +41,17 @@ namespace NetPad.UiInterop
                 DefaultPath = _settings.ScriptsDirectoryPath
             });
 
-            return path;
+            if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
+                return null;
+
+            path = path
+                .Replace(_settings.ScriptsDirectoryPath, string.Empty)
+                .Trim('/');
+
+            if (!path.EndsWith(Script.STANARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+                path += Script.STANARD_EXTENSION;
+
+            return "/" + path;
         }
     }
 }
