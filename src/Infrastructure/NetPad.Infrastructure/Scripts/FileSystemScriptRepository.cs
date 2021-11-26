@@ -15,6 +15,7 @@ namespace NetPad.Scripts
         public FileSystemScriptRepository(Settings settings)
         {
             _settings = settings;
+            Directory.CreateDirectory(_settings.ScriptsDirectoryPath);
         }
 
         public Task<List<ScriptSummary>> GetAllAsync()
@@ -34,7 +35,6 @@ namespace NetPad.Scripts
         public Task<Script> CreateAsync(string name)
         {
             var script = new Script(Guid.NewGuid(), name);
-            script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
             return Task.FromResult(script);
         }
 

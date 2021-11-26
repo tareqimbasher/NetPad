@@ -26,6 +26,11 @@ namespace NetPad.Scripts
 
             Status = ScriptStatus.Ready;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
+
+            if (script.IsNew)
+            {
+                script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
+            }
         }
 
         public Script Script { get; }
