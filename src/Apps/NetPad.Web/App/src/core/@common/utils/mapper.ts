@@ -1,8 +1,14 @@
-export interface Constructable<T = {}> {
+/**
+ * @deprecated This is only used in the deprecated Mapper
+ */
+interface Constructable<T = {}> {
     // eslint-disable-next-line @typescript-eslint/prefer-function-type
     new(...args: any[]): T;
-};
+}
 
+/**
+ * @deprecated This is no longer used, but kept in case it becomes useful.
+ */
 export class Mapper
 {
     public static toNew<TModel>(modelType: Constructable, source: any): TModel {

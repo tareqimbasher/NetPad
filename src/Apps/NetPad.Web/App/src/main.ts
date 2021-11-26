@@ -5,13 +5,13 @@ import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 
 const startupOptions = new URLSearchParams(window.location.search);
-const win = startupOptions.get("win");
 
 const app = Aurelia.register(
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(String, window.location.origin),
 );
 
+const win = startupOptions.get("win");
 if (win === "main") {
     const mainWindow = require("./windows/main/main");
     mainWindow.register(app);

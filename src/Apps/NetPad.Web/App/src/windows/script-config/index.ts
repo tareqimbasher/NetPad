@@ -1,12 +1,8 @@
-import {IScriptManager, ISession, Script, ScriptEnvironment} from "@domain";
+import {IScriptManager, ISession, Script} from "@domain";
 
 export class Index {
-    public environment: ScriptEnvironment;
+    public script: Script;
     public namespaces: string;
-
-    public get script(): Script {
-        return this.environment.script;
-    }
 
     constructor(
         readonly startupOptions: URLSearchParams,
@@ -15,7 +11,9 @@ export class Index {
     }
 
     public async binding() {
-        this.environment = await this.session.getEnvironment(this.startupOptions.get("script-id"));
+        const environment = await this.session.getEnvironment(this.startupOptions.get("script-id"));
+        this.script = environment.script;
+
         document.title = `${this.script.name} - Properties`;
         this.namespaces = this.script.config.namespaces.join('\n');
     }

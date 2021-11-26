@@ -1,4 +1,4 @@
-import {DI, IHttpClient} from "aurelia";
+import {DI} from "aurelia";
 import {IScriptsService, ScriptsService, ISession} from "@domain";
 
 export interface IScriptManager extends IScriptsService {}
