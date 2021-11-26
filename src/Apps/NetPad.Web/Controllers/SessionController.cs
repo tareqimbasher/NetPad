@@ -51,15 +51,18 @@ namespace NetPad.Controllers
             var scriptEnvironment = GetScriptEnvironment(scriptId);
             var script = scriptEnvironment.Script;
 
-            var response = await _uiDialogService.AskUserIfTheyWantToSave(script);
-            if (response == YesNoCancel.Cancel)
-                return;
-
-            if (script.IsDirty && response == YesNoCancel.Yes)
+            if (script.IsDirty)
             {
-                bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
-                if (!saved)
+                var response = await _uiDialogService.AskUserIfTheyWantToSave(script);
+                if (response == YesNoCancel.Cancel)
                     return;
+
+                if (response == YesNoCancel.Yes)
+                {
+                    bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
+                    if (!saved)
+                        return;
+                }
             }
 
             await _session.CloseAsync(scriptId);
