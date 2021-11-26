@@ -2,22 +2,24 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
-using ElectronNET.API;
 using NetPad.Common;
 using NetPad.Events;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
+using NetPad.UiInterop;
 
 namespace NetPad.BackgroundServices
 {
     public class ScriptBackgroundService : BackgroundService
     {
         private readonly ISession _session;
+        private readonly IIpcService _ipcService;
 
-        public ScriptBackgroundService(ISession session)
+        public ScriptBackgroundService(ISession session, IIpcService ipcService)
         {
             _session = session;
+            _ipcService = ipcService;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,27 +44,19 @@ namespace NetPad.BackgroundServices
                     {
                         var script = environment.Script;
 
-                        environment.OnPropertyChanged.Add((args) =>
+                        environment.OnPropertyChanged.Add(async (args) =>
                         {
-                            Electron.IpcMain.Send(
-                                BrowserWindow,
-                                nameof(EnvironmentPropertyChanged),
-                                Serialize(new EnvironmentPropertyChanged(script.Id, args.PropertyName, args.NewValue)));
-
-                            return Task.CompletedTask;
+                            await _ipcService.SendAsync(
+                                new EnvironmentPropertyChanged(script.Id, args.PropertyName, args.NewValue));
                         });
 
-                        script.OnPropertyChanged.Add((args) =>
+                        script.OnPropertyChanged.Add(async (args) =>
                         {
-                            Electron.IpcMain.Send(
-                                BrowserWindow,
-                                nameof(ScriptPropertyChanged),
-                                Serialize(new ScriptPropertyChanged(script.Id, args.PropertyName, args.NewValue)));
-
-                            return Task.CompletedTask;
+                            await _ipcService.SendAsync(
+                                new ScriptPropertyChanged(script.Id, args.PropertyName, args.NewValue));
                         });
 
-                        environment.SetIO(ActionRuntimeInputReader.Default, new IpcScriptOutputWriter(environment));
+                        environment.SetIO(ActionRuntimeInputReader.Default, new IpcScriptOutputWriter(environment, _ipcService));
                     }
                 }
                 else if (changes.Action == NotifyCollectionChangedAction.Remove)

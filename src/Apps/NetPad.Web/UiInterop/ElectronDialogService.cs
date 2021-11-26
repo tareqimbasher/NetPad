@@ -1,22 +1,16 @@
-using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using NetPad.Scripts;
-using NetPad.Utils;
+using NetPad.Services;
 
-namespace NetPad.Services
+namespace NetPad.UiInterop
 {
-    public enum YesNoCancel
-    {
-        Yes, No, Cancel
-    }
-
-    public class UiScriptService : IUiScriptService
+    public class ElectronDialogService : IUiDialogService
     {
         private readonly Settings _settings;
 
-        public UiScriptService(Settings settings)
+        public ElectronDialogService(Settings settings)
         {
             _settings = settings;
         }

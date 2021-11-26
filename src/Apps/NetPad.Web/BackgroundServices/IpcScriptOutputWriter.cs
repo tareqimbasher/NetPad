@@ -1,37 +1,25 @@
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using ElectronNET.API;
-using NetPad.Common;
 using NetPad.Events;
 using NetPad.Runtimes;
 using NetPad.Scripts;
-using NetPad.Utils;
+using NetPad.UiInterop;
 
 namespace NetPad.BackgroundServices
 {
     public class IpcScriptOutputWriter : IScriptRuntimeOutputWriter
     {
+        private readonly IIpcService _ipcService;
         public ScriptEnvironment Environment { get; }
 
-        public IpcScriptOutputWriter(ScriptEnvironment environment)
+        public IpcScriptOutputWriter(ScriptEnvironment environment, IIpcService ipcService)
         {
+            _ipcService = ipcService;
             Environment = environment;
         }
 
-        public Task WriteAsync(object? output)
+        public async Task WriteAsync(object? output)
         {
-            var data = new
-            {
-                ScriptId = Environment.Script.Id,
-                Output = output?.ToString()
-            };
-
-            Electron.IpcMain.Send(ElectronUtil.MainWindow,
-                nameof(ScriptOutputEmitted),
-                JsonSerializer.Serialize(new ScriptOutputEmitted(Environment.Script.Id, output?.ToString()), options: JsonSerialization.DefaultOptions));
-
-            return Task.CompletedTask;
+            await _ipcService.SendAsync(new ScriptOutputEmitted(Environment.Script.Id, output?.ToString()));
         }
     }
 }

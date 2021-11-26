@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using ElectronNET.API;
-using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Exceptions;
 using NetPad.Scripts;
-using NetPad.Services;
 using NetPad.Sessions;
+using NetPad.UiInterop;
 
 namespace NetPad.Controllers
 {
@@ -18,14 +15,14 @@ namespace NetPad.Controllers
     {
         private readonly ISession _session;
         private readonly IScriptRepository _scriptRepository;
-        private readonly IUiScriptService _uiScriptService;
+        private readonly IUiDialogService _uiDialogService;
         private readonly Settings _settings;
 
-        public SessionController(ISession session, IScriptRepository scriptRepository, IUiScriptService uiScriptService, Settings settings)
+        public SessionController(ISession session, IScriptRepository scriptRepository, IUiDialogService uiDialogService, Settings settings)
         {
             _session = session;
             _scriptRepository = scriptRepository;
-            _uiScriptService = uiScriptService;
+            _uiDialogService = uiDialogService;
             _settings = settings;
         }
 
@@ -54,13 +51,13 @@ namespace NetPad.Controllers
             var scriptEnvironment = GetScriptEnvironment(scriptId);
             var script = scriptEnvironment.Script;
 
-            var response = await _uiScriptService.AskUserIfTheyWantToSave(script);
+            var response = await _uiDialogService.AskUserIfTheyWantToSave(script);
             if (response == YesNoCancel.Cancel)
                 return;
 
             if (script.IsDirty && response == YesNoCancel.Yes)
             {
-                bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _uiScriptService, _settings);
+                bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
                 if (!saved)
                     return;
             }

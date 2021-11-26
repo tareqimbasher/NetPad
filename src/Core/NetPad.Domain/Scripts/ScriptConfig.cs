@@ -5,10 +5,10 @@ namespace NetPad.Scripts
 {
     public class ScriptConfig
     {
-        public ScriptConfig(ScriptKind kind, IEnumerable<string>? namespaces = null)
+        public ScriptConfig(ScriptKind kind, List<string>? namespaces = null)
         {
             Kind = kind;
-            Namespaces = namespaces?.ToList() ?? new List<string>();
+            Namespaces = namespaces ?? new List<string>();
         }
 
         public ScriptKind Kind { get; private set; }

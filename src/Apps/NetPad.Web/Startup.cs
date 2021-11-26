@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ElectronNET.API;
-using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +19,7 @@ using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Services;
 using NetPad.Sessions;
-using NetPad.Utils;
+using NetPad.UiInterop;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag.CodeGeneration.TypeScript;
 
@@ -31,7 +31,6 @@ namespace NetPad
         {
             Configuration = configuration;
             WebHostEnvironment = webHostEnvironment;
-            ElectronUtil.Initialize("http://localhost:8001");
         }
 
         public IConfiguration Configuration { get; }
@@ -52,15 +51,20 @@ namespace NetPad
                 AddSwagger(services);
             }
 
+            services.AddSingleton<HostInfo>();
             services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
+
             services.AddSingleton<ISession, Sessions.Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
-            services.AddTransient<IUiScriptService, UiScriptService>();
 
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
+
+            services.AddTransient<IUiDialogService, ElectronDialogService>();
+            services.AddTransient<IUiWindowService, ElectronWindowService>();
+            services.AddTransient<IIpcService, ElectronIpcService>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();
@@ -104,7 +108,7 @@ namespace NetPad
 
             app.UseSpa(spa =>
             {
-                // To learn more about options for serving an Angular SPA from ASP.NET Core,
+                // To learn more about options for serving an SPA from ASP.NET Core,
                 // see https://go.microsoft.com/fwlink/?linkid=864501
 
                 spa.Options.SourcePath = "App";
@@ -115,32 +119,17 @@ namespace NetPad
                 }
             });
 
+            app.ApplicationServices.GetRequiredService<HostInfo>().SetHostUrl(app.ServerFeatures
+                    .Get<IServerAddressesFeature>()
+                    .Addresses
+                    .First(a => a.StartsWith("http:")));
+
             if (HybridSupport.IsElectronActive)
             {
                 Task.Run(async () =>
                 {
-                    var display = await Electron.Screen.GetPrimaryDisplayAsync();
-
-                    await ElectronUtil.CreateWindowAsync("main", new BrowserWindowOptions
-                    {
-                        Height = display.Bounds.Height * 2 / 3,
-                        Width = display.Bounds.Width * 2 / 3,
-                        MinHeight = 200,
-                        MinWidth = 200,
-                        Center = true
-                    });
+                    await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
                 });
-
-                // var options = new BrowserWindowOptions()
-                // {
-                //     Show = false
-                // };
-                //
-                // Task.Run(async () =>
-                // {
-                //     var browserWindow = await Electron.WindowManager.CreateWindowAsync(options);
-                //     browserWindow.OnShow += () => browserWindow.Show();
-                // });
             }
         }
 

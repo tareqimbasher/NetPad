@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using ElectronNET.API;
-using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Common;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Runtimes;
-using NetPad.Services;
 using NetPad.Sessions;
-using NetPad.Utils;
+using NetPad.UiInterop;
 
 namespace NetPad.Controllers
 {
@@ -23,14 +17,14 @@ namespace NetPad.Controllers
         private readonly IScriptRepository _scriptRepository;
         private readonly ISession _session;
         private readonly Settings _settings;
-        private readonly IUiScriptService _uiScriptService;
+        private readonly IUiDialogService _uiDialogService;
 
-        public ScriptsController(IScriptRepository scriptRepository, ISession session, Settings settings, IUiScriptService uiScriptService)
+        public ScriptsController(IScriptRepository scriptRepository, ISession session, Settings settings, IUiDialogService uiDialogService)
         {
             _scriptRepository = scriptRepository;
             _session = session;
             _settings = settings;
-            _uiScriptService = uiScriptService;
+            _uiDialogService = uiDialogService;
         }
 
         [HttpGet]
@@ -53,7 +47,7 @@ namespace NetPad.Controllers
             var scriptEnvironment = GetScriptEnvironment(id);
             var script = scriptEnvironment.Script;
 
-            await SaveAsync(script, _scriptRepository, _uiScriptService, _settings);
+            await SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
         }
 
         [HttpPatch("{id:guid}/run")]
@@ -73,25 +67,11 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/open-config")]
-        public async Task OpenConfig(Guid id)
+        public async Task OpenConfig(Guid id, [FromServices] IUiWindowService uiWindowService)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
             var script = scriptEnvironment.Script;
-
-            var display = await Electron.Screen.GetPrimaryDisplayAsync();
-
-            var window = await ElectronUtil.CreateWindowAsync("script-config", new BrowserWindowOptions()
-            {
-                Title = script.Name,
-                Height = display.Bounds.Height * 2 / 4,
-                Width = display.Bounds.Width * 2 / 4,
-                MinHeight = 200,
-                MinWidth = 200,
-                Center = true,
-                AutoHideMenuBar = true,
-            }, ("script-id", script.Id));
-
-            window.SetParentWindow(ElectronUtil.MainWindow);
+            await uiWindowService.OpenScriptConfigWindowAsync(script);
         }
 
         [HttpPut("{id:guid}/config")]
@@ -105,11 +85,11 @@ namespace NetPad.Controllers
         }
 
 
-        public static async Task<bool> SaveAsync(Script script, IScriptRepository scriptRepository, IUiScriptService uiScriptService, Settings settings)
+        public static async Task<bool> SaveAsync(Script script, IScriptRepository scriptRepository, IUiDialogService uiDialogService, Settings settings)
         {
             if (script.IsNew)
             {
-                var path = await uiScriptService.AskUserForSaveLocation(script);
+                var path = await uiDialogService.AskUserForSaveLocation(script);
                 if (string.IsNullOrWhiteSpace(path))
                     return false;
 
