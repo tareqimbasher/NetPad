@@ -12,6 +12,7 @@ namespace NetPad.Controllers
         public (
             Script,
             ScriptPropertyChanged,
+            ScriptConfigPropertyChanged,
             ScriptOutputEmitted,
             EnvironmentsAdded,
             EnvironmentsRemoved,
