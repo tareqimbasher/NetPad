@@ -34,12 +34,15 @@ namespace NetPad.UiInterop
             var window = await CreateWindowAsync("script-config", new BrowserWindowOptions
             {
                 Title = script.Name,
-                Height = display.Bounds.Height * 2 / 4,
-                Width = display.Bounds.Width * 2 / 4,
+                Height = display.Bounds.Height * 3 / 5,
+                Width = display.Bounds.Width * 3 / 5,
                 AutoHideMenuBar = true,
             }, ("script-id", script.Id));
 
             window.SetParentWindow(ElectronUtil.MainWindow);
+            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+            window.Center();
         }
 
         private async Task<BrowserWindow> CreateWindowAsync(
