@@ -4,10 +4,10 @@ import {
     EventBus,
     ISession,
     Session,
-    IScriptManager,
-    ScriptManager,
-    ISettingsManager,
-    SettingsManager,
+    IScriptService,
+    ScriptService,
+    ISettingService,
+    SettingService,
 } from "@domain";
 import {Index} from "./index";
 
@@ -16,8 +16,8 @@ export function register(app: Aurelia): void {
         .register(
             Registration.singleton(IEventBus, EventBus),
             Registration.singleton(ISession, Session),
-            Registration.singleton(IScriptManager, ScriptManager),
-            Registration.singleton(ISettingsManager, SettingsManager),
+            Registration.singleton(IScriptService, ScriptService),
+            Registration.singleton(ISettingService, SettingService),
         )
         .app(Index);
 }

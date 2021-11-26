@@ -1,6 +1,6 @@
 import {
-    ISessionService,
-    SessionService,
+    ISessionApiClient,
+    SessionApiClient,
     ScriptEnvironment,
     IEventBus,
     ScriptPropertyChanged,
@@ -12,7 +12,7 @@ import {
 } from "@domain";
 import {DI, IHttpClient, ILogger} from "aurelia";
 
-export interface ISession extends ISessionService {
+export interface ISession extends ISessionApiClient {
     environments: ScriptEnvironment[];
 
     get active(): ScriptEnvironment | undefined;
@@ -22,7 +22,7 @@ export interface ISession extends ISessionService {
 
 export const ISession = DI.createInterface<ISession>();
 
-export class Session extends SessionService implements ISession {
+export class Session extends SessionApiClient implements ISession {
     private _active?: ScriptEnvironment | null | undefined;
     private _environments?: ScriptEnvironment[] = [];
 

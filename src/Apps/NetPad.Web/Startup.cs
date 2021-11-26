@@ -142,7 +142,7 @@ namespace NetPad
                 {
                     var settings = new TypeScriptClientGeneratorSettings
                     {
-                        ClassName = "{controller}Service",
+                        ClassName = "{controller}ApiClient",
                         Template = TypeScriptTemplate.Aurelia,
                         GenerateClientInterfaces = true,
                         QueryNullValue = null,

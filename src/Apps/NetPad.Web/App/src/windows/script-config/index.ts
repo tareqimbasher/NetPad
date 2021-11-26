@@ -1,4 +1,4 @@
-import {IScriptManager, ISession, Script} from "@domain";
+import {IScriptService, ISession, Script} from "@domain";
 
 export class Index {
     public script: Script;
@@ -7,7 +7,7 @@ export class Index {
     constructor(
         readonly startupOptions: URLSearchParams,
         @ISession readonly session: ISession,
-        @IScriptManager readonly scriptManager: IScriptManager) {
+        @IScriptService readonly scriptService: IScriptService) {
     }
 
     public async binding() {
@@ -29,7 +29,7 @@ export class Index {
                 .map(ns => ns.trim())
                 .filter(ns => ns);
 
-            await this.scriptManager.setScriptNamespaces(this.script.id, config.namespaces);
+            await this.scriptService.setScriptNamespaces(this.script.id, config.namespaces);
             window.close();
         }
         catch (ex) {

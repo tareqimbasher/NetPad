@@ -1,5 +1,5 @@
 import {bindable, PLATFORM, watch} from "aurelia";
-import {IEventBus, IScriptManager, ISession, Script, ScriptEnvironment, ScriptKind, ScriptOutputEmitted} from "@domain";
+import {IEventBus, IScriptService, ISession, Script, ScriptEnvironment, ScriptKind, ScriptOutputEmitted} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
@@ -12,7 +12,7 @@ export class ScriptEnvironmentView {
     private resultsEl: HTMLElement;
 
     constructor(
-        @IScriptManager readonly scriptManager: IScriptManager,
+        @IScriptService readonly scriptService: IScriptService,
         @ISession readonly session: ISession,
         @IEventBus readonly eventBus: IEventBus) {
     }
@@ -30,7 +30,7 @@ export class ScriptEnvironmentView {
     }
 
     public set kind(value) {
-        this.scriptManager.setScriptKind(this.script.id, value);
+        this.scriptService.setScriptKind(this.script.id, value);
     }
 
     private attached() {
@@ -59,7 +59,7 @@ export class ScriptEnvironmentView {
     public async run() {
         this.setResults(null);
         this.showResults = true;
-        await this.scriptManager.run(this.environment.script.id);
+        await this.scriptService.run(this.environment.script.id);
     }
 
     private setResults(results: string | null) {
@@ -79,7 +79,7 @@ export class ScriptEnvironmentView {
         });
 
         const f = Util.debounce(this, async (ev) => {
-            await this.scriptManager.updateCode(this.environment.script.id, this.editor.getValue());
+            await this.scriptService.updateCode(this.environment.script.id, this.editor.getValue());
         }, 500, true);
 
         this.editor.onDidChangeModelContent(ev => f(ev));

@@ -9,7 +9,7 @@
 
 import {IHttpClient} from "aurelia";
 
-export interface IScriptsService {
+export interface IScriptsApiClient {
     getScripts(): Promise<ScriptSummary[]>;
     create(): Promise<void>;
     save(id: string): Promise<void>;
@@ -20,7 +20,7 @@ export interface IScriptsService {
     setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
 }
 
-export class ScriptsService implements IScriptsService {
+export class ScriptsApiClient implements IScriptsApiClient {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -324,7 +324,7 @@ export class ScriptsService implements IScriptsService {
     }
 }
 
-export interface ISessionService {
+export interface ISessionApiClient {
     getEnvironment(scriptId: string): Promise<ScriptEnvironment>;
     getEnvironments(): Promise<ScriptEnvironment[]>;
     open(scriptPath: string | null | undefined): Promise<void>;
@@ -333,7 +333,7 @@ export interface ISessionService {
     setActive(scriptId: string): Promise<void>;
 }
 
-export class SessionService implements ISessionService {
+export class SessionApiClient implements ISessionApiClient {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -560,11 +560,11 @@ export class SessionService implements ISessionService {
     }
 }
 
-export interface ISettingsService {
+export interface ISettingsApiClient {
     get(): Promise<Settings>;
 }
 
-export class SettingsService implements ISettingsService {
+export class SettingsApiClient implements ISettingsApiClient {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -610,11 +610,11 @@ export class SettingsService implements ISettingsService {
     }
 }
 
-export interface ITypesService {
+export interface ITypesApiClient {
     getAllTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>;
 }
 
-export class TypesService implements ITypesService {
+export class TypesApiClient implements ITypesApiClient {
     private http: IHttpClient;
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
