@@ -15,7 +15,10 @@ export class Index {
         this.script = environment.script;
 
         document.title = `${this.script.name} - Properties`;
-        this.namespaces = this.script.config.namespaces.join('\n');
+        let namespaces = this.script.config.namespaces.join("\n");
+        if (namespaces)
+            namespaces += "\n";
+        this.namespaces = namespaces;
     }
 
     public async ok() {
@@ -26,7 +29,7 @@ export class Index {
                 .map(ns => ns.trim())
                 .filter(ns => ns);
 
-            await this.scriptManager.setConfig(this.script.id, config);
+            await this.scriptManager.setScriptNamespaces(this.script.id, config.namespaces);
             window.close();
         }
         catch (ex) {
