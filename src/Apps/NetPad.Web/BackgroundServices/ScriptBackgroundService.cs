@@ -56,6 +56,12 @@ namespace NetPad.BackgroundServices
                                 new ScriptPropertyChanged(script.Id, args.PropertyName, args.NewValue));
                         });
 
+                        script.Config.OnPropertyChanged.Add(async (args) =>
+                        {
+                            await _ipcService.SendAsync(
+                                new ScriptConfigPropertyChanged(script.Id, args.PropertyName, args.NewValue));
+                        });
+
                         environment.SetIO(ActionRuntimeInputReader.Default, new IpcScriptOutputWriter(environment, _ipcService));
                     }
                 }
@@ -68,6 +74,7 @@ namespace NetPad.BackgroundServices
                     {
                         environment.RemoveAllPropertyChangedHandlers();
                         environment.Script.RemoveAllPropertyChangedHandlers();
+                        environment.Script.Config.RemoveAllPropertyChangedHandlers();
                     }
                 }
             };

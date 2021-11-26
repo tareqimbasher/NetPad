@@ -1,14 +1,11 @@
 import {bindable, PLATFORM, watch} from "aurelia";
-import {IEventBus, IScriptManager, ISession, ScriptEnvironment, ScriptOutputEmitted} from "@domain";
+import {IEventBus, IScriptManager, ISession, Script, ScriptEnvironment, ScriptKind, ScriptOutputEmitted} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
     public showResults = true;
-    public get id(): string {
-        return this.environment.script.id;
-    }
 
     private disposables: (() => void)[] = [];
     private editor: monaco.editor.IStandaloneCodeEditor;
@@ -20,7 +17,25 @@ export class ScriptEnvironmentView {
         @IEventBus readonly eventBus: IEventBus) {
     }
 
+    public get id(): string {
+        return this.environment.script.id;
+    }
+
+    public get script(): Script {
+        return this.environment.script;
+    }
+
+    public get kind(): ScriptKind {
+        return this.script.config.kind;
+    }
+
+    public set kind(value) {
+        this.scriptManager.setScriptKind(this.script.id, value);
+    }
+
     private attached() {
+        this.kind = this.script.config.kind;
+
         const token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
             if (msg.scriptId === this.environment.script.id) {
                 this.appendResults(msg.output);
@@ -83,7 +98,16 @@ export class ScriptEnvironmentView {
     @watch<ScriptEnvironmentView>(vm => vm.session.active)
     private adjustEditorLayout() {
         PLATFORM.taskQueue.queueTask(() => {
+            if (this.environment === this.session.active)
             this.editor.layout();
         }, {delay: 100});
     }
 }
+
+/**
+ * Config stuff
+ * UI => BE => FE
+ *
+ * Code
+ * UI => BE
+ */

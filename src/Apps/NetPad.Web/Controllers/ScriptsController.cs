@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Exceptions;
@@ -30,7 +31,7 @@ namespace NetPad.Controllers
         [HttpGet]
         public async Task<IEnumerable<ScriptSummary>> GetScripts()
         {
-            return await _scriptRepository.GetAllAsync();
+            return (await _scriptRepository.GetAllAsync()).OrderBy(s => s.Path);
         }
 
         [HttpPatch("create")]
@@ -74,13 +75,20 @@ namespace NetPad.Controllers
             await uiWindowService.OpenScriptConfigWindowAsync(script);
         }
 
-        [HttpPut("{id:guid}/config")]
-        public IActionResult SetConfig(Guid id, [FromBody] ScriptConfig config)
+        [HttpPut("{id:guid}/namespaces")]
+        public IActionResult SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
         {
             var script = GetScriptEnvironment(id).Script;
-            script.Config.SetKind(config.Kind);
-            script.Config.SetNamespaces(config.Namespaces);
+            script.Config.SetNamespaces(namespaces);
 
+            return NoContent();
+        }
+
+        [HttpPut("{id:guid}/kind")]
+        public IActionResult SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
+        {
+            var script = GetScriptEnvironment(id).Script;
+            script.Config.SetKind(scriptKind);
             return NoContent();
         }
 

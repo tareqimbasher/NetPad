@@ -66,9 +66,18 @@ namespace NetPad.Scripts
             var part2 = parts[1];
 
             Id = Guid.Parse(part1Lines.First());
+            Code = part2.TrimStart();
+
+            Config.RemoveAllPropertyChangedHandlers();
+
             Config = JsonSerializer.Deserialize<ScriptConfig>(
                 string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(this);
-            Code = part2.TrimStart();
+
+            Config.OnPropertyChanged.Add(change  =>
+            {
+                IsDirty = true;
+                return Task.CompletedTask;
+            });
 
             return Task.CompletedTask;
         }

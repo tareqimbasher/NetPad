@@ -16,7 +16,8 @@ export interface IScriptsService {
     run(id: string): Promise<void>;
     updateCode(id: string, code: string): Promise<void>;
     openConfig(id: string): Promise<void>;
-    setConfig(id: string, config: ScriptConfig): Promise<FileResponse | null>;
+    setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
+    setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
 }
 
 export class ScriptsService implements IScriptsService {
@@ -242,14 +243,14 @@ export class ScriptsService implements IScriptsService {
         return Promise.resolve<void>(<any>null);
     }
 
-    setConfig(id: string, config: ScriptConfig, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
-        let url_ = this.baseUrl + "/scripts/{id}/config";
+    setScriptNamespaces(id: string, namespaces: string[], signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/namespaces";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(config);
+        const content_ = JSON.stringify(namespaces);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -262,11 +263,51 @@ export class ScriptsService implements IScriptsService {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSetConfig(_response);
+            return this.processSetScriptNamespaces(_response);
         });
     }
 
-    protected processSetConfig(response: Response): Promise<FileResponse | null> {
+    protected processSetScriptNamespaces(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/kind";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(scriptKind);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetScriptKind(_response);
+        });
+    }
+
+    protected processSetScriptKind(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -570,7 +611,7 @@ export class SettingsService implements ISettingsService {
 }
 
 export interface ITypesService {
-    getAllTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>;
+    getAllTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>;
 }
 
 export class TypesService implements ITypesService {
@@ -583,7 +624,7 @@ export class TypesService implements ITypesService {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getAllTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
+    getAllTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
         let url_ = this.baseUrl + "/types";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -600,14 +641,14 @@ export class TypesService implements ITypesService {
         });
     }
 
-    protected processGetAllTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
+    protected processGetAllTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged.fromJS(resultData200) : <any>null;
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -615,7 +656,7 @@ export class TypesService implements ITypesService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>(<any>null);
+        return Promise.resolve<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>(<any>null);
     }
 }
 
@@ -664,64 +705,6 @@ export class ScriptSummary implements IScriptSummary {
 export interface IScriptSummary {
     name: string;
     path: string;
-}
-
-export class ScriptConfig implements IScriptConfig {
-    kind!: ScriptKind;
-    namespaces!: string[];
-
-    constructor(data?: IScriptConfig) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.namespaces = [];
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.kind = _data["kind"];
-            if (Array.isArray(_data["namespaces"])) {
-                this.namespaces = [] as any;
-                for (let item of _data["namespaces"])
-                    this.namespaces!.push(item);
-            }
-        }
-    }
-
-    static fromJS(data: any): ScriptConfig {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptConfig();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["kind"] = this.kind;
-        if (Array.isArray(this.namespaces)) {
-            data["namespaces"] = [];
-            for (let item of this.namespaces)
-                data["namespaces"].push(item);
-        }
-        return data; 
-    }
-
-    clone(): ScriptConfig {
-        const json = this.toJSON();
-        let result = new ScriptConfig();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptConfig {
-    kind: ScriptKind;
-    namespaces: string[];
 }
 
 export type ScriptKind = "Expression" | "Statements" | "Program";
@@ -786,8 +769,8 @@ export class Script implements IScript {
     path?: string | undefined;
     config!: ScriptConfig;
     code!: string;
-    directoryPath?: string | undefined;
     isDirty!: boolean;
+    directoryPath?: string | undefined;
     isNew!: boolean;
 
     constructor(data?: IScript) {
@@ -809,8 +792,8 @@ export class Script implements IScript {
             this.path = _data["path"];
             this.config = _data["config"] ? ScriptConfig.fromJS(_data["config"]) : new ScriptConfig();
             this.code = _data["code"];
-            this.directoryPath = _data["directoryPath"];
             this.isDirty = _data["isDirty"];
+            this.directoryPath = _data["directoryPath"];
             this.isNew = _data["isNew"];
         }
     }
@@ -829,8 +812,8 @@ export class Script implements IScript {
         data["path"] = this.path;
         data["config"] = this.config ? this.config.toJSON() : <any>undefined;
         data["code"] = this.code;
-        data["directoryPath"] = this.directoryPath;
         data["isDirty"] = this.isDirty;
+        data["directoryPath"] = this.directoryPath;
         data["isNew"] = this.isNew;
         return data; 
     }
@@ -849,9 +832,67 @@ export interface IScript {
     path?: string | undefined;
     config: ScriptConfig;
     code: string;
-    directoryPath?: string | undefined;
     isDirty: boolean;
+    directoryPath?: string | undefined;
     isNew: boolean;
+}
+
+export class ScriptConfig implements IScriptConfig {
+    kind!: ScriptKind;
+    namespaces!: string[];
+
+    constructor(data?: IScriptConfig) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.namespaces = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.kind = _data["kind"];
+            if (Array.isArray(_data["namespaces"])) {
+                this.namespaces = [] as any;
+                for (let item of _data["namespaces"])
+                    this.namespaces!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): ScriptConfig {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptConfig();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kind"] = this.kind;
+        if (Array.isArray(this.namespaces)) {
+            data["namespaces"] = [];
+            for (let item of this.namespaces)
+                data["namespaces"].push(item);
+        }
+        return data; 
+    }
+
+    clone(): ScriptConfig {
+        const json = this.toJSON();
+        let result = new ScriptConfig();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptConfig {
+    kind: ScriptKind;
+    namespaces: string[];
 }
 
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
@@ -899,16 +940,17 @@ export interface ISettings {
     scriptsDirectoryPath: string;
 }
 
-export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged implements IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged implements IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
     item1!: Script;
     item2!: ScriptPropertyChanged;
-    item3!: ScriptOutputEmitted;
-    item4!: EnvironmentsAdded;
-    item5!: EnvironmentsRemoved;
-    item6!: EnvironmentPropertyChanged;
-    item7!: ActiveEnvironmentChanged;
+    item3!: ScriptConfigPropertyChanged;
+    item4!: ScriptOutputEmitted;
+    item5!: EnvironmentsAdded;
+    item6!: EnvironmentsRemoved;
+    item7!: EnvironmentPropertyChanged;
+    rest!: ValueTupleOfActiveEnvironmentChanged;
 
-    constructor(data?: IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged) {
+    constructor(data?: IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -918,11 +960,12 @@ export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAnd
         if (!data) {
             this.item1 = new Script();
             this.item2 = new ScriptPropertyChanged();
-            this.item3 = new ScriptOutputEmitted();
-            this.item4 = new EnvironmentsAdded();
-            this.item5 = new EnvironmentsRemoved();
-            this.item6 = new EnvironmentPropertyChanged();
-            this.item7 = new ActiveEnvironmentChanged();
+            this.item3 = new ScriptConfigPropertyChanged();
+            this.item4 = new ScriptOutputEmitted();
+            this.item5 = new EnvironmentsAdded();
+            this.item6 = new EnvironmentsRemoved();
+            this.item7 = new EnvironmentPropertyChanged();
+            this.rest = new ValueTupleOfActiveEnvironmentChanged();
         }
     }
 
@@ -930,17 +973,18 @@ export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAnd
         if (_data) {
             this.item1 = _data["item1"] ? Script.fromJS(_data["item1"]) : new Script();
             this.item2 = _data["item2"] ? ScriptPropertyChanged.fromJS(_data["item2"]) : new ScriptPropertyChanged();
-            this.item3 = _data["item3"] ? ScriptOutputEmitted.fromJS(_data["item3"]) : new ScriptOutputEmitted();
-            this.item4 = _data["item4"] ? EnvironmentsAdded.fromJS(_data["item4"]) : new EnvironmentsAdded();
-            this.item5 = _data["item5"] ? EnvironmentsRemoved.fromJS(_data["item5"]) : new EnvironmentsRemoved();
-            this.item6 = _data["item6"] ? EnvironmentPropertyChanged.fromJS(_data["item6"]) : new EnvironmentPropertyChanged();
-            this.item7 = _data["item7"] ? ActiveEnvironmentChanged.fromJS(_data["item7"]) : new ActiveEnvironmentChanged();
+            this.item3 = _data["item3"] ? ScriptConfigPropertyChanged.fromJS(_data["item3"]) : new ScriptConfigPropertyChanged();
+            this.item4 = _data["item4"] ? ScriptOutputEmitted.fromJS(_data["item4"]) : new ScriptOutputEmitted();
+            this.item5 = _data["item5"] ? EnvironmentsAdded.fromJS(_data["item5"]) : new EnvironmentsAdded();
+            this.item6 = _data["item6"] ? EnvironmentsRemoved.fromJS(_data["item6"]) : new EnvironmentsRemoved();
+            this.item7 = _data["item7"] ? EnvironmentPropertyChanged.fromJS(_data["item7"]) : new EnvironmentPropertyChanged();
+            this.rest = _data["rest"] ? ValueTupleOfActiveEnvironmentChanged.fromJS(_data["rest"]) : new ValueTupleOfActiveEnvironmentChanged();
         }
     }
 
-    static fromJS(data: any): ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    static fromJS(data: any): ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
         data = typeof data === 'object' ? data : {};
-        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged();
         result.init(data);
         return result;
     }
@@ -954,33 +998,34 @@ export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAnd
         data["item5"] = this.item5 ? this.item5.toJSON() : <any>undefined;
         data["item6"] = this.item6 ? this.item6.toJSON() : <any>undefined;
         data["item7"] = this.item7 ? this.item7.toJSON() : <any>undefined;
+        data["rest"] = this.rest ? this.rest.toJSON() : <any>undefined;
         return data; 
     }
 
-    clone(): ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    clone(): ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
         const json = this.toJSON();
-        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged();
         result.init(json);
         return result;
     }
 }
 
-export interface IValueTupleOfScriptAndScriptPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+export interface IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
     item1: Script;
     item2: ScriptPropertyChanged;
-    item3: ScriptOutputEmitted;
-    item4: EnvironmentsAdded;
-    item5: EnvironmentsRemoved;
-    item6: EnvironmentPropertyChanged;
-    item7: ActiveEnvironmentChanged;
+    item3: ScriptConfigPropertyChanged;
+    item4: ScriptOutputEmitted;
+    item5: EnvironmentsAdded;
+    item6: EnvironmentsRemoved;
+    item7: EnvironmentPropertyChanged;
+    rest: ValueTupleOfActiveEnvironmentChanged;
 }
 
-export class ScriptPropertyChanged implements IScriptPropertyChanged {
-    scriptId!: string;
+export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     propertyName!: string;
     newValue?: any | undefined;
 
-    constructor(data?: IScriptPropertyChanged) {
+    constructor(data?: IPropertyChangedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -991,9 +1036,44 @@ export class ScriptPropertyChanged implements IScriptPropertyChanged {
 
     init(_data?: any) {
         if (_data) {
-            this.scriptId = _data["scriptId"];
             this.propertyName = _data["propertyName"];
             this.newValue = _data["newValue"];
+        }
+    }
+
+    static fromJS(data: any): PropertyChangedEvent {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'PropertyChangedEvent' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["propertyName"] = this.propertyName;
+        data["newValue"] = this.newValue;
+        return data; 
+    }
+
+    clone(): PropertyChangedEvent {
+        throw new Error("The abstract class 'PropertyChangedEvent' cannot be instantiated.");
+    }
+}
+
+export interface IPropertyChangedEvent {
+    propertyName: string;
+    newValue?: any | undefined;
+}
+
+export class ScriptPropertyChanged extends PropertyChangedEvent implements IScriptPropertyChanged {
+    scriptId!: string;
+
+    constructor(data?: IScriptPropertyChanged) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.scriptId = _data["scriptId"];
         }
     }
 
@@ -1007,8 +1087,7 @@ export class ScriptPropertyChanged implements IScriptPropertyChanged {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["scriptId"] = this.scriptId;
-        data["propertyName"] = this.propertyName;
-        data["newValue"] = this.newValue;
+        super.toJSON(data);
         return data; 
     }
 
@@ -1020,10 +1099,48 @@ export class ScriptPropertyChanged implements IScriptPropertyChanged {
     }
 }
 
-export interface IScriptPropertyChanged {
+export interface IScriptPropertyChanged extends IPropertyChangedEvent {
     scriptId: string;
-    propertyName: string;
-    newValue?: any | undefined;
+}
+
+export class ScriptConfigPropertyChanged extends PropertyChangedEvent implements IScriptConfigPropertyChanged {
+    scriptId!: string;
+
+    constructor(data?: IScriptConfigPropertyChanged) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): ScriptConfigPropertyChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptConfigPropertyChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        super.toJSON(data);
+        return data; 
+    }
+
+    clone(): ScriptConfigPropertyChanged {
+        const json = this.toJSON();
+        let result = new ScriptConfigPropertyChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptConfigPropertyChanged extends IPropertyChangedEvent {
+    scriptId: string;
 }
 
 export class ScriptOutputEmitted implements IScriptOutputEmitted {
@@ -1181,25 +1298,17 @@ export interface IEnvironmentsRemoved {
     environments: ScriptEnvironment[];
 }
 
-export class EnvironmentPropertyChanged implements IEnvironmentPropertyChanged {
+export class EnvironmentPropertyChanged extends PropertyChangedEvent implements IEnvironmentPropertyChanged {
     scriptId!: string;
-    propertyName!: string;
-    newValue?: any | undefined;
 
     constructor(data?: IEnvironmentPropertyChanged) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
+        super(data);
     }
 
     init(_data?: any) {
+        super.init(_data);
         if (_data) {
             this.scriptId = _data["scriptId"];
-            this.propertyName = _data["propertyName"];
-            this.newValue = _data["newValue"];
         }
     }
 
@@ -1213,8 +1322,7 @@ export class EnvironmentPropertyChanged implements IEnvironmentPropertyChanged {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["scriptId"] = this.scriptId;
-        data["propertyName"] = this.propertyName;
-        data["newValue"] = this.newValue;
+        super.toJSON(data);
         return data; 
     }
 
@@ -1226,10 +1334,54 @@ export class EnvironmentPropertyChanged implements IEnvironmentPropertyChanged {
     }
 }
 
-export interface IEnvironmentPropertyChanged {
+export interface IEnvironmentPropertyChanged extends IPropertyChangedEvent {
     scriptId: string;
-    propertyName: string;
-    newValue?: any | undefined;
+}
+
+export class ValueTupleOfActiveEnvironmentChanged implements IValueTupleOfActiveEnvironmentChanged {
+    item1!: ActiveEnvironmentChanged;
+
+    constructor(data?: IValueTupleOfActiveEnvironmentChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.item1 = new ActiveEnvironmentChanged();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"] ? ActiveEnvironmentChanged.fromJS(_data["item1"]) : new ActiveEnvironmentChanged();
+        }
+    }
+
+    static fromJS(data: any): ValueTupleOfActiveEnvironmentChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValueTupleOfActiveEnvironmentChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1 ? this.item1.toJSON() : <any>undefined;
+        return data; 
+    }
+
+    clone(): ValueTupleOfActiveEnvironmentChanged {
+        const json = this.toJSON();
+        let result = new ValueTupleOfActiveEnvironmentChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IValueTupleOfActiveEnvironmentChanged {
+    item1: ActiveEnvironmentChanged;
 }
 
 export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {

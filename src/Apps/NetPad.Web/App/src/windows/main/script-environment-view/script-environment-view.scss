@@ -9,6 +9,11 @@ script-environment-view {
         margin-bottom: 0.25rem;
     }
 
+    .script-kind-selector {
+        max-width: 150px;
+        display: inline-block;
+    }
+
     .text-editor-container {
         min-height: 200px;
         background-color: red;

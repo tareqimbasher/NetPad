@@ -1,18 +1,37 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using NetPad.Common;
 
 namespace NetPad.Scripts
 {
-    public class ScriptConfig
+    public class ScriptConfig : INotifyOnPropertyChanged
     {
+        private ScriptKind _kind;
+        private List<string> _namespaces;
+
         public ScriptConfig(ScriptKind kind, List<string>? namespaces = null)
         {
-            Kind = kind;
-            Namespaces = namespaces ?? new List<string>();
+            _kind = kind;
+            _namespaces = namespaces ?? new List<string>();
+            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
-        public ScriptKind Kind { get; private set; }
-        public List<string> Namespaces { get; private set; }
+        [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+
+        public ScriptKind Kind
+        {
+            get => _kind;
+            private set => this.RaiseAndSetIfChanged(ref _kind, value);
+        }
+
+        public List<string> Namespaces
+        {
+            get => _namespaces;
+            private set => this.RaiseAndSetIfChanged(ref _namespaces, value);
+        }
 
         public void SetKind(ScriptKind kind)
         {

@@ -7,14 +7,26 @@
         </button>
         <button class="btn btn-sm btn-secondary"
                 title="Save"
-                click.trigger="scriptManager.save(environment.script.id)">
+                click.trigger="scriptManager.save(script.id)">
             <i class="bi bi-hdd-fill"></i>
         </button>
         <button class="btn btn-sm btn-secondary"
                 title="Config"
-                click.trigger="scriptManager.openConfig(environment.script.id)">
+                click.trigger="scriptManager.openConfig(script.id)">
             <i class="bi bi-gear-fill"></i>
         </button>
+        <span class="ms-3">
+            <b>Kind:</b>
+            <select class="form-select form-select-sm script-kind-selector"
+                    value.bind="kind">
+                <option value="Expression">C# Expression (Not supported yet)</option>
+                <option value="Statements">C# Statements</option>
+                <option value="Program">C# Program (Doesn't auto-change code for you yet)</option>
+            </select>
+        </span>
+        <span class="ms-3">
+            <b>Namespaces:</b> ${script.config.namespaces.length}
+        </span>
     </div>
     <div class="text-editor-container">
         <div class="text-editor" data-text-editor-id.bind="id"></div>

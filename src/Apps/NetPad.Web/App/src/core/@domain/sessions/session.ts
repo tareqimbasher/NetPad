@@ -4,9 +4,13 @@ import {
     ScriptEnvironment,
     IEventBus,
     ScriptPropertyChanged,
-    EnvironmentsAdded, EnvironmentsRemoved, EnvironmentPropertyChanged, ActiveEnvironmentChanged
+    ScriptConfigPropertyChanged,
+    EnvironmentsAdded,
+    EnvironmentsRemoved,
+    EnvironmentPropertyChanged,
+    ActiveEnvironmentChanged
 } from "@domain";
-import {DI, IHttpClient} from "aurelia";
+import {DI, IHttpClient, ILogger} from "aurelia";
 
 export interface ISession extends ISessionService {
     environments: ScriptEnvironment[];
@@ -25,7 +29,8 @@ export class Session extends SessionService implements ISession {
     constructor(
         baseUrl: string,
         @IHttpClient http: IHttpClient,
-        @IEventBus readonly eventBus: IEventBus) {
+        @IEventBus readonly eventBus: IEventBus,
+        @ILogger readonly logger: ILogger) {
         super(baseUrl, http);
         this.subscribeToEvents();
     }
@@ -49,13 +54,14 @@ export class Session extends SessionService implements ISession {
     }
 
     private subscribeToEvents() {
-        this.eventBus.subscribeToServer(EnvironmentsAdded, message =>
-        {
+        this.eventBus.subscribeToServer(EnvironmentsAdded, message => {
+            this.logger.debug(`${nameof(EnvironmentsAdded)}`, message);
             this.environments.push(...message.environments);
         });
 
-        this.eventBus.subscribeToServer(EnvironmentsRemoved, message =>
-        {
+        this.eventBus.subscribeToServer(EnvironmentsRemoved, message => {
+            this.logger.debug(`${nameof(EnvironmentsRemoved)}`, message);
+
             for (let environment of message.environments) {
                 const ix = this.environments.findIndex(e => e.script.id == environment.script.id);
                 if (ix >= 0)
@@ -63,9 +69,10 @@ export class Session extends SessionService implements ISession {
             }
         });
 
-        this.eventBus.subscribeToServer(ActiveEnvironmentChanged, change =>
-        {
-            const activeScriptId = change.scriptId;
+        this.eventBus.subscribeToServer(ActiveEnvironmentChanged, message => {
+            this.logger.debug(`${nameof(ActiveEnvironmentChanged)}`, message);
+
+            const activeScriptId = message.scriptId;
 
             if (!activeScriptId)
                 this._active = null;
@@ -74,35 +81,52 @@ export class Session extends SessionService implements ISession {
                 if (environment)
                     this._active = environment;
                 else
-                    console.error("No environment found with script id: " + activeScriptId);
+                    this.logger.error(`${nameof(ActiveEnvironmentChanged)}: No environment found with script id: ` + activeScriptId);
             }
         });
 
-        this.eventBus.subscribeToServer(EnvironmentPropertyChanged, update =>
-        {
-            const environment = this.environments.find(e => e.script.id == update.scriptId);
+        this.eventBus.subscribeToServer(EnvironmentPropertyChanged, message => {
+            this.logger.debug(`${nameof(EnvironmentPropertyChanged)}`, message);
+
+            const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
-                console.error("Could not find an environment for script id: " + update.scriptId);
+                this.logger.error(`${nameof(EnvironmentPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
                 return;
             }
 
-            const propName = update.propertyName.charAt(0).toLowerCase() + update.propertyName.slice(1);
-            environment[propName] = update.newValue;
+            const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
+            environment[propName] = message.newValue;
         });
 
-        this.eventBus.subscribeToServer(ScriptPropertyChanged, update =>
-        {
-            const environment = this.environments.find(e => e.script.id == update.scriptId);
+        this.eventBus.subscribeToServer(ScriptPropertyChanged, message => {
+            this.logger.debug(`${nameof(ScriptPropertyChanged)}`, message);
+
+            const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
-                console.error("Could not find an environment for script id: " + update.scriptId);
+                this.logger.error(`${nameof(ScriptPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
                 return;
             }
 
             const script = environment.script;
-            const propName = update.propertyName.charAt(0).toLowerCase() + update.propertyName.slice(1);
-            script[propName] = update.newValue;
+            const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
+            script[propName] = message.newValue;
+        });
+
+        this.eventBus.subscribeToServer(ScriptConfigPropertyChanged, message => {
+            this.logger.debug(`${nameof(ScriptConfigPropertyChanged)}`, message);
+
+            const environment = this.environments.find(e => e.script.id == message.scriptId);
+
+            if (!environment) {
+                this.logger.error(`${nameof(ScriptConfigPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
+                return;
+            }
+
+            const script = environment.script;
+            const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
+            script.config[propName] = message.newValue;
         });
     }
 }
