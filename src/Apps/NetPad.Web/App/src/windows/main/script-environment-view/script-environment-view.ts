@@ -21,7 +21,7 @@ export class ScriptEnvironmentView {
     }
 
     private attached() {
-        const token = this.eventBus.subscribeRemote(ScriptOutputEmitted, msg => {
+        const token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
             if (msg.scriptId === this.environment.script.id) {
                 this.appendResults(msg.output);
             }

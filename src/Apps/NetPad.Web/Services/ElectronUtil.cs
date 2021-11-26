@@ -5,6 +5,6 @@ namespace NetPad.Services
 {
     public static class ElectronUtil
     {
-        public static BrowserWindow? MainWindow => Electron.WindowManager.BrowserWindows.FirstOrDefault();
+        public static BrowserWindow MainWindow => Electron.WindowManager.BrowserWindows.First();
     }
 }

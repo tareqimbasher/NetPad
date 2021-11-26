@@ -49,12 +49,12 @@ export class Session extends SessionService implements ISession {
     }
 
     private subscribeToEvents() {
-        this.eventBus.subscribeRemote(EnvironmentsAdded, message =>
+        this.eventBus.subscribeToServer(EnvironmentsAdded, message =>
         {
             this.environments.push(...message.environments);
         });
 
-        this.eventBus.subscribeRemote(EnvironmentsRemoved, message =>
+        this.eventBus.subscribeToServer(EnvironmentsRemoved, message =>
         {
             for (let environment of message.environments) {
                 const ix = this.environments.findIndex(e => e.script.id == environment.script.id);
@@ -63,7 +63,7 @@ export class Session extends SessionService implements ISession {
             }
         });
 
-        this.eventBus.subscribeRemote(ActiveEnvironmentChanged, change =>
+        this.eventBus.subscribeToServer(ActiveEnvironmentChanged, change =>
         {
             const activeScriptId = change.scriptId;
 
@@ -78,7 +78,7 @@ export class Session extends SessionService implements ISession {
             }
         });
 
-        this.eventBus.subscribeRemote(EnvironmentPropertyChanged, update =>
+        this.eventBus.subscribeToServer(EnvironmentPropertyChanged, update =>
         {
             const environment = this.environments.find(e => e.script.id == update.scriptId);
 
@@ -91,7 +91,7 @@ export class Session extends SessionService implements ISession {
             environment[propName] = update.newValue;
         });
 
-        this.eventBus.subscribeRemote(ScriptPropertyChanged, update =>
+        this.eventBus.subscribeToServer(ScriptPropertyChanged, update =>
         {
             const environment = this.environments.find(e => e.script.id == update.scriptId);
 

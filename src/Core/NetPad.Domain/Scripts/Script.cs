@@ -31,6 +31,7 @@ namespace NetPad.Scripts
 
         [JsonIgnore]
         public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        public bool ShouldSerializeOnPropertyChanged() => false; // For Json.NET to ignore prop
 
         public Guid Id { get; private set; }
 

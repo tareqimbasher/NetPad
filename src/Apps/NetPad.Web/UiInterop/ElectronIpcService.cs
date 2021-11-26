@@ -1,7 +1,6 @@
-using System.Text.Json;
+using System;
 using System.Threading.Tasks;
 using ElectronNET.API;
-using NetPad.Common;
 using NetPad.Services;
 
 namespace NetPad.UiInterop
@@ -15,10 +14,17 @@ namespace NetPad.UiInterop
 
         public Task SendAsync(string channel, object? message)
         {
-            Electron.IpcMain.Send(
-                ElectronUtil.MainWindow,
-                channel,
-                JsonSerializer.Serialize(message, JsonSerialization.DefaultOptions));
+            try
+            {
+                Electron.IpcMain.Send(
+                    ElectronUtil.MainWindow,
+                    channel,
+                    message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
 
             return Task.CompletedTask;
         }
