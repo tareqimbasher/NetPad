@@ -53,15 +53,24 @@ namespace NetPad.Sessions
         public async Task CloseAsync(Guid scriptId)
         {
             var environment = Get(scriptId);
-            if (environment != null)
-            {
-                _environments.Remove(environment);
-                environment.Dispose();
+            if (environment == null)
+                return;
 
-                if (Active == environment)
+            var ix = _environments.IndexOf(environment);
+
+            _environments.Remove(environment);
+            environment.Dispose();
+
+            if (Active == environment)
+            {
+                if (_environments.Any())
                 {
-                    await SetActive(null);
+                    if (ix != 0)
+                        ix--;
+                    await SetActive(_environments[ix].Script.Id);
                 }
+                else
+                    await SetActive(null);
             }
         }
 
