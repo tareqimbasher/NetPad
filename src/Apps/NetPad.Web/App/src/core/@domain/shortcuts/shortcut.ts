@@ -137,4 +137,16 @@ export class Shortcut {
             return this.keyExpression(key);
         } else return false;
     }
+
+    public toString(): string {
+        let combo = [];
+        if (this.metaKey) combo.push("Meta");
+        if (this.altKey) combo.push("Alt");
+        if (this.ctrlKey) combo.push("Ctrl");
+        if (this.shiftKey) combo.push("Shift");
+        if (this.key) combo.push(this.key.replace("Key", ""));
+        if (this.keyExpression) combo.push("Custom Expression");
+
+        return `${this.name} (${combo.join(" + ").trim()})`;
+    }
 }

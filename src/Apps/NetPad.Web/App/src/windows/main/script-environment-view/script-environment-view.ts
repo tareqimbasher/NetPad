@@ -1,5 +1,14 @@
 import {bindable, PLATFORM, watch} from "aurelia";
-import {IEventBus, IScriptService, ISession, Script, ScriptEnvironment, ScriptKind, ScriptOutputEmitted} from "@domain";
+import {
+    IEventBus,
+    IScriptService,
+    ISession,
+    IShortcutManager,
+    Script,
+    ScriptEnvironment,
+    ScriptKind,
+    ScriptOutputEmitted
+} from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
 
@@ -14,6 +23,7 @@ export class ScriptEnvironmentView {
     constructor(
         @IScriptService readonly scriptService: IScriptService,
         @ISession readonly session: ISession,
+        @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus) {
     }
 

@@ -16,6 +16,10 @@ export class ShortcutManager implements IShortcutManager{
     constructor(@IEventBus readonly eventBus: IEventBus) {
     }
 
+    public getShortcutByName(name: string): Shortcut | undefined {
+        return this.registry.find(s => s.name === name);
+    }
+
     public registerShortcut(shortcut: Shortcut) {
         const existing = this.registry.findIndex((s) => s.matches(shortcut));
         if (existing >= 0) {
