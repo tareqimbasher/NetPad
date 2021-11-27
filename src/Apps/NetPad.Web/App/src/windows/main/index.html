@@ -12,7 +12,8 @@
                         repeat.for="env of session.environments">
                         <div class="script-tab ${session.active === env ? 'active' : ''}">
                             <div class="text"
-                                 click.trigger="session.setActive(env.script.id)">
+                                 click.trigger="session.activate(env.script.id)"
+                                 auxclick.trigger="session.close(env.script.id)">
                                 ${env.script.name} ${env.script.isDirty ? '*' : ''}
                             </div>
                             <i class="bi bi-x action-danger" click.trigger="session.close(env.script.id)"></i>

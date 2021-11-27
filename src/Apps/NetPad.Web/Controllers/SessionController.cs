@@ -45,7 +45,7 @@ namespace NetPad.Controllers
             await _session.OpenAsync(script);
         }
 
-        [HttpPatch("close/{scriptId:guid}")]
+        [HttpPatch("{scriptId:guid}/close")]
         public async Task Close(Guid scriptId)
         {
             var scriptEnvironment = GetScriptEnvironment(scriptId);
@@ -74,10 +74,16 @@ namespace NetPad.Controllers
             return _session.Active?.Script.Id;
         }
 
-        [HttpPatch("set-active/{scriptId:guid}")]
-        public async Task SetActive(Guid scriptId)
+        [HttpPatch("{scriptId:guid}/activate")]
+        public async Task Activate(Guid scriptId)
         {
-            await _session.SetActive(scriptId);
+            await _session.ActivateAsync(scriptId);
+        }
+
+        [HttpPatch("activate-last-active")]
+        public async Task ActivateLastActive()
+        {
+            await _session.ActivateLastActiveScriptAsync();
         }
 
         private ScriptEnvironment GetScriptEnvironment(Guid id)

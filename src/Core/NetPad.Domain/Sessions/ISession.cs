@@ -14,7 +14,8 @@ namespace NetPad.Sessions
         ScriptEnvironment? Get(Guid scriptId);
         Task OpenAsync(Script script);
         Task CloseAsync(Guid scriptId);
-        Task<string> GetNewScriptName();
-        Task SetActive(Guid? scriptId);
+        Task<string> GetNewScriptNameAsync();
+        Task ActivateAsync(Guid? scriptId);
+        Task ActivateLastActiveScriptAsync();
     }
 }

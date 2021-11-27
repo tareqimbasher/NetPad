@@ -15,6 +15,7 @@ namespace NetPad.Sessions
         private readonly IServiceProvider _serviceProvider;
         private readonly ObservableCollection<ScriptEnvironment> _environments;
         private ScriptEnvironment? _active;
+        private Guid? _lastActiveScriptId = null;
 
         public Session(IServiceProvider serviceProvider)
         {
@@ -47,7 +48,7 @@ namespace NetPad.Sessions
                 _environments.Add(environment);
             }
 
-            await SetActive(script.Id);
+            await ActivateAsync(script.Id);
         }
 
         public async Task CloseAsync(Guid scriptId)
@@ -67,15 +68,17 @@ namespace NetPad.Sessions
                 {
                     if (ix != 0)
                         ix--;
-                    await SetActive(_environments[ix].Script.Id);
+                    await ActivateAsync(_environments[ix].Script.Id);
                 }
                 else
-                    await SetActive(null);
+                    await ActivateAsync(null);
             }
         }
 
-        public Task SetActive(Guid? scriptId)
+        public Task ActivateAsync(Guid? scriptId)
         {
+            _lastActiveScriptId = Active?.Script.Id;
+
             if (scriptId == null)
                 Active = null;
             else
@@ -87,7 +90,13 @@ namespace NetPad.Sessions
             return Task.CompletedTask;
         }
 
-        public Task<string> GetNewScriptName()
+        public Task ActivateLastActiveScriptAsync()
+        {
+            ActivateAsync(_lastActiveScriptId);
+            return Task.CompletedTask;
+        }
+
+        public Task<string> GetNewScriptNameAsync()
         {
             const string baseName = "Script";
             int number = 1;

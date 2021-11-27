@@ -330,7 +330,8 @@ export interface ISessionApiClient {
     open(scriptPath: string | null | undefined): Promise<void>;
     close(scriptId: string): Promise<void>;
     getActive(): Promise<string | null>;
-    setActive(scriptId: string): Promise<void>;
+    activate(scriptId: string): Promise<void>;
+    activateLastActive(): Promise<void>;
 }
 
 export class SessionApiClient implements ISessionApiClient {
@@ -457,7 +458,7 @@ export class SessionApiClient implements ISessionApiClient {
     }
 
     close(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/session/close/{scriptId}";
+        let url_ = this.baseUrl + "/session/{scriptId}/close";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
@@ -525,8 +526,8 @@ export class SessionApiClient implements ISessionApiClient {
         return Promise.resolve<string | null>(<any>null);
     }
 
-    setActive(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/session/set-active/{scriptId}";
+    activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/{scriptId}/activate";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
@@ -540,11 +541,42 @@ export class SessionApiClient implements ISessionApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processSetActive(_response);
+            return this.processActivate(_response);
         });
     }
 
-    protected processSetActive(response: Response): Promise<void> {
+    protected processActivate(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    activateLastActive(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/activate-last-active";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processActivateLastActive(_response);
+        });
+    }
+
+    protected processActivateLastActive(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {

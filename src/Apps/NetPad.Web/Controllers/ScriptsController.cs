@@ -37,7 +37,7 @@ namespace NetPad.Controllers
         [HttpPatch("create")]
         public async Task Create()
         {
-            var name = await _session.GetNewScriptName();
+            var name = await _session.GetNewScriptNameAsync();
             var script = await _scriptRepository.CreateAsync(name);
             await _session.OpenAsync(script);
         }

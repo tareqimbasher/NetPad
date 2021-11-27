@@ -62,7 +62,7 @@ namespace NetPad.ViewModels.Scripts
 
         public async Task CreateNewScriptAsync()
         {
-            var name = await _session.GetNewScriptName();
+            var name = await _session.GetNewScriptNameAsync();
             await _scriptRepository.CreateAsync(name);
             Console.WriteLine("Scripts: " + _session.Environments.Count);
         }
