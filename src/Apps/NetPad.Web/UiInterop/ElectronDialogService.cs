@@ -38,7 +38,7 @@ namespace NetPad.UiInterop
                 Message = "Where do you want to save this script?",
                 NameFieldLabel = script.Name,
                 Filters = new[] { new FileFilter { Name = "NetPad Script", Extensions = new[] { Script.STANARD_EXTENSION_WO_DOT } } },
-                DefaultPath = _settings.ScriptsDirectoryPath
+                DefaultPath = Path.Combine(_settings.ScriptsDirectoryPath, script.Name + Script.STANARD_EXTENSION)
             });
 
             if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
