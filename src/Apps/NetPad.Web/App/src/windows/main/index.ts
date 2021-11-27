@@ -53,6 +53,19 @@ export class Index {
         );
 
         this.shortcutManager.registerShortcut(
+            new Shortcut("Save All")
+                .withCtrlKey()
+                .withShiftKey()
+                .withKey(KeyCode.KeyS)
+                .hasAction(async () => {
+                    for (const environment of this.session.environments.filter(e => e.script.isDirty)) {
+                        await this.session.activate(environment.script.id);
+                        await this.scriptService.save(environment.script.id);
+                    }
+                })
+        );
+
+        this.shortcutManager.registerShortcut(
             new Shortcut("Run")
                 .withKey(KeyCode.F5)
                 .hasAction(() => this.scriptService.run(this.session.active.script.id))
