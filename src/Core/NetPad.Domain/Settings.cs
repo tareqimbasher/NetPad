@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace NetPad
 {
@@ -6,7 +7,10 @@ namespace NetPad
     {
         public Settings()
         {
-            ScriptsDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            ScriptsDirectoryPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Documents",
+                "NetPad");
         }
 
         public string ScriptsDirectoryPath { get; set; }
