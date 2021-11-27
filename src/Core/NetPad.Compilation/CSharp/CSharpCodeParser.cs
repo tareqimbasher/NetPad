@@ -109,6 +109,12 @@ public static class UserScript
     {{
         OutputWriter.WriteAsync(o?.ToString() + ""\n"");
     }}
+
+    public static T? Dump<T>(this T? o)
+    {{
+        ConsoleWriteLine(o);
+        return o;
+    }}
 }}
 
 {1}
