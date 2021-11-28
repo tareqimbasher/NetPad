@@ -1,5 +1,5 @@
 <template data-id.bind="id">
-    <div class="header">
+    <div class="header ps-2 pe-2 mb-3">
         <button class="btn btn-sm btn-success"
                 title="${shortcutManager.getShortcutByName('Run').toString()}"
                 click.trigger="run()">
@@ -15,9 +15,14 @@
                 click.trigger="scriptService.openConfig(script.id)">
             <i class="bi bi-gear-fill"></i>
         </button>
+        <button class="btn btn-sm btn-secondary"
+                title="Toggle Theme"
+                click.trigger="settings.theme = (settings.theme === 'Light' ? 'Dark' : 'Light')">
+            <i class="bi bi-sun-fill"></i>
+        </button>
         <span class="ms-3">
             <b>Kind:</b>
-            <select class="form-select bg-dark text-white form-select-sm script-kind-selector"
+            <select class="form-select form-select-sm script-kind-selector"
                     value.bind="kind">
                 <option value="Expression">C# Expression (Not supported yet)</option>
                 <option value="Statements">C# Statements</option>
@@ -32,7 +37,16 @@
         <div class="text-editor" data-text-editor-id.bind="id"></div>
     </div>
     <div class="results-container" show.bind="showResults">
-        <i class="bi bi-x-square-fill action-danger float-end" click.trigger="showResults = false"></i>
-        <div class="results" ref="resultsEl" data-script-results-id.bind="id"></div>
+        <div class="toolbar">
+            <div class="row m-0 p-0">
+                <div class="col ps-2">
+                    Results
+                </div>
+                <div class="col text-end pe-2">
+                    <i class="bi bi-x-square-fill action-danger" click.trigger="showResults = false"></i>
+                </div>
+            </div>
+        </div>
+        <div class="results pt-2" ref="resultsEl" data-script-results-id.bind="id"></div>
     </div>
 </template>

@@ -13,9 +13,20 @@ namespace NetPad.Controllers
             _settings = settings;
         }
 
+        [HttpGet]
         public Settings Get()
         {
             return _settings;
+        }
+
+        [HttpPut]
+        public IActionResult Update([FromBody] Settings settings)
+        {
+            _settings
+                .SetTheme(settings.Theme)
+                .SetScriptsDirectoryPath(settings.ScriptsDirectoryPath);
+            _settings.Save();
+            return NoContent();
         }
     }
 }

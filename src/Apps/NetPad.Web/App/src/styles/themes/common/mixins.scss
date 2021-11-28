@@ -1,0 +1,119 @@
+@import "./functions.scss";
+
+/*
+  @mixin theme($property, $key, $inlineExtra:null, $postExtra:null)
+  Assigns a property a theme value for each defined theme.Example usage:
+    .mySelector {
+      padding: 6px;
+      @include theme(background-color, backgroundLight);
+      @include theme(border, borderDark, 1px solid);
+    }sass generated equivalent:
+    .mySelector {
+      padding: 6px;      :global(.light) & {
+        border: 1px solid color(woodsmoke);
+        border: 1px solid var(--theme-light-borderDark, color(woodsmoke));
+      }
+      :global(.light) & {
+        background-color: color(alabaster);
+        background-color: var(--theme-light-backgroundLight, color(alabaster));
+      }      :global(.dark) & {
+        border: 1px solid color(alabaster);
+        border: 1px solid var(--theme-dark-borderDark, color(alabaster));
+      }
+      :global(.dark) & {
+        background-color: color(woodsmoke);
+        background-color: var(--theme-dark-backgroundLight, color(woodsmoke));
+      }
+    }browser output:
+    .mySelector {
+      padding: 6px;
+    }
+    .light .mySelector {
+      border: 1px solid #141519;
+      border: 1px solid var(--theme-light-borderDark, #141519);
+    }
+    .light .mySelector {
+      background-color: #FCFCFC;
+      background-color: var(--theme-light-backgroundLight, #FCFCFC);
+    }    .dark .mySelector {
+      border: 1px solid #FCFCFC;
+      border: 1px solid var(--theme-dark-borderDark, #FCFCFC);
+    }
+    .dark .mySelector {
+      background-color: #141519;
+      background-color: var(--theme-dark-backgroundLight, #141519);
+    }
+*/
+@mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
+  @each $theme in $themes {
+    @if (themeExists($key, $theme)) {
+      $value: getThemeValue($key, $theme);
+
+      //:global(.#{$theme}) & {
+      @at-root .#{$theme} #{&} { // if you aren't using css-modules, use this instead of the :global line above
+        #{$property}: #{$inlineExtra} #{$value} #{$postExtra}; //fallback for browsers that shouldn't exist anymore
+        #{$property}: #{$inlineExtra} var(--theme-#{$theme}-#{$key}, #{$value}) #{$postExtra};
+      }
+    } @else {
+      @error "Property #{$key} doesn't exist in #{$theme}";
+    }
+  }
+}
+
+/*
+  @mixin generateThemeMappings(themeName: string, themeMap: map)
+  helper function for generating list of theme variables and adding to existing map.
+  This will add a new theme to the themes array and the theme color list.
+*/
+@mixin generateThemeMappings($themeName, $newThemeMap) {
+  //creates/adds to list of theme names
+  $themes: append($themes, $themeName, $separator: comma) !global;
+
+  @each $key, $value in $newThemeMap {
+    //adds new themeKey if doesn't exist
+    @if not map-has-key($themeValues, $key) {
+      $themeValues: map-merge(
+        $themeValues,
+        (
+          $key: (
+            $themeName: $value,
+          ),
+        )
+      ) !global;
+    }
+    //adds to existing key map
+    @else {
+      $existingKeyMap: map-get($themeValues, $key);
+      //if theme variable doesn't exist, add it
+      @if not map-get($existingKeyMap, $themeName) {
+        $newKeyMap: map-merge(
+          $existingKeyMap,
+          (
+            $themeName: $value,
+          )
+        );
+        $themeValues: map-merge(
+          $themeValues,
+          (
+            $key: $newKeyMap,
+          )
+        ) !global;
+      }
+    }
+  }
+}
+
+/*
+  @mixin generateThemeVariables
+  Auto-generates the entire list of theme variables for use in var() statements.
+  Really should only be called in the html selector at the app root.
+*/
+@mixin generateThemeVariables {
+  @each $key, $val in $themeValues {
+    @each $theme in $themes {
+      @if (themeExists($key, $theme)) {
+        --theme-#{$theme}-#{$key}: #{getThemeValue($key, $theme)};
+      }
+    }
+  }
+}

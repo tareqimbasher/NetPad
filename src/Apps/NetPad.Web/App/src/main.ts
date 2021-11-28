@@ -3,6 +3,7 @@ import Aurelia, {ColorOptions, ConsoleSink, LoggerConfiguration, LogLevel, Regis
 // import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
+import {ISettingService, Settings} from "@domain";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -14,6 +15,11 @@ const app = Aurelia.register(
     }),
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(String, window.location.origin),
+    Registration.cachedCallback<Settings>(Settings, (c) => {
+        const settings = new Settings();
+        c.get(ISettingService).get().then(s => settings.init(s));
+        return settings;
+    })
 );
 
 const win = startupOptions.get("win");

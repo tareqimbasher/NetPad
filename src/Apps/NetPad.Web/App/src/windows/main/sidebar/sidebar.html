@@ -1,14 +1,17 @@
-<div class="connection-list">
-    <a href="#" class="ps-3">Add Connection</a>
-</div>
-<hr/>
-<div class="script-list">
-    <h5 class="ps-3">Scripts</h5>
-    <div class="list-group" style="width: 100%; display: block">
-        <button class="list-group-item list-group-item-action"
-                repeat.for="script of scripts"
-                click.trigger="session.open(script.path)">
-            ${script.name}
-        </button>
+<template class="d-flex flex-column">
+    <div class="connection-list">
+        <a class="ps-3">Add Connection</a>
     </div>
-</div>
+    <hr class="m-0"/>
+    <div class="pt-2 script-list flex-grow-1">
+        <h5 class="ps-3 mb-4">Scripts</h5>
+
+        <div class="list-group" style="width: 100%; display: block">
+            <button class="list-group-item list-group-item-action"
+                    repeat.for="script of scripts"
+                    click.trigger="session.open(script.path)">
+                ${script.name}
+            </button>
+        </div>
+    </div>
+</template>

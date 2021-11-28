@@ -1,0 +1,5 @@
+@import "~styles/themes";
+
+statusbar {
+    @include theme(background-color, statusbarBackground);
+}

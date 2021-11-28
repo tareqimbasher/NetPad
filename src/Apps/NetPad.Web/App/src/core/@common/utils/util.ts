@@ -68,4 +68,10 @@ export class Util {
             if (callNow) func.call(thisArg, ...args);
         };
     }
+
+    /**
+     * Creates a promise that resolves after the specified number of milliseconds.
+     * @param ms The delay in milliseconds.
+     */
+    public delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 }

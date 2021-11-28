@@ -930,6 +930,7 @@ export interface IScriptConfig {
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 export class Settings implements ISettings {
+    theme!: Theme;
     scriptsDirectoryPath!: string;
 
     constructor(data?: ISettings) {
@@ -943,6 +944,7 @@ export class Settings implements ISettings {
 
     init(_data?: any) {
         if (_data) {
+            this.theme = _data["theme"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
         }
     }
@@ -956,6 +958,7 @@ export class Settings implements ISettings {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["theme"] = this.theme;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         return data; 
     }
@@ -969,8 +972,11 @@ export class Settings implements ISettings {
 }
 
 export interface ISettings {
+    theme: Theme;
     scriptsDirectoryPath: string;
 }
+
+export type Theme = "Light" | "Dark";
 
 export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged implements IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
     item1!: Script;

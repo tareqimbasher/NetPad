@@ -52,7 +52,8 @@ namespace NetPad
             }
 
             services.AddSingleton<HostInfo>();
-            services.AddSingleton(Configuration.GetSection("Settings").Get<Settings>());
+            services.AddSingleton(Configuration.GetSection("Settings")
+                .Get<Settings>(c => c.BindNonPublicProperties = true));
 
             services.AddSingleton<ISession, Sessions.Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();

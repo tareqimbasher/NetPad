@@ -7,7 +7,8 @@ import {
     Script,
     ScriptEnvironment,
     ScriptKind,
-    ScriptOutputEmitted
+    ScriptOutputEmitted,
+    Settings
 } from "@domain";
 import * as monaco from "monaco-editor";
 import {Util} from "@common";
@@ -21,6 +22,7 @@ export class ScriptEnvironmentView {
     private resultsEl: HTMLElement;
 
     constructor(
+        readonly settings: Settings,
         @IScriptService readonly scriptService: IScriptService,
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
@@ -73,7 +75,12 @@ export class ScriptEnvironmentView {
     }
 
     private setResults(results: string | null) {
-        this.resultsEl.innerHTML = results?.replaceAll("\n", "<br/>") ?? "";
+        if (!results)
+            results = "";
+
+        this.resultsEl.innerHTML = results
+            .replaceAll("\n", "<br/>")
+            .replaceAll(" ", "&nbsp;");
     }
 
     private appendResults(results: string | null) {
@@ -84,9 +91,9 @@ export class ScriptEnvironmentView {
         const el = document.querySelector(`[data-text-editor-id="${this.id}"]`) as HTMLElement;
         this.editor = monaco.editor.create(el, {
             value: this.environment.script.code,
-            language: 'csharp',
-            theme: "vs-dark"
+            language: 'csharp'
         });
+        this.updateEditorTheme();
 
         const f = Util.debounce(this, async (ev) => {
             await this.scriptService.updateCode(this.environment.script.id, this.editor.getValue());
@@ -106,11 +113,16 @@ export class ScriptEnvironmentView {
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.session.active)
-    private adjustEditorLayout() {
+    private updateEditorLayout() {
         PLATFORM.taskQueue.queueTask(() => {
             if (this.environment === this.session.active)
-            this.editor.layout();
+                this.editor.layout();
         }, {delay: 100});
+    }
+
+    @watch<ScriptEnvironmentView>(vm => vm.settings.theme)
+    private updateEditorTheme() {
+        monaco.editor.setTheme(this.settings.theme === "Light" ? "vs" : "vs-dark");
     }
 }
 

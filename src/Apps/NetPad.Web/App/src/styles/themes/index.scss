@@ -1,0 +1,15 @@
+@import "./common/mixins.scss";
+
+$themes: ();
+$themeValues: ();
+
+@import "./light.scss";
+@include generateThemeMappings(theme-light, $light);
+
+@import "./dark.scss";
+@include generateThemeMappings(theme-dark, $dark);
+
+html {
+  @include generateThemeVariables;
+}
+

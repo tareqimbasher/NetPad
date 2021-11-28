@@ -1,4 +1,4 @@
-<template class="dark">
+<template class="theme-${settings.theme.toLowerCase()}">
     <require from="./script-environment-view/script-environment-view"></require>
     <require from="./sidebar/sidebar"></require>
     <require from="./statusbar/statusbar"></require>
@@ -7,7 +7,7 @@
         <div class="window-body flex-grow-1 d-flex flex-row">
             <sidebar></sidebar>
             <div id="content" class="flex-grow-1 d-flex flex-column">
-                <ul id="tabs" class="nav nav-tabs bg-dark">
+                <ul id="tabs" class="nav nav-tabs">
                     <li class="nav-item"
                         repeat.for="env of session.environments">
                         <div class="script-tab ${session.active === env ? 'active' : ''}">
@@ -25,7 +25,7 @@
                         click.trigger="scriptService.create()"
                         title="${shortcutManager.getShortcutByName('New').toString()}">
                         <div class="script-tab new-script-tab">
-                            <i class="bi bi-plus"></i>
+                            <i class="bi bi-plus-lg"></i>
                         </div>
                     </li>
                 </ul>

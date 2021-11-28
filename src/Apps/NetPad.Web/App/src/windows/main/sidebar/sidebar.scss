@@ -1,17 +1,23 @@
+@import "~styles/themes";
+
 sidebar {
-    background-color: #3e3e3e;
+    @include theme(background-color, sidebarBackground);
 
     .connection-list {
         min-height: 15rem;
     }
 
+    .script-list {
+    }
+
     .list-group-item {
-        background-color: #3e3e3e;
-        color: white;
+        @include theme(background-color, sidebarBackground);
+        @include theme(color, textColor);
+        border-right: none;
+        border-left: none;
 
         &:hover {
-            background-color: #505050;
-            color: white;
+            @include theme(background-color, hoverColor);
         }
     }
 }

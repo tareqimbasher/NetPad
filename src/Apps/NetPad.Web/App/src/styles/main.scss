@@ -1,13 +1,18 @@
 @import "./bootstrap";
-
-$dark-bg: #212121;
+@import "~styles/themes";
 
 body, html {
-  height: 100%;
+    height: 100%;
 }
 
 .window {
     min-height: 100vh;
-    background-color: $dark-bg;
-    color: white;
+    @include theme(background-color, backgroundColor);
+    @include theme(color, textColor);
+}
+
+.form-control, .form-select {
+    @include theme(background-color, formControlBackground);
+    @include theme(color, textColor);
+    @include theme(border-color, borderColor);
 }

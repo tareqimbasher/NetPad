@@ -1,13 +1,10 @@
+@import "~styles/themes";
+
 script-environment-view {
     display: flex;
     flex-direction: column;
     flex: 1;
     padding-top: 0.5rem;
-    background-color: #1e1e1e;
-
-    .header {
-        margin-bottom: 0.75rem;
-    }
 
     .script-kind-selector {
         max-width: 150px;
@@ -16,7 +13,6 @@ script-environment-view {
 
     .text-editor-container {
         min-height: 200px;
-        background-color: red;
         flex: 1;
 
         .text-editor {
@@ -27,7 +23,16 @@ script-environment-view {
     .results-container {
         flex: 1;
         padding: 0.25rem;
-        background-color: #3e3e3e;
-        color: white;
+        @include theme(background-color, resultsBackground);
+
+        .toolbar {
+            padding: 0.1rem 0;
+            @include theme(background-color, resultsToolbarBackground);
+        }
+    }
+
+    .results {
+        font-family: monospace;
+        overflow-y: auto;
     }
 }

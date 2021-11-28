@@ -1,48 +1,46 @@
+@import "~styles/themes";
+
 sidebar {
     flex: 0 0 15em;
 }
 
 #content {
-    padding: 0.25rem;
 }
 
 #tabs {
     .script-tab {
-        background-color: #333;
-        color: white;
+        @include theme(background-color, backgroundColor);
+        //@include theme(border-right, borderColor, 1px solid);
         font-weight: bold;
         cursor: default;
         height: 1.6rem;
         font-size: 0.75rem;
 
         $padding-vertical: 0.15rem;
-        $padding-horizontal: 0.65rem;
+        $padding-horizontal: 0.5rem;
+
+        padding: $padding-vertical $padding-horizontal;
 
         .text {
             display: inline-block;
-            padding: $padding-vertical 2px $padding-vertical $padding-horizontal;
         }
 
         .bi {
-            padding: $padding-vertical $padding-horizontal $padding-vertical 2px;
+            padding: $padding-vertical 1px;
         }
 
         &.new-script-tab {
-            padding: 0.2rem 0.2rem;
+            padding: $padding-vertical 0.6rem;
         }
 
         &:hover {
-            background-color: #525252;
+            @include theme(background-color, hoverColor);
         }
     }
 
     .script-tab.active {
         color: dodgerblue;
-        border-color: dodgerblue;
     }
-}
-
-statusbar {
 }
 
 .script-environments {

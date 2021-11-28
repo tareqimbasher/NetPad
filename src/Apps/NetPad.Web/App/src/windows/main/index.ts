@@ -1,4 +1,4 @@
-import {IScriptService, ISession, IShortcutManager, Shortcut} from "@domain";
+import {Settings, IScriptService, ISession, IShortcutManager, Shortcut} from "@domain";
 import {IBackgroundService, KeyCode} from "@common";
 import {IContainer} from "aurelia";
 
@@ -6,6 +6,7 @@ export class Index {
     private readonly backgroundServices: IBackgroundService[] = [];
 
     constructor(
+        readonly settings: Settings,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
