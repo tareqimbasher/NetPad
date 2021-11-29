@@ -26,6 +26,8 @@ namespace NetPad.Runtimes
 
         public Task InitializeAsync(Script script)
         {
+            if (_script != null)
+                throw new InvalidOperationException("Runtime is already initialized.");
             _script = script;
             return Task.CompletedTask;
         }
@@ -34,11 +36,11 @@ namespace NetPad.Runtimes
         {
             EnsureInitialization();
 
-            var result = _codeParser.Parse(_script!);
+            var parsingResult = _codeParser.Parse(_script!);
 
             try
             {
-                var compilationResult = _codeCompiler.Compile(new CompilationInput(result.Program));
+                var compilationResult = _codeCompiler.Compile(new CompilationInput(parsingResult.Program));
 
                 if (!compilationResult.Success)
                 {

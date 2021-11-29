@@ -27,6 +27,25 @@ namespace NetPad.Runtimes.Tests
         };
 
         [Fact]
+        public async Task Must_Be_Initialized()
+        {
+            var runtime = GetScriptRuntime();
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await runtime.RunAsync(ActionRuntimeInputReader.Default, ActionRuntimeOutputWriter.Default));
+        }
+
+        [Fact]
+        public async Task Throws_If_Already_Initialized()
+        {
+            var script = GetScript();
+            var runtime = GetScriptRuntime();
+            await runtime.InitializeAsync(script);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await runtime.InitializeAsync(script));
+        }
+
+        [Fact]
         public async Task Can_Not_Run_Expression_Kind_Script()
         {
             var script = GetScript();
