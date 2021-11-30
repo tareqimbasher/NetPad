@@ -230,7 +230,7 @@ public async Task Main()
         }
 
         [Fact]
-        public void Parsed_Code_Replaces_ConsoleWrite_With_UserScript_ConsoleWrite()
+        public void Parsed_Code_Replaces_ConsoleWrite_With_UserScript_OutputWrite()
         {
             var script = GetScript();
             script.UpdateCode("Statement 1; Console.Write(\"Some Text\");");
@@ -239,11 +239,11 @@ public async Task Main()
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.Write(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScript.ConsoleWrite(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("UserScript.OutputWrite(\"Some Text\");", result.UserProgram!);
         }
 
         [Fact]
-        public void Parsed_Code_Replaces_ConsoleWriteLine_With_UserScript_ConsoleWriteLine()
+        public void Parsed_Code_Replaces_ConsoleWriteLine_With_UserScript_OutputWriteLine()
         {
             var script = GetScript();
             script.UpdateCode("Statement 1; Console.WriteLine(\"Some Text\");");
@@ -252,7 +252,7 @@ public async Task Main()
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.WriteLine(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScript.ConsoleWriteLine(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("UserScript.OutputWriteLine(\"Some Text\");", result.UserProgram!);
         }
 
         private Script GetScript() => new Script("Test Script");

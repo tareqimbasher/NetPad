@@ -23,8 +23,8 @@ namespace NetPad.Compilation.CSharp
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode)
                 // TODO implementation should be improved to use syntax tree instead of a simple string replace
-                .Replace("Console.WriteLine", "UserScript.ConsoleWriteLine")
-                .Replace("Console.Write", "UserScript.ConsoleWrite");
+                .Replace("Console.WriteLine", "UserScript.OutputWriteLine")
+                .Replace("Console.Write", "UserScript.OutputWrite");
 
             var baseProgramTemplate = GetBaseProgramTemplate();
             var program = string.Format(baseProgramTemplate, usings, userProgram);
@@ -100,19 +100,19 @@ public static class UserScript
         }}
     }}
 
-    public static void ConsoleWrite(object? o)
+    public static void OutputWrite(object? o)
     {{
         OutputWriter.WriteAsync(o?.ToString());
     }}
 
-    public static void ConsoleWriteLine(object? o)
+    public static void OutputWriteLine(object? o)
     {{
         OutputWriter.WriteAsync(o?.ToString() + ""\n"");
     }}
 
     public static T? Dump<T>(this T? o)
     {{
-        ConsoleWriteLine(o);
+        OutputWriteLine(o);
         return o;
     }}
 }}
