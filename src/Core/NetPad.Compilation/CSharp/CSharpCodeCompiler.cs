@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetPad.Exceptions;
 using NetPad.Runtimes;
 
 namespace NetPad.Compilation.CSharp
@@ -25,10 +24,10 @@ namespace NetPad.Compilation.CSharp
         private CSharpCompilation CreateCompilation(CompilationInput input)
         {
             // Parse code
-            var sourceCode = SourceText.From(input.Code);
+            SourceText sourceCode = SourceText.From(input.Code);
 
-            var parseOptions = GetParseOptions();
-            var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
+            CSharpParseOptions parseOptions = GetParseOptions();
+            SyntaxTree parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
             // Build references
             var assemblyLocations = AppDomain.CurrentDomain.GetAssemblies()
@@ -50,7 +49,8 @@ namespace NetPad.Compilation.CSharp
             // Create compilation
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
-                .WithOptimizationLevel(OptimizationLevel.Debug);
+                .WithOptimizationLevel(OptimizationLevel.Debug)
+                .WithOverflowChecks(true);
 
             return CSharpCompilation.Create($"NetPadScript_{Guid.NewGuid()}.dll",
                 new[] { parsedSyntaxTree },
