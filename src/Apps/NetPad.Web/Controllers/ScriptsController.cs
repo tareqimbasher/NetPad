@@ -52,7 +52,7 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/run")]
-        public async Task Run(Guid id, [FromServices] IScriptRuntime scriptRuntime)
+        public async Task Run(Guid id)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
             await scriptEnvironment.RunAsync();
