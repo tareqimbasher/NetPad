@@ -1,9 +1,11 @@
-using System.Collections.Generic;
+using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NetPad.Common;
 using NetPad.Events;
+using NetPad.Extensions;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
@@ -67,10 +69,9 @@ namespace NetPad.BackgroundServices
                 }
                 else if (changes.Action == NotifyCollectionChangedAction.Remove)
                 {
-                    var environments = changes.OldItems as IList<ScriptEnvironment>;
-                    if (environments == null) return;
+                    if (changes.OldItems == null) return;
 
-                    foreach (var environment in environments)
+                    foreach (ScriptEnvironment environment in changes.OldItems)
                     {
                         environment.RemoveAllPropertyChangedHandlers();
                         environment.Script.RemoveAllPropertyChangedHandlers();
