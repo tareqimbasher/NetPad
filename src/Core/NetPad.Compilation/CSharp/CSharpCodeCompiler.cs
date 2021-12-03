@@ -30,13 +30,7 @@ namespace NetPad.Compilation.CSharp
             SyntaxTree parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
             // Build references
-            var assemblyLocations = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(assembly =>
-                    !assembly.IsDynamic &&
-                    !string.IsNullOrWhiteSpace(assembly.Location) &&
-                    assembly.GetName()?.Name?.StartsWith("System.") == true)
-                .Select(assembly => assembly.Location)
-                .ToHashSet();
+            var assemblyLocations = SystemAssemblies.GetAssemblyLocations();
 
             foreach (var assemblyReferenceLocation in input.AssemblyReferenceLocations)
                 assemblyLocations.Add(assemblyReferenceLocation);
