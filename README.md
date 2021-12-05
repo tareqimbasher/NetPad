@@ -2,6 +2,8 @@
 
 A cross-platform C# editor and playground.
 
+![preview-progressbars](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-http.png?raw=true)
+
 ## Motivation
 
 We love [LinqPad](https://www.linqpad.net/), but we miss its tremendous utility
