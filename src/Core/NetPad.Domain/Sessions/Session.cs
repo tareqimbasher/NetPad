@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Exceptions;
 using NetPad.Scripts;
@@ -13,13 +14,15 @@ namespace NetPad.Sessions
     public class Session : ISession
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<Session> _logger;
         private readonly ObservableCollection<ScriptEnvironment> _environments;
         private ScriptEnvironment? _active;
         private Guid? _lastActiveScriptId = null;
 
-        public Session(IServiceProvider serviceProvider)
+        public Session(IServiceProvider serviceProvider, ILogger<Session> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
             _environments = new ObservableCollection<ScriptEnvironment>();
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
@@ -31,6 +34,7 @@ namespace NetPad.Sessions
             get => _active;
             set => this.RaiseAndSetIfChanged(ref _active, value);
         }
+
         public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
 
 
@@ -53,6 +57,7 @@ namespace NetPad.Sessions
 
         public async Task CloseAsync(Guid scriptId)
         {
+            _logger.LogDebug($"Closing script: {scriptId}");
             var environment = Get(scriptId);
             if (environment == null)
                 return;
@@ -73,6 +78,8 @@ namespace NetPad.Sessions
                 else
                     await ActivateAsync(null);
             }
+
+            _logger.LogDebug($"Closed script: {scriptId}");
         }
 
         public Task ActivateAsync(Guid? scriptId)

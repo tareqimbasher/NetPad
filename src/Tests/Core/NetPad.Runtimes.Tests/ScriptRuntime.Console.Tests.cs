@@ -1,21 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
+using NetPad.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NetPad.Runtimes.Tests
 {
-    public class ScriptRuntimeConsoleTests
+    public class ScriptRuntimeConsoleTests : TestBase
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-
-        public ScriptRuntimeConsoleTests(ITestOutputHelper testOutputHelper)
+        public ScriptRuntimeConsoleTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            _testOutputHelper = testOutputHelper;
+        }
+
+        protected override void ConfigureServices(ServiceCollection services)
+        {
+            services.AddTransient<ICodeParser, CSharpCodeParser>();
+            services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
+            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
+            services.AddTransient<IScriptRuntime, ScriptRuntime>();
         }
 
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]
@@ -34,7 +42,7 @@ namespace NetPad.Runtimes.Tests
             script.Config.SetKind(ScriptKind.Statements);
             script.UpdateCode($"Console.Write({code});");
 
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
             await runtime.InitializeAsync(script);
 
             string? result = null;
@@ -46,11 +54,6 @@ namespace NetPad.Runtimes.Tests
             _testOutputHelper.WriteLine(result);
 
             Assert.Equal(expectedOutput, result);
-        }
-
-        private IScriptRuntime GetScriptRuntime()
-        {
-            return new ScriptRuntime(new MainAppDomainAssemblyLoader(), new CSharpCodeParser(), new CSharpCodeCompiler());
         }
     }
 }

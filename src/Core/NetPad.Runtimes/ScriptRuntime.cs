@@ -3,7 +3,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
+using NetPad.Exceptions;
 using NetPad.Extensions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
@@ -12,16 +15,22 @@ namespace NetPad.Runtimes
 {
     public sealed class ScriptRuntime : IScriptRuntime
     {
-        private readonly IAssemblyLoader _assemblyLoader;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ICodeParser _codeParser;
         private readonly ICodeCompiler _codeCompiler;
+        private readonly ILogger<ScriptRuntime> _logger;
         private Script? _script;
 
-        public ScriptRuntime(IAssemblyLoader assemblyLoader, ICodeParser codeParser, ICodeCompiler codeCompiler)
+        public ScriptRuntime(
+            IServiceProvider serviceProvider,
+            ICodeParser codeParser,
+            ICodeCompiler codeCompiler,
+            ILogger<ScriptRuntime> logger)
         {
-            _assemblyLoader = assemblyLoader;
+            _serviceProvider = serviceProvider;
             _codeParser = codeParser;
             _codeCompiler = codeCompiler;
+            _logger = logger;
         }
 
         public Task InitializeAsync(Script script)
@@ -36,11 +45,15 @@ namespace NetPad.Runtimes
         {
             EnsureInitialization();
 
-            var parsingResult = _codeParser.Parse(_script!);
+            var script = _script!;
+            var parsingResult = _codeParser.Parse(script!);
 
             try
             {
-                var compilationResult = _codeCompiler.Compile(new CompilationInput(parsingResult.Program));
+                var compilationResult = _codeCompiler.Compile(new CompilationInput(parsingResult.Program)
+                {
+                    OutputAssemblyNameTag = script.Name
+                });
 
                 if (!compilationResult.Success)
                 {
@@ -50,17 +63,28 @@ namespace NetPad.Runtimes
                     return false;
                 }
 
-                var assembly = _assemblyLoader.LoadFrom(compilationResult.AssemblyBytes);
+                using var scope = _serviceProvider.CreateScope();
+                var assembly = scope.ServiceProvider.GetRequiredService<IAssemblyLoader>().LoadFrom(compilationResult.AssemblyBytes);
 
                 var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
                 if (userScriptType == null)
-                    throw new Exception("Could not find UserScript type");
+                {
+                    throw new ScriptRuntimeException("Could not find the UserScript type");
+                }
 
                 var method = userScriptType.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
                 if (method == null)
-                    throw new Exception("Could not find entry method on UserScript");
+                {
+                    throw new Exception("Could not find the entry method Main on UserScript");
+                }
 
                 var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
+
+                if (task == null)
+                {
+                    throw new ScriptRuntimeException("Expected a Task to be returned by executing the " +
+                                                     $"script's Main method but got a {task?.GetType().FullName} ");
+                }
 
                 await task;
 
@@ -70,25 +94,15 @@ namespace NetPad.Runtimes
                     return false;
                 }
 
-                // var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
-                //     .Where(x => x.ModuleName?.Contains("Hello") == true)
-                //     .ToArray();
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Error running script: Details: {ex}");
                 await outputWriter.WriteAsync(ex + "\n");
                 return false;
             }
 
             return true;
-
-            // Task.Run(async () =>
-            // {
-            //     await Task.Delay(5000);
-            //     var modules = Process.GetCurrentProcess().Modules.Cast<ProcessModule>()
-            //         // .Where(x => x.ModuleName?.Contains("Hello") == true)
-            //         .ToArray();
-            // });
         }
 
         private void EnsureInitialization()
@@ -99,7 +113,8 @@ namespace NetPad.Runtimes
 
         public void Dispose()
         {
-            _assemblyLoader.UnloadLoadedAssemblies();
+            _logger.LogTrace($"Dispose start");
+            _logger.LogTrace($"Dispose end");
         }
     }
 }
