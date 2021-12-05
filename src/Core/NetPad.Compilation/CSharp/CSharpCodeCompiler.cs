@@ -46,7 +46,12 @@ namespace NetPad.Compilation.CSharp
                 .WithOptimizationLevel(OptimizationLevel.Debug)
                 .WithOverflowChecks(true);
 
-            return CSharpCompilation.Create($"NetPadScript_{Guid.NewGuid()}.dll",
+            // TODO write a unit test to test assembly name
+            string assemblyName = "NetPadScript";
+            if (input.OutputAssemblyNameTag != null)
+                assemblyName += $"_{input.OutputAssemblyNameTag}";
+
+            return CSharpCompilation.Create($"{assemblyName}_{Guid.NewGuid()}.dll",
                 new[] { parsedSyntaxTree },
                 references: references,
                 options: compilationOptions);
