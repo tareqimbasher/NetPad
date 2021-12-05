@@ -10,6 +10,19 @@ We love [LinqPad](https://www.linqpad.net/), but we miss its tremendous utility
 when running on non-Windows platforms. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
+## Contribution
+This is a work in progress, and still in its infancy. We welcome all contributions!
+
+You can currently:
+* Write, save and run your own scripts
+* Add additional namespaces to your script
+
+You cannot, yet:
+* Dump complex objects to the results console
+* Add database connections
+* Reference NuGet packages or your own assemblies
+* Enjoy code-completion features in the editor
+
 ## Tech Stack
 
 * Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
