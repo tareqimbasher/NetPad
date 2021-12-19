@@ -14,7 +14,9 @@
                             <div class="text"
                                  click.trigger="session.activate(env.script.id)"
                                  auxclick.trigger="session.close(env.script.id)">
-                                ${env.script.name} ${env.script.isDirty ? '*' : ''}
+                                ${env.script.name}
+                                ${env.status === 'Running' ? '[Running]' : ''}
+                                ${env.script.isDirty ? '*' : ''}
                             </div>
                             <i class="bi bi-x action-danger"
                                title="${shortcutManager.getShortcutByName('Close').toString()}"
