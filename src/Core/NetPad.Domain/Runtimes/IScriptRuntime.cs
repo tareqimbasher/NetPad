@@ -7,6 +7,6 @@ namespace NetPad.Runtimes
     public interface IScriptRuntime : IDisposable
     {
         Task InitializeAsync(Script script);
-        Task<bool> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter);
+        Task<RunResult> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter);
     }
 }

@@ -41,7 +41,7 @@ namespace NetPad.Runtimes
             return Task.CompletedTask;
         }
 
-        public async Task<bool> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
+        public async Task<RunResult> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
         {
             EnsureInitialization();
 
@@ -60,7 +60,7 @@ namespace NetPad.Runtimes
                     await outputWriter.WriteAsync(compilationResult.Diagnostics
                         .Where(d => d.Severity == DiagnosticSeverity.Error)
                         .JoinToString("\n") + "\n");
-                    return false;
+                    return RunResult.FailedToRun();
                 }
 
                 using var scope = _serviceProvider.CreateScope();
@@ -78,6 +78,8 @@ namespace NetPad.Runtimes
                     throw new Exception("Could not find the entry method Main on UserScript");
                 }
 
+                var runStart = DateTime.Now;
+
                 var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
 
                 if (task == null)
@@ -91,18 +93,16 @@ namespace NetPad.Runtimes
                 if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
                 {
                     await outputWriter.WriteAsync(exception);
-                    return false;
                 }
 
+                return RunResult.Success((DateTime.Now - runStart).TotalMilliseconds);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error running script: Details: {ex}");
                 await outputWriter.WriteAsync(ex + "\n");
-                return false;
+                return RunResult.FailedToRun();
             }
-
-            return true;
         }
 
         private void EnsureInitialization()

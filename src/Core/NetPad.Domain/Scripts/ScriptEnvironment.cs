@@ -14,7 +14,7 @@ namespace NetPad.Scripts
         private readonly IServiceScope _scope;
         private readonly ILogger<ScriptEnvironment> _logger;
         private ScriptStatus _status;
-        private int _runDurationMilliseconds;
+        private double _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
         private IScriptRuntimeInputReader _inputReader;
         private IScriptRuntimeOutputWriter _outputWriter;
@@ -44,7 +44,7 @@ namespace NetPad.Scripts
             set => this.RaiseAndSetIfChanged(ref _status, value);
         }
 
-        public int RunDurationMilliseconds
+        public double RunDurationMilliseconds
         {
             get => _runDurationMilliseconds;
             set => this.RaiseAndSetIfChanged(ref _runDurationMilliseconds, value);
@@ -62,12 +62,10 @@ namespace NetPad.Scripts
             {
                 var runtime = await GetRuntimeAsync();
 
-                var start = DateTime.Now;
+                var runResult = await runtime.RunAsync(_inputReader, _outputWriter);
 
-                var ranWithoutErrors = await runtime.RunAsync(_inputReader, _outputWriter);
-
-                RunDurationMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
-                Status = ranWithoutErrors ? ScriptStatus.Ready : ScriptStatus.Error;
+                RunDurationMilliseconds = runResult.DurationMs;
+                Status = runResult.IsScriptRunSuccessful ? ScriptStatus.Ready : ScriptStatus.Error;
                 _logger.LogDebug($"Run completed with status: {Status}");
             }
             catch (Exception ex)
