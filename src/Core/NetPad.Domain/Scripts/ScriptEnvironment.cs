@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Runtimes;
 
@@ -11,6 +12,7 @@ namespace NetPad.Scripts
     public sealed class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
     {
         private readonly IServiceScope _scope;
+        private readonly ILogger<ScriptEnvironment> _logger;
         private ScriptStatus _status;
         private int _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
@@ -19,8 +21,9 @@ namespace NetPad.Scripts
 
         public ScriptEnvironment(Script script, IServiceScope scope)
         {
-            _scope = scope;
             Script = script;
+            _scope = scope;
+            _logger = _scope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionRuntimeInputReader.Default;
             _outputWriter = ActionRuntimeOutputWriter.Default;
 
@@ -51,27 +54,31 @@ namespace NetPad.Scripts
 
         public async Task RunAsync()
         {
+            _logger.LogTrace($"{nameof(RunAsync)} start");
+
             Status = ScriptStatus.Running;
 
             try
             {
-                if (_runtime == null)
-                {
-                    _runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
-                    await _runtime.InitializeAsync(Script);
-                }
+                var runtime = await GetRuntimeAsync();
 
                 var start = DateTime.Now;
 
-                var ranWithoutErrors = await _runtime.RunAsync(_inputReader, _outputWriter);
+                var ranWithoutErrors = await runtime.RunAsync(_inputReader, _outputWriter);
 
                 RunDurationMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
                 Status = ranWithoutErrors ? ScriptStatus.Ready : ScriptStatus.Error;
+                _logger.LogDebug($"Run completed with status: {Status}");
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Error running script. Details: {ex}");
                 await _outputWriter.WriteAsync(ex + "\n");
                 Status = ScriptStatus.Error;
+            }
+            finally
+            {
+                _logger.LogTrace($"{nameof(RunAsync)} end");
             }
         }
 
@@ -86,11 +93,25 @@ namespace NetPad.Scripts
             _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
         }
 
+        private async Task<IScriptRuntime> GetRuntimeAsync()
+        {
+            if (_runtime == null)
+            {
+                _logger.LogDebug($"Initializing new runtime");
+                _runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
+                await _runtime.InitializeAsync(Script);
+            }
+
+            return _runtime;
+        }
+
         public void Dispose()
         {
+            _logger.LogTrace($"{nameof(Dispose)} start");
             StopAsync();
-            _scope.Dispose();
             this.RemoveAllPropertyChangedHandlers();
+            _scope.Dispose();
+            _logger.LogTrace($"{nameof(Dispose)} end");
         }
     }
 }

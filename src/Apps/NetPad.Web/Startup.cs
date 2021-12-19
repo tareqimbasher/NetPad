@@ -46,11 +46,6 @@ namespace NetPad
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
-            if (WebHostEnvironment.IsDevelopment())
-            {
-                AddSwagger(services);
-            }
-
             services.AddSingleton<HostInfo>();
             services.AddSingleton(Configuration.GetSection("Settings")
                 .Get<Settings>(c => c.BindNonPublicProperties = true));
@@ -60,7 +55,7 @@ namespace NetPad
 
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
-            services.AddTransient<IAssemblyLoader, MainAppDomainAssemblyLoader>();
+            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
 
             services.AddTransient<IUiDialogService, ElectronDialogService>();
@@ -69,6 +64,12 @@ namespace NetPad
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();
+
+            if (WebHostEnvironment.IsDevelopment())
+            {
+                AddSwagger(services);
+                services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

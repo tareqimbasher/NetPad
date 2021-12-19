@@ -1,21 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
+using NetPad.Tests;
+using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace NetPad.Runtimes.Tests
 {
-    public class ScriptRuntimeTests
+    public class ScriptRuntimeTests : TestBase
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-
-        public ScriptRuntimeTests(ITestOutputHelper testOutputHelper)
+        public ScriptRuntimeTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
         {
-            _testOutputHelper = testOutputHelper;
+        }
+
+        protected override void ConfigureServices(ServiceCollection services)
+        {
+            services.AddTransient<ICodeParser, CSharpCodeParser>();
+            services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
+            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
+            services.AddTransient<IScriptRuntime, ScriptRuntime>();
         }
 
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]
@@ -29,7 +39,7 @@ namespace NetPad.Runtimes.Tests
         [Fact]
         public async Task Must_Be_Initialized()
         {
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await runtime.RunAsync(ActionRuntimeInputReader.Default, ActionRuntimeOutputWriter.Default));
@@ -39,7 +49,7 @@ namespace NetPad.Runtimes.Tests
         public async Task Throws_If_Already_Initialized()
         {
             var script = GetScript();
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
             await runtime.InitializeAsync(script);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await runtime.InitializeAsync(script));
@@ -52,7 +62,7 @@ namespace NetPad.Runtimes.Tests
             script.Config.SetKind(ScriptKind.Expression);
             script.UpdateCode($@"Console.Write(5)");
 
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
             await runtime.InitializeAsync(script);
 
             await Assert.ThrowsAsync<NotImplementedException>(async () =>
@@ -71,7 +81,7 @@ namespace NetPad.Runtimes.Tests
             script.Config.SetKind(ScriptKind.Statements);
             script.UpdateCode($"Console.Write({code});");
 
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
             await runtime.InitializeAsync(script);
 
             string? result = null;
@@ -95,7 +105,7 @@ public async System.Threading.Tasks.Task Main() {{
 }}
 ");
 
-            var runtime = GetScriptRuntime();
+            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
             await runtime.InitializeAsync(script);
 
             string? result = null;
@@ -107,6 +117,48 @@ public async System.Threading.Tasks.Task Main() {{
             Assert.Equal(expectedOutput, result);
         }
 
+        [Fact]
+        public async Task Unloads_Assemblies_After_Run()
+        {
+            int? rollingLoadedAssembliesCount = null;
+
+            for (int i = 0; i < 5; i++)
+            {
+                var script = GetScript();
+                script.Config.SetKind(ScriptKind.Statements);
+                script.UpdateCode($"Console.Write(4 + 7);");
+
+                var scope = ServiceProvider.CreateScope();
+                var runtime = scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
+                await runtime.InitializeAsync(script);
+
+                // Keep result in local variable to test that assembly unloads even if we keep reference to result
+                string? result = null;
+
+                await runtime.RunAsync(
+                    ActionRuntimeInputReader.Default,
+                    new ActionRuntimeOutputWriter((o) =>
+                    {
+                        result = o?.ToString();
+                    }));
+
+                scope.Dispose();
+                GCUtil.CollectAndWait();
+
+                int loadedAssembliesCount = AppDomain.CurrentDomain.GetAssemblies().Length;
+                Logger.LogDebug($"Loaded assemblies count: {loadedAssembliesCount}");
+
+                if (rollingLoadedAssembliesCount == null)
+                    rollingLoadedAssembliesCount = loadedAssembliesCount;
+                else
+                {
+                    Assert.Equal(rollingLoadedAssembliesCount, loadedAssembliesCount);
+                    rollingLoadedAssembliesCount = loadedAssembliesCount;
+                }
+            }
+        }
+
+
         private Script GetScript()
         {
             var script = new Script("Test");
@@ -116,11 +168,6 @@ public async System.Threading.Tasks.Task Main() {{
             });
 
             return script;
-        }
-
-        private IScriptRuntime GetScriptRuntime()
-        {
-            return new ScriptRuntime(new MainAppDomainAssemblyLoader(), new CSharpCodeParser(), new CSharpCodeCompiler());
         }
     }
 }

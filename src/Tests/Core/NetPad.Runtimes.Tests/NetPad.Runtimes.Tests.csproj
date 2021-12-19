@@ -25,6 +25,15 @@
       <ProjectReference Include="..\..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
       <ProjectReference Include="..\..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
       <ProjectReference Include="..\..\..\Core\NetPad.Runtimes\NetPad.Runtimes.csproj" />
+      <ProjectReference Include="..\..\NetPad.Tests\NetPad.Tests.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="appsettings.json">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

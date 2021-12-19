@@ -5,13 +5,14 @@ namespace NetPad.Compilation
 {
     public class CompilationInput
     {
-        public string Code { get; }
-        public IEnumerable<string> AssemblyReferenceLocations { get; }
-
         public CompilationInput(string code, IEnumerable<string>? assemblyReferenceLocations = null)
         {
             Code = code;
             AssemblyReferenceLocations = assemblyReferenceLocations ?? Array.Empty<string>();
         }
+
+        public string Code { get; }
+        public string? OutputAssemblyNameTag { get; set; }
+        public IEnumerable<string> AssemblyReferenceLocations { get; }
     }
 }
