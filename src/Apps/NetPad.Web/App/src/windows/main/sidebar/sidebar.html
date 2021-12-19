@@ -4,11 +4,16 @@
     </div>
     <hr class="m-0"/>
     <div class="pt-2 script-list flex-grow-1">
-        <h5 class="ps-3 mb-4">Scripts</h5>
+        <h5 class="ps-3 mb-4">
+            Scripts
+            <div class="clickable bi bi-folder-fill text-yellow float-end pe-2"
+               click.trigger="openScriptsFolder()"></div>
+        </h5>
 
         <div class="list-group" style="width: 100%; display: block">
             <button class="list-group-item list-group-item-action"
                     repeat.for="script of scripts"
+                    title.bind="script.path"
                     click.trigger="session.open(script.path)">
                 ${script.name}
             </button>

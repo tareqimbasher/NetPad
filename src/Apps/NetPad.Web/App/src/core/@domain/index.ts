@@ -3,6 +3,7 @@ export * from "./api";
 export * from "./events/event-bus";
 
 export * from "./settings/setting-service";
+export * from "./app/app-service";
 export * from "./sessions/session";
 export * from "./scripts/script-service";
 

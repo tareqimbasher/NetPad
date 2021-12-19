@@ -16,3 +16,7 @@ body, html {
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
 }
+
+.bi.clickable {
+    cursor: pointer;
+}
