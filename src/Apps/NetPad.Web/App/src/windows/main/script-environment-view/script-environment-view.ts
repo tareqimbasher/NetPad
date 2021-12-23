@@ -91,7 +91,8 @@ export class ScriptEnvironmentView {
         const el = document.querySelector(`[data-text-editor-id="${this.id}"]`) as HTMLElement;
         this.editor = monaco.editor.create(el, {
             value: this.environment.script.code,
-            language: 'csharp'
+            language: 'csharp',
+            automaticLayout: true
         });
         this.updateEditorTheme();
 
@@ -101,7 +102,7 @@ export class ScriptEnvironmentView {
 
         this.editor.onDidChangeModelContent(ev => f(ev));
 
-        window.addEventListener("resize", () => this.editor.layout());
+        //window.addEventListener("resize", () => this.editor.layout());
         // const ob = new ResizeObserver(entries => {
         //     console.log(entries);
         //     this.editor.layout({

@@ -1,0 +1,15 @@
+<div id="keyboard-dialog">
+    <h4>
+        <i class="bi bi-keyboard-fill"></i>
+        Keyboard Shortcuts
+        <button class="btn btn-close btn-close-white float-end"
+                click.trigger="close()"></button>
+    </h4>
+    <hr>
+
+    <div class="row"
+         repeat.for="shortcut of shortcuts">
+        <div class="col-6">${shortcut.name}</div>
+        <div class="col-6"><code>${shortcut.keyCombinationString()}</code></div>
+    </div>
+</div>

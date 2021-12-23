@@ -20,3 +20,7 @@ body, html {
 .bi.clickable {
     cursor: pointer;
 }
+
+.dialog {
+    @include theme(background-color, backgroundColor);
+}

@@ -130,6 +130,7 @@ namespace NetPad
             {
                 Task.Run(async () =>
                 {
+                    await Task.Delay(2000);
                     await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
                 });
             }

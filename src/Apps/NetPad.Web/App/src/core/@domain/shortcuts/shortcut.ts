@@ -6,6 +6,8 @@ import { ShortcutActionExecutionContext } from "./shortcut-action-execution-cont
  * A shortcut that executes an action.
  */
 export class Shortcut {
+    public name: string;
+    public group?: string;
     public ctrlKey = false;
     public altKey = false;
     public shiftKey = false;
@@ -15,7 +17,9 @@ export class Shortcut {
     public action: (context: ShortcutActionExecutionContext) => void;
     public isConfigurable = false;
 
-    constructor(public name: string) {
+    constructor(name: string, group: string = null) {
+        this.name = name;
+        this.group = group;
         this.action = () => null;
     }
 
@@ -112,6 +116,8 @@ export class Shortcut {
                 this.metaKey === keyOrEventOrShortcut.metaKey
             );
         }
+        else
+            key = keyOrEventOrShortcut as KeyCode;
 
         return this.matchesKeyCombo(key, ctrl ?? false, alt ?? false, shift ?? false, meta ?? false);
     }
@@ -139,6 +145,10 @@ export class Shortcut {
     }
 
     public toString(): string {
+        return `${this.name} (${this.keyCombinationString})`;
+    }
+
+    public keyCombinationString() {
         let combo = [];
         if (this.metaKey) combo.push("Meta");
         if (this.altKey) combo.push("Alt");
@@ -147,6 +157,6 @@ export class Shortcut {
         if (this.key) combo.push(this.key.replace("Key", ""));
         if (this.keyExpression) combo.push("Custom Expression");
 
-        return `${this.name} (${combo.join(" + ").trim()})`;
+        return combo.join(" + ").trim();
     }
 }

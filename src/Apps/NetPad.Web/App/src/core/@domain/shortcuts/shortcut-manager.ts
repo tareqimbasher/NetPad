@@ -2,10 +2,19 @@ import {Shortcut} from "./shortcut";
 import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
 import {IEventBus} from "@domain/events/event-bus";
 import {DI} from "aurelia";
+import {KeyCode} from "@common";
 
 export interface IShortcutManager {
     initialize(): void;
+    getRegisteredShortcuts(): Shortcut[];
     registerShortcut(shortcut: Shortcut): void;
+    executeKeyCombination(
+        key: KeyCode | undefined,
+        ctrl?: boolean,
+        alt?: boolean,
+        shift?: boolean,
+        meta?: boolean
+    ): void;
 }
 
 export const IShortcutManager = DI.createInterface<IShortcutManager>();
@@ -16,8 +25,18 @@ export class ShortcutManager implements IShortcutManager{
     constructor(@IEventBus readonly eventBus: IEventBus) {
     }
 
-    public getShortcutByName(name: string): Shortcut | undefined {
-        return this.registry.find(s => s.name === name);
+    public initialize() {
+        document.addEventListener("keydown", (ev) => {
+            const shortcut = this.registry.find((s) => s.matches(ev));
+            if (!shortcut) return;
+
+            this.execute(shortcut, ev);
+            ev.preventDefault();
+        });
+    }
+
+    public getRegisteredShortcuts(): Shortcut[] {
+        return [...this.registry];
     }
 
     public registerShortcut(shortcut: Shortcut) {
@@ -29,15 +48,30 @@ export class ShortcutManager implements IShortcutManager{
         }
     }
 
-    public initialize() {
-        document.addEventListener("keydown", (ev) => {
-            const shortcut = this.registry.find((s) => s.matches(ev));
-            if (!shortcut) return;
+    public executeKeyCombination(
+        key: KeyCode | undefined,
+        ctrl?: boolean,
+        alt?: boolean,
+        shift?: boolean,
+        meta?: boolean
+    ): void {
+        const shortcut = this.registry.find(s => s.matches(
+            key,
+            ctrl,
+            alt,
+            shift,
+            meta
+        ));
 
-            const context = new ShortcutActionExecutionContext(ev, this.eventBus);
+        console.log("shortcut", shortcut);
 
-            shortcut.action(context);
-            ev.preventDefault();
-        });
+        if (shortcut) {
+            this.execute(shortcut);
+        }
+    }
+
+    private execute(shortcut: Shortcut, keyboardEvent: KeyboardEvent = null) {
+        const context = new ShortcutActionExecutionContext(keyboardEvent, this.eventBus);
+        shortcut.action(context);
     }
 }

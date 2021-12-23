@@ -1,4 +1,11 @@
-import Aurelia, {ColorOptions, ConsoleSink, LoggerConfiguration, LogLevel, Registration} from 'aurelia';
+import Aurelia, {
+    ColorOptions,
+    ConsoleSink,
+    DialogDefaultConfiguration,
+    LoggerConfiguration,
+    LogLevel,
+    Registration
+} from 'aurelia';
 // import "bootstrap";
 // import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
@@ -19,7 +26,10 @@ const app = Aurelia.register(
         const settings = new Settings();
         c.get(ISettingService).get().then(s => settings.init(s));
         return settings;
-    })
+    }),
+    DialogDefaultConfiguration.customize((config) => {
+        config.lock = true;
+    }),
 );
 
 const win = startupOptions.get("win");

@@ -7,6 +7,8 @@ export * from "./app/app-service";
 export * from "./sessions/session";
 export * from "./scripts/script-service";
 
+export * from "./dialogs/dialog-base";
+
 export * from "./shortcuts/shortcut";
 export * from "./shortcuts/shortcut-action-execution-context";
 export * from "./shortcuts/shortcut-manager";

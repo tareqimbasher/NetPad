@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
@@ -9,10 +11,12 @@ namespace NetPad.UiInterop
 {
     public class ElectronWindowService : IUiWindowService
     {
+        private readonly IIpcService _ipcService;
         private readonly string _hostUrl;
 
-        public ElectronWindowService(HostInfo hostInfo)
+        public ElectronWindowService(HostInfo hostInfo, IIpcService ipcService)
         {
+            _ipcService = ipcService;
             _hostUrl = hostInfo.HostUrl;
         }
 
@@ -21,10 +25,31 @@ namespace NetPad.UiInterop
         public async Task OpenMainWindowAsync()
         {
             var display = await PrimaryDisplay();
-            await CreateWindowAsync("main", new BrowserWindowOptions
+            var window = await CreateWindowAsync("main", new BrowserWindowOptions
             {
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 2 / 3,
+            });
+
+
+            window.SetMenu(new[]
+            {
+                new MenuItem
+                {
+                    Label = "Help",
+                    Type = MenuType.submenu,
+                    Submenu = new []
+                    {
+                        new MenuItem()
+                        {
+                            Label = "Keyboard Shortcuts",
+                            Click = new Action(() =>
+                            {
+                                _ipcService.SendAsync("show-keyboard-shortcut-dialog", null);
+                            })
+                        }
+                    }
+                }
             });
         }
 

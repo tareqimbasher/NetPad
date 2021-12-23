@@ -54,6 +54,11 @@ export class Session extends SessionApiClient implements ISession {
     }
 
     private subscribeToEvents() {
+        this.eventBus.subscribeToServer("show-keyboard-shortcut-dialog", o =>
+        {
+           alert("Got message show-keyboard-shortcut-dialog");
+        });
+
         this.eventBus.subscribeToServer(EnvironmentsAdded, message => {
             this.logger.debug(`${nameof(EnvironmentsAdded)}`, message);
             this.environments.push(...message.environments);
