@@ -48,7 +48,7 @@ namespace NetPad.Runtimes.Tests
             string? result = null;
 
             await runtime.RunAsync(
-                ActionRuntimeInputReader.Default,
+                ActionRuntimeInputReader.Null,
                 new ActionRuntimeOutputWriter(output => result = output?.ToString()));
 
             _testOutputHelper.WriteLine(result);

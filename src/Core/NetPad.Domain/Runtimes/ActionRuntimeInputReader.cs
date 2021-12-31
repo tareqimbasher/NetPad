@@ -12,7 +12,7 @@ namespace NetPad.Runtimes
             _action = action;
         }
 
-        public static ActionRuntimeInputReader Default => new ActionRuntimeInputReader(() => null);
+        public static ActionRuntimeInputReader Null => new ActionRuntimeInputReader(() => null);
 
         public Task<string?> ReadAsync()
         {
@@ -29,7 +29,7 @@ namespace NetPad.Runtimes
             _action = action;
         }
 
-        public static AsyncActionRuntimeInputReader Default =>
+        public static AsyncActionRuntimeInputReader Null =>
             new AsyncActionRuntimeInputReader(() => Task.FromResult<string?>(null));
 
         public async Task<string?> ReadAsync()

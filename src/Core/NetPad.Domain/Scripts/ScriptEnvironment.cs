@@ -24,8 +24,8 @@ namespace NetPad.Scripts
             Script = script;
             _scope = scope;
             _logger = _scope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
-            _inputReader = ActionRuntimeInputReader.Default;
-            _outputWriter = ActionRuntimeOutputWriter.Default;
+            _inputReader = ActionRuntimeInputReader.Null;
+            _outputWriter = ActionRuntimeOutputWriter.Null;
 
             Status = ScriptStatus.Ready;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();

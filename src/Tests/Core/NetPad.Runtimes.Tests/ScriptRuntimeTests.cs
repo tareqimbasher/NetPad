@@ -42,7 +42,7 @@ namespace NetPad.Runtimes.Tests
             var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await runtime.RunAsync(ActionRuntimeInputReader.Default, ActionRuntimeOutputWriter.Default));
+                await runtime.RunAsync(ActionRuntimeInputReader.Null, ActionRuntimeOutputWriter.Null));
         }
 
         [Fact]
@@ -68,8 +68,8 @@ namespace NetPad.Runtimes.Tests
             await Assert.ThrowsAsync<NotImplementedException>(async () =>
             {
                 await runtime.RunAsync(
-                    ActionRuntimeInputReader.Default,
-                    ActionRuntimeOutputWriter.Default);
+                    ActionRuntimeInputReader.Null,
+                    ActionRuntimeOutputWriter.Null);
             });
         }
 
@@ -87,7 +87,7 @@ namespace NetPad.Runtimes.Tests
             string? result = null;
 
             await runtime.RunAsync(
-                ActionRuntimeInputReader.Default,
+                ActionRuntimeInputReader.Null,
                 new ActionRuntimeOutputWriter(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
@@ -111,7 +111,7 @@ public async System.Threading.Tasks.Task Main() {{
             string? result = null;
 
             await runtime.RunAsync(
-                ActionRuntimeInputReader.Default,
+                ActionRuntimeInputReader.Null,
                 new ActionRuntimeOutputWriter(output => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
@@ -136,7 +136,7 @@ public async System.Threading.Tasks.Task Main() {{
                 string? result = null;
 
                 await runtime.RunAsync(
-                    ActionRuntimeInputReader.Default,
+                    ActionRuntimeInputReader.Null,
                     new ActionRuntimeOutputWriter((o) =>
                     {
                         result = o?.ToString();

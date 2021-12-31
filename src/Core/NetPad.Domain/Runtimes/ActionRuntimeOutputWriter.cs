@@ -12,7 +12,7 @@ namespace NetPad.Runtimes
             _action = action;
         }
 
-        public static ActionRuntimeOutputWriter Default => new ActionRuntimeOutputWriter(o => { });
+        public static ActionRuntimeOutputWriter Null => new ActionRuntimeOutputWriter(o => { });
 
         public Task WriteAsync(object? output)
         {
@@ -30,7 +30,7 @@ namespace NetPad.Runtimes
             _action = action;
         }
 
-        public static AsyncActionRuntimeOutputWriter Default =>
+        public static AsyncActionRuntimeOutputWriter Null =>
             new AsyncActionRuntimeOutputWriter(o => Task.CompletedTask);
 
         public async Task WriteAsync(object? output)

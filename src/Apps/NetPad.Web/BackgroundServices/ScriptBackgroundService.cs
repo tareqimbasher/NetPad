@@ -64,7 +64,7 @@ namespace NetPad.BackgroundServices
                                 new ScriptConfigPropertyChanged(script.Id, args.PropertyName, args.NewValue));
                         });
 
-                        environment.SetIO(ActionRuntimeInputReader.Default, new IpcScriptOutputWriter(environment, _ipcService));
+                        environment.SetIO(ActionRuntimeInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
                     }
                 }
                 else if (changes.Action == NotifyCollectionChangedAction.Remove)
