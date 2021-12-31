@@ -7,9 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Exceptions;
-using NetPad.Extensions;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
+using NetPad.Utilities;
 
 namespace NetPad.Runtimes
 {

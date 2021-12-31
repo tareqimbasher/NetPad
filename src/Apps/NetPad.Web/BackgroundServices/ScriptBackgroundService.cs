@@ -5,11 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using NetPad.Common;
 using NetPad.Events;
-using NetPad.Extensions;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices
 {
