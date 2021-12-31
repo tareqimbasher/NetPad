@@ -3,9 +3,9 @@ using NetPad.Scripts;
 
 namespace NetPad.Exceptions
 {
-    public class InvalidScriptFormat : Exception
+    public class InvalidScriptFormatException : Exception
     {
-        public InvalidScriptFormat(Script script)
+        public InvalidScriptFormatException(Script script)
         {
             Script = script;
         }

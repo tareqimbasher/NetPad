@@ -59,7 +59,7 @@ namespace NetPad.Scripts
         {
             var parts = contents.Split("#Code");
             if (parts.Length != 2)
-                throw new InvalidScriptFormat(this);
+                throw new InvalidScriptFormatException(this);
 
             var part1 = parts[0];
             var part1Lines = part1.Split(Environment.NewLine);
@@ -71,7 +71,7 @@ namespace NetPad.Scripts
             Config.RemoveAllPropertyChangedHandlers();
 
             Config = JsonSerializer.Deserialize<ScriptConfig>(
-                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormat(this);
+                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormatException(this);
 
             Config.OnPropertyChanged.Add(change  =>
             {
