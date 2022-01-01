@@ -48,7 +48,7 @@ namespace NetPad.Scripts
 
             var script = new Script(Guid.NewGuid(), Path.GetFileNameWithoutExtension(fileInfo.Name));
             script.SetPath(path);
-            await script.LoadAsync(await File.ReadAllTextAsync(filePath).ConfigureAwait(false)).ConfigureAwait(false);
+            script.Deserialize(await File.ReadAllTextAsync(filePath).ConfigureAwait(false));
 
             return script;
         }
@@ -60,13 +60,7 @@ namespace NetPad.Scripts
 
             var filePath = GetFullPath(script.Path);
 
-            var config = JsonSerializer.Serialize(script.Config);
-
-            await File.WriteAllTextAsync(filePath, $"{script.Id}\n" +
-                                                   $"{config}\n" +
-                                                   $"#Code\n" +
-                                                   $"{script.Code}")
-                .ConfigureAwait(false);
+            await File.WriteAllTextAsync(filePath, script.Serialize()).ConfigureAwait(false);
 
             script.IsDirty = false;
             return script;

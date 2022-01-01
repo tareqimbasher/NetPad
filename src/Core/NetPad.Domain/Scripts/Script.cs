@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -55,7 +55,15 @@ namespace NetPad.Scripts
         public bool IsNew => Path == null;
 
 
-        public Task LoadAsync(string contents)
+        public string Serialize()
+        {
+            return $"{Id}\n" +
+                   $"{JsonSerializer.Serialize(Config)}\n" +
+                   $"#Code\n" +
+                   $"{Code}";
+        }
+
+        public void Deserialize(string contents)
         {
             var parts = contents.Split("#Code");
             if (parts.Length != 2)
@@ -78,8 +86,6 @@ namespace NetPad.Scripts
                 IsDirty = true;
                 return Task.CompletedTask;
             });
-
-            return Task.CompletedTask;
         }
 
         public void SetPath(string path)
