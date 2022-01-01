@@ -60,7 +60,7 @@ namespace NetPad.Runtimes
                     await outputWriter.WriteAsync(compilationResult.Diagnostics
                         .Where(d => d.Severity == DiagnosticSeverity.Error)
                         .JoinToString("\n") + "\n");
-                    return RunResult.FailedToRun();
+                    return RunResult.RunAttemptFailure();
                 }
 
                 using var scope = _serviceProvider.CreateScope();
@@ -93,6 +93,7 @@ namespace NetPad.Runtimes
                 if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
                 {
                     await outputWriter.WriteAsync(exception);
+                    return RunResult.ScriptCompletionFailure();
                 }
 
                 return RunResult.Success((DateTime.Now - runStart).TotalMilliseconds);
@@ -101,7 +102,7 @@ namespace NetPad.Runtimes
             {
                 _logger.LogError($"Error running script: Details: {ex}");
                 await outputWriter.WriteAsync(ex + "\n");
-                return RunResult.FailedToRun();
+                return RunResult.RunAttemptFailure();
             }
         }
 

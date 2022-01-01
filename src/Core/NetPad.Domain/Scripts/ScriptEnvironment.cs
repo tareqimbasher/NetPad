@@ -65,7 +65,7 @@ namespace NetPad.Scripts
                 var runResult = await runtime.RunAsync(_inputReader, _outputWriter);
 
                 RunDurationMilliseconds = runResult.DurationMs;
-                Status = runResult.IsScriptRunSuccessful ? ScriptStatus.Ready : ScriptStatus.Error;
+                Status = runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error;
                 _logger.LogDebug($"Run completed with status: {Status}");
             }
             catch (Exception ex)

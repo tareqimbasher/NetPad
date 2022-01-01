@@ -1,12 +1,14 @@
 namespace NetPad.Runtimes
 {
+    /// <summary>
+    /// Represents the result of running a script.
+    /// </summary>
     public class RunResult
     {
-
-        public RunResult(bool isRunAttemptSuccessful, bool isScriptRunSuccessful, double durationMs)
+        public RunResult(bool isRunAttemptSuccessful, bool isScriptCompletedSuccessfully, double durationMs)
         {
             IsRunAttemptSuccessful = isRunAttemptSuccessful;
-            IsScriptRunSuccessful = isScriptRunSuccessful;
+            IsScriptCompletedSuccessfully = isScriptCompletedSuccessfully;
             DurationMs = durationMs;
         }
 
@@ -16,16 +18,28 @@ namespace NetPad.Runtimes
         public bool IsRunAttemptSuccessful { get; }
 
         /// <summary>
-        /// Indicates whether the actual script code ran successfully.
+        /// Indicates whether the script code ran to completion successfully.
         /// </summary>
-        public bool IsScriptRunSuccessful { get; }
+        public bool IsScriptCompletedSuccessfully { get; }
 
         /// <summary>
-        /// The duration, in milliseconds, it took to run the script code.
+        /// The duration, in milliseconds, it took to run the script.
         /// </summary>
         public double DurationMs { get; }
 
-        public static RunResult FailedToRun() => new RunResult(false, false, 0);
+        /// <summary>
+        /// Returns a <see cref="RunResult"/> that indicates that the attempt to run the script failed.
+        /// </summary>
+        public static RunResult RunAttemptFailure() => new RunResult(false, false, 0);
+
+        /// <summary>
+        /// Returns a <see cref="RunResult"/> that indicates that the script ran but did not complete successfully.
+        /// </summary>
+        public static RunResult ScriptCompletionFailure() => new RunResult(true, false, 0);
+
+        /// <summary>
+        /// Returns a <see cref="RunResult"/> that indicates that the script ran and completed successfully.
+        /// </summary>
         public static RunResult Success(double durationMs) => new RunResult(true, true, durationMs);
     }
 }
