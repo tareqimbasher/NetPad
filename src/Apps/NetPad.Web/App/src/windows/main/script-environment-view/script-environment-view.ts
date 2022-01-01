@@ -1,4 +1,4 @@
-import {bindable, PLATFORM, watch} from "aurelia";
+import { bindable, PLATFORM, watch } from "aurelia";
 import {
     IEventBus,
     IScriptService,
@@ -11,7 +11,7 @@ import {
     Settings
 } from "@domain";
 import * as monaco from "monaco-editor";
-import {Util} from "@common";
+import { Util } from "@common";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
@@ -58,7 +58,7 @@ export class ScriptEnvironmentView {
 
         PLATFORM.taskQueue.queueTask(() => {
             this.initializeEditor();
-        }, {delay: 100});
+        }, { delay: 100 });
     }
 
     public detaching() {
@@ -95,6 +95,30 @@ export class ScriptEnvironmentView {
         });
         this.updateEditorTheme();
 
+        monaco.languages.registerCompletionItemProvider("csharp", {
+            provideCompletionItems: (model, position, ctx, token) => {
+                return <any>{
+                    suggestions: [
+                        {
+                            label: "Console.WriteLine",
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            documentation: "Write a line to the console",
+                            inertText: "Console.WriteLine();",
+                            range: {
+                                replace: {
+                                    startLineNumber: position.lineNumber,
+                                    endLineNumber: position.lineNumber,
+                                    startColumn: position.column,
+                                    endColumn: position.column
+                                }
+                            }
+                        }
+                    ],
+                    incomplete: false
+                };
+            }
+        })
+
         const f = Util.debounce(this, async (ev) => {
             await this.scriptService.updateCode(this.environment.script.id, this.editor.getValue());
         }, 500, true);
@@ -117,7 +141,7 @@ export class ScriptEnvironmentView {
         PLATFORM.taskQueue.queueTask(() => {
             if (this.environment === this.session.active)
                 this.editor.layout();
-        }, {delay: 100});
+        }, { delay: 100 });
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.settings.theme)

@@ -99,7 +99,9 @@ namespace NetPad.Sessions
 
         public Task ActivateLastActiveScriptAsync()
         {
-            ActivateAsync(_lastActiveScriptId);
+            if (_lastActiveScriptId != null)
+                ActivateAsync(_lastActiveScriptId);
+
             return Task.CompletedTask;
         }
 
