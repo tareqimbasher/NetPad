@@ -31,6 +31,7 @@ namespace NetPad
 
         public void Save()
         {
+            throw new NotImplementedException();
         }
     }
 
