@@ -8,6 +8,7 @@ using NetPad.Compilation.CSharp;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
 using NetPad.Tests;
+using NetPad.Tests.Helpers;
 using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -161,7 +162,7 @@ public async System.Threading.Tasks.Task Main() {{
 
         private Script GetScript()
         {
-            var script = new Script("Test");
+            var script = ScriptTestHelper.CreateScript();
             script.Config.SetNamespaces(new[]
             {
                 "System"

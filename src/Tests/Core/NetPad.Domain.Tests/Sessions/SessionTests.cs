@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetPad.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,8 +23,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task GettingOpenedScriptById_ReturnsCorrectScript()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             var result = session.Get(script.Id);
@@ -34,8 +35,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task GettingClosedScriptById_ReturnsNull()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
             await session.CloseAsync(script.Id);
 
@@ -47,7 +48,7 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public void GettingNonOpenedScriptById_ReturnsNull()
         {
-            var session = GetNewSession();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
 
             var result = session.Get(Guid.NewGuid());
 
@@ -58,7 +59,7 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public void ActiveSession_IsNull_OnInitialization()
         {
-            var session = GetNewSession();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
 
             Assert.Null(session.Active);
         }
@@ -66,9 +67,9 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ActivingAScript_SetsItAsTheActiveScript()
         {
-            var session = GetNewSession();
-            var script1 = GetNewScript();
-            var script2 = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script1 = ScriptTestHelper.CreateScript();
+            var script2 = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script1);
             await session.OpenAsync(script2);
 
@@ -80,9 +81,9 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ActivatingLastActiveScript_ActivatesTheLastActiveScript()
         {
-            var session = GetNewSession();
-            var script1 = GetNewScript();
-            var script2 = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script1 = ScriptTestHelper.CreateScript();
+            var script2 = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script1);
             await session.OpenAsync(script2);
             await session.ActivateAsync(script1.Id);
@@ -95,7 +96,7 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ActivatingLastActiveScriptWhenNoScriptsAreOpen_DoesNotThrow()
         {
-            var session = GetNewSession();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
 
             await session.ActivateLastActiveScriptAsync();
 
@@ -105,8 +106,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ActivatingLastActiveScriptWhenNoScriptWasLastActive_DoesNotChangeActiveProperty()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             await session.ActivateLastActiveScriptAsync();
@@ -117,8 +118,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task OpeningAScript_SetsItAsActive()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             Assert.Equal(session.Active?.Script, script);
@@ -127,8 +128,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task OpeningAScript_AddsItToEnviornmentsCollection()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             Assert.Equal(session.Environments.Single().Script, script);
@@ -137,8 +138,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ClosingScript_RemovesItFromEnviornmentsCollection()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             await session.CloseAsync(script.Id);
@@ -149,10 +150,10 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ClosingActiveScript_WhenLastActiveScriptExists_MakesLastActiveScriptActive()
         {
-            var session = GetNewSession();
-            var script1 = GetNewScript();
-            var script2 = GetNewScript();
-            var script3 = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script1 = ScriptTestHelper.CreateScript();
+            var script2 = ScriptTestHelper.CreateScript();
+            var script3 = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script2);
             await session.OpenAsync(script1);
             await session.OpenAsync(script3);
@@ -165,8 +166,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ClosingLastActiveScript_SetsActiveToNull()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script);
 
             await session.CloseAsync(script.Id);
@@ -177,10 +178,10 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ClosingActiveScript_WhenLastActiveScriptWasAlsoClosed_ActivatesScriptBeforeClosingActiveScript()
         {
-            var session = GetNewSession();
-            var script1 = GetNewScript();
-            var script2 = GetNewScript();
-            var script3 = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script1 = ScriptTestHelper.CreateScript();
+            var script2 = ScriptTestHelper.CreateScript();
+            var script3 = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script1);
             await session.OpenAsync(script2);
             await session.OpenAsync(script3);
@@ -194,10 +195,10 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task ClosingNonActiveScript_DoesNotChangeActiveScript()
         {
-            var session = GetNewSession();
-            var script1 = GetNewScript();
-            var script2 = GetNewScript();
-            var script3 = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script1 = ScriptTestHelper.CreateScript();
+            var script2 = ScriptTestHelper.CreateScript();
+            var script3 = ScriptTestHelper.CreateScript();
             await session.OpenAsync(script2);
             await session.OpenAsync(script1);
             await session.OpenAsync(script3);
@@ -210,7 +211,7 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task GetsInitialSequentialNewScriptName_WhenNoScriptsAreOpened()
         {
-            var session = GetNewSession();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
 
             var name = await session.GetNewScriptNameAsync();
 
@@ -220,8 +221,8 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task GetsNextSequentialNewScriptName_WhenOtherScriptsAlreadyOpen()
         {
-            var session = GetNewSession();
-            var script = GetNewScript(await session.GetNewScriptNameAsync());
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript(name: await session.GetNewScriptNameAsync());
             await session.OpenAsync(script);
 
             var name = await session.GetNewScriptNameAsync();
@@ -238,26 +239,12 @@ namespace NetPad.Domain.Tests.Sessions
         [Fact]
         public async Task OpeningScript_SetsItsEnvironmentScriptStatusToReady()
         {
-            var session = GetNewSession();
-            var script = GetNewScript();
+            var session = SessionTestHelper.CreateSession(ServiceProvider);
+            var script = ScriptTestHelper.CreateScript();
 
             await session.OpenAsync(script);
 
             Assert.Equal(ScriptStatus.Ready, session.Active?.Status);
-        }
-
-
-        private Script GetNewScript(string? name = null)
-        {
-            var id = Guid.NewGuid();
-            return new Script(id, name ?? $"Script {id}");
-        }
-
-        private Session GetNewSession()
-        {
-            return new Session(
-                ServiceProvider,
-                ServiceProvider.GetRequiredService<ILogger<Session>>());
         }
     }
 }
