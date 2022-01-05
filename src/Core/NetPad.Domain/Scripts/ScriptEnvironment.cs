@@ -9,7 +9,7 @@ using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    public sealed class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
+    public class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
     {
         private readonly IServiceScope _scope;
         private readonly ILogger<ScriptEnvironment> _logger;
@@ -18,6 +18,10 @@ namespace NetPad.Scripts
         private IScriptRuntime? _runtime;
         private IScriptRuntimeInputReader _inputReader;
         private IScriptRuntimeOutputWriter _outputWriter;
+
+        private object _destructionLock = new object();
+        private bool _isDestroyed = false;
+
 
         public ScriptEnvironment(Script script, IServiceScope scope)
         {
@@ -56,6 +60,7 @@ namespace NetPad.Scripts
         {
             _logger.LogTrace($"{nameof(RunAsync)} start");
 
+            EnsureNotDestroyed();
             Status = ScriptStatus.Running;
 
             try
@@ -80,8 +85,17 @@ namespace NetPad.Scripts
             }
         }
 
-        public Task StopAsync()
+        public virtual Task DestroyAsync()
         {
+            lock (_destructionLock)
+            {
+                EnsureNotDestroyed();
+                this.RemoveAllPropertyChangedHandlers();
+                _scope.Dispose();
+
+                _isDestroyed = true;
+            }
+
             return Task.CompletedTask;
         }
 
@@ -103,12 +117,16 @@ namespace NetPad.Scripts
             return _runtime;
         }
 
+        private void EnsureNotDestroyed()
+        {
+            if (_isDestroyed)
+                throw new InvalidOperationException($"{nameof(ScriptEnvironment)} is destroyed.");
+        }
+
         public void Dispose()
         {
             _logger.LogTrace($"{nameof(Dispose)} start");
-            StopAsync();
-            this.RemoveAllPropertyChangedHandlers();
-            _scope.Dispose();
+            DestroyAsync();
             _logger.LogTrace($"{nameof(Dispose)} end");
         }
     }

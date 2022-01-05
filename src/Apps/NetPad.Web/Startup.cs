@@ -52,6 +52,7 @@ namespace NetPad
 
             services.AddSingleton<ISession, Sessions.Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
+            services.AddTransient<IScriptEnvironmentFactory, ScriptEnvironmentFactory>();
 
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();

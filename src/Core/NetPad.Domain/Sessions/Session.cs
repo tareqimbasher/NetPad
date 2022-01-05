@@ -13,15 +13,15 @@ namespace NetPad.Sessions
 {
     public class Session : ISession
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IScriptEnvironmentFactory _scriptEnvironmentFactory;
         private readonly ILogger<Session> _logger;
         private readonly ObservableCollection<ScriptEnvironment> _environments;
         private ScriptEnvironment? _active;
         private Guid? _lastActiveScriptId = null;
 
-        public Session(IServiceProvider serviceProvider, ILogger<Session> logger)
+        public Session(IScriptEnvironmentFactory scriptEnvironmentFactory, ILogger<Session> logger)
         {
-            _serviceProvider = serviceProvider;
+            _scriptEnvironmentFactory = scriptEnvironmentFactory;
             _logger = logger;
             _environments = new ObservableCollection<ScriptEnvironment>();
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
@@ -48,7 +48,7 @@ namespace NetPad.Sessions
             var environment = Get(script.Id);
             if (environment == null)
             {
-                environment = new ScriptEnvironment(script, _serviceProvider.CreateScope());
+                environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
                 _environments.Add(environment);
             }
 
