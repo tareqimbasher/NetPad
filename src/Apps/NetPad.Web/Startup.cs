@@ -63,7 +63,7 @@ namespace NetPad
 
             services.AddTransient<IUiDialogService, ElectronDialogService>();
             services.AddTransient<IUiWindowService, ElectronWindowService>();
-            services.AddTransient<IIpcService, ElectronIpcService>();
+            services.AddTransient<IIpcService, SignalRIpcService>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();
