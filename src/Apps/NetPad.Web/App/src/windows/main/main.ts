@@ -1,5 +1,7 @@
 import {Aurelia, Registration} from "aurelia";
 import {
+    IIpcGateway,
+    ElectronIpcGateway,
     IEventBus,
     EventBus,
     ISession,
@@ -18,6 +20,7 @@ import {Index} from "./index";
 export function register(app: Aurelia): void {
     app
         .register(
+            Registration.singleton(IIpcGateway, ElectronIpcGateway),
             Registration.singleton(IEventBus, EventBus),
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(ISession, Session),

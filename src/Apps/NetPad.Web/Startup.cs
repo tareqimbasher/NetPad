@@ -46,6 +46,8 @@ namespace NetPad
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
+            services.AddSignalR();
+
             services.AddSingleton<HostInfo>();
             services.AddSingleton(Configuration.GetSection("Settings")
                 .Get<Settings>(c => c.BindNonPublicProperties = true));
@@ -107,6 +109,8 @@ namespace NetPad
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+
+                endpoints.MapHub<IpcHub>("/ipchub");
             });
 
             app.UseSpa(spa =>

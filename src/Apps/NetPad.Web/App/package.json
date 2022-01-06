@@ -42,6 +42,7 @@
         }
     },
     "dependencies": {
+        "@microsoft/signalr": "^6.0.1",
         "@popperjs/core": "^2.10.2",
         "@types/ts-nameof": "^4.2.1",
         "aurelia": "latest",
