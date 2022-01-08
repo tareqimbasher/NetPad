@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.BackgroundServices;
+using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Middlewares;
@@ -40,13 +41,17 @@ namespace NetPad
         {
             services.AddControllersWithViews().AddJsonOptions(config =>
             {
-                config.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                JsonSerialization.Configure(config.JsonSerializerOptions);
             });
 
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
-            services.AddSignalR();
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                {
+                    JsonSerialization.Configure(options.PayloadSerializerOptions);
+                });
 
             services.AddSingleton<HostInfo>();
             services.AddSingleton(Configuration.GetSection("Settings")

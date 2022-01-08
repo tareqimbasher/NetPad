@@ -7,16 +7,17 @@ namespace NetPad.Common
     {
         static JsonSerialization()
         {
-            DefaultOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Converters =
-                {
-                    new JsonStringEnumConverter()
-                }
-            };
+            DefaultOptions = new JsonSerializerOptions();
+            Configure(DefaultOptions);
         }
 
         public static JsonSerializerOptions DefaultOptions { get; }
+
+        public static JsonSerializerOptions Configure(JsonSerializerOptions options)
+        {
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.Converters.Add(new JsonStringEnumConverter());
+            return options;
+        }
     }
 }
