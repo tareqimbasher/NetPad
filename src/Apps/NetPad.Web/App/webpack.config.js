@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const Dotenv = require('dotenv-webpack');
 const tsNameof = require("ts-nameof");
@@ -31,6 +32,19 @@ module.exports = function (env, {analyze}) {
         target: 'electron-renderer',
         mode: production ? 'production' : 'development',
         devtool: production ? undefined : 'eval-cheap-source-map',
+        optimization: {
+            minimize: true,
+            minimizer: [
+                new TerserPlugin({
+                    // Added these options so that passing class types as parameters (ex. EventBus) works.
+                    // Without this webpack will mangle class names, breaking any calls to Function.name.
+                    terserOptions: {
+                        keep_classnames: true,
+                        keep_fnames: true
+                    }
+                })
+            ]
+        },
         entry: {
             entry: './src/main.ts'
         },
