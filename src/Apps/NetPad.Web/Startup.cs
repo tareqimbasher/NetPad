@@ -15,6 +15,7 @@ using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Middlewares;
+using NetPad.Packages;
 using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
@@ -65,6 +66,7 @@ namespace NetPad
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
+            services.AddTransient<IPackageProvider, PackageProvider>();
 
             services.AddTransient<IUiDialogService, ElectronDialogService>();
             services.AddTransient<IUiWindowService, ElectronWindowService>();

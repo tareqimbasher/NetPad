@@ -62,6 +62,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+    <ProjectReference Include="..\..\Core\NetPad.Packages\NetPad.Packages.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Runtimes\NetPad.Runtimes.csproj" />
     <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
   </ItemGroup>
