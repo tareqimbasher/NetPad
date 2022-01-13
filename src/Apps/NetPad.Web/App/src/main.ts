@@ -3,23 +3,37 @@ import Aurelia, {ColorOptions, ConsoleSink, LoggerConfiguration, LogLevel, Regis
 // import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
-import {ISettingService, Settings} from "@domain";
+import {
+    EventBus,
+    IEventBus,
+    IIpcGateway,
+    ISession,
+    ISettingService,
+    Session,
+    Settings,
+    SignalRIpcGateway
+} from "@domain";
+import {ExternalLinkCustomAttribute} from "@application";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
 const app = Aurelia.register(
-    LoggerConfiguration.create({
-        colorOptions: ColorOptions.colors,
-        level: LogLevel.trace,
-        sinks: [ConsoleSink],
-    }),
+    Registration.singleton(IIpcGateway, SignalRIpcGateway),
+    Registration.singleton(IEventBus, EventBus),
+    Registration.singleton(ISession, Session),
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(String, window.location.origin),
     Registration.cachedCallback<Settings>(Settings, (c) => {
         const settings = new Settings();
         c.get(ISettingService).get().then(s => settings.init(s));
         return settings;
-    })
+    }),
+    LoggerConfiguration.create({
+        colorOptions: ColorOptions.colors,
+        level: LogLevel.trace,
+        sinks: [ConsoleSink],
+    }),
+    ExternalLinkCustomAttribute
 );
 
 const win = startupOptions.get("win");

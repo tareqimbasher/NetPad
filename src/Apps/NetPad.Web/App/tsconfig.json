@@ -16,6 +16,8 @@
       "@domain/*": ["core/@domain/*"],
       "@common": ["core/@common"],
       "@common/*": ["core/@common/*"],
+      "@application": ["core/@application"],
+      "@application/*": ["core/@application/*"],
     }
   },
   "include": [
