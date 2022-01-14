@@ -1,13 +1,12 @@
 import {Aurelia, Registration} from "aurelia";
 import {Index} from "./index";
-import {EventBus, IEventBus, IScriptService, ISession, ScriptService, Session} from "@domain";
+import {IPackageService, IScriptService, PackageService, ScriptService} from "@domain";
 
 export function register(app: Aurelia): void {
     app
         .register(
-            Registration.singleton(IEventBus, EventBus),
-            Registration.singleton(ISession, Session),
             Registration.singleton(IScriptService, ScriptService),
+            Registration.singleton(IPackageService, PackageService),
         )
         .app(Index);
 }

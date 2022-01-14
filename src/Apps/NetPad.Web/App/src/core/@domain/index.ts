@@ -10,6 +10,7 @@ export * from "./settings/setting-service";
 export * from "./app/app-service";
 export * from "./sessions/session";
 export * from "./scripts/script-service";
+export * from "./packages/package-service";
 
 export * from "./shortcuts/shortcut";
 export * from "./shortcuts/shortcut-action-execution-context";

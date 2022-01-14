@@ -57,9 +57,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Packages\NetPad.Packages.csproj" />

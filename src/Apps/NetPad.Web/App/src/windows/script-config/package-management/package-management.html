@@ -1,0 +1,25 @@
+<input class="form-control"
+       type="text"
+       placeholder="Search packages..."
+       value.bind="term & debounce:400"/>
+
+<hr/>
+
+<div class="list-group" style="flex: 1 1 auto; overflow-y: auto; min-height: 100px; max-height: 500px">
+    <div class="list-group-item"
+         repeat.for="result of searchResults">
+        <h5>
+            <img src.bind="result.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                 alt.bind="result.iconUrl"
+                 style="height: 24px" />
+            ${result.title}
+        </h5>
+        <p>
+            <b>Description:</b> ${result.description} <br/>
+            <b>Authors:</b> ${result.authors} <br/>
+            <b>Url:</b> <a href.bind="result.projectUrl" external-link>${result.projectUrl || ''}</a> <br/>
+            <b>Downloads:</b> ${result.downloadCount} <br/>
+            <b>Versions:</b> ${result.versions.length === 1 ? result.versions : (result.versions[0] + '-' + result.versions[result.versions.length - 1])} <br/>
+        </p>
+    </div>
+</div>

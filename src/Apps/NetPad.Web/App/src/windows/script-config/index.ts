@@ -3,6 +3,7 @@ import {IScriptService, ISession, Script} from "@domain";
 export class Index {
     public script: Script;
     public namespaces: string;
+    public selectedContent: "namespaces" | "packages" = "packages";
 
     constructor(
         readonly startupOptions: URLSearchParams,

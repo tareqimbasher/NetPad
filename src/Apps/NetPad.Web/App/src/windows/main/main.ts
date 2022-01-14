@@ -1,11 +1,5 @@
 import {Aurelia, Registration} from "aurelia";
 import {
-    IIpcGateway,
-    SignalRIpcGateway,
-    IEventBus,
-    EventBus,
-    ISession,
-    Session,
     IScriptService,
     ScriptService,
     ISettingService,
@@ -20,10 +14,7 @@ import {Index} from "./index";
 export function register(app: Aurelia): void {
     app
         .register(
-            Registration.singleton(IIpcGateway, SignalRIpcGateway),
-            Registration.singleton(IEventBus, EventBus),
             Registration.singleton(IShortcutManager, ShortcutManager),
-            Registration.singleton(ISession, Session),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(ISettingService, SettingService),
             Registration.singleton(IAppService, AppService),

@@ -19,18 +19,18 @@ namespace NetPad.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<PackageMetadata>>> Search(
             [FromQuery] string term,
-            [FromQuery] int skip = 0,
-            [FromQuery] int take = 30,
-            [FromQuery] bool includePrerelease = false)
+            [FromQuery] int? skip = null,
+            [FromQuery] int? take = null,
+            [FromQuery] bool? includePrerelease = null)
         {
             if (string.IsNullOrWhiteSpace(term))
                 return BadRequest($"{term} is required.");
 
             var packages = await _packageProvider.SearchPackagesAsync(
                 term,
-                skip,
-                take,
-                includePrerelease
+                skip ?? 0,
+                take ?? 30,
+                includePrerelease ?? false
             );
 
             return Ok(packages);
