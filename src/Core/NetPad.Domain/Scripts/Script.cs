@@ -46,7 +46,7 @@ namespace NetPad.Scripts
 
         public bool IsDirty
         {
-            get => _isDirty || IsNew;
+            get => _isDirty;
             set => this.RaiseAndSetIfChanged(ref _isDirty, value);
         }
 
