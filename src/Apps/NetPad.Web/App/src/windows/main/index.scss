@@ -1,50 +1,59 @@
 @import "~styles/themes";
+$statusbar-height: 20px;
+
+#content {
+    height: calc(100vh - #{$statusbar-height});
+}
 
 sidebar {
     flex: 0 0 15em;
 }
 
-#content {
+#scripts-content {
+    min-width: 0;
+}
+
+statusbar {
+    height: $statusbar-height;
 }
 
 #tabs {
+    $script-tab-padding-vertical: 0.15rem;
+    $script-tab-padding-horizontal: 0.5rem;
+
     .script-tab {
-        @include theme(background-color, backgroundColor);
-        //@include theme(border-right, borderColor, 1px solid);
-        font-weight: bold;
-        cursor: default;
-        height: 1.6rem;
-        font-size: 0.75rem;
-
-        $padding-vertical: 0.15rem;
-        $padding-horizontal: 0.5rem;
-
-        padding: $padding-vertical $padding-horizontal;
-
-        .text {
-            display: inline-block;
+        &.active {
+            color: dodgerblue;
         }
 
-        .bi {
-            padding: $padding-vertical 1px;
+        .tab {
+            @include theme(background-color, backgroundColor);
+            //@include theme(border-right, borderColor, 1px solid);
+            font-weight: bold;
+            cursor: default;
+            height: 1.6rem;
+            font-size: 0.75rem;
+            padding: $script-tab-padding-vertical $script-tab-padding-horizontal;
+
+            .text {
+                display: inline-block;
+            }
+
+            .bi {
+                padding: $script-tab-padding-vertical 1px;
+            }
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
         }
 
-        &.new-script-tab {
-            padding: $padding-vertical 0.6rem;
+        &.new-script-tab .tab {
+            padding: $script-tab-padding-vertical 0.6rem;
         }
-
-        &:hover {
-            @include theme(background-color, hoverColor);
-        }
-    }
-
-    .script-tab.active {
-        color: dodgerblue;
     }
 }
 
-.script-environments {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+#script-environments {
+    min-height: 0;
 }

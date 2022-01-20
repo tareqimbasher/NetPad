@@ -1,4 +1,4 @@
-import { bindable, PLATFORM, watch } from "aurelia";
+import {bindable, PLATFORM, watch} from "aurelia";
 import {
     IEventBus,
     IScriptService,
@@ -11,11 +11,12 @@ import {
     Settings
 } from "@domain";
 import * as monaco from "monaco-editor";
-import { Util } from "@common";
+import {Util} from "@common";
+import {ResultsViewSettings} from "./results-view-settings";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
-    public showResults = true;
+    public resultsViewSettings: ResultsViewSettings;
 
     private disposables: (() => void)[] = [];
     private editor: monaco.editor.IStandaloneCodeEditor;
@@ -27,6 +28,7 @@ export class ScriptEnvironmentView {
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus) {
+        this.resultsViewSettings = new ResultsViewSettings();
     }
 
     public get id(): string {
@@ -70,7 +72,7 @@ export class ScriptEnvironmentView {
 
     public async run() {
         this.setResults(null);
-        this.showResults = true;
+        this.resultsViewSettings.show = true;
         await this.scriptService.run(this.environment.script.id);
     }
 
@@ -149,11 +151,3 @@ export class ScriptEnvironmentView {
         monaco.editor.setTheme(this.settings.theme === "Light" ? "vs" : "vs-dark");
     }
 }
-
-/**
- * Config stuff
- * UI => BE => FE
- *
- * Code
- * UI => BE
- */

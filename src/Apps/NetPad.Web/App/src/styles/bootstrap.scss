@@ -11,6 +11,7 @@ $input-btn-padding-y: .275rem;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
+@import "~styles/themes";
 
 @each $color in map-keys($colors) {
     .text-#{"" + $color} {
@@ -18,10 +19,24 @@ $input-btn-padding-y: .275rem;
     }
 }
 
-.bi.action:hover {
-    color: $blue;
+.bi {
+    &.clickable {
+        cursor: pointer;
+    }
+
+    &.action:hover {
+        @extend .clickable;
+        color: $blue;
+    }
+
+    &.action-danger:hover {
+        @extend .clickable;
+        color: $red;
+    }
 }
 
-.bi.action-danger:hover {
-    color: $red;
+.form-control, .form-select {
+    @include theme(background-color, formControlBackground);
+    @include theme(color, textColor);
+    @include theme(border-color, borderColor);
 }

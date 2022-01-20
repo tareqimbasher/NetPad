@@ -6,17 +6,7 @@ body, html {
 }
 
 .window {
-    min-height: 100vh;
+    height: 100vh;
     @include theme(background-color, backgroundColor);
     @include theme(color, textColor);
-}
-
-.form-control, .form-select {
-    @include theme(background-color, formControlBackground);
-    @include theme(color, textColor);
-    @include theme(border-color, borderColor);
-}
-
-.bi.clickable {
-    cursor: pointer;
 }
