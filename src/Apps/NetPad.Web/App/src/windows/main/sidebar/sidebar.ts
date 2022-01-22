@@ -1,4 +1,5 @@
 import {IAppService, IScriptService, ISession, ScriptSummary} from "@domain";
+import Split from "split.js";
 
 export class Sidebar {
     private scripts: ScriptSummary[] = [];
@@ -10,6 +11,13 @@ export class Sidebar {
 
     public async attached() {
         this.scripts = await this.scriptService.getScripts();
+
+        Split(["#connection-list", "#script-list"], {
+            gutterSize: 6,
+            direction: 'vertical',
+            sizes: [35, 65],
+            minSize: [100, 100],
+        });
     }
 
     public async openScriptsFolder() {
