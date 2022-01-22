@@ -30,3 +30,20 @@ body, html {
     flex-grow: 1;
     min-height: 0;
 }
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    @include theme(background-color, scrollbarTrackColor);
+}
+
+::-webkit-scrollbar-thumb {
+    @include theme(background-color, scrollbarThumbColor);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
