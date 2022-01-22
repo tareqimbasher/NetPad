@@ -3,18 +3,47 @@
 sidebar {
     @include theme(background-color, sidebarBackground);
 
-    #script-list > .list-group {
+    //script-folder > .list-group {
+    //    border-left: 1px red dotted;
+    //}
+
+    #script-list > script-folder {
         overflow: auto;
-    }
 
-    .list-group-item {
-        @include theme(background-color, sidebarBackground);
-        @include theme(color, textColor);
-        border-right: none;
-        border-left: none;
+        .list-group-item {
+            border-right: none;
+            border-left: none;
+            border-width: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            padding-right: 0;
+            user-select: none;
 
-        &:hover {
-            @include theme(background-color, hoverColor);
+            &.script-folder-item {
+                padding: 4px 8px;
+
+                &:hover {
+                    .open-folder-button {
+                        visibility: visible;
+                    }
+                }
+            }
+
+            &.script-item {
+                padding: 4px 8px;
+
+                &:hover {
+                    @include theme(background-color, hoverColor);
+                }
+            }
+
+            .open-folder-button {
+                visibility: hidden;
+            }
+        }
+
+        .open-folder-button {
+            visibility: hidden;
         }
     }
 }

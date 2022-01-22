@@ -13,30 +13,13 @@ $input-btn-padding-y: .275rem;
 @import "~bootstrap/scss/bootstrap";
 @import "~styles/themes";
 
-@each $color in map-keys($colors) {
-    .text-#{"" + $color} {
-        color: map-get($colors, $color);
-    }
-}
-
-.bi {
-    &.clickable {
-        cursor: pointer;
-    }
-
-    &.action:hover {
-        @extend .clickable;
-        color: $blue;
-    }
-
-    &.action-danger:hover {
-        @extend .clickable;
-        color: $red;
-    }
-}
-
 .form-control, .form-select {
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
+}
+
+.list-group-item {
+    @include theme(background-color, sidebarBackground);
+    @include theme(color, textColor);
 }

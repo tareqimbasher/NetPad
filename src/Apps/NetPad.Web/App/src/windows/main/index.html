@@ -18,7 +18,7 @@
                                 ${env.status === 'Running' ? '[Running]' : ''}
                                 ${env.script.isDirty ? '*' : ''}
                             </div>
-                            <i class="bi bi-x action-danger"
+                            <i class="bi bi-x action-icon hover-text-red"
                                title="${shortcutManager.getShortcutByName('Close').toString()}"
                                click.trigger="session.close(env.script.id)"></i>
                         </div>

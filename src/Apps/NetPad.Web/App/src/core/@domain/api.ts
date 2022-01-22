@@ -10,7 +10,7 @@
 import {IHttpClient} from "aurelia";
 
 export interface IAppApiClient {
-    openScriptsFolder(): Promise<FileResponse | null>;
+    openScriptsFolder(path: string | null | undefined): Promise<FileResponse | null>;
 }
 
 export class AppApiClient implements IAppApiClient {
@@ -23,8 +23,10 @@ export class AppApiClient implements IAppApiClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    openScriptsFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null> {
-        let url_ = this.baseUrl + "/app/open-scripts-folder";
+    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/app/open-scripts-folder?";
+        if (path !== undefined && path !== null)
+            url_ += "path=" + encodeURIComponent("" + path) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -844,6 +846,7 @@ export class TypesApiClient implements ITypesApiClient {
 }
 
 export class PackageMetadata implements IPackageMetadata {
+    id!: string;
     title!: string;
     authors!: string;
     description!: string;
@@ -866,6 +869,7 @@ export class PackageMetadata implements IPackageMetadata {
 
     init(_data?: any) {
         if (_data) {
+            this.id = _data["id"];
             this.title = _data["title"];
             this.authors = _data["authors"];
             this.description = _data["description"];
@@ -889,6 +893,7 @@ export class PackageMetadata implements IPackageMetadata {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
         data["title"] = this.title;
         data["authors"] = this.authors;
         data["description"] = this.description;
@@ -912,6 +917,7 @@ export class PackageMetadata implements IPackageMetadata {
 }
 
 export interface IPackageMetadata {
+    id: string;
     title: string;
     authors: string;
     description: string;

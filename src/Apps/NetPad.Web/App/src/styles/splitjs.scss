@@ -1,0 +1,15 @@
+@import "~styles/themes";
+
+.gutter {
+    @include theme(background-color, splitterColor);
+    background-repeat: no-repeat;
+    background-position: 50%;
+
+    &.gutter-horizontal:hover {
+        cursor: col-resize;
+    }
+
+    &.gutter-vertical:hover {
+        cursor: row-resize;
+    }
+}

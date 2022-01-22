@@ -163,9 +163,10 @@ namespace NetPad
                         UseAbortSignal = true,
                         TypeScriptGeneratorSettings =
                         {
+                            TypeScriptVersion = 4.4m,
                             EnumStyle = TypeScriptEnumStyle.StringLiteral,
                             GenerateCloneMethod = true,
-                            TypeScriptVersion = 4.4m
+                            MarkOptionalProperties = true
                         }
                     };
 

@@ -1,4 +1,5 @@
 @import "./bootstrap";
+@import "./splitjs";
 @import "~styles/themes";
 
 body, html {
@@ -11,24 +12,30 @@ body, html {
     @include theme(color, textColor);
 }
 
-.gutter {
-    @include theme(background-color, splitterColor);
-    background-repeat: no-repeat;
-    background-position: 50%;
-
-    &.gutter-horizontal:hover {
-        cursor: col-resize;
-    }
-
-    &.gutter-vertical:hover {
-        cursor: row-resize;
-    }
-}
-
-
 .flex-grow-height-restricted {
     flex-grow: 1;
     min-height: 0;
+}
+
+hr {
+    @include theme(color, borderColor);
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.action-icon {
+    @extend .clickable;
+    color: gray;
+
+    &:hover {
+        @include theme(color, actionIconHoverColor);
+
+        &::before {
+            font-weight: bold !important;
+        }
+    }
 }
 
 ::-webkit-scrollbar {
@@ -46,4 +53,14 @@ body, html {
 
 ::-webkit-scrollbar-corner {
     background-color: transparent;
+}
+
+@each $color in map-keys($colors) {
+    .text-#{"" + $color} {
+        color: map-get($colors, $color) !important;
+    }
+
+    .hover-text-#{"" + $color}:hover {
+        color: map-get($colors, $color) !important;
+    }
 }

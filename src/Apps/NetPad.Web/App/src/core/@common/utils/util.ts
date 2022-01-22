@@ -33,13 +33,36 @@ export class Util {
 
     /**
      * Truncates a string.
-     * @param str The string to truncate
+     * @param str The string to truncate.
      * @param maxLength The length after which the target string will be truncated.
      */
     public static truncate(str: string, maxLength: number) {
         if (!str || maxLength < 0 || str.length <= maxLength) return str;
 
         return str.substr(0, maxLength - 3) + "...";
+    }
+
+    /**
+     * Groups a collection by the selected key.
+     * @param collection The collection to group.
+     * @param keyGetter A function that selects the key to group by.
+     */
+    public static groupBy<TItem, TKey>(collection: Array<TItem>, keyGetter: (item: TItem) => TKey): Map<TKey, Array<TItem>> {
+        const map = new Map();
+
+        for (const item of collection) {
+            const key = keyGetter(item);
+
+            const collection = map.get(key);
+
+            if (!collection) {
+                map.set(key, [item]);
+            } else {
+                collection.push(item);
+            }
+        }
+
+        return map;
     }
 
     /**
