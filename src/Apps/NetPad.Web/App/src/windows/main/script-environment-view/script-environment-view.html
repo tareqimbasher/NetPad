@@ -33,27 +33,29 @@
             <b>Namespaces:</b> ${script.config.namespaces.length}
         </span>
     </div>
-    <div class="text-editor-container">
-        <div class="text-editor" data-text-editor-id.bind="id"></div>
-    </div>
-    <div class="results-container" show.bind="resultsViewSettings.show">
-        <div class="toolbar">
-            <div class="row m-0 p-0">
-                <div class="col ps-2">
-                    <b>Results</b>
-                </div>
-                <div class="col text-end pe-0">
-                    <i class="bi bi-text-center action"
-                       title="Text Wrap"
-                       click.trigger="resultsViewSettings.textWrap = !resultsViewSettings.textWrap"></i>
-                    <i class="bi bi-x-square-fill action-danger"
-                       title="Close Results"
-                       click.trigger="resultsViewSettings.show = false"></i>
+    <div class="flex-grow-height-restricted">
+        <div class="text-editor-container">
+            <div class="text-editor" data-text-editor-id.bind="id"></div>
+        </div>
+        <div class="results-container" show.bind="resultsViewSettings.show">
+            <div class="toolbar">
+                <div class="row m-0 p-0">
+                    <div class="col ps-2">
+                        <b>Results</b>
+                    </div>
+                    <div class="col text-end pe-0">
+                        <i class="bi bi-text-center action"
+                           title="Text Wrap"
+                           click.trigger="resultsViewSettings.textWrap = !resultsViewSettings.textWrap"></i>
+                        <i class="bi bi-x-square-fill action-danger"
+                           title="Close Results"
+                           click.trigger="resultsViewSettings.show = false"></i>
+                    </div>
                 </div>
             </div>
+            <div class="results pt-2 ${resultsViewSettings.textWrap ? 'text-wrap' : ''}"
+                 ref="resultsEl"
+                 data-script-results-id.bind="id"></div>
         </div>
-        <div class="results pt-2 ${resultsViewSettings.textWrap ? 'text-wrap' : ''}"
-             ref="resultsEl"
-             data-script-results-id.bind="id"></div>
     </div>
 </template>

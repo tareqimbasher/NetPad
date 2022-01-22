@@ -2,7 +2,6 @@
 
 script-environment-view {
     padding-top: 0.5rem;
-    min-height: 0;
 
     .script-kind-selector {
         max-width: 150px;
@@ -10,21 +9,14 @@ script-environment-view {
     }
 
     .text-editor-container {
-        min-height: 200px;
-        flex: 1;
-
         .text-editor {
             height: 100%;
         }
     }
 
     .results-container {
-        flex: 1;
-        min-height: 0;
-        min-width: 0;
         display: flex;
         flex-direction: column;
-        padding: 0.25rem;
         @include theme(background-color, resultsBackground);
 
         .toolbar {
@@ -34,8 +26,10 @@ script-environment-view {
     }
 
     .results {
+        padding: 0.25rem;
         font-family: monospace;
         overflow-x: auto;
+        flex-grow: 1;
 
         &.text-wrap {
             overflow-wrap: break-word;

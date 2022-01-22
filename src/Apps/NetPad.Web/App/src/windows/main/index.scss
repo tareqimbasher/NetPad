@@ -6,11 +6,7 @@ $statusbar-height: 20px;
 }
 
 sidebar {
-    flex: 0 0 15em;
-}
-
-#scripts-content {
-    min-width: 0;
+    width: 15em;
 }
 
 statusbar {
@@ -52,8 +48,4 @@ statusbar {
             padding: $script-tab-padding-vertical 0.6rem;
         }
     }
-}
-
-#script-environments {
-    min-height: 0;
 }

@@ -1,4 +1,7 @@
 export class ResultsViewSettings {
-    public show = true;
-    public textWrap = true;
+    constructor(
+        public show: boolean = true,
+        textWrap: boolean = true,
+    ) {
+    }
 }

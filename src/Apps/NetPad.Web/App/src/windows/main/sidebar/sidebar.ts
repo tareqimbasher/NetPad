@@ -15,4 +15,8 @@ export class Sidebar {
     public async openScriptsFolder() {
         await this.appService.openScriptsFolder();
     }
+
+    public async addConnection() {
+        alert("Not implemented yet.");
+    }
 }
