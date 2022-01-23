@@ -11,6 +11,7 @@ import {
     ISettingService,
     Session,
     Settings,
+    SettingService,
     SignalRIpcGateway
 } from "@domain";
 import {ExternalLinkCustomAttribute} from "@application";
@@ -23,6 +24,7 @@ const app = Aurelia.register(
     Registration.singleton(ISession, Session),
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(String, window.location.origin),
+    Registration.singleton(ISettingService, SettingService),
     Registration.cachedCallback<Settings>(Settings, (c) => {
         const settings = new Settings();
         c.get(ISettingService).get().then(s => settings.init(s));
