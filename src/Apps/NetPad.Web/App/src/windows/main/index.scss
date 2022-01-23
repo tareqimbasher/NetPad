@@ -16,7 +16,6 @@ statusbar {
 #tabs {
     $script-tab-padding-vertical: 0.15rem;
     $script-tab-padding-horizontal: 0.5rem;
-    @include theme(border-bottom-color, borderColor);
 
     .script-tab {
         &.active {

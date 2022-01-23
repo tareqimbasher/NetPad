@@ -20,6 +20,14 @@ $input-btn-padding-y: .275rem;
 }
 
 .list-group-item {
-    @include theme(background-color, sidebarBackground);
+    @include theme(background-color, listBackground);
+    @include theme(color, textColor);
+}
+
+.nav-tabs {
+    @include theme(border-bottom-color, borderColor);
+}
+
+.table {
     @include theme(color, textColor);
 }

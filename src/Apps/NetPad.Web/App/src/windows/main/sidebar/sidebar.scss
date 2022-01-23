@@ -18,6 +18,7 @@ sidebar {
             padding-bottom: 0;
             padding-right: 0;
             user-select: none;
+            @include theme(background-color, sidebarBackground);
 
             &.script-folder-item {
                 padding: 4px 8px;
