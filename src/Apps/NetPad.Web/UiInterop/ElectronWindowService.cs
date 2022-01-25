@@ -21,11 +21,15 @@ namespace NetPad.UiInterop
         public async Task OpenMainWindowAsync()
         {
             var display = await PrimaryDisplay();
-            await CreateWindowAsync("main", new BrowserWindowOptions
+            var window = await CreateWindowAsync("main", new BrowserWindowOptions
             {
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 2 / 3,
+                X = display.Bounds.X,
+                Y = display.Bounds.Y
             });
+
+            window.Center();
         }
 
         public async Task OpenScriptConfigWindowAsync(Script script)
