@@ -3,12 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace NetPad.Common
 {
-    public static class JsonSerialization
+    public static class JsonSerializer
     {
-        static JsonSerialization()
+        static JsonSerializer()
         {
-            DefaultOptions = new JsonSerializerOptions();
-            Configure(DefaultOptions);
+            DefaultOptions = Configure(new JsonSerializerOptions());
         }
 
         public static JsonSerializerOptions DefaultOptions { get; }
@@ -18,6 +17,16 @@ namespace NetPad.Common
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.Converters.Add(new JsonStringEnumConverter());
             return options;
+        }
+
+        public static string Serialize(object? value)
+        {
+            return System.Text.Json.JsonSerializer.Serialize(value, DefaultOptions);
+        }
+
+        public static T? Deserialize<T>(string json)
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<T>(json, DefaultOptions);
         }
     }
 }

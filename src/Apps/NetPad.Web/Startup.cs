@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using Microsoft.AspNetCore.Builder;
@@ -40,10 +39,11 @@ namespace NetPad
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews().AddJsonOptions(config =>
-            {
-                JsonSerialization.Configure(config.JsonSerializerOptions);
-            });
+            services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    JsonSerializer.Configure(options.JsonSerializerOptions);
+                });
 
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
@@ -51,7 +51,7 @@ namespace NetPad
             services.AddSignalR()
                 .AddJsonProtocol(options =>
                 {
-                    JsonSerialization.Configure(options.PayloadSerializerOptions);
+                    JsonSerializer.Configure(options.PayloadSerializerOptions);
                 });
 
             services.AddSingleton<HostInfo>();
@@ -66,7 +66,7 @@ namespace NetPad
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
-            services.AddTransient<IPackageProvider, PackageProvider>();
+            services.AddTransient<IPackageProvider, NugetPackageProvider>();
 
             services.AddTransient<IUiDialogService, ElectronDialogService>();
             services.AddTransient<IUiWindowService, ElectronWindowService>();
@@ -166,15 +166,19 @@ namespace NetPad
                             TypeScriptVersion = 4.4m,
                             EnumStyle = TypeScriptEnumStyle.StringLiteral,
                             GenerateCloneMethod = true,
-                            MarkOptionalProperties = true
+                            MarkOptionalProperties = true,
                         }
                     };
 
                     var generator = new TypeScriptClientGenerator(document, settings);
 
                     var lines = generator.GenerateFile()
-                        .Replace("private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };", "private http: IHttpClient;")
-                        .Replace("http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }", "@IHttpClient http?: IHttpClient")
+                        .Replace(
+                            "private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };",
+                            "private http: IHttpClient;")
+                        .Replace(
+                            "http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }",
+                            "@IHttpClient http?: IHttpClient")
                         .Split(Environment.NewLine)
                         .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
                         .ToList();

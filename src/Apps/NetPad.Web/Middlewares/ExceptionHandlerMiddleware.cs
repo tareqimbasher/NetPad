@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NetPad.Common;
@@ -32,7 +31,7 @@ namespace NetPad.Middlewares
                     JsonSerializer.Serialize(new
                     {
                         Error = ex.ToString()
-                    }, JsonSerialization.DefaultOptions));
+                    }));
             }
         }
     }
