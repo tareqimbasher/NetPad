@@ -1,3 +1,5 @@
+<import from="./package-metadata.html"></import>
+
 <input class="form-control"
        type="text"
        placeholder="Search packages..."
@@ -5,21 +7,37 @@
 
 <hr/>
 
-<div class="list-group" style="flex: 1 1 auto; overflow-y: auto; min-height: 100px; max-height: 500px">
-    <div class="list-group-item"
-         repeat.for="result of searchResults">
-        <h5>
-            <img src.bind="result.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                 alt.bind="result.iconUrl"
-                 style="height: 24px" />
-            ${result.title}
-        </h5>
-        <p>
-            <b>Description:</b> ${result.description} <br/>
-            <b>Authors:</b> ${result.authors} <br/>
-            <b>Url:</b> <a href.bind="result.projectUrl" external-link>${result.projectUrl || ''}</a> <br/>
-            <b>Downloads:</b> ${result.downloadCount} <br/>
-            <b>Versions:</b> ${result.versions.length === 1 ? result.versions : (result.versions[0] + '-' + result.versions[result.versions.length - 1])} <br/>
-        </p>
+<div class="list-group"
+     style="flex: 1 1 auto; overflow-y: auto; min-height: 100px; max-height: 500px"
+     if.bind="!!term">
+    <div class="list-group-item d-flex flex-row"
+         repeat.for="package of searchResults">
+        <package-metadata class="flex-grow-1" metadata.bind="package"></package-metadata>
+        <small class="d-flex align-items-center justify-content-center" style="flex: 0 0 100px">
+            <a href="" click.trigger="addPackage(package)" show.bind="package.existsInLocalCache">Add</a>
+            <a href="" click.trigger="downloadPackage(package)" show.bind="!package.existsInLocalCache">Download</a>
+        </small>
+    </div>
+</div>
+<div else class="list-group">
+    <div class="list-group-item d-flex flex-row"
+         repeat.for="package of cachedPackages">
+        <div class="flex-grow-1" if.bind="package.packageMetadata">
+            <package-metadata metadata.bind="package.packageMetadata"></package-metadata>
+            <b>Cached in:</b> ${package.directoryPath}<br/>
+            <b>Cached versions:</b> ${package.versions}
+        </div>
+        <div else>
+            <h5>
+                ${package.packageId}
+            </h5>
+            <p>
+                <b>Path:</b> ${package.directoryPath} <br/>
+                <b>Versions:</b> ${package.versions.length === 1 ? package.versions : (package.versions[0] + '-' + package.versions[package.versions.length - 1])}
+            </p>
+        </div>
+        <small class="d-flex align-items-center justify-content-center" style="flex: 0 0 100px">
+            <a href="" click.trigger="deleteFromCache(package)">Delete from cache</a>
+        </small>
     </div>
 </div>

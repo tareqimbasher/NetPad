@@ -4,7 +4,7 @@ namespace NetPad.Packages
 {
     public class PackageMetadata
     {
-        public string Id { get; set; }
+        public string PackageId { get; set; }
         public string Title { get; set; }
         public string Authors { get; set; }
         public string Description { get; set; }

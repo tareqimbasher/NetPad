@@ -1,35 +1,45 @@
-<template class="dark">
+<template class="theme-${settings.theme.toLowerCase()}">
+    <require from="./namespace-management/namespace-management"></require>
+    <require from="./reference-management/reference-management"></require>
     <require from="./package-management/package-management"></require>
 
-    <div class="window d-flex flex-column" style="padding: 10px">
+    <div class="window d-flex flex-column" style="padding: 0 10px 10px">
         <div class="flex-grow-1 d-flex flex-column">
-            <ul id="tabs" class="nav nav-tabs">
+            <ul id="tabs" class="nav nav-tabs mb-3">
                 <li class="nav-item">
-                    <a class="nav-link" click.trigger="selectedContent='packages'">Packages</a>
+                    <div class="nav-link" click.trigger="selectedContent='references'">References</div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link" click.trigger="selectedContent='packages'">Packages</div>
                 </li>
                 <li class="nav-item" click.trigger="selectedContent='namespaces'">
-                    <a class="nav-link">Namespaces</a>
+                    <div class="nav-link">Namespaces</div>
                 </li>
             </ul>
+
+            <div id="references-content"
+                 class="tab-content flex-grow-1 d-flex flex-column"
+                 show.bind="selectedContent == 'references'">
+                <reference-management class="flex-grow-1 d-flex flex-column"></reference-management>
+            </div>
 
             <div id="packages-content"
                  class="tab-content flex-grow-1 d-flex flex-column"
                  show.bind="selectedContent == 'packages'">
-                <package-management containerless></package-management>
+                <package-management class="flex-grow-1 d-flex flex-column"></package-management>
             </div>
 
             <div id="namespaces-content"
                  class="tab-content flex-grow-1 d-flex flex-column"
                  show.bind="selectedContent == 'namespaces'">
-                <h5>List each namespace on a separate line</h5>
-                <textarea class="form-control flex-grow-1"
-                          value.bind="namespaces"
-                          spellcheck="false"></textarea>
+                <namespace-management class="flex-grow-1 d-flex flex-column"></namespace-management>
             </div>
         </div>
-        <div class="mt-3 text-end">
-            <button class="btn btn-secondary" click.trigger="ok()">OK</button>
-            <button class="btn btn-secondary" click.trigger="cancel()">Cancel</button>
+        <div class="mt-3">
+            <div class="float-end">
+                <button class="btn btn-sm btn-secondary" click.trigger="save()">Save</button>
+                <button class="btn btn-sm btn-secondary" click.trigger="cancel()">Cancel</button>
+            </div>
         </div>
     </div>
 </template>

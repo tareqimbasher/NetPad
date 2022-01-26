@@ -9,4 +9,8 @@
       <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\NetPad.Domain\NetPad.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

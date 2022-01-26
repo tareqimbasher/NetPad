@@ -24,6 +24,13 @@
                 "filter": [
                     "**/*"
                 ]
+            },
+            {
+                "from": "../../../bin/Release/net5.0/linux-x64",
+                "to": "bin",
+                "filter": [
+                    "**/NetPad.Domain.dll"
+                ]
             }
         ],
         "files": [

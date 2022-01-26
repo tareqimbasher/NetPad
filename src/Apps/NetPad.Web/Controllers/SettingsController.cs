@@ -24,7 +24,8 @@ namespace NetPad.Controllers
         {
             _settings
                 .SetTheme(settings.Theme)
-                .SetScriptsDirectoryPath(settings.ScriptsDirectoryPath);
+                .SetScriptsDirectoryPath(settings.ScriptsDirectoryPath)
+                .SetPackageCacheDirectoryPath(settings.PackageCacheDirectoryPath);
             return NoContent();
         }
     }

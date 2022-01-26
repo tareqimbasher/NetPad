@@ -1,0 +1,14 @@
+<template bindable="metadata">
+    <h5>
+        <img src.bind="metadata.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+             style="height: 24px" />
+        ${metadata.title}
+    </h5>
+    <p>
+        <b>Authors:</b> ${metadata.authors} |
+        <b>Url:</b> <a href.bind="metadata.projectUrl" external-link>${metadata.projectUrl || ''}</a> |
+        <b>Downloads:</b> ${metadata.downloadCount} |
+        <b>Versions:</b> ${metadata.versions.length === 1 ? metadata.versions : (metadata.versions[0] + '-' + metadata.versions[metadata.versions.length - 1])} <br/>
+        ${metadata.description}
+    </p>
+</template>

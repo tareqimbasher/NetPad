@@ -11,12 +11,20 @@ namespace NetPad.Scripts
     {
         private ScriptKind _kind;
         private List<string> _namespaces;
+        private List<Reference> _references;
 
-        public ScriptConfig(ScriptKind kind, List<string>? namespaces = null)
+        public ScriptConfig(
+            ScriptKind kind,
+            List<string>? namespaces = null,
+            List<Reference>? references = null)
         {
             _kind = kind;
             _namespaces = namespaces ?? new List<string>();
+            _references = references ?? new List<Reference>();
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
+
+            _references.Add(new AssemblyReference("/home/tips/Local/Jarvis.dll"));
+            _references.Add(new PackageReference("Newtonsoft.Json", "Json.NET", "13.0.1.0"));
         }
 
         [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
@@ -33,6 +41,12 @@ namespace NetPad.Scripts
             private set => this.RaiseAndSetIfChanged(ref _namespaces, value);
         }
 
+        public List<Reference> References
+        {
+            get => _references;
+            private set => this.RaiseAndSetIfChanged(ref _references, value);
+        }
+
         public void SetKind(ScriptKind kind)
         {
             if (kind == Kind)
@@ -44,6 +58,14 @@ namespace NetPad.Scripts
         public void SetNamespaces(IEnumerable<string> namespaces)
         {
             Namespaces = namespaces.Distinct().ToList();
+        }
+
+        public void SetReferences(IEnumerable<Reference> references)
+        {
+            foreach (var reference in references)
+                reference.EnsureValid();
+
+            References = references.ToList();
         }
     }
 
