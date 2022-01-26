@@ -1,6 +1,7 @@
 import {Settings, IScriptService, ISession, IShortcutManager, Shortcut} from "@domain";
 import {IBackgroundService, KeyCode} from "@common";
 import {IContainer} from "aurelia";
+import Split from "split.js";
 
 export class Index {
     private readonly backgroundServices: IBackgroundService[] = [];
@@ -27,6 +28,15 @@ export class Index {
         if (this.session.environments.length === 0) {
             await this.scriptService.create();
         }
+    }
+
+    public attached() {
+        Split([document.getElementById("sidebar"), document.getElementById("scripts-content")], {
+            gutterSize: 6,
+            sizes: [14, 86],
+            minSize: [100, 300],
+            expandToMin: true,
+        });
     }
 
     private registerBuiltInShortcuts() {

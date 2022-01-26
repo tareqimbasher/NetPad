@@ -10,3 +10,40 @@ body, html {
     @include theme(background-color, backgroundColor);
     @include theme(color, textColor);
 }
+
+.gutter {
+    @include theme(background-color, splitterColor);
+    background-repeat: no-repeat;
+    background-position: 50%;
+
+    &.gutter-horizontal:hover {
+        cursor: col-resize;
+    }
+
+    &.gutter-vertical:hover {
+        cursor: row-resize;
+    }
+}
+
+
+.flex-grow-height-restricted {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    @include theme(background-color, scrollbarTrackColor);
+}
+
+::-webkit-scrollbar-thumb {
+    @include theme(background-color, scrollbarThumbColor);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}

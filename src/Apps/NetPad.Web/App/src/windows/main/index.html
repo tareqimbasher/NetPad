@@ -5,8 +5,8 @@
 
     <div class="window d-flex flex-column">
         <div id="content" class="flex-grow-1 d-flex flex-row">
-            <sidebar></sidebar>
-            <div id="scripts-content" class="flex-grow-1 d-flex flex-column">
+            <sidebar id="sidebar"></sidebar>
+            <div id="scripts-content" class="flex-grow-height-restricted d-flex flex-column">
                 <ul id="tabs" class="nav nav-tabs">
                     <li class="nav-item script-tab ${session.active === env ? 'active' : ''}"
                         repeat.for="env of session.environments">
@@ -31,8 +31,8 @@
                         </div>
                     </li>
                 </ul>
-                <div id="script-environments" class="flex-grow-1 d-flex flex-column">
-                    <script-environment-view class="flex-grow-1 d-flex flex-column"
+                <div id="script-environments" class="flex-grow-height-restricted d-flex flex-column">
+                    <script-environment-view class="flex-grow-height-restricted d-flex flex-column"
                                              repeat.for="env of session.environments"
                                              show.bind="session.active === env"
                                              environment.bind="env"></script-environment-view>

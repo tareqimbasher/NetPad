@@ -11,6 +11,7 @@ import {
     Settings
 } from "@domain";
 import * as monaco from "monaco-editor";
+import Split from "split.js";
 import {Util} from "@common";
 import {ResultsViewSettings} from "./results-view-settings";
 
@@ -61,6 +62,18 @@ export class ScriptEnvironmentView {
         PLATFORM.taskQueue.queueTask(() => {
             this.initializeEditor();
         }, { delay: 100 });
+
+        const split = Split([
+            `script-environment-view[data-id="${this.id}"] .text-editor-container`,
+            `script-environment-view[data-id="${this.id}"] .results-container`
+        ], {
+            gutterSize: 6,
+            direction: 'vertical',
+            sizes: [50, 50],
+            minSize: [50, 50],
+        });
+
+        this.disposables.push(() => split.destroy());
     }
 
     public detaching() {
@@ -127,23 +140,23 @@ export class ScriptEnvironmentView {
 
         this.editor.onDidChangeModelContent(ev => f(ev));
 
-        window.addEventListener("resize", () => this.editor.layout());
-        // const ob = new ResizeObserver(entries => {
-        //     console.log(entries);
-        //     this.editor.layout({
-        //         width: document.scriptSelector(".window").clientWidth - document.scriptSelector("sidebar").clientWidth,
-        //         height: document.scriptSelector(".text-editor").clientHeight
-        //     });
-        // });
-        // ob.observe(document.scriptSelector("statusbar"));
+        const ob = new ResizeObserver(entries => this.updateEditorLayout());
+        ob.observe(document.getElementById("sidebar"));
+        ob.observe(document.querySelector(`script-environment-view[data-id="${this.id}"] .text-editor-container`));
+        ob.observe(document.querySelector(`script-environment-view[data-id="${this.id}"] .results-container`));
+        this.disposables.push(() => ob.disconnect());
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.session.active)
-    private updateEditorLayout() {
+    private activeScriptEnvironmentChanged() {
         PLATFORM.taskQueue.queueTask(() => {
             if (this.environment === this.session.active)
-                this.editor.layout();
+                this.updateEditorLayout();
         }, { delay: 100 });
+    }
+
+    private updateEditorLayout() {
+        this.editor.layout();
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.settings.theme)

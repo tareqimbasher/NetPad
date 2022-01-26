@@ -3,11 +3,8 @@
 sidebar {
     @include theme(background-color, sidebarBackground);
 
-    .connection-list {
-        min-height: 15rem;
-    }
-
-    .script-list {
+    #script-list > .list-group {
+        overflow: auto;
     }
 
     .list-group-item {
