@@ -1,5 +1,5 @@
 import {IIpcGateway, SubscriptionToken} from "@domain";
-import {ipcRenderer, IpcRendererEvent} from "electron";
+//import {ipcRenderer, IpcRendererEvent} from "electron";
 import {ILogger} from "aurelia";
 
 export class ElectronIpcGateway implements IIpcGateway {
@@ -7,13 +7,14 @@ export class ElectronIpcGateway implements IIpcGateway {
     }
 
     public subscribe(channelName: string, callback: (message: any, channel: string) => void): SubscriptionToken {
-        const handler = (event: IpcRendererEvent, ...args: any[]) => {
-            this.logger.debug(`ElectronIpcGateway: Got server message`, event, ...args);
-            const json = args.length > 0 ? args[0] : null;
-            callback(!json ? null : JSON.parse(json), channelName);
-        };
+        //const handler = (event: IpcRendererEvent, ...args: any[]) => {
+        //    this.logger.debug(`ElectronIpcGateway: Got server message`, event, ...args);
+        //    const json = args.length > 0 ? args[0] : null;
+        //    callback(!json ? null : JSON.parse(json), channelName);
+        //};
 
-        ipcRenderer.on(channelName, handler);
-        return new SubscriptionToken(() => ipcRenderer.off(channelName, handler));
+        //ipcRenderer.on(channelName, handler);
+        //return new SubscriptionToken(() => ipcRenderer.off(channelName, handler));
+        return new SubscriptionToken(() => { });
     }
 }
