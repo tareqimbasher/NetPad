@@ -43,6 +43,14 @@ export class Util {
     }
 
     /**
+     * Checks if a string is a letter.
+     * @param str The string to check.
+     */
+    public static isLetter(str: string): boolean {
+        return str.length === 1 && !!str.match(/[a-z]/i);
+    }
+
+    /**
      * Groups a collection by the selected key.
      * @param collection The collection to group.
      * @param keyGetter A function that selects the key to group by.
@@ -63,6 +71,14 @@ export class Util {
         }
 
         return map;
+    }
+
+    /**
+     * Returns a new array with the unique items from the provided array.
+     * @param collection The array to filter.
+     */
+    public static distinct<TItem>(collection: Array<TItem>): Array<TItem> {
+        return [...new Set(collection)];
     }
 
     /**

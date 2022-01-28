@@ -1,12 +1,14 @@
-import {IScriptService, ISession, Script} from "@domain";
+import {IScriptService, ISession, Script, Settings} from "@domain";
+import {ConfigStore} from "./config-store";
 
 export class Index {
     public script: Script;
-    public namespaces: string;
-    public selectedContent: "namespaces" | "packages" = "packages";
+    public selectedContent: "namespaces" | "references" | "packages" = "references";
 
     constructor(
         readonly startupOptions: URLSearchParams,
+        readonly settings: Settings,
+        readonly configStore: ConfigStore,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService) {
     }
@@ -16,21 +18,15 @@ export class Index {
         this.script = environment.script;
 
         document.title = `${this.script.name} - Properties`;
-        let namespaces = this.script.config.namespaces.join("\n");
-        if (namespaces)
-            namespaces += "\n";
-        this.namespaces = namespaces;
+
+        this.configStore.namespaces = environment.script.config.namespaces;
+        this.configStore.references = environment.script.config.references;
     }
 
-    public async ok() {
+    public async save() {
         try {
-            const config = this.script.config;
-            config.namespaces = this.namespaces
-                .split('\n')
-                .map(ns => ns.trim())
-                .filter(ns => ns);
-
-            await this.scriptService.setScriptNamespaces(this.script.id, config.namespaces);
+            await this.scriptService.setScriptNamespaces(this.script.id, this.configStore.namespaces);
+            await this.scriptService.setReferences(this.script.id, this.configStore.references);
             window.close();
         }
         catch (ex) {

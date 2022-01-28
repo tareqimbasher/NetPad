@@ -1,0 +1,18 @@
+@import "~styles/themes";
+
+package-management {
+    .column {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .column-header {
+        flex: 0 0 35px;
+        margin-bottom: 5px;
+        @include theme(border-bottom, borderColor, 1px solid);
+    }
+
+    .details-list > li {
+        margin-bottom: 5px;
+    }
+}

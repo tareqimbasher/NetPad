@@ -17,6 +17,22 @@ body, html {
     min-height: 0;
 }
 
+.flex-1 {
+    flex: 1;
+}
+
+.min-h-0 {
+    min-height: 0;
+}
+
+.min-w-0 {
+    min-width: 0;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
 hr {
     @include theme(color, borderColor);
 }
@@ -36,6 +52,39 @@ hr {
             font-weight: bold !important;
         }
     }
+}
+
+table thead td {
+    font-weight: bold;
+}
+
+.grid.gutterless {
+    > .row {
+        margin-right: 0;
+        margin-left: 0;
+
+        > * {
+            padding-right: 0;
+            padding-left: 0;
+        }
+    }
+}
+
+.text-truncate-1-line {
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden;
+}
+
+.text-truncate-2-lines {
+    @extend .text-truncate-1-line;
+    -webkit-line-clamp: 2;
+}
+
+.text-truncate-3-lines {
+    @extend .text-truncate-1-line;
+    -webkit-line-clamp: 3;
 }
 
 ::-webkit-scrollbar {

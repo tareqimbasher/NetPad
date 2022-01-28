@@ -1,25 +1,120 @@
-<input class="form-control"
-       type="text"
-       placeholder="Search packages..."
-       value.bind="term & debounce:400"/>
-
-<hr/>
-
-<div class="list-group" style="flex: 1 1 auto; overflow-y: auto; min-height: 100px; max-height: 500px">
-    <div class="list-group-item"
-         repeat.for="result of searchResults">
-        <h5>
-            <img src.bind="result.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                 alt.bind="result.iconUrl"
-                 style="height: 24px" />
-            ${result.title}
-        </h5>
-        <p>
-            <b>Description:</b> ${result.description} <br/>
-            <b>Authors:</b> ${result.authors} <br/>
-            <b>Url:</b> <a href.bind="result.projectUrl" external-link>${result.projectUrl || ''}</a> <br/>
-            <b>Downloads:</b> ${result.downloadCount} <br/>
-            <b>Versions:</b> ${result.versions.length === 1 ? result.versions : (result.versions[0] + '-' + result.versions[result.versions.length - 1])} <br/>
-        </p>
+<div class="d-flex flex-row flex-grow-height-restricted">
+    <!-- CACHED PACKAGES -->
+    <div id="cached-packages" class="d-flex flex-column column">
+        <div class="column-header">
+            <h5>Local Package Cache</h5>
+        </div>
+        <div class="list-group overflow-y-auto">
+            <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
+                 repeat.for="package of cachedPackages"
+                 click.trigger="selectPackage(package)">
+                <div class="grid gutterless">
+                    <div class="row">
+                        <div class="col-md-11 text-break">
+                            <h6>
+                                <img
+                                    src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                                    style="height: 18px"/>
+                                <b>${package.title} <small>${package.version}</small></b>
+                            </h6>
+                            <p class="text-truncate-3-lines">${package.description}</p>
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <button class="btn btn-sm btn-link"
+                                    click.trigger="deleteFromCache(package)"
+                                    title="Delete from Local Cache">Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- PACKAGE SEARCH -->
+    <div id="package-search" class="d-flex flex-column column">
+        <div class="column-header">
+            <input class="form-control"
+                   type="text"
+                   placeholder="Search packages..."
+                   value.bind="term & debounce:400"/>
+        </div>
+
+        <div class="list-group overflow-y-auto">
+            <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
+                 repeat.for="package of searchResults"
+                 click.trigger="selectPackage(package)">
+                <div class="grid gutterless">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <h6>
+                                <img
+                                    src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                                    style="height: 18px"/>
+                                <b>${package.title}</b>
+                            </h6>
+                            <p class="text-truncate-3-lines">
+                                ${package.description}
+                            </p>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button class="btn btn-sm btn-link"
+                                    click.trigger="addPackage(package)"
+                                    show.bind="package.existsInLocalCache">Add
+                            </button>
+                            <button class="btn btn-sm btn-link"
+                                    click.trigger="downloadPackage(package)"
+                                    show.bind="!package.existsInLocalCache">Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PACKAGES INFO -->
+    <div id="package-info" class="column overflow-y-auto">
+        <ul class="list-unstyled details-list" show.bind="selectedPackage">
+            <li><b>Authors:</b> ${selectedPackage.authors}</li>
+            <li><b>ID:</b> ${selectedPackage.packageId}</li>
+            <li><b>Version:</b> ${selectedPackage.version}</li>
+            <li><b>Published:</b> ${selectedPackage.publishedDate | dateTime}</li>
+            <li show.bind="selectedPackage.downloadCount !== null">
+                <b>Downloads:</b> ${selectedPackage.downloadCount}
+            </li>
+            <li show.bind="selectedPackage.licenseUrl !== null">
+                <a href.bind="selectedPackage.licenseUrl" external-link>License</a>
+            </li>
+            <li show.bind="selectedPackage.projectUrl !== null">
+                <a href.bind="selectedPackage.projectUrl" external-link>Project Url</a>
+            </li>
+            <li show.bind="selectedPackage.packageDetailsUrl !== null">
+                <a href.bind="selectedPackage.packageDetailsUrl" external-link>Project Details</a>
+            </li>
+            <li show.bind="selectedPackage.readmeUrl !== null">
+                <a href.bind="selectedPackage.readmeUrl" external-link>Readme</a>
+            </li>
+            <li show.bind="selectedPackage.reportAbuseUrl !== null">
+                <a href.bind="selectedPackage.reportAbuseUrl" external-link>Report Abuse</a>
+            </li>
+            <li>
+                <b>Description:</b><br/>
+                <p innerHTML.bind="selectedPackage.description | sanitizeHtml | textToHtml"></p>
+            </li>
+            <li>
+                <b>Dependencies:</b><br/>
+                <ul class="list-unstyled" if.bind="selectedPackage.dependencies.length">
+                    <li repeat.for="dep of selectedPackage.dependencies">${dep}</li>
+                </ul>
+                <span else>(none)</span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+<div portal="#buttons">
+    <button class="btn btn-sm btn-secondary" click.trigger="save()">Add...</button>
+    <button class="btn btn-sm btn-secondary" click.trigger="openCacheDirectory()">Open Cache Folder</button>
 </div>

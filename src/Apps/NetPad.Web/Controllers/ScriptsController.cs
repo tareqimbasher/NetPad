@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Exceptions;
 using NetPad.Scripts;
-using NetPad.Runtimes;
 using NetPad.Sessions;
 using NetPad.UiInterop;
 
@@ -80,6 +79,15 @@ namespace NetPad.Controllers
         {
             var script = GetScriptEnvironment(id).Script;
             script.Config.SetNamespaces(namespaces);
+
+            return NoContent();
+        }
+
+        [HttpPut("{id:guid}/references")]
+        public IActionResult SetReferences(Guid id, [FromBody] IEnumerable<Reference> references)
+        {
+            var script = GetScriptEnvironment(id).Script;
+            script.Config.SetReferences(references);
 
             return NoContent();
         }

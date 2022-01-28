@@ -78,7 +78,7 @@ namespace NetPad
             if (WebHostEnvironment.IsDevelopment())
             {
                 AddSwagger(services);
-                services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+                //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
         }
 

@@ -14,7 +14,12 @@ import {
     SettingService,
     SignalRIpcGateway
 } from "@domain";
-import {ExternalLinkCustomAttribute} from "@application";
+import {
+    DateTimeValueConverter,
+    ExternalLinkCustomAttribute,
+    SanitizeHtmlValueConverter,
+    TextToHtmlValueConverter
+} from "@application";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -35,7 +40,10 @@ const app = Aurelia.register(
         level: LogLevel.trace,
         sinks: [ConsoleSink],
     }),
-    ExternalLinkCustomAttribute
+    ExternalLinkCustomAttribute,
+    DateTimeValueConverter,
+    TextToHtmlValueConverter,
+    SanitizeHtmlValueConverter,
 );
 
 const win = startupOptions.get("win");

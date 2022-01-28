@@ -38,8 +38,8 @@ namespace NetPad.UiInterop
             var window = await CreateWindowAsync("script-config", new BrowserWindowOptions
             {
                 Title = script.Name,
-                Height = display.Bounds.Height * 3 / 5,
-                Width = display.Bounds.Width * 3 / 5,
+                Height = display.Bounds.Height * 2 / 3,
+                Width = display.Bounds.Width * 4 / 5,
                 AutoHideMenuBar = true,
             }, ("script-id", script.Id));
 

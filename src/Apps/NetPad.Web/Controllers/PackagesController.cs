@@ -16,16 +16,19 @@ namespace NetPad.Controllers
             _packageProvider = packageProvider;
         }
 
+        [HttpGet("cached")]
+        public async Task<ActionResult<IEnumerable<CachedPackage>>> GetCachedPackages([FromQuery] bool loadMetadata)
+        {
+            return Ok(await _packageProvider.GetCachedPackagesAsync(loadMetadata));
+        }
+
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<PackageMetadata>>> Search(
-            [FromQuery] string term,
+            [FromQuery] string? term,
             [FromQuery] int? skip = null,
             [FromQuery] int? take = null,
             [FromQuery] bool? includePrerelease = null)
         {
-            if (string.IsNullOrWhiteSpace(term))
-                return BadRequest($"{term} is required.");
-
             var packages = await _packageProvider.SearchPackagesAsync(
                 term,
                 skip ?? 0,
@@ -34,6 +37,18 @@ namespace NetPad.Controllers
             );
 
             return Ok(packages);
+        }
+
+        [HttpPatch("download")]
+        public async Task<IActionResult> Download([FromQuery] string packageId, [FromQuery] string packageVersion)
+        {
+            if (string.IsNullOrWhiteSpace(packageId))
+                return BadRequest($"{nameof(packageId)} is required.");
+            if (string.IsNullOrWhiteSpace(packageVersion))
+                return BadRequest($"{nameof(packageVersion)} is required.");
+
+            await _packageProvider.DownloadPackageAsync(packageId, packageVersion);
+            return Ok();
         }
     }
 }

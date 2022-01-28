@@ -1,0 +1,34 @@
+<div if.bind="assemblyReferences.length === 0"
+     class="flex-grow-1 d-flex align-items-center justify-content-center">
+    <p class="text-muted">
+        No assembly references
+    </p>
+</div>
+<table else class="table table-hover">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Source</td>
+            <td class="text-center"><i class="bi bi-gear-fill"></i></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr as-element="row"
+            repeat.for="reference of references">
+            <td>
+                ${reference.title}
+            </td>
+            <td>
+                ${reference.version ? 'NuGet' : reference.assemblyPath}
+            </td>
+            <td class="text-center" style="width: 40px">
+                <a href="" click.trigger="removeReference(reference)">
+                    Remove
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div portal="#buttons">
+    <button class="btn btn-sm btn-secondary" click.trigger="save()">Browse...</button>
+</div>
