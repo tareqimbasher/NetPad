@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
+using NetPad.Packages;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
 using NetPad.Tests;
@@ -27,6 +28,7 @@ namespace NetPad.Runtimes.Tests
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
+            services.AddTransient<IPackageProvider>(sp => null);
         }
 
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]

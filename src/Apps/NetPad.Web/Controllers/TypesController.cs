@@ -18,6 +18,6 @@ namespace NetPad.Controllers
             EnvironmentsRemoved,
             EnvironmentPropertyChanged,
             ActiveEnvironmentChanged
-        )? GetAllTypes() => null;
+        )? AdditionalTypes() => null;
     }
 }

@@ -48,6 +48,9 @@ export class PackageManagement {
     }
 
     public async referencePackage(pkg: PackageMetadata) {
+        if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
+            await this.downloadPackage(pkg);
+
         this.configStore.references.push(new PackageReference({
             packageId: pkg.packageId,
             title: pkg.title,

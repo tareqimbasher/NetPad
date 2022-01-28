@@ -5,17 +5,21 @@
         Browse for an assembly or add a Nuget package.
     </p>
 </div>
-<table else class="table table-hover">
-    <thead>
+
+<div class="flex-grow-height-restricted d-flex flex-row" else>
+    <table class="table table-hover">
+        <thead>
         <tr>
             <td>Name</td>
             <td>Source</td>
             <td class="text-center"><i class="bi bi-gear-fill"></i></td>
         </tr>
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
         <tr as-element="row"
-            repeat.for="reference of references">
+            class="${selectedReference === reference ? 'active' : ''}"
+            repeat.for="reference of references"
+            click.trigger="selectReference(reference)">
             <td>
                 ${reference.title}
             </td>
@@ -23,13 +27,27 @@
                 ${reference.version ? 'NuGet' : reference.assemblyPath}
             </td>
             <td class="text-center" style="width: 40px">
-                <a href="" click.trigger="removeReference(reference)">
+                <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
                     Remove
-                </a>
+                </button>
             </td>
         </tr>
-    </tbody>
-</table>
+        </tbody>
+    </table>
+    <div class="ps-3" style="flex: 1 1 350px">
+        <h5>Select Namespaces:</h5>
+        <hr/>
+        <ul class="list-unstyled">
+            <li repeat.for="namespace of namespaces">
+                <label class="text-break">
+                    <input type="checkbox" checked.bind="namespace.selected"/>
+                    ${namespace.name}
+                </label>
+            </li>
+        </ul>
+    </div>
+</div>
+
 <div portal="#buttons">
     <button class="btn btn-sm btn-secondary" click.trigger="browse.click()">Browse...</button>
     <input ref="browse" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">

@@ -44,9 +44,18 @@ $input-btn-padding-y-sm: .10rem;
 .table {
     @include theme(color, textColor);
 
-    tr:hover td {
-        @include theme(color, textColor);
-        @include theme(--bs-table-hover-bg, hoverColor);
+    tr {
+        &.active > td {
+            @include theme(background-color, activeColor);
+            * {
+                @include theme(color, textColor);
+            }
+        }
+
+        &:hover > td {
+            @include theme(color, textColor);
+            @include theme(--bs-table-hover-bg, hoverColor);
+        }
     }
 
     td {

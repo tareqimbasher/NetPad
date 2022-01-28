@@ -38,6 +38,7 @@ namespace NetPad.Compilation.CSharp
             assemblyLocations.Add(typeof(IScriptRuntimeOutputWriter).Assembly.Location);
 
             var references = assemblyLocations
+                .Where(al => !string.IsNullOrWhiteSpace(al))
                 .Select(location => MetadataReference.CreateFromFile(location));
 
             // Create compilation

@@ -95,6 +95,68 @@ export class AppApiClient implements IAppApiClient {
     }
 }
 
+export interface IAssembliesApiClient {
+
+    getNamespaces(reference: Reference): Promise<string[]>;
+}
+
+export class AssembliesApiClient implements IAssembliesApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getNamespaces(reference: Reference, signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/assemblies/namespaces";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(reference);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetNamespaces(_response);
+        });
+    }
+
+    protected processGetNamespaces(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
+    }
+}
+
 export interface IPackagesApiClient {
 
     getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
@@ -1020,7 +1082,7 @@ export class SettingsApiClient implements ISettingsApiClient {
 
 export interface ITypesApiClient {
 
-    getAllTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>;
+    additionalTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>;
 }
 
 export class TypesApiClient implements ITypesApiClient {
@@ -1033,7 +1095,7 @@ export class TypesApiClient implements ITypesApiClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    getAllTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
+    additionalTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
         let url_ = this.baseUrl + "/types";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1046,11 +1108,11 @@ export class TypesApiClient implements ITypesApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processGetAllTypes(_response);
+            return this.processAdditionalTypes(_response);
         });
     }
 
-    protected processGetAllTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
+    protected processAdditionalTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1067,6 +1129,144 @@ export class TypesApiClient implements ITypesApiClient {
         }
         return Promise.resolve<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>(<any>null);
     }
+}
+
+export abstract class Reference implements IReference {
+    title!: string;
+
+    protected _discriminator: string;
+
+    constructor(data?: IReference) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        this._discriminator = "Reference";
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): Reference {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "AssemblyReference") {
+            let result = new AssemblyReference();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PackageReference") {
+            let result = new PackageReference();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'Reference' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
+        data["title"] = this.title;
+        return data;
+    }
+
+    clone(): Reference {
+        throw new Error("The abstract class 'Reference' cannot be instantiated.");
+    }
+}
+
+export interface IReference {
+    title: string;
+}
+
+export class AssemblyReference extends Reference implements IAssemblyReference {
+    assemblyPath?: string | undefined;
+
+    constructor(data?: IAssemblyReference) {
+        super(data);
+        this._discriminator = "AssemblyReference";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.assemblyPath = _data["assemblyPath"];
+        }
+    }
+
+    static fromJS(data: any): AssemblyReference {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyReference();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["assemblyPath"] = this.assemblyPath;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AssemblyReference {
+        const json = this.toJSON();
+        let result = new AssemblyReference();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyReference extends IReference {
+    assemblyPath?: string | undefined;
+}
+
+export class PackageReference extends Reference implements IPackageReference {
+    packageId!: string;
+    version!: string;
+
+    constructor(data?: IPackageReference) {
+        super(data);
+        this._discriminator = "PackageReference";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.packageId = _data["packageId"];
+            this.version = _data["version"];
+        }
+    }
+
+    static fromJS(data: any): PackageReference {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageReference();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["packageId"] = this.packageId;
+        data["version"] = this.version;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PackageReference {
+        const json = this.toJSON();
+        let result = new PackageReference();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPackageReference extends IReference {
+    packageId: string;
+    version: string;
 }
 
 export class PackageMetadata implements IPackageMetadata {
@@ -1260,144 +1460,6 @@ export class ScriptSummary implements IScriptSummary {
 export interface IScriptSummary {
     name: string;
     path: string;
-}
-
-export abstract class Reference implements IReference {
-    title!: string;
-
-    protected _discriminator: string;
-
-    constructor(data?: IReference) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        this._discriminator = "Reference";
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.title = _data["title"];
-        }
-    }
-
-    static fromJS(data: any): Reference {
-        data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "AssemblyReference") {
-            let result = new AssemblyReference();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "PackageReference") {
-            let result = new PackageReference();
-            result.init(data);
-            return result;
-        }
-        throw new Error("The abstract class 'Reference' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["discriminator"] = this._discriminator;
-        data["title"] = this.title;
-        return data;
-    }
-
-    clone(): Reference {
-        throw new Error("The abstract class 'Reference' cannot be instantiated.");
-    }
-}
-
-export interface IReference {
-    title: string;
-}
-
-export class AssemblyReference extends Reference implements IAssemblyReference {
-    assemblyPath?: string | undefined;
-
-    constructor(data?: IAssemblyReference) {
-        super(data);
-        this._discriminator = "AssemblyReference";
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.assemblyPath = _data["assemblyPath"];
-        }
-    }
-
-    static fromJS(data: any): AssemblyReference {
-        data = typeof data === 'object' ? data : {};
-        let result = new AssemblyReference();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["assemblyPath"] = this.assemblyPath;
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): AssemblyReference {
-        const json = this.toJSON();
-        let result = new AssemblyReference();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IAssemblyReference extends IReference {
-    assemblyPath?: string | undefined;
-}
-
-export class PackageReference extends Reference implements IPackageReference {
-    packageId!: string;
-    version!: string;
-
-    constructor(data?: IPackageReference) {
-        super(data);
-        this._discriminator = "PackageReference";
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.packageId = _data["packageId"];
-            this.version = _data["version"];
-        }
-    }
-
-    static fromJS(data: any): PackageReference {
-        data = typeof data === 'object' ? data : {};
-        let result = new PackageReference();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["packageId"] = this.packageId;
-        data["version"] = this.version;
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): PackageReference {
-        const json = this.toJSON();
-        let result = new PackageReference();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IPackageReference extends IReference {
-    packageId: string;
-    version: string;
 }
 
 export type ScriptKind = "Expression" | "Statements" | "Program";

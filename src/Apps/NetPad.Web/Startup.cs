@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetPad.Assemblies;
 using NetPad.BackgroundServices;
 using NetPad.Common;
 using NetPad.Compilation;
@@ -66,6 +67,7 @@ namespace NetPad
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
+            services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
             services.AddTransient<IPackageProvider, NugetPackageProvider>();
 
             services.AddTransient<IUiDialogService, ElectronDialogService>();
@@ -78,7 +80,7 @@ namespace NetPad
             if (WebHostEnvironment.IsDevelopment())
             {
                 AddSwagger(services);
-                //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+                services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
         }
 

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,6 +5,8 @@ namespace NetPad.Packages
 {
     public interface IPackageProvider
     {
+        Task<string> GetCachedPackageAssemblyPathAsync(string packageId, string packageVersion);
+
         Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false);
 
         Task DeleteCachedPackageAsync(string packageId, string packageVersion);

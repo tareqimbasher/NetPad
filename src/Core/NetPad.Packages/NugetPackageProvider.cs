@@ -24,6 +24,42 @@ namespace NetPad.Packages
             _settings = settings;
         }
 
+        public Task<string> GetCachedPackageAssemblyPathAsync(string packageId, string packageVersion)
+        {
+            var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());
+
+            var packageDir = nugetCacheDir.GetDirectories()
+                .FirstOrDefault(d => d.Name == packageId);
+            if (packageDir == null) throw new Exception("Package directory not found.");
+
+            var versionDir = packageDir.GetDirectories()
+                .FirstOrDefault(d => d.Name == packageVersion);
+            if (versionDir == null) throw new Exception("Package version directory not found.");
+
+            var libDir = versionDir.GetDirectories()
+                .FirstOrDefault(d => d.Name == "lib");
+            if (libDir == null) throw new Exception("Package version lib directory not found.");
+
+            var netstandard2Dir = libDir.GetDirectories()
+                .FirstOrDefault(d => d.Name == "netstandard2.0");
+            if (netstandard2Dir == null) throw new Exception("No netstandard2.0 directory found for package.");
+
+            string? assemblyPath;
+
+            var dlls = netstandard2Dir.GetFiles("*.dll");
+            if (dlls.Length == 1)
+                assemblyPath = dlls.First().FullName;
+
+            assemblyPath = dlls
+                .FirstOrDefault(d => d.Name.Equals($"{packageId}.dll", StringComparison.OrdinalIgnoreCase))?
+                .FullName;
+
+            if (assemblyPath == null)
+                throw new Exception("Could not determine main assembly path.");
+
+            return Task.FromResult(assemblyPath);
+        }
+
         public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
         {
             var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());

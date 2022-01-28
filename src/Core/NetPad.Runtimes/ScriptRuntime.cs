@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Exceptions;
+using NetPad.Packages;
 using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Utilities;
@@ -18,6 +21,7 @@ namespace NetPad.Runtimes
         private readonly IServiceProvider _serviceProvider;
         private readonly ICodeParser _codeParser;
         private readonly ICodeCompiler _codeCompiler;
+        private readonly IPackageProvider _packageProvider;
         private readonly ILogger<ScriptRuntime> _logger;
         private Script? _script;
 
@@ -25,11 +29,13 @@ namespace NetPad.Runtimes
             IServiceProvider serviceProvider,
             ICodeParser codeParser,
             ICodeCompiler codeCompiler,
+            IPackageProvider packageProvider,
             ILogger<ScriptRuntime> logger)
         {
             _serviceProvider = serviceProvider;
             _codeParser = codeParser;
             _codeCompiler = codeCompiler;
+            _packageProvider = packageProvider;
             _logger = logger;
         }
 
@@ -50,7 +56,22 @@ namespace NetPad.Runtimes
 
             try
             {
-                var compilationResult = _codeCompiler.Compile(new CompilationInput(parsingResult.Program)
+                var assemblyPaths = new List<string>();
+                foreach (var reference in script.Config.References)
+                {
+                    if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
+                        assemblyPaths.Add(aRef.AssemblyPath);
+                    else if (reference is PackageReference pRef)
+                    {
+                        assemblyPaths.Add(
+                            await _packageProvider.GetCachedPackageAssemblyPathAsync(pRef.PackageId, pRef.Version)
+                        );
+                    }
+                }
+
+                var compilationResult = _codeCompiler.Compile(new CompilationInput(
+                    parsingResult.Program,
+                    assemblyPaths)
                 {
                     OutputAssemblyNameTag = script.Name
                 });
@@ -64,7 +85,12 @@ namespace NetPad.Runtimes
                 }
 
                 using var scope = _serviceProvider.CreateScope();
-                var assembly = scope.ServiceProvider.GetRequiredService<IAssemblyLoader>().LoadFrom(compilationResult.AssemblyBytes);
+                using var loader = new UnloadableAssemblyLoader(
+                    assemblyPaths.Select(p => (AssemblyName.GetAssemblyName(p).FullName, File.ReadAllBytes(p))),
+                    scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
+                );
+
+                var assembly = loader.LoadFrom(compilationResult.AssemblyBytes);
 
                 var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
                 if (userScriptType == null)
