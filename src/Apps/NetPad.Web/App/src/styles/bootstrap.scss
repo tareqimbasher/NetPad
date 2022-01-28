@@ -4,10 +4,11 @@ $spacer: 0.5rem;
 $border-radius: 0;
 $border-radius: 0;
 $border-radius: 0;
+$nav-link-padding-y: .25rem;
 $btn-border-radius: .25rem;
 $input-btn-focus-width: 0.1rem;
-$nav-link-padding-y: .25rem;
 $input-btn-padding-y: .275rem;
+$input-btn-padding-y-sm: .10rem;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
@@ -50,5 +51,14 @@ $input-btn-padding-y: .275rem;
 
     td {
         @include theme(border-bottom-color, borderColor);
+    }
+}
+
+.dropdown-menu {
+    @include theme(background-color, formControlBackground);
+    @include theme(color, textColor);
+
+    .dropdown-item:hover {
+        @include theme(background-color, hoverColor);
     }
 }

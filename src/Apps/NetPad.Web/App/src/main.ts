@@ -1,6 +1,6 @@
 import Aurelia, {ColorOptions, ConsoleSink, LoggerConfiguration, LogLevel, Registration} from 'aurelia';
 // import "bootstrap";
-// import 'bootstrap/dist/js/bootstrap.bundle';
+import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {

@@ -22,9 +22,6 @@ namespace NetPad.Scripts
             _namespaces = namespaces ?? new List<string>();
             _references = references ?? new List<Reference>();
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
-
-            _references.Add(new AssemblyReference("/home/tips/Local/Jarvis.dll"));
-            _references.Add(new PackageReference("Newtonsoft.Json", "Json.NET", "13.0.1.0"));
         }
 
         [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }

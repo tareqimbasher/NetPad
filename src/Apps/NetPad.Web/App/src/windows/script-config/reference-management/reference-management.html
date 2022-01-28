@@ -1,7 +1,8 @@
-<div if.bind="assemblyReferences.length === 0"
+<div if.bind="references.length === 0"
      class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <p class="text-muted">
-        No assembly references
+    <p class="text-muted text-center">
+        No assembly references.<br/>
+        Browse for an assembly or add a Nuget package.
     </p>
 </div>
 <table else class="table table-hover">
@@ -30,5 +31,6 @@
     </tbody>
 </table>
 <div portal="#buttons">
-    <button class="btn btn-sm btn-secondary" click.trigger="save()">Browse...</button>
+    <button class="btn btn-sm btn-secondary" click.trigger="browse.click()">Browse...</button>
+    <input ref="browse" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
 </div>

@@ -26,25 +26,24 @@ namespace NetPad.Packages
 
         public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
         {
-            string nugetCacheDirPath = GetNugetCacheDirectoryPath();
+            var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());
 
-            var cachedPackages = Directory.GetDirectories(nugetCacheDirPath)
+            var cachedPackages = nugetCacheDir.GetDirectories()
                 .SelectMany(d =>
                 {
                     var versions = new List<CachedPackage>();
 
-                    var versionDirs = Directory.GetDirectories(d)
-                        .Where(v => Version.TryParse(Path.GetFileName(v), out _))
-                        .Select(v => Path.GetFileName(v))
+                    var versionDirs = d.GetDirectories()
+                        .Where(v => Version.TryParse(v.Name, out _))
                         .ToArray();
 
                     foreach (var versionDir in versionDirs)
                     {
                         versions.Add(new CachedPackage
                         {
-                            PackageId = Path.GetFileName(d),
-                            DirectoryPath = versionDir,
-                            Version = Path.GetFileName(versionDir)
+                            PackageId = d.Name,
+                            DirectoryPath = versionDir.FullName,
+                            Version = versionDir.Name
                         });
                     }
 
@@ -69,7 +68,7 @@ namespace NetPad.Packages
                 });
             }
 
-            return cachedPackages;
+            return cachedPackages.OrderBy(p => p.Title ?? p.PackageId).ToArray();
         }
 
         public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
