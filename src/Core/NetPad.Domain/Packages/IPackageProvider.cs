@@ -8,6 +8,8 @@ namespace NetPad.Packages
     {
         Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false);
 
+        Task DeleteCachedPackageAsync(string packageId, string packageVersion);
+
         Task<PackageMetadata[]> SearchPackagesAsync(
             string? term,
             int skip,

@@ -99,6 +99,8 @@ export interface IPackagesApiClient {
 
     getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
 
+    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
 
     download(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
@@ -158,6 +160,43 @@ export class PackagesApiClient implements IPackagesApiClient {
             });
         }
         return Promise.resolve<CachedPackage[]>(<any>null);
+    }
+
+    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/packages/cached?";
+        if (packageId !== undefined && packageId !== null)
+            url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
+        if (packageVersion !== undefined && packageVersion !== null)
+            url_ += "packageVersion=" + encodeURIComponent("" + packageVersion) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processDeleteCachedPackage(_response);
+        });
+    }
+
+    protected processDeleteCachedPackage(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
     }
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]> {

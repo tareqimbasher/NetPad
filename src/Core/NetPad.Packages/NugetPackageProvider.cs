@@ -72,6 +72,30 @@ namespace NetPad.Packages
             return cachedPackages;
         }
 
+        public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
+        {
+            var nugetPackageDirectory = new DirectoryInfo(GetNugetCacheDirectoryPath());
+
+            var packageDir = nugetPackageDirectory.GetDirectories()
+                .FirstOrDefault(d => d.Name == packageId);
+
+            if (packageDir != null)
+            {
+                var versionDir = packageDir.GetDirectories()
+                    .FirstOrDefault(d => d.Name == packageVersion);
+
+                if (versionDir != null)
+                {
+                    versionDir.Delete(recursive: true);
+
+                    if (packageDir.GetDirectories().Length == 0)
+                        packageDir.Delete();
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
         public async Task<PackageMetadata[]> SearchPackagesAsync(
             string? term,
             int skip,

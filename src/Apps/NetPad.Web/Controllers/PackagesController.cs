@@ -22,6 +22,13 @@ namespace NetPad.Controllers
             return Ok(await _packageProvider.GetCachedPackagesAsync(loadMetadata));
         }
 
+        [HttpDelete("cached")]
+        public async Task<IActionResult> DeleteCachedPackage([FromQuery] string packageId, [FromQuery] string packageVersion)
+        {
+            await _packageProvider.DeleteCachedPackageAsync(packageId, packageVersion);
+            return Ok();
+        }
+
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<PackageMetadata>>> Search(
             [FromQuery] string? term,

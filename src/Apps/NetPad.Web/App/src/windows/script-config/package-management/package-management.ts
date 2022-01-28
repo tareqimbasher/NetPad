@@ -50,25 +50,23 @@ export class PackageManagement {
             10,
             false)).map(r => new PackageSearchResult(r));
 
-        for (const result of results) {
-            result.existsInLocalCache = !!this.cachedPackages.find(p => p.packageId === result.packageId);
-        }
+        this.markPackagesAddedToScript(results);
 
         this.searchResults = results;
     }
 
     public async addPackage(pkg: PackageMetadata) {
-
     }
 
     public async downloadPackage(pkg: PackageMetadata) {
         await this.packageService.download(pkg.packageId, pkg.version);
         await this.refreshCachedPackages();
-        alert("Download complete");
     }
 
     public async deleteFromCache(pkg: PackageMetadata) {
-
+        await this.packageService.deleteCachedPackage(pkg.packageId, pkg.version);
+        this.cachedPackages.splice(this.cachedPackages.indexOf(pkg as CachedPackage), 1);
+        this.markPackagesAddedToScript();
     }
 
     public async openCacheDirectory() {
@@ -81,13 +79,15 @@ export class PackageManagement {
 
     private async refreshCachedPackages() {
         this.cachedPackages = await this.packageService.getCachedPackages(true);
-        // const arr = [...packages];
-        //
-        // for (let i = 0; i < 5; i++) {
-        //     arr.push(...packages);
-        // }
-        //
-        // this.cachedPackages = arr;
+        this.markPackagesAddedToScript();
+    }
+
+    private markPackagesAddedToScript(searchResults?: PackageSearchResult[]) {
+        searchResults ??= this.searchResults;
+
+        for (const searchResult of searchResults) {
+            searchResult.existsInLocalCache = !!this.cachedPackages.find(p => p.packageId === searchResult.packageId);
+        }
     }
 }
 
