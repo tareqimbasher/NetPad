@@ -1,3 +1,42 @@
+<template as-custom-element="loader"
+          class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+    <div class="text-muted">
+        Loading...
+    </div>
+    <div class="progress mt-3"
+         style="width: 200px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
+             role="progressbar"
+             style="width: 100%"></div>
+    </div>
+</template>
+
+<template as-custom-element="packages" class="list-group overflow-y-auto">
+    <bindable property="packages"></bindable>
+    <bindable property="selectedPackage"></bindable>
+
+    <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
+         repeat.for="package of packages"
+         click.trigger="selectedPackage = package">
+        <div class="grid gutterless">
+            <div class="row">
+                <div class="col-md-10">
+                    <h6 class="d-flex align-items-center">
+                        <img class="me-3"
+                            src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                            style="height: 24px;"/>
+                        <b>${package.title} <small>(${package.version})</small></b>
+                    </h6>
+                    <p class="text-truncate-3-lines">${package.description}</p>
+                </div>
+                <div class="col-md-2 text-end">
+                    <au-slot name="actions"></au-slot>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <div class="d-flex flex-row flex-grow-height-restricted">
     <!-- CACHED PACKAGES -->
     <div id="cached-packages" class="d-flex flex-column column">
@@ -6,67 +45,36 @@
         </div>
 
         <div promise.bind="cacheLoadingPromise" class="flex-grow-height-restricted d-flex flex-column">
-            <div pending class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-                <div class="text-muted">
-                    Loading...
-                </div>
-                <div class="progress mt-3"
-                     style="width: 200px">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar"
-                         style="width: 100%"></div>
-                </div>
-            </div>
+            <loader pending></loader>
+            <packages then
+                      packages.bind="cachedPackages"
+                      selected-package.two-way="selectedPackage">
+                <div au-slot="actions" class="btn-group btn-group-sm">
+                    <let package.bind="$host.package"></let>
 
-            <div then class="list-group overflow-y-auto">
-                <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
-                     repeat.for="package of cachedPackages"
-                     click.trigger="selectPackage(package)">
-                    <div class="grid gutterless">
-                        <div class="row">
-                            <div class="col-md-10 text-break">
-                                <h6>
-                                    <img
-                                        src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                                        style="height: 18px"/>
-                                    <b>${package.title} <small>${package.version}</small></b>
-                                </h6>
-                                <p class="text-truncate-3-lines">${package.description}</p>
-                            </div>
-                            <div class="col-md-2 text-end">
-                                <span class="badge bg-success"
-                                      show.bind="package.referenced">
-                                    <i class="bi bi-check"></i>
-                                    Added
-                                </span>
-                                <div class="btn-group btn-group-sm"
-                                     show.bind="!package.referenced">
-                                    <button type="button"
-                                            class="btn btn-secondary"
-                                            title="Add to Script"
-                                            click.trigger="referencePackage(package)">
-                                        <i class="bi bi-plus"></i>
-                                        Add
-                                    </button>
-                                    <button type="button"
-                                            class="btn btn-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown">
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li title="Delete from Local Cache"
-                                            click.trigger="deleteFromCache(package)">
-                                            <button class="dropdown-item btn btn-link">
-                                                <i class="bi bi-x"></i>
-                                                Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button"
+                            class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
+                            title="Add to Script"
+                            click.trigger="referencePackage(package)">
+                        <i class="bi bi-plus" show.bind="!package.referenced"></i>
+                        ${package.referenced ? 'Added' : 'Add'}
+                    </button>
+                    <button type="button"
+                            class="btn btn-secondary dropdown-toggle"
+                            data-bs-toggle="dropdown">
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li title="Delete from Local Cache"
+                            click.trigger="deleteFromCache(package)">
+                            <button class="dropdown-item btn btn-link">
+                                <i class="bi bi-x"></i>
+                                Delete
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-            </div>
+            </packages>
+
         </div>
     </div>
 
@@ -80,84 +88,52 @@
         </div>
 
         <div promise.bind="searchLoadingPromise" class="flex-grow-height-restricted d-flex flex-column">
-            <div pending class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-                <div class="text-muted">
-                    Loading...
-                </div>
-                <div class="progress mt-3"
-                     style="width: 200px">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar"
-                         style="width: 100%"></div>
-                </div>
-            </div>
+            <loader pending></loader>
+            <packages then
+                      packages.bind="searchResults"
+                      selected-package.two-way="selectedPackage">
+                <div au-slot="actions">
+                    <let package.bind="$host.package"></let>
 
-            <div then class="list-group overflow-y-auto">
-                <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
-                     repeat.for="package of searchResults"
-                     click.trigger="selectPackage(package)">
-                    <div class="grid gutterless">
-                        <div class="row">
-                            <div class="col-md-10">
-                                <h6>
-                                    <img
-                                        src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                                        style="height: 18px"/>
-                                    <b>${package.title}</b>
-                                </h6>
-                                <p class="text-truncate-3-lines">
-                                    ${package.description}
-                                </p>
-                            </div>
-                            <div class="col-md-2 text-end">
-                                <span class="badge bg-success"
-                                      show.bind="package.referenced">
-                                    <i class="bi bi-check"></i>
-                                    Added
-                                </span>
-                                <div class="btn-group btn-group-sm"
-                                     show.bind="!package.referenced && !package.isDownloading">
-                                    <button type="button"
-                                            class="btn btn-secondary"
-                                            title="Add to Script"
-                                            click.trigger="referencePackage(package)">
-                                        <i class="bi bi-plus"></i>
-                                        Add
-                                    </button>
-                                    <button type="button"
-                                            class="btn btn-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown">
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li title="Download without adding to Script"
-                                            show.bind="!package.existsInLocalCache"
-                                            click.trigger="downloadPackage(package)">
-                                            <button class="dropdown-item btn btn-link">
-                                                <i class="bi bi-download"></i>
-                                                Download Only
-                                            </button>
-                                        </li>
-                                        <li title="Add specific version"
-                                            click.trigger="referenceSpecificPackageVersion(package)">
-                                            <button class="dropdown-item btn btn-link">
-                                                <i class="bi bi-pin-fill"></i>
-                                                Add Specific Version
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="progress"
-                                     show.bind="package.isDownloading"
-                                     style="height: 10px">
-                                    <div class="progress-bar progress-bar-striped bg-warning progress-bar-animated"
-                                         role="progressbar"
-                                         style="width: 100%"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button"
+                                class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
+                                title="Add to Script"
+                                click.trigger="referencePackage(package)">
+                            <i class="bi bi-plus" show.bind="!package.referenced"></i>
+                            ${package.referenced ? 'Added' : 'Add'}
+                        </button>
+                        <button type="button"
+                                class="btn btn-secondary dropdown-toggle"
+                                data-bs-toggle="dropdown">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li title="Download without adding to Script"
+                                show.bind="!package.existsInLocalCache"
+                                click.trigger="downloadPackage(package)">
+                                <button class="dropdown-item btn btn-link">
+                                    <i class="bi bi-download"></i>
+                                    Download Only
+                                </button>
+                            </li>
+                            <li title="Add specific version"
+                                click.trigger="referenceSpecificPackageVersion(package)">
+                                <button class="dropdown-item btn btn-link">
+                                    <i class="bi bi-pin-fill"></i>
+                                    Add Specific Version
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="progress"
+                         show.bind="package.isDownloading"
+                         style="height: 10px">
+                        <div class="progress-bar progress-bar-striped bg-warning progress-bar-animated"
+                             role="progressbar"
+                             style="width: 100%"></div>
                     </div>
                 </div>
-            </div>
+            </packages>
         </div>
     </div>
 
@@ -200,7 +176,6 @@
         </ul>
     </div>
 </div>
-
 
 <div portal="#buttons">
     <button class="btn btn-sm btn-secondary" click.trigger="openCacheDirectory()">Open Cache Folder</button>

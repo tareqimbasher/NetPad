@@ -8,6 +8,8 @@ package-management {
 
     .column-header {
         flex: 0 0 35px;
+        display: flex;
+        align-items: center;
         margin-bottom: 5px;
         @include theme(border-bottom, borderColor, 1px solid);
     }

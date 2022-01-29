@@ -20,7 +20,7 @@ export class PackageManagement {
     ) {
     }
 
-    public async attached() {
+    public attached() {
         const split = Split(["#cached-packages", "#package-search", "#package-info"], {
             gutterSize: 6,
             sizes: [35, 40, 25],
@@ -28,7 +28,7 @@ export class PackageManagement {
         });
         this.disposables.push(() => split.destroy());
 
-        await this.refreshCachedPackages();
+        this.refreshCachedPackages();
         this.searchPackages();
     }
 
@@ -37,7 +37,7 @@ export class PackageManagement {
             try {
                 d();
             } catch (ex) {
-                console.error(ex);
+                console.error("Error in disposing", ex);
             }
         });
     }
@@ -47,7 +47,10 @@ export class PackageManagement {
         await this.searchPackages(newValue);
     }
 
-    public async referencePackage(pkg: PackageMetadata) {
+    public async referencePackage(pkg: PackageSearchResult | CachedPackageViewModel) {
+        if (pkg.referenced)
+            return;
+
         if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
             await this.downloadPackage(pkg);
 
@@ -83,10 +86,6 @@ export class PackageManagement {
 
     public async openCacheDirectory() {
         await this.appService.openPackageCacheFolder();
-    }
-
-    public selectPackage(pkg: PackageMetadata) {
-        this.selectedPackage = pkg;
     }
 
     private async refreshCachedPackages() {
