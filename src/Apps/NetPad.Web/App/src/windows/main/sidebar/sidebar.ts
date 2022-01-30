@@ -1,4 +1,4 @@
-import {IAppService, IScriptService, ISession, ScriptSummary} from "@domain";
+import {IAppService, IEventBus, IScriptService, ISession, ScriptDirectoryChanged, ScriptSummary} from "@domain";
 import Split from "split.js";
 
 export class Sidebar {
@@ -6,13 +6,30 @@ export class Sidebar {
 
     constructor(@ISession readonly session: ISession,
                 @IScriptService readonly scriptService: IScriptService,
-                @IAppService readonly appService: IAppService) {
+                @IAppService readonly appService: IAppService,
+                @IEventBus readonly eventBus: IEventBus) {
         this.rootScriptFolder = new SidebarScriptFolder("/", "/");
         this.rootScriptFolder.expanded = true;
     }
 
     public async attached() {
-        const summaries = await this.scriptService.getScripts();
+        this.loadScripts(await this.scriptService.getScripts());
+
+        Split(["#connection-list", "#script-list"], {
+            gutterSize: 6,
+            direction: 'vertical',
+            sizes: [35, 65],
+            minSize: [100, 100],
+        });
+
+        this.eventBus.subscribeToServer(ScriptDirectoryChanged, msg => {
+            this.loadScripts(msg.scripts);
+        });
+    }
+
+    private loadScripts(summaries: ScriptSummary[]) {
+        this.rootScriptFolder.scripts.splice(0);
+        this.rootScriptFolder.folders.splice(0);
 
         for (const summary of summaries) {
             const folderParts = summary.path
@@ -23,13 +40,6 @@ export class Sidebar {
             const folder = this.getFolder(this.rootScriptFolder, folderParts);
             folder.scripts.push(summary);
         }
-
-        Split(["#connection-list", "#script-list"], {
-            gutterSize: 6,
-            direction: 'vertical',
-            sizes: [35, 65],
-            minSize: [100, 100],
-        });
     }
 
     private getFolder(parent: SidebarScriptFolder, folderPathParts: string[]) {
