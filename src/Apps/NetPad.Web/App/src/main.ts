@@ -19,7 +19,7 @@ import {
     ExternalLinkCustomAttribute,
     SanitizeHtmlValueConverter,
     TextToHtmlValueConverter,
-    SettingsBackgroundService
+    SettingsBackgroundService, IWindowBootstrap
 } from "@application";
 import {IBackgroundService} from "@common";
 
@@ -45,17 +45,19 @@ const app = Aurelia.register(
     SanitizeHtmlValueConverter,
 );
 
-const win = startupOptions.get("win");
-if (win === "main") {
-    const mainWindow = require("./windows/main/main");
-    mainWindow.register(app);
-} else if (win === "settings") {
-    const settingsWindow = require("./windows/settings/main");
-    settingsWindow.register(app);
-} else if (win === "script-config") {
-    const scriptConfigWindow = require("./windows/script-config/main");
-    scriptConfigWindow.register(app);
-}
+
+const winOpt = startupOptions.get("win");
+let win: any;
+
+if (winOpt === "main")
+    win = require("./windows/main/main");
+else if (winOpt === "settings")
+    win = require("./windows/settings/main");
+else if (winOpt === "script-config")
+    win = require("./windows/script-config/main");
+
+const bootstrapper = new win.Bootstrapper() as IWindowBootstrap;
+bootstrapper.registerServices(app);
 
 app.container.get(ISettingService).get()
     .then(settings => app.container.get(Settings).init(settings))
@@ -74,4 +76,9 @@ app.container.get(ISettingService).get()
         }
 
     })
-    .then(() => app.start());
+    .then(() => {
+        app
+            .app(bootstrapper.getEntry())
+            .start();
+    })
+;

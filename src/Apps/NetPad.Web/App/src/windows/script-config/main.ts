@@ -9,14 +9,18 @@ import {
     PackageService,
     ScriptService
 } from "@domain";
+import {IWindowBootstrap} from "@application";
 
-export function register(app: Aurelia): void {
-    app
-        .register(
+export class Bootstrapper implements IWindowBootstrap {
+    getEntry = () => Index;
+
+    registerServices(app: Aurelia): void {
+        app.register(
             Registration.singleton(IAppService, AppService),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(IAssemblyService, AssemblyService),
             Registration.singleton(IPackageService, PackageService),
         )
-        .app(Index);
+    }
 }
+

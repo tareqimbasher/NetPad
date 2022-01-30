@@ -1,3 +1,5 @@
+export * from "./windows/iwindow-bootstrap";
+
 export * from "./attributes/external-link";
 
 export * from "./value-converters/date-time-value-converter";

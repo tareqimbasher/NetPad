@@ -8,13 +8,16 @@ import {
     AppService,
 } from "@domain";
 import {Index} from "./index";
+import {IWindowBootstrap} from "@application";
 
-export function register(app: Aurelia): void {
-    app
-        .register(
+export class Bootstrapper implements IWindowBootstrap {
+    getEntry = () => Index;
+
+    registerServices(app: Aurelia): void {
+        app.register(
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(IAppService, AppService),
-        )
-        .app(Index);
+        );
+    }
 }
