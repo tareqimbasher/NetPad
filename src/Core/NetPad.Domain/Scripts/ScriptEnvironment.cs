@@ -19,7 +19,7 @@ namespace NetPad.Scripts
         private IScriptRuntimeInputReader _inputReader;
         private IScriptRuntimeOutputWriter _outputWriter;
 
-        private object _destructionLock = new object();
+        private readonly object _destructionLock = new object();
         private bool _isDestroyed = false;
 
 

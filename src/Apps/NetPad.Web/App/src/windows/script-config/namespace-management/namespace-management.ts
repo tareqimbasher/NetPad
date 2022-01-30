@@ -1,22 +1,19 @@
 import {watch} from "aurelia";
+import {observable} from "@aurelia/runtime";
 import {ConfigStore} from "../config-store";
 import {Util} from "@common";
 
 export class NamespaceManagement {
-    public namespaces: string;
+    @observable namespaces: string;
     public error?: string;
 
     constructor(readonly configStore: ConfigStore) {
     }
 
     public binding() {
-        let namespaces = this.configStore.namespaces.join("\n");
-        if (namespaces)
-            namespaces += "\n";
-        this.namespaces = namespaces;
+        this.configStoreChanged();
     }
 
-    @watch<NamespaceManagement>(vm => vm.namespaces)
     public namespacesChanged(newValue: string) {
         let namespaces = this.namespaces
             .split('\n')
@@ -27,6 +24,14 @@ export class NamespaceManagement {
 
         namespaces = Util.distinct(namespaces);
         this.configStore.namespaces = namespaces;
+    }
+
+    @watch<NamespaceManagement>(vm => vm.configStore.namespaces.length)
+    public configStoreChanged() {
+        let namespaces = this.configStore.namespaces.join("\n");
+        if (namespaces)
+            namespaces += "\n";
+        this.namespaces = namespaces;
     }
 
     private validate(namespaces: string[]): string | undefined {

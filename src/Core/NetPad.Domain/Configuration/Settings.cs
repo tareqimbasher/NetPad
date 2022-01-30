@@ -13,7 +13,8 @@ namespace NetPad.Configuration
             ScriptsDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Documents",
-                "NetPad");
+                "NetPad",
+                "Scripts");
             PackageCacheDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "NetPad",

@@ -19,7 +19,7 @@
          repeat.for="package of packages"
          click.trigger="selectedPackage = package">
         <div class="grid gutterless">
-            <div class="row">
+            <div class="row align-items-center">
                 <div class="col-md-10">
                     <h6 class="d-flex align-items-center">
                         <img class="me-3"
@@ -95,7 +95,7 @@
                 <div au-slot="actions">
                     <let package.bind="$host.package"></let>
 
-                    <div class="btn-group btn-group-sm">
+                    <div class="btn-group btn-group-sm" show.bind="!package.isDownloading">
                         <button type="button"
                                 class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
                                 title="Add to Script"
@@ -177,6 +177,6 @@
     </div>
 </div>
 
-<div portal="#buttons">
+<div portal="#buttons" if.bind="configStore.selectedTab.route === 'packages'">
     <button class="btn btn-secondary" click.trigger="openCacheDirectory()">Open Cache Folder</button>
 </div>

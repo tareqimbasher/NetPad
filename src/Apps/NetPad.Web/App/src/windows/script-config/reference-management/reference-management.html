@@ -1,14 +1,14 @@
-<div if.bind="references.length === 0"
+<div if.bind="!references.length"
      class="flex-grow-1 d-flex align-items-center justify-content-center">
     <p class="text-muted text-center">
         No assembly references.<br/>
         <a class="btn-link" click.trigger="browse.click()">Browse</a> for an assembly
-        or <a class="btn-link">add a Nuget package</a>.
+        or <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a Nuget package</a>.
     </p>
 </div>
 
-<div class="flex-grow-height-restricted d-flex flex-row" else>
-    <table class="table table-hover">
+<div class="flex-grow-height-restricted d-flex flex-row" show.bind="references.length">
+    <table id="references-list" class="table table-hover">
         <thead>
         <tr>
             <td>Name</td>
@@ -35,21 +35,29 @@
         </tr>
         </tbody>
     </table>
-    <div class="ps-3" style="flex: 1 1 350px">
-        <h5>Select Namespaces:</h5>
-        <hr/>
-        <ul class="list-unstyled">
-            <li repeat.for="namespace of namespaces">
-                <label class="text-break">
-                    <input type="checkbox" checked.bind="namespace.selected"/>
-                    ${namespace.name}
-                </label>
-            </li>
-        </ul>
+    <div id="namespace-selection" class="ps-3 flex-grow-height-restricted d-flex flex-column">
+        <div if.bind="!selectedReference"
+             class="flex-grow-1 d-flex align-items-center justify-content-center">
+            <p class="text-muted text-center">
+                Click a reference to select the included Namespaces.
+            </p>
+        </div>
+        <div else>
+            <h5>Select Namespaces:</h5>
+            <hr/>
+            <ul class="list-unstyled">
+                <li repeat.for="namespace of namespaces">
+                    <label class="text-break">
+                        <input type="checkbox" checked.bind="namespace.selected"/>
+                        ${namespace.name}
+                    </label>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 
-<div portal="#buttons">
+<div portal="#buttons" if.bind="configStore.selectedTab.route === 'references'">
     <button class="btn btn-secondary" click.trigger="browse.click()">Browse...</button>
     <input ref="browse" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
 </div>

@@ -3,12 +3,7 @@ import {ConfigStore} from "./config-store";
 
 export class Index {
     public script: Script;
-    public selectedTab;
-    public tabs = [
-        {route: "references", text: "References"},
-        {route: "packages", text: "Packages"},
-        {route: "namespaces", text: "Namespaces"},
-    ];
+
 
     constructor(
         readonly startupOptions: URLSearchParams,
@@ -16,7 +11,7 @@ export class Index {
         readonly configStore: ConfigStore,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService) {
-        this.selectedTab = this.tabs[0];
+        this.configStore.selectedTab = this.configStore.tabs[0];
     }
 
     public async binding() {

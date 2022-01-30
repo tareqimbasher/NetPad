@@ -19,7 +19,8 @@ import {
     ExternalLinkCustomAttribute,
     SanitizeHtmlValueConverter,
     TextToHtmlValueConverter,
-    SettingsBackgroundService, IWindowBootstrap
+    SettingsBackgroundService,
+    IWindowBootstrap
 } from "@application";
 import {IBackgroundService} from "@common";
 

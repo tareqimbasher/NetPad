@@ -1,6 +1,13 @@
 import {Reference} from "@domain";
 
 export class ConfigStore {
+    public selectedTab;
+    public tabs = [
+        {route: "references", text: "References"},
+        {route: "packages", text: "Packages"},
+        {route: "namespaces", text: "Namespaces"},
+    ];
+
     public namespaces: string[] = [];
     public references: Reference[] = [];
 

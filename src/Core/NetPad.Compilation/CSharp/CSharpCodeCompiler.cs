@@ -36,6 +36,7 @@ namespace NetPad.Compilation.CSharp
                 assemblyLocations.Add(assemblyReferenceLocation);
 
             assemblyLocations.Add(typeof(IScriptRuntimeOutputWriter).Assembly.Location);
+            assemblyLocations.Add(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NetPad.Domain.dll"));
 
             var references = assemblyLocations
                 .Where(al => !string.IsNullOrWhiteSpace(al))
