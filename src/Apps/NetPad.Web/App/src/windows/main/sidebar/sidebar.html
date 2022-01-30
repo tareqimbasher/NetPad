@@ -5,9 +5,10 @@
 
         <div class="list-group">
             <div class="list-group-item script-folder-item">
-                <i class="action-icon text-orange bi ${folder.expanded ? 'bi-dash' : 'bi-plus'}"
-                   click.trigger="folder.expanded = !folder.expanded"></i>
-                <i class="bi bi-folder-fill text-yellow"></i> ${folder.name}
+                <span click.trigger="folder.expanded = !folder.expanded">
+                    <i class="action-icon text-orange bi ${folder.expanded ? 'bi-dash' : 'bi-plus'}"></i>
+                    <i class="bi bi-folder-fill text-yellow"></i> ${folder.name}
+                </span>
                 <i class="action-icon bi bi-box-arrow-up-right open-folder-button text-blue float-end"
                      title="Open"
                      click.trigger="vm.openScriptsFolder(folder)"></i>
