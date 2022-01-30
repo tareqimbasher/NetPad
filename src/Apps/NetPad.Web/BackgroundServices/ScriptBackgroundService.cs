@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NetPad.Common;
@@ -11,7 +9,6 @@ using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
 using NetPad.UiInterop;
-using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices
 {

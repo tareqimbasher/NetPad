@@ -1,6 +1,6 @@
 import {Constructable} from "@aurelia/kernel/src/interfaces";
-import { KeyCode } from "@common";
-import { ShortcutActionExecutionContext } from "./shortcut-action-execution-context";
+import {KeyCode} from "@common";
+import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
 
 /**
  * A shortcut that executes an action.

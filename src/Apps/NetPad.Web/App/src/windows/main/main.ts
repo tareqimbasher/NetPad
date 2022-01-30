@@ -1,12 +1,5 @@
 import {Aurelia, Registration} from "aurelia";
-import {
-    IScriptService,
-    ScriptService,
-    IShortcutManager,
-    ShortcutManager,
-    IAppService,
-    AppService,
-} from "@domain";
+import {AppService, IAppService, IScriptService, IShortcutManager, ScriptService, ShortcutManager,} from "@domain";
 import {Index} from "./index";
 import {IWindowBootstrap} from "@application";
 

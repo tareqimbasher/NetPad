@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {IAppApiClient, AppApiClient} from "@domain";
+import {AppApiClient, IAppApiClient} from "@domain";
 
 export interface IAppService extends IAppApiClient {}
 

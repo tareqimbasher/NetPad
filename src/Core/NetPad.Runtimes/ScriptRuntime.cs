@@ -10,8 +10,8 @@ using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Exceptions;
 using NetPad.Packages;
-using NetPad.Scripts;
 using NetPad.Runtimes.Assemblies;
+using NetPad.Scripts;
 using NetPad.Utilities;
 
 namespace NetPad.Runtimes

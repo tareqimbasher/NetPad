@@ -1,4 +1,4 @@
-import {Settings, IScriptService, ISession, IShortcutManager, Shortcut, RunScriptEvent, ISettingService} from "@domain";
+import {IScriptService, ISession, ISettingService, IShortcutManager, RunScriptEvent, Settings, Shortcut} from "@domain";
 import {KeyCode} from "@common";
 import {IContainer} from "aurelia";
 import Split from "split.js";

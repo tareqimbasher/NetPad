@@ -1,15 +1,8 @@
-import { bindable, PLATFORM, watch } from "aurelia";
+import {bindable, PLATFORM, watch} from "aurelia";
 import * as monaco from "monaco-editor";
-import {
-    IScriptService,
-    ISession,
-    Script,
-    ScriptEnvironment,
-    ScriptKind,
-    Settings
-} from "@domain";
-import { Util } from "@common";
-import { TestCompletionItemProvider } from "./completion-item-providers/test-completion-item-provider";
+import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
+import {Util} from "@common";
+import {TestCompletionItemProvider} from "./completion-item-providers/test-completion-item-provider";
 
 export class Editor {
     @bindable public environment: ScriptEnvironment;

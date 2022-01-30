@@ -3,24 +3,16 @@ import Aurelia, {ColorOptions, ConsoleSink, ILogger, LoggerConfiguration, LogLev
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
+import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService,} from "@domain";
 import {
-    IEventBus,
-    IIpcGateway,
-    ISession,
-    ISettingService,
-    Session,
-    Settings,
-    SettingService,
-} from "@domain";
-import {
-    EventBus,
-    SignalRIpcGateway,
     DateTimeValueConverter,
+    EventBus,
     ExternalLinkCustomAttribute,
+    IWindowBootstrap,
     SanitizeHtmlValueConverter,
-    TextToHtmlValueConverter,
     SettingsBackgroundService,
-    IWindowBootstrap
+    SignalRIpcGateway,
+    TextToHtmlValueConverter
 } from "@application";
 import {IBackgroundService} from "@common";
 

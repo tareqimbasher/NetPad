@@ -1,14 +1,14 @@
 import {
-    IEventBus,
-    ISessionApiClient,
-    SessionApiClient,
-    ScriptEnvironment,
-    ScriptPropertyChanged,
-    ScriptConfigPropertyChanged,
+    ActiveEnvironmentChanged,
+    EnvironmentPropertyChanged,
     EnvironmentsAdded,
     EnvironmentsRemoved,
-    EnvironmentPropertyChanged,
-    ActiveEnvironmentChanged
+    IEventBus,
+    ISessionApiClient,
+    ScriptConfigPropertyChanged,
+    ScriptEnvironment,
+    ScriptPropertyChanged,
+    SessionApiClient
 } from "@domain";
 import {DI, IHttpClient, ILogger} from "aurelia";
 

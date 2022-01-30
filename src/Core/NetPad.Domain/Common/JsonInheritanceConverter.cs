@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
@@ -277,7 +278,7 @@ namespace NetPad.Common
                         var method = type.GetRuntimeMethod((string)attribute.MethodName, new Type[0]);
                         if (method != null)
                         {
-                            var types = (System.Collections.Generic.IEnumerable<Type>)method.Invoke(null, new object[0]);
+                            var types = (IEnumerable<Type>)method.Invoke(null, new object[0]);
                             foreach (var knownType in types)
                             {
                                 if (knownType.Name == discriminator)

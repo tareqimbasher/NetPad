@@ -17,14 +17,15 @@ using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.Middlewares;
 using NetPad.Packages;
-using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
+using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.Sessions;
 using NetPad.UiInterop;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag.CodeGeneration.TypeScript;
+using Session = NetPad.Sessions.Session;
 
 namespace NetPad
 {
@@ -61,7 +62,7 @@ namespace NetPad
             services.AddSingleton<Settings>(sp =>
                 sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
 
-            services.AddSingleton<ISession, Sessions.Session>();
+            services.AddSingleton<ISession, Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IScriptEnvironmentFactory, ScriptEnvironmentFactory>();
 

@@ -1,7 +1,8 @@
 import {Aurelia, Registration} from "aurelia";
 import {Index} from "./index";
 import {
-    AppService, AssemblyService,
+    AppService,
+    AssemblyService,
     IAppService,
     IAssemblyService,
     IPackageService,
