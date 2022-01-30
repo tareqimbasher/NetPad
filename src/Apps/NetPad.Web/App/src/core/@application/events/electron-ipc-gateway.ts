@@ -1,6 +1,7 @@
-import {IIpcGateway, SubscriptionToken} from "@domain";
 import {ipcRenderer, IpcRendererEvent} from "electron";
 import {ILogger} from "aurelia";
+import {IIpcGateway} from "@domain";
+import {SubscriptionToken} from "@application";
 
 export class ElectronIpcGateway implements IIpcGateway {
     constructor(@ILogger readonly logger: ILogger) {

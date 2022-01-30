@@ -1,10 +1,8 @@
 export * from "./api";
 
-export * from "./events/event-bus";
-export * from "./events/subscription-token";
+export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";
-export * from "./events/electron-ipc-gateway";
-export * from "./events/signalr-ipc-gateway";
+export * from "./events/run-script-event";
 
 export * from "./settings/setting-service";
 export * from "./app/app-service";

@@ -4,7 +4,6 @@ import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {
-    EventBus,
     IEventBus,
     IIpcGateway,
     ISession,
@@ -12,9 +11,10 @@ import {
     Session,
     Settings,
     SettingService,
-    SignalRIpcGateway
 } from "@domain";
 import {
+    EventBus,
+    SignalRIpcGateway,
     DateTimeValueConverter,
     ExternalLinkCustomAttribute,
     SanitizeHtmlValueConverter,

@@ -1,4 +1,4 @@
-import {Settings, IScriptService, ISession, IShortcutManager, Shortcut} from "@domain";
+import {Settings, IScriptService, ISession, IShortcutManager, Shortcut, RunScriptEvent} from "@domain";
 import {IBackgroundService, KeyCode} from "@common";
 import {IContainer} from "aurelia";
 import Split from "split.js";
@@ -79,7 +79,7 @@ export class Index {
         this.shortcutManager.registerShortcut(
             new Shortcut("Run")
                 .withKey(KeyCode.F5)
-                .hasAction(() => this.scriptService.run(this.session.active.script.id))
+                .firesEvent(RunScriptEvent)
                 .configurable()
         );
 

@@ -3,7 +3,7 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    IShortcutManager,
+    IShortcutManager, RunScriptEvent,
     Script,
     ScriptEnvironment,
     ScriptKind,
@@ -17,6 +17,7 @@ import {ResultsViewSettings} from "./results-view-settings";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
+    public running = false;
     public resultsViewSettings: ResultsViewSettings;
 
     private disposables: (() => void)[] = [];
@@ -30,10 +31,6 @@ export class ScriptEnvironmentView {
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus) {
         this.resultsViewSettings = new ResultsViewSettings();
-    }
-
-    public get id(): string {
-        return this.environment.script.id;
     }
 
     public get script(): Script {
@@ -51,21 +48,28 @@ export class ScriptEnvironmentView {
     private attached() {
         this.kind = this.script.config.kind;
 
-        const token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
-            if (msg.scriptId === this.environment.script.id) {
+        let token = this.eventBus.subscribe(RunScriptEvent, async msg => {
+            if ((msg.scriptId && msg.scriptId === this.script.id) ||
+                (!msg.scriptId && this.session.active.script.id === this.script.id)) {
+                await this.run();
+            }
+        });
+        this.disposables.push(() => token.dispose());
+
+        token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
+            if (msg.scriptId === this.script.id) {
                 this.appendResults(msg.output);
             }
         });
-
         this.disposables.push(() => token.dispose());
 
         PLATFORM.taskQueue.queueTask(() => {
             this.initializeEditor();
-        }, { delay: 100 });
+        }, {delay: 100});
 
         const split = Split([
-            `script-environment-view[data-id="${this.id}"] .text-editor-container`,
-            `script-environment-view[data-id="${this.id}"] .results-container`
+            `script-environment-view[data-id="${this.script.id}"] .text-editor-container`,
+            `script-environment-view[data-id="${this.script.id}"] .results-container`
         ], {
             gutterSize: 6,
             direction: 'vertical',
@@ -83,10 +87,23 @@ export class ScriptEnvironmentView {
         }
     }
 
+    private async sendCodeToServer() {
+        await this.scriptService.updateCode(this.script.id, this.editor.getValue());
+    }
+
     public async run() {
-        this.setResults(null);
-        this.resultsViewSettings.show = true;
-        await this.scriptService.run(this.environment.script.id);
+        if (this.running) return;
+
+        this.running = true;
+
+        try {
+            await this.sendCodeToServer();
+            this.setResults(null);
+            this.resultsViewSettings.show = true;
+            await this.scriptService.run(this.script.id);
+        } finally {
+            this.running = false;
+        }
     }
 
     private setResults(results: string | null) {
@@ -103,9 +120,9 @@ export class ScriptEnvironmentView {
     }
 
     private initializeEditor() {
-        const el = document.querySelector(`[data-text-editor-id="${this.id}"]`) as HTMLElement;
+        const el = document.querySelector(`[data-text-editor-id="${this.script.id}"]`) as HTMLElement;
         this.editor = monaco.editor.create(el, {
-            value: this.environment.script.code,
+            value: this.script.code,
             language: 'csharp'
         });
         this.updateEditorTheme();
@@ -135,15 +152,15 @@ export class ScriptEnvironmentView {
         })
 
         const f = Util.debounce(this, async (ev) => {
-            await this.scriptService.updateCode(this.environment.script.id, this.editor.getValue());
+            await this.sendCodeToServer();
         }, 500, true);
 
         this.editor.onDidChangeModelContent(ev => f(ev));
 
         const ob = new ResizeObserver(entries => this.updateEditorLayout());
         ob.observe(document.getElementById("sidebar"));
-        ob.observe(document.querySelector(`script-environment-view[data-id="${this.id}"] .text-editor-container`));
-        ob.observe(document.querySelector(`script-environment-view[data-id="${this.id}"] .results-container`));
+        ob.observe(document.querySelector(`script-environment-view[data-id="${this.script.id}"] .text-editor-container`));
+        ob.observe(document.querySelector(`script-environment-view[data-id="${this.script.id}"] .results-container`));
         this.disposables.push(() => ob.disconnect());
     }
 
@@ -152,7 +169,7 @@ export class ScriptEnvironmentView {
         PLATFORM.taskQueue.queueTask(() => {
             if (this.environment === this.session.active)
                 this.updateEditorLayout();
-        }, { delay: 100 });
+        }, {delay: 100});
     }
 
     private updateEditorLayout() {

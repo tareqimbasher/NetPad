@@ -1,7 +1,7 @@
+import {DI} from "aurelia";
 import {Shortcut} from "./shortcut";
 import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
-import {IEventBus} from "@domain/events/event-bus";
-import {DI} from "aurelia";
+import {IEventBus} from "@domain";
 
 export interface IShortcutManager {
     initialize(): void;
@@ -34,9 +34,15 @@ export class ShortcutManager implements IShortcutManager{
             const shortcut = this.registry.find((s) => s.matches(ev));
             if (!shortcut) return;
 
-            const context = new ShortcutActionExecutionContext(ev, this.eventBus);
+            if (shortcut.action) {
+                const context = new ShortcutActionExecutionContext(ev, this.eventBus);
+                shortcut.action(context);
+            }
 
-            shortcut.action(context);
+            if (shortcut.eventType) {
+                this.eventBus.publish(new shortcut.eventType());
+            }
+
             ev.preventDefault();
         });
     }

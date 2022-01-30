@@ -1,5 +1,5 @@
+import {Constructable} from "@aurelia/kernel/src/interfaces";
 import { KeyCode } from "@common";
-import { ShortcutManager } from "./shortcut-manager";
 import { ShortcutActionExecutionContext } from "./shortcut-action-execution-context";
 
 /**
@@ -12,11 +12,11 @@ export class Shortcut {
     public metaKey = false;
     public key?: KeyCode;
     public keyExpression?: (keyCode: KeyCode) => boolean;
-    public action: (context: ShortcutActionExecutionContext) => void;
+    public action?: (context: ShortcutActionExecutionContext) => void;
+    public eventType?: Constructable;
     public isConfigurable = false;
 
     constructor(public name: string) {
-        this.action = () => null;
     }
 
     public withKey(key: KeyCode): Shortcut {
@@ -26,11 +26,6 @@ export class Shortcut {
 
     public withKeyExpression(expression: (keyCode: KeyCode) => boolean): Shortcut {
         this.keyExpression = expression;
-        return this;
-    }
-
-    public hasAction(action: (context: ShortcutActionExecutionContext) => void): Shortcut {
-        this.action = action;
         return this;
     }
 
@@ -51,6 +46,16 @@ export class Shortcut {
 
     public withMetaKey(mustBePressed = true): Shortcut {
         this.metaKey = mustBePressed;
+        return this;
+    }
+
+    public hasAction(action: (context: ShortcutActionExecutionContext) => void): Shortcut {
+        this.action = action;
+        return this;
+    }
+
+    public firesEvent<TEventType extends Constructable>(eventType: TEventType) {
+        this.eventType = eventType;
         return this;
     }
 

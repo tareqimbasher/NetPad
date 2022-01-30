@@ -1,8 +1,8 @@
 import {
+    IEventBus,
     ISessionApiClient,
     SessionApiClient,
     ScriptEnvironment,
-    IEventBus,
     ScriptPropertyChanged,
     ScriptConfigPropertyChanged,
     EnvironmentsAdded,
