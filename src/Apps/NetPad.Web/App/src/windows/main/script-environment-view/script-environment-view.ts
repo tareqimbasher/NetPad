@@ -24,6 +24,7 @@ export class ScriptEnvironmentView {
     private disposables: (() => void)[] = [];
     private editor: monaco.editor.IStandaloneCodeEditor;
     private resultsEl: HTMLElement;
+    private split: Split.Instance;
 
     constructor(
         readonly settings: Settings,
@@ -68,17 +69,17 @@ export class ScriptEnvironmentView {
             this.initializeEditor();
         }, {delay: 100});
 
-        const split = Split([
+        this.split = Split([
             `script-environment-view[data-id="${this.script.id}"] .text-editor-container`,
             `script-environment-view[data-id="${this.script.id}"] .results-container`
         ], {
             gutterSize: 6,
             direction: 'vertical',
             sizes: [50, 50],
-            minSize: [50, 50],
+            minSize: [50, 0],
         });
 
-        this.disposables.push(() => split.destroy());
+        this.disposables.push(() => this.split.destroy());
     }
 
     public detaching() {
@@ -100,7 +101,7 @@ export class ScriptEnvironmentView {
         try {
             await this.sendCodeToServer();
             this.setResults(null);
-            this.resultsViewSettings.show = true;
+            this.showResults();
             await this.scriptService.run(this.script.id);
         } finally {
             this.running = false;
@@ -201,5 +202,15 @@ export class ScriptEnvironmentView {
 
         Object.assign(options, this.settings.editorOptions || {})
         this.editor.updateOptions(options);
+    }
+
+    private collapseResults()
+    {
+        this.split.collapse(1);
+    }
+
+    private showResults()
+    {
+        this.split.setSizes([50, 50]);
     }
 }
