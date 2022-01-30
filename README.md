@@ -2,22 +2,26 @@
 
 A cross-platform C# editor and playground.
 
-![preview-progressbars](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-http.png?raw=true)
+![preview-main](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main.png?raw=true)
 
 ## Motivation
 
-We love [LinqPad](https://www.linqpad.net/), but we miss its tremendous utility
-when running on non-Windows platforms. This is an effort to develop an
+We love [LinqPad](https://www.linqpad.net/), but we also miss its tremendous
+utility when running on non-Windows platforms. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
 ## Contribution
-This is a work in progress, and still in its infancy. We welcome all contributions!
+
+This is a work in progress, and still in its infancy. We welcome all
+contributions!
 
 You can currently:
+
 * Write, save and run your own scripts
 * Add additional namespaces to your script
 
 You cannot, yet:
+
 * Dump complex objects to the results console
 * Add database connections
 * Reference NuGet packages or your own assemblies
@@ -79,6 +83,9 @@ on [how to package the app](https://github.com/ElectronNET/Electron.NET#-build)
 for more details.
 
 ### Bug
+
+(**Update:** Found the issue and a fix, still working on the permanent change.)
+
 There is a bug I've been experiencing when packaging for linux and running the
 app where the packaged app fails to run. Not sure if this bug also manifests
 itself on other platforms, I haven't tested packaging on platforms other than
