@@ -1,7 +1,8 @@
-import {AssemblyReference, IAssemblyService, Reference} from "@domain";
-import {ConfigStore} from "../config-store";
 import {observable} from "@aurelia/runtime";
 import * as path from "path";
+import Split from "split.js";
+import {AssemblyReference, IAssemblyService, Reference} from "@domain";
+import {ConfigStore} from "../config-store";
 
 export class ReferenceManagement {
     @observable public browsedAssemblies: FileList;
@@ -12,6 +13,14 @@ export class ReferenceManagement {
         readonly configStore: ConfigStore,
         @IAssemblyService readonly assemblyService: IAssemblyService
     ) {
+    }
+
+    public attached() {
+        Split(["#references-list", "#namespace-selection"], {
+            gutterSize: 6,
+            sizes: [80, 20],
+            minSize: [50, 50]
+        });
     }
 
     public get references(): Reference[] {
@@ -27,6 +36,7 @@ export class ReferenceManagement {
     public removeReference(reference: Reference) {
         const ix = this.references.indexOf(reference);
         this.references.splice(ix, 1);
+        this.selectedReference = null;
     }
 
     private browsedAssembliesChanged(newValue: FileList) {

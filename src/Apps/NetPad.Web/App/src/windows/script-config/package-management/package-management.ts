@@ -1,7 +1,8 @@
 import {observable} from '@aurelia/runtime';
 import Split from "split.js";
-import {IPackageService, CachedPackage, PackageMetadata, IAppService, PackageReference} from "@domain";
+import {CachedPackage, IAppService, IPackageService, PackageMetadata, PackageReference} from "@domain";
 import {ConfigStore} from "../config-store";
+import {watch} from "aurelia";
 
 export class PackageManagement {
     @observable public term: string;
@@ -11,7 +12,6 @@ export class PackageManagement {
 
     public searchLoadingPromise?: Promise<void>;
     public cacheLoadingPromise?: Promise<void>;
-    private disposables: (() => void)[] = [];
 
     constructor(
         readonly configStore: ConfigStore,
@@ -21,22 +21,14 @@ export class PackageManagement {
     }
 
     public attached() {
-        // HACK: not sure why destroying the split isn't removing the gutter
-        document.querySelectorAll("package-management .gutter").forEach(e => e.remove());
-
-        const split = Split(["#cached-packages", "#package-search", "#package-info"], {
+        Split(["#cached-packages", "#package-search", "#package-info"], {
             gutterSize: 6,
             sizes: [35, 40, 25],
             minSize: [50, 50, 50],
         });
-        this.disposables.push(() => split.destroy());
 
         this.refreshCachedPackages();
         this.searchPackages();
-    }
-
-    public dispose() {
-        this.disposables.forEach(d => d());
     }
 
     public async termChanged(newValue: string, oldValue: string) {
@@ -56,7 +48,6 @@ export class PackageManagement {
             title: pkg.title,
             version: pkg.version
         }));
-        this.markReferencedPackages();
     }
 
     public async referenceSpecificPackageVersion(pkg: PackageReference) {
@@ -100,16 +91,14 @@ export class PackageManagement {
             10,
             false)
             .then(data => {
-                const results = data.map(r => new PackageSearchResult(r));
-                this.markReferencedPackages(results);
-                this.searchResults = results;
+                this.searchResults = data.map(r => new PackageSearchResult(r));
+                this.markReferencedPackages();
             });
     }
 
-    private markReferencedPackages(searchResults?: PackageSearchResult[]) {
-        searchResults ??= this.searchResults;
-
-        for (const searchResult of searchResults) {
+    @watch<PackageManagement>(vm => vm.configStore.references.length)
+    private markReferencedPackages() {
+        for (const searchResult of this.searchResults) {
             searchResult.existsInLocalCache = !!this.cachedPackages
                 .find(p => p.packageId === searchResult.packageId);
             searchResult.referenced = !!this.configStore.references
