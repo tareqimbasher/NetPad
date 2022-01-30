@@ -14,7 +14,13 @@ $input-btn-padding-y-sm: .10rem;
 @import "~bootstrap/scss/bootstrap";
 @import "~styles/themes";
 
-.form-control, .form-select {
+.form-control {
+    @include theme(background-color, formControlBackground);
+    @include theme(color, textColor);
+    @include theme(border-color, borderColor);
+}
+
+.form-select {
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
@@ -29,7 +35,14 @@ $input-btn-padding-y-sm: .10rem;
         @include theme(background-color, hoverColor);
     }
 
-    &.active, &.active:hover {
+    &.active {
+        @include theme(background-color, activeColor);
+        * {
+            @include theme(color, textColor);
+        }
+    }
+
+    &.active:hover {
         @include theme(background-color, activeColor);
         * {
             @include theme(color, textColor);
