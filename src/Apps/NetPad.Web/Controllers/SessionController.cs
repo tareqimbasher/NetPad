@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Configuration;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Sessions;

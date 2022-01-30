@@ -1,5 +1,7 @@
+@import "~styles/variables";
 @import "~styles/themes";
 
 statusbar {
     @include theme(background-color, statusbarBackground);
+    height: $statusbar-height;
 }

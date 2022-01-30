@@ -1,12 +1,13 @@
 using System;
 using System.IO;
 
-namespace NetPad
+namespace NetPad.Configuration
 {
     public class Settings
     {
         public Settings()
         {
+            // Defaults
             Theme = Theme.Dark;
             ScriptsDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -19,9 +20,16 @@ namespace NetPad
                 "Packages");
         }
 
-        public Theme Theme { get; private set; }
-        public string ScriptsDirectoryPath { get; private set; }
-        public string PackageCacheDirectoryPath { get; private set; }
+        public Settings(Theme theme, string scriptsDirectoryPath, string packageCacheDirectoryPath) : this()
+        {
+            Theme = theme;
+            ScriptsDirectoryPath = scriptsDirectoryPath;
+            PackageCacheDirectoryPath = packageCacheDirectoryPath;
+        }
+
+        public Theme Theme { get; set; }
+        public string ScriptsDirectoryPath { get; set; }
+        public string PackageCacheDirectoryPath { get; set; }
 
         public Settings SetTheme(Theme theme)
         {

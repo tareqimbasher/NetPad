@@ -11,6 +11,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Settings = NetPad.Configuration.Settings;
 
 namespace NetPad.Packages
 {

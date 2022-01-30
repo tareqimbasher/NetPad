@@ -14,6 +14,7 @@ using NetPad.BackgroundServices;
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
+using NetPad.Configuration;
 using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Scripts;
@@ -56,8 +57,9 @@ namespace NetPad
                 });
 
             services.AddSingleton<HostInfo>();
-            services.AddSingleton(Configuration.GetSection("Settings")
-                .Get<Settings>(c => c.BindNonPublicProperties = true));
+            services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
+            services.AddSingleton<Settings>(sp =>
+                sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
 
             services.AddSingleton<ISession, Sessions.Session>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();

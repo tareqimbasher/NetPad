@@ -1,5 +1,5 @@
+@import "~styles/variables";
 @import "~styles/themes";
-$statusbar-height: 20px;
 
 #content {
     height: calc(100vh - #{$statusbar-height});
@@ -7,10 +7,6 @@ $statusbar-height: 20px;
 
 sidebar {
     width: 15em;
-}
-
-statusbar {
-    height: $statusbar-height;
 }
 
 #tabs {

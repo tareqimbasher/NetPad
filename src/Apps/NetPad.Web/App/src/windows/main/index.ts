@@ -1,26 +1,19 @@
 import {Settings, IScriptService, ISession, IShortcutManager, Shortcut, RunScriptEvent} from "@domain";
-import {IBackgroundService, KeyCode} from "@common";
+import {KeyCode} from "@common";
 import {IContainer} from "aurelia";
 import Split from "split.js";
 
 export class Index {
-    private readonly backgroundServices: IBackgroundService[] = [];
-
     constructor(
         readonly settings: Settings,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IContainer container: IContainer) {
-        this.backgroundServices.push(...container.getAll(IBackgroundService));
     }
 
     public async binding() {
         this.shortcutManager.initialize();
-
-        for (const backgroundService of this.backgroundServices) {
-            await backgroundService.start();
-        }
 
         this.registerBuiltInShortcuts();
 

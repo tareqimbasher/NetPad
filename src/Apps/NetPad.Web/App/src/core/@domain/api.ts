@@ -1082,7 +1082,7 @@ export class SettingsApiClient implements ISettingsApiClient {
 
 export interface ITypesApiClient {
 
-    additionalTypes(): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>;
+    additionalTypes(): Promise<ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>;
 }
 
 export class TypesApiClient implements ITypesApiClient {
@@ -1095,7 +1095,7 @@ export class TypesApiClient implements ITypesApiClient {
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    additionalTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
+    additionalTypes(signal?: AbortSignal | undefined): Promise<ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
         let url_ = this.baseUrl + "/types";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -1112,14 +1112,14 @@ export class TypesApiClient implements ITypesApiClient {
         });
     }
 
-    protected processAdditionalTypes(response: Response): Promise<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null> {
+    protected processAdditionalTypes(response: Response): Promise<ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged.fromJS(resultData200) : <any>null;
+            result200 = resultData200 ? ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged.fromJS(resultData200) : <any>null;
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1127,7 +1127,7 @@ export class TypesApiClient implements ITypesApiClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged | null>(<any>null);
+        return Promise.resolve<ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged | null>(<any>null);
     }
 }
 
@@ -1718,17 +1718,17 @@ export interface ISettings {
 
 export type Theme = "Light" | "Dark";
 
-export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged implements IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
-    item1!: Script;
-    item2!: ScriptPropertyChanged;
-    item3!: ScriptConfigPropertyChanged;
-    item4!: ScriptOutputEmitted;
-    item5!: EnvironmentsAdded;
-    item6!: EnvironmentsRemoved;
-    item7!: EnvironmentPropertyChanged;
-    rest!: ValueTupleOfActiveEnvironmentChanged;
+export class ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged implements IValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1!: SettingsUpdated;
+    item2!: Script;
+    item3!: ScriptPropertyChanged;
+    item4!: ScriptConfigPropertyChanged;
+    item5!: ScriptOutputEmitted;
+    item6!: EnvironmentsAdded;
+    item7!: EnvironmentsRemoved;
+    rest!: ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged;
 
-    constructor(data?: IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged) {
+    constructor(data?: IValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1736,33 +1736,33 @@ export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyCh
             }
         }
         if (!data) {
-            this.item1 = new Script();
-            this.item2 = new ScriptPropertyChanged();
-            this.item3 = new ScriptConfigPropertyChanged();
-            this.item4 = new ScriptOutputEmitted();
-            this.item5 = new EnvironmentsAdded();
-            this.item6 = new EnvironmentsRemoved();
-            this.item7 = new EnvironmentPropertyChanged();
-            this.rest = new ValueTupleOfActiveEnvironmentChanged();
+            this.item1 = new SettingsUpdated();
+            this.item2 = new Script();
+            this.item3 = new ScriptPropertyChanged();
+            this.item4 = new ScriptConfigPropertyChanged();
+            this.item5 = new ScriptOutputEmitted();
+            this.item6 = new EnvironmentsAdded();
+            this.item7 = new EnvironmentsRemoved();
+            this.rest = new ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
         }
     }
 
     init(_data?: any) {
         if (_data) {
-            this.item1 = _data["item1"] ? Script.fromJS(_data["item1"]) : new Script();
-            this.item2 = _data["item2"] ? ScriptPropertyChanged.fromJS(_data["item2"]) : new ScriptPropertyChanged();
-            this.item3 = _data["item3"] ? ScriptConfigPropertyChanged.fromJS(_data["item3"]) : new ScriptConfigPropertyChanged();
-            this.item4 = _data["item4"] ? ScriptOutputEmitted.fromJS(_data["item4"]) : new ScriptOutputEmitted();
-            this.item5 = _data["item5"] ? EnvironmentsAdded.fromJS(_data["item5"]) : new EnvironmentsAdded();
-            this.item6 = _data["item6"] ? EnvironmentsRemoved.fromJS(_data["item6"]) : new EnvironmentsRemoved();
-            this.item7 = _data["item7"] ? EnvironmentPropertyChanged.fromJS(_data["item7"]) : new EnvironmentPropertyChanged();
-            this.rest = _data["rest"] ? ValueTupleOfActiveEnvironmentChanged.fromJS(_data["rest"]) : new ValueTupleOfActiveEnvironmentChanged();
+            this.item1 = _data["item1"] ? SettingsUpdated.fromJS(_data["item1"]) : new SettingsUpdated();
+            this.item2 = _data["item2"] ? Script.fromJS(_data["item2"]) : new Script();
+            this.item3 = _data["item3"] ? ScriptPropertyChanged.fromJS(_data["item3"]) : new ScriptPropertyChanged();
+            this.item4 = _data["item4"] ? ScriptConfigPropertyChanged.fromJS(_data["item4"]) : new ScriptConfigPropertyChanged();
+            this.item5 = _data["item5"] ? ScriptOutputEmitted.fromJS(_data["item5"]) : new ScriptOutputEmitted();
+            this.item6 = _data["item6"] ? EnvironmentsAdded.fromJS(_data["item6"]) : new EnvironmentsAdded();
+            this.item7 = _data["item7"] ? EnvironmentsRemoved.fromJS(_data["item7"]) : new EnvironmentsRemoved();
+            this.rest = _data["rest"] ? ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged.fromJS(_data["rest"]) : new ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
         }
     }
 
-    static fromJS(data: any): ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
+    static fromJS(data: any): ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
         data = typeof data === 'object' ? data : {};
-        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged();
+        let result = new ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
         result.init(data);
         return result;
     }
@@ -1780,23 +1780,69 @@ export class ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyCh
         return data;
     }
 
-    clone(): ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
+    clone(): ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
         const json = this.toJSON();
-        let result = new ValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged();
+        let result = new ValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
         result.init(json);
         return result;
     }
 }
 
-export interface IValueTupleOfScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndEnvironmentPropertyChangedAndValueTupleOfActiveEnvironmentChanged {
-    item1: Script;
-    item2: ScriptPropertyChanged;
-    item3: ScriptConfigPropertyChanged;
-    item4: ScriptOutputEmitted;
-    item5: EnvironmentsAdded;
-    item6: EnvironmentsRemoved;
-    item7: EnvironmentPropertyChanged;
-    rest: ValueTupleOfActiveEnvironmentChanged;
+export interface IValueTupleOfSettingsUpdatedAndScriptAndScriptPropertyChangedAndScriptConfigPropertyChangedAndScriptOutputEmittedAndEnvironmentsAddedAndEnvironmentsRemovedAndValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1: SettingsUpdated;
+    item2: Script;
+    item3: ScriptPropertyChanged;
+    item4: ScriptConfigPropertyChanged;
+    item5: ScriptOutputEmitted;
+    item6: EnvironmentsAdded;
+    item7: EnvironmentsRemoved;
+    rest: ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged;
+}
+
+export class SettingsUpdated implements ISettingsUpdated {
+    settings!: Settings;
+
+    constructor(data?: ISettingsUpdated) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.settings = new Settings();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.settings = _data["settings"] ? Settings.fromJS(_data["settings"]) : new Settings();
+        }
+    }
+
+    static fromJS(data: any): SettingsUpdated {
+        data = typeof data === 'object' ? data : {};
+        let result = new SettingsUpdated();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["settings"] = this.settings ? this.settings.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): SettingsUpdated {
+        const json = this.toJSON();
+        let result = new SettingsUpdated();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISettingsUpdated {
+    settings: Settings;
 }
 
 export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
@@ -2076,6 +2122,57 @@ export interface IEnvironmentsRemoved {
     environments: ScriptEnvironment[];
 }
 
+export class ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged implements IValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1!: EnvironmentPropertyChanged;
+    item2!: ActiveEnvironmentChanged;
+
+    constructor(data?: IValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.item1 = new EnvironmentPropertyChanged();
+            this.item2 = new ActiveEnvironmentChanged();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"] ? EnvironmentPropertyChanged.fromJS(_data["item1"]) : new EnvironmentPropertyChanged();
+            this.item2 = _data["item2"] ? ActiveEnvironmentChanged.fromJS(_data["item2"]) : new ActiveEnvironmentChanged();
+        }
+    }
+
+    static fromJS(data: any): ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1 ? this.item1.toJSON() : <any>undefined;
+        data["item2"] = this.item2 ? this.item2.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+        const json = this.toJSON();
+        let result = new ValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IValueTupleOfEnvironmentPropertyChangedAndActiveEnvironmentChanged {
+    item1: EnvironmentPropertyChanged;
+    item2: ActiveEnvironmentChanged;
+}
+
 export class EnvironmentPropertyChanged extends PropertyChangedEvent implements IEnvironmentPropertyChanged {
     scriptId!: string;
 
@@ -2114,52 +2211,6 @@ export class EnvironmentPropertyChanged extends PropertyChangedEvent implements 
 
 export interface IEnvironmentPropertyChanged extends IPropertyChangedEvent {
     scriptId: string;
-}
-
-export class ValueTupleOfActiveEnvironmentChanged implements IValueTupleOfActiveEnvironmentChanged {
-    item1!: ActiveEnvironmentChanged;
-
-    constructor(data?: IValueTupleOfActiveEnvironmentChanged) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.item1 = new ActiveEnvironmentChanged();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.item1 = _data["item1"] ? ActiveEnvironmentChanged.fromJS(_data["item1"]) : new ActiveEnvironmentChanged();
-        }
-    }
-
-    static fromJS(data: any): ValueTupleOfActiveEnvironmentChanged {
-        data = typeof data === 'object' ? data : {};
-        let result = new ValueTupleOfActiveEnvironmentChanged();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["item1"] = this.item1 ? this.item1.toJSON() : <any>undefined;
-        return data;
-    }
-
-    clone(): ValueTupleOfActiveEnvironmentChanged {
-        const json = this.toJSON();
-        let result = new ValueTupleOfActiveEnvironmentChanged();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IValueTupleOfActiveEnvironmentChanged {
-    item1: ActiveEnvironmentChanged;
 }
 
 export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {

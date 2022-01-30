@@ -13,6 +13,7 @@ using DynamicData;
 using DynamicData.Binding;
 using DynamicData.PLinq;
 using Microsoft.Extensions.DependencyInjection;
+using NetPad.Configuration;
 using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Sessions;

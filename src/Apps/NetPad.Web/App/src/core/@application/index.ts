@@ -8,3 +8,5 @@ export * from "./events/event-bus";
 export * from "./events/subscription-token";
 export * from "./events/electron-ipc-gateway";
 export * from "./events/signalr-ipc-gateway";
+
+export * from "./background-services/settings-background-service";

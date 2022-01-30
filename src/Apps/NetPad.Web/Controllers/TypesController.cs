@@ -10,6 +10,7 @@ namespace NetPad.Controllers
     {
         [HttpGet]
         public (
+            SettingsUpdated,
             Script,
             ScriptPropertyChanged,
             ScriptConfigPropertyChanged,

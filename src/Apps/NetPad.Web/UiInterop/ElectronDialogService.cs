@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+using NetPad.Configuration;
 using NetPad.Scripts;
 using NetPad.Services;
 

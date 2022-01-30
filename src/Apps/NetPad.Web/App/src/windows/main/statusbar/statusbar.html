@@ -1,7 +1,14 @@
-<b style="margin-left: 0.5rem">
-    ${session.active.status}
-</b>
+<div class="d-flex">
+    <div class="ms-3 me-auto">
+        <b>${session.active.status}</b>
 
-<span show.bind="session.active.status === 'Ready' && session.active.runDurationMilliseconds > 0">
-    (Took: ${session.active.runDurationMilliseconds} ms)
-</span>
+        <span show.bind="session.active.status === 'Ready' && session.active.runDurationMilliseconds > 0">
+            (Took: ${session.active.runDurationMilliseconds} ms)
+        </span>
+    </div>
+    <div class="me-3">
+        <i class="bi bi-sun-fill action-icon"
+           click.trigger="settingsService.toggleTheme()"
+           title="Toggle Theme"></i>
+    </div>
+</div>

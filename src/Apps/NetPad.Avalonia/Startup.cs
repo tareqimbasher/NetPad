@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Configuration;
 using NetPad.Scripts;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
