@@ -125,7 +125,7 @@ export class ScriptEnvironmentView {
             value: this.script.code,
             language: 'csharp'
         });
-        this.updateEditorTheme();
+        this.updateEditorSettings();
 
         monaco.languages.registerCompletionItemProvider("csharp", {
             provideCompletionItems: (model, position, ctx, token) => {
@@ -177,7 +177,28 @@ export class ScriptEnvironmentView {
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.settings.theme)
-    private updateEditorTheme() {
-        monaco.editor.setTheme(this.settings.theme === "Light" ? "vs" : "vs-dark");
+    @watch<ScriptEnvironmentView>(vm => vm.settings.editorBackgroundColor)
+    @watch<ScriptEnvironmentView>(vm => vm.settings.editorOptions)
+    private updateEditorSettings() {
+        let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+
+        if (this.settings.editorBackgroundColor) {
+            monaco.editor.defineTheme("custom-theme", {
+                base: <any>theme,
+                inherit: true,
+                rules: [],
+                colors: {
+                    "editor.background": this.settings.editorBackgroundColor,
+                },
+            });
+            theme = "custom-theme";
+        }
+
+        const options = {
+            theme: theme
+        };
+
+        Object.assign(options, this.settings.editorOptions || {})
+        this.editor.updateOptions(options);
     }
 }

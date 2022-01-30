@@ -8,11 +8,11 @@
         <button class="btn btn-sm btn-secondary"
                 title="${shortcutManager.getShortcutByName('Save').toString()}"
                 click.trigger="scriptService.save(script.id)">
-            <i class="bi bi-hdd-fill"></i>
+            <i class="bi bi-disc-fill"></i>
         </button>
         <button class="btn btn-sm btn-secondary"
                 title="${shortcutManager.getShortcutByName('Script Properties').toString()}"
-                click.trigger="scriptService.openConfig(script.id)">
+                click.trigger="scriptService.openConfigWindow(script.id)">
             <i class="bi bi-gear-fill"></i>
         </button>
         <span class="ms-3">

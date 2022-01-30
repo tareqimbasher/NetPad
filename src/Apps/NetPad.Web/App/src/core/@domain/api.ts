@@ -361,7 +361,7 @@ export interface IScriptsApiClient {
 
     updateCode(id: string, code: string): Promise<void>;
 
-    openConfig(id: string): Promise<void>;
+    openConfigWindow(id: string): Promise<void>;
 
     setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
 
@@ -559,7 +559,7 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    openConfig(id: string, signal?: AbortSignal | undefined): Promise<void> {
+    openConfigWindow(id: string, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/open-config";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -574,11 +574,11 @@ export class ScriptsApiClient implements IScriptsApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOpenConfig(_response);
+            return this.processOpenConfigWindow(_response);
         });
     }
 
-    protected processOpenConfig(response: Response): Promise<void> {
+    protected processOpenConfigWindow(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -995,6 +995,10 @@ export interface ISettingsApiClient {
     get(): Promise<Settings>;
 
     update(settings: Settings): Promise<FileResponse | null>;
+
+    openSettingsWindow(): Promise<void>;
+
+    showSettingsFile(): Promise<FileResponse | null>;
 }
 
 export class SettingsApiClient implements ISettingsApiClient {
@@ -1064,6 +1068,70 @@ export class SettingsApiClient implements ISettingsApiClient {
     }
 
     protected processUpdate(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    openSettingsWindow(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/settings/open";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpenSettingsWindow(_response);
+        });
+    }
+
+    protected processOpenSettingsWindow(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    showSettingsFile(signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/settings/show-settings-file";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processShowSettingsFile(_response);
+        });
+    }
+
+    protected processShowSettingsFile(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -1669,6 +1737,8 @@ export class Settings implements ISettings {
     theme!: Theme;
     scriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
+    editorBackgroundColor?: string | undefined;
+    editorOptions!: any;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -1684,6 +1754,8 @@ export class Settings implements ISettings {
             this.theme = _data["theme"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
+            this.editorBackgroundColor = _data["editorBackgroundColor"];
+            this.editorOptions = _data["editorOptions"];
         }
     }
 
@@ -1699,6 +1771,8 @@ export class Settings implements ISettings {
         data["theme"] = this.theme;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
+        data["editorBackgroundColor"] = this.editorBackgroundColor;
+        data["editorOptions"] = this.editorOptions;
         return data;
     }
 
@@ -1714,6 +1788,8 @@ export interface ISettings {
     theme: Theme;
     scriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;
+    editorBackgroundColor?: string | undefined;
+    editorOptions: any;
 }
 
 export type Theme = "Light" | "Dark";

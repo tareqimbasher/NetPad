@@ -1,7 +1,17 @@
-$dark-bg: #212121;
+@import "~styles/themes";
 
-.window {
-    min-height: 100vh;
-    background-color: $dark-bg;
-    color: white;
+.section {
+    margin-bottom: 10px;
+    padding: 0 15px 15px 10px;
+    @include theme(border-bottom, borderColor, 1px solid);
+
+    > .header {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    > .body {
+        padding-left: 10px;
+    }
 }

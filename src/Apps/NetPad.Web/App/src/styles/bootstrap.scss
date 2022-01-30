@@ -5,10 +5,12 @@ $border-radius: 0;
 $border-radius: 0;
 $border-radius: 0;
 $nav-link-padding-y: .25rem;
-$btn-border-radius: .25rem;
+$border-radius: .15rem;
+$border-radius-sm: .1rem;
+$border-radius-lg: .2rem;
 $input-btn-focus-width: 0.1rem;
-$input-btn-padding-y: .275rem;
-$input-btn-padding-y-sm: .10rem;
+$input-btn-padding-y: .16rem;
+$input-btn-padding-y-sm: .1rem;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
@@ -37,6 +39,7 @@ $input-btn-padding-y-sm: .10rem;
 
     &.active {
         @include theme(background-color, activeColor);
+
         * {
             @include theme(color, textColor);
         }
@@ -44,6 +47,7 @@ $input-btn-padding-y-sm: .10rem;
 
     &.active:hover {
         @include theme(background-color, activeColor);
+
         * {
             @include theme(color, textColor);
         }
@@ -60,6 +64,7 @@ $input-btn-padding-y-sm: .10rem;
     tr {
         &.active > td {
             @include theme(background-color, activeColor);
+
             * {
                 @include theme(color, textColor);
             }

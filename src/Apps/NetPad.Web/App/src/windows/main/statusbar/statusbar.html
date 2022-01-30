@@ -7,7 +7,10 @@
         </span>
     </div>
     <div class="me-3">
-        <i class="bi bi-sun-fill action-icon"
+        <i class="bi bi-gear-fill action-icon me-2"
+           click.trigger="settingsService.openSettingsWindow()"
+           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+        <i class="bi bi-sun action-icon"
            click.trigger="settingsService.toggleTheme()"
            title="Toggle Theme"></i>
     </div>

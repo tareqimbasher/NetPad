@@ -1,4 +1,4 @@
-import {Settings, IScriptService, ISession, IShortcutManager, Shortcut, RunScriptEvent} from "@domain";
+import {Settings, IScriptService, ISession, IShortcutManager, Shortcut, RunScriptEvent, ISettingService} from "@domain";
 import {KeyCode} from "@common";
 import {IContainer} from "aurelia";
 import Split from "split.js";
@@ -7,6 +7,7 @@ export class Index {
     constructor(
         readonly settings: Settings,
         @ISession readonly session: ISession,
+        @ISettingService readonly settingsService: ISettingService,
         @IScriptService readonly scriptService: IScriptService,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IContainer container: IContainer) {
@@ -63,7 +64,6 @@ export class Index {
                 .withKey(KeyCode.KeyS)
                 .hasAction(async () => {
                     for (const environment of this.session.environments.filter(e => e.script.isDirty)) {
-                        await this.session.activate(environment.script.id);
                         await this.scriptService.save(environment.script.id);
                     }
                 })
@@ -79,7 +79,14 @@ export class Index {
         this.shortcutManager.registerShortcut(
             new Shortcut("Script Properties")
                 .withKey(KeyCode.F4)
-                .hasAction(() => this.scriptService.openConfig(this.session.active.script.id))
+                .hasAction(() => this.scriptService.openConfigWindow(this.session.active.script.id))
+                .configurable()
+        );
+
+        this.shortcutManager.registerShortcut(
+            new Shortcut("Settings")
+                .withKey(KeyCode.F12)
+                .hasAction(() => this.settingsService.openSettingsWindow())
                 .configurable()
         );
 

@@ -32,6 +32,23 @@ namespace NetPad.UiInterop
             window.Center();
         }
 
+        public async Task OpenSettingsWindowAsync()
+        {
+            var display = await PrimaryDisplay();
+            var window = await CreateWindowAsync("settings", new BrowserWindowOptions
+            {
+                Title = "Settings",
+                Height = display.Bounds.Height * 1 / 2,
+                Width = display.Bounds.Width * 1 / 2,
+                AutoHideMenuBar = true,
+            });
+
+            window.SetParentWindow(ElectronUtil.MainWindow);
+            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+            window.Center();
+        }
+
         public async Task OpenScriptConfigWindowAsync(Script script)
         {
             var display = await PrimaryDisplay();

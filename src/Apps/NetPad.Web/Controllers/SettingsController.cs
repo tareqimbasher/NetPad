@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Configuration;
@@ -32,12 +34,36 @@ namespace NetPad.Controllers
             _settings
                 .SetTheme(settings.Theme)
                 .SetScriptsDirectoryPath(settings.ScriptsDirectoryPath)
-                .SetPackageCacheDirectoryPath(settings.PackageCacheDirectoryPath);
+                .SetPackageCacheDirectoryPath(settings.PackageCacheDirectoryPath)
+                .SetEditorBackgroundColor(settings.EditorBackgroundColor)
+                .SetEditorOptions(settings.EditorOptions)
+            ;
 
             await settingsRepository.SaveSettingsAsync(_settings);
             await ipcService.SendAsync(new SettingsUpdated(_settings));
 
             return NoContent();
+        }
+
+        [HttpPatch("open")]
+        public async Task OpenSettingsWindow([FromServices] IUiWindowService uiWindowService)
+        {
+            await uiWindowService.OpenSettingsWindowAsync();
+        }
+
+        [HttpPatch("show-settings-file")]
+        public async Task<IActionResult> ShowSettingsFile([FromServices] ISettingsRepository settingsRepository)
+        {
+            var path = Path.GetDirectoryName(await settingsRepository.GetSettingsFileLocationAsync());
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+                return Ok();
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true
+            });
+            return Ok();
         }
     }
 }

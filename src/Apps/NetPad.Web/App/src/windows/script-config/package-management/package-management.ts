@@ -21,6 +21,9 @@ export class PackageManagement {
     }
 
     public attached() {
+        // HACK: not sure why destroying the split isn't removing the gutter
+        document.querySelectorAll("package-management .gutter").forEach(e => e.remove());
+
         const split = Split(["#cached-packages", "#package-search", "#package-info"], {
             gutterSize: 6,
             sizes: [35, 40, 25],
@@ -33,13 +36,7 @@ export class PackageManagement {
     }
 
     public dispose() {
-        this.disposables.forEach(d => {
-            try {
-                d();
-            } catch (ex) {
-                console.error("Error in disposing", ex);
-            }
-        });
+        this.disposables.forEach(d => d());
     }
 
     public async termChanged(newValue: string, oldValue: string) {

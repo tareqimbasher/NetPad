@@ -17,6 +17,11 @@ namespace NetPad.Configuration
                 "settings.json");
         }
 
+        public Task<string> GetSettingsFileLocationAsync()
+        {
+            return Task.FromResult(_settingsFilePath);
+        }
+
         public async Task<Settings> GetSettingsAsync()
         {
             if (!File.Exists(_settingsFilePath))

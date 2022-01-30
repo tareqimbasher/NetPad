@@ -1,0 +1,67 @@
+<div class="section">
+    <div class="header">
+        <i class="bi bi-sun-fill"></i>
+        Theme
+    </div>
+    <div class="body">
+        <div class="form-check">
+            <input id="theme-light"
+                   name="theme"
+                   class="form-check-input"
+                   type="radio"
+                   model.bind="'Light'"
+                   checked.bind="settings.theme">
+            <label class="form-check-label" for="theme-light">
+                Light
+            </label>
+        </div>
+        <div class="form-check">
+            <input id="theme-dark"
+                   name="theme"
+                   class="form-check-input"
+                   type="radio"
+                   model.bind="'Dark'"
+                   checked.bind="settings.theme">
+            <label class="form-check-label" for="theme-dark">
+                Dark
+            </label>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header">
+        <i class="bi bi-folder-fill text-yellow"></i>
+        Folders
+    </div>
+
+    <div class="body">
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label fw-bold">Scripts</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath">
+            </div>
+            <div class="col-sm-2 text-end">
+                <button class="btn btn-secondary"
+                        show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
+                        click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath">
+                    Undo
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label fw-bold">Package Cache</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath">
+            </div>
+            <div class="col-sm-2 text-end">
+                <button class="btn btn-secondary"
+                        show.bind="settings.packageCacheDirectoryPath != currentSettings.packageCacheDirectoryPath"
+                        click.trigger="settings.packageCacheDirectoryPath = currentSettings.packageCacheDirectoryPath">
+                    Undo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

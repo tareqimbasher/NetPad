@@ -2,7 +2,8 @@
      class="flex-grow-1 d-flex align-items-center justify-content-center">
     <p class="text-muted text-center">
         No assembly references.<br/>
-        Browse for an assembly or add a Nuget package.
+        <a class="btn-link" click.trigger="browse.click()">Browse</a> for an assembly
+        or <a class="btn-link">add a Nuget package</a>.
     </p>
 </div>
 
@@ -49,6 +50,6 @@
 </div>
 
 <div portal="#buttons">
-    <button class="btn btn-sm btn-secondary" click.trigger="browse.click()">Browse...</button>
+    <button class="btn btn-secondary" click.trigger="browse.click()">Browse...</button>
     <input ref="browse" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
 </div>

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json;
 
 namespace NetPad.Configuration
 {
@@ -18,6 +19,17 @@ namespace NetPad.Configuration
                 "NetPad",
                 "Cache",
                 "Packages");
+            EditorOptions = new
+            {
+                cursorBlinking = "blink",
+                lineNumbers = "on",
+                wordWrap = "off",
+                mouseWheelZoom = true,
+                minimap = new
+                {
+                    enabled = true
+                }
+            };
         }
 
         public Settings(Theme theme, string scriptsDirectoryPath, string packageCacheDirectoryPath) : this()
@@ -30,6 +42,8 @@ namespace NetPad.Configuration
         public Theme Theme { get; set; }
         public string ScriptsDirectoryPath { get; set; }
         public string PackageCacheDirectoryPath { get; set; }
+        public string? EditorBackgroundColor { get; set; }
+        public object EditorOptions { get; set; }
 
         public Settings SetTheme(Theme theme)
         {
@@ -49,14 +63,16 @@ namespace NetPad.Configuration
             return this;
         }
 
-        public void Save()
+        public Settings SetEditorBackgroundColor(string? editorBackgroundColor)
         {
-            throw new NotImplementedException();
+            EditorBackgroundColor = editorBackgroundColor;
+            return this;
         }
-    }
 
-    public enum Theme
-    {
-        Light, Dark
+        public Settings SetEditorOptions(object options)
+        {
+            EditorOptions = options ?? new object();
+            return this;
+        }
     }
 }

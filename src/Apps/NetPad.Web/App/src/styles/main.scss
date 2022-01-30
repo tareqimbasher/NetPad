@@ -43,14 +43,14 @@ hr {
 
 .action-icon {
     @extend .clickable;
-    color: gray;
+    @include theme(color, actionIconColor);
 
     &:hover {
         @include theme(color, actionIconHoverColor);
 
-        &::before {
-            font-weight: bold !important;
-        }
+        //&::before {
+        //    font-weight: bold !important;
+        //}
     }
 }
 
@@ -85,6 +85,35 @@ table thead td {
 .text-truncate-3-lines {
     @extend .text-truncate-1-line;
     -webkit-line-clamp: 3;
+}
+
+a.btn-link:hover {
+    cursor: pointer;
+}
+
+.tabs {
+    .nav-item {
+        @include theme(background-color, tabColor);
+        border-bottom: 2px solid transparent;
+
+        &.active {
+            font-weight: bold;
+            @include theme(background-color, tabActiveColor);
+            @include theme(border-bottom, activeColor, 2px solid);
+        }
+
+        .nav-link {
+            border: none;
+            padding-top: 7px;
+            padding-bottom: 7px;
+            @include theme(color, textColor);
+
+            &:hover {
+                border: none;
+                cursor: pointer;
+            }
+        }
+    }
 }
 
 ::-webkit-scrollbar {

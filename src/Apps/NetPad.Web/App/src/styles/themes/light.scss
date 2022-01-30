@@ -1,15 +1,18 @@
 $light: (
     textColor: #34314b,
     textContrastColor: #d4d4d4,
-    backgroundColor: #ffffff,
+    backgroundColor: #f3f3f3,
     borderColor: #ccc,
     borderColorContrast: #444,
     hoverColor: rgba(0, 0, 0, 0.075),
     activeColor: #0d6efd,
+    tabColor: #e1e1e1,
+    tabActiveColor: #dadada,
     splitterColor: #dcdcdc,
     scrollbarTrackColor: #CECECE,
     scrollbarThumbColor: #7E8182,
     listBackground: #f1f1f1,
+    actionIconColor: grey,
     actionIconHoverColor: black,
     formControlBackground: #eee,
     // WINDOW
@@ -19,7 +22,7 @@ $light: (
     // SIDEBAR
     sidebarBackground: #eaeaea,
     // STATUSBAR
-    statusbarBackground: #e8e8e8,
+    statusbarBackground: #dcdcdc,
     // SCRIPT VIEW
     resultsBackground: #fafafa,
     resultsToolbarBackground: #ccc,

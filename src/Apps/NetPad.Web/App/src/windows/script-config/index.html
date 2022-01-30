@@ -5,19 +5,13 @@
 
     <div class="window d-flex flex-column" style="padding: 0 10px 10px">
         <div class="flex-grow-height-restricted d-flex flex-column">
-            <ul id="tabs" class="nav nav-tabs mb-3">
-                <li class="nav-item">
-                    <div class="nav-link" click.trigger="selectedContent='references'">References</div>
-                </li>
-                <li class="nav-item">
-                    <div class="nav-link" click.trigger="selectedContent='packages'">Packages</div>
-                </li>
-                <li class="nav-item" click.trigger="selectedContent='namespaces'">
-                    <div class="nav-link">Namespaces</div>
+            <ul class="tabs nav nav-tabs mb-3">
+                <li class="nav-item ${tab === selectedTab ? 'active' : ''}" repeat.for="tab of tabs">
+                    <div class="nav-link" click.trigger="selectedTab = tab">${tab.text}</div>
                 </li>
             </ul>
 
-            <div class="flex-grow-height-restricted d-flex flex-column" switch.bind="selectedContent">
+            <div class="flex-grow-height-restricted d-flex flex-column" switch.bind="selectedTab.route">
                 <reference-management case="references"
                                       class="flex-grow-height-restricted d-flex flex-column"></reference-management>
 
@@ -31,8 +25,8 @@
         <div class="d-flex mt-3">
             <div class="me-auto" id="buttons"></div>
             <div>
-                <button class="btn btn-sm btn-primary" click.trigger="save()">Save</button>
-                <button class="btn btn-sm btn-outline-secondary" click.trigger="cancel()">Cancel</button>
+                <button class="btn btn-primary" click.trigger="save()">Save</button>
+                <button class="btn btn-outline-secondary" click.trigger="cancel()">Cancel</button>
             </div>
         </div>
     </div>

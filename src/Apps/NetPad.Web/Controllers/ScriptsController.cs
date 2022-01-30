@@ -68,7 +68,7 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/open-config")]
-        public async Task OpenConfig(Guid id, [FromServices] IUiWindowService uiWindowService)
+        public async Task OpenConfigWindow(Guid id, [FromServices] IUiWindowService uiWindowService)
         {
             var scriptEnvironment = GetScriptEnvironment(id);
             var script = scriptEnvironment.Script;

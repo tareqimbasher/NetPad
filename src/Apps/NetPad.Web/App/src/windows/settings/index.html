@@ -1,5 +1,33 @@
-<template class="theme-${settings.theme.toLowerCase()}">
+<template class="theme-${currentSettings.theme.toLowerCase()}">
+    <import from="./general-settings/general-settings"></import>
+    <import from="./editor-options-settings/editor-options-settings"></import>
+
     <div class="window d-flex flex-column">
-        Settings Window
+        <div class="flex-grow-height-restricted d-flex flex-column">
+            <ul class="tabs nav nav-tabs mb-3">
+                <li class="nav-item ${tab === selectedTab ? 'active' : ''}" repeat.for="tab of tabs">
+                    <div class="nav-link" click.trigger="selectedTab = tab">${tab.text}</div>
+                </li>
+            </ul>
+
+            <div class="flex-grow-height-restricted d-flex flex-column" switch.bind="selectedTab.route">
+                <general-settings case="general"
+                                  class="flex-grow-height-restricted d-flex flex-column"
+                                  settings.bind="settings"></general-settings>
+                <editor-options-settings case="editor"
+                                         class="flex-grow-height-restricted d-flex flex-column"
+                                         settings.bind="settings"></editor-options-settings>
+            </div>
+        </div>
+
+        <div class="d-flex ps-3 pe-3 pb-3">
+            <div class="me-auto">
+                <button class="btn btn-secondary" click.trigger="settingService.showSettingsFile()">Show Settings File</button>
+            </div>
+            <div>
+                <button class="btn btn-primary" click.trigger="save()">Save</button>
+                <button class="btn btn-outline-secondary" click.trigger="cancel()">Cancel</button>
+            </div>
+        </div>
     </div>
 </template>
