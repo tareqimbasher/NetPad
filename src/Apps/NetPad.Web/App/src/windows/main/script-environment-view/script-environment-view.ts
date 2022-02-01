@@ -1,4 +1,4 @@
-import {bindable, PLATFORM, watch} from "aurelia";
+import {bindable, ILogger} from "aurelia";
 import {
     IEventBus,
     IScriptService,
@@ -8,31 +8,40 @@ import {
     Script,
     ScriptEnvironment,
     ScriptKind,
-    ScriptOutputEmitted,
+    ScriptOutputEmitted, ScriptStatus,
     Settings
 } from "@domain";
-import * as monaco from "monaco-editor";
 import Split from "split.js";
-import {Util} from "@common";
 import {ResultsPaneSettings} from "./results-pane-settings";
+import {Util} from "@common";
+import {observable} from "@aurelia/runtime";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
+    @observable public editorText: string = null;
     public running = false;
     public resultsPaneSettings: ResultsPaneSettings;
 
     private disposables: (() => void)[] = [];
-    private editor: monaco.editor.IStandaloneCodeEditor;
-    private resultsEl: HTMLElement;
     private split: Split.Instance;
+    private editorTextChanged: (newText: string) => void;
+    private textEditorPane: HTMLElement;
+    private resultsPane: HTMLElement;
+    private resultsEl: HTMLElement;
+
 
     constructor(
         readonly settings: Settings,
         @IScriptService readonly scriptService: IScriptService,
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
-        @IEventBus readonly eventBus: IEventBus) {
-        this.resultsPaneSettings = new ResultsPaneSettings(false, this.settings.resultsOptions.textWrap);
+        @IEventBus readonly eventBus: IEventBus,
+        @ILogger readonly logger: ILogger) {
+        this.resultsPaneSettings = new ResultsPaneSettings(this.settings.resultsOptions.textWrap);
+
+        this.editorTextChanged = Util.debounce(this, async (newText: string, oldText: string) => {
+            await this.sendCodeToServer();
+        }, 500, true);
     }
 
     public get script(): Script {
@@ -65,38 +74,21 @@ export class ScriptEnvironmentView {
         });
         this.disposables.push(() => token.dispose());
 
-        PLATFORM.taskQueue.queueTask(() => {
-            this.initializeEditor();
-        }, {delay: 100});
-
-        this.split = Split([
-            `script-environment-view[data-id="${this.script.id}"] .text-editor-container`,
-            `script-environment-view[data-id="${this.script.id}"] .results-container`
-        ], {
+        this.split = Split([this.textEditorPane, this.resultsPane], {
             gutterSize: 6,
             direction: 'vertical',
             sizes: [100, 0],
             minSize: [50, 0],
         });
-
         this.disposables.push(() => this.split.destroy());
     }
 
     public detaching() {
-        this.editor.dispose();
-        for (const disposable of this.disposables) {
-            disposable();
-        }
-    }
-
-    private async sendCodeToServer() {
-        await this.scriptService.updateCode(this.script.id, this.editor.getValue());
+        this.disposables.forEach(d => d());
     }
 
     public async run() {
-        if (this.running) return;
-
-        this.running = true;
+        if (this.environment.status === "Running") return;
 
         try {
             await this.sendCodeToServer();
@@ -104,92 +96,14 @@ export class ScriptEnvironmentView {
             if (this.settings.resultsOptions.openOnRun)
                 this.showResults();
             await this.scriptService.run(this.script.id);
-        } finally {
-            this.running = false;
+        }
+        catch (ex) {
+            this.logger.error("Error while running script", ex);
         }
     }
 
-    private initializeEditor() {
-        const el = document.querySelector(`[data-text-editor-id="${this.script.id}"]`) as HTMLElement;
-        this.editor = monaco.editor.create(el, {
-            value: this.script.code,
-            language: 'csharp'
-        });
-        this.updateEditorSettings();
-
-        monaco.languages.registerCompletionItemProvider("csharp", {
-            provideCompletionItems: (model, position, ctx, token) => {
-                return <any>{
-                    suggestions: [
-                        {
-                            label: "Console.WriteLine",
-                            kind: monaco.languages.CompletionItemKind.Snippet,
-                            documentation: "Write a line to the console",
-                            inertText: "Console.WriteLine();",
-                            range: {
-                                replace: {
-                                    startLineNumber: position.lineNumber,
-                                    endLineNumber: position.lineNumber,
-                                    startColumn: position.column,
-                                    endColumn: position.column
-                                }
-                            }
-                        }
-                    ],
-                    incomplete: false
-                };
-            }
-        })
-
-        const f = Util.debounce(this, async (ev) => {
-            await this.sendCodeToServer();
-        }, 500, true);
-
-        this.editor.onDidChangeModelContent(ev => f(ev));
-
-        const ob = new ResizeObserver(entries => this.updateEditorLayout());
-        ob.observe(document.getElementById("sidebar"));
-        ob.observe(document.querySelector(`script-environment-view[data-id="${this.script.id}"] .text-editor-container`));
-        ob.observe(document.querySelector(`script-environment-view[data-id="${this.script.id}"] .results-container`));
-        this.disposables.push(() => ob.disconnect());
-    }
-
-    @watch<ScriptEnvironmentView>(vm => vm.session.active)
-    private activeScriptEnvironmentChanged() {
-        PLATFORM.taskQueue.queueTask(() => {
-            if (this.environment === this.session.active)
-                this.updateEditorLayout();
-        }, {delay: 100});
-    }
-
-    private updateEditorLayout() {
-        this.editor.layout();
-    }
-
-    @watch<ScriptEnvironmentView>(vm => vm.settings.theme)
-    @watch<ScriptEnvironmentView>(vm => vm.settings.editorBackgroundColor)
-    @watch<ScriptEnvironmentView>(vm => vm.settings.editorOptions)
-    private updateEditorSettings() {
-        let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
-
-        if (this.settings.editorBackgroundColor) {
-            monaco.editor.defineTheme("custom-theme", {
-                base: <any>theme,
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": this.settings.editorBackgroundColor,
-                },
-            });
-            theme = "custom-theme";
-        }
-
-        const options = {
-            theme: theme
-        };
-
-        Object.assign(options, this.settings.editorOptions || {})
-        this.editor.updateOptions(options);
+    private async sendCodeToServer() {
+        await this.scriptService.updateCode(this.script.id, this.editorText);
     }
 
     private setResults(results: string | null) {
@@ -206,13 +120,16 @@ export class ScriptEnvironmentView {
     }
 
     private showResults() {
-        if (this.resultsPaneSettings.show) return;
-        this.resultsPaneSettings.show = true;
+        if (this.isResultsPaneShowing()) return;
         this.split.setSizes([50, 50]);
     }
 
     private collapseResults() {
-        this.resultsPaneSettings.show = false;
+        if (!this.isResultsPaneShowing()) return;
         this.split.collapse(1);
+    }
+
+    private isResultsPaneShowing(): boolean {
+        return this.resultsPane.clientHeight > 0;
     }
 }

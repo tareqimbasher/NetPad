@@ -8,14 +8,13 @@ script-environment-view {
         display: inline-block;
     }
 
-    .text-editor-container {
+    .text-editor-pane {
         .text-editor {
-            height: 100%;
+            width: 100%;
         }
-        overflow: hidden;
     }
 
-    .results-container {
+    .results-pane {
         display: flex;
         flex-direction: column;
         @include theme(background-color, resultsBackground);

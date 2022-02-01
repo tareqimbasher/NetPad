@@ -1,6 +1,8 @@
 <template data-id.bind="script.id">
+    <import from="../editor/editor"></import>
+
     <div class="header ps-2 pe-2 mb-3">
-        <button class="btn btn-sm btn-success ${running ? 'disabled' : ''}"
+        <button class="btn btn-sm btn-success ${environment.status === 'Running' ? 'disabled' : ''}"
                 title="${shortcutManager.getShortcutByName('Run').toString()}"
                 click.trigger="run()">
             <i class="bi bi-play-fill"></i>
@@ -29,10 +31,13 @@
         </span>
     </div>
     <div class="flex-grow-height-restricted">
-        <div class="text-editor-container">
-            <div class="text-editor" data-text-editor-id.bind="script.id"></div>
+        <div class="text-editor-pane d-flex overflow-hidden" ref="textEditorPane">
+            <editor class="text-editor"
+                    data-text-editor-id.bind="script.id"
+                    environment.bind="environment"
+                    text.two-way="editorText"></editor>
         </div>
-        <div class="results-container overflow-hidden">
+        <div class="results-pane overflow-hidden" ref="resultsPane">
             <div class="toolbar">
                 <div class="row m-0 p-0">
                     <div class="col ps-2">

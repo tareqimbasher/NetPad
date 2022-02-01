@@ -1,12 +1,13 @@
 import {bindable, PLATFORM, watch} from "aurelia";
 import * as monaco from "monaco-editor";
 import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
-import {Util} from "@common";
 import {TestCompletionItemProvider} from "./completion-item-providers/test-completion-item-provider";
 
 export class Editor {
     @bindable public environment: ScriptEnvironment;
+    @bindable public text: string;
     private monacoEditor: monaco.editor.IStandaloneCodeEditor;
+    private disposables: (() => void)[] = [];
 
     constructor(
         readonly element: Element,
@@ -21,35 +22,64 @@ export class Editor {
         }, { delay: 100 });
     }
 
+    public detaching() {
+        this.monacoEditor.dispose();
+        this.disposables.forEach(d => d());
+    }
+
     private initializeEditor() {
         this.monacoEditor = monaco.editor.create(this.element as HTMLElement, {
             value: this.environment.script.code,
             language: 'csharp'
         });
-        this.updateEditorTheme();
+        this.text = this.environment.script.code;
+        this.updateEditorSettings();
+
+        this.monacoEditor.onDidChangeModelContent(ev => this.text = this.monacoEditor.getValue());
+
+        const ob = new ResizeObserver(entries => this.updateEditorLayout());
+        ob.observe(this.element);
+        this.disposables.push(() => ob.disconnect());
 
         // TODO should be called once per app lifetime. Here for testing.
         new TestCompletionItemProvider().register();
+    }
 
-        const f = Util.debounce(this, async (ev) => {
-            await this.scriptService.updateCode(this.environment.script.id, this.monacoEditor.getValue());
-        }, 500, true);
+    @watch<Editor>(vm => vm.session.active)
+    private activeScriptEnvironmentChanged() {
+        PLATFORM.taskQueue.queueTask(() => {
+            if (this.environment === this.session.active)
+                this.updateEditorLayout();
+        }, {delay: 100});
+    }
 
-        this.monacoEditor.onDidChangeModelContent(ev => f(ev));
-
-        window.addEventListener("resize", () => this.monacoEditor.layout());
-        // const ob = new ResizeObserver(entries => {
-        //     console.log(entries);
-        //     this.editor.layout({
-        //         width: document.scriptSelector(".window").clientWidth - document.scriptSelector("sidebar").clientWidth,
-        //         height: document.scriptSelector(".text-editor").clientHeight
-        //     });
-        // });
-        // ob.observe(document.scriptSelector("statusbar"));
+    private updateEditorLayout() {
+        this.monacoEditor.layout();
     }
 
     @watch<Editor>(vm => vm.settings.theme)
-    private updateEditorTheme() {
-        monaco.editor.setTheme(this.settings.theme === "Light" ? "vs" : "vs-dark");
+    @watch<Editor>(vm => vm.settings.editorBackgroundColor)
+    @watch<Editor>(vm => vm.settings.editorOptions)
+    private updateEditorSettings() {
+        let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+
+        if (this.settings.editorBackgroundColor) {
+            monaco.editor.defineTheme("custom-theme", {
+                base: <any>theme,
+                inherit: true,
+                rules: [],
+                colors: {
+                    "editor.background": this.settings.editorBackgroundColor,
+                },
+            });
+            theme = "custom-theme";
+        }
+
+        const options = {
+            theme: theme
+        };
+
+        Object.assign(options, this.settings.editorOptions || {})
+        this.monacoEditor.updateOptions(options);
     }
 }
