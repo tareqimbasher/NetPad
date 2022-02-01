@@ -103,7 +103,7 @@ export class ScriptEnvironmentView {
     }
 
     private async sendCodeToServer() {
-        await this.scriptService.updateCode(this.script.id, this.editorText);
+        await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
     }
 
     private setResults(results: string | null) {
