@@ -14,12 +14,12 @@ import {
 import * as monaco from "monaco-editor";
 import Split from "split.js";
 import {Util} from "@common";
-import {ResultsViewSettings} from "./results-view-settings";
+import {ResultsPaneSettings} from "./results-pane-settings";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
     public running = false;
-    public resultsViewSettings: ResultsViewSettings;
+    public resultsPaneSettings: ResultsPaneSettings;
 
     private disposables: (() => void)[] = [];
     private editor: monaco.editor.IStandaloneCodeEditor;
@@ -32,7 +32,7 @@ export class ScriptEnvironmentView {
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus) {
-        this.resultsViewSettings = new ResultsViewSettings(this.settings.resultsOptions.textWrap);
+        this.resultsPaneSettings = new ResultsPaneSettings(false, this.settings.resultsOptions.textWrap);
     }
 
     public get script(): Script {
@@ -75,7 +75,7 @@ export class ScriptEnvironmentView {
         ], {
             gutterSize: 6,
             direction: 'vertical',
-            sizes: [50, 50],
+            sizes: [100, 0],
             minSize: [50, 0],
         });
 
@@ -107,19 +107,6 @@ export class ScriptEnvironmentView {
         } finally {
             this.running = false;
         }
-    }
-
-    private setResults(results: string | null) {
-        if (!results)
-            results = "";
-
-        this.resultsEl.innerHTML = results
-            .replaceAll("\n", "<br/>")
-            .replaceAll(" ", "&nbsp;");
-    }
-
-    private appendResults(results: string | null) {
-        this.setResults(this.resultsEl.innerHTML + results);
     }
 
     private initializeEditor() {
@@ -205,19 +192,27 @@ export class ScriptEnvironmentView {
         this.editor.updateOptions(options);
     }
 
-    private collapseResults() {
-        if (!this.isResultsPaneShowing()) return;
-        this.split.collapse(1);
+    private setResults(results: string | null) {
+        if (!results)
+            results = "";
+
+        this.resultsEl.innerHTML = results
+            .replaceAll("\n", "<br/>")
+            .replaceAll(" ", "&nbsp;");
+    }
+
+    private appendResults(results: string | null) {
+        this.setResults(this.resultsEl.innerHTML + results);
     }
 
     private showResults() {
-        if (this.isResultsPaneShowing()) return;
-
+        if (this.resultsPaneSettings.show) return;
+        this.resultsPaneSettings.show = true;
         this.split.setSizes([50, 50]);
     }
 
-    private isResultsPaneShowing(): boolean {
-        const pane = document.querySelector(`script-environment-view[data-id="${this.script.id}"] .results-container`) as HTMLElement;
-        return pane.clientHeight > 0;
+    private collapseResults() {
+        this.resultsPaneSettings.show = false;
+        this.split.collapse(1);
     }
 }

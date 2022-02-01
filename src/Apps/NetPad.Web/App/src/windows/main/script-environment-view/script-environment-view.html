@@ -32,23 +32,23 @@
         <div class="text-editor-container">
             <div class="text-editor" data-text-editor-id.bind="script.id"></div>
         </div>
-        <div class="results-container">
+        <div class="results-container overflow-hidden">
             <div class="toolbar">
                 <div class="row m-0 p-0">
                     <div class="col ps-2">
                         <b>Results</b>
                     </div>
                     <div class="col text-end pe-1">
-                        <i class="bi bi-text-center action-icon ${resultsViewSettings.textWrap ? 'text-blue' : ''}"
+                        <i class="bi bi-text-center action-icon ${resultsPaneSettings.textWrap ? 'text-blue' : ''}"
                            title="Text Wrap"
-                           click.trigger="resultsViewSettings.textWrap = !resultsViewSettings.textWrap"></i>
+                           click.trigger="resultsPaneSettings.textWrap = !resultsPaneSettings.textWrap"></i>
                         <i class="bi bi-x action-icon hover-text-red"
                            title="Close Results"
                            click.trigger="collapseResults()"></i>
                     </div>
                 </div>
             </div>
-            <div class="results pt-2 ${resultsViewSettings.textWrap ? 'text-wrap' : ''}"
+            <div class="results pt-2 ${resultsPaneSettings.textWrap ? 'text-wrap' : ''}"
                  ref="resultsEl"
                  data-script-results-id.bind="script.id"></div>
         </div>
