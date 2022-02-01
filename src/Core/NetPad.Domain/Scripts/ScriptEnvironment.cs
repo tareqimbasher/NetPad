@@ -42,7 +42,7 @@ namespace NetPad.Scripts
 
         public Script Script { get; }
 
-        public ScriptStatus Status
+        public virtual ScriptStatus Status
         {
             get => _status;
             set => this.RaiseAndSetIfChanged(ref _status, value);
@@ -61,6 +61,10 @@ namespace NetPad.Scripts
             _logger.LogTrace($"{nameof(RunAsync)} start");
 
             EnsureNotDestroyed();
+
+            if (Status == ScriptStatus.Running)
+                throw new InvalidOperationException("Script is already running.");
+
             Status = ScriptStatus.Running;
 
             try

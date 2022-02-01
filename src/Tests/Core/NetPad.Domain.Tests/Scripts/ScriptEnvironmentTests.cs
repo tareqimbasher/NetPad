@@ -37,6 +37,16 @@ namespace NetPad.Domain.Tests.Scripts
         }
 
         [Fact]
+        public void RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
+        {
+            var script = ScriptTestHelper.CreateScript();
+            var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
+            environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
+
+            Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync());
+        }
+
+        [Fact]
         public void DisposingEnvironment_DestroysEnvironment()
         {
             var script = ScriptTestHelper.CreateScript();
