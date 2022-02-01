@@ -8,12 +8,6 @@ script-environment-view {
         display: inline-block;
     }
 
-    .text-editor-pane {
-        .text-editor {
-            width: 100%;
-        }
-    }
-
     .results-pane {
         display: flex;
         flex-direction: column;
