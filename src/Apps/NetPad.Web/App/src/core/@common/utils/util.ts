@@ -87,18 +87,21 @@ export class Util {
      * @param thisArg The value to use as this when calling func.
      * @param func The function to debounce.
      * @param waitMs The number of milliseconds to debounce.
-     * @param immediate If true, will execute the function immediately and then waits for the interval before being called again.
+     * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
      */
     public static debounce(thisArg: unknown, func: (...args: any[]) => void, waitMs: number, immediate?: boolean) : (...args:any[]) => void {
         let timeout: NodeJS.Timeout | null;
+        let isImmediateCall = false;
 
         return (...args: any[]) => {
             const later = () => {
                 timeout = null;
-                func.call(thisArg, ...args);
+                if (!isImmediateCall) func.call(thisArg, ...args);
             };
 
-            const callNow = immediate && !timeout;
+            isImmediateCall = immediate && !timeout;
+
+            const callNow = immediate && isImmediateCall;
 
             if (timeout) clearTimeout(timeout);
 
