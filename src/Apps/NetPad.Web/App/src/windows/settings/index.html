@@ -1,6 +1,7 @@
 <template class="theme-${currentSettings.theme.toLowerCase()}">
     <import from="./general-settings/general-settings"></import>
     <import from="./editor-options-settings/editor-options-settings"></import>
+    <import from="./results-options-settings/results-options-settings"></import>
 
     <div class="window d-flex flex-column">
         <div class="flex-grow-height-restricted d-flex flex-column">
@@ -17,6 +18,9 @@
                 <editor-options-settings case="editor"
                                          class="flex-grow-height-restricted d-flex flex-column"
                                          settings.bind="settings"></editor-options-settings>
+                <results-options-settings case="results"
+                                         class="flex-grow-height-restricted d-flex flex-column"
+                                         settings.bind="settings"></results-options-settings>
             </div>
         </div>
 

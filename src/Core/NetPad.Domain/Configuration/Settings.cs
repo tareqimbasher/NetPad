@@ -9,16 +9,19 @@ namespace NetPad.Configuration
         {
             // Defaults
             Theme = Theme.Dark;
+
             ScriptsDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Documents",
                 "NetPad",
                 "Scripts");
+
             PackageCacheDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "NetPad",
                 "Cache",
                 "Packages");
+
             EditorOptions = new
             {
                 cursorBlinking = "blink",
@@ -29,6 +32,12 @@ namespace NetPad.Configuration
                 {
                     enabled = true
                 }
+            };
+
+            ResultsOptions = new ResultsOptions
+            {
+                OpenOnRun = true,
+                TextWrap = false
             };
         }
 
@@ -44,6 +53,7 @@ namespace NetPad.Configuration
         public string PackageCacheDirectoryPath { get; set; }
         public string? EditorBackgroundColor { get; set; }
         public object EditorOptions { get; set; }
+        public ResultsOptions ResultsOptions { get; set; }
 
         public Settings SetTheme(Theme theme)
         {
@@ -72,6 +82,12 @@ namespace NetPad.Configuration
         public Settings SetEditorOptions(object options)
         {
             EditorOptions = options ?? new object();
+            return this;
+        }
+
+        public Settings SetResultsOptions(ResultsOptions resultsOptions)
+        {
+            ResultsOptions = resultsOptions ?? throw new ArgumentNullException(nameof(resultsOptions));
             return this;
         }
     }

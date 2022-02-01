@@ -32,7 +32,7 @@ export class ScriptEnvironmentView {
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus) {
-        this.resultsViewSettings = new ResultsViewSettings();
+        this.resultsViewSettings = new ResultsViewSettings(this.settings.resultsOptions.textWrap);
     }
 
     public get script(): Script {
@@ -101,7 +101,8 @@ export class ScriptEnvironmentView {
         try {
             await this.sendCodeToServer();
             this.setResults(null);
-            this.showResults();
+            if (this.settings.resultsOptions.openOnRun)
+                this.showResults();
             await this.scriptService.run(this.script.id);
         } finally {
             this.running = false;
@@ -204,13 +205,19 @@ export class ScriptEnvironmentView {
         this.editor.updateOptions(options);
     }
 
-    private collapseResults()
-    {
+    private collapseResults() {
+        if (!this.isResultsPaneShowing()) return;
         this.split.collapse(1);
     }
 
-    private showResults()
-    {
+    private showResults() {
+        if (this.isResultsPaneShowing()) return;
+
         this.split.setSizes([50, 50]);
+    }
+
+    private isResultsPaneShowing(): boolean {
+        const pane = document.querySelector(`script-environment-view[data-id="${this.script.id}"] .results-container`) as HTMLElement;
+        return pane.clientHeight > 0;
     }
 }

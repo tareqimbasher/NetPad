@@ -7,6 +7,7 @@ export class Index {
     public tabs = [
         {route: "general", text: "General"},
         {route: "editor", text: "Editor"},
+        {route: "results", text: "Results"},
     ];
 
     constructor(currentSettings: Settings, @ISettingService readonly settingService: ISettingService) {

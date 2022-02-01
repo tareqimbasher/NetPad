@@ -1739,6 +1739,7 @@ export class Settings implements ISettings {
     packageCacheDirectoryPath!: string;
     editorBackgroundColor?: string | undefined;
     editorOptions!: any;
+    resultsOptions!: ResultsOptions;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -1746,6 +1747,9 @@ export class Settings implements ISettings {
                 if (data.hasOwnProperty(property))
                     (<any>this)[property] = (<any>data)[property];
             }
+        }
+        if (!data) {
+            this.resultsOptions = new ResultsOptions();
         }
     }
 
@@ -1756,6 +1760,7 @@ export class Settings implements ISettings {
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
             this.editorBackgroundColor = _data["editorBackgroundColor"];
             this.editorOptions = _data["editorOptions"];
+            this.resultsOptions = _data["resultsOptions"] ? ResultsOptions.fromJS(_data["resultsOptions"]) : new ResultsOptions();
         }
     }
 
@@ -1773,6 +1778,7 @@ export class Settings implements ISettings {
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
         data["editorBackgroundColor"] = this.editorBackgroundColor;
         data["editorOptions"] = this.editorOptions;
+        data["resultsOptions"] = this.resultsOptions ? this.resultsOptions.toJSON() : <any>undefined;
         return data;
     }
 
@@ -1790,9 +1796,57 @@ export interface ISettings {
     packageCacheDirectoryPath: string;
     editorBackgroundColor?: string | undefined;
     editorOptions: any;
+    resultsOptions: ResultsOptions;
 }
 
 export type Theme = "Light" | "Dark";
+
+export class ResultsOptions implements IResultsOptions {
+    openOnRun!: boolean;
+    textWrap!: boolean;
+
+    constructor(data?: IResultsOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.openOnRun = _data["openOnRun"];
+            this.textWrap = _data["textWrap"];
+        }
+    }
+
+    static fromJS(data: any): ResultsOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new ResultsOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["openOnRun"] = this.openOnRun;
+        data["textWrap"] = this.textWrap;
+        return data;
+    }
+
+    clone(): ResultsOptions {
+        const json = this.toJSON();
+        let result = new ResultsOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IResultsOptions {
+    openOnRun: boolean;
+    textWrap: boolean;
+}
 
 export class Types implements ITypes {
     script!: Script;

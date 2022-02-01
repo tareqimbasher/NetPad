@@ -1,6 +1,6 @@
 export class ResultsViewSettings {
     constructor(
-        textWrap: boolean = true
+        public textWrap: boolean = false
     ) {
     }
 }

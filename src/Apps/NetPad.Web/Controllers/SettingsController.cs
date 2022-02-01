@@ -37,6 +37,7 @@ namespace NetPad.Controllers
                 .SetPackageCacheDirectoryPath(settings.PackageCacheDirectoryPath)
                 .SetEditorBackgroundColor(settings.EditorBackgroundColor)
                 .SetEditorOptions(settings.EditorOptions)
+                .SetResultsOptions(settings.ResultsOptions)
             ;
 
             await settingsRepository.SaveSettingsAsync(_settings);
