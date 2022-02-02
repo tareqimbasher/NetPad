@@ -8,27 +8,25 @@
             <sidebar id="sidebar"></sidebar>
             <div id="scripts-content" class="flex-grow-height-restricted d-flex flex-column">
                 <ul id="tabs" class="nav nav-tabs">
-                    <li class="nav-item script-tab ${session.active === env ? 'active' : ''}"
+                    <li class="nav-item d-flex flex-row align-items-center script-tab ${session.active === env ? 'active' : ''}"
                         repeat.for="env of session.environments">
-                        <div class="tab">
-                            <div class="text"
-                                 click.trigger="session.activate(env.script.id)"
-                                 auxclick.trigger="session.close(env.script.id)">
+                        <div class="text d-flex align-items-center"
+                             click.trigger="session.activate(env.script.id)"
+                             auxclick.trigger="session.close(env.script.id)">
+                            <span>
                                 ${env.script.name}
                                 ${env.status === 'Running' ? '[Running]' : ''}
                                 ${env.script.isDirty ? '*' : ''}
-                            </div>
-                            <i class="bi bi-x action-icon hover-text-red"
-                               title="${shortcutManager.getShortcutByName('Close').toString()}"
-                               click.trigger="session.close(env.script.id)"></i>
+                            </span>
                         </div>
+                        <i class="bi bi-x action-icon hover-text-red"
+                           title="${shortcutManager.getShortcutByName('Close').toString()}"
+                           click.trigger="session.close(env.script.id)"></i>
                     </li>
-                    <li class="nav-item script-tab new-script-tab"
+                    <li class="nav-item script-tab new-script-tab d-flex align-items-center"
                         click.trigger="scriptService.create()"
                         title="${shortcutManager.getShortcutByName('New').toString()}">
-                        <div class="tab">
-                            <i class="bi bi-plus-lg"></i>
-                        </div>
+                        <i class="bi bi-plus-lg"></i>
                     </li>
                 </ul>
                 <div id="script-environments" class="flex-grow-height-restricted d-flex flex-column">

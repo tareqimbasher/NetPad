@@ -10,38 +10,44 @@ sidebar {
 }
 
 #tabs {
-    $script-tab-padding-vertical: 0.15rem;
-    $script-tab-padding-horizontal: 0.5rem;
+    overflow-x: auto;
+    overflow-y:hidden;
+    flex-wrap: nowrap;
 
     .script-tab {
+        white-space: nowrap;
+        margin-right: 1px;
+
+        @include theme(background-color, tabColor);
+        font-weight: bold;
+        cursor: default;
+        height: 1.6rem;
+        font-size: 0.75rem;
+        padding-right: 3px;
+
+        .text {
+            padding-left: 0.5rem;
+            padding-right: 0.3rem;
+            height: 100%;
+            user-select: none;
+        }
+
+        .bi {
+            line-height: 100%;
+        }
+
+        &:hover {
+            @include theme(background-color, tabActiveColor);
+        }
+
         &.active {
             color: dodgerblue;
+            @include theme(background-color, tabActiveColor);
         }
 
-        .tab {
-            @include theme(background-color, backgroundColor);
-            //@include theme(border-right, borderColor, 1px solid);
-            font-weight: bold;
-            cursor: default;
-            height: 1.6rem;
-            font-size: 0.75rem;
-            padding: $script-tab-padding-vertical $script-tab-padding-horizontal;
-
-            .text {
-                display: inline-block;
-            }
-
-            .bi {
-                padding: $script-tab-padding-vertical 1px;
-            }
-
-            &:hover {
-                @include theme(background-color, hoverColor);
-            }
-        }
-
-        &.new-script-tab .tab {
-            padding: $script-tab-padding-vertical 0.4rem;
+        &.new-script-tab {
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
         }
     }
 }

@@ -1,3 +1,4 @@
+@import "./variables";
 @import "./bootstrap";
 @import "./splitjs";
 @import "~styles/themes";
@@ -95,6 +96,7 @@ a.btn-link:hover {
     .nav-item {
         @include theme(background-color, tabColor);
         border-bottom: 2px solid transparent;
+        margin-right: 1px;
 
         &.active {
             font-weight: bold;
@@ -102,10 +104,14 @@ a.btn-link:hover {
             @include theme(border-bottom, activeColor, 2px solid);
         }
 
+        &:hover {
+            @include theme(background-color, tabActiveColor);
+        }
+
         .nav-link {
             border: none;
-            padding-top: 7px;
-            padding-bottom: 7px;
+            padding-top: $tab-vertical-padding;
+            padding-bottom: $tab-vertical-padding;
             @include theme(color, textColor);
 
             &:hover {
