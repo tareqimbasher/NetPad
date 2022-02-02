@@ -11,7 +11,7 @@
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="NJsonSchema" Version="10.6.7" />
+      <PackageReference Include="NJsonSchema" Version="10.6.6" />
     </ItemGroup>
 
 </Project>
