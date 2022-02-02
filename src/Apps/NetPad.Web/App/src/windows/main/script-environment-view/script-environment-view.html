@@ -1,4 +1,4 @@
-<template data-id.bind="script.id">
+<template>
     <import from="../editor/editor"></import>
 
     <div class="header ps-2 pe-2 mb-3">
@@ -31,13 +31,11 @@
         </span>
     </div>
     <div class="flex-grow-height-restricted">
-        <div class="text-editor-pane d-flex overflow-hidden" ref="textEditorPane">
-            <editor class="text-editor"
-                    data-text-editor-id.bind="script.id"
-                    environment.bind="environment"
+        <div ref="textEditorPane" class="text-editor-pane d-flex overflow-hidden">
+            <editor environment.bind="environment"
                     text.two-way="editorText"></editor>
         </div>
-        <div class="results-pane overflow-hidden" ref="resultsPane">
+        <div ref="resultsPane" class="results-pane overflow-hidden">
             <div class="toolbar">
                 <div class="row m-0 p-0">
                     <div class="col ps-2">
@@ -53,9 +51,8 @@
                     </div>
                 </div>
             </div>
-            <div class="results pt-2 ${resultsPaneSettings.textWrap ? 'text-wrap' : ''}"
-                 ref="resultsEl"
-                 data-script-results-id.bind="script.id"></div>
+            <div ref="resultsEl"
+                 class="results pt-2 ${resultsPaneSettings.textWrap ? 'text-wrap' : ''}"></div>
         </div>
     </div>
 </template>

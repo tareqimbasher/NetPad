@@ -42,7 +42,7 @@ export class Editor {
         this.disposables.push(() => ob.disconnect());
 
         // TODO should be called once per app lifetime. Here for testing.
-        new TestCompletionItemProvider().register();
+        //new TestCompletionItemProvider().register();
     }
 
     @watch<Editor>(vm => vm.session.active)

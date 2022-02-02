@@ -18,7 +18,7 @@ import {observable} from "@aurelia/runtime";
 
 export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
-    @observable public editorText: string = null;
+    @observable public editorText: string;
     public running = false;
     public resultsPaneSettings: ResultsPaneSettings;
 
@@ -103,6 +103,7 @@ export class ScriptEnvironmentView {
     }
 
     private async sendCodeToServer() {
+        if (this.environment.script.code === this.editorText) return;
         await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
     }
 
