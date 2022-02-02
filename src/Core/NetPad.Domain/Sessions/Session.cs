@@ -57,22 +57,26 @@ namespace NetPad.Sessions
         public async Task CloseAsync(Guid scriptId)
         {
             _logger.LogDebug($"Closing script: {scriptId}");
-            var environment = Get(scriptId);
-            if (environment == null)
+            var environmentToClose = Get(scriptId);
+            if (environmentToClose == null)
                 return;
 
-            var ix = _environments.IndexOf(environment);
+            var ix = _environments.IndexOf(environmentToClose);
 
-            _environments.Remove(environment);
-            environment.Dispose();
+            _environments.Remove(environmentToClose);
+            environmentToClose.Dispose();
 
-            if (Active == environment)
+            if (Active == environmentToClose)
             {
                 if (_environments.Any())
                 {
-                    if (ix != 0)
-                        ix--;
-                    await ActivateAsync(_environments[ix].Script.Id);
+                    if (CanActivateLastActiveScript())
+                        await ActivateAsync(_lastActiveScriptId);
+                    else
+                    {
+                        ix = ix == 0 ? 1 : (ix - 1);
+                        await ActivateAsync(_environments[ix].Script.Id);
+                    }
                 }
                 else
                     await ActivateAsync(null);
@@ -98,7 +102,7 @@ namespace NetPad.Sessions
 
         public Task ActivateLastActiveScriptAsync()
         {
-            if (_lastActiveScriptId != null)
+            if (CanActivateLastActiveScript())
                 ActivateAsync(_lastActiveScriptId);
 
             return Task.CompletedTask;
@@ -116,5 +120,7 @@ namespace NetPad.Sessions
 
             return Task.FromResult($"{baseName} {number}");
         }
+
+        private bool CanActivateLastActiveScript() => _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
     }
 }
