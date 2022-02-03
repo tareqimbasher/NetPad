@@ -19,12 +19,14 @@ You can currently:
 
 * Write, save and run your own scripts
 * Add additional namespaces to your script
+* Reference and use your own assemblies in scripts
+* Add and use NuGet packages in scripts (`Basic Support`)
 
 You cannot, yet:
 
-* Dump complex objects to the results console
+* Dump complex objects to the results console (`Coming soon!`)
+* More complete NuGet package support
 * Add database connections
-* Reference NuGet packages or your own assemblies
 * Enjoy code-completion features in the editor
 
 ## Tech Stack
@@ -42,7 +44,7 @@ backend occurs via REST API calls and Electron's IPC protocol.
 #### 1. Run the SPA
 
 ```
-# Install deps
+# Install dependencies
 cd Apps/NetPad.Web/App
 npm install
 
@@ -58,10 +60,11 @@ dotnet tool install ElectronNET.CLI -g
 
 # Start the app
 cd Apps/NetPad.Web/App
-electronize start /watch
-```
+electronize start /manifest electron.manifest.js
 
-Be sure to edit your script directory in `appsettings.json`
+# Or start the app in watch mode
+electronize start /watch /manifest electron.manifest.js
+```
 
 #### Note
 
@@ -69,18 +72,22 @@ Be sure to edit your script directory in `appsettings.json`
 
 ## Packaging
 
-Build the app for the desired platform from the root directory of `NetPad.Web`
+The app is built and packaged
+using [electron-builder](https://www.electron.build/). Build the app for the
+desired platform from the root directory of `NetPad.Web`
 project:
 
 ```
-electronize build /target win
-electronize build /target osx
-electronize build /target linux
+electronize build /target win /manifest electron.manifest.js
+electronize build /target osx /manifest electron.manifest.js
+electronize build /target linux /manifest electron.manifest.js
 ```
 
-See the Electron.NET docs
-on [how to package the app](https://github.com/ElectronNET/Electron.NET#-build)
-for more details.
+See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
+on how to package the app for additional CLI options,
+and [electron-builder](https://www.electron.build/) for additional configuration
+options for the `build`
+object in `electron.manifest.js`.
 
 ### Bug
 
