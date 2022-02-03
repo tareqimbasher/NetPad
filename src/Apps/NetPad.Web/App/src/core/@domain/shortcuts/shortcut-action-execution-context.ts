@@ -1,8 +1,15 @@
-import {IEventBus} from "@domain";
+import {IEventBus, ISession} from "@domain";
+import {IContainer} from "aurelia";
 
 export class ShortcutActionExecutionContext {
+    public session: ISession;
+    public eventBus: IEventBus;
+
     constructor(
         public readonly event: KeyboardEvent,
-        @IEventBus public readonly eventBus: IEventBus
-    ) {}
+        @IContainer public readonly container: IContainer
+    ) {
+        this.session = container.get(ISession);
+        this.eventBus = container.get(IEventBus);
+    }
 }

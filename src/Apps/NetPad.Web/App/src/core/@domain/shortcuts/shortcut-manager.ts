@@ -1,4 +1,4 @@
-import {DI} from "aurelia";
+import {DI, IContainer} from "aurelia";
 import {Shortcut} from "./shortcut";
 import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
 import {IEventBus} from "@domain";
@@ -13,7 +13,7 @@ export const IShortcutManager = DI.createInterface<IShortcutManager>();
 export class ShortcutManager implements IShortcutManager{
     private registry: Shortcut[] = [];
 
-    constructor(@IEventBus readonly eventBus: IEventBus) {
+    constructor(@IEventBus readonly eventBus: IEventBus, @IContainer readonly container: IContainer) {
     }
 
     public getShortcutByName(name: string): Shortcut | undefined {
@@ -31,11 +31,11 @@ export class ShortcutManager implements IShortcutManager{
 
     public initialize() {
         document.addEventListener("keydown", (ev) => {
-            const shortcut = this.registry.find((s) => s.matches(ev));
+            const shortcut = this.registry.find((s) => s.isEnabled && s.matches(ev));
             if (!shortcut) return;
 
             if (shortcut.action) {
-                const context = new ShortcutActionExecutionContext(ev, this.eventBus);
+                const context = new ShortcutActionExecutionContext(ev, this.container);
                 shortcut.action(context);
             }
 

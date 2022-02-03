@@ -15,6 +15,7 @@ export class Shortcut {
     public action?: (context: ShortcutActionExecutionContext) => void;
     public eventType?: Constructable;
     public isConfigurable = false;
+    public isEnabled = false;
 
     constructor(public name: string) {
     }
@@ -61,6 +62,11 @@ export class Shortcut {
 
     public configurable(isConfigurable = true): Shortcut {
         this.isConfigurable = isConfigurable;
+        return this;
+    }
+
+    public enabled(isEnabled = true): Shortcut {
+        this.isEnabled = isEnabled;
         return this;
     }
 
