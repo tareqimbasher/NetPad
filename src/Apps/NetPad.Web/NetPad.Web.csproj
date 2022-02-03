@@ -11,6 +11,8 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <RootNamespace>NetPad</RootNamespace>
     <Nullable>enable</Nullable>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="13.5.1" />
@@ -25,6 +27,9 @@
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
     <None Remove="App\dist\**" />
     <Content Remove="App\dist\**" />
+    <Content Include="electron.manifest.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
