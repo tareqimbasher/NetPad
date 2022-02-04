@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NetPad.Compilation
@@ -10,31 +11,37 @@ namespace NetPad.Compilation
 
         public static HashSet<string> GetAssemblyLocations()
         {
-            if (_systemAssembliesLocations == null)
-            {
-                _systemAssembliesLocations = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(assembly =>
-                        !assembly.IsDynamic &&
-                        !string.IsNullOrWhiteSpace(assembly.Location) &&
-                        assembly.GetName()?.Name?.StartsWith("System.") == true)
-                    .Select(assembly => assembly.Location)
-                    .ToHashSet();
-            }
+            return _systemAssembliesLocations ??= GetAssemblyLocationsFromAppContext();
+        }
 
-            var s = AppDomain.CurrentDomain.GetAssemblies()
+        private static HashSet<string> GetAssemblyLocationsFromAppDomain()
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly =>
                     !assembly.IsDynamic &&
                     !string.IsNullOrWhiteSpace(assembly.Location) &&
-                    assembly.GetName()?.Name?.StartsWith("System.") == true)
-                .Select(assembly => new
-                {
-                    assembly.GetName().FullName,
-                    assembly.Location,
-                    assembly.ImageRuntimeVersion
-                })
-                .ToArray();
+                    assembly.GetName().Name?.StartsWith("System.") == true)
+                .Select(assembly => assembly.Location)
+                .ToHashSet();
+        }
 
-            return _systemAssembliesLocations;
+        private static HashSet<string> GetAssemblyLocationsFromAppContext()
+        {
+            string? assemblyPaths = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+            if (string.IsNullOrWhiteSpace(assemblyPaths))
+                throw new Exception("TRUSTED_PLATFORM_ASSEMBLIES is empty. " +
+                                    "Make sure you are not running the app as a Single File application.");
+
+            var includeList = new[] { "System.", "mscorlib.", "netstandard." };
+
+            return assemblyPaths
+                .Split(Path.PathSeparator)
+                .Where(path =>
+                {
+                    var fileName = Path.GetFileName(path);
+                    return includeList.Any(p => fileName.StartsWith(p));
+                })
+                .ToHashSet();
         }
     }
 }
