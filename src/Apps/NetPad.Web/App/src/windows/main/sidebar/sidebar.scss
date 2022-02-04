@@ -3,10 +3,6 @@
 sidebar {
     @include theme(background-color, sidebarBackground);
 
-    //script-folder > .list-group {
-    //    border-left: 1px red dotted;
-    //}
-
     #script-list > script-folder {
         overflow: auto;
 

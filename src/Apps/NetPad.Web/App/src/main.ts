@@ -1,5 +1,4 @@
 import Aurelia, {ColorOptions, ConsoleSink, ILogger, LoggerConfiguration, LogLevel, Registration} from 'aurelia';
-// import "bootstrap";
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
@@ -35,7 +34,7 @@ const app = Aurelia.register(
     ExternalLinkCustomAttribute,
     DateTimeValueConverter,
     TextToHtmlValueConverter,
-    SanitizeHtmlValueConverter,
+    SanitizeHtmlValueConverter
 );
 
 

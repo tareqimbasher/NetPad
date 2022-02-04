@@ -1,6 +1,4 @@
 <template>
-    <import from="../editor/editor"></import>
-
     <div class="header ps-2 pe-2 mb-3">
         <button class="btn btn-sm btn-success ${environment.status === 'Running' ? 'disabled' : ''}"
                 title="${shortcutManager.getShortcutByName('Run').toString()}"

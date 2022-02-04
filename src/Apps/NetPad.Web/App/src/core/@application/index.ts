@@ -12,3 +12,5 @@ export * from "./events/electron-ipc-gateway";
 export * from "./events/signalr-ipc-gateway";
 
 export * from "./background-services/settings-background-service";
+
+export * from "./editor/editor";
