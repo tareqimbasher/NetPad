@@ -64,6 +64,7 @@ namespace NetPad.Packages
         public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
         {
             var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());
+            using var sourceCacheContext = new SourceCacheContext();
 
             var cachedPackages = nugetCacheDir.GetDirectories()
                 .SelectMany(d =>
@@ -97,7 +98,7 @@ namespace NetPad.Packages
                 {
                     var metadata = await resource.GetMetadataAsync(
                         new PackageIdentity(cp.PackageId, new NuGetVersion(cp.Version)),
-                        new SourceCacheContext(),
+                        sourceCacheContext,
                         NullLogger.Instance,
                         CancellationToken.None);
 
@@ -144,10 +145,10 @@ namespace NetPad.Packages
             else if (take > 200) take = 200;
 
             var repository = GetSourceRepository();
-            PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
+            var searchResource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
 
             var filter = new SearchFilter(includePrerelease);
-            var searchResults = await resource.SearchAsync(
+            var searchResults = await searchResource.SearchAsync(
                 term,
                 filter,
                 skip,
@@ -180,12 +181,13 @@ namespace NetPad.Packages
             var version = new NuGetVersion(packageVersion);
 
             await using var packageStream = new MemoryStream();
+            using var sourceCacheContext = new SourceCacheContext();
 
             await resource.CopyNupkgToStreamAsync(
                 packageId,
                 new NuGetVersion(version),
                 packageStream,
-                new SourceCacheContext(),
+                sourceCacheContext,
                 NullLogger.Instance,
                 CancellationToken.None
             ).ConfigureAwait(false);
