@@ -39,9 +39,6 @@ const config = {
             },
             "**/*"
         ],
-        win: {
-            target: "portable"
-        },
         linux: {
             category: "Development",
             target: [
@@ -51,6 +48,18 @@ const config = {
                 // {
                 //     target: "pacman"
                 // }
+            ]
+        },
+        win: {
+            target: "portable"
+        },
+        mac: {
+            category: "public.app-category.developer-tools",
+            darkModeSupport: true,
+            target: [
+                {
+                    target: "dir"
+                },
             ]
         }
     }
