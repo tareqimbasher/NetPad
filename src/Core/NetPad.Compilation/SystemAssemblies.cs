@@ -21,6 +21,19 @@ namespace NetPad.Compilation
                     .ToHashSet();
             }
 
+            var s = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(assembly =>
+                    !assembly.IsDynamic &&
+                    !string.IsNullOrWhiteSpace(assembly.Location) &&
+                    assembly.GetName()?.Name?.StartsWith("System.") == true)
+                .Select(assembly => new
+                {
+                    assembly.GetName().FullName,
+                    assembly.Location,
+                    assembly.ImageRuntimeVersion
+                })
+                .ToArray();
+
             return _systemAssembliesLocations;
         }
     }

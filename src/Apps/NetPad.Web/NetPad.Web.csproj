@@ -16,7 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="13.5.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.15.5" />
     <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5" />
   </ItemGroup>
