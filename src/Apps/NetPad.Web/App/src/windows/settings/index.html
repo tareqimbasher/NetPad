@@ -2,6 +2,7 @@
     <import from="./general-settings/general-settings"></import>
     <import from="./editor-options-settings/editor-options-settings"></import>
     <import from="./results-options-settings/results-options-settings"></import>
+    <import from="./keyboard-shortcut-settings/keyboard-shortcut-settings"></import>
 
     <div class="window d-flex flex-column">
         <div class="flex-grow-height-restricted d-flex flex-column">
@@ -13,14 +14,17 @@
 
             <div class="flex-grow-height-restricted d-flex flex-column" switch.bind="selectedTab.route">
                 <general-settings case="general"
-                                  class="flex-grow-height-restricted d-flex flex-column"
+                                  class="tab-content"
                                   settings.bind="settings"></general-settings>
                 <editor-options-settings case="editor"
-                                         class="flex-grow-height-restricted d-flex flex-column"
+                                         class="tab-content"
                                          settings.bind="settings"></editor-options-settings>
                 <results-options-settings case="results"
-                                         class="flex-grow-height-restricted d-flex flex-column"
-                                         settings.bind="settings"></results-options-settings>
+                                          class="tab-content"
+                                          settings.bind="settings"></results-options-settings>
+                <keyboard-shortcut-settings case="keyboard-shortcuts"
+                                          class="tab-content"
+                                          settings.bind="settings"></keyboard-shortcut-settings>
             </div>
         </div>
 

@@ -30,6 +30,18 @@ body, html {
     min-width: 0;
 }
 
+.overflow-x-hidden {
+    overflow-x: hidden;
+}
+
+.overflow-y-hidden {
+    overflow-y: hidden;
+}
+
+.overflow-x-auto {
+    overflow-x: auto;
+}
+
 .overflow-y-auto {
     overflow-y: auto;
 }
@@ -120,6 +132,12 @@ a.btn-link:hover {
             }
         }
     }
+}
+
+.tab-content {
+    @extend .flex-grow-height-restricted;
+    @extend .d-flex;
+    @extend .flex-column;
 }
 
 ::-webkit-scrollbar {

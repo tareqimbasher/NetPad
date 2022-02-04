@@ -13,13 +13,13 @@
 
             <div class="flex-grow-height-restricted d-flex flex-column">
                 <reference-management show.bind="configStore.selectedTab.route === 'references'"
-                                      class="flex-grow-height-restricted d-flex flex-column"></reference-management>
+                                      class="tab-content"></reference-management>
 
                 <package-management show.bind="configStore.selectedTab.route === 'packages'"
-                                    class="flex-grow-height-restricted d-flex flex-column"></package-management>
+                                    class="tab-content"></package-management>
 
                 <namespace-management show.bind="configStore.selectedTab.route === 'namespaces'"
-                                      class="flex-grow-height-restricted d-flex flex-column"></namespace-management>
+                                      class="tab-content"></namespace-management>
             </div>
         </div>
         <div class="d-flex mt-3">

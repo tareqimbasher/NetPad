@@ -1,0 +1,27 @@
+<div class="section flex-grow-height-restricted d-flex flex-column">
+    <div class="header">
+        <i class="bi bi-keyboard-fill"></i>
+        Shortcuts
+    </div>
+    <div class="body flex-grow-height-restricted d-flex flex-column">
+        <div class="list-group flex-grow-height-restricted d-flex flex-column overflow-y-auto overflow-x-hidden">
+            <div class="list-group-item list-group-item-action"
+                 repeat.for="shortcut of builtinShortcuts">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-4">
+                        ${shortcut.name}
+                    </div>
+                    <div class="col-3 d-flex align-items-center">
+<!--                        <i class="bi bi-pencil-fill action-icon me-3"></i>-->
+                        <kbd class="d-inline-block">${shortcut.keyComboString}</kbd>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        <input type="text"-->
+<!--               class="form-control"-->
+<!--               value.bind="keyCombo"-->
+<!--               keydown.trigger="keyComboPressed($event)">-->
+    </div>
+</div>

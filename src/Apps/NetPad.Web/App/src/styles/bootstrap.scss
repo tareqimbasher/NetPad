@@ -90,3 +90,7 @@ $form-select-indicator-color: silver;
         @include theme(background-color, hoverColor);
     }
 }
+
+kbd {
+    @include theme(background-color, kbdBackground);
+}

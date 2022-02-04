@@ -8,6 +8,7 @@ export class Index {
         {route: "general", text: "General"},
         {route: "editor", text: "Editor"},
         {route: "results", text: "Results"},
+        {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
     ];
 
     constructor(currentSettings: Settings, @ISettingService readonly settingService: ISettingService) {
