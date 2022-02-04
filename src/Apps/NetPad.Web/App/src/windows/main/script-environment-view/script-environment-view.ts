@@ -94,7 +94,7 @@ export class ScriptEnvironmentView {
             await this.sendCodeToServer();
             this.setResults(null);
             if (this.settings.resultsOptions.openOnRun)
-                this.showResults();
+                this.openResultsPane();
             await this.scriptService.run(this.script.id);
         }
         catch (ex) {
@@ -120,17 +120,16 @@ export class ScriptEnvironmentView {
         this.setResults(this.resultsEl.innerHTML + results);
     }
 
-    private showResults() {
-        if (this.isResultsPaneShowing()) return;
+    private openResultsPane() {
+        if (this.isResultsPaneOpen()) return;
         this.split.setSizes([50, 50]);
     }
 
-    private collapseResults() {
-        if (!this.isResultsPaneShowing()) return;
+    private collapseResultsPane() {
         this.split.collapse(1);
     }
 
-    private isResultsPaneShowing(): boolean {
+    private isResultsPaneOpen(): boolean {
         return this.resultsPane.clientHeight > 0;
     }
 }

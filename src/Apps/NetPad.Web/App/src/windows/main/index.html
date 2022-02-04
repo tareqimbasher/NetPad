@@ -7,7 +7,7 @@
         <div id="content" class="flex-grow-1 d-flex flex-row">
             <sidebar id="sidebar"></sidebar>
             <div id="scripts-content" class="flex-grow-height-restricted d-flex flex-column">
-                <ul id="tabs" class="nav nav-tabs">
+                <ul id="tabs" class="nav nav-tabs flex-shrink-0">
                     <li class="nav-item d-flex flex-row align-items-center script-tab ${session.active === env ? 'active' : ''}"
                         repeat.for="env of session.environments">
                         <div class="text d-flex align-items-center"
