@@ -59,20 +59,20 @@ export class ScriptEnvironmentView {
     private attached() {
         this.kind = this.script.config.kind;
 
-        let token = this.eventBus.subscribe(RunScriptEvent, async msg => {
+        const token1 = this.eventBus.subscribe(RunScriptEvent, async msg => {
             if ((msg.scriptId && msg.scriptId === this.script.id) ||
                 (!msg.scriptId && this.session.active.script.id === this.script.id)) {
                 await this.run();
             }
         });
-        this.disposables.push(() => token.dispose());
+        this.disposables.push(() => token1.dispose());
 
-        token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
+        const token2 = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
             if (msg.scriptId === this.script.id) {
                 this.appendResults(msg.output);
             }
         });
-        this.disposables.push(() => token.dispose());
+        this.disposables.push(() => token2.dispose());
 
         this.split = Split([this.textEditorPane, this.resultsPane], {
             gutterSize: 6,
