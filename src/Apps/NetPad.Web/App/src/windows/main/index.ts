@@ -1,29 +1,61 @@
 import Split from "split.js";
-import {IShortcutManager, Settings, BuiltinShortcuts} from "@domain";
+import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
+import {IPaneManager, PaneHost, PaneHostOrientation} from "@application";
+import {NamespacesPane} from "./panes/namespaces-pane/namespaces-pane";
+import {KeyCode} from "@common";
 
 export class Index {
+    public rightPaneHost: PaneHost;
+    private split: Split.Instance;
+
     constructor(
         readonly settings: Settings,
-        @IShortcutManager readonly shortcutManager: IShortcutManager) {
+        @IShortcutManager readonly shortcutManager: IShortcutManager,
+        @IPaneManager readonly paneManager: IPaneManager) {
     }
 
     public async binding() {
         this.shortcutManager.initialize();
-        this.registerBuiltInShortcuts();
+        this.registerKeyboardShortcuts();
     }
 
     public attached() {
-        Split(["sidebar", "script-environments"], {
-            gutterSize: 6,
-            sizes: [14, 86],
-            minSize: [100, 300],
-            expandToMin: true,
-        });
+        const viewStateController = {
+            expand: (paneHost) => {
+                this.split?.destroy();
+                this.split = Split(["sidebar", "script-environments", `pane-host[data-id='${paneHost.id}']`], {
+                    gutterSize: 6,
+                    sizes: [14, 71, 15],
+                    minSize: [100, 300, 100],
+                });
+            },
+            collapse: (paneHost) => {
+                this.split?.destroy();
+                this.split = Split(["sidebar", "script-environments"], {
+                    gutterSize: 6,
+                    sizes: [14, 86],
+                    minSize: [100, 300],
+                });
+            }
+        };
+
+        this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
+        this.paneManager.movePaneToHost(NamespacesPane, this.rightPaneHost);
+        viewStateController.collapse(this.rightPaneHost);
     }
 
-    private registerBuiltInShortcuts() {
+    private registerKeyboardShortcuts() {
         for (const builtinShortcut of BuiltinShortcuts) {
             this.shortcutManager.registerShortcut(builtinShortcut);
         }
+
+        this.shortcutManager.registerShortcut(
+            new Shortcut("Namespaces Pane")
+                .withAltKey()
+                .withKey(KeyCode.KeyN)
+                .hasAction(() => this.paneManager.activateOrCollapse(NamespacesPane))
+                .configurable()
+                .enabled()
+        );
     }
 }

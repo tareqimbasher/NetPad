@@ -1,0 +1,42 @@
+@import "~styles/themes";
+
+pane-host {
+    .ribbon {
+        @include theme(background, sidebarBackground);
+        width: 23px;
+
+        .pane-tag {
+            user-select: none;
+            padding: 0.5rem 0.1rem;
+            writing-mode: vertical-lr;
+            width: 100%;
+            display: flex;
+            align-items: center;
+
+            &:hover {
+                @include theme(background-color, tabActiveColor);
+            }
+
+            &.active {
+                @include theme(background-color, tabActiveColor);
+                border-right: 1px dodgerblue solid;
+            }
+        }
+    }
+
+    .header {
+        @include theme(border-bottom, borderColor, 1px solid);
+    }
+
+    .content {
+        .content-container > * {
+            flex-grow: 1;
+            display: flex;
+        }
+    }
+
+    .pane-collapser {
+        font-size: 17px;
+        line-height: 100%;
+    }
+}

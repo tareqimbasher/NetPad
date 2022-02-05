@@ -1,0 +1,29 @@
+<template class="d-flex flex-row ${orientation.toLowerCase()} overflow-hidden"
+          data-id.bind="id">
+    <div class="ribbon ${orientation === 'Right' ? 'order-2' : 'order-1'}">
+        <div repeat.for="pane of panes"
+             class="pane-tag ${pane === active ? 'active' : ''}"
+             click.trigger="activateOrCollapse(pane)"
+             title.bind="pane.name">
+            <i class="mb-1 bi bi-${pane.icon}" show.bind="pane.icon"></i>
+            <span>${pane.name}</span>
+        </div>
+    </div>
+    <div class="content flex-fill d-flex flex-column min-w-0" show.bind="viewState === 'Expanded'">
+        <div class="header d-flex justify-content-between align-items-center p-2">
+            <div class="text-truncate">
+                ${active.name}
+            </div>
+            <div class="justify-content-end ms-1">
+                <i class="action-icon bi bi-dash-lg pane-collapser fw-bold"
+                   click.trigger="collapse()"
+                   title="Hide"></i>
+            </div>
+        </div>
+        <au-compose repeat.for="pane of panes"
+                    view-model.bind="pane"
+                    show.bind="pane === active"
+                    class="content-container flex-fill overflow-x-auto d-flex">
+        </au-compose>
+    </div>
+</template>

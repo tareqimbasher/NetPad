@@ -6,7 +6,8 @@
     <div class="window d-flex flex-column">
         <div id="content" class="flex-grow-1 d-flex flex-row">
             <sidebar></sidebar>
-            <script-environments></script-environments>
+            <script-environments class="flex-fill"></script-environments>
+            <au-compose view-model.bind="rightPaneHost" containerless></au-compose>
         </div>
         <statusbar></statusbar>
     </div>

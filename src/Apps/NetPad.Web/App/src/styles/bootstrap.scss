@@ -94,3 +94,7 @@ $form-select-indicator-color: silver;
 kbd {
     @include theme(background-color, kbdBackground);
 }
+
+.bi.fw-bold::before {
+    font-weight: bold !important;
+}
