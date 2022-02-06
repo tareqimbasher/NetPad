@@ -28,6 +28,7 @@ export class ScriptEnvironmentView {
     private textEditorPane: HTMLElement;
     private resultsPane: HTMLElement;
     private resultsEl: HTMLElement;
+    private logger: ILogger;
 
 
     constructor(
@@ -36,7 +37,8 @@ export class ScriptEnvironmentView {
         @ISession readonly session: ISession,
         @IShortcutManager readonly shortcutManager: IShortcutManager,
         @IEventBus readonly eventBus: IEventBus,
-        @ILogger readonly logger: ILogger) {
+        @ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(ScriptEnvironmentView));
         this.resultsPaneSettings = new ResultsPaneSettings(this.settings.resultsOptions.textWrap);
 
         this.editorTextChanged = Util.debounce(this, async (newText: string, oldText: string) => {

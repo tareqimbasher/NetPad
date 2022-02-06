@@ -4,7 +4,10 @@ import {IIpcGateway} from "@domain";
 import {SubscriptionToken} from "@application";
 
 export class ElectronIpcGateway implements IIpcGateway {
-    constructor(@ILogger readonly logger: ILogger) {
+    private readonly logger: ILogger;
+
+    constructor(@ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(ElectronIpcGateway));
     }
 
     public subscribe(channelName: string, callback: (message: any, channel: string) => void): SubscriptionToken {

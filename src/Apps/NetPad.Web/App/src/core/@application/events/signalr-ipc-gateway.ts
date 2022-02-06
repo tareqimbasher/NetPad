@@ -1,21 +1,21 @@
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
-import {ILogger} from "aurelia";
+import {ILogger, PLATFORM} from "aurelia";
 import {IIpcGateway} from "@domain";
 import {SubscriptionToken} from "@application";
 
 export class SignalRIpcGateway implements IIpcGateway {
-    private connection: HubConnection
+    private readonly connection: HubConnection
+    private readonly logger: ILogger;
 
-    constructor(@ILogger readonly logger: ILogger) {
+    constructor(@ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(SignalRIpcGateway));
         this.connection = new HubConnectionBuilder()
             .withUrl("/ipchub")
             .build();
 
         this.connection.onclose(error => {
             this.logger.warn("SignalR IPC Gateway connection was closed. Will try to reconnect in 2 seconds", error);
-            setTimeout(() => {
-                this.connection.start();
-            }, 2000);
+            PLATFORM.setTimeout(() => this.connection.start(), 2000);
         });
 
         this.connection.start();

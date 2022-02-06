@@ -57,5 +57,5 @@ export const BuiltinShortcuts = [
         .withKey(KeyCode.Tab)
         .hasAction((ctx) => ctx.session.activateLastActive())
         .configurable()
-        .enabled()
+        .enabled(),
 ];

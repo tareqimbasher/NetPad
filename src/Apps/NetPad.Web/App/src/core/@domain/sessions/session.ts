@@ -24,14 +24,16 @@ export const ISession = DI.createInterface<ISession>();
 
 export class Session extends SessionApiClient implements ISession {
     private _active?: ScriptEnvironment | null | undefined;
-    private _environments?: ScriptEnvironment[] = [];
+    private readonly _environments?: ScriptEnvironment[] = [];
+    private readonly logger: ILogger;
 
     constructor(
         baseUrl: string,
         @IHttpClient http: IHttpClient,
         @IEventBus readonly eventBus: IEventBus,
-        @ILogger readonly logger: ILogger) {
+        @ILogger logger: ILogger) {
         super(baseUrl, http);
+        this.logger = logger.scopeTo(nameof(Session));
         this.subscribeToEvents();
     }
 
@@ -55,13 +57,10 @@ export class Session extends SessionApiClient implements ISession {
 
     private subscribeToEvents() {
         this.eventBus.subscribeToServer(EnvironmentsAdded, message => {
-            this.logger.debug(`${nameof(EnvironmentsAdded)}`, message);
             this.environments.push(...message.environments);
         });
 
         this.eventBus.subscribeToServer(EnvironmentsRemoved, message => {
-            this.logger.debug(`${nameof(EnvironmentsRemoved)}`, message);
-
             for (let environment of message.environments) {
                 const ix = this.environments.findIndex(e => e.script.id == environment.script.id);
                 if (ix >= 0)
@@ -70,8 +69,6 @@ export class Session extends SessionApiClient implements ISession {
         });
 
         this.eventBus.subscribeToServer(ActiveEnvironmentChanged, message => {
-            this.logger.debug(`${nameof(ActiveEnvironmentChanged)}`, message);
-
             const activeScriptId = message.scriptId;
 
             if (!activeScriptId)
@@ -86,8 +83,6 @@ export class Session extends SessionApiClient implements ISession {
         });
 
         this.eventBus.subscribeToServer(EnvironmentPropertyChanged, message => {
-            this.logger.debug(`${nameof(EnvironmentPropertyChanged)}`, message);
-
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
@@ -100,8 +95,6 @@ export class Session extends SessionApiClient implements ISession {
         });
 
         this.eventBus.subscribeToServer(ScriptPropertyChanged, message => {
-            this.logger.debug(`${nameof(ScriptPropertyChanged)}`, message);
-
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
@@ -115,8 +108,6 @@ export class Session extends SessionApiClient implements ISession {
         });
 
         this.eventBus.subscribeToServer(ScriptConfigPropertyChanged, message => {
-            this.logger.debug(`${nameof(ScriptConfigPropertyChanged)}`, message);
-
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {

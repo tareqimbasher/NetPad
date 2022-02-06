@@ -1,15 +1,18 @@
-import {bindable, watch} from "aurelia";
+import {bindable, ILogger, watch} from "aurelia";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
 import {Settings} from "@domain";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
-    public currentSettings: Readonly<Settings>;
     @observable public useCustomEditorBackgroundColor: boolean;
-    private editor: monaco.editor.IStandaloneCodeEditor;
+    public currentSettings: Readonly<Settings>;
 
-    constructor(currentSettings: Settings) {
+    private editor: monaco.editor.IStandaloneCodeEditor;
+    private logger: ILogger;
+
+    constructor(currentSettings: Settings, @ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(EditorOptionsSettings));
         this.currentSettings = currentSettings;
     }
 
@@ -34,9 +37,8 @@ export class EditorOptionsSettings {
 
             try {
                 options = JSON.parse(json);
-            }
-            catch (ex) {
-                console.error("Error parsing editor options", ex);
+            } catch (ex) {
+                this.logger.error("Error parsing editor options", ex);
                 return;
             }
 

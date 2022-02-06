@@ -1,3 +1,5 @@
+import {PLATFORM} from "aurelia";
+
 export class Util {
     public static newGuid(): string {
         return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -90,7 +92,7 @@ export class Util {
      * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
      */
     public static debounce(thisArg: unknown, func: (...args: any[]) => void, waitMs: number, immediate?: boolean) : (...args:any[]) => void {
-        let timeout: NodeJS.Timeout | null;
+        let timeout: number;
         let isImmediateCall = false;
 
         return (...args: any[]) => {
@@ -103,9 +105,9 @@ export class Util {
 
             const callNow = immediate && isImmediateCall;
 
-            if (timeout) clearTimeout(timeout);
+            if (timeout) PLATFORM.clearTimeout(timeout);
 
-            timeout = setTimeout(later, waitMs) as unknown as NodeJS.Timeout;
+            timeout = PLATFORM.setTimeout(later, waitMs);
 
             if (callNow) func.call(thisArg, ...args);
         };
@@ -115,5 +117,5 @@ export class Util {
      * Creates a promise that resolves after the specified number of milliseconds.
      * @param ms The delay in milliseconds.
      */
-    public delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    public delay = (ms: number) => new Promise((resolve) => PLATFORM.setTimeout(resolve, ms));
 }
