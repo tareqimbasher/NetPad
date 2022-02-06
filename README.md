@@ -58,12 +58,12 @@ npm start
 # Install the Electron.NET CLI tool if you don't have it already
 dotnet tool install ElectronNET.CLI -g
 
-# Start the app
+# Start the app in watch mode
 cd Apps/NetPad.Web/App
-electronize start /manifest electron.manifest.js
-
-# Or start the app in watch mode
 electronize start /watch /manifest electron.manifest.js
+
+# Or start the app without watch mode
+electronize start /manifest electron.manifest.js /PublishSingleFile false
 ```
 
 #### Note
