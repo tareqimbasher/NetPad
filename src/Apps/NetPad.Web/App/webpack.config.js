@@ -3,6 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const tsNameof = require("ts-nameof");
 
@@ -96,6 +97,11 @@ module.exports = function (env, {analyze}) {
             new HtmlWebpackPlugin({template: 'index.html'}),
             new Dotenv({
                 path: `./.env${production ? '' : '.' + process.env.NODE_ENV}`,
+            }),
+            new MonacoWebpackPlugin({
+                languages: [
+                    "csharp"
+                ]
             }),
             analyze && new BundleAnalyzerPlugin()
         ].filter(p => p)
