@@ -4,7 +4,7 @@ import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation} from 
 export interface IPaneManager {
     get paneHosts(): ReadonlyArray<PaneHost>;
     createPaneHost(orientation: PaneHostOrientation, viewStateController: IPaneHostViewStateController): PaneHost;
-    movePaneToHost<TPane extends Pane>(paneType: any, paneHost: PaneHost): TPane;
+    addPaneToHost<TPane extends Pane>(paneType: any, paneHost: PaneHost): TPane;
     activateOrCollapse(pane: Pane): void;
     activateOrCollapse(paneType: any): void;
 }
@@ -27,7 +27,7 @@ export class PaneManager implements IPaneManager {
         return host;
     }
 
-    public movePaneToHost<TPane extends Pane>(paneType: any, targetPaneHost: PaneHost): TPane {
+    public addPaneToHost<TPane extends Pane>(paneType: any, targetPaneHost: PaneHost): TPane {
         if (!(paneType.prototype instanceof Pane))
             throw new Error("paneType is not a type of Pane");
 

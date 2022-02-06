@@ -6,6 +6,7 @@ pane-host {
         width: 23px;
 
         .pane-tag {
+            font-size: 0.75rem;
             user-select: none;
             padding: 0.5rem 0.1rem;
             writing-mode: vertical-lr;
@@ -31,6 +32,7 @@ pane-host {
     .content {
         .content-container > * {
             flex-grow: 1;
+            min-width: 0;
             display: flex;
         }
     }

@@ -40,7 +40,7 @@ export class Index {
         };
 
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
-        this.paneManager.movePaneToHost(NamespacesPane, this.rightPaneHost);
+        this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         viewStateController.collapse(this.rightPaneHost);
     }
 

@@ -5,7 +5,7 @@
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="activateOrCollapse(pane)"
              title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyComboString + ')') : ''}">
-            <i class="mb-1 bi bi-${pane.icon}" show.bind="pane.icon"></i>
+            <i class="mb-3 bi bi-${pane.icon}" show.bind="pane.icon"></i>
             <span>${pane.name}</span>
         </div>
     </div>
