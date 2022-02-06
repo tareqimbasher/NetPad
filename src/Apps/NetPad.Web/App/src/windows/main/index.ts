@@ -1,7 +1,7 @@
 import Split from "split.js";
 import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
 import {IPaneManager, PaneHost, PaneHostOrientation} from "@application";
-import {NamespacesPane} from "./panes/namespaces-pane/namespaces-pane";
+import {ClipboardPane, NamespacesPane} from "./panes";
 import {KeyCode} from "@common";
 
 export class Index {
@@ -41,6 +41,7 @@ export class Index {
 
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
+        this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
         viewStateController.collapse(this.rightPaneHost);
     }
 
