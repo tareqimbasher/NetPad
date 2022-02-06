@@ -30,6 +30,7 @@ namespace NetPad.UiInterop
             });
 
             window.Center();
+            window.Maximize();
         }
 
         public async Task OpenSettingsWindowAsync()
