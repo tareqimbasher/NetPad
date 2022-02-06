@@ -78,33 +78,15 @@ desired platform from the root directory of `NetPad.Web`
 project:
 
 ```
-electronize build /target win /manifest electron.manifest.js
-electronize build /target osx /manifest electron.manifest.js
-electronize build /target linux /manifest electron.manifest.js
+electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
+electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
+electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
 ```
 
 See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
-on how to package the app for additional CLI options,
+for additional CLI options when packaging the app,
 and [electron-builder](https://www.electron.build/) for additional configuration
-options for the `build`
-object in `electron.manifest.js`.
-
-### Bug
-
-(**Update:** Found the issue and a fix, still working on the permanent change.)
-
-There is a bug I've been experiencing when packaging for linux and running the
-app where the packaged app fails to run. Not sure if this bug also manifests
-itself on other platforms, I haven't tested packaging on platforms other than
-linux so far.
-
-To fix, do the following:
-
-1. Add `"asar": false` in `electron.manifest.json` under the `"build"` node.
-2. Run `electronize build /target linux`
-3. Go to `NetPad.Web/bin/Desktop/linux-unpacked/resources`, and move the `bin`
-   directory inside the `app` directory.
-4. You can then run the `net-pad` executable inside the `linux-unpacked` dir.
+options.
 
 ## Resources:
 
