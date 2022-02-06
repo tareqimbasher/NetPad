@@ -34,15 +34,15 @@ export class NamespacesPane extends Pane {
 
         let namespaces = this.namespaces
             .split('\n')
-            .map(ns => ns.trim());
+            .map(ns => ns.trim())
+            .filter(ns => ns);
 
         namespaces = Util.distinct(namespaces);
         await this.scriptService.setScriptNamespaces(environment.script.id, namespaces);
     }
 
     @watch<NamespacesPane>(vm => vm.session.active)
-    @watch<NamespacesPane>(vm => vm.session.active.script.config.namespaces.length)
     public activeScriptEnvironmentChanged() {
-        this.namespaces = this.session.active.script.config.namespaces.join('\n');
+        this.namespaces = this.session.active.script.config.namespaces.join("\n") + "\n";
     }
 }
