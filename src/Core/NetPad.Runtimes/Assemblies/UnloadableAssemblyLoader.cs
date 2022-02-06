@@ -12,30 +12,34 @@ namespace NetPad.Runtimes.Assemblies
     public sealed class UnloadableAssemblyLoader : AssemblyLoadContext, IAssemblyLoader
     {
         private readonly ILogger<UnloadableAssemblyLoader> _logger;
-        private bool _unloaded = false;
-        private Dictionary<string, byte[]> _referenceAssemblies;
+        private bool _unloaded;
+        private readonly Dictionary<string, ReferencedAssembly> _referenceAssemblies;
 
         public UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> logger) : base(isCollectible: true)
         {
             _logger = logger;
+            _referenceAssemblies = new Dictionary<string, ReferencedAssembly>();
         }
 
-        public UnloadableAssemblyLoader(
-            IEnumerable<(string assemblyName, byte[] assemblyBytes)> referenceAssemblies,
-            ILogger<UnloadableAssemblyLoader> logger
-        ) : this(logger)
+        public UnloadableAssemblyLoader(IEnumerable<string> referenceAssemblyPaths, ILogger<UnloadableAssemblyLoader> logger) : this(logger)
         {
-            _referenceAssemblies = referenceAssemblies
-                .ToDictionary(k => k.assemblyName, v => v.assemblyBytes);
+            _referenceAssemblies = referenceAssemblyPaths
+                .Select(p => new ReferencedAssembly(p, true))
+                .ToDictionary(k => k.AssemblyName, v => v);
         }
-
 
         protected override Assembly? Load(AssemblyName assemblyName)
         {
-            if (_referenceAssemblies.TryGetValue(assemblyName.FullName, out var assemblyBytes))
-                return LoadFrom(assemblyBytes);
-            else
-                return base.Load(assemblyName);
+            if (_referenceAssemblies.TryGetValue(assemblyName.FullName, out var assembly))
+                return LoadFrom(assembly.Bytes);
+
+            foreach (var referenceAssembly in _referenceAssemblies.Values)
+            {
+                if (referenceAssembly.AssembliesInSameDir?.TryGetValue(assemblyName.FullName, out var r) == true)
+                    return LoadFrom(r!.Bytes);
+            }
+
+            return base.Load(assemblyName);
         }
 
         public Assembly LoadFrom(byte[] assemblyBytes)
@@ -49,12 +53,12 @@ namespace NetPad.Runtimes.Assemblies
 
                 // Checkout: https://github.com/natemcmaster/DotNetCorePlugins
                 using var stream = new MemoryStream(assemblyBytes);
-                var assembly = base.LoadFromStream(stream);
+                var assembly = LoadFromStream(stream);
                 return assembly;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error loading assembly bytes. Details: {ex}");
+                _logger.LogError(ex, "Error loading assembly bytes");
                 throw;
             }
             finally
@@ -79,7 +83,7 @@ namespace NetPad.Runtimes.Assemblies
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in unload: {ex}");
+                _logger.LogError(ex, "Error in unload");
             }
             finally
             {
@@ -94,6 +98,30 @@ namespace NetPad.Runtimes.Assemblies
             UnloadLoadedAssemblies();
             GCUtil.CollectAndWait();
             _logger.LogTrace($"{nameof(Dispose)} end ");
+        }
+
+
+        public class ReferencedAssembly
+        {
+            private byte[]? _bytes;
+
+            public ReferencedAssembly(string path, bool scanOtherAssembliesInSameDir)
+            {
+                Path = path ?? throw new ArgumentNullException(nameof(path));
+                AssemblyName = System.Reflection.AssemblyName.GetAssemblyName(path).FullName;
+
+                if (scanOtherAssembliesInSameDir)
+                {
+                    AssembliesInSameDir = Directory.GetFiles(System.IO.Path.GetDirectoryName(path)!, "*.dll")
+                        .Select(dll => new ReferencedAssembly(dll, false))
+                        .ToDictionary(k => k.AssemblyName, v => v);
+                }
+            }
+
+            public string Path { get; }
+            public string AssemblyName { get; }
+            public byte[] Bytes => _bytes ??= File.ReadAllBytes(Path);
+            public Dictionary<string, ReferencedAssembly>? AssembliesInSameDir { get; }
         }
     }
 }

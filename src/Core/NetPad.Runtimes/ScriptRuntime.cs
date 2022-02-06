@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,25 +56,13 @@ namespace NetPad.Runtimes
 
             try
             {
-                var assemblyPaths = new List<string>();
-                foreach (var reference in script.Config.References)
-                {
-                    if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
-                        assemblyPaths.Add(aRef.AssemblyPath);
-                    else if (reference is PackageReference pRef)
-                    {
-                        assemblyPaths.Add(
-                            await _packageProvider.GetCachedPackageAssemblyPathAsync(pRef.PackageId, pRef.Version)
-                        );
-                    }
-                }
+                var assemblyPaths = await GetReferenceAssemblyPathsAsync();
 
-                var compilationResult = _codeCompiler.Compile(new CompilationInput(
-                    parsingResult.Program,
-                    assemblyPaths)
-                {
-                    OutputAssemblyNameTag = script.Name
-                });
+                var compilationResult = _codeCompiler.Compile(
+                    new CompilationInput(parsingResult.Program, assemblyPaths)
+                    {
+                        OutputAssemblyNameTag = script.Name
+                    });
 
                 if (!compilationResult.Success)
                 {
@@ -84,49 +72,22 @@ namespace NetPad.Runtimes
                     return RunResult.RunAttemptFailure();
                 }
 
-                using var scope = _serviceProvider.CreateScope();
-                using var loader = new UnloadableAssemblyLoader(
-                    assemblyPaths.Select(p => (AssemblyName.GetAssemblyName(p).FullName, File.ReadAllBytes(p))),
-                    scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
+                var (alcWeakRef, completionSuccess, elapsedMs) = await ExecuteAndUnloadAsync(
+                    compilationResult.AssemblyBytes,
+                    assemblyPaths,
+                    outputWriter
                 );
 
-                var assembly = loader.LoadFrom(compilationResult.AssemblyBytes);
-
-                var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
-                if (userScriptType == null)
+                for (int i = 0; alcWeakRef.IsAlive && (i < 10); i++)
                 {
-                    throw new ScriptRuntimeException("Could not find the UserScript type");
+                    GCUtil.CollectAndWait();
                 }
 
-                var method = userScriptType.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
-                if (method == null)
-                {
-                    throw new Exception("Could not find the entry method Main on UserScript");
-                }
-
-                var runStart = DateTime.Now;
-
-                var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
-
-                if (task == null)
-                {
-                    throw new ScriptRuntimeException("Expected a Task to be returned by executing the " +
-                                                     $"script's Main method but got a {task?.GetType().FullName} ");
-                }
-
-                await task;
-
-                if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
-                {
-                    await outputWriter.WriteAsync(exception);
-                    return RunResult.ScriptCompletionFailure();
-                }
-
-                return RunResult.Success((DateTime.Now - runStart).TotalMilliseconds);
+                return !completionSuccess ? RunResult.ScriptCompletionFailure() : RunResult.Success(elapsedMs);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error running script: Details: {ex}");
+                _logger.LogError(ex, "Error running script");
                 await outputWriter.WriteAsync(ex + "\n");
                 return RunResult.RunAttemptFailure();
             }
@@ -136,6 +97,78 @@ namespace NetPad.Runtimes
         {
             if (_script == null)
                 throw new InvalidOperationException($"Script is not initialized.");
+        }
+
+        private async Task<string[]> GetReferenceAssemblyPathsAsync()
+        {
+            var assemblyPaths = new List<string>();
+
+            foreach (var reference in _script!.Config.References)
+            {
+                if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
+                {
+                    assemblyPaths.Add(aRef.AssemblyPath);
+                }
+                else if (reference is PackageReference pRef)
+                {
+                    assemblyPaths.Add(
+                        await _packageProvider.GetCachedPackageAssemblyPathAsync(pRef.PackageId, pRef.Version)
+                    );
+                }
+            }
+
+            return assemblyPaths.ToArray();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteAndUnloadAsync(
+            byte[] targetAssembly,
+            string[] referenceAssemblyPaths,
+            IScriptRuntimeOutputWriter outputWriter
+        )
+        {
+            using var scope = _serviceProvider.CreateScope();
+            using var assemblyLoader = new UnloadableAssemblyLoader(
+                referenceAssemblyPaths,
+                scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
+            );
+
+            var assembly = assemblyLoader.LoadFrom(targetAssembly);
+
+            var alcWeakRef = new WeakReference(assemblyLoader, trackResurrection: true);
+
+            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
+            if (userScriptType == null)
+            {
+                throw new ScriptRuntimeException("Could not find the UserScript type");
+            }
+
+            var method = userScriptType.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
+            if (method == null)
+            {
+                throw new Exception("Could not find the entry method Main on UserScript");
+            }
+
+            var runStart = DateTime.Now;
+
+            var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
+
+            if (task == null)
+            {
+                throw new ScriptRuntimeException("Expected a Task to be returned by executing the " +
+                                                 $"script's Main method but got a {task?.GetType().FullName} ");
+            }
+
+            await task;
+            var elapsedMs = (DateTime.Now - runStart).TotalMilliseconds;
+
+            if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
+            {
+                await outputWriter.WriteAsync(exception);
+                return (alcWeakRef, false, elapsedMs);
+            }
+
+            return (alcWeakRef, true, elapsedMs);
         }
 
         public void Dispose()
