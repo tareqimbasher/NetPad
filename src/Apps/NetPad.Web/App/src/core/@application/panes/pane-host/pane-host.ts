@@ -11,7 +11,8 @@ export class PaneHost {
 
     constructor(
         orientation: PaneHostOrientation,
-        readonly viewStateController: IPaneHostViewStateController) {
+        readonly viewStateController: IPaneHostViewStateController
+    ) {
         this.id = Util.newGuid();
         this.orientation = orientation;
         this.panes = new Set<Pane>();

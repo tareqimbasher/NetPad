@@ -1,5 +1,5 @@
 import {Pane} from "@application";
-import {IScriptService, ISession} from "@domain";
+import {IScriptService, ISession, IShortcutManager} from "@domain";
 import {observable} from "@aurelia/runtime";
 import {watch} from "aurelia";
 import {Util} from "@common";
@@ -7,8 +7,13 @@ import {Util} from "@common";
 export class NamespacesPane extends Pane {
     @observable namespaces: string;
 
-    constructor(@ISession readonly session: ISession, @IScriptService readonly scriptService: IScriptService) {
+    constructor(
+        @ISession private readonly session: ISession,
+        @IScriptService private readonly scriptService: IScriptService,
+        @IShortcutManager private readonly shortcutManager: IShortcutManager
+    ) {
         super("Namespaces", "list");
+        this.hasShortcut(shortcutManager.getShortcutByName("Namespaces Pane"));
     }
 
     public get name() {

@@ -6,6 +6,7 @@ import {IEventBus} from "@domain";
 export interface IShortcutManager {
     initialize(): void;
     registerShortcut(shortcut: Shortcut): void;
+    getShortcutByName(name: string): Shortcut | undefined;
 }
 
 export const IShortcutManager = DI.createInterface<IShortcutManager>();
