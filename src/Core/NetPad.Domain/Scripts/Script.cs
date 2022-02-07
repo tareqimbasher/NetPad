@@ -89,6 +89,9 @@ namespace NetPad.Scripts
 
         public void SetPath(string path)
         {
+            if (Path == path)
+                return;
+
             Path = path ?? throw new ArgumentNullException(nameof(path));
 
             if (!path.StartsWith("/")) path = "/" + path;
@@ -101,6 +104,9 @@ namespace NetPad.Scripts
 
         public void UpdateCode(string newCode)
         {
+            if (Code == newCode)
+                return;
+
             Code = newCode ?? string.Empty;
             IsDirty = true;
         }

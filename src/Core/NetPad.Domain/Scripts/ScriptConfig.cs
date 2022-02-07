@@ -54,11 +54,17 @@ namespace NetPad.Scripts
 
         public void SetNamespaces(IEnumerable<string> namespaces)
         {
+            if (Namespaces.SequenceEqual(namespaces))
+                return;
+
             Namespaces = namespaces.Distinct().Where(ns => !string.IsNullOrWhiteSpace(ns)).ToList();
         }
 
         public void SetReferences(IEnumerable<Reference> references)
         {
+            if (References.SequenceEqual(references))
+                return;
+
             foreach (var reference in references)
                 reference.EnsureValid();
 
