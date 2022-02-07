@@ -42,10 +42,10 @@
                 Click a reference to select the included Namespaces.
             </p>
         </div>
-        <div else>
+        <div class="d-flex flex-column flex-grow-height-restricted" else>
             <h5>Select Namespaces:</h5>
             <hr/>
-            <ul class="list-unstyled">
+            <ul class="list-unstyled overflow-y-auto">
                 <li repeat.for="namespace of namespaces">
                     <label class="text-break">
                         <input type="checkbox" checked.bind="namespace.selected"/>
