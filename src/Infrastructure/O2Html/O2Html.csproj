@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>10</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="Styles\Embedded\bootstrap.min.css" />
+      <None Remove="Styles\Embedded\default-theme.css" />
+      <None Remove="Scripts\Embedded\main.js" />
+    </ItemGroup>
+
+</Project>
