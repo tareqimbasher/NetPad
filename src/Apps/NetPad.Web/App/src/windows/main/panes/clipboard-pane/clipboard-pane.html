@@ -5,7 +5,7 @@
         <span class="text-truncate user-select-none">
             ${$index + 1}. ${entry.substr(0, 200)}
         </span>
-        <i class="bi ${selected === entry ? 'bi-check-circle-fill text-success' : 'action-icon bi-trash-fill'}"
+        <i class="ms-2 bi ${selected === entry ? 'bi-check-circle-fill text-success' : 'action-icon bi-trash-fill'}"
            click.trigger="removeEntry(entry)"></i>
     </div>
 </div>

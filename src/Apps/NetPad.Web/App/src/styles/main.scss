@@ -141,8 +141,8 @@ a.btn-link:hover {
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -154,7 +154,7 @@ a.btn-link:hover {
 }
 
 ::-webkit-scrollbar-corner {
-    background-color: transparent;
+    @include theme(background-color, scrollbarTrackColor);
 }
 
 @each $color in map-keys($colors) {
