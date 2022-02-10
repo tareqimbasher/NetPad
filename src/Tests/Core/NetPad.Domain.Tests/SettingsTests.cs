@@ -14,7 +14,8 @@ namespace NetPad.Domain.Tests
             var expected = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Documents",
-                "NetPad");
+                "NetPad",
+                "Scripts");
 
             Assert.Equal(expected, settings.ScriptsDirectoryPath);
         }

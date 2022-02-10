@@ -230,7 +230,7 @@ namespace NetPad.Domain.Tests.Sessions
             Assert.Equal("Script 2", name);
         }
 
-        [Fact]
+        [Fact(Skip = "WIP")]
         public async Task ClosingScript_DisposesItsEnvironment()
         {
             throw new NotImplementedException();

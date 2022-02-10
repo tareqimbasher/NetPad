@@ -26,10 +26,9 @@ namespace NetPad.BackgroundServices
                     int count = 0;
                     var names = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.FullName)
                         .Where(n => n?.Contains("NetPadScript") == true)
-                        .Select(s => $"{++count}. {s?.Split(',')[0]}")
-                        .JoinToString("\n");
+                        .Select(s => $"{++count}. {s?.Split(',')[0]}");
 
-                    _logger.LogDebug($"Loaded NetPad script assemblies:\n{names}");
+                    _logger.LogDebug("Loaded NetPad script assemblies:\n{Assemblies}", names.JoinToString("\n"));
                 }
             });
 
