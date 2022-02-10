@@ -91,7 +91,7 @@ namespace NetPad.Runtimes.Tests
 
             await runtime.RunAsync(
                 ActionRuntimeInputReader.Null,
-                new ActionRuntimeOutputWriter(output => result = output?.ToString()));
+                new ActionRuntimeOutputWriter((output, title) => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
         }
@@ -115,7 +115,7 @@ public async System.Threading.Tasks.Task Main() {{
 
             await runtime.RunAsync(
                 ActionRuntimeInputReader.Null,
-                new ActionRuntimeOutputWriter(output => result = output?.ToString()));
+                new ActionRuntimeOutputWriter((output, title) => result = output?.ToString()));
 
             Assert.Equal(expectedOutput, result);
         }
@@ -140,7 +140,7 @@ public async System.Threading.Tasks.Task Main() {{
 
                 await runtime.RunAsync(
                     ActionRuntimeInputReader.Null,
-                    new ActionRuntimeOutputWriter((o) =>
+                    new ActionRuntimeOutputWriter((o, title) =>
                     {
                         result = o?.ToString();
                     }));

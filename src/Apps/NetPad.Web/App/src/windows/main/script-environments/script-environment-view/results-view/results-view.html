@@ -1,0 +1,23 @@
+<div class="toolbar">
+    <div class="row m-0 p-0">
+        <div class="col ps-2">
+            <b>Results</b>
+        </div>
+        <div class="actions-right col text-end pe-1">
+            <i class="action-icon bi bi-arrows-collapse hover-text-white"
+               title="Collapse All"
+               click.trigger="resultControls.collapseAllTables()"></i>
+            <i class="action-icon bi bi-arrows-expand"
+               title="Expand All"
+               click.trigger="resultControls.expandAllTables()"></i>
+            <i class="action-icon bi bi-text-center ${resultsViewSettings.textWrap ? 'text-blue' : ''}"
+               title="Text Wrap"
+               click.trigger="resultsViewSettings.textWrap = !resultsViewSettings.textWrap"></i>
+            <i class="action-icon bi bi-x hover-text-red"
+               title="Close Results"
+               click.trigger="onCloseRequested()"></i>
+        </div>
+    </div>
+</div>
+<div ref="resultsEl"
+     class="results pt-2 ${resultsViewSettings.textWrap ? 'text-wrap' : ''}"></div>

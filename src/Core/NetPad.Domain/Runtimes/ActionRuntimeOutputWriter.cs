@@ -5,37 +5,37 @@ namespace NetPad.Runtimes
 {
     public class ActionRuntimeOutputWriter : IScriptRuntimeOutputWriter
     {
-        private readonly Action<object?> _action;
+        private readonly Action<object?, string?> _action;
 
-        public ActionRuntimeOutputWriter(Action<object?> action)
+        public ActionRuntimeOutputWriter(Action<object?, string?> action)
         {
             _action = action;
         }
 
-        public static ActionRuntimeOutputWriter Null => new ActionRuntimeOutputWriter(o => { });
+        public static ActionRuntimeOutputWriter Null => new ActionRuntimeOutputWriter((_, _) => { });
 
-        public Task WriteAsync(object? output)
+        public Task WriteAsync(object? output, string? title = null)
         {
-            _action(output);
+            _action(output, title);
             return Task.CompletedTask;
         }
     }
 
     public class AsyncActionRuntimeOutputWriter : IScriptRuntimeOutputWriter
     {
-        private readonly Func<object?, Task> _action;
+        private readonly Func<object?, string?, Task> _action;
 
-        public AsyncActionRuntimeOutputWriter(Func<object?, Task> action)
+        public AsyncActionRuntimeOutputWriter(Func<object?, string?, Task> action)
         {
             _action = action;
         }
 
         public static AsyncActionRuntimeOutputWriter Null =>
-            new AsyncActionRuntimeOutputWriter(o => Task.CompletedTask);
+            new AsyncActionRuntimeOutputWriter((_, _) => Task.CompletedTask);
 
-        public async Task WriteAsync(object? output)
+        public async Task WriteAsync(object? output, string? title = null)
         {
-            await _action(output);
+            await _action(output, title);
         }
     }
 }

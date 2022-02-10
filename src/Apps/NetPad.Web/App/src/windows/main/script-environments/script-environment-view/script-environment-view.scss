@@ -8,25 +8,9 @@ script-environment-view {
         display: inline-block;
     }
 
-    .results-pane {
+    .results-container {
         display: flex;
         flex-direction: column;
         @include theme(background-color, resultsBackground);
-
-        .toolbar {
-            padding: 0.1rem 0;
-            @include theme(background-color, resultsToolbarBackground);
-        }
-    }
-
-    .results {
-        padding: 0.25rem;
-        font-family: monospace;
-        overflow-x: auto;
-        flex-grow: 1;
-
-        &.text-wrap {
-            overflow-wrap: break-word;
-        }
     }
 }

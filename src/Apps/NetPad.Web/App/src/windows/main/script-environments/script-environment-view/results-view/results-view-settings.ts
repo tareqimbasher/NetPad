@@ -1,4 +1,4 @@
-export class ResultsPaneSettings {
+export class ResultsPaneViewSettings {
     constructor(public textWrap = false) {
     }
 }

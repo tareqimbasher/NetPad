@@ -100,19 +100,19 @@ public static class UserScript
         }}
     }}
 
-    public static void OutputWrite(object? o)
+    public static void OutputWrite(object? o, string? title = null)
     {{
-        OutputWriter.WriteAsync(o?.ToString());
+        OutputWriter.WriteAsync(o, title);
     }}
 
-    public static void OutputWriteLine(object? o)
+    public static void OutputWriteLine(object? o, string? title = null)
     {{
-        OutputWriter.WriteAsync(o?.ToString() + ""\n"");
+        OutputWriter.WriteAsync(o, title);
     }}
 
-    public static T? Dump<T>(this T? o)
+    public static T? Dump<T>(this T? o, string? title = null)
     {{
-        OutputWriteLine(o);
+        OutputWriteLine(o, title);
         return o;
     }}
 }}

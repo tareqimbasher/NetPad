@@ -51,7 +51,7 @@ namespace NetPad.Runtimes.Tests
 
             await runtime.RunAsync(
                 ActionRuntimeInputReader.Null,
-                new ActionRuntimeOutputWriter(output => result = output?.ToString()));
+                new ActionRuntimeOutputWriter((output, title) => result = output?.ToString()));
 
             _testOutputHelper.WriteLine(result);
 

@@ -7,6 +7,6 @@ namespace NetPad.Runtimes
     /// </summary>
     public interface IScriptRuntimeOutputWriter
     {
-        Task WriteAsync(object? output);
+        Task WriteAsync(object? output, string? title = null);
     }
 }

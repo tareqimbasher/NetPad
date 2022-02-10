@@ -8,11 +8,9 @@ import {
     Script,
     ScriptEnvironment,
     ScriptKind,
-    ScriptOutputEmitted, ScriptStatus,
     Settings
 } from "@domain";
 import Split from "split.js";
-import {ResultsPaneSettings} from "./results-pane-settings";
 import {Util} from "@common";
 import {observable} from "@aurelia/runtime";
 
@@ -20,16 +18,13 @@ export class ScriptEnvironmentView {
     @bindable public environment: ScriptEnvironment;
     @observable public editorText: string;
     public running = false;
-    public resultsPaneSettings: ResultsPaneSettings;
 
     private disposables: (() => void)[] = [];
     private split: Split.Instance;
     private editorTextChanged: (newText: string) => void;
-    private textEditorPane: HTMLElement;
-    private resultsPane: HTMLElement;
-    private resultsEl: HTMLElement;
+    private textEditorContainer: HTMLElement;
+    private resultsContainer: HTMLElement;
     private logger: ILogger;
-
 
     constructor(
         readonly settings: Settings,
@@ -39,7 +34,6 @@ export class ScriptEnvironmentView {
         @IEventBus readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(ScriptEnvironmentView));
-        this.resultsPaneSettings = new ResultsPaneSettings(this.settings.resultsOptions.textWrap);
 
         this.editorTextChanged = Util.debounce(this, async (newText: string, oldText: string) => {
             await this.sendCodeToServer();
@@ -58,7 +52,7 @@ export class ScriptEnvironmentView {
         this.scriptService.setScriptKind(this.script.id, value);
     }
 
-    private attached() {
+    public attached() {
         this.kind = this.script.config.kind;
 
         const token1 = this.eventBus.subscribe(RunScriptEvent, async msg => {
@@ -69,14 +63,9 @@ export class ScriptEnvironmentView {
         });
         this.disposables.push(() => token1.dispose());
 
-        const token2 = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
-            if (msg.scriptId === this.script.id) {
-                this.appendResults(msg.output);
-            }
-        });
-        this.disposables.push(() => token2.dispose());
 
-        this.split = Split([this.textEditorPane, this.resultsPane], {
+
+        this.split = Split([this.textEditorContainer, this.resultsContainer], {
             gutterSize: 6,
             direction: 'vertical',
             sizes: [100, 0],
@@ -89,14 +78,13 @@ export class ScriptEnvironmentView {
         this.disposables.forEach(d => d());
     }
 
-    public async run() {
+    private async run() {
         if (this.environment.status === "Running") return;
 
         try {
             await this.sendCodeToServer();
-            this.setResults(null);
             if (this.settings.resultsOptions.openOnRun)
-                this.openResultsPane();
+                this.openResultsView();
             await this.scriptService.run(this.script.id);
         }
         catch (ex) {
@@ -109,29 +97,16 @@ export class ScriptEnvironmentView {
         await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
     }
 
-    private setResults(results: string | null) {
-        if (!results)
-            results = "";
-
-        this.resultsEl.innerHTML = results
-            .replaceAll("\n", "<br/>")
-            .replaceAll(" ", "&nbsp;");
-    }
-
-    private appendResults(results: string | null) {
-        this.setResults(this.resultsEl.innerHTML + results);
-    }
-
-    private openResultsPane() {
-        if (this.isResultsPaneOpen()) return;
+    private openResultsView() {
+        if (this.isResultsViewOpen()) return;
         this.split.setSizes([50, 50]);
     }
 
-    private collapseResultsPane() {
+    private collapseResultsView = () => {
         this.split.collapse(1);
     }
 
-    private isResultsPaneOpen(): boolean {
-        return this.resultsPane.clientHeight > 0;
+    private isResultsViewOpen(): boolean {
+        return this.resultsContainer.clientHeight > 0;
     }
 }
