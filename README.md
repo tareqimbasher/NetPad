@@ -21,11 +21,11 @@ You can currently:
 * Add additional namespaces to your script
 * Reference and use your own assemblies in scripts
 * Add and use NuGet packages in scripts (`Basic Support`)
+* Dump complex objects to the results console
 
 You cannot, yet:
 
-* Dump complex objects to the results console (`Coming soon!`)
-* More complete NuGet package support
+* More complete NuGet package support (`Coming soon!`)
 * Add database connections
 * Enjoy code-completion features in the editor
 
