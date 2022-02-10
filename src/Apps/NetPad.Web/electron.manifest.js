@@ -10,7 +10,8 @@ const config = {
     },
     singleInstance: false,
     environment: "Production",
-    aspCoreBackendPort: 8001,
+    aspCoreBackendPort: 50900,
+    electronPort: 50901,
     build: {
         appId: "com.netpad.app",
         productName: "NetPad",
