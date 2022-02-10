@@ -100,7 +100,9 @@ namespace NetPad
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            if (!HybridSupport.IsElectronActive)
+                app.UseHttpsRedirection();
+
             app.UseStaticFiles();
             if (!env.IsDevelopment())
             {
@@ -138,8 +140,9 @@ namespace NetPad
                 }
             });
 
-            app.ApplicationServices.GetRequiredService<HostInfo>().SetHostUrl(app.ServerFeatures
-                    .Get<IServerAddressesFeature>()
+            app.ApplicationServices.GetRequiredService<HostInfo>().SetHostUrl(
+                app.ServerFeatures
+                    .Get<IServerAddressesFeature>()!
                     .Addresses
                     .First(a => a.StartsWith("http:")));
 
