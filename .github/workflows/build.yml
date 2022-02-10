@@ -5,27 +5,56 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  
+  # Allows running this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
-  build:
+  app:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./src
 
     steps:
-      - uses: actions/checkout@v2
+      - name: 🚚 Checkout latest
+        uses: actions/checkout@v2
 
-      - name: Setup .NET
+      - name: 🧲 Setup .NET
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
 
-      - name: Restore dependencies
+      - name: 📦 Install dependencies
         run: dotnet restore
 
-      - name: Build
+      - name: 🔨 Build
         run: dotnet build --no-restore
 
-      - name: Test
+      - name: 🧐 Test
         run: dotnet test --no-build --verbosity normal
+  
+  spa:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/Apps/NetPad.Web/App
+    
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
+    
+    steps:
+      - name: 🚚 Checkout latest
+        uses: actions/checkout@v2
+
+      - name: 🧲 Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔨 Build
+        run: npm run build
