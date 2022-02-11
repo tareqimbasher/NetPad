@@ -6,7 +6,7 @@
             repeat.for="env of session.environments">
             <div class="text d-flex align-items-center"
                  click.trigger="session.activate(env.script.id)"
-                 auxclick.trigger="session.close(env.script.id)">
+                 auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">
                             <span>
                                 ${env.script.name}
                                 ${env.status === 'Running' ? '[Running]' : ''}

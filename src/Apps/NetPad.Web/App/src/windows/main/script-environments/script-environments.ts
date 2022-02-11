@@ -12,4 +12,9 @@ export class ScriptEnvironments {
             await this.scriptService.create();
         }
     }
+
+    public async tabSecondaryClicked(scriptId: string, event: MouseEvent) {
+        if (event.button !== 1) return;
+        await this.session.close(scriptId);
+    }
 }
