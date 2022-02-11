@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Infrastructure\O2Html\O2Html.csproj" />
+      <ProjectReference Include="..\O2Html\O2Html.csproj" />
     </ItemGroup>
 
 </Project>

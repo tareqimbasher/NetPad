@@ -66,8 +66,8 @@
     <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Packages\NetPad.Packages.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Runtimes\NetPad.Runtimes.csproj" />
+    <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
     <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\O2Html\O2Html.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App\dist\**" />
