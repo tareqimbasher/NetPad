@@ -6,7 +6,6 @@ import {KeyCode} from "@common";
 
 export class Index {
     public rightPaneHost: PaneHost;
-    private split: Split.Instance;
 
     constructor(
         readonly settings: Settings,
@@ -20,29 +19,29 @@ export class Index {
     }
 
     public attached() {
+        Split(["sidebar", "script-environments"], {
+            gutterSize: 6,
+            sizes: [14, 86],
+            minSize: [100, 300],
+        });
+
         const viewStateController = {
+            split: null,
             expand: (paneHost) => {
-                this.split?.destroy();
-                this.split = Split(["sidebar", "script-environments", `pane-host[data-id='${paneHost.id}']`], {
+                viewStateController.split = Split(["#content-left", `pane-host[data-id='${paneHost.id}']`], {
                     gutterSize: 6,
-                    sizes: [14, 71, 15],
-                    minSize: [100, 300, 100],
+                    sizes: [85, 15],
+                    minSize: [300, 100],
                 });
             },
             collapse: (paneHost) => {
-                this.split?.destroy();
-                this.split = Split(["sidebar", "script-environments"], {
-                    gutterSize: 6,
-                    sizes: [14, 86],
-                    minSize: [100, 300],
-                });
+                viewStateController.split?.destroy();
             }
         };
 
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
-        viewStateController.collapse(this.rightPaneHost);
     }
 
     private registerKeyboardShortcuts() {
