@@ -10,14 +10,14 @@ export class SettingsBackgroundService implements IBackgroundService {
         @IEventBus readonly eventBus: IEventBus) {
     }
 
-    start(): Promise<void> {
+    public start(): Promise<void> {
         this.settingsUpdatedEventToken = this.eventBus.subscribeToServer(SettingsUpdated, msg => {
             this.settings.init(msg.settings);
-        })
+        });
         return Promise.resolve(undefined);
     }
 
-    stop(): void {
+    public stop(): void {
         this.settingsUpdatedEventToken.dispose();
     }
 }

@@ -11,7 +11,8 @@ import {
     SanitizeHtmlValueConverter,
     SettingsBackgroundService,
     SignalRIpcGateway,
-    TextToHtmlValueConverter
+    TextToHtmlValueConverter,
+    WindowBackgroundService
 } from "@application";
 import {IBackgroundService} from "@common";
 
@@ -26,6 +27,7 @@ const app = Aurelia.register(
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingService, SettingService),
     Registration.transient(IBackgroundService, SettingsBackgroundService),
+    Registration.transient(IBackgroundService, WindowBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
         level: LogLevel.trace,

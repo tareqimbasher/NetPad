@@ -10,8 +10,4 @@
       <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="UiInterop" />
-    </ItemGroup>
-
 </Project>

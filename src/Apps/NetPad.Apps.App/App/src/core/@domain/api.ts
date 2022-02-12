@@ -1849,16 +1849,17 @@ export interface IResultsOptions {
 }
 
 export class Types implements ITypes {
-    script!: Script;
-    settingsUpdated!: SettingsUpdated;
-    scriptPropertyChanged!: ScriptPropertyChanged;
-    scriptConfigPropertyChanged!: ScriptConfigPropertyChanged;
-    scriptOutputEmitted!: ScriptOutputEmitted;
-    environmentsAdded!: EnvironmentsAdded;
-    environmentsRemoved!: EnvironmentsRemoved;
-    environmentPropertyChanged!: EnvironmentPropertyChanged;
-    activeEnvironmentChanged!: ActiveEnvironmentChanged;
-    scriptDirectoryChanged!: ScriptDirectoryChanged;
+    script?: Script | undefined;
+    settingsUpdated?: SettingsUpdated | undefined;
+    scriptPropertyChanged?: ScriptPropertyChanged | undefined;
+    scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
+    scriptOutputEmitted?: ScriptOutputEmitted | undefined;
+    environmentsAdded?: EnvironmentsAdded | undefined;
+    environmentsRemoved?: EnvironmentsRemoved | undefined;
+    environmentPropertyChanged?: EnvironmentPropertyChanged | undefined;
+    activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
+    scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
+    openWindowCommand?: OpenWindowCommand | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -1867,32 +1868,21 @@ export class Types implements ITypes {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
-        if (!data) {
-            this.script = new Script();
-            this.settingsUpdated = new SettingsUpdated();
-            this.scriptPropertyChanged = new ScriptPropertyChanged();
-            this.scriptConfigPropertyChanged = new ScriptConfigPropertyChanged();
-            this.scriptOutputEmitted = new ScriptOutputEmitted();
-            this.environmentsAdded = new EnvironmentsAdded();
-            this.environmentsRemoved = new EnvironmentsRemoved();
-            this.environmentPropertyChanged = new EnvironmentPropertyChanged();
-            this.activeEnvironmentChanged = new ActiveEnvironmentChanged();
-            this.scriptDirectoryChanged = new ScriptDirectoryChanged();
-        }
     }
 
     init(_data?: any) {
         if (_data) {
-            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
-            this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdated.fromJS(_data["settingsUpdated"]) : new SettingsUpdated();
-            this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChanged.fromJS(_data["scriptPropertyChanged"]) : new ScriptPropertyChanged();
-            this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChanged.fromJS(_data["scriptConfigPropertyChanged"]) : new ScriptConfigPropertyChanged();
-            this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmitted.fromJS(_data["scriptOutputEmitted"]) : new ScriptOutputEmitted();
-            this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAdded.fromJS(_data["environmentsAdded"]) : new EnvironmentsAdded();
-            this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemoved.fromJS(_data["environmentsRemoved"]) : new EnvironmentsRemoved();
-            this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChanged.fromJS(_data["environmentPropertyChanged"]) : new EnvironmentPropertyChanged();
-            this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChanged.fromJS(_data["activeEnvironmentChanged"]) : new ActiveEnvironmentChanged();
-            this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChanged.fromJS(_data["scriptDirectoryChanged"]) : new ScriptDirectoryChanged();
+            this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
+            this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdated.fromJS(_data["settingsUpdated"]) : <any>undefined;
+            this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChanged.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
+            this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChanged.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
+            this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmitted.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
+            this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAdded.fromJS(_data["environmentsAdded"]) : <any>undefined;
+            this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemoved.fromJS(_data["environmentsRemoved"]) : <any>undefined;
+            this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChanged.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
+            this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChanged.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
+            this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChanged.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
+            this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
         }
     }
 
@@ -1915,6 +1905,7 @@ export class Types implements ITypes {
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
         data["activeEnvironmentChanged"] = this.activeEnvironmentChanged ? this.activeEnvironmentChanged.toJSON() : <any>undefined;
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
+        data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         return data;
     }
 
@@ -1927,16 +1918,17 @@ export class Types implements ITypes {
 }
 
 export interface ITypes {
-    script: Script;
-    settingsUpdated: SettingsUpdated;
-    scriptPropertyChanged: ScriptPropertyChanged;
-    scriptConfigPropertyChanged: ScriptConfigPropertyChanged;
-    scriptOutputEmitted: ScriptOutputEmitted;
-    environmentsAdded: EnvironmentsAdded;
-    environmentsRemoved: EnvironmentsRemoved;
-    environmentPropertyChanged: EnvironmentPropertyChanged;
-    activeEnvironmentChanged: ActiveEnvironmentChanged;
-    scriptDirectoryChanged: ScriptDirectoryChanged;
+    script?: Script | undefined;
+    settingsUpdated?: SettingsUpdated | undefined;
+    scriptPropertyChanged?: ScriptPropertyChanged | undefined;
+    scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
+    scriptOutputEmitted?: ScriptOutputEmitted | undefined;
+    environmentsAdded?: EnvironmentsAdded | undefined;
+    environmentsRemoved?: EnvironmentsRemoved | undefined;
+    environmentPropertyChanged?: EnvironmentPropertyChanged | undefined;
+    activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
+    scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
+    openWindowCommand?: OpenWindowCommand | undefined;
 }
 
 export class SettingsUpdated implements ISettingsUpdated {
@@ -2397,6 +2389,120 @@ export class ScriptDirectoryChanged implements IScriptDirectoryChanged {
 
 export interface IScriptDirectoryChanged {
     scripts: ScriptSummary[];
+}
+
+export class OpenWindowCommand implements IOpenWindowCommand {
+    windowName!: string;
+    options!: WindowOptions;
+    metadata!: { [key: string]: any; };
+
+    constructor(data?: IOpenWindowCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.options = new WindowOptions();
+            this.metadata = {};
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.windowName = _data["windowName"];
+            this.options = _data["options"] ? WindowOptions.fromJS(_data["options"]) : new WindowOptions();
+            if (_data["metadata"]) {
+                this.metadata = {} as any;
+                for (let key in _data["metadata"]) {
+                    if (_data["metadata"].hasOwnProperty(key))
+                        (<any>this.metadata)![key] = _data["metadata"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): OpenWindowCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new OpenWindowCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["windowName"] = this.windowName;
+        data["options"] = this.options ? this.options.toJSON() : <any>undefined;
+        if (this.metadata) {
+            data["metadata"] = {};
+            for (let key in this.metadata) {
+                if (this.metadata.hasOwnProperty(key))
+                    (<any>data["metadata"])[key] = this.metadata[key];
+            }
+        }
+        return data;
+    }
+
+    clone(): OpenWindowCommand {
+        const json = this.toJSON();
+        let result = new OpenWindowCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOpenWindowCommand {
+    windowName: string;
+    options: WindowOptions;
+    metadata: { [key: string]: any; };
+}
+
+export class WindowOptions implements IWindowOptions {
+    height!: number;
+    width!: number;
+
+    constructor(data?: IWindowOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.height = _data["height"];
+            this.width = _data["width"];
+        }
+    }
+
+    static fromJS(data: any): WindowOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new WindowOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["height"] = this.height;
+        data["width"] = this.width;
+        return data;
+    }
+
+    clone(): WindowOptions {
+        const json = this.toJSON();
+        let result = new WindowOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWindowOptions {
+    height: number;
+    width: number;
 }
 
 export interface FileResponse {

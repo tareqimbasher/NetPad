@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.UiInterop;
+using NetPad.Web.UiInterop;
 
 namespace NetPad.Web;
 
@@ -18,6 +19,8 @@ public class NetPadWebConfigurator : IApplicationConfigurator
         {
             ApplicationType = ApplicationType.Electron
         });
+
+        services.AddTransient<IUiWindowService, WebWindowService>();
         services.AddTransient<IIpcService, SignalRIpcService>();
     }
 

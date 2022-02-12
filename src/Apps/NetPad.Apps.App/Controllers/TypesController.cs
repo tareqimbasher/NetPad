@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Commands;
 using NetPad.Events;
 using NetPad.Scripts;
 
@@ -16,18 +17,19 @@ namespace NetPad.Controllers
         {
         }
 
-        class Types
+        private class Types
         {
-            public Script Script { get; set; }
-            public SettingsUpdated SettingsUpdated { get; set; }
-            public ScriptPropertyChanged ScriptPropertyChanged { get; set; }
-            public ScriptConfigPropertyChanged ScriptConfigPropertyChanged { get; set; }
-            public ScriptOutputEmitted ScriptOutputEmitted { get; set; }
-            public EnvironmentsAdded EnvironmentsAdded { get; set; }
-            public EnvironmentsRemoved EnvironmentsRemoved { get; set; }
-            public EnvironmentPropertyChanged EnvironmentPropertyChanged { get; set; }
-            public ActiveEnvironmentChanged ActiveEnvironmentChanged { get; set; }
-            public ScriptDirectoryChanged ScriptDirectoryChanged { get; set; }
+            public Script? Script { get; set; }
+            public SettingsUpdated? SettingsUpdated { get; set; }
+            public ScriptPropertyChanged? ScriptPropertyChanged { get; set; }
+            public ScriptConfigPropertyChanged? ScriptConfigPropertyChanged { get; set; }
+            public ScriptOutputEmitted? ScriptOutputEmitted { get; set; }
+            public EnvironmentsAdded? EnvironmentsAdded { get; set; }
+            public EnvironmentsRemoved? EnvironmentsRemoved { get; set; }
+            public EnvironmentPropertyChanged? EnvironmentPropertyChanged { get; set; }
+            public ActiveEnvironmentChanged? ActiveEnvironmentChanged { get; set; }
+            public ScriptDirectoryChanged? ScriptDirectoryChanged { get; set; }
+            public OpenWindowCommand? OpenWindowCommand { get; set; }
         }
     }
 }
