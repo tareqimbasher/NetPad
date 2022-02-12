@@ -21,6 +21,7 @@ public class NetPadWebConfigurator : IApplicationConfigurator
         });
 
         services.AddTransient<IUiWindowService, WebWindowService>();
+        services.AddTransient<IUiDialogService, WebDialogService>();
         services.AddTransient<IIpcService, SignalRIpcService>();
     }
 

@@ -11,6 +11,7 @@ export * from "./events/signalr-ipc-gateway";
 
 export * from "./background-services/settings-background-service";
 export * from "./background-services/window-background-service";
+export * from "./background-services/dialog-background-service";
 
 export * from "./windows/iwindow-bootstrap";
 export * from "./editor/editor";

@@ -22,8 +22,8 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
             ApplicationType = ApplicationType.Electron
         });
 
-        services.AddTransient<IUiDialogService, ElectronDialogService>();
         services.AddTransient<IUiWindowService, ElectronWindowService>();
+        services.AddTransient<IUiDialogService, ElectronDialogService>();
         services.AddTransient<IIpcService, ElectronIpcService>();
     }
 

@@ -1,6 +1,6 @@
 namespace NetPad.Commands;
 
-public class OpenWindowCommand
+public class OpenWindowCommand : Command
 {
     public OpenWindowCommand(string windowName)
     {

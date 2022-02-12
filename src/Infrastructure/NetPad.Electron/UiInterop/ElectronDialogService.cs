@@ -18,7 +18,7 @@ namespace NetPad.Electron.UiInterop
         public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
         {
             var result = await ElectronNET.API.Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
-                new MessageBoxOptions("Do you want to save?")
+                new MessageBoxOptions($"You have unsaved changes. Do you want to save '{script.Name}'?")
                 {
                     Title = "Save?",
                     Buttons = new[] { "Yes", "No", "Cancel" },

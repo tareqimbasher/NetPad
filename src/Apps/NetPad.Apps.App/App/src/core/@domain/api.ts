@@ -1849,6 +1849,7 @@ export interface IResultsOptions {
 }
 
 export class Types implements ITypes {
+    yesNoCancel!: YesNoCancel;
     script?: Script | undefined;
     settingsUpdated?: SettingsUpdated | undefined;
     scriptPropertyChanged?: ScriptPropertyChanged | undefined;
@@ -1860,6 +1861,7 @@ export class Types implements ITypes {
     activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    confirmSaveCommand?: ConfirmSaveCommand | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -1872,6 +1874,7 @@ export class Types implements ITypes {
 
     init(_data?: any) {
         if (_data) {
+            this.yesNoCancel = _data["yesNoCancel"];
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdated.fromJS(_data["settingsUpdated"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChanged.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
@@ -1883,6 +1886,7 @@ export class Types implements ITypes {
             this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChanged.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChanged.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
+            this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
         }
     }
 
@@ -1895,6 +1899,7 @@ export class Types implements ITypes {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["yesNoCancel"] = this.yesNoCancel;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
@@ -1906,6 +1911,7 @@ export class Types implements ITypes {
         data["activeEnvironmentChanged"] = this.activeEnvironmentChanged ? this.activeEnvironmentChanged.toJSON() : <any>undefined;
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
+        data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         return data;
     }
 
@@ -1918,6 +1924,7 @@ export class Types implements ITypes {
 }
 
 export interface ITypes {
+    yesNoCancel: YesNoCancel;
     script?: Script | undefined;
     settingsUpdated?: SettingsUpdated | undefined;
     scriptPropertyChanged?: ScriptPropertyChanged | undefined;
@@ -1929,7 +1936,10 @@ export interface ITypes {
     activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
+    confirmSaveCommand?: ConfirmSaveCommand | undefined;
 }
+
+export type YesNoCancel = "Yes" | "No" | "Cancel";
 
 export class SettingsUpdated implements ISettingsUpdated {
     settings!: Settings;
@@ -2391,18 +2401,51 @@ export interface IScriptDirectoryChanged {
     scripts: ScriptSummary[];
 }
 
-export class OpenWindowCommand implements IOpenWindowCommand {
-    windowName!: string;
-    options!: WindowOptions;
-    metadata!: { [key: string]: any; };
+export abstract class Command implements ICommand {
+    id!: string;
 
-    constructor(data?: IOpenWindowCommand) {
+    constructor(data?: ICommand) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+        }
+    }
+
+    static fromJS(data: any): Command {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'Command' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        return data;
+    }
+
+    clone(): Command {
+        throw new Error("The abstract class 'Command' cannot be instantiated.");
+    }
+}
+
+export interface ICommand {
+    id: string;
+}
+
+export class OpenWindowCommand extends Command implements IOpenWindowCommand {
+    windowName!: string;
+    options!: WindowOptions;
+    metadata!: { [key: string]: any; };
+
+    constructor(data?: IOpenWindowCommand) {
+        super(data);
         if (!data) {
             this.options = new WindowOptions();
             this.metadata = {};
@@ -2410,6 +2453,7 @@ export class OpenWindowCommand implements IOpenWindowCommand {
     }
 
     init(_data?: any) {
+        super.init(_data);
         if (_data) {
             this.windowName = _data["windowName"];
             this.options = _data["options"] ? WindowOptions.fromJS(_data["options"]) : new WindowOptions();
@@ -2441,6 +2485,7 @@ export class OpenWindowCommand implements IOpenWindowCommand {
                     (<any>data["metadata"])[key] = this.metadata[key];
             }
         }
+        super.toJSON(data);
         return data;
     }
 
@@ -2452,7 +2497,7 @@ export class OpenWindowCommand implements IOpenWindowCommand {
     }
 }
 
-export interface IOpenWindowCommand {
+export interface IOpenWindowCommand extends ICommand {
     windowName: string;
     options: WindowOptions;
     metadata: { [key: string]: any; };
@@ -2503,6 +2548,75 @@ export class WindowOptions implements IWindowOptions {
 export interface IWindowOptions {
     height: number;
     width: number;
+}
+
+export abstract class CommandOfYesNoCancel extends Command implements ICommandOfYesNoCancel {
+
+    constructor(data?: ICommandOfYesNoCancel) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): CommandOfYesNoCancel {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'CommandOfYesNoCancel' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CommandOfYesNoCancel {
+        throw new Error("The abstract class 'CommandOfYesNoCancel' cannot be instantiated.");
+    }
+}
+
+export interface ICommandOfYesNoCancel extends ICommand {
+}
+
+export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirmSaveCommand {
+    message!: string;
+
+    constructor(data?: IConfirmSaveCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): ConfirmSaveCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new ConfirmSaveCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): ConfirmSaveCommand {
+        const json = this.toJSON();
+        let result = new ConfirmSaveCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
+    message: string;
 }
 
 export interface FileResponse {

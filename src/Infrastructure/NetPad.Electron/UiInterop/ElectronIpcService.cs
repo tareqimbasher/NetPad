@@ -1,3 +1,4 @@
+using NetPad.Commands;
 using NetPad.Common;
 using NetPad.UiInterop;
 
@@ -24,6 +25,11 @@ namespace NetPad.Electron.UiInterop
                 Console.WriteLine(ex);
             }
             return Task.CompletedTask;
+        }
+
+        public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message)
+        {
+            throw new PlatformNotSupportedException();
         }
     }
 }

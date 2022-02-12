@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Commands;
 using NetPad.Events;
 using NetPad.Scripts;
+using NetPad.UiInterop;
 
 namespace NetPad.Controllers
 {
@@ -19,6 +20,8 @@ namespace NetPad.Controllers
 
         private class Types
         {
+            public YesNoCancel YesNoCancel { get; set; }
+
             public Script? Script { get; set; }
             public SettingsUpdated? SettingsUpdated { get; set; }
             public ScriptPropertyChanged? ScriptPropertyChanged { get; set; }
@@ -30,6 +33,7 @@ namespace NetPad.Controllers
             public ActiveEnvironmentChanged? ActiveEnvironmentChanged { get; set; }
             public ScriptDirectoryChanged? ScriptDirectoryChanged { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
+            public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
         }
     }
 }

@@ -31,4 +31,8 @@ export class SignalRIpcGateway implements IIpcGateway {
         this.connection.on(channelName, handler);
         return new SubscriptionToken(() => this.connection.off(channelName, handler));
     }
+
+    public async send<TResult>(channelName: string, ...params: any[]): Promise<TResult> {
+        return await this.connection.invoke(channelName, ...params);
+    }
 }
