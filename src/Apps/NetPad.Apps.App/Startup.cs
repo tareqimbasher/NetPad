@@ -11,6 +11,7 @@ using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
+using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Runtimes;
@@ -46,6 +47,7 @@ namespace NetPad
             services.AddSingleton<HostInfo>();
             services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
 
+            services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<ISession, Session>();
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
@@ -63,7 +65,7 @@ namespace NetPad
             if (WebHostEnvironment.IsDevelopment())
             {
                 AddSwagger(services);
-                services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+                //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
 
             Program.ApplicationConfigurator.ConfigureServices(services);
@@ -87,7 +89,7 @@ namespace NetPad
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             if (!env.IsDevelopment())
