@@ -2,15 +2,16 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
+      <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NetPad.Domain\NetPad.Domain.csproj" />
+      <PackageReference Include="ElectronNET.API" Version="13.5.1" />
     </ItemGroup>
 
 </Project>

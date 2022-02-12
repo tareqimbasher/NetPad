@@ -1,5 +1,5 @@
 const config = {
-    executable: "NetPad.Web",
+    executable: "NetPad.Apps.App",
     splashscreen: {
         imageFile: ""
     },

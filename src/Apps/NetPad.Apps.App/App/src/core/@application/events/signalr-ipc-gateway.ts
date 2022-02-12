@@ -10,7 +10,7 @@ export class SignalRIpcGateway implements IIpcGateway {
     constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(SignalRIpcGateway));
         this.connection = new HubConnectionBuilder()
-            .withUrl("/ipchub")
+            .withUrl("/ipc-hub")
             .build();
 
         this.connection.onclose(error => {

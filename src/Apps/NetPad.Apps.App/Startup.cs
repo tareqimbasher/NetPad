@@ -1,8 +1,4 @@
-using System;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using ElectronNET.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -20,16 +16,12 @@ using NetPad.Packages;
 using NetPad.Runtimes;
 using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
-using NetPad.Services;
 using NetPad.Sessions;
 using NetPad.UiInterop;
-using NJsonSchema.CodeGeneration.TypeScript;
-using NSwag.CodeGeneration.TypeScript;
-using Session = NetPad.Sessions.Session;
 
 namespace NetPad
 {
-    public class Startup
+    public partial class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
@@ -43,39 +35,27 @@ namespace NetPad
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews()
-                .AddJsonOptions(options =>
-                {
-                    JsonSerializer.Configure(options.JsonSerializerOptions);
-                });
+                .AddJsonOptions(options => { JsonSerializer.Configure(options.JsonSerializerOptions); });
+
+            services.AddSignalR()
+                .AddJsonProtocol(options => { JsonSerializer.Configure(options.PayloadSerializerOptions); });
 
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
-            services.AddSignalR()
-                .AddJsonProtocol(options =>
-                {
-                    JsonSerializer.Configure(options.PayloadSerializerOptions);
-                });
-
             services.AddSingleton<HostInfo>();
-            services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-            services.AddSingleton<Settings>(sp =>
-                sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
+            services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
 
             services.AddSingleton<ISession, Session>();
+            services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IScriptEnvironmentFactory, ScriptEnvironmentFactory>();
-
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntime, ScriptRuntime>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
             services.AddTransient<IPackageProvider, NugetPackageProvider>();
-
-            services.AddTransient<IUiDialogService, ElectronDialogService>();
-            services.AddTransient<IUiWindowService, ElectronWindowService>();
-            services.AddTransient<IIpcService, SignalRIpcService>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptBackgroundService>();
@@ -85,10 +65,17 @@ namespace NetPad
                 AddSwagger(services);
                 services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
+
+            Program.ApplicationConfigurator.ConfigureServices(services);
+
+            // We want to always use SignalR for IPC, overriding Electron's IPC service
+            services.AddTransient<IIpcService, SignalRIpcService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var services = app.ApplicationServices;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -100,10 +87,9 @@ namespace NetPad
                 app.UseHsts();
             }
 
-            if (!HybridSupport.IsElectronActive)
-                app.UseHttpsRedirection();
-
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
+
             if (!env.IsDevelopment())
             {
                 app.UseSpaStaticFiles();
@@ -124,7 +110,7 @@ namespace NetPad
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
 
-                endpoints.MapHub<IpcHub>("/ipchub");
+                endpoints.MapHub<IpcHub>("/ipc-hub");
             });
 
             app.UseSpa(spa =>
@@ -140,64 +126,13 @@ namespace NetPad
                 }
             });
 
-            app.ApplicationServices.GetRequiredService<HostInfo>().SetHostUrl(
+            services.GetRequiredService<HostInfo>().SetHostUrl(
                 app.ServerFeatures
                     .Get<IServerAddressesFeature>()!
                     .Addresses
                     .First(a => a.StartsWith("http:")));
 
-            if (HybridSupport.IsElectronActive)
-            {
-                Task.Run(async () =>
-                {
-                    await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
-                });
-            }
-        }
-
-        private void AddSwagger(IServiceCollection services)
-        {
-            services.AddSwaggerDocument(config =>
-            {
-                config.Title = "NetPad";
-                config.PostProcess = document =>
-                {
-                    var settings = new TypeScriptClientGeneratorSettings
-                    {
-                        ClassName = "{controller}ApiClient",
-                        Template = TypeScriptTemplate.Aurelia,
-                        GenerateClientInterfaces = true,
-                        QueryNullValue = null,
-                        UseAbortSignal = true,
-                        TypeScriptGeneratorSettings =
-                        {
-                            TypeScriptVersion = 4.4m,
-                            EnumStyle = TypeScriptEnumStyle.StringLiteral,
-                            GenerateCloneMethod = true,
-                            MarkOptionalProperties = true,
-                        }
-                    };
-
-                    var generator = new TypeScriptClientGenerator(document, settings);
-
-                    var lines = generator.GenerateFile()
-                        .Replace(
-                            "private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };",
-                            "private http: IHttpClient;")
-                        .Replace(
-                            "http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }",
-                            "@IHttpClient http?: IHttpClient")
-                        .Split(Environment.NewLine)
-                        .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
-                        .ToList();
-
-                    lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
-
-                    File.WriteAllText(
-                        Path.Combine(WebHostEnvironment.ContentRootPath, "App", "src", "core", "@domain", "api.ts"),
-                        string.Join(Environment.NewLine, lines));
-                };
-            });
+            Program.ApplicationConfigurator.Configure(app, env);
         }
     }
 }

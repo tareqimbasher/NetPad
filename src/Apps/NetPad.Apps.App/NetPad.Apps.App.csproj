@@ -15,7 +15,6 @@
     <FileVersion>0.1.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ElectronNET.API" Version="13.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.15.5" />
     <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5" />
@@ -62,12 +61,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
-    <ProjectReference Include="..\..\Core\NetPad.Packages\NetPad.Packages.csproj" />
     <ProjectReference Include="..\..\Core\NetPad.Runtimes\NetPad.Runtimes.csproj" />
     <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\NetPad.Electron\NetPad.Electron.csproj" />
     <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\NetPad.Web\NetPad.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App\dist\**" />

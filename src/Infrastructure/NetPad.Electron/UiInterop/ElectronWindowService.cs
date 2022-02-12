@@ -1,11 +1,9 @@
-using System.Linq;
-using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using NetPad.Scripts;
-using NetPad.Services;
+using NetPad.UiInterop;
 
-namespace NetPad.UiInterop
+namespace NetPad.Electron.UiInterop
 {
     public class ElectronWindowService : IUiWindowService
     {
@@ -16,7 +14,7 @@ namespace NetPad.UiInterop
             _hostUrl = hostInfo.HostUrl;
         }
 
-        private async Task<Display> PrimaryDisplay() => await Electron.Screen.GetPrimaryDisplayAsync();
+        private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
 
         public async Task OpenMainWindowAsync()
         {
@@ -83,7 +81,7 @@ namespace NetPad.UiInterop
             options.MinWidth = 100;
             options.Center = true;
 
-            return await Electron.WindowManager.CreateWindowAsync(options, url);
+            return await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
         }
     }
 }

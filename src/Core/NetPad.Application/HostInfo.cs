@@ -1,4 +1,4 @@
-namespace NetPad.Services
+namespace NetPad
 {
     public class HostInfo
     {

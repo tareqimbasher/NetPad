@@ -1,10 +1,7 @@
-using System;
-using System.Threading.Tasks;
-using ElectronNET.API;
 using NetPad.Common;
-using NetPad.Services;
+using NetPad.UiInterop;
 
-namespace NetPad.UiInterop
+namespace NetPad.Electron.UiInterop
 {
     public class ElectronIpcService : IIpcService
     {
@@ -17,7 +14,7 @@ namespace NetPad.UiInterop
         {
             try
             {
-                Electron.IpcMain.Send(
+                ElectronNET.API.Electron.IpcMain.Send(
                     ElectronUtil.MainWindow,
                     channel,
                     JsonSerializer.Serialize(message));
