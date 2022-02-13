@@ -1,9 +1,0 @@
-files:
-  include: 'src/**/*.scss'
-rules:
-  property-sort-order: 0
-  no-color-keywords: 0
-  quotes: 0
-  hex-notation: 0
-  single-line-per-selector: 0
-  no-important: 0

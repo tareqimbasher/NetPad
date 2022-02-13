@@ -13,9 +13,8 @@
     },
     "scripts": {
         "lint:js": "eslint src test cypress --ext .js,.ts",
-        "lint:css": "sass-lint -c .sass-lint.yml \"src/**/*.scss\"",
         "lint:html": "htmlhint -c .htmlhintrc src",
-        "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
+        "lint": "npm run lint:js && npm run lint:html",
         "pretest": "npm run lint",
         "start": "webpack serve",
         "build": "rimraf dist && webpack --env production",
@@ -80,7 +79,6 @@
         "postcss-loader": "^6.2.0",
         "rimraf": "^3.0.2",
         "sass": "^1.43.4",
-        "sass-lint": "^1.13.1",
         "sass-loader": "^12.3.0",
         "start-server-and-test": "^1.14.0",
         "style-loader": "^3.3.1",
