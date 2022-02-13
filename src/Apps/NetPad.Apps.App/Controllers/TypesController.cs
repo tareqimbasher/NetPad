@@ -34,6 +34,7 @@ namespace NetPad.Controllers
             public ScriptDirectoryChanged? ScriptDirectoryChanged { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
             public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
+            public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }
         }
     }
 }

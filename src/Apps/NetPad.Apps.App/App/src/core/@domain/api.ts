@@ -1862,6 +1862,7 @@ export class Types implements ITypes {
     scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
+    requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -1887,6 +1888,7 @@ export class Types implements ITypes {
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChanged.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
+            this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
         }
     }
 
@@ -1912,6 +1914,7 @@ export class Types implements ITypes {
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
+        data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
         return data;
     }
 
@@ -1937,6 +1940,7 @@ export interface ITypes {
     scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
+    requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
@@ -2617,6 +2621,75 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 
 export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
     message: string;
+}
+
+export abstract class CommandOfString extends Command implements ICommandOfString {
+
+    constructor(data?: ICommandOfString) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): CommandOfString {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'CommandOfString' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CommandOfString {
+        throw new Error("The abstract class 'CommandOfString' cannot be instantiated.");
+    }
+}
+
+export interface ICommandOfString extends ICommand {
+}
+
+export class RequestNewScriptNameCommand extends CommandOfString implements IRequestNewScriptNameCommand {
+    currentScriptName!: string;
+
+    constructor(data?: IRequestNewScriptNameCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.currentScriptName = _data["currentScriptName"];
+        }
+    }
+
+    static fromJS(data: any): RequestNewScriptNameCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new RequestNewScriptNameCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["currentScriptName"] = this.currentScriptName;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): RequestNewScriptNameCommand {
+        const json = this.toJSON();
+        let result = new RequestNewScriptNameCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRequestNewScriptNameCommand extends ICommandOfString {
+    currentScriptName: string;
 }
 
 export interface FileResponse {

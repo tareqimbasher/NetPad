@@ -1,8 +1,11 @@
 import {IBackgroundService} from "@common";
 import {IDisposable} from "aurelia";
-import {IEventBus, ConfirmSaveCommand, IIpcGateway, YesNoCancel} from "@domain";
+import {IEventBus, ConfirmSaveCommand, IIpcGateway, YesNoCancel, RequestNewScriptNameCommand} from "@domain";
 
-export class DialogBackgroundService implements IBackgroundService {
+/**
+ * This is utilized for the Web app, not the Electron app
+ */
+export class WebDialogBackgroundService implements IBackgroundService {
     private disposables: IDisposable[] = [];
 
     constructor(@IEventBus readonly eventBus: IEventBus,
@@ -14,6 +17,11 @@ export class DialogBackgroundService implements IBackgroundService {
         this.disposables.push(
             this.eventBus.subscribeToServer(ConfirmSaveCommand, async msg => { await this.confirmSave(msg); })
         );
+
+        this.disposables.push(
+            this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => { await this.requestNewScriptName(msg); })
+        );
+
         return Promise.resolve(undefined);
     }
 
@@ -25,5 +33,11 @@ export class DialogBackgroundService implements IBackgroundService {
         const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
 
         await this.ipcGateway.send("Respond", command.id, ync);
+    }
+
+    private async requestNewScriptName(command: RequestNewScriptNameCommand) {
+        const newName = prompt("Name:", command.currentScriptName);
+
+        await this.ipcGateway.send("Respond", command.id, newName || null);
     }
 }

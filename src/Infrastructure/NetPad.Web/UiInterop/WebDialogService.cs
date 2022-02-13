@@ -18,8 +18,13 @@ public class WebDialogService : IUiDialogService
         return await _ipcService.SendAndReceiveAsync(new ConfirmSaveCommand(script));
     }
 
-    public Task<string?> AskUserForSaveLocation(Script script)
+    public async Task<string?> AskUserForSaveLocation(Script script)
     {
-        return Task.FromResult($"/{script.Name}{Script.STANARD_EXTENSION}");
+        var newName = await _ipcService.SendAndReceiveAsync(new RequestNewScriptNameCommand(script.Name));
+
+        if (newName == null)
+            return null;
+
+        return $"/{newName}{Script.STANARD_EXTENSION}";
     }
 }

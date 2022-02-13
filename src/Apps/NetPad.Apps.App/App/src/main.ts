@@ -5,7 +5,7 @@ import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService,} from "@domain";
 import {
     DateTimeValueConverter,
-    DialogBackgroundService,
+    WebDialogBackgroundService,
     EventBus,
     ExternalLinkCustomAttribute,
     IWindowBootstrap,
@@ -13,7 +13,8 @@ import {
     SettingsBackgroundService,
     SignalRIpcGateway,
     TextToHtmlValueConverter,
-    WindowBackgroundService
+    WebWindowBackgroundService,
+    PlatformsCustomAttribute
 } from "@application";
 import {IBackgroundService} from "@common";
 
@@ -28,14 +29,15 @@ const app = Aurelia.register(
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingService, SettingService),
     Registration.transient(IBackgroundService, SettingsBackgroundService),
-    Registration.transient(IBackgroundService, DialogBackgroundService),
-    Registration.transient(IBackgroundService, WindowBackgroundService),
+    Registration.transient(IBackgroundService, WebDialogBackgroundService),
+    Registration.transient(IBackgroundService, WebWindowBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
         level: LogLevel.trace,
         sinks: [ConsoleSink],
     }),
     ExternalLinkCustomAttribute,
+    PlatformsCustomAttribute,
     DateTimeValueConverter,
     TextToHtmlValueConverter,
     SanitizeHtmlValueConverter

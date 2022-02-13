@@ -43,7 +43,7 @@ export class ReferenceManagement {
         if (!newValue || newValue.length === 0)
             return;
 
-        const references = Array.from(newValue).map(d => new AssemblyReference({
+        const references = Array.from(newValue).map((d: File | any) => new AssemblyReference({
             title: path.basename(d.path),
             assemblyPath: d.path
         }));

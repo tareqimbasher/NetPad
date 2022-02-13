@@ -2,7 +2,10 @@ import {IBackgroundService} from "@common";
 import {IDisposable} from "aurelia";
 import {IEventBus, OpenWindowCommand} from "@domain";
 
-export class WindowBackgroundService implements IBackgroundService {
+/**
+ * This is utilized for the Web app, not the Electron app
+ */
+export class WebWindowBackgroundService implements IBackgroundService {
     private openWindowCommandToken: IDisposable;
 
     constructor(@IEventBus readonly eventBus: IEventBus) {
@@ -20,8 +23,6 @@ export class WindowBackgroundService implements IBackgroundService {
     }
 
     private openWindow(command: OpenWindowCommand) {
-        console.warn(command);
-
         let metadata = "";
         for (const key of Object.keys(command.metadata)) {
             metadata += `&${key}=${command.metadata[key]}`;
@@ -37,9 +38,9 @@ export class WindowBackgroundService implements IBackgroundService {
         const x = mainWin.top.outerWidth / 2 + mainWin.top.screenX - ( width / 2);
         const y = mainWin.top.outerHeight / 2 + mainWin.top.screenY - ( height / 2);
 
-        let features = `width=${width},height=${height},x=${x},y=${y}`;
+        let features = `width=${width},height=${height},x=${x},y=${y},location=off,toolbar=off,status=off`;
 
-        const win = window.open(url, "_blank", features);
+        window.open(url, command.windowName, features);
 
         // const focusPopup = () => { win.focus(); };
         // document.addEventListener("mousedown", focusPopup);

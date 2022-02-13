@@ -30,7 +30,8 @@ const postcssLoader = {
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
     return {
-        target: 'electron-renderer',
+        // target: 'electron-renderer',
+        target: 'web',
         mode: production ? 'production' : 'development',
         devtool: production ? undefined : 'eval-cheap-source-map',
         optimization: {
@@ -61,6 +62,10 @@ module.exports = function (env, {analyze}) {
                 path.resolve(__dirname, 'dev-app'),
                 path.resolve(__dirname, 'node_modules'),
             ],
+            fallback: {
+                "fs": false,
+                "path": require.resolve("path-browserify"),
+            }
         },
         devServer: {
             historyApiFallback: true,

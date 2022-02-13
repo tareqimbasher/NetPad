@@ -1,4 +1,5 @@
-export * from "./attributes/external-link";
+export * from "./attributes/external-link-attribute";
+export * from "./attributes/platforms-attribute";
 
 export * from "./value-converters/date-time-value-converter";
 export * from "./value-converters/text-to-html-value-converter";
@@ -10,8 +11,8 @@ export * from "./events/subscription-token";
 export * from "./events/signalr-ipc-gateway";
 
 export * from "./background-services/settings-background-service";
-export * from "./background-services/window-background-service";
-export * from "./background-services/dialog-background-service";
+export * from "./background-services/web-window-background-service";
+export * from "./background-services/web-dialog-background-service";
 
 export * from "./windows/iwindow-bootstrap";
 export * from "./editor/editor";
