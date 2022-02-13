@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetPad.Common;
+using NetPad.Events;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 
@@ -13,28 +12,22 @@ namespace NetPad.Sessions
     public class Session : ISession
     {
         private readonly IScriptEnvironmentFactory _scriptEnvironmentFactory;
+        private readonly IEventBus _eventBus;
         private readonly ILogger<Session> _logger;
-        private readonly ObservableCollection<ScriptEnvironment> _environments;
-        private ScriptEnvironment? _active;
+        private readonly List<ScriptEnvironment> _environments;
         private Guid? _lastActiveScriptId = null;
 
-        public Session(IScriptEnvironmentFactory scriptEnvironmentFactory, ILogger<Session> logger)
+        public Session(IScriptEnvironmentFactory scriptEnvironmentFactory, IEventBus eventBus, ILogger<Session> logger)
         {
             _scriptEnvironmentFactory = scriptEnvironmentFactory;
+            _eventBus = eventBus;
             _logger = logger;
-            _environments = new ObservableCollection<ScriptEnvironment>();
-            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
+            _environments = new List<ScriptEnvironment>();
         }
 
-        public ObservableCollection<ScriptEnvironment> Environments => _environments;
+        public IReadOnlyList<ScriptEnvironment> Environments => _environments.AsReadOnly();
 
-        public ScriptEnvironment? Active
-        {
-            get => _active;
-            set => this.RaiseAndSetIfChanged(ref _active, value);
-        }
-
-        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        public ScriptEnvironment? Active { get; private set; }
 
 
         public ScriptEnvironment? Get(Guid scriptId)
@@ -49,6 +42,7 @@ namespace NetPad.Sessions
             {
                 environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
                 _environments.Add(environment);
+                await _eventBus.PublishAsync(new EnvironmentsAdded(environment));
             }
 
             await ActivateAsync(script.Id);
@@ -65,6 +59,7 @@ namespace NetPad.Sessions
 
             _environments.Remove(environmentToClose);
             environmentToClose.Dispose();
+            await _eventBus.PublishAsync(new EnvironmentsRemoved(environmentToClose));
 
             if (Active == environmentToClose)
             {
@@ -87,15 +82,19 @@ namespace NetPad.Sessions
 
         public Task ActivateAsync(Guid? scriptId)
         {
+            ScriptEnvironment? newActive;
             _lastActiveScriptId = Active?.Script.Id;
 
             if (scriptId == null)
-                Active = null;
+                newActive = null;
             else
             {
                 var environment = Get(scriptId.Value);
-                Active = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
+                newActive = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
             }
+
+            Active = newActive;
+            _eventBus.PublishAsync(new ActiveEnvironmentChanged(newActive?.Script.Id));
 
             return Task.CompletedTask;
         }

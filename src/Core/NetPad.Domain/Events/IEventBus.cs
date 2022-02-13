@@ -131,14 +131,6 @@ public interface IEventBus
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="event">Event to deliver</param>
     Task PublishAsync<TEvent>(TEvent @event) where TEvent : class, IEvent;
-
-    /// <summary>
-    /// Publish a Event to any subscribers asynchronously
-    /// </summary>
-    /// <typeparam name="TEvent">Type of Event</typeparam>
-    /// <param name="event">Event to deliver</param>
-    /// <param name="callback">AsyncCallback called on completion</param>
-    Task PublishAsync<TEvent>(TEvent @event, AsyncCallback callback) where TEvent : class, IEvent;
 }
 
 public interface ISubscriberErrorHandler

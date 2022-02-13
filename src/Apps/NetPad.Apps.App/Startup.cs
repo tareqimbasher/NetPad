@@ -60,7 +60,8 @@ namespace NetPad
             services.AddTransient<IPackageProvider, NugetPackageProvider>();
 
             services.AddHostedService<SessionBackgroundService>();
-            services.AddHostedService<ScriptBackgroundService>();
+            services.AddHostedService<ScriptEnvironmentBackgroundService>();
+            services.AddHostedService<ScriptDirectoryBackgroundService>();
 
             if (WebHostEnvironment.IsDevelopment())
             {

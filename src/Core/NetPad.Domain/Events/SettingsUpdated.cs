@@ -2,7 +2,7 @@ using NetPad.Configuration;
 
 namespace NetPad.Events
 {
-    public class SettingsUpdated
+    public class SettingsUpdated : IEvent
     {
         public SettingsUpdated(Settings settings)
         {

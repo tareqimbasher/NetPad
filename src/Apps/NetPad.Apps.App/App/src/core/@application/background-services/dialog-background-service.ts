@@ -22,7 +22,6 @@ export class DialogBackgroundService implements IBackgroundService {
     }
 
     private async confirmSave(command: ConfirmSaveCommand) {
-        console.warn("Got command", command);
         const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
 
         await this.ipcGateway.send("Respond", command.id, ync);

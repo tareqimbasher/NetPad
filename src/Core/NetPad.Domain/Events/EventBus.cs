@@ -326,17 +326,6 @@ public sealed class EventBus : IEventBus
         await PublishInternalAsync<TEvent>(@event);
     }
 
-    /// <summary>
-    /// Publish a Event to any subscribers asynchronously
-    /// </summary>
-    /// <typeparam name="TEvent">Type of Event</typeparam>
-    /// <param name="event">Event to deliver</param>
-    /// <param name="callback">AsyncCallback called on completion</param>
-    public async Task PublishAsync<TEvent>(TEvent @event, AsyncCallback callback) where TEvent : class, IEvent
-    {
-        await PublishInternalAsync<TEvent>(@event);
-    }
-
     #endregion
 
     #region Internal Methods

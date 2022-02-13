@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Sessions;
 
@@ -12,6 +13,7 @@ namespace NetPad.Tests.Helpers
         {
             return new Session(
                 new ScriptEnvironmentFactory(serviceProvider),
+                serviceProvider.GetRequiredService<IEventBus>(),
                 serviceProvider.GetRequiredService<ILogger<Session>>());
         }
     }

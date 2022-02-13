@@ -11,14 +11,14 @@ namespace NetPad.Utilities
         private Process? _process;
         private readonly object _outputReceivedLock;
         private readonly object _errorReceivedLock;
-        
+
         public ProcessHandler(string commandText)
         {
             _outputReceivedLock = new object();
             _errorReceivedLock = new object();
             OnOutputReceivedHandlers = new List<Func<string, Task>>();
             OnErrorReceivedHandlers = new List<Func<string, Task>>();
-            
+
             CommandText = commandText;
         }
 
@@ -66,7 +66,7 @@ namespace NetPad.Utilities
             _process.BeginErrorReadLine();
 
             if (!waitForExit) return true;
-            
+
             await _process.WaitForExitAsync();
             ExitCode = _process.ExitCode;
 
@@ -76,7 +76,7 @@ namespace NetPad.Utilities
         public void StopProcess()
         {
             if (_process == null || _process.HasExited) return;
-            
+
             _process.Kill();
             _process.Dispose();
         }
@@ -91,12 +91,12 @@ namespace NetPad.Utilities
                 AsyncHelpers.RunSync(() => handler(ev.Data));
             }
         }
-        
+
         private void ErrorReceived(object? sender, DataReceivedEventArgs ev)
         {
             if (ev.Data == null)
                 return;
-            
+
             foreach (var handler in OnErrorReceivedHandlers)
             {
                 AsyncHelpers.RunSync(() => handler(ev.Data));
@@ -111,7 +111,7 @@ namespace NetPad.Utilities
                 _process.ErrorDataReceived -= ErrorReceived;
                 StopProcess();
             }
-            
+
             OnOutputReceivedHandlers.Clear();
             OnErrorReceivedHandlers.Clear();
         }

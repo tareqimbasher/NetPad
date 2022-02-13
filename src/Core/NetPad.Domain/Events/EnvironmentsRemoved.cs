@@ -2,7 +2,7 @@ using NetPad.Scripts;
 
 namespace NetPad.Events
 {
-    public class EnvironmentsRemoved
+    public class EnvironmentsRemoved : IEvent
     {
         public EnvironmentsRemoved(params ScriptEnvironment[] environments)
         {

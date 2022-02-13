@@ -2,7 +2,7 @@ using System;
 
 namespace NetPad.Events
 {
-    public class ActiveEnvironmentChanged
+    public class ActiveEnvironmentChanged : IEvent
     {
         public ActiveEnvironmentChanged(Guid? scriptId)
         {

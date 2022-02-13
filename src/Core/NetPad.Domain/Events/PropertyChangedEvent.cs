@@ -1,6 +1,6 @@
 namespace NetPad.Events
 {
-    public abstract class PropertyChangedEvent
+    public abstract class PropertyChangedEvent : IEvent
     {
         protected PropertyChangedEvent(string propertyName, object? newValue)
         {

@@ -2,7 +2,7 @@ using NetPad.Scripts;
 
 namespace NetPad.Events
 {
-    public class EnvironmentsAdded
+    public class EnvironmentsAdded : IEvent
     {
         public EnvironmentsAdded(params ScriptEnvironment[] environments)
         {

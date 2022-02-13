@@ -2,7 +2,7 @@ using System;
 
 namespace NetPad.Events
 {
-    public class ScriptOutputEmitted
+    public class ScriptOutputEmitted : IEvent
     {
         public ScriptOutputEmitted(Guid scriptId, string? output)
         {

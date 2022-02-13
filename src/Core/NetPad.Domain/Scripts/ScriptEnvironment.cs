@@ -1,24 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
+using NetPad.Events;
 using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    public class ScriptEnvironment : INotifyOnPropertyChanged, IDisposable
+    public class ScriptEnvironment : IDisposable
     {
         private readonly IServiceScope _scope;
+        private readonly IEventBus _eventBus;
         private readonly ILogger<ScriptEnvironment> _logger;
-        private ScriptStatus _status;
-        private double _runDurationMilliseconds;
-        private IScriptRuntime? _runtime;
         private IScriptRuntimeInputReader _inputReader;
         private IScriptRuntimeOutputWriter _outputWriter;
 
+        private ScriptStatus _status;
+        private double _runDurationMilliseconds;
+        private IScriptRuntime? _runtime;
         private readonly object _destructionLock = new object();
         private bool _isDestroyed = false;
 
@@ -27,34 +27,21 @@ namespace NetPad.Scripts
         {
             Script = script;
             _scope = scope;
+            _eventBus = _scope.ServiceProvider.GetRequiredService<IEventBus>();
             _logger = _scope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionRuntimeInputReader.Null;
             _outputWriter = ActionRuntimeOutputWriter.Null;
 
-            Status = ScriptStatus.Ready;
-            OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
+            _status = ScriptStatus.Ready;
 
-            if (script.IsNew)
-            {
-                script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
-            }
+            Initialize();
         }
 
         public Script Script { get; }
 
-        public virtual ScriptStatus Status
-        {
-            get => _status;
-            set => this.RaiseAndSetIfChanged(ref _status, value);
-        }
+        public virtual ScriptStatus Status => _status;
 
-        public double RunDurationMilliseconds
-        {
-            get => _runDurationMilliseconds;
-            set => this.RaiseAndSetIfChanged(ref _runDurationMilliseconds, value);
-        }
-
-        [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        public double RunDurationMilliseconds => _runDurationMilliseconds;
 
         public async Task RunAsync()
         {
@@ -65,7 +52,7 @@ namespace NetPad.Scripts
             if (Status == ScriptStatus.Running)
                 throw new InvalidOperationException("Script is already running.");
 
-            Status = ScriptStatus.Running;
+            await SetStatusAsync(ScriptStatus.Running);
 
             try
             {
@@ -73,15 +60,16 @@ namespace NetPad.Scripts
 
                 var runResult = await runtime.RunAsync(_inputReader, _outputWriter);
 
-                RunDurationMilliseconds = runResult.DurationMs;
-                Status = runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error;
+                await SetRunDurationAsync(runResult.DurationMs);
+                await SetStatusAsync(runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error);
+
                 _logger.LogDebug($"Run completed with status: {Status}");
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error running script. Details: {ex}");
                 await _outputWriter.WriteAsync(ex + "\n");
-                Status = ScriptStatus.Error;
+                await SetStatusAsync(ScriptStatus.Error);
             }
             finally
             {
@@ -94,8 +82,10 @@ namespace NetPad.Scripts
             lock (_destructionLock)
             {
                 EnsureNotDestroyed();
-                this.RemoveAllPropertyChangedHandlers();
                 _scope.Dispose();
+
+                Script.RemoveAllPropertyChangedHandlers();
+                Script.Config.RemoveAllPropertyChangedHandlers();
 
                 _isDestroyed = true;
             }
@@ -107,6 +97,36 @@ namespace NetPad.Scripts
         {
             _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
             _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
+        }
+
+        private void Initialize()
+        {
+            if (Script.IsNew)
+            {
+                Script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
+            }
+
+            Script.OnPropertyChanged.Add(async (args) =>
+            {
+                await _eventBus.PublishAsync(new ScriptPropertyChanged(Script.Id, args.PropertyName, args.NewValue));
+            });
+
+            Script.Config.OnPropertyChanged.Add(async (args) =>
+            {
+                await _eventBus.PublishAsync(new ScriptConfigPropertyChanged(Script.Id, args.PropertyName, args.NewValue));
+            });
+        }
+
+        private async Task SetStatusAsync(ScriptStatus status)
+        {
+            _status = status;
+            await _eventBus.PublishAsync(new EnvironmentPropertyChanged(Script.Id, nameof(Status), status));
+        }
+
+        private async Task SetRunDurationAsync(double runDurationMs)
+        {
+            _runDurationMilliseconds = runDurationMs;
+            await _eventBus.PublishAsync(new EnvironmentPropertyChanged(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
         }
 
         private async Task<IScriptRuntime> GetRuntimeAsync()

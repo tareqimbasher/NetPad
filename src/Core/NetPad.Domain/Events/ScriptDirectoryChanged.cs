@@ -3,7 +3,7 @@ using NetPad.Scripts;
 
 namespace NetPad.Events
 {
-    public class ScriptDirectoryChanged
+    public class ScriptDirectoryChanged : IEvent
     {
         public ScriptDirectoryChanged(List<ScriptSummary> scripts)
         {

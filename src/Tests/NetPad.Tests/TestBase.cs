@@ -2,8 +2,8 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Events;
 using NetPad.Tests.Logging;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace NetPad.Tests
@@ -28,6 +28,8 @@ namespace NetPad.Tests
                 config.AddProvider(new XUnitLoggerProvider(testOutputHelper));
                 config.AddConfiguration(configuration.GetSection("Logging"));
             });
+
+            services.AddSingleton<IEventBus, EventBus>();
 
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider(true);
