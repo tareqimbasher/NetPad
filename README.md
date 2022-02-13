@@ -47,30 +47,44 @@ backend occurs via REST API calls and Electron's IPC protocol.
 
 ```
 # Install dependencies
-cd Apps/NetPad.Web/App
+cd Apps/NetPad.Apps.App/App
 npm install
 
 # Start the development web server
 npm start
 ```
 
-#### 2. Run the Electron app
+#### 2. Run the main app
+
+NetPad can run as an Electron app, or as a regular web application and accessed
+with a web browser.
+
+##### Electron
 
 ```
 # Install the Electron.NET CLI tool if you don't have it already
 dotnet tool install ElectronNET.CLI -g
 
 # Start the app in watch mode
-cd Apps/NetPad.Web/App
+cd Apps/NetPad.Apps.App
 electronize start /watch /manifest electron.manifest.js
 
 # Or start the app without watch mode
 electronize start /manifest electron.manifest.js /PublishSingleFile false
 ```
 
-#### Note
+###### Note
 
 > Only the first electronize start is slow. Later runs are much faster.
+
+##### Web Application
+
+```
+cd Apps/NetPad.Apps.App
+dotnet run
+```
+
+and access the app via your web browser, ex: `http://localhost:5000`
 
 ## Packaging
 
