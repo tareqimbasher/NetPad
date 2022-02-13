@@ -3,6 +3,10 @@ import {ILogger} from "aurelia";
 import {IIpcGateway} from "@domain";
 import {SubscriptionToken} from "@application";
 
+/**
+ * @deprecated This is still functional, but we are using SignalR IPC communication
+ * for both Web and Electron versions of the app. This class will be deleted.
+ */
 export class ElectronIpcGateway implements IIpcGateway {
     private readonly logger: ILogger;
 
@@ -19,5 +23,9 @@ export class ElectronIpcGateway implements IIpcGateway {
 
         ipcRenderer.on(channelName, handler);
         return new SubscriptionToken(() => ipcRenderer.off(channelName, handler));
+    }
+
+    send<TResult>(channelName: string, ...params: any[]): Promise<TResult> {
+        throw new Error("Platform not supported");
     }
 }

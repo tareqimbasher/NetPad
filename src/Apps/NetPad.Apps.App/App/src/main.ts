@@ -16,7 +16,7 @@ import {
     WebWindowBackgroundService,
     PlatformsCustomAttribute
 } from "@application";
-import {IBackgroundService} from "@common";
+import {IBackgroundService, System} from "@common";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -44,7 +44,10 @@ const app = Aurelia.register(
 );
 
 
-const winOpt = startupOptions.get("win");
+let winOpt = startupOptions.get("win");
+if (!winOpt && !System.isRunningInElectron())
+    winOpt = "main";
+
 let win: any;
 
 if (winOpt === "main")

@@ -30,8 +30,8 @@ const postcssLoader = {
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
     return {
-        // target: 'electron-renderer',
-        target: 'web',
+        //target: 'web',
+        target: 'electron-renderer',
         mode: production ? 'production' : 'development',
         devtool: production ? undefined : 'eval-cheap-source-map',
         optimization: {

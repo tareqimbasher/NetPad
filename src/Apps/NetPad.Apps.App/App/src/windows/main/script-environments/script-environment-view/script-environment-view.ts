@@ -107,6 +107,6 @@ export class ScriptEnvironmentView {
     }
 
     private isResultsViewOpen(): boolean {
-        return this.resultsContainer.clientHeight > 0;
+        return this.resultsContainer.clientHeight > 10;
     }
 }

@@ -7,10 +7,14 @@ export class ExternalLinkCustomAttribute {
     }
 
     public attached() {
-        if (this.element.tagName !== "A" || !this.element.getAttribute("href"))
-            return;
+        const handler = async (event: Event) => {
+            if (this.element.tagName !== "A" || !this.element.getAttribute("href"))
+                return;
 
-        const handler = (event: Event) => this.openLinkExternally(event);
+            await this.openLinkExternally(event);
+            return false;
+        };
+
         this.element.addEventListener("click", handler);
         this.disposables.push(() => this.element.removeEventListener("click", handler));
     }

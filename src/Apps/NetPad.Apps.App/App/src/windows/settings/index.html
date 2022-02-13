@@ -30,7 +30,11 @@
 
         <div class="d-flex ps-3 pe-3 pb-3">
             <div class="me-auto">
-                <button class="btn btn-secondary" click.trigger="settingService.showSettingsFile()">Show Settings File</button>
+                <button class="btn btn-secondary"
+                        click.trigger="settingService.showSettingsFile()"
+                        platforms="Electron">
+                    Show Settings File
+                </button>
             </div>
             <div>
                 <button class="btn btn-primary" click.trigger="save()">Save</button>
