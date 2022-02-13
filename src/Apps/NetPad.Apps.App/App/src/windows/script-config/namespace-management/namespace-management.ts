@@ -37,9 +37,9 @@ export class NamespaceManagement {
     private validate(namespaces: string[]): string | undefined {
         for (const namespace of namespaces) {
             if (namespace.startsWith("using "))
-                return `The namespace \"${namespace}\" should not contain the word \"using\".`;
+                return `The namespace "${namespace}" should not contain the word "using".`;
             if (namespace.length > 0 && !Util.isLetter(namespace[0]) && namespace[0] !== "_")
-                return `The namespace \"${namespace}\" seems incorrect. It must start with an alphabet or underscore.`;
+                return `The namespace "${namespace}" seems incorrect. It must start with an alphabet or underscore.`;
         }
 
         return undefined;

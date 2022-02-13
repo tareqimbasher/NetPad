@@ -61,7 +61,7 @@ export class Session extends SessionApiClient implements ISession {
         });
 
         this.eventBus.subscribeToServer(EnvironmentsRemoved, message => {
-            for (let environment of message.environments) {
+            for (const environment of message.environments) {
                 const ix = this.environments.findIndex(e => e.script.id == environment.script.id);
                 if (ix >= 0)
                     this.environments.splice(ix, 1);

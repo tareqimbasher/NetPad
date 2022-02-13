@@ -150,7 +150,7 @@ export class Shortcut {
     }
 
     public get keyComboString(): string {
-        let combo = [];
+        const combo = [];
         if (this.metaKey) combo.push("Meta");
         if (this.altKey) combo.push("Alt");
         if (this.ctrlKey) combo.push("Ctrl");
@@ -162,7 +162,7 @@ export class Shortcut {
     }
 
     public toString(): string {
-        let combo = [];
+        const combo = [];
         if (this.metaKey) combo.push("Meta");
         if (this.altKey) combo.push("Alt");
         if (this.ctrlKey) combo.push("Ctrl");

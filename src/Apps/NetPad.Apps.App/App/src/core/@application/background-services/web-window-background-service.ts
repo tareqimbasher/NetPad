@@ -38,7 +38,7 @@ export class WebWindowBackgroundService implements IBackgroundService {
         const x = mainWin.top.outerWidth / 2 + mainWin.top.screenX - ( width / 2);
         const y = mainWin.top.outerHeight / 2 + mainWin.top.screenY - ( height / 2);
 
-        let features = `width=${width},height=${height},x=${x},y=${y},location=off,toolbar=off,status=off`;
+        const features = `width=${width},height=${height},x=${x},y=${y},location=off,toolbar=off,status=off`;
 
         window.open(url, command.windowName, features);
 
