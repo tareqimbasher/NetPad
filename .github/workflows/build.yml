@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./src/Apps/NetPad.Web/App
+        working-directory: ./src/Apps/NetPad.Apps.App/App
     
     strategy:
       matrix:
