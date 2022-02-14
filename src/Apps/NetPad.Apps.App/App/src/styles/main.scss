@@ -3,17 +3,20 @@
 @import "./splitjs";
 @import "~styles/themes";
 
-body, html {
+body,
+html {
     height: 100%;
 }
 
 .window {
     height: 100vh;
+
     @include theme(background-color, backgroundColor);
     @include theme(color, textColor);
 }
 
-.flex-grow-height-restricted {
+.flex-grow-height-restricted,
+%flex-grow-height-restricted {
     flex-grow: 1;
     min-height: 0;
 }
@@ -50,20 +53,21 @@ hr {
     @include theme(color, borderColor);
 }
 
-.clickable {
+.clickable,
+%clickable {
     cursor: pointer;
 }
 
 .action-icon {
-    @extend .clickable;
+    @extend %clickable;
     @include theme(color, actionIconColor);
 
     &:hover {
         @include theme(color, actionIconHoverColor);
 
-        //&::before {
-        //    font-weight: bold !important;
-        //}
+        // &::before {
+        //     font-weight: bold !important;
+        // }
     }
 }
 
@@ -83,7 +87,8 @@ table thead td {
     }
 }
 
-.text-truncate-1-line {
+.text-truncate-1-line,
+%text-truncate-1-line {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     display: -webkit-box;
@@ -91,12 +96,12 @@ table thead td {
 }
 
 .text-truncate-2-lines {
-    @extend .text-truncate-1-line;
+    @extend %text-truncate-1-line;
     -webkit-line-clamp: 2;
 }
 
 .text-truncate-3-lines {
-    @extend .text-truncate-1-line;
+    @extend %text-truncate-1-line;
     -webkit-line-clamp: 3;
 }
 
@@ -135,7 +140,7 @@ a.btn-link:hover {
 }
 
 .tab-content {
-    @extend .flex-grow-height-restricted;
+    @extend %flex-grow-height-restricted;
     @extend .d-flex;
     @extend .flex-column;
 }
@@ -157,12 +162,13 @@ a.btn-link:hover {
     @include theme(background-color, scrollbarTrackColor);
 }
 
+@use "sass:map";
 @each $color in map-keys($colors) {
     .text-#{"" + $color} {
-        color: map-get($colors, $color) !important;
+        color: map.get($colors, $color) !important;
     }
 
     .hover-text-#{"" + $color}:hover {
-        color: map-get($colors, $color) !important;
+        color: map.get($colors, $color) !important;
     }
 }

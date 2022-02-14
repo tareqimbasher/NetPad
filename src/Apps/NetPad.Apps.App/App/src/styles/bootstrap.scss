@@ -4,13 +4,13 @@ $spacer: 0.5rem;
 $border-radius: 0;
 $border-radius: 0;
 $border-radius: 0;
-$nav-link-padding-y: .25rem;
-$border-radius: .15rem;
-$border-radius-sm: .1rem;
-$border-radius-lg: .2rem;
+$nav-link-padding-y: 0.25rem;
+$border-radius: 0.15rem;
+$border-radius-sm: 0.1rem;
+$border-radius-lg: 0.2rem;
 $input-btn-focus-width: 0.1rem;
-$input-btn-padding-y: .16rem;
-$input-btn-padding-y-sm: .1rem;
+$input-btn-padding-y: 0.16rem;
+$input-btn-padding-y-sm: 0.1rem;
 $form-select-indicator-color: silver;
 
 // Should be the last line after overrides
@@ -28,7 +28,6 @@ $form-select-indicator-color: silver;
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
 }
-
 
 .list-group-item {
     @include theme(background-color, listBackground);
@@ -63,6 +62,10 @@ $form-select-indicator-color: silver;
     @include theme(color, textColor);
 
     tr {
+        td {
+            @include theme(border-bottom-color, borderColor);
+        }
+
         &.active > td {
             @include theme(background-color, activeColor);
 
@@ -75,10 +78,6 @@ $form-select-indicator-color: silver;
             @include theme(color, textColor);
             @include theme(--bs-table-hover-bg, hoverColor);
         }
-    }
-
-    td {
-        @include theme(border-bottom-color, borderColor);
     }
 }
 
