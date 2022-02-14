@@ -1,3 +1,5 @@
+@use "sass:map";
+
 @import "./variables";
 @import "./bootstrap";
 @import "./splitjs";
@@ -162,7 +164,6 @@ a.btn-link:hover {
     @include theme(background-color, scrollbarTrackColor);
 }
 
-@use "sass:map";
 @each $color in map-keys($colors) {
     .text-#{"" + $color} {
         color: map.get($colors, $color) !important;
