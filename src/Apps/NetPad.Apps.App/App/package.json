@@ -72,7 +72,7 @@
         "eslint": "^8.1.0",
         "eslint-plugin-cypress": "^2.12.1",
         "html-webpack-plugin": "^5.5.0",
-        "htmlhint": "^0.16.0",
+        "htmlhint": "^1.1.2",
         "jest": "^27.3.1",
         "jest-transform-stub": "^2.0.0",
         "monaco-editor-webpack-plugin": "^7.0.1",
