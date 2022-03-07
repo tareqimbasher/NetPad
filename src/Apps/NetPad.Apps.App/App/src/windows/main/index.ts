@@ -1,6 +1,6 @@
 import Split from "split.js";
 import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
-import {IPaneManager, PaneHost, PaneHostOrientation} from "@application";
+import {DefaultCompletionItemProvider, IPaneManager, PaneHost, PaneHostOrientation} from "@application";
 import {ClipboardPane, NamespacesPane} from "./panes";
 import {KeyCode} from "@common";
 
@@ -42,6 +42,8 @@ export class Index {
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
+
+        new DefaultCompletionItemProvider().register();
     }
 
     private registerKeyboardShortcuts() {

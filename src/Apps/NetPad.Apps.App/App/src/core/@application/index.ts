@@ -24,3 +24,4 @@ export * from "./panes/ipane-host-view-state-controller";
 export * from "./panes/pane";
 
 export * from "./editor/editor";
+export * from "./editor/completion-item-providers/default-completion-item-provider";
