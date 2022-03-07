@@ -16,7 +16,7 @@ export class NamespacesPane extends Pane {
         this.hasShortcut(shortcutManager.getShortcutByName("Namespaces Pane"));
     }
 
-    public get name() {
+    public override get name() {
         const environment = this.session.active;
         if (!environment) return this._name;
         return `Namespaces (${environment.script.config.namespaces.length})`;

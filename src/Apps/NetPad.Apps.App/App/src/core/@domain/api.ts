@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 //----------------------
@@ -913,7 +914,7 @@ export class SessionApiClient implements ISessionApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
