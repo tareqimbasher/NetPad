@@ -32,7 +32,8 @@
 <div class="flex-grow-height-restricted">
     <div ref="textEditorContainer" class="text-editor-container d-flex overflow-hidden">
         <editor environment.bind="environment"
-                text.two-way="editorText"></editor>
+                text.two-way="editorText"
+                view-model.two-way="editor"></editor>
     </div>
     <div ref="resultsContainer" class="results-container overflow-hidden">
         <results-view environment.bind="environment"
