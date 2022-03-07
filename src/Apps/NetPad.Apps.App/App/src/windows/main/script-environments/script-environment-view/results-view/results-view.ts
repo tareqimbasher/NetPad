@@ -1,20 +1,22 @@
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmitted, ScriptStatus, Settings} from "@domain";
-import {bindable, IDisposable, watch} from "aurelia";
+import {bindable, IDisposable, ILogger, watch} from "aurelia";
+import {ViewModelBase} from "@application";
 
-export class ResultsView {
+export class ResultsView extends ViewModelBase {
     public resultsViewSettings: ResultsPaneViewSettings;
     @bindable public environment: ScriptEnvironment;
     @bindable public onCloseRequested: () => void;
 
     private resultsEl: HTMLElement;
     private resultControls: ResultControls;
-    private disposables: (() => void)[] = [];
 
     constructor(private readonly settings: Settings,
                 @ISession private readonly session: ISession,
                 @IEventBus readonly eventBus: IEventBus,
+                @ILogger logger: ILogger
     ) {
+        super(logger);
         this.resultsViewSettings = new ResultsPaneViewSettings(this.settings.resultsOptions.textWrap);
     }
 
@@ -29,9 +31,9 @@ export class ResultsView {
         this.disposables.push(() => token.dispose());
     }
 
-    public detaching() {
+    public override detaching() {
         this.resultControls.dispose();
-        this.disposables.forEach(d => d());
+        super.detaching();
     }
 
     private appendResults(results: string | null) {

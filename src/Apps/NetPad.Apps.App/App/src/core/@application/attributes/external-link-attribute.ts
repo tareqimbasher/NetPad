@@ -1,9 +1,11 @@
 import {System} from "@common";
+import {ViewModelBase} from "@application/view-model-base";
+import {ILogger} from "aurelia";
 
-export class ExternalLinkCustomAttribute {
-    private disposables: (() => void)[] = [];
+export class ExternalLinkCustomAttribute extends ViewModelBase {
 
-    constructor(private readonly element: Element) {
+    constructor(private readonly element: Element, @ILogger logger: ILogger) {
+        super(logger);
     }
 
     public attached() {
@@ -17,10 +19,6 @@ export class ExternalLinkCustomAttribute {
 
         this.element.addEventListener("click", handler);
         this.disposables.push(() => this.element.removeEventListener("click", handler));
-    }
-
-    public detaching() {
-        this.disposables.forEach(d => d());
     }
 
     private async openLinkExternally(event: Event): Promise<void> {

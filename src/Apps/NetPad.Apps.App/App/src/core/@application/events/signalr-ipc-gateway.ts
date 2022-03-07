@@ -23,7 +23,7 @@ export class SignalRIpcGateway implements IIpcGateway {
 
     public subscribe(channelName: string, callback: (message: any, channel: string) => void): SubscriptionToken {
         const handler = (...args: any[]) => {
-            this.logger.debug(`SignalRIpcGateway: Got server message`, ...args);
+            this.logger.debug(`Received server push message of type ${channelName}`, ...args);
             const arg = args.length > 0 ? args[0] : null;
             callback(arg, channelName);
         };
