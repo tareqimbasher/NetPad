@@ -14,9 +14,10 @@ import {
     SignalRIpcGateway,
     TextToHtmlValueConverter,
     WebWindowBackgroundService,
-    PlatformsCustomAttribute
+    PlatformsCustomAttribute,
+    ContextMenu
 } from "@application";
-import {IBackgroundService, System} from "@common";
+import {AppMutationObserver, IBackgroundService, System} from "@common";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -28,6 +29,7 @@ const app = Aurelia.register(
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingService, SettingService),
+    Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.transient(IBackgroundService, SettingsBackgroundService),
     Registration.transient(IBackgroundService, WebDialogBackgroundService),
     Registration.transient(IBackgroundService, WebWindowBackgroundService),
@@ -36,11 +38,18 @@ const app = Aurelia.register(
         level: LogLevel.trace,
         sinks: [ConsoleSink],
     }),
+
+    // Custom Attributes
     ExternalLinkCustomAttribute,
     PlatformsCustomAttribute,
+
+    // Value Converters
     DateTimeValueConverter,
     TextToHtmlValueConverter,
-    SanitizeHtmlValueConverter
+    SanitizeHtmlValueConverter,
+
+    // Custom elements
+    ContextMenu
 );
 
 

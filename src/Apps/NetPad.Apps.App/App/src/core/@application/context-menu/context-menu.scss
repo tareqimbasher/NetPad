@@ -1,0 +1,65 @@
+@import "~styles/themes";
+
+context-menu {
+    position: fixed;
+    z-index: 100001;
+    opacity: 0;
+    visibility: hidden;
+    @include theme(background-color, contextMenuBackgroundColor);
+    border-radius: 2px;
+    width: 285px;
+    padding: 10px 0;
+    -webkit-box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
+    0 5px 5px -3px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
+    0 5px 5px -3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
+    0 5px 5px -3px rgba(0, 0, 0, 0.2);
+    transition: visibility 0.2s, opacity 0.2s linear;
+    -moz-transition: visibility 0.2s, opacity 0.2s linear;
+
+    &.visible {
+        opacity: 1;
+        visibility: visible;
+        display: block;
+    }
+
+    .menu {
+        .item {
+            cursor: default;
+            padding: 2px 5px;
+
+            &:hover {
+                background-color: rgba(30, 144, 255, 0.5);
+            }
+
+            .item-container {
+                padding: 0 7px;
+            }
+
+            .icon {
+                width: 25px;
+            }
+
+            .text {
+
+            }
+
+            .shortcut {
+                text-align: right;
+            }
+
+            &.divider {
+                &:hover {
+                    background-color: unset;
+                }
+            }
+        }
+
+        hr {
+            //padding: 0;
+            margin: 3px 0;
+            background-color: white;
+        }
+    }
+}

@@ -111,6 +111,10 @@ a.btn-link:hover {
     cursor: pointer;
 }
 
+.bi.invisible {
+    visibility: hidden;
+}
+
 .tabs {
     .nav-item {
         @include theme(background-color, tabColor);

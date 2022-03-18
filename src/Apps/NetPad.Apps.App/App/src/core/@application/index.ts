@@ -8,7 +8,6 @@ export * from "./value-converters/text-to-html-value-converter";
 export * from "./value-converters/sanitize-html-value-converter";
 
 export * from "./events/event-bus";
-export * from "./events/subscription-token";
 export * from "./events/signalr-ipc-gateway";
 
 export * from "./background-services/settings-background-service";
@@ -25,3 +24,6 @@ export * from "./panes/pane";
 
 export * from "./editor/editor";
 export * from "./editor/completion-item-providers/default-completion-item-provider";
+
+export * from "./context-menu/context-menu-options";
+export * from "./context-menu/context-menu";

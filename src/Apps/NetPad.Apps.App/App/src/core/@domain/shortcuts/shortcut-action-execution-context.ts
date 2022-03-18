@@ -5,10 +5,7 @@ export class ShortcutActionExecutionContext {
     public session: ISession;
     public eventBus: IEventBus;
 
-    constructor(
-        public readonly event: KeyboardEvent,
-        @IContainer public readonly container: IContainer
-    ) {
+    constructor(@IContainer public readonly container: IContainer) {
         this.session = container.get(ISession);
         this.eventBus = container.get(IEventBus);
     }

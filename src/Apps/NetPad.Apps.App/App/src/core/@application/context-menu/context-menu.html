@@ -1,0 +1,22 @@
+<template>
+    <div class="menu">
+        <div class="item ${item.isDivider ? 'divider' : ''}"
+             repeat.for="item of options.items"
+             click.trigger="selectMenuItem(item)">
+            <div class="item-container">
+                <div if.bind="!item.isDivider" class="d-flex">
+                    <div class="icon">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div class="text flex-grow-1 text-truncate">
+                        ${item.text}
+                    </div>
+                    <div class="shortcut" show.bind="item.shortcut">
+                        ${item.shortcut.keyComboString}
+                    </div>
+                </div>
+                <hr else/>
+            </div>
+        </div>
+    </div>
+</template>

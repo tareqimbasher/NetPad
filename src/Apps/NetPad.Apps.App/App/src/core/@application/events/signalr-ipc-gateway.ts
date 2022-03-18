@@ -1,7 +1,7 @@
 import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
 import {ILogger, PLATFORM} from "aurelia";
 import {IIpcGateway} from "@domain";
-import {SubscriptionToken} from "@application";
+import {SubscriptionToken} from "@common";
 
 export class SignalRIpcGateway implements IIpcGateway {
     private readonly connection: HubConnection

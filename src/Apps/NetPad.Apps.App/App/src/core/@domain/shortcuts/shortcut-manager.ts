@@ -7,6 +7,7 @@ export interface IShortcutManager {
     initialize(): void;
     registerShortcut(shortcut: Shortcut): void;
     getShortcutByName(name: string): Shortcut | undefined;
+    executeShortcut(shortcut: Shortcut): void;
 }
 
 export const IShortcutManager = DI.createInterface<IShortcutManager>();
@@ -35,16 +36,20 @@ export class ShortcutManager implements IShortcutManager{
             const shortcut = this.registry.find((s) => s.isEnabled && s.matches(ev));
             if (!shortcut) return;
 
-            if (shortcut.action) {
-                const context = new ShortcutActionExecutionContext(ev, this.container);
-                shortcut.action(context);
-            }
-
-            if (shortcut.eventType) {
-                this.eventBus.publish(new shortcut.eventType());
-            }
+            this.executeShortcut(shortcut);
 
             ev.preventDefault();
         });
+    }
+
+    public executeShortcut(shortcut: Shortcut) {
+        if (shortcut.action) {
+            const context = new ShortcutActionExecutionContext(this.container);
+            shortcut.action(context);
+        }
+
+        if (shortcut.eventType) {
+            this.eventBus.publish(new shortcut.eventType());
+        }
     }
 }

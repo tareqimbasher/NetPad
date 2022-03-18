@@ -3,7 +3,8 @@
 
     <ul class="nav nav-tabs flex-shrink-0">
         <li class="nav-item d-flex flex-row align-items-center script-tab ${session.active === env ? 'active' : ''}"
-            repeat.for="env of session.environments">
+            repeat.for="env of session.environments"
+            data-script-id.bind="env.script.id">
             <div class="text d-flex align-items-center"
                  click.trigger="session.activate(env.script.id)"
                  auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">
@@ -29,5 +30,7 @@
                                  show.bind="session.active === env"
                                  environment.bind="env"></script-environment-view>
     </div>
+
+    <context-menu options.bind="tabContextMenuOptions"></context-menu>
 
 </template>

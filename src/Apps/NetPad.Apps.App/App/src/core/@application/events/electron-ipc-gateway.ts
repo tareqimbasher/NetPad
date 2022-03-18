@@ -1,7 +1,7 @@
 import {ipcRenderer, IpcRendererEvent} from "electron";
 import {ILogger} from "aurelia";
 import {IIpcGateway} from "@domain";
-import {SubscriptionToken} from "@application";
+import {SubscriptionToken} from "@common";
 
 /**
  * @deprecated This is still functional, but we are using SignalR IPC communication
