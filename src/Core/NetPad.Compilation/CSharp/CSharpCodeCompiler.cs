@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using NetPad.Runtimes;
+using NetPad.IO;
 
 namespace NetPad.Compilation.CSharp
 {
@@ -35,7 +35,7 @@ namespace NetPad.Compilation.CSharp
             foreach (var assemblyReferenceLocation in input.AssemblyReferenceLocations)
                 assemblyLocations.Add(assemblyReferenceLocation);
 
-            assemblyLocations.Add(typeof(IScriptRuntimeOutputWriter).Assembly.Location);
+            assemblyLocations.Add(typeof(IOutputWriter).Assembly.Location);
 
             var references = assemblyLocations
                 .Where(al => !string.IsNullOrWhiteSpace(al))

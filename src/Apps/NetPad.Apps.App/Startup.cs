@@ -15,7 +15,6 @@ using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Runtimes;
-using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
 using NetPad.Sessions;
 using NetPad.UiInterop;
@@ -51,11 +50,11 @@ namespace NetPad
             services.AddSingleton<ISession, Session>();
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
-            services.AddTransient<IScriptEnvironmentFactory, ScriptEnvironmentFactory>();
+            services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-            services.AddTransient<IScriptRuntime, ScriptRuntime>();
+            services.AddTransient<IScriptRuntimeFactory, DefaultInMemoryScriptRuntimeFactory>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
             services.AddTransient<IPackageProvider, NugetPackageProvider>();
 

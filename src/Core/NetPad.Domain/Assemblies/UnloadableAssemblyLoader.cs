@@ -7,7 +7,7 @@ using System.Runtime.Loader;
 using Microsoft.Extensions.Logging;
 using NetPad.Utilities;
 
-namespace NetPad.Runtimes.Assemblies
+namespace NetPad.Assemblies
 {
     public sealed class UnloadableAssemblyLoader : AssemblyLoadContext, IAssemblyLoader
     {

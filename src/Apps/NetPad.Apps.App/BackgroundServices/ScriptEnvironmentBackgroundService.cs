@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NetPad.Events;
-using NetPad.Runtimes;
+using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.UiInterop;
@@ -41,7 +41,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
                 SubscribeAndForwardToIpc<ScriptPropertyChanged>(environment);
                 SubscribeAndForwardToIpc<ScriptConfigPropertyChanged>(environment);
 
-                environment.SetIO(ActionRuntimeInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
+                environment.SetIO(ActionInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
             }
 
             return Task.CompletedTask;

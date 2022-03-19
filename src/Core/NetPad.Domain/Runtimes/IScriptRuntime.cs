@@ -1,12 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using NetPad.Scripts;
+using NetPad.IO;
 
 namespace NetPad.Runtimes
 {
-    public interface IScriptRuntime : IDisposable
+    public interface IScriptRuntime : IDisposable, IAsyncDisposable
     {
-        Task InitializeAsync(Script script);
-        Task<RunResult> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter);
+        Task<RunResult> RunScriptAsync();
+
+        void AddOutputListener(IOutputWriter outputWriter);
+        void RemoveOutputListener(IOutputWriter outputWriter);
     }
 }

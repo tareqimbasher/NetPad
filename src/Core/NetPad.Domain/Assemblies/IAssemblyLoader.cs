@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace NetPad.Runtimes.Assemblies
+namespace NetPad.Assemblies
 {
     public interface IAssemblyLoader : IDisposable
     {

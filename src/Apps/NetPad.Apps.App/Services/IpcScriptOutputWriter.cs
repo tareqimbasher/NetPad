@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using NetPad.Events;
-using NetPad.Runtimes;
+using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 using O2Html;
@@ -9,7 +9,7 @@ using O2Html.Dom;
 
 namespace NetPad.Services;
 
-public class IpcScriptOutputWriter : IScriptRuntimeOutputWriter
+public class IpcScriptOutputWriter : IOutputWriter
 {
     private readonly IIpcService _ipcService;
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()

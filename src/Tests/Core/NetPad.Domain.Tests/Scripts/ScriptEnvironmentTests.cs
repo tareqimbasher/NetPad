@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using NetPad.Runtimes;
+using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.Tests;
 using NetPad.Tests.Helpers;
@@ -23,8 +23,8 @@ namespace NetPad.Domain.Tests.Scripts
         {
             var script = ScriptTestHelper.CreateScript();
             var environment = new ScriptEnvironment(script, ServiceProvider.CreateScope());
-            var inputReader = new ActionRuntimeInputReader(() => null);
-            var outputWriter = new ActionRuntimeOutputWriter((o, title) => { });
+            var inputReader = new ActionInputReader(() => null);
+            var outputWriter = new ActionOutputWriter((o, title) => { });
 
             environment.SetIO(inputReader, outputWriter);
 
@@ -44,18 +44,6 @@ namespace NetPad.Domain.Tests.Scripts
             environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
 
             Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync());
-        }
-
-        [Fact]
-        public void DisposingEnvironment_DestroysEnvironment()
-        {
-            var script = ScriptTestHelper.CreateScript();
-            var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
-            environment.Setup(e => e.DestroyAsync()).Returns(Task.CompletedTask);
-
-            environment.Object.Dispose();
-
-            environment.Verify(e => e.DestroyAsync(), Times.Once);
         }
 
         [Fact]

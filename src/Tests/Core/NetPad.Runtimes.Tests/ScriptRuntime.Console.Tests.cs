@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using NetPad.Assemblies;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
+using NetPad.IO;
 using NetPad.Packages;
-using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
 using NetPad.Tests;
+using NetPad.Tests.Services;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,8 +26,8 @@ namespace NetPad.Runtimes.Tests
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-            services.AddTransient<IScriptRuntime, ScriptRuntime>();
-            services.AddTransient<IPackageProvider>(sp => null);
+            services.AddTransient<DefaultInMemoryScriptRuntimeFactory>();
+            services.AddTransient<IPackageProvider, NullPackageProvider>();
         }
 
         public static IEnumerable<object[]> ConsoleOutputTestData => new[]
@@ -44,18 +46,21 @@ namespace NetPad.Runtimes.Tests
             script.Config.SetKind(ScriptKind.Statements);
             script.UpdateCode($"Console.Write({code});");
 
-            var runtime = ServiceProvider.GetRequiredService<IScriptRuntime>();
-            await runtime.InitializeAsync(script);
-
             string? result = null;
+            var runtime = await GetScriptRuntimeAsync(script);
+            runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
 
-            await runtime.RunAsync(
-                ActionRuntimeInputReader.Null,
-                new ActionRuntimeOutputWriter((output, title) => result = output?.ToString()));
+            await runtime.RunScriptAsync();
 
             _testOutputHelper.WriteLine(result);
 
             Assert.Equal(expectedOutput, result);
+        }
+
+        private async Task<InMemoryScriptRuntime> GetScriptRuntimeAsync(Script script)
+        {
+            return (InMemoryScriptRuntime)await ServiceProvider.GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
+                .CreateScriptRuntimeAsync(script);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace NetPad.Sessions
         private readonly IEventBus _eventBus;
         private readonly ILogger<Session> _logger;
         private readonly List<ScriptEnvironment> _environments;
-        private Guid? _lastActiveScriptId = null;
+        private Guid? _lastActiveScriptId;
 
         public Session(IScriptEnvironmentFactory scriptEnvironmentFactory, IEventBus eventBus, ILogger<Session> logger)
         {
@@ -50,7 +50,7 @@ namespace NetPad.Sessions
 
         public async Task CloseAsync(Guid scriptId)
         {
-            _logger.LogDebug($"Closing script: {scriptId}");
+            _logger.LogDebug("Closing script: {ScriptId}", scriptId);
             var environmentToClose = Get(scriptId);
             if (environmentToClose == null)
                 return;
@@ -58,7 +58,7 @@ namespace NetPad.Sessions
             var ix = _environments.IndexOf(environmentToClose);
 
             _environments.Remove(environmentToClose);
-            environmentToClose.Dispose();
+            await environmentToClose.DisposeAsync();
             await _eventBus.PublishAsync(new EnvironmentsRemoved(environmentToClose));
 
             if (Active == environmentToClose)
@@ -77,7 +77,7 @@ namespace NetPad.Sessions
                     await ActivateAsync(null);
             }
 
-            _logger.LogDebug($"Closed script: {scriptId}");
+            _logger.LogDebug("Closed script: {ScriptId}", scriptId);
         }
 
         public Task ActivateAsync(Guid? scriptId)

@@ -12,7 +12,7 @@ namespace NetPad.Tests.Helpers
         public static Session CreateSession(IServiceProvider serviceProvider)
         {
             return new Session(
-                new ScriptEnvironmentFactory(serviceProvider),
+                new DefaultScriptEnvironmentFactory(serviceProvider),
                 serviceProvider.GetRequiredService<IEventBus>(),
                 serviceProvider.GetRequiredService<ILogger<Session>>());
         }

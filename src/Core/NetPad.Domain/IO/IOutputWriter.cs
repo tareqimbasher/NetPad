@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 
-namespace NetPad.Runtimes
+namespace NetPad.IO
 {
     /// <summary>
-    /// A way to write output from the script runtime.
+    /// Writes output.
     /// </summary>
-    public interface IScriptRuntimeOutputWriter
+    public interface IOutputWriter
     {
         Task WriteAsync(object? output, string? title = null);
     }

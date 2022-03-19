@@ -7,11 +7,10 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
-        public static readonly string[] NamespacesNeededByBaseProgram = new[]
-        {
+        public static readonly string[] NamespacesNeededByBaseProgram = {
             "System",
             "System.Threading.Tasks",
-            "NetPad.Runtimes"
+            "NetPad.IO"
         };
 
         public CodeParsingResult Parse(Script script, params string[] additionalNamespaces)
@@ -83,10 +82,10 @@ public async Task Main()
 
 public static class UserScript
 {{
-    private static IScriptRuntimeOutputWriter OutputWriter {{ get; set; }}
+    private static IOutputWriter OutputWriter {{ get; set; }}
     private static Exception? Exception {{ get; set; }}
 
-    private static async Task Main(IScriptRuntimeOutputWriter outputWriter)
+    private static async Task Main(IOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
 

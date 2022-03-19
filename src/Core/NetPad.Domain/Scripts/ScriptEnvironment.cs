@@ -4,33 +4,33 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Events;
+using NetPad.IO;
 using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    public class ScriptEnvironment : IDisposable
+    // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
+    public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
-        private readonly IServiceScope _scope;
         private readonly IEventBus _eventBus;
         private readonly ILogger<ScriptEnvironment> _logger;
-        private IScriptRuntimeInputReader _inputReader;
-        private IScriptRuntimeOutputWriter _outputWriter;
+        private IServiceScope? _serviceScope;
+        private IInputReader _inputReader;
+        private IOutputWriter _outputWriter;
 
         private ScriptStatus _status;
         private double _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
-        private readonly object _destructionLock = new object();
-        private bool _isDestroyed = false;
+        private bool _isDisposed;
 
-
-        public ScriptEnvironment(Script script, IServiceScope scope)
+        public ScriptEnvironment(Script script, IServiceScope serviceScope)
         {
             Script = script;
-            _scope = scope;
-            _eventBus = _scope.ServiceProvider.GetRequiredService<IEventBus>();
-            _logger = _scope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
-            _inputReader = ActionRuntimeInputReader.Null;
-            _outputWriter = ActionRuntimeOutputWriter.Null;
+            _serviceScope = serviceScope;
+            _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
+            _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
+            _inputReader = ActionInputReader.Null;
+            _outputWriter = ActionOutputWriter.Null;
 
             _status = ScriptStatus.Ready;
 
@@ -45,9 +45,9 @@ namespace NetPad.Scripts
 
         public async Task RunAsync()
         {
-            _logger.LogTrace($"{nameof(RunAsync)} start");
+            EnsureNotDisposed();
 
-            EnsureNotDestroyed();
+            _logger.LogTrace($"{nameof(RunAsync)} start");
 
             if (Status == ScriptStatus.Running)
                 throw new InvalidOperationException("Script is already running.");
@@ -57,17 +57,16 @@ namespace NetPad.Scripts
             try
             {
                 var runtime = await GetRuntimeAsync();
-
-                var runResult = await runtime.RunAsync(_inputReader, _outputWriter);
+                var runResult = await runtime.RunScriptAsync();
 
                 await SetRunDurationAsync(runResult.DurationMs);
                 await SetStatusAsync(runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error);
 
-                _logger.LogDebug($"Run completed with status: {Status}");
+                _logger.LogDebug("Run completed with status: {Status}", Status);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error running script. Details: {ex}");
+                _logger.LogError(ex, "Error running script");
                 await _outputWriter.WriteAsync(ex + "\n");
                 await SetStatusAsync(ScriptStatus.Error);
             }
@@ -77,30 +76,22 @@ namespace NetPad.Scripts
             }
         }
 
-        public virtual Task DestroyAsync()
+        public void SetIO(IInputReader inputReader, IOutputWriter outputWriter)
         {
-            lock (_destructionLock)
-            {
-                EnsureNotDestroyed();
-                _scope.Dispose();
+            EnsureNotDisposed();
 
-                Script.RemoveAllPropertyChangedHandlers();
-                Script.Config.RemoveAllPropertyChangedHandlers();
+            RemoveScriptRuntimeListeners();
 
-                _isDestroyed = true;
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public void SetIO(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
-        {
             _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
             _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
+
+            AddScriptRuntimeListeners();
         }
 
         private void Initialize()
         {
+            EnsureNotDisposed();
+
             if (Script.IsNew)
             {
                 Script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
@@ -133,25 +124,94 @@ namespace NetPad.Scripts
         {
             if (_runtime == null)
             {
-                _logger.LogDebug($"Initializing new runtime");
-                _runtime = _scope.ServiceProvider.GetRequiredService<IScriptRuntime>();
-                await _runtime.InitializeAsync(Script);
+                _logger.LogDebug("Initializing new runtime");
+
+                var factory = _serviceScope!.ServiceProvider.GetRequiredService<IScriptRuntimeFactory>();
+                _runtime = await factory.CreateScriptRuntimeAsync(Script);
+
+                AddScriptRuntimeListeners();
             }
 
             return _runtime;
         }
 
-        private void EnsureNotDestroyed()
+        private void AddScriptRuntimeListeners()
         {
-            if (_isDestroyed)
-                throw new InvalidOperationException($"{nameof(ScriptEnvironment)} is destroyed.");
+            _runtime?.AddOutputListener(_outputWriter);
+        }
+
+        private void RemoveScriptRuntimeListeners()
+        {
+            _runtime?.RemoveOutputListener(_outputWriter);
+        }
+
+        private void EnsureNotDisposed()
+        {
+            if (_isDisposed)
+                throw new InvalidOperationException($"Script environment {Script.Id} is disposed.");
         }
 
         public void Dispose()
         {
             _logger.LogTrace($"{nameof(Dispose)} start");
-            DestroyAsync();
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+
+            _isDisposed = true;
+
             _logger.LogTrace($"{nameof(Dispose)} end");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            _logger.LogTrace($"{nameof(DisposeAsync)} start");
+
+            await DisposeAsyncCore().ConfigureAwait(false);
+
+            Dispose(disposing: false);
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+            GC.SuppressFinalize(this);
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+
+            _isDisposed = true;
+
+            _logger.LogTrace($"{nameof(DisposeAsync)} end");
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _runtime?.Dispose();
+                _serviceScope?.Dispose();
+
+                _runtime = null;
+                _serviceScope = null;
+
+                Script.RemoveAllPropertyChangedHandlers();
+                Script.Config.RemoveAllPropertyChangedHandlers();
+            }
+        }
+
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_runtime != null)
+            {
+                await _runtime.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (_serviceScope is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                _serviceScope?.Dispose();
+            }
+
+            _runtime = null;
+            _serviceScope = null;
         }
     }
 }

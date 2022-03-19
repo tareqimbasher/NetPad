@@ -16,7 +16,7 @@ namespace NetPad.Domain.Tests.Scripts
         [Fact]
         public async Task CreateEnvironment_CreatesEnvironmentSuccessfully()
         {
-            IScriptEnvironmentFactory factory = new ScriptEnvironmentFactory(ServiceProvider);
+            IScriptEnvironmentFactory factory = new DefaultScriptEnvironmentFactory(ServiceProvider);
             var script = ScriptTestHelper.CreateScript();
 
             ScriptEnvironment environment = await factory.CreateEnvironmentAsync(script);

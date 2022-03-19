@@ -69,6 +69,7 @@
     <ProjectReference Include="..\..\Infrastructure\NetPad.Electron\NetPad.Electron.csproj" />
     <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\NetPad.Web\NetPad.Web.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App\dist\**" />

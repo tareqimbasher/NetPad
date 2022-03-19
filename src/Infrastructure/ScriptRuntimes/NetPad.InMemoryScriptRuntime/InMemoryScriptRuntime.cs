@@ -1,81 +1,77 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Assemblies;
 using NetPad.Compilation;
 using NetPad.Exceptions;
+using NetPad.IO;
 using NetPad.Packages;
-using NetPad.Runtimes.Assemblies;
 using NetPad.Scripts;
 using NetPad.Utilities;
 
 namespace NetPad.Runtimes
 {
-    public sealed class ScriptRuntime : IScriptRuntime
+    // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
+    public sealed class InMemoryScriptRuntime : IScriptRuntime
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly Script _script;
         private readonly ICodeParser _codeParser;
         private readonly ICodeCompiler _codeCompiler;
         private readonly IPackageProvider _packageProvider;
-        private readonly ILogger<ScriptRuntime> _logger;
-        private Script? _script;
+        private readonly ILogger<InMemoryScriptRuntime> _logger;
+        private readonly IOutputWriter _outputWriter;
+        private readonly HashSet<IOutputWriter> _outputListeners;
+        private IServiceScope? _serviceScope;
 
-        public ScriptRuntime(
-            IServiceProvider serviceProvider,
+        public InMemoryScriptRuntime(
+            Script script,
+            IServiceScope serviceScope,
             ICodeParser codeParser,
             ICodeCompiler codeCompiler,
             IPackageProvider packageProvider,
-            ILogger<ScriptRuntime> logger)
+            ILogger<InMemoryScriptRuntime> logger)
         {
-            _serviceProvider = serviceProvider;
+            _script = script;
+            _serviceScope = serviceScope;
             _codeParser = codeParser;
             _codeCompiler = codeCompiler;
             _packageProvider = packageProvider;
             _logger = logger;
+            _outputListeners = new HashSet<IOutputWriter>();
+
+            _outputWriter = new ActionOutputWriter((obj, title) =>
+            {
+                foreach (var outputWriter in _outputListeners)
+                {
+                    try
+                    {
+                        outputWriter.WriteAsync(obj, title);
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            });
+
         }
 
-        public Task InitializeAsync(Script script)
+        public async Task<RunResult> RunScriptAsync()
         {
-            if (_script != null)
-                throw new InvalidOperationException("Runtime is already initialized.");
-            _script = script;
-            return Task.CompletedTask;
-        }
-
-        public async Task<RunResult> RunAsync(IScriptRuntimeInputReader inputReader, IScriptRuntimeOutputWriter outputWriter)
-        {
-            EnsureInitialization();
-
-            var script = _script!;
-            var parsingResult = _codeParser.Parse(script!);
-
             try
             {
-                var assemblyPaths = await GetReferenceAssemblyPathsAsync();
+                var (success, assemblyBytes, referenceAssemblyPaths) = await CompileAndGetRefAssemblyPathsAsync();
 
-                var compilationResult = _codeCompiler.Compile(
-                    new CompilationInput(parsingResult.Program, assemblyPaths)
-                    {
-                        OutputAssemblyNameTag = script.Name
-                    });
-
-                if (!compilationResult.Success)
-                {
-                    await outputWriter.WriteAsync(compilationResult.Diagnostics
-                        .Where(d => d.Severity == DiagnosticSeverity.Error)
-                        .JoinToString("\n") + "\n");
+                if (!success)
                     return RunResult.RunAttemptFailure();
-                }
 
-                var (alcWeakRef, completionSuccess, elapsedMs) = await ExecuteAndUnloadAsync(
-                    compilationResult.AssemblyBytes,
-                    assemblyPaths,
-                    outputWriter
+                var (alcWeakRef, completionSuccess, elapsedMs) = await ExecuteInMemoryAndUnloadAsync(
+                    _serviceScope!,
+                    assemblyBytes,
+                    referenceAssemblyPaths,
+                    _outputWriter
                 );
 
                 for (int i = 0; alcWeakRef.IsAlive && (i < 10); i++)
@@ -88,15 +84,43 @@ namespace NetPad.Runtimes
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await outputWriter.WriteAsync(ex + "\n");
+                await _outputWriter.WriteAsync(ex + "\n");
                 return RunResult.RunAttemptFailure();
             }
         }
 
-        private void EnsureInitialization()
+        public void AddOutputListener(IOutputWriter outputWriter)
         {
-            if (_script == null)
-                throw new InvalidOperationException($"Script is not initialized.");
+            _outputListeners.Add(outputWriter);
+        }
+
+        public void RemoveOutputListener(IOutputWriter outputWriter)
+        {
+            _outputListeners.Remove(outputWriter);
+        }
+
+        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths)> CompileAndGetRefAssemblyPathsAsync()
+        {
+            var parsingResult = _codeParser.Parse(_script);
+
+            var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
+
+            var compilationResult = _codeCompiler.Compile(
+                new CompilationInput(parsingResult.Program, referenceAssemblyPaths)
+                {
+                    OutputAssemblyNameTag = _script.Name
+                });
+
+            if (!compilationResult.Success)
+            {
+                await _outputWriter.WriteAsync(compilationResult.Diagnostics
+                    .Where(d => d.Severity == DiagnosticSeverity.Error)
+                    .JoinToString("\n") + "\n");
+
+                return (false, Array.Empty<byte>(), Array.Empty<string>());
+            }
+
+            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths);
         }
 
         private async Task<string[]> GetReferenceAssemblyPathsAsync()
@@ -121,13 +145,14 @@ namespace NetPad.Runtimes
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteAndUnloadAsync(
+        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteInMemoryAndUnloadAsync(
+            IServiceScope serviceScope,
             byte[] targetAssembly,
             string[] referenceAssemblyPaths,
-            IScriptRuntimeOutputWriter outputWriter
+            IOutputWriter outputWriter
         )
         {
-            using var scope = _serviceProvider.CreateScope();
+            using var scope = serviceScope.ServiceProvider.CreateScope();
             using var assemblyLoader = new UnloadableAssemblyLoader(
                 referenceAssemblyPaths,
                 scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
@@ -173,8 +198,31 @@ namespace NetPad.Runtimes
 
         public void Dispose()
         {
-            _logger.LogTrace($"Dispose start");
-            _logger.LogTrace($"Dispose end");
+            _logger.LogTrace("Dispose start");
+
+            _outputListeners.Clear();
+            if (_serviceScope != null)
+            {
+                _serviceScope.Dispose();
+                _serviceScope = null;
+            }
+
+            _logger.LogTrace("Dispose end");
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            _logger.LogTrace("DisposeAsync start");
+
+            _outputListeners.Clear();
+            if (_serviceScope != null)
+            {
+                _serviceScope.Dispose();
+                _serviceScope = null;
+            }
+
+            _logger.LogTrace("DisposeAsync end");
+            return ValueTask.CompletedTask;
         }
     }
 }
