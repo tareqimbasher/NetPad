@@ -23,5 +23,13 @@
         "@typescript-eslint/no-var-requires": "off",
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-empty-function": "warn"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["src/core/@domain/api.ts"],
+            "rules": {
+                "@typescript-eslint/ban-ts-comment": "off"
+            }
+        }
+    ]
 }
