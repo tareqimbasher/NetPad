@@ -7,7 +7,8 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
-        public static readonly string[] NamespacesNeededByBaseProgram = {
+        public static readonly string[] NamespacesNeededByBaseProgram =
+        {
             "System",
             "System.Threading.Tasks",
             "NetPad.IO"
@@ -22,8 +23,8 @@ namespace NetPad.Compilation.CSharp
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode)
                 // TODO implementation should be improved to use syntax tree instead of a simple string replace
-                .Replace("Console.WriteLine", "UserScript.OutputWriteLine")
-                .Replace("Console.Write", "UserScript.OutputWrite");
+                .Replace("Console.WriteLine", "UserScriptProgram.OutputWriteLine")
+                .Replace("Console.Write", "UserScriptProgram.OutputWrite");
 
             var baseProgramTemplate = GetBaseProgramTemplate();
             var program = string.Format(baseProgramTemplate, usings, userProgram);
@@ -80,12 +81,18 @@ public async Task Main()
             return @"
 {0}
 
-public static class UserScript
+public class UserScriptProgram
 {{
     private static IOutputWriter OutputWriter {{ get; set; }}
     private static Exception? Exception {{ get; set; }}
 
-    private static async Task Main(IOutputWriter outputWriter)
+    // Entry point used when running script in external process
+    static async Task Main(string[] args)
+    {{
+        await Start(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
+    }}
+
+    private static async Task Start(IOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
 
@@ -99,19 +106,22 @@ public static class UserScript
         }}
     }}
 
-    public static void OutputWrite(object? o, string? title = null)
+    public static void OutputWrite(object? o = null, string? title = null)
     {{
         OutputWriter.WriteAsync(o, title);
     }}
 
-    public static void OutputWriteLine(object? o, string? title = null)
+    public static void OutputWriteLine(object? o = null, string? title = null)
     {{
         OutputWriter.WriteAsync(o, title);
     }}
+}}
 
+public static class Exts
+{{
     public static T? Dump<T>(this T? o, string? title = null)
     {{
-        OutputWriteLine(o, title);
+        UserScriptProgram.OutputWriteLine(o, title);
         return o;
     }}
 }}

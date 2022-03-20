@@ -41,8 +41,11 @@ namespace NetPad.Compilation.CSharp
                 .Where(al => !string.IsNullOrWhiteSpace(al))
                 .Select(location => MetadataReference.CreateFromFile(location));
 
-            // Create compilation
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            // Using OutputKind.ConsoleApplication vs OutputKind.DynamicallyLinkedLibrary so the generated assembly
+            // is able to be executed as an executable (ie. dotnet ./assembly.dll). Using OutputKind.DynamicallyLinkedLibrary
+            // generates an assembly that does not have an entry point, resulting in failure to execute standalone assembly
+            // in external processes outside of NetPad
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.ConsoleApplication)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithOptimizationLevel(OptimizationLevel.Debug)
                 .WithOverflowChecks(true);

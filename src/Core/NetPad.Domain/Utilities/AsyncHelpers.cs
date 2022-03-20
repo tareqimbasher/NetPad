@@ -8,7 +8,7 @@ namespace NetPad.Utilities
     public static class AsyncHelpers
     {
         /// <summary>
-        /// Execute's an async Task<T> method which has a void return value synchronously
+        /// Executes an async Task<T> method which has a void return value synchronously
         /// </summary>
         /// <param name="task">Task<T> method to execute</param>
         public static void RunSync(Func<Task> task)
@@ -38,7 +38,7 @@ namespace NetPad.Utilities
         }
 
         /// <summary>
-        /// Execute's an async Task<T> method which has a T return type synchronously
+        /// Executes an async Task<T> method which has a T return type synchronously
         /// </summary>
         /// <typeparam name="T">Return Type</typeparam>
         /// <param name="task">Task<T> method to execute</param>

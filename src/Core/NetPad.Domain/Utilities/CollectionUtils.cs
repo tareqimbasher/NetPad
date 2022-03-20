@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NetPad.Extensions
+namespace NetPad.Utilities
 {
-    public static class CollectionExtensions
+    public static class CollectionUtils
     {
         public static Task ForEachAsync<T>(this IEnumerable<T> collection, int degreeOfParallelism, Func<T, Task> asyncAction)
         {

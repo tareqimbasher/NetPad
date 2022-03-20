@@ -135,8 +135,8 @@ namespace NetPad.Runtimes
                 }
                 else if (reference is PackageReference pRef)
                 {
-                    assemblyPaths.Add(
-                        await _packageProvider.GetCachedPackageAssemblyPathAsync(pRef.PackageId, pRef.Version)
+                    assemblyPaths.AddRange(
+                        await _packageProvider.GetPackageAndDependantAssembliesAsync(pRef.PackageId, pRef.Version)
                     );
                 }
             }
@@ -162,16 +162,16 @@ namespace NetPad.Runtimes
 
             var alcWeakRef = new WeakReference(assemblyLoader, trackResurrection: true);
 
-            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScript");
+            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScriptProgram");
             if (userScriptType == null)
             {
-                throw new ScriptRuntimeException("Could not find the UserScript type");
+                throw new ScriptRuntimeException("Could not find the UserScriptProgram type");
             }
 
-            var method = userScriptType.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = userScriptType.GetMethod("Start", BindingFlags.Static | BindingFlags.NonPublic);
             if (method == null)
             {
-                throw new Exception("Could not find the entry method Main on UserScript");
+                throw new Exception("Could not find the entry method Start on UserScriptProgram");
             }
 
             var runStart = DateTime.Now;
