@@ -110,6 +110,11 @@ namespace NetPad.Packages
             return cachedPackages.OrderBy(p => p.Title ?? p.PackageId).ToArray();
         }
 
+        public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<HashSet<string>> GetPackageAndDependantAssembliesAsync(string packageId, string packageVersion)
         {
             throw new NotImplementedException();

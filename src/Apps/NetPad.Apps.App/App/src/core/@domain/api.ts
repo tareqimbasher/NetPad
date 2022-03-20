@@ -164,6 +164,8 @@ export interface IPackagesApiClient {
 
     deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
 
+    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
+
     purgePackageCache(): Promise<FileResponse | null>;
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
@@ -262,6 +264,52 @@ export class PackagesApiClient implements IPackagesApiClient {
             });
         }
         return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]> {
+        let url_ = this.baseUrl + "/packages/cache/explicitly-installed?";
+        if (loadMetadata === null)
+            throw new Error("The parameter 'loadMetadata' cannot be null.");
+        else if (loadMetadata !== undefined)
+            url_ += "loadMetadata=" + encodeURIComponent("" + loadMetadata) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetExplicitlyInstalledCachedPackages(_response);
+        });
+    }
+
+    protected processGetExplicitlyInstalledCachedPackages(response: Response): Promise<CachedPackage[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(CachedPackage.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CachedPackage[]>(<any>null);
     }
 
     purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null> {
@@ -1484,6 +1532,7 @@ export interface IPackageMetadata {
 }
 
 export class CachedPackage extends PackageMetadata implements ICachedPackage {
+    installReason!: PackageInstallReason;
     directoryPath!: string;
 
     constructor(data?: ICachedPackage) {
@@ -1493,6 +1542,7 @@ export class CachedPackage extends PackageMetadata implements ICachedPackage {
     init(_data?: any) {
         super.init(_data);
         if (_data) {
+            this.installReason = _data["installReason"];
             this.directoryPath = _data["directoryPath"];
         }
     }
@@ -1506,6 +1556,7 @@ export class CachedPackage extends PackageMetadata implements ICachedPackage {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["installReason"] = this.installReason;
         data["directoryPath"] = this.directoryPath;
         super.toJSON(data);
         return data;
@@ -1520,8 +1571,11 @@ export class CachedPackage extends PackageMetadata implements ICachedPackage {
 }
 
 export interface ICachedPackage extends IPackageMetadata {
+    installReason: PackageInstallReason;
     directoryPath: string;
 }
+
+export type PackageInstallReason = "Explicit" | "Dependency";
 
 export class ScriptSummary implements IScriptSummary {
     name!: string;

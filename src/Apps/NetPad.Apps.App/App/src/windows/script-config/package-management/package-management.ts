@@ -9,6 +9,7 @@ export class PackageManagement {
     public searchResults: PackageSearchResult[] = [];
     public cachedPackages: CachedPackageViewModel[] = [];
     public selectedPackage?: PackageMetadata;
+    public showAllCachedDeps: boolean;
 
     public searchLoadingPromise?: Promise<void>;
     public cacheLoadingPromise?: Promise<void>;
@@ -83,12 +84,25 @@ export class PackageManagement {
         }
     }
 
+    @watch((vm: PackageManagement) => vm.showAllCachedDeps)
     private async refreshCachedPackages() {
-        this.cacheLoadingPromise = this.packageService.getCachedPackages(true)
-            .then(cps => {
-                this.cachedPackages = cps.map(p => new CachedPackageViewModel(p));
-                this.markReferencedPackages();
-            });
+        if (this.showAllCachedDeps) {
+            this.cacheLoadingPromise = this.packageService.getCachedPackages(true)
+                .then(cps => {
+                    this.cachedPackages = cps
+                        .sort((a,b) => (a.packageId > b.packageId) ? 1 : ((b.packageId > a.packageId) ? -1 : 0))
+                        .map(p => new CachedPackageViewModel(p));
+                    this.markReferencedPackages();
+                });
+        } else {
+            this.cacheLoadingPromise = this.packageService.getExplicitlyInstalledCachedPackages(true)
+                .then(cps => {
+                    this.cachedPackages = cps
+                        .sort((a,b) => (a.packageId > b.packageId) ? 1 : ((b.packageId > a.packageId) ? -1 : 0))
+                        .map(p => new CachedPackageViewModel(p));
+                    this.markReferencedPackages();
+                });
+        }
     }
 
     private async searchPackages(term?: string) {

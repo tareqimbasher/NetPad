@@ -3,7 +3,7 @@
     <require from="./reference-management/reference-management"></require>
     <require from="./package-management/package-management"></require>
 
-    <div class="window d-flex flex-column" style="padding: 0 10px 10px">
+    <div class="window d-flex flex-column" style="padding-bottom: 10px">
         <div class="flex-grow-height-restricted d-flex flex-column">
             <ul class="tabs nav nav-tabs mb-3">
                 <li class="nav-item ${tab === configStore.selectedTab ? 'active' : ''}" repeat.for="tab of configStore.tabs">
@@ -11,7 +11,7 @@
                 </li>
             </ul>
 
-            <div class="flex-grow-height-restricted d-flex flex-column">
+            <div class="flex-grow-height-restricted d-flex flex-column" style="padding: 0 10px">
                 <reference-management show.bind="configStore.selectedTab.route === 'references'"
                                       class="tab-content"></reference-management>
 
@@ -22,7 +22,7 @@
                                       class="tab-content"></namespace-management>
             </div>
         </div>
-        <div class="d-flex mt-3">
+        <div class="d-flex mt-3" style="padding: 0 10px">
             <div class="me-auto" id="buttons"></div>
             <div>
                 <button class="btn btn-primary" click.trigger="save()">Save</button>

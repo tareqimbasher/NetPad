@@ -17,6 +17,13 @@ namespace NetPad.Packages
         Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false);
 
         /// <summary>
+        /// Gets a listing cached (installed) packages that were explicitly installed.
+        /// </summary>
+        /// <param name="loadMetadata"></param>
+        /// <returns></returns>
+        Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false);
+
+        /// <summary>
         /// Deletes all cached packages.
         /// </summary>
         Task PurgePackageCacheAsync();

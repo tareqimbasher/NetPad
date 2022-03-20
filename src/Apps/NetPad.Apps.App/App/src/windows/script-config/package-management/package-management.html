@@ -11,7 +11,7 @@
     </div>
 </template>
 
-<template as-custom-element="packages" class="list-group overflow-y-auto">
+<template as-custom-element="packages" class="list-group flex-grow-height-restricted overflow-y-auto">
     <bindable property="packages"></bindable>
     <bindable property="selectedPackage"></bindable>
 
@@ -23,11 +23,14 @@
                 <div class="col-md-10">
                     <h6 class="d-flex align-items-center">
                         <img class="me-3"
-                            src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                            style="height: 24px;"/>
+                             src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                             style="height: 24px;"/>
                         <b>${package.title} <small>(${package.version})</small></b>
                     </h6>
                     <p class="text-truncate-3-lines">${package.description}</p>
+                    <small class="text-warning" show.bind="package.installReason === 'Dependency'">
+                        Installed as a dependency
+                    </small>
                 </div>
                 <div class="col-md-2 text-end">
                     <au-slot name="actions"></au-slot>
@@ -40,8 +43,15 @@
 <div class="d-flex flex-row flex-grow-height-restricted">
     <!-- CACHED PACKAGES -->
     <div id="cached-packages" class="d-flex flex-column column">
-        <div class="column-header">
+        <div class="column-header justify-content-between">
             <h5>Local Package Cache</h5>
+            <div class="form-check" title="Show packages that were installed as dependencies">
+                <input id="show-deps-checkbox" class="form-check-input" type="checkbox"
+                       checked.bind="showAllCachedDeps">
+                <label class="form-check-label" for="show-deps-checkbox">
+                    Show dependencies
+                </label>
+            </div>
         </div>
 
         <div promise.bind="cacheLoadingPromise" class="flex-grow-height-restricted d-flex flex-column">

@@ -22,6 +22,12 @@ namespace NetPad.Controllers
             return Ok(await _packageProvider.GetCachedPackagesAsync(loadMetadata));
         }
 
+        [HttpGet("cache/explicitly-installed")]
+        public async Task<ActionResult<IEnumerable<CachedPackage>>> GetExplicitlyInstalledCachedPackages([FromQuery] bool loadMetadata)
+        {
+            return Ok(await _packageProvider.GetExplicitlyInstalledCachedPackagesAsync(loadMetadata));
+        }
+
         [HttpDelete("cache")]
         public async Task<IActionResult> DeleteCachedPackage([FromQuery] string packageId, [FromQuery] string packageVersion)
         {
