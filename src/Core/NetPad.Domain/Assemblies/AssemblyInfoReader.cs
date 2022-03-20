@@ -9,7 +9,7 @@ namespace NetPad.Assemblies
 {
     public class AssemblyInfoReader : IAssemblyInfoReader
     {
-        public string[] GetNamespaces(byte[] assembly)
+        public HashSet<string> GetNamespaces(byte[] assembly)
         {
             var namespaces = new HashSet<string>();
 
@@ -30,7 +30,7 @@ namespace NetPad.Assemblies
                 namespaces.Add(metadataReader.GetString(typeDef.Namespace));
             }
 
-            return namespaces.ToArray();
+            return namespaces;
         }
     }
 }

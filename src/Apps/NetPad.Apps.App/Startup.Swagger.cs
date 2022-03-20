@@ -45,6 +45,7 @@ public partial class Startup
                     .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
                     .ToList();
 
+                lines.Insert(0, "// @ts-nocheck");
                 lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
 
                 File.WriteAllText(

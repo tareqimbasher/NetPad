@@ -16,16 +16,28 @@ namespace NetPad.Controllers
             _packageProvider = packageProvider;
         }
 
-        [HttpGet("cached")]
+        [HttpGet("cache")]
         public async Task<ActionResult<IEnumerable<CachedPackage>>> GetCachedPackages([FromQuery] bool loadMetadata)
         {
             return Ok(await _packageProvider.GetCachedPackagesAsync(loadMetadata));
         }
 
-        [HttpDelete("cached")]
+        [HttpDelete("cache")]
         public async Task<IActionResult> DeleteCachedPackage([FromQuery] string packageId, [FromQuery] string packageVersion)
         {
+            if (string.IsNullOrWhiteSpace(packageId))if (string.IsNullOrWhiteSpace(packageId))
+                return BadRequest($"{nameof(packageId)} is required.");
+            if (string.IsNullOrWhiteSpace(packageVersion))
+                return BadRequest($"{nameof(packageVersion)} is required.");
+
             await _packageProvider.DeleteCachedPackageAsync(packageId, packageVersion);
+            return Ok();
+        }
+
+        [HttpPatch("cache/purge")]
+        public async Task<IActionResult> PurgePackageCache()
+        {
+            await _packageProvider.PurgePackageCacheAsync();
             return Ok();
         }
 
@@ -46,15 +58,15 @@ namespace NetPad.Controllers
             return Ok(packages);
         }
 
-        [HttpPatch("download")]
-        public async Task<IActionResult> Download([FromQuery] string packageId, [FromQuery] string packageVersion)
+        [HttpPatch("install")]
+        public async Task<IActionResult> Install([FromQuery] string packageId, [FromQuery] string packageVersion)
         {
             if (string.IsNullOrWhiteSpace(packageId))
                 return BadRequest($"{nameof(packageId)} is required.");
             if (string.IsNullOrWhiteSpace(packageVersion))
                 return BadRequest($"{nameof(packageVersion)} is required.");
 
-            await _packageProvider.DownloadPackageAsync(packageId, packageVersion);
+            await _packageProvider.InstallPackageAsync(packageId, packageVersion);
             return Ok();
         }
     }

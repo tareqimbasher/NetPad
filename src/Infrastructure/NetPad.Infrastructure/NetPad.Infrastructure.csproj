@@ -11,7 +11,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
+        <PackageReference Include="NuGet.Protocol" Version="6.0.0" />
+        <PackageReference Include="NuGet.Resolver" Version="6.0.0" />
     </ItemGroup>
 
 </Project>

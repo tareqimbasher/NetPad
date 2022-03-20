@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using NetPad.Events;
 using NetPad.IO;
@@ -47,6 +48,9 @@ public class IpcScriptOutputWriter : IOutputWriter
         {
             element = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
         }
+
+        if (element.Children.All(c => c.Type == NodeType.Text))
+            group.WithAddClass("text");
 
         group.AddChild(element);
 

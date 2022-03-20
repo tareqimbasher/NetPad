@@ -55,8 +55,9 @@ namespace NetPad
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IScriptRuntimeFactory, DefaultInMemoryScriptRuntimeFactory>();
+            //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
-            services.AddTransient<IPackageProvider, NugetPackageProvider>();
+            services.AddTransient<IPackageProvider, NuGetPackageProvider>();
 
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptEnvironmentBackgroundService>();

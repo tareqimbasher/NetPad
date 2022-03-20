@@ -15,7 +15,8 @@ import {
     TextToHtmlValueConverter,
     WebWindowBackgroundService,
     PlatformsCustomAttribute,
-    ContextMenu
+    ContextMenu,
+    YesNoValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService, System} from "@common";
 
@@ -47,6 +48,7 @@ const app = Aurelia.register(
     DateTimeValueConverter,
     TextToHtmlValueConverter,
     SanitizeHtmlValueConverter,
+    YesNoValueConverter,
 
     // Custom elements
     ContextMenu

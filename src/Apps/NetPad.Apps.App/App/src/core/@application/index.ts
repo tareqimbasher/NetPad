@@ -6,6 +6,7 @@ export * from "./attributes/platforms-attribute";
 export * from "./value-converters/date-time-value-converter";
 export * from "./value-converters/text-to-html-value-converter";
 export * from "./value-converters/sanitize-html-value-converter";
+export * from "./value-converters/yes-no-value-converter";
 
 export * from "./events/event-bus";
 export * from "./events/signalr-ipc-gateway";
@@ -27,3 +28,4 @@ export * from "./editor/completion-item-providers/default-completion-item-provid
 
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
+export {YesNoValueConverter} from "@application/value-converters/yes-no-value-converter";

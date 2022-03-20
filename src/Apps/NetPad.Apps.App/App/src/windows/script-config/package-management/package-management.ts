@@ -41,7 +41,7 @@ export class PackageManagement {
             return;
 
         if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
-            await this.downloadPackage(pkg);
+            await this.installPackage(pkg);
 
         this.configStore.references.push(new PackageReference({
             packageId: pkg.packageId,
@@ -54,15 +54,15 @@ export class PackageManagement {
         alert("Not implemented yet.");
     }
 
-    public async downloadPackage(pkg: PackageSearchResult) {
+    public async installPackage(pkg: PackageSearchResult) {
         try {
-            pkg.isDownloading = true;
-            await this.packageService.download(pkg.packageId, pkg.version);
+            pkg.isInstalling = true;
+            await this.packageService.install(pkg.packageId, pkg.version);
             await this.refreshCachedPackages();
         } catch (ex) {
             alert(`Download failed. ${ex.message}`);
         } finally {
-            pkg.isDownloading = false;
+            pkg.isInstalling = false;
         }
     }
 
@@ -74,6 +74,13 @@ export class PackageManagement {
 
     public async openCacheDirectory() {
         await this.appService.openPackageCacheFolder();
+    }
+
+    public async purgeCache() {
+        if (confirm("Are you sure you want to purge the package cache? This will delete all cached packages.")) {
+            await this.packageService.purgePackageCache();
+            await this.refreshCachedPackages();
+        }
     }
 
     private async refreshCachedPackages() {
@@ -114,7 +121,7 @@ export class PackageManagement {
 
 class PackageSearchResult extends PackageMetadata {
     public existsInLocalCache = false;
-    public isDownloading = false;
+    public isInstalling = false;
     public referenced = false;
 }
 

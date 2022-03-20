@@ -8,10 +8,18 @@ namespace NetPad.Utilities
     {
         private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
-        public static string JoinToString<T>(this IEnumerable<T> collection, string? separator)
-            => string.Join(separator, collection);
+        public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
+            string.Join(separator, collection);
 
         public static string RemoveLeadingBOMString(string str) =>
             str.StartsWith(_bomString, StringComparison.Ordinal) ? str.Remove(0, _bomString.Length) : str;
+
+        public static string DefaultIfNullOrWhitespace(this string str, string defaultString = "") =>
+            !string.IsNullOrWhiteSpace(str) ? str : defaultString;
+
+        public static Uri? ToUriOrDefault(string uriString)
+        {
+            return Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+        }
     }
 }

@@ -47,8 +47,13 @@ results-view {
 
         /* GROUPS */
         .group {
-            padding: 5px 5px;
+            padding: 0.25rem 0.25rem;
             border-left: 2px transparent solid;
+
+            &.text {
+                padding-top: 0;
+                padding-bottom: 0;
+            }
         }
 
         .titled.group {

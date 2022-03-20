@@ -7,8 +7,8 @@
 // </auto-generated>
 //----------------------
 // ReSharper disable InconsistentNaming
-
 import {IHttpClient} from "aurelia";
+
 
 export interface IAppApiClient {
 
@@ -164,9 +164,11 @@ export interface IPackagesApiClient {
 
     deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
 
+    purgePackageCache(): Promise<FileResponse | null>;
+
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
 
-    download(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
 }
 
 export class PackagesApiClient implements IPackagesApiClient {
@@ -180,7 +182,7 @@ export class PackagesApiClient implements IPackagesApiClient {
     }
 
     getCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]> {
-        let url_ = this.baseUrl + "/packages/cached?";
+        let url_ = this.baseUrl + "/packages/cache?";
         if (loadMetadata === null)
             throw new Error("The parameter 'loadMetadata' cannot be null.");
         else if (loadMetadata !== undefined)
@@ -226,7 +228,7 @@ export class PackagesApiClient implements IPackagesApiClient {
     }
 
     deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
-        let url_ = this.baseUrl + "/packages/cached?";
+        let url_ = this.baseUrl + "/packages/cache?";
         if (packageId !== undefined && packageId !== null)
             url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
         if (packageVersion !== undefined && packageVersion !== null)
@@ -247,6 +249,39 @@ export class PackagesApiClient implements IPackagesApiClient {
     }
 
     protected processDeleteCachedPackage(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/packages/cache/purge";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processPurgePackageCache(_response);
+        });
+    }
+
+    protected processPurgePackageCache(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -312,8 +347,8 @@ export class PackagesApiClient implements IPackagesApiClient {
         return Promise.resolve<PackageMetadata[]>(<any>null);
     }
 
-    download(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
-        let url_ = this.baseUrl + "/packages/download?";
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/packages/install?";
         if (packageId !== undefined && packageId !== null)
             url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
         if (packageVersion !== undefined && packageVersion !== null)
@@ -329,11 +364,11 @@ export class PackagesApiClient implements IPackagesApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processDownload(_response);
+            return this.processInstall(_response);
         });
     }
 
-    protected processDownload(response: Response): Promise<FileResponse | null> {
+    protected processInstall(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -914,7 +949,7 @@ export class SessionApiClient implements ISessionApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1340,19 +1375,20 @@ export interface IPackageReference extends IReference {
 
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
+    version?: string | undefined;
     title!: string;
-    authors!: string;
-    description!: string;
-    iconUrl!: string;
-    projectUrl!: string;
-    packageDetailsUrl!: string;
-    licenseUrl!: string;
-    readmeUrl!: string;
-    reportAbuseUrl!: string;
+    authors?: string | undefined;
+    description?: string | undefined;
+    iconUrl?: string | undefined;
+    projectUrl?: string | undefined;
+    packageDetailsUrl?: string | undefined;
+    licenseUrl?: string | undefined;
+    readmeUrl?: string | undefined;
+    reportAbuseUrl?: string | undefined;
+    requireLicenseAcceptance?: boolean | undefined;
     dependencies!: string[];
     downloadCount?: number | undefined;
     publishedDate?: Date | undefined;
-    version?: string | undefined;
 
     constructor(data?: IPackageMetadata) {
         if (data) {
@@ -1369,6 +1405,7 @@ export class PackageMetadata implements IPackageMetadata {
     init(_data?: any) {
         if (_data) {
             this.packageId = _data["packageId"];
+            this.version = _data["version"];
             this.title = _data["title"];
             this.authors = _data["authors"];
             this.description = _data["description"];
@@ -1378,6 +1415,7 @@ export class PackageMetadata implements IPackageMetadata {
             this.licenseUrl = _data["licenseUrl"];
             this.readmeUrl = _data["readmeUrl"];
             this.reportAbuseUrl = _data["reportAbuseUrl"];
+            this.requireLicenseAcceptance = _data["requireLicenseAcceptance"];
             if (Array.isArray(_data["dependencies"])) {
                 this.dependencies = [] as any;
                 for (let item of _data["dependencies"])
@@ -1385,7 +1423,6 @@ export class PackageMetadata implements IPackageMetadata {
             }
             this.downloadCount = _data["downloadCount"];
             this.publishedDate = _data["publishedDate"] ? new Date(_data["publishedDate"].toString()) : <any>undefined;
-            this.version = _data["version"];
         }
     }
 
@@ -1399,6 +1436,7 @@ export class PackageMetadata implements IPackageMetadata {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["packageId"] = this.packageId;
+        data["version"] = this.version;
         data["title"] = this.title;
         data["authors"] = this.authors;
         data["description"] = this.description;
@@ -1408,6 +1446,7 @@ export class PackageMetadata implements IPackageMetadata {
         data["licenseUrl"] = this.licenseUrl;
         data["readmeUrl"] = this.readmeUrl;
         data["reportAbuseUrl"] = this.reportAbuseUrl;
+        data["requireLicenseAcceptance"] = this.requireLicenseAcceptance;
         if (Array.isArray(this.dependencies)) {
             data["dependencies"] = [];
             for (let item of this.dependencies)
@@ -1415,7 +1454,6 @@ export class PackageMetadata implements IPackageMetadata {
         }
         data["downloadCount"] = this.downloadCount;
         data["publishedDate"] = this.publishedDate ? this.publishedDate.toISOString() : <any>undefined;
-        data["version"] = this.version;
         return data;
     }
 
@@ -1429,19 +1467,20 @@ export class PackageMetadata implements IPackageMetadata {
 
 export interface IPackageMetadata {
     packageId: string;
+    version?: string | undefined;
     title: string;
-    authors: string;
-    description: string;
-    iconUrl: string;
-    projectUrl: string;
-    packageDetailsUrl: string;
-    licenseUrl: string;
-    readmeUrl: string;
-    reportAbuseUrl: string;
+    authors?: string | undefined;
+    description?: string | undefined;
+    iconUrl?: string | undefined;
+    projectUrl?: string | undefined;
+    packageDetailsUrl?: string | undefined;
+    licenseUrl?: string | undefined;
+    readmeUrl?: string | undefined;
+    reportAbuseUrl?: string | undefined;
+    requireLicenseAcceptance?: boolean | undefined;
     dependencies: string[];
     downloadCount?: number | undefined;
     publishedDate?: Date | undefined;
-    version?: string | undefined;
 }
 
 export class CachedPackage extends PackageMetadata implements ICachedPackage {

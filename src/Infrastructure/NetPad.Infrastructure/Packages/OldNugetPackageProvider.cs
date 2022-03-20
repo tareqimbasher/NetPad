@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NetPad.Extensions;
+using NetPad.Utilities;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -15,17 +15,18 @@ using Settings = NetPad.Configuration.Settings;
 
 namespace NetPad.Packages
 {
-    public class NugetPackageProvider : IPackageProvider
+    [Obsolete("Old implementation. Will be deleted soon.")]
+    public class OldNugetPackageProvider : IPackageProvider
     {
         private readonly Settings _settings;
         private const string NUGET_API_URI = "https://api.nuget.org/v3/index.json";
 
-        public NugetPackageProvider(Settings settings)
+        public OldNugetPackageProvider(Settings settings)
         {
             _settings = settings;
         }
 
-        public Task<string> GetCachedPackageAssemblyPathAsync(string packageId, string packageVersion)
+        public virtual Task<HashSet<string>> GetCachedPackageAssembliesAsync(string packageId, string packageVersion)
         {
             var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());
 
@@ -58,10 +59,10 @@ namespace NetPad.Packages
             if (assemblyPath == null)
                 throw new Exception("Could not determine main assembly path.");
 
-            return Task.FromResult(assemblyPath);
+            return Task.FromResult(new HashSet<string> { assemblyPath });
         }
 
-        public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
+        public virtual async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
         {
             var nugetCacheDir = new DirectoryInfo(GetNugetCacheDirectoryPath());
             using var sourceCacheContext = new SourceCacheContext();
@@ -109,7 +110,12 @@ namespace NetPad.Packages
             return cachedPackages.OrderBy(p => p.Title ?? p.PackageId).ToArray();
         }
 
-        public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
+        public async Task<HashSet<string>> GetPackageAndDependantAssembliesAsync(string packageId, string packageVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual Task DeleteCachedPackageAsync(string packageId, string packageVersion)
         {
             var nugetPackageDirectory = new DirectoryInfo(GetNugetCacheDirectoryPath());
 
@@ -133,12 +139,12 @@ namespace NetPad.Packages
             return Task.CompletedTask;
         }
 
-        public async Task<PackageMetadata[]> SearchPackagesAsync(
+        public virtual async Task<PackageMetadata[]> SearchPackagesAsync(
             string? term,
             int skip,
             int take,
             bool includePrerelease,
-            CancellationToken? token = null)
+            CancellationToken? cancellationToken = null)
         {
             if (skip < 0) skip = 0;
             if (take < 0) take = 0;
@@ -154,7 +160,7 @@ namespace NetPad.Packages
                 skip,
                 take,
                 NullLogger.Instance,
-                token ?? CancellationToken.None
+                cancellationToken ?? CancellationToken.None
             ).ConfigureAwait(false);
 
             var orderedSearchResults = searchResults.Select(r => new
@@ -174,7 +180,7 @@ namespace NetPad.Packages
             return orderedSearchResults.Select(r => r.Package).ToArray();
         }
 
-        public async Task DownloadPackageAsync(string packageId, string packageVersion)
+        public virtual async Task InstallPackageAsync(string packageId, string packageVersion)
         {
             var repository = GetSourceRepository();
             FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>().ConfigureAwait(false);
@@ -212,6 +218,11 @@ namespace NetPad.Packages
             }
         }
 
+        public async Task PurgePackageCacheAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         private SourceRepository GetSourceRepository()
         {
             var providers = new List<Lazy<INuGetResourceProvider>>();
@@ -221,13 +232,13 @@ namespace NetPad.Packages
             return new SourceRepository(packageSource, providers);
         }
 
-        private string GetNugetCacheDirectoryPath()
+        protected string GetNugetCacheDirectoryPath()
         {
             var path = Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet");
             return Directory.CreateDirectory(path).FullName;
         }
 
-        private async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
+        protected async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
         {
             packageMetadata.PackageId = searchMetadata.Identity.Id;
             packageMetadata.Title = searchMetadata.Title;
@@ -241,29 +252,33 @@ namespace NetPad.Packages
             packageMetadata.ReportAbuseUrl = searchMetadata.ReportAbuseUrl;
             packageMetadata.DownloadCount = searchMetadata.DownloadCount;
             packageMetadata.PublishedDate = searchMetadata.Published?.UtcDateTime;
-            packageMetadata.Dependencies = searchMetadata.DependencySets.SelectMany(ds => ds.Packages.Select(p =>
-                {
-                    var str = $"{p.Id} ";
-                    var vRange = p.VersionRange;
+            // packageMetadata.Dependencies = searchMetadata.DependencySets.SelectMany(ds => ds.Packages.Select(p =>
+            //     {
+            //         var str = $"{p.Id} ";
+            //         var vRange = p.VersionRange;
+            //
+            //         if (vRange.HasLowerBound || vRange.HasUpperBound)
+            //         {
+            //             var range = "";
+            //
+            //             if (vRange.HasUpperBound)
+            //                 range += $"{vRange.MaxVersion} <{(vRange.IsMaxInclusive ? "=" : "")}";
+            //
+            //             if (vRange.HasLowerBound)
+            //             {
+            //                 if (vRange.HasUpperBound) range += " | ";
+            //                 range += $"{vRange.MinVersion} >{(vRange.IsMinInclusive ? "=" : "")}";
+            //             }
+            //
+            //             str += $"({range})";
+            //         }
+            //
+            //         return str;
+            //     }))
+            //     .ToArray();
 
-                    if (vRange.HasLowerBound || vRange.HasUpperBound)
-                    {
-                        var range = "";
-
-                        if (vRange.HasUpperBound)
-                            range += $"{vRange.MaxVersion} <{(vRange.IsMaxInclusive ? "=" : "")}";
-
-                        if (vRange.HasLowerBound)
-                        {
-                            if (vRange.HasUpperBound) range += " | ";
-                            range += $"{vRange.MinVersion} >{(vRange.IsMinInclusive ? "=" : "")}";
-                        }
-
-                        str += $"({range})";
-                    }
-
-                    return str;
-                }))
+            packageMetadata.Dependencies = searchMetadata.DependencySets.Select(dg =>
+                    $"{dg.TargetFramework}\n{dg.Packages.Select(p => $"{p.Id} {p.VersionRange}").JoinToString("\n")}")
                 .ToArray();
 
             if (packageMetadata.Version == null)

@@ -95,7 +95,7 @@
                 <div au-slot="actions">
                     <let package.bind="$host.package"></let>
 
-                    <div class="btn-group btn-group-sm" show.bind="!package.isDownloading">
+                    <div class="btn-group btn-group-sm" show.bind="!package.isInstalling">
                         <button type="button"
                                 class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
                                 title="Add to Script"
@@ -110,7 +110,7 @@
                         <ul class="dropdown-menu">
                             <li title="Download without adding to Script"
                                 show.bind="!package.existsInLocalCache"
-                                click.trigger="downloadPackage(package)">
+                                click.trigger="installPackage(package)">
                                 <button class="dropdown-item btn btn-link">
                                     <i class="bi bi-download"></i>
                                     Download Only
@@ -126,7 +126,7 @@
                         </ul>
                     </div>
                     <div class="progress"
-                         show.bind="package.isDownloading"
+                         show.bind="package.isInstalling"
                          style="height: 10px">
                         <div class="progress-bar progress-bar-striped bg-warning progress-bar-animated"
                              role="progressbar"
@@ -147,6 +147,7 @@
             <li show.bind="selectedPackage.downloadCount !== null">
                 <b>Downloads:</b> ${selectedPackage.downloadCount}
             </li>
+            <li><b>Requires Accept License:</b> ${selectedPackage.requireLicenseAcceptance | yesNo}</li>
             <li show.bind="selectedPackage.licenseUrl !== null">
                 <a href.bind="selectedPackage.licenseUrl" external-link>License</a>
             </li>
@@ -169,7 +170,9 @@
             <li>
                 <b>Dependencies:</b><br/>
                 <ul class="list-unstyled" if.bind="selectedPackage.dependencies.length">
-                    <li repeat.for="dep of selectedPackage.dependencies">${dep}</li>
+                    <li repeat.for="dep of selectedPackage.dependencies">
+                        <p innerHTML.bind="dep | sanitizeHtml | textToHtml"></p>
+                    </li>
                 </ul>
                 <span else>(none)</span>
             </li>
@@ -179,4 +182,5 @@
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'packages'">
     <button class="btn btn-secondary" click.trigger="openCacheDirectory()">Open Cache Folder</button>
+    <button class="btn btn-secondary" click.trigger="purgeCache()">Purge Cache</button>
 </div>

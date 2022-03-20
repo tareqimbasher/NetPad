@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
@@ -23,27 +24,35 @@ namespace NetPad.Controllers
         [HttpPatch("namespaces")]
         public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
         {
-            string assemblyPath;
-
             if (reference is AssemblyReference assemblyReference)
             {
                 if (assemblyReference.AssemblyPath == null)
                     throw new Exception("Assembly path is null.");
 
-                assemblyPath = assemblyReference.AssemblyPath;
+                return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyReference.AssemblyPath)));
             }
             else if (reference is PackageReference packageReference)
             {
-                assemblyPath = await _packageProvider.GetCachedPackageAssemblyPathAsync(
+                var assemblies = await _packageProvider.GetCachedPackageAssembliesAsync(
                     packageReference.PackageId,
                     packageReference.Version);
-}
+
+                var namespaces = new HashSet<string>();
+
+                foreach (var assembly in assemblies)
+                {
+                    foreach (var ns in _assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assembly)))
+                    {
+                        namespaces.Add(ns);
+                    }
+                }
+
+                return Ok(namespaces);
+            }
             else
             {
                 throw new Exception($"Unknown reference type: {reference.GetType().Name}");
             }
-
-            return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyPath)));
         }
     }
 }
