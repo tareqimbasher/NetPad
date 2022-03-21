@@ -47,6 +47,12 @@ namespace NetPad.Controllers
             return Ok();
         }
 
+        [HttpGet("versions")]
+        public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId)
+        {
+            return await _packageProvider.GetPackageVersionsAsync(packageId);
+        }
+
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<PackageMetadata>>> Search(
             [FromQuery] string? term,

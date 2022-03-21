@@ -40,7 +40,13 @@ namespace NetPad.Packages
         /// </summary>
         /// <param name="packageId">Package ID</param>
         /// <param name="packageVersion">Package Version</param>
-        Task<HashSet<string>> GetPackageAndDependantAssembliesAsync(string packageId, string packageVersion);
+        Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion);
+
+        /// <summary>
+        /// Gets all versions of a package.
+        /// </summary>
+        /// <param name="packageId">Package ID</param>
+        Task<string[]> GetPackageVersionsAsync(string packageId);
 
         /// <summary>
         /// Deletes a package from the cache.

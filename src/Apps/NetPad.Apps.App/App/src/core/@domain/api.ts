@@ -168,6 +168,8 @@ export interface IPackagesApiClient {
 
     purgePackageCache(): Promise<FileResponse | null>;
 
+    getPackageVersions(packageId: string | null | undefined): Promise<string[]>;
+
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
 
     install(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
@@ -343,6 +345,50 @@ export class PackagesApiClient implements IPackagesApiClient {
             });
         }
         return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    getPackageVersions(packageId: string | null | undefined, signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/packages/versions?";
+        if (packageId !== undefined && packageId !== null)
+            url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetPackageVersions(_response);
+        });
+    }
+
+    protected processGetPackageVersions(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
     }
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]> {

@@ -40,6 +40,13 @@ public class NuGetPackageProvider : IPackageProvider
         // TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
     }
 
+    public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
+    {
+        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
+
+        return await GetCachedPackagesAsync(nuGetCacheDir.GetDirectories(), loadMetadata);
+    }
+
     public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
     {
         var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
@@ -48,13 +55,6 @@ public class NuGetPackageProvider : IPackageProvider
             .Where(d => GetInstallInfo(d.FullName)?.InstallReason == PackageInstallReason.Explicit);
 
         return await GetCachedPackagesAsync(packageDirectories, loadMetadata);
-    }
-
-    public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
-    {
-        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
-
-        return await GetCachedPackagesAsync(nuGetCacheDir.GetDirectories(), loadMetadata);
     }
 
     private async Task<CachedPackage[]> GetCachedPackagesAsync(IEnumerable<DirectoryInfo> packageDirectories, bool loadMetadata = false)
@@ -74,7 +74,7 @@ public class NuGetPackageProvider : IPackageProvider
                     InstallReason = installInfo.InstallReason,
                     DirectoryPath = packageDir.FullName,
                     PackageId = nuspecReader.GetId(),
-                    Version = nuspecReader.GetVersion().Version.ToString(),
+                    Version = nuspecReader.GetVersion().ToString(),
                     Title = nuspecReader.GetTitle().DefaultIfNullOrWhitespace(nuspecReader.GetId()),
                     Authors = nuspecReader.GetAuthors(),
                     Description = nuspecReader.GetDescription(),
@@ -128,7 +128,29 @@ public class NuGetPackageProvider : IPackageProvider
             .ToHashSet();
     }
 
-    public async Task<HashSet<string>> GetPackageAndDependantAssembliesAsync(string packageId, string packageVersion)
+    public async Task<string[]> GetPackageVersionsAsync(string packageId)
+    {
+        using var sourceCacheContext = new SourceCacheContext();
+
+        foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
+        {
+            var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+            var versions = await resource.GetAllVersionsAsync(
+                packageId,
+                sourceCacheContext,
+                NuGetNullLogger.Instance,
+                CancellationToken.None);
+
+            if (versions.Any())
+            {
+                return versions.Select(v => v.ToString()).ToArray();
+            }
+        }
+
+        return Array.Empty<string>();
+    }
+
+    public async Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion)
     {
         var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
 
@@ -155,7 +177,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         foreach (var package in allPackages)
         {
-            var libAssemblies = await GetCachedPackageAssembliesAsync(package.Id, package.Version.Version.ToString());
+            var libAssemblies = await GetCachedPackageAssembliesAsync(package.Id, package.Version.ToString());
 
             foreach (var libAssembly in libAssemblies)
             {
@@ -583,7 +605,7 @@ public class NuGetPackageProvider : IPackageProvider
         {
             packageMetadata.Version = (await searchMetadata.GetVersionsAsync().ConfigureAwait(false))?
                 .LastOrDefault()?
-                .Version.Version.ToString();
+                .Version.ToString();
         }
     }
 

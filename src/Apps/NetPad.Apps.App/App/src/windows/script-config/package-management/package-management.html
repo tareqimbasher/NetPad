@@ -127,9 +127,9 @@
                                 </button>
                             </li>
                             <li title="Add specific version"
-                                click.trigger="referenceSpecificPackageVersion(package)">
+                                click.trigger="selectPackageVersionToInstall(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="bi bi-pin-fill"></i>
+                                    <i class="bi bi-tag"></i>
                                     Add Specific Version
                                 </button>
                             </li>
@@ -187,6 +187,32 @@
                 <span else>(none)</span>
             </li>
         </ul>
+    </div>
+</div>
+
+<div class="package-version-picker-modal-wrapper d-flex align-items-center justify-content-center"
+     if.bind="showVersionPickerModal">
+    <div class="package-version-picker-modal d-flex flex-column">
+        <h5 class="mb-3">Select a version:</h5>
+        <div class="list-group flex-grow-height-restricted overflow-y-auto" if.bind="versionsToPickFrom.length">
+            <div class="list-group-item list-group-item-action"
+                 repeat.for="version of versionsToPickFrom"
+                 click.trigger="selectedVersion == version ? selectedVersion = null : selectedVersion = version">
+                ${version}
+                <i class="text-success bi bi-check-circle-fill float-end"
+                   show.bind="version === selectedVersion"></i>
+            </div>
+        </div>
+        <p else class="flex-grow-height-restricted d-flex align-items-center justify-content-center">
+            Fetching versions...
+        </p>
+        <div class="text-end mt-3">
+            <button class="btn btn-primary ${!selectedVersion ? 'disabled' : ''}"
+                    click.trigger="referencePackage(selectedPackage, selectedVersion)">
+                Confirm
+            </button>
+            <button class="btn btn-outline-secondary" click.trigger="showVersionPickerModal = false">Cancel</button>
+        </div>
     </div>
 </div>
 

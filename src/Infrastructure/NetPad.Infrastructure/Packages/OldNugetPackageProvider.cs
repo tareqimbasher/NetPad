@@ -115,7 +115,12 @@ namespace NetPad.Packages
             throw new NotImplementedException();
         }
 
-        public async Task<HashSet<string>> GetPackageAndDependantAssembliesAsync(string packageId, string packageVersion)
+        public async Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<string[]> GetPackageVersionsAsync(string packageId)
         {
             throw new NotImplementedException();
         }

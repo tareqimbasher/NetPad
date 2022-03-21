@@ -136,7 +136,7 @@ namespace NetPad.Runtimes
                 else if (reference is PackageReference pRef)
                 {
                     assemblyPaths.AddRange(
-                        await _packageProvider.GetPackageAndDependantAssembliesAsync(pRef.PackageId, pRef.Version)
+                        await _packageProvider.GetPackageAndDependanciesAssembliesAsync(pRef.PackageId, pRef.Version)
                     );
                 }
             }

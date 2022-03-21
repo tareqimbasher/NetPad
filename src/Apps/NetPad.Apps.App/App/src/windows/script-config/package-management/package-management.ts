@@ -11,6 +11,10 @@ export class PackageManagement {
     public selectedPackage?: PackageMetadata;
     public showAllCachedDeps: boolean;
 
+    public showVersionPickerModal: boolean;
+    public versionsToPickFrom: string[];
+    public selectedVersion?: string;
+
     public searchLoadingPromise?: Promise<void>;
     public cacheLoadingPromise?: Promise<void>;
 
@@ -37,28 +41,42 @@ export class PackageManagement {
         await this.searchPackages(newValue);
     }
 
-    public async referencePackage(pkg: PackageSearchResult | CachedPackageViewModel) {
+    public async selectPackageVersionToInstall(pkg: PackageReference) {
+        this.versionsToPickFrom = null;
+        this.selectedVersion = null;
+        this.showVersionPickerModal = true;
+
+        this.versionsToPickFrom = await this.packageService.getPackageVersions(pkg.packageId);
+        if (!this.versionsToPickFrom || !this.versionsToPickFrom.length) {
+            alert("Could not find any versions for package: " + pkg.packageId);
+        }
+    }
+
+    public async referencePackage(pkg: PackageSearchResult | CachedPackageViewModel, version?: string) {
+        this.selectedVersion = null;
+        this.versionsToPickFrom = null;
+        this.showVersionPickerModal = false;
+
         if (pkg.referenced)
             return;
 
+        if (!version)
+            version = pkg.version;
+
         if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
-            await this.installPackage(pkg);
+            await this.installPackage(pkg, version);
 
         this.configStore.references.push(new PackageReference({
             packageId: pkg.packageId,
             title: pkg.title,
-            version: pkg.version
+            version: version
         }));
     }
 
-    public async referenceSpecificPackageVersion(pkg: PackageReference) {
-        alert("Not implemented yet.");
-    }
-
-    public async installPackage(pkg: PackageSearchResult) {
+    public async installPackage(pkg: PackageSearchResult, version?: string) {
         try {
             pkg.isInstalling = true;
-            await this.packageService.install(pkg.packageId, pkg.version);
+            await this.packageService.install(pkg.packageId, version || pkg.version);
             await this.refreshCachedPackages();
         } catch (ex) {
             alert(`Download failed. ${ex.message}`);
@@ -86,23 +104,16 @@ export class PackageManagement {
 
     @watch((vm: PackageManagement) => vm.showAllCachedDeps)
     private async refreshCachedPackages() {
-        if (this.showAllCachedDeps) {
-            this.cacheLoadingPromise = this.packageService.getCachedPackages(true)
-                .then(cps => {
-                    this.cachedPackages = cps
-                        .sort((a,b) => (a.packageId > b.packageId) ? 1 : ((b.packageId > a.packageId) ? -1 : 0))
-                        .map(p => new CachedPackageViewModel(p));
-                    this.markReferencedPackages();
-                });
-        } else {
-            this.cacheLoadingPromise = this.packageService.getExplicitlyInstalledCachedPackages(true)
-                .then(cps => {
-                    this.cachedPackages = cps
-                        .sort((a,b) => (a.packageId > b.packageId) ? 1 : ((b.packageId > a.packageId) ? -1 : 0))
-                        .map(p => new CachedPackageViewModel(p));
-                    this.markReferencedPackages();
-                });
-        }
+        const promise = this.showAllCachedDeps
+            ? this.packageService.getCachedPackages(true)
+            : this.packageService.getExplicitlyInstalledCachedPackages(true);
+
+        this.cacheLoadingPromise = promise.then(cps => {
+            this.cachedPackages = cps
+                .sort((a, b) => (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0))
+                .map(p => new CachedPackageViewModel(p));
+            this.markReferencedPackages();
+        });
     }
 
     private async searchPackages(term?: string) {
