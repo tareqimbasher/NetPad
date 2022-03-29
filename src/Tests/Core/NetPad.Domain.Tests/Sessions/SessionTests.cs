@@ -208,28 +208,6 @@ namespace NetPad.Domain.Tests.Sessions
             Assert.Equal(script3, session.Active?.Script);
         }
 
-        [Fact]
-        public async Task GetsInitialSequentialNewScriptName_WhenNoScriptsAreOpened()
-        {
-            var session = SessionTestHelper.CreateSession(ServiceProvider);
-
-            var name = await session.GetNewScriptNameAsync();
-
-            Assert.Equal("Script 1", name);
-        }
-
-        [Fact]
-        public async Task GetsNextSequentialNewScriptName_WhenOtherScriptsAlreadyOpen()
-        {
-            var session = SessionTestHelper.CreateSession(ServiceProvider);
-            var script = ScriptTestHelper.CreateScript(name: await session.GetNewScriptNameAsync());
-            await session.OpenAsync(script);
-
-            var name = await session.GetNewScriptNameAsync();
-
-            Assert.Equal("Script 2", name);
-        }
-
         [Fact(Skip = "WIP")]
         public async Task ClosingScript_DisposesItsEnvironment()
         {

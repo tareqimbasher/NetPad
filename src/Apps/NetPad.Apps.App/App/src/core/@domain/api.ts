@@ -850,7 +850,7 @@ export interface ISessionApiClient {
 
     getEnvironments(): Promise<ScriptEnvironment[]>;
 
-    open(scriptPath: string | null | undefined): Promise<void>;
+    openByPath(scriptPath: string): Promise<void>;
 
     close(scriptId: string): Promise<void>;
 
@@ -951,25 +951,27 @@ export class SessionApiClient implements ISessionApiClient {
         return Promise.resolve<ScriptEnvironment[]>(<any>null);
     }
 
-    open(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/session/open?";
-        if (scriptPath !== undefined && scriptPath !== null)
-            url_ += "scriptPath=" + encodeURIComponent("" + scriptPath) + "&";
+    openByPath(scriptPath: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/session/open/path";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(scriptPath);
+
         let options_ = <RequestInit>{
+            body: content_,
             method: "PATCH",
             signal,
             headers: {
+                "Content-Type": "application/json",
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processOpen(_response);
+            return this.processOpenByPath(_response);
         });
     }
 
-    protected processOpen(response: Response): Promise<void> {
+    protected processOpenByPath(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1624,6 +1626,7 @@ export interface ICachedPackage extends IPackageMetadata {
 export type PackageInstallReason = "Explicit" | "Dependency";
 
 export class ScriptSummary implements IScriptSummary {
+    id!: string;
     name!: string;
     path!: string;
 
@@ -1638,6 +1641,7 @@ export class ScriptSummary implements IScriptSummary {
 
     init(_data?: any) {
         if (_data) {
+            this.id = _data["id"];
             this.name = _data["name"];
             this.path = _data["path"];
         }
@@ -1652,6 +1656,7 @@ export class ScriptSummary implements IScriptSummary {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
         data["name"] = this.name;
         data["path"] = this.path;
         return data;
@@ -1666,6 +1671,7 @@ export class ScriptSummary implements IScriptSummary {
 }
 
 export interface IScriptSummary {
+    id: string;
     name: string;
     path: string;
 }
@@ -1876,6 +1882,7 @@ export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 export class Settings implements ISettings {
     theme!: Theme;
     scriptsDirectoryPath!: string;
+    autoSaveScriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
     editorBackgroundColor?: string | undefined;
     editorOptions!: any;
@@ -1897,6 +1904,7 @@ export class Settings implements ISettings {
         if (_data) {
             this.theme = _data["theme"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
+            this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
             this.editorBackgroundColor = _data["editorBackgroundColor"];
             this.editorOptions = _data["editorOptions"];
@@ -1915,6 +1923,7 @@ export class Settings implements ISettings {
         data = typeof data === 'object' ? data : {};
         data["theme"] = this.theme;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
+        data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
         data["editorBackgroundColor"] = this.editorBackgroundColor;
         data["editorOptions"] = this.editorOptions;
@@ -1933,6 +1942,7 @@ export class Settings implements ISettings {
 export interface ISettings {
     theme: Theme;
     scriptsDirectoryPath: string;
+    autoSaveScriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;
     editorBackgroundColor?: string | undefined;
     editorOptions: any;

@@ -2,7 +2,7 @@ using System;
 
 namespace NetPad.Events
 {
-    public class EnvironmentPropertyChanged : PropertyChangedEvent
+    public class EnvironmentPropertyChanged : PropertyChangedEvent, IEventWithScriptId
     {
         public EnvironmentPropertyChanged(Guid scriptId, string propertyName, object? newValue)
             : base(propertyName, newValue)

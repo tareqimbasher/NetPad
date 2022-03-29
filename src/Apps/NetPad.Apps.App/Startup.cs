@@ -18,6 +18,7 @@ using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Sessions;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad
 {
@@ -48,8 +49,10 @@ namespace NetPad
 
             services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<ISession, Session>();
+            services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-            services.AddSingleton<IScriptRepository, FileSystemScriptRepository>();
+            services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
+            services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
             services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
@@ -129,11 +132,26 @@ namespace NetPad
                 }
             });
 
+            // Set host url
             services.GetRequiredService<HostInfo>().SetHostUrl(
                 app.ServerFeatures
                     .Get<IServerAddressesFeature>()!
                     .Addresses
                     .First(a => a.StartsWith("http:")));
+
+            // Load auto-saved scripts from last session
+            AsyncHelpers.RunSync(async () =>
+            {
+                var session = app.ApplicationServices.GetRequiredService<ISession>();
+                var autoSaveScriptRepository = app.ApplicationServices.GetRequiredService<IAutoSaveScriptRepository>();
+
+                var autoSavedScripts = await autoSaveScriptRepository.GetScriptsAsync();
+
+                foreach (var autoSavedScript in autoSavedScripts)
+                {
+                    await session.OpenAsync(autoSavedScript);
+                }
+            });
 
             Program.ApplicationConfigurator.Configure(app, env);
         }

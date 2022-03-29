@@ -10,8 +10,8 @@ namespace NetPad.Domain.Tests.Scripts
         [Fact]
         public void Defines_Correct_Standard_Extension_Names()
         {
-            Assert.Equal(".netpad", Script.STANARD_EXTENSION);
-            Assert.Equal("netpad", Script.STANARD_EXTENSION_WO_DOT);
+            Assert.Equal(".netpad", Script.STANDARD_EXTENSION);
+            Assert.Equal("netpad", Script.STANDARD_EXTENSION_WO_DOT);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace NetPad.Domain.Tests.Scripts
         [Fact]
         public void SetPath_Sets_Path()
         {
-            var path = $"/some/path/test.{Script.STANARD_EXTENSION_WO_DOT}";
+            var path = $"/some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);
@@ -126,7 +126,7 @@ namespace NetPad.Domain.Tests.Scripts
         [Fact]
         public void SetPath_Prepends_Forward_Slash_If_Not_Added_Already()
         {
-            var path = $"some/path/test.{Script.STANARD_EXTENSION_WO_DOT}";
+            var path = $"some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);
@@ -137,7 +137,7 @@ namespace NetPad.Domain.Tests.Scripts
         [Fact]
         public void SetPath_Does_Not_Prepend_Forward_Slash_If_Added_Already()
         {
-            var path = $"some/path/test.{Script.STANARD_EXTENSION_WO_DOT}";
+            var path = $"some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);
@@ -153,24 +153,24 @@ namespace NetPad.Domain.Tests.Scripts
 
             script.SetPath(path);
 
-            Assert.Equal(path + Script.STANARD_EXTENSION, script.Path);
+            Assert.Equal(path + Script.STANDARD_EXTENSION, script.Path);
         }
 
         [Fact]
         public void SetPath_Does_Not_Add_File_Extension_To_Path_If_Added_Already()
         {
-            var path = $"/some/path/test.{Script.STANARD_EXTENSION_WO_DOT}";
+            var path = $"/some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);
 
-            Assert.Single(Regex.Matches(script.Path!, Script.STANARD_EXTENSION));
+            Assert.Single(Regex.Matches(script.Path!, Script.STANDARD_EXTENSION));
         }
 
         [Fact]
         public void SetPath_Sets_Name()
         {
-            var path = $"/some/path/test.{Script.STANARD_EXTENSION_WO_DOT}";
+            var path = $"/some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);

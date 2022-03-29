@@ -17,7 +17,10 @@ namespace NetPad.Sessions
         private readonly List<ScriptEnvironment> _environments;
         private Guid? _lastActiveScriptId;
 
-        public Session(IScriptEnvironmentFactory scriptEnvironmentFactory, IEventBus eventBus, ILogger<Session> logger)
+        public Session(
+            IScriptEnvironmentFactory scriptEnvironmentFactory,
+            IEventBus eventBus,
+            ILogger<Session> logger)
         {
             _scriptEnvironmentFactory = scriptEnvironmentFactory;
             _eventBus = eventBus;
@@ -38,6 +41,7 @@ namespace NetPad.Sessions
         public async Task OpenAsync(Script script)
         {
             var environment = Get(script.Id);
+
             if (environment == null)
             {
                 environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
@@ -105,19 +109,6 @@ namespace NetPad.Sessions
                 ActivateAsync(_lastActiveScriptId);
 
             return Task.CompletedTask;
-        }
-
-        public Task<string> GetNewScriptNameAsync()
-        {
-            const string baseName = "Script";
-            int number = 1;
-
-            while (_environments.Any(m => m.Script.Name == $"{baseName} {number}"))
-            {
-                number++;
-            }
-
-            return Task.FromResult($"{baseName} {number}");
         }
 
         private bool CanActivateLastActiveScript() => _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);

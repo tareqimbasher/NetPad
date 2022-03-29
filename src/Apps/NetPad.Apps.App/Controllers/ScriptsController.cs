@@ -16,15 +16,22 @@ namespace NetPad.Controllers
     public class ScriptsController : Controller
     {
         private readonly IScriptRepository _scriptRepository;
+        private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
         private readonly ISession _session;
-        private readonly Settings _settings;
+        private readonly IScriptNameGenerator _scriptNameGenerator;
         private readonly IUiDialogService _uiDialogService;
 
-        public ScriptsController(IScriptRepository scriptRepository, ISession session, Settings settings, IUiDialogService uiDialogService)
+        public ScriptsController(
+            IScriptRepository scriptRepository,
+            IAutoSaveScriptRepository autoSaveScriptRepository,
+            ISession session,
+            IScriptNameGenerator scriptNameGenerator,
+            IUiDialogService uiDialogService)
         {
             _scriptRepository = scriptRepository;
+            _autoSaveScriptRepository = autoSaveScriptRepository;
             _session = session;
-            _settings = settings;
+            _scriptNameGenerator = scriptNameGenerator;
             _uiDialogService = uiDialogService;
         }
 
@@ -37,7 +44,7 @@ namespace NetPad.Controllers
         [HttpPatch("create")]
         public async Task Create()
         {
-            var name = await _session.GetNewScriptNameAsync();
+            var name = _scriptNameGenerator.Generate();
             var script = await _scriptRepository.CreateAsync(name);
             await _session.OpenAsync(script);
         }
@@ -48,7 +55,7 @@ namespace NetPad.Controllers
             var scriptEnvironment = GetScriptEnvironment(id);
             var script = scriptEnvironment.Script;
 
-            await SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
+            await SaveAsync(script, _scriptRepository, _autoSaveScriptRepository, _uiDialogService);
         }
 
         [HttpPatch("{id:guid}/run")]
@@ -101,8 +108,12 @@ namespace NetPad.Controllers
             return NoContent();
         }
 
-
-        public static async Task<bool> SaveAsync(Script script, IScriptRepository scriptRepository, IUiDialogService uiDialogService, Settings settings)
+        // TODO needs better structure. maybe move to a mediator command (along with other calls)
+        public static async Task<bool> SaveAsync(
+            Script script,
+            IScriptRepository scriptRepository,
+            IAutoSaveScriptRepository autoSaveScriptRepository,
+            IUiDialogService uiDialogService)
         {
             if (script.IsNew)
             {
@@ -114,6 +125,9 @@ namespace NetPad.Controllers
             }
 
             await scriptRepository.SaveAsync(script);
+
+            await autoSaveScriptRepository.DeleteAsync(script);
+
             return true;
         }
 

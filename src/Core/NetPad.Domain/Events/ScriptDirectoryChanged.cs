@@ -5,11 +5,11 @@ namespace NetPad.Events
 {
     public class ScriptDirectoryChanged : IEvent
     {
-        public ScriptDirectoryChanged(List<ScriptSummary> scripts)
+        public ScriptDirectoryChanged(IEnumerable<ScriptSummary> scripts)
         {
             Scripts = scripts;
         }
 
-        public List<ScriptSummary> Scripts { get; }
+        public IEnumerable<ScriptSummary> Scripts { get; }
     }
 }

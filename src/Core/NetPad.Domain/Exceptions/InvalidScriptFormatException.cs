@@ -5,7 +5,7 @@ namespace NetPad.Exceptions
 {
     public class InvalidScriptFormatException : Exception
     {
-        public InvalidScriptFormatException(Script script)
+        public InvalidScriptFormatException(Script script, string message) : base(message)
         {
             Script = script;
         }

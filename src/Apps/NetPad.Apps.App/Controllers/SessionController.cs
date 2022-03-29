@@ -16,15 +16,19 @@ namespace NetPad.Controllers
     {
         private readonly ISession _session;
         private readonly IScriptRepository _scriptRepository;
+        private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
         private readonly IUiDialogService _uiDialogService;
-        private readonly Settings _settings;
 
-        public SessionController(ISession session, IScriptRepository scriptRepository, IUiDialogService uiDialogService, Settings settings)
+        public SessionController(
+            ISession session,
+            IScriptRepository scriptRepository,
+            IAutoSaveScriptRepository autoSaveScriptRepository,
+            IUiDialogService uiDialogService)
         {
             _session = session;
             _scriptRepository = scriptRepository;
+            _autoSaveScriptRepository = autoSaveScriptRepository;
             _uiDialogService = uiDialogService;
-            _settings = settings;
         }
 
         [HttpGet("environments/{scriptId:guid}")]
@@ -39,10 +43,10 @@ namespace NetPad.Controllers
             return _session.Environments;
         }
 
-        [HttpPatch("open")]
-        public async Task Open([FromQuery] string scriptPath)
+        [HttpPatch("open/path")]
+        public async Task OpenByPath([FromBody] string scriptPath)
         {
-            var script = await _scriptRepository.GetAsync(scriptPath) ?? throw new ScriptNotFoundException(scriptPath);
+            var script = await _scriptRepository.GetAsync(scriptPath);
             await _session.OpenAsync(script);
         }
 
@@ -60,13 +64,14 @@ namespace NetPad.Controllers
 
                 if (response == YesNoCancel.Yes)
                 {
-                    bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _uiDialogService, _settings);
+                    bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _autoSaveScriptRepository, _uiDialogService);
                     if (!saved)
                         return;
                 }
             }
 
             await _session.CloseAsync(scriptId);
+            await _autoSaveScriptRepository.DeleteAsync(script);
         }
 
         [HttpGet("active")]

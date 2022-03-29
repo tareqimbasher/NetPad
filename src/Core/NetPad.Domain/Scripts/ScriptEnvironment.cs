@@ -9,7 +9,7 @@ using NetPad.Runtimes;
 
 namespace NetPad.Scripts
 {
-    // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
+    // If this class is sealed, IDisposable and IAsyncDisposable implementations should be revised
     public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         private readonly IEventBus _eventBus;

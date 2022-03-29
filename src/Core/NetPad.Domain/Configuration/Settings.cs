@@ -16,6 +16,12 @@ namespace NetPad.Configuration
                 "NetPad",
                 "Scripts");
 
+            AutoSaveScriptsDirectoryPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "NetPad",
+                "AutoSave",
+                "Scripts");
+
             PackageCacheDirectoryPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "NetPad",
@@ -50,6 +56,7 @@ namespace NetPad.Configuration
 
         public Theme Theme { get; set; }
         public string ScriptsDirectoryPath { get; set; }
+        public string AutoSaveScriptsDirectoryPath { get; set; }
         public string PackageCacheDirectoryPath { get; set; }
         public string? EditorBackgroundColor { get; set; }
         public object EditorOptions { get; set; }

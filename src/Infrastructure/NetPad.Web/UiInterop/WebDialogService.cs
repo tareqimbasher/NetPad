@@ -25,6 +25,6 @@ public class WebDialogService : IUiDialogService
         if (newName == null)
             return null;
 
-        return $"/{newName}{Script.STANARD_EXTENSION}";
+        return $"/{newName}{Script.STANDARD_EXTENSION}";
     }
 }

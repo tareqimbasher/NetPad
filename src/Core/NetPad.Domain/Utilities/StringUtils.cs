@@ -21,5 +21,21 @@ namespace NetPad.Utilities
         {
             return Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
         }
+
+        public static string[] SplitLastOccurence(this string str, string separator)
+        {
+            int ix = str.LastIndexOf(separator, StringComparison.Ordinal);
+
+            if (ix < 0)
+            {
+                return new[] { str };
+            }
+
+            return new[]
+            {
+                str[..ix],
+                str[(ix + 1)..]
+            };
+        }
     }
 }

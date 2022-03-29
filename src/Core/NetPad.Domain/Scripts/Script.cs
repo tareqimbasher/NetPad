@@ -10,17 +10,30 @@ namespace NetPad.Scripts
 {
     public class Script : INotifyOnPropertyChanged
     {
-        public const string STANARD_EXTENSION_WO_DOT = "netpad";
-        public const string STANARD_EXTENSION = ".netpad";
-        private bool _isDirty = false;
+        public const string STANDARD_EXTENSION_WO_DOT = "netpad";
+        public const string STANDARD_EXTENSION = ".netpad";
         private string _name;
+        private string _code;
+        private bool _isDirty;
 
         public Script(Guid id, string name)
         {
+            if (id == null)
+                throw new ArgumentNullException(nameof(id));
+
+            if (id == default)
+                throw new ArgumentException($"{nameof(id)} cannot be an empty GUID");
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException($"{nameof(name)} cannot be an empty or whitespace");
+
             Id = id;
             _name = name;
+            _code = string.Empty;
             Config = new ScriptConfig(ScriptKind.Statements);
-            Code = string.Empty;
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
@@ -28,8 +41,7 @@ namespace NetPad.Scripts
         {
         }
 
-        [JsonIgnore]
-        public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
 
         public Guid Id { get; private set; }
 
@@ -41,7 +53,12 @@ namespace NetPad.Scripts
 
         public string? Path { get; private set; }
         public ScriptConfig Config { get; private set; }
-        public string Code { get; private set; }
+
+        public string Code
+        {
+            get => _code;
+            private set => this.RaiseAndSetIfChanged(ref _code, value);
+        }
 
         public bool IsDirty
         {
@@ -66,19 +83,23 @@ namespace NetPad.Scripts
         {
             var parts = contents.Split("#Code");
             if (parts.Length != 2)
-                throw new InvalidScriptFormatException(this);
+                throw new InvalidScriptFormatException(this, "The script is missing #Code identifier.");
 
             var part1 = parts[0];
             var part1Lines = part1.Split(Environment.NewLine);
             var part2 = parts[1];
 
-            Id = Guid.Parse(part1Lines.First());
+            if (!Guid.TryParse(part1Lines.First(), out var id) || id == default)
+                throw new InvalidScriptFormatException(this, "Invalid or non-existent ID.");
+            else
+                Id = id;
+
             Code = part2.TrimStart();
 
             Config.RemoveAllPropertyChangedHandlers();
 
             Config = JsonSerializer.Deserialize<ScriptConfig>(
-                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormatException(this);
+                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormatException(this, "Invalid config section.");
 
             Config.OnPropertyChanged.Add(change  =>
             {
@@ -96,7 +117,7 @@ namespace NetPad.Scripts
 
             if (!path.StartsWith("/")) path = "/" + path;
 
-            if (!path.EndsWith(STANARD_EXTENSION)) path += STANARD_EXTENSION;
+            if (!path.EndsWith(STANDARD_EXTENSION)) path += STANDARD_EXTENSION;
 
             Path = path;
             Name = System.IO.Path.GetFileNameWithoutExtension(path);
@@ -109,6 +130,22 @@ namespace NetPad.Scripts
 
             Code = newCode ?? string.Empty;
             IsDirty = true;
+        }
+
+        public override string ToString()
+        {
+            return $"{Id} | {Name}";
+        }
+
+        public static Script From(string name, string scriptJson, string? path)
+        {
+            var newScript = new Script(name);
+            newScript.Deserialize(scriptJson);
+
+            if (path != null)
+                newScript.SetPath(path);
+
+            return newScript;
         }
     }
 }

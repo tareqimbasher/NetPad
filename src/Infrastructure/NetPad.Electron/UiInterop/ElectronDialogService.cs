@@ -35,8 +35,8 @@ namespace NetPad.Electron.UiInterop
                 Title = "Save Script",
                 Message = "Where do you want to save this script?",
                 NameFieldLabel = script.Name,
-                Filters = new[] { new FileFilter { Name = "NetPad Script", Extensions = new[] { Script.STANARD_EXTENSION_WO_DOT } } },
-                DefaultPath = Path.Combine(_settings.ScriptsDirectoryPath, script.Name + Script.STANARD_EXTENSION)
+                Filters = new[] { new FileFilter { Name = "NetPad Script", Extensions = new[] { Script.STANDARD_EXTENSION_WO_DOT } } },
+                DefaultPath = Path.Combine(_settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)
             });
 
             if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
@@ -46,8 +46,8 @@ namespace NetPad.Electron.UiInterop
                 .Replace(_settings.ScriptsDirectoryPath, string.Empty)
                 .Trim('/');
 
-            if (!path.EndsWith(Script.STANARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
-                path += Script.STANARD_EXTENSION;
+            if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+                path += Script.STANDARD_EXTENSION;
 
             return "/" + path;
         }
