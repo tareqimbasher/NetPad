@@ -41,7 +41,7 @@ export class DefaultCompletionItemProvider {
                 label: "foreach",
                 kind: monaco.languages.CompletionItemKind.Snippet,
                 documentation: "Foreach loop",
-                insertText: "foreach (var ${2:item} of ${1:collection})\n{\n\t${3}\n}",
+                insertText: "foreach (var ${2:item} in ${1:collection})\n{\n\t${3}\n}",
                 insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                 range: range
             },
