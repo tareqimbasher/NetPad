@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -31,10 +33,10 @@ public class ObjectHtmlConverter : HtmlConverter
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
             .AddText(oType.FullName!);
 
-        foreach (var property in properties)
+        foreach (var property in properties.Where(p => p.CanRead))
         {
             var name = property.Name;
-            var value = property.GetValue(obj);
+            object? value = GetPropertyValue(property, obj);
 
             var tr = table.Body.AddAndGetElement("tr");
             tr.AddAndGetElement("td")
@@ -60,10 +62,10 @@ public class ObjectHtmlConverter : HtmlConverter
 
         var properties = obj.GetReadableProperties();
 
-        foreach (var property in properties)
+        foreach (var property in properties.Where(p => p.CanRead))
         {
             var td = tr.AddAndGetElement("td");
-            var value = property.GetValue(obj);
+            object? value = GetPropertyValue(property, obj);
             td.AddChild(htmlSerializer.Serialize(value, serializationScope));
         }
     }
@@ -71,5 +73,17 @@ public class ObjectHtmlConverter : HtmlConverter
     public override bool CanConvert(Type type)
     {
         return type.IsObjectType();
+    }
+
+    private object? GetPropertyValue(PropertyInfo property, object? obj)
+    {
+        try
+        {
+            return property.GetValue(obj);
+        }
+        catch (Exception)
+        {
+            return "";
+        }
     }
 }
