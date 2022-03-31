@@ -1,7 +1,7 @@
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
-namespace NetPad.Commands;
+namespace NetPad.CQs;
 
 public class ConfirmSaveCommand : Command<YesNoCancel>
 {

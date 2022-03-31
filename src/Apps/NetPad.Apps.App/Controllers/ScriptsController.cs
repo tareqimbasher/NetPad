@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Configuration;
-using NetPad.Exceptions;
+using NetPad.CQs;
 using NetPad.Scripts;
-using NetPad.Sessions;
 using NetPad.UiInterop;
 
 namespace NetPad.Controllers
@@ -15,125 +13,84 @@ namespace NetPad.Controllers
     [Route("scripts")]
     public class ScriptsController : Controller
     {
-        private readonly IScriptRepository _scriptRepository;
-        private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
-        private readonly ISession _session;
-        private readonly IScriptNameGenerator _scriptNameGenerator;
-        private readonly IUiDialogService _uiDialogService;
+        private readonly IMediator _mediator;
 
-        public ScriptsController(
-            IScriptRepository scriptRepository,
-            IAutoSaveScriptRepository autoSaveScriptRepository,
-            ISession session,
-            IScriptNameGenerator scriptNameGenerator,
-            IUiDialogService uiDialogService)
+        public ScriptsController(IMediator mediator)
         {
-            _scriptRepository = scriptRepository;
-            _autoSaveScriptRepository = autoSaveScriptRepository;
-            _session = session;
-            _scriptNameGenerator = scriptNameGenerator;
-            _uiDialogService = uiDialogService;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IEnumerable<ScriptSummary>> GetScripts()
         {
-            return (await _scriptRepository.GetAllAsync()).OrderBy(s => s.Path);
+            return await _mediator.Send(new GetAllScriptsQuery());
         }
 
         [HttpPatch("create")]
         public async Task Create()
         {
-            var name = _scriptNameGenerator.Generate();
-            var script = await _scriptRepository.CreateAsync(name);
-            await _session.OpenAsync(script);
+            var script = await _mediator.Send(new CreateScriptCommand());
+            await _mediator.Send(new OpenScriptCommand(script));
         }
 
         [HttpPatch("{id:guid}/save")]
         public async Task Save(Guid id)
         {
-            var scriptEnvironment = GetScriptEnvironment(id);
-            var script = scriptEnvironment.Script;
-
-            await SaveAsync(script, _scriptRepository, _autoSaveScriptRepository, _uiDialogService);
+            var environment = await GetScriptEnvironmentAsync(id);
+            await _mediator.Send(new SaveScriptCommand(environment.Script));
         }
 
         [HttpPatch("{id:guid}/run")]
         public async Task Run(Guid id)
         {
-            var scriptEnvironment = GetScriptEnvironment(id);
-            await scriptEnvironment.RunAsync();
+            await _mediator.Send(new RunScriptCommand(id));
         }
 
         [HttpPut("{id:guid}/code")]
-        public void UpdateCode(Guid id, [FromBody] string code)
+        public async Task UpdateCode(Guid id, [FromBody] string code)
         {
-            var scriptEnvironment = GetScriptEnvironment(id);
-            var script = scriptEnvironment.Script;
-
-            script.UpdateCode(code);
+            var environment = await GetScriptEnvironmentAsync(id);
+            await _mediator.Send(new UpdateScriptCodeCommand(environment.Script, code));
         }
 
         [HttpPatch("{id:guid}/open-config")]
         public async Task OpenConfigWindow(Guid id, [FromServices] IUiWindowService uiWindowService)
         {
-            var scriptEnvironment = GetScriptEnvironment(id);
-            var script = scriptEnvironment.Script;
+            var environment = await GetScriptEnvironmentAsync(id);
+            var script = environment.Script;
             await uiWindowService.OpenScriptConfigWindowAsync(script);
         }
 
         [HttpPut("{id:guid}/namespaces")]
-        public IActionResult SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
+        public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
         {
-            var script = GetScriptEnvironment(id).Script;
-            script.Config.SetNamespaces(namespaces);
+            var environment = await GetScriptEnvironmentAsync(id);
+            environment.Script.Config.SetNamespaces(namespaces);
 
             return NoContent();
         }
 
         [HttpPut("{id:guid}/references")]
-        public IActionResult SetReferences(Guid id, [FromBody] IEnumerable<Reference> references)
+        public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> references)
         {
-            var script = GetScriptEnvironment(id).Script;
-            script.Config.SetReferences(references);
+            var environment = await GetScriptEnvironmentAsync(id);
+            environment.Script.Config.SetReferences(references);
 
             return NoContent();
         }
 
         [HttpPut("{id:guid}/kind")]
-        public IActionResult SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
+        public async Task<IActionResult> SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
         {
-            var script = GetScriptEnvironment(id).Script;
-            script.Config.SetKind(scriptKind);
+            var environment = await GetScriptEnvironmentAsync(id);
+            environment.Script.Config.SetKind(scriptKind);
             return NoContent();
         }
 
-        // TODO needs better structure. maybe move to a mediator command (along with other calls)
-        public static async Task<bool> SaveAsync(
-            Script script,
-            IScriptRepository scriptRepository,
-            IAutoSaveScriptRepository autoSaveScriptRepository,
-            IUiDialogService uiDialogService)
+        private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
         {
-            if (script.IsNew)
-            {
-                var path = await uiDialogService.AskUserForSaveLocation(script);
-                if (string.IsNullOrWhiteSpace(path))
-                    return false;
-
-                script.SetPath(path);
-            }
-
-            await scriptRepository.SaveAsync(script);
-
-            await autoSaveScriptRepository.DeleteAsync(script);
-
-            return true;
-        }
-
-        private ScriptEnvironment GetScriptEnvironment(Guid id)
-        {
-            return _session.Get(id) ?? throw new ScriptNotFoundException(id);
+            var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(id, true));
+            return environment!;
         }
     }
 }

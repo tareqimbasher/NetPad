@@ -60,7 +60,7 @@ namespace NetPad.Compilation.CSharp
                 userCode = $@"
 public async Task Main()
 {{
-    {scriptCode}
+{scriptCode}
 }}
 ";
             }
@@ -135,7 +135,7 @@ public static class Exts
             return @"
 public class UserScript_Program
 {{
-    {0}
+{0}
 }}
 ";
         }

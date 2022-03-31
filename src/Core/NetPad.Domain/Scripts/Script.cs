@@ -123,7 +123,7 @@ namespace NetPad.Scripts
             Name = System.IO.Path.GetFileNameWithoutExtension(path);
         }
 
-        public void UpdateCode(string newCode)
+        public void UpdateCode(string? newCode)
         {
             if (Code == newCode)
                 return;

@@ -1,4 +1,5 @@
 using System.Linq;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.Assemblies;
 using NetPad.BackgroundServices;
+using NetPad.CQs;
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
@@ -65,6 +67,8 @@ namespace NetPad
             services.AddHostedService<SessionBackgroundService>();
             services.AddHostedService<ScriptEnvironmentBackgroundService>();
             services.AddHostedService<ScriptDirectoryBackgroundService>();
+
+            services.AddMediatR(typeof(Command).Assembly);
 
             if (WebHostEnvironment.IsDevelopment())
             {

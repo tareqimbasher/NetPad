@@ -172,7 +172,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var baseProgramTemplate = parser.GetBaseProgramTemplate();
 
-            Assert.Contains("public static class UserScript", baseProgramTemplate);
+            Assert.Contains("public class UserScriptProgram", baseProgramTemplate);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace NetPad.Compilation.Tests.CSharp
             var expected = @"
 public async Task Main()
 {
-    Console.WriteLine(DateTime.Now);
+Console.WriteLine(DateTime.Now);
 }
 ";
             Assert.Equal(expected, userCode);
@@ -239,7 +239,7 @@ public async Task Main()
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.Write(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScript.OutputWrite(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("UserScriptProgram.OutputWrite(\"Some Text\");", result.UserProgram!);
         }
 
         [Fact]
@@ -252,7 +252,7 @@ public async Task Main()
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.WriteLine(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScript.OutputWriteLine(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("UserScriptProgram.OutputWriteLine(\"Some Text\");", result.UserProgram!);
         }
 
         private Script GetScript() => new Script("Test Script");

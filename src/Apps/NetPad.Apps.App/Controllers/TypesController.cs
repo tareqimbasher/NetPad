@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Commands;
+using NetPad.CQs;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.UiInterop;

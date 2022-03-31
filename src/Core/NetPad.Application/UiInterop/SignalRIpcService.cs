@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
-using NetPad.Commands;
+using NetPad.CQs;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.UiInterop

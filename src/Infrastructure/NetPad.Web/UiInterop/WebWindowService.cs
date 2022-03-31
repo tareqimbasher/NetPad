@@ -1,4 +1,4 @@
-using NetPad.Commands;
+using NetPad.CQs;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 

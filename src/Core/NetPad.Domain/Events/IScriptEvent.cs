@@ -2,7 +2,7 @@ using System;
 
 namespace NetPad.Events;
 
-public interface IEventWithScriptId
+public interface IScriptEvent : IEvent
 {
     Guid ScriptId { get; }
 }

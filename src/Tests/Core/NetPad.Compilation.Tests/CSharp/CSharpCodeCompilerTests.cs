@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using NetPad.Compilation.CSharp;
+using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +23,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.True(result.Success);
+            Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
         }
 
         [Fact]
@@ -32,7 +33,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.True(result.Success);
+            Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
         }
 
         [Theory]
@@ -72,7 +73,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.True(result.Success);
+            Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
         }
 
         [Fact]
@@ -92,7 +93,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.True(result.Success);
+            Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
         }
 
         [Fact]
@@ -102,7 +103,8 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.True(result.Success);        }
+            Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
+        }
 
         [Fact]
         public void Can_Not_Compile_CSharp10_Features()
@@ -125,7 +127,7 @@ namespace NetPad.Compilation.Tests.CSharp
 {usings}
 public class Program
 {{
-    public void Main()
+    public static void Main()
     {{
         {code}
     }}

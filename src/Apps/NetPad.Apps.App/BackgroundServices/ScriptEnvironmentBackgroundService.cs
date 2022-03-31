@@ -68,24 +68,18 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
     private void AutoSaveScriptChanges(ScriptEnvironment environment)
     {
-        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev =>
+        async Task handler (Guid scriptId)
         {
-            if (ev.ScriptId != environment.Script.Id)
+            if (scriptId != environment.Script.Id)
                 return;
 
             await _autoSaveScriptRepository.SaveAsync(environment.Script);
-        });
+        }
 
+        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev => await handler(ev.ScriptId));
         AddEnvironmentEventToken(environment, scriptPropChangeToken);
 
-        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChanged>(async ev =>
-        {
-            if (ev.ScriptId != environment.Script.Id)
-                return;
-
-            await _autoSaveScriptRepository.SaveAsync(environment.Script);
-        });
-
+        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChanged>(async ev => await handler(ev.ScriptId));
         AddEnvironmentEventToken(environment, scriptConfigPropChangeToken);
     }
 
@@ -96,7 +90,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         SubscribeAndForwardToIpc<ScriptConfigPropertyChanged>(environment);
     }
 
-    private void SubscribeAndForwardToIpc<TEvent>(ScriptEnvironment environment, Func<TEvent, bool>? predicate = null) where TEvent : class, IEvent, IEventWithScriptId
+    private void SubscribeAndForwardToIpc<TEvent>(ScriptEnvironment environment, Func<TEvent, bool>? predicate = null) where TEvent : class, IScriptEvent
     {
         var token = _eventBus.Subscribe<TEvent>(async ev =>
         {

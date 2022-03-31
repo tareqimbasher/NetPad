@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Configuration;
+using NetPad.CQs;
 using NetPad.Exceptions;
 using NetPad.Scripts;
-using NetPad.Sessions;
-using NetPad.UiInterop;
 
 namespace NetPad.Controllers
 {
@@ -14,87 +13,55 @@ namespace NetPad.Controllers
     [Route("session")]
     public class SessionController : Controller
     {
-        private readonly ISession _session;
-        private readonly IScriptRepository _scriptRepository;
-        private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
-        private readonly IUiDialogService _uiDialogService;
+        private readonly IMediator _mediator;
 
-        public SessionController(
-            ISession session,
-            IScriptRepository scriptRepository,
-            IAutoSaveScriptRepository autoSaveScriptRepository,
-            IUiDialogService uiDialogService)
+        public SessionController(IMediator mediator)
         {
-            _session = session;
-            _scriptRepository = scriptRepository;
-            _autoSaveScriptRepository = autoSaveScriptRepository;
-            _uiDialogService = uiDialogService;
+            _mediator = mediator;
         }
 
         [HttpGet("environments/{scriptId:guid}")]
-        public ScriptEnvironment GetEnvironment(Guid scriptId)
+        public async Task<ScriptEnvironment> GetEnvironment(Guid scriptId)
         {
-            return _session.Get(scriptId) ?? throw new EnvironmentNotFoundException(scriptId);
+            return await _mediator.Send(new GetOpenedScriptEnviornmentQuery(scriptId))
+                   ?? throw new EnvironmentNotFoundException(scriptId);
         }
 
         [HttpGet("environments")]
-        public IEnumerable<ScriptEnvironment> GetEnvironments()
+        public async Task<IEnumerable<ScriptEnvironment>> GetEnvironments()
         {
-            return _session.Environments;
+            return await _mediator.Send(new GetOpenedScriptEnviornmentsQuery());
         }
 
         [HttpPatch("open/path")]
         public async Task OpenByPath([FromBody] string scriptPath)
         {
-            var script = await _scriptRepository.GetAsync(scriptPath);
-            await _session.OpenAsync(script);
+            await _mediator.Send(new OpenScriptCommand(scriptPath));
         }
 
         [HttpPatch("{scriptId:guid}/close")]
         public async Task Close(Guid scriptId)
         {
-            var scriptEnvironment = GetScriptEnvironment(scriptId);
-            var script = scriptEnvironment.Script;
-
-            if (script.IsDirty)
-            {
-                var response = await _uiDialogService.AskUserIfTheyWantToSave(script);
-                if (response == YesNoCancel.Cancel)
-                    return;
-
-                if (response == YesNoCancel.Yes)
-                {
-                    bool saved = await ScriptsController.SaveAsync(script, _scriptRepository, _autoSaveScriptRepository, _uiDialogService);
-                    if (!saved)
-                        return;
-                }
-            }
-
-            await _session.CloseAsync(scriptId);
-            await _autoSaveScriptRepository.DeleteAsync(script);
+            await _mediator.Send(new CloseScriptCommand(scriptId));
         }
 
         [HttpGet("active")]
-        public Guid? GetActive()
+        public async Task<Guid?> GetActive()
         {
-            return _session.Active?.Script.Id;
+            var active = await _mediator.Send(new GetActiveScriptEnviornmentQuery());
+            return active?.Script.Id;
         }
 
         [HttpPatch("{scriptId:guid}/activate")]
         public async Task Activate(Guid scriptId)
         {
-            await _session.ActivateAsync(scriptId);
+            await _mediator.Send(new ActivateScriptCommand(scriptId));
         }
 
         [HttpPatch("activate-last-active")]
         public async Task ActivateLastActive()
         {
-            await _session.ActivateLastActiveScriptAsync();
-        }
-
-        private ScriptEnvironment GetScriptEnvironment(Guid id)
-        {
-            return _session.Get(id) ?? throw new ScriptNotFoundException(id);
+            await _mediator.Send(new ActivateLastActiveScriptCommand());
         }
     }
 }

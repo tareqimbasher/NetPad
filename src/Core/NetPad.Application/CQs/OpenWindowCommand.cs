@@ -1,4 +1,4 @@
-namespace NetPad.Commands;
+namespace NetPad.CQs;
 
 public class OpenWindowCommand : Command
 {

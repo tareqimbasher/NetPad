@@ -1,12 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NetPad.Scripts;
-using NetPad.Sessions;
 using NetPad.Tests;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NetPad.Tests.Helpers;
 using Xunit;

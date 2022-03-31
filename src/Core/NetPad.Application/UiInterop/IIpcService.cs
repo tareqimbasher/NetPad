@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using NetPad.Commands;
+using NetPad.CQs;
 
 namespace NetPad.UiInterop
 {

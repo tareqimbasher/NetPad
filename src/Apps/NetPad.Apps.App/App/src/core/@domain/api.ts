@@ -2555,10 +2555,10 @@ export interface IScriptDirectoryChanged {
     scripts: ScriptSummary[];
 }
 
-export abstract class Command implements ICommand {
+export abstract class CommandBase implements ICommandBase {
     id!: string;
 
-    constructor(data?: ICommand) {
+    constructor(data?: ICommandBase) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2573,9 +2573,9 @@ export abstract class Command implements ICommand {
         }
     }
 
-    static fromJS(data: any): Command {
+    static fromJS(data: any): CommandBase {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'Command' cannot be instantiated.");
+        throw new Error("The abstract class 'CommandBase' cannot be instantiated.");
     }
 
     toJSON(data?: any) {
@@ -2584,13 +2584,42 @@ export abstract class Command implements ICommand {
         return data;
     }
 
+    clone(): CommandBase {
+        throw new Error("The abstract class 'CommandBase' cannot be instantiated.");
+    }
+}
+
+export interface ICommandBase {
+    id: string;
+}
+
+export abstract class Command extends CommandBase implements ICommand {
+
+    constructor(data?: ICommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): Command {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'Command' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
     clone(): Command {
         throw new Error("The abstract class 'Command' cannot be instantiated.");
     }
 }
 
-export interface ICommand {
-    id: string;
+export interface ICommand extends ICommandBase {
 }
 
 export class OpenWindowCommand extends Command implements IOpenWindowCommand {
@@ -2704,7 +2733,7 @@ export interface IWindowOptions {
     width: number;
 }
 
-export abstract class CommandOfYesNoCancel extends Command implements ICommandOfYesNoCancel {
+export abstract class CommandOfYesNoCancel extends CommandBase implements ICommandOfYesNoCancel {
 
     constructor(data?: ICommandOfYesNoCancel) {
         super(data);
@@ -2730,7 +2759,7 @@ export abstract class CommandOfYesNoCancel extends Command implements ICommandOf
     }
 }
 
-export interface ICommandOfYesNoCancel extends ICommand {
+export interface ICommandOfYesNoCancel extends ICommandBase {
 }
 
 export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirmSaveCommand {
@@ -2773,7 +2802,7 @@ export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
     message: string;
 }
 
-export abstract class CommandOfString extends Command implements ICommandOfString {
+export abstract class CommandOfString extends CommandBase implements ICommandOfString {
 
     constructor(data?: ICommandOfString) {
         super(data);
@@ -2799,7 +2828,7 @@ export abstract class CommandOfString extends Command implements ICommandOfStrin
     }
 }
 
-export interface ICommandOfString extends ICommand {
+export interface ICommandOfString extends ICommandBase {
 }
 
 export class RequestNewScriptNameCommand extends CommandOfString implements IRequestNewScriptNameCommand {
