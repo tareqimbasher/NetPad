@@ -39,7 +39,6 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         {
             foreach (var environment in ev.Environments)
             {
-                ForwardRelevantEventsToIpc(environment);
                 AutoSaveScriptChanges(environment);
 
                 environment.SetIO(ActionInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
@@ -50,25 +49,14 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
         _eventBus.Subscribe<EnvironmentsRemoved>(ev =>
         {
-            foreach (var environment in ev.Environments)
-            {
-                if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens)) continue;
-
-                foreach (var token in tokens)
-                {
-                    _eventBus.Unsubscribe(token);
-                }
-
-                _environmentSubscriptionTokens.Remove(environment.Script.Id);
-            }
-
+            Unsubscribe(ev.Environments);
             return Task.CompletedTask;
         });
     }
 
     private void AutoSaveScriptChanges(ScriptEnvironment environment)
     {
-        async Task handler (Guid scriptId)
+        async Task handler(Guid scriptId)
         {
             if (scriptId != environment.Script.Id)
                 return;
@@ -83,33 +71,6 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         AddEnvironmentEventToken(environment, scriptConfigPropChangeToken);
     }
 
-    private void ForwardRelevantEventsToIpc(ScriptEnvironment environment)
-    {
-        SubscribeAndForwardToIpc<EnvironmentPropertyChanged>(environment);
-        SubscribeAndForwardToIpc<ScriptPropertyChanged>(environment, ev => ev.PropertyName != nameof(Script.Code));
-        SubscribeAndForwardToIpc<ScriptConfigPropertyChanged>(environment);
-    }
-
-    private void SubscribeAndForwardToIpc<TEvent>(ScriptEnvironment environment, Func<TEvent, bool>? predicate = null) where TEvent : class, IScriptEvent
-    {
-        var token = _eventBus.Subscribe<TEvent>(async ev =>
-        {
-            if (ev.ScriptId != environment.Script.Id)
-            {
-                return;
-            }
-
-            if (predicate != null && !predicate(ev))
-            {
-                return;
-            }
-
-            await _ipcService.SendAsync(ev);
-        });
-
-        AddEnvironmentEventToken(environment, token);
-    }
-
     private void AddEnvironmentEventToken(ScriptEnvironment environment, EventSubscriptionToken token)
     {
         if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
@@ -119,5 +80,23 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         }
 
         tokens.Add(token);
+    }
+
+    private void Unsubscribe(ScriptEnvironment[] environments)
+    {
+        foreach (var environment in environments)
+        {
+            if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
+            {
+                continue;
+            }
+
+            foreach (var token in tokens)
+            {
+                _eventBus.Unsubscribe(token);
+            }
+
+            _environmentSubscriptionTokens.Remove(environment.Script.Id);
+        }
     }
 }

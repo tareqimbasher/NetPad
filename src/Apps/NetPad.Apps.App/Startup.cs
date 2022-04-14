@@ -64,7 +64,7 @@ namespace NetPad
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
 
-            services.AddHostedService<SessionBackgroundService>();
+            services.AddHostedService<EventForwardToIpcBackgroundService>();
             services.AddHostedService<ScriptEnvironmentBackgroundService>();
             services.AddHostedService<ScriptDirectoryBackgroundService>();
 

@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Configuration;
+using NetPad.CQs;
 using NetPad.Events;
 using NetPad.UiInterop;
 
@@ -13,10 +15,12 @@ namespace NetPad.Controllers
     public class SettingsController : Controller
     {
         private readonly Settings _settings;
+        private readonly IMediator _mediator;
 
-        public SettingsController(Settings settings)
+        public SettingsController(Settings settings, IMediator mediator)
         {
             _settings = settings;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -28,20 +32,9 @@ namespace NetPad.Controllers
         [HttpPut]
         public async Task<IActionResult> Update(
             [FromBody] Settings settings,
-            [FromServices] ISettingsRepository settingsRepository,
             [FromServices] IIpcService ipcService)
         {
-            _settings
-                .SetTheme(settings.Theme)
-                .SetScriptsDirectoryPath(settings.ScriptsDirectoryPath)
-                .SetPackageCacheDirectoryPath(settings.PackageCacheDirectoryPath)
-                .SetEditorBackgroundColor(settings.EditorBackgroundColor)
-                .SetEditorOptions(settings.EditorOptions)
-                .SetResultsOptions(settings.ResultsOptions)
-            ;
-
-            await settingsRepository.SaveSettingsAsync(_settings);
-            await ipcService.SendAsync(new SettingsUpdated(_settings));
+            await _mediator.Send(new UpdateSettingsCommand(settings));
 
             return NoContent();
         }
