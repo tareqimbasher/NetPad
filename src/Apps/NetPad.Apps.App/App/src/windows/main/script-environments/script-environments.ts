@@ -1,4 +1,4 @@
-import {IEventBus, IScriptService, ISession, IShortcutManager, RunScriptEvent} from "@domain";
+import {IAppService, IEventBus, IScriptService, ISession, IShortcutManager, RunScriptEvent, Script} from "@domain";
 import {ContextMenuOptions} from "@application";
 
 export class ScriptEnvironments {
@@ -7,6 +7,7 @@ export class ScriptEnvironments {
     constructor(
         @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService,
+        @IAppService private readonly appService: IAppService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IEventBus private readonly eventBus: IEventBus) {
     }
@@ -42,6 +43,11 @@ export class ScriptEnvironments {
                     isDivider: true
                 },
                 {
+                    text: "Open Containing Folder",
+                    selected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
+                    show: (clickTarget) => !!this.getScript(clickTarget).path
+                },
+                {
                     icon: "bi bi-x",
                     text: "Close",
                     shortcut: this.shortcutManager.getShortcutByName("Close"),
@@ -58,5 +64,12 @@ export class ScriptEnvironments {
 
     private getScriptId(tab: Element): string | undefined {
         return tab?.attributes.getNamedItem("data-script-id")?.value;
+    }
+
+    private getScript(tab: Element): Script | undefined {
+        const scriptId = this.getScriptId(tab);
+        if (scriptId) {
+            return this.session.environments.find(e => e.script.id === scriptId)?.script;
+        }
     }
 }

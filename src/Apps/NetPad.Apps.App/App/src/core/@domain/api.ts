@@ -12,6 +12,8 @@ import {IHttpClient} from "aurelia";
 
 export interface IAppApiClient {
 
+    openFolderContainingScript(scriptPath: string | null | undefined): Promise<FileResponse | null>;
+
     openScriptsFolder(path: string | null | undefined): Promise<FileResponse | null>;
 
     openPackageCacheFolder(): Promise<FileResponse | null>;
@@ -25,6 +27,41 @@ export class AppApiClient implements IAppApiClient {
     constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/app/open-folder-containing-script?";
+        if (scriptPath !== undefined && scriptPath !== null)
+            url_ += "scriptPath=" + encodeURIComponent("" + scriptPath) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpenFolderContainingScript(_response);
+        });
+    }
+
+    protected processOpenFolderContainingScript(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
     }
 
     openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {

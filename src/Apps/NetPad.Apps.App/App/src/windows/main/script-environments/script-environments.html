@@ -4,7 +4,8 @@
     <ul class="nav nav-tabs flex-shrink-0">
         <li class="nav-item d-flex flex-row align-items-center script-tab ${session.active === env ? 'active' : ''}"
             repeat.for="env of session.environments"
-            data-script-id.bind="env.script.id">
+            data-script-id.bind="env.script.id"
+            title.bind="env.script.path || 'Unsaved'">
             <div class="text d-flex align-items-center"
                  click.trigger="session.activate(env.script.id)"
                  auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">

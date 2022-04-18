@@ -1,5 +1,5 @@
 import {bindable, ILogger} from "aurelia";
-import {ContextMenuOptions, IContextMenuItem, ViewModelBase} from "@application";
+import {ContextMenuOptions, IContextMenuItem, IContextMenuItemWithInternals, ViewModelBase} from "@application";
 import {AppMutationObserver} from "@common";
 import {IShortcutManager} from "@domain";
 
@@ -43,6 +43,12 @@ export class ContextMenu extends ViewModelBase {
 
         if (showContextMenu) {
             this.activeClickTarget = clickTarget;
+
+            // Evaluate which items should show
+            for (const item of this.options.items) {
+                (item as IContextMenuItemWithInternals)._show = !item.show || item.show(clickTarget);
+            }
+
             this.showContextMenu(event.clientX, event.clientY);
         } else {
             this.hideContextMenu();

@@ -2,6 +2,7 @@
     <div class="menu">
         <div class="item ${item.isDivider ? 'divider' : ''}"
              repeat.for="item of options.items"
+             show.bind="item._show"
              click.trigger="selectMenuItem(item)">
             <div class="item-container">
                 <div if.bind="!item.isDivider" class="d-flex">

@@ -10,13 +10,31 @@ namespace NetPad.Controllers
     [Route("app")]
     public class AppController : Controller
     {
+        [HttpPatch("open-folder-containing-script")]
+        public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath)
+        {
+            if (scriptPath == null)
+                return BadRequest();
+
+            var dirPath = Path.GetDirectoryName(scriptPath);
+            if (!Directory.Exists(dirPath))
+                return BadRequest($"Directory does not exist at: {dirPath}");
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.GetDirectoryName(scriptPath),
+                UseShellExecute = true
+            });
+            return Ok();
+        }
+
         [HttpPatch("open-scripts-folder")]
         public IActionResult OpenScriptsFolder([FromQuery] string? path, [FromServices] Settings settings)
         {
             if (string.IsNullOrWhiteSpace(path))
                 path = settings.ScriptsDirectoryPath;
             else
-                path = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('/'));
+                path = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('/', '\\'));
 
             Process.Start(new ProcessStartInfo
             {

@@ -13,5 +13,10 @@ export interface IContextMenuItem {
     icon?: string;
     shortcut?: Shortcut,
     isDivider?: boolean;
-    selected?: (target: Element) => Promise<void>;
+    selected?: (target: Element) => Promise<any>;
+    show?: (target: Element) => boolean;
+}
+
+export interface IContextMenuItemWithInternals extends IContextMenuItem {
+    _show: boolean;
 }
