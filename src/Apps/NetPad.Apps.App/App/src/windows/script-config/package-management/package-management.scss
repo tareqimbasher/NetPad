@@ -34,4 +34,20 @@ package-management {
             padding: 10px;
         }
     }
+
+    .package {
+        .package-container {
+            display: flex;
+            align-items: center;
+
+            .package-description {
+                flex-grow: 1;
+            }
+
+            .package-actions {
+                flex: 0 0 100px;
+                text-align: right;
+            }
+        }
+    }
 }

@@ -18,8 +18,8 @@ export class ReferenceManagement {
     public attached() {
         Split(["#references-list", "#namespace-selection"], {
             gutterSize: 6,
-            sizes: [80, 20],
-            minSize: [50, 50]
+            sizes: [50, 50],
+            minSize: [20, 20]
         });
     }
 

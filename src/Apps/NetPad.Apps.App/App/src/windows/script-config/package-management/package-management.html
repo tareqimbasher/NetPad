@@ -15,26 +15,24 @@
     <bindable property="packages"></bindable>
     <bindable property="selectedPackage"></bindable>
 
-    <div class="list-group-item list-group-item-action ${selectedPackage === package ? 'active' : ''}"
+    <div class="list-group-item list-group-item-action package ${selectedPackage === package ? 'active' : ''}"
          repeat.for="package of packages"
          click.trigger="selectedPackage = package">
-        <div class="grid gutterless">
-            <div class="row align-items-center">
-                <div class="col-md-10">
-                    <h6 class="d-flex align-items-center">
-                        <img class="me-3"
-                             src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                             style="height: 24px;"/>
-                        <b>${package.title} <small>(${package.version})</small></b>
-                    </h6>
-                    <p class="text-truncate-3-lines">${package.description}</p>
-                    <small class="text-warning" show.bind="package.installReason === 'Dependency'">
-                        Installed as a dependency
-                    </small>
-                </div>
-                <div class="col-md-2 text-end">
-                    <au-slot name="actions"></au-slot>
-                </div>
+        <div class="package-container">
+            <div class="package-description">
+                <h6 class="d-flex align-items-center">
+                    <img class="me-3"
+                         src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                         style="height: 24px;"/>
+                    <b>${package.title} <small>(${package.version})</small></b>
+                </h6>
+                <p class="text-truncate-3-lines">${package.description}</p>
+                <small class="text-warning" show.bind="package.installReason === 'Dependency'">
+                    Installed as a dependency
+                </small>
+            </div>
+            <div class="package-actions">
+                <au-slot name="actions"></au-slot>
             </div>
         </div>
     </div>

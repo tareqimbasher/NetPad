@@ -28,6 +28,9 @@
             click.trigger="selectReference(reference)">
             <td>
                 ${reference.title}
+                <span show.bind="reference.version">
+                    (${reference.version})
+                </span>
             </td>
             <td>
                 ${reference.version ? 'NuGet' : reference.assemblyPath}
@@ -44,7 +47,7 @@
         <div if.bind="!selectedReference"
              class="flex-grow-1 d-flex align-items-center justify-content-center">
             <p class="text-muted text-center">
-                Click a reference to select the included Namespaces.
+                Click a reference to select Namespaces you want to include.
             </p>
         </div>
         <div class="d-flex flex-column flex-grow-height-restricted" else>
