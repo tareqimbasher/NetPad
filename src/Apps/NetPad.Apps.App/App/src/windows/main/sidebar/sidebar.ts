@@ -1,5 +1,14 @@
-import {IAppService, IEventBus, IScriptService, ISession, ScriptDirectoryChanged, ScriptSummary} from "@domain";
+import {
+    IAppService,
+    IEventBus,
+    IScriptService,
+    ISession,
+    ScriptDirectoryChanged,
+    ScriptSummary,
+    Settings
+} from "@domain";
 import Split from "split.js";
+import {Util} from "@common";
 
 export class Sidebar {
     private readonly rootScriptFolder: SidebarScriptFolder;
@@ -7,7 +16,8 @@ export class Sidebar {
     constructor(@ISession readonly session: ISession,
                 @IScriptService readonly scriptService: IScriptService,
                 @IAppService readonly appService: IAppService,
-                @IEventBus readonly eventBus: IEventBus) {
+                @IEventBus readonly eventBus: IEventBus,
+                readonly settings: Settings) {
         this.rootScriptFolder = new SidebarScriptFolder("/", "/");
         this.rootScriptFolder.expanded = true;
     }
@@ -28,11 +38,21 @@ export class Sidebar {
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
+        // Clear existing structure first
         this.rootScriptFolder.scripts.splice(0);
         this.rootScriptFolder.folders.splice(0);
 
+        const scriptsDirPath = this.settings.scriptsDirectoryPath.replace("\\", "/");
+
         for (const summary of summaries) {
-            const folderParts = summary.path
+            let path = summary.path;
+
+            if (path.startsWith(scriptsDirPath))
+            {
+                path = "/" + Util.trim(path.substring(scriptsDirPath.length), "/");
+            }
+
+            const folderParts = path
                 .split("/")
                 .filter(x => !!x)
                 .slice(0, -1);

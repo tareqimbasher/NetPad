@@ -29,6 +29,7 @@ namespace NetPad.Scripts
             foreach (var scriptFile in scriptFiles)
             {
                 var firstLine = File.ReadLines(scriptFile).FirstOrDefault();
+
                 if (firstLine == null || !Guid.TryParse(firstLine, out var scriptIdFromFile))
                 {
                     continue;
@@ -37,7 +38,7 @@ namespace NetPad.Scripts
                 summaries.Add(new ScriptSummary(
                     scriptIdFromFile,
                     Path.GetFileNameWithoutExtension(scriptFile),
-                    GetScriptPathFromFullPath(scriptFile)));
+                    scriptFile.Replace(Path.PathSeparator, '/')));
             }
 
             return Task.FromResult<IEnumerable<ScriptSummary>>(summaries);
@@ -51,20 +52,18 @@ namespace NetPad.Scripts
 
         public async Task<Script> GetAsync(string path)
         {
-            var filePath = GetFullPath(path);
-
             // Basic protection against malicious calls
-            if (!filePath.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+            if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
-            var fileInfo = new FileInfo(filePath);
+            var fileInfo = new FileInfo(path);
 
             if (!fileInfo.Exists)
                 throw new ScriptNotFoundException(path);
 
             var script = new Script(Guid.NewGuid(), Path.GetFileNameWithoutExtension(fileInfo.Name));
             script.SetPath(path);
-            script.Deserialize(await File.ReadAllTextAsync(filePath).ConfigureAwait(false));
+            script.Deserialize(await File.ReadAllTextAsync(path).ConfigureAwait(false));
 
             return script;
         }
@@ -88,18 +87,12 @@ namespace NetPad.Scripts
                 var script = Script.From(
                     Path.GetFileNameWithoutExtension(scriptFile),
                     await File.ReadAllTextAsync(scriptFile).ConfigureAwait(false),
-                    GetScriptPathFromFullPath(scriptFile));
+                    scriptFile);
 
                 return script;
             }
 
             return null;
-        }
-
-        private string GetScriptPathFromFullPath(string fullPath)
-        {
-            string path = fullPath.Replace(GetRepositoryDirPath(), string.Empty);
-            return $"/{path.Trim('/')}";
         }
 
         public async Task<Script> SaveAsync(Script script)
@@ -111,9 +104,7 @@ namespace NetPad.Scripts
             if (!script.Path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
-            var filePath = GetFullPath(script.Path);
-
-            await File.WriteAllTextAsync(filePath, script.Serialize()).ConfigureAwait(false);
+            await File.WriteAllTextAsync(script.Path, script.Serialize()).ConfigureAwait(false);
 
             script.IsDirty = false;
             return script;
@@ -128,24 +119,11 @@ namespace NetPad.Scripts
             if (!script.Path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
-            var filePath = GetFullPath(script.Path);
-            if (!File.Exists(filePath))
+            if (!File.Exists(script.Path))
                 throw new InvalidOperationException($"{nameof(script.Path)} does not exist. Cannot delete script.");
 
-            File.Delete(filePath);
+            File.Delete(script.Path);
             return Task.CompletedTask;
-        }
-
-        private string GetFullPath(string scriptPath)
-        {
-            string fullPath = scriptPath.TrimEnd('/');
-
-            if (!File.Exists(fullPath))
-            {
-                fullPath = Path.Combine(GetRepositoryDirPath(), scriptPath.Trim('/'));
-            }
-
-            return fullPath;
         }
 
         private string GetRepositoryDirPath()

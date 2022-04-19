@@ -45,6 +45,48 @@ export class Util {
     }
 
     /**
+     * Removes the specified character from the beginning and end of a string.
+     * @param str The string to trim.
+     * @param character The character to remove.
+     */
+    public static trim(str: string | null | undefined, character: string) {
+        if (!str)
+            return str;
+
+        let start = 0,
+            end = str.length;
+
+        while(start < end && str[start] === character)
+            ++start;
+
+        while(end > start && str[end - 1] === character)
+            --end;
+
+        return (start > 0 || end < str.length) ? str.substring(start, end) : str;
+    }
+
+    /**
+     * Removes the specified set of characters from the beginning and end of a string.
+     * @param str The string to trim.
+     * @param characters The characters to remove.
+     */
+    public static trimAny(str: string | null | undefined, ...characters: string[]) {
+        if (!str)
+            return str;
+
+        let start = 0,
+            end = str.length;
+
+        while(start < end && characters.indexOf(str[start]) >= 0)
+            ++start;
+
+        while(end > start && characters.indexOf(str[end - 1]) >= 0)
+            --end;
+
+        return (start > 0 || end < str.length) ? str.substring(start, end) : str;
+    }
+
+    /**
      * Checks if a string is a letter.
      * @param str The string to check.
      */

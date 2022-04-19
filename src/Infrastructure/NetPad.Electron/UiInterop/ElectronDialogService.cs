@@ -42,14 +42,12 @@ namespace NetPad.Electron.UiInterop
             if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
                 return null;
 
-            path = path
-                .Replace(_settings.ScriptsDirectoryPath, string.Empty)
-                .Trim('/');
+            path = path.TrimEnd(Path.PathSeparator);
 
             if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
                 path += Script.STANDARD_EXTENSION;
 
-            return "/" + path;
+            return path;
         }
     }
 }

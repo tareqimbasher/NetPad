@@ -14,6 +14,7 @@ namespace NetPad.Scripts
         public const string STANDARD_EXTENSION = ".netpad";
         private string _name;
         private string _code;
+        private string? _path;
         private bool _isDirty;
 
         public Script(Guid id, string name)
@@ -51,7 +52,12 @@ namespace NetPad.Scripts
             set => this.RaiseAndSetIfChanged(ref _name, value);
         }
 
-        public string? Path { get; private set; }
+        public string? Path
+        {
+            get => _path;
+            private set => this.RaiseAndSetIfChanged(ref _path, value);
+        }
+
         public ScriptConfig Config { get; private set; }
 
         public string Code
@@ -86,7 +92,7 @@ namespace NetPad.Scripts
                 throw new InvalidScriptFormatException(this, "The script is missing #Code identifier.");
 
             var part1 = parts[0];
-            var part1Lines = part1.Split(Environment.NewLine);
+            var part1Lines = part1.Split("\n");
             var part2 = parts[1];
 
             if (!Guid.TryParse(part1Lines.First(), out var id) || id == default)
@@ -113,13 +119,12 @@ namespace NetPad.Scripts
             if (Path == path)
                 return;
 
-            Path = path ?? throw new ArgumentNullException(nameof(path));
-
-            if (!path.StartsWith("/")) path = "/" + path;
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
 
             if (!path.EndsWith(STANDARD_EXTENSION)) path += STANDARD_EXTENSION;
 
-            Path = path;
+            Path = path.Replace('\\', '/');
             Name = System.IO.Path.GetFileNameWithoutExtension(path);
         }
 

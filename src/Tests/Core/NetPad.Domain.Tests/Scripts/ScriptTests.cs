@@ -124,14 +124,14 @@ namespace NetPad.Domain.Tests.Scripts
         }
 
         [Fact]
-        public void SetPath_Prepends_Forward_Slash_If_Not_Added_Already()
+        public void SetPath_Normalizes_Windows_Path_Separators()
         {
-            var path = $"some/path/test.{Script.STANDARD_EXTENSION_WO_DOT}";
+            var path = $"C:\\some\\path\\test.{Script.STANDARD_EXTENSION_WO_DOT}";
             var script = new Script("Test");
 
             script.SetPath(path);
 
-            Assert.Equal("/" + path, script.Path);
+            Assert.Equal(path.Replace("\\", "/"), script.Path);
         }
 
         [Fact]
