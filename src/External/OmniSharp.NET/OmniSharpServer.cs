@@ -8,14 +8,14 @@ namespace OmniSharp
         where TConfiguration : OmniSharpServerConfiguration
     {
         private int _sequence;
-        
+
         protected OmniSharpServer(TConfiguration configuration, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
-            Logger = loggerFactory.CreateLogger("OmniSharpServer");
+            Logger = loggerFactory.CreateLogger(GetType().FullName);
             _sequence = 100;
         }
-        
+
         public TConfiguration Configuration { get; }
         protected ILogger Logger { get; }
 
@@ -23,7 +23,8 @@ namespace OmniSharp
 
         public abstract Task StopAsync();
 
-        public abstract Task<TResponse> Send<TResponse>(object request) where TResponse : class;
+        public abstract Task Send(object request);
+        public abstract Task<TResponse?> Send<TResponse>(object request) where TResponse : class;
 
         protected int NextSequence() => ++_sequence;
 

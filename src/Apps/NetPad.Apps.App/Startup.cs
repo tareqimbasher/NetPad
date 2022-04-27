@@ -18,9 +18,11 @@ using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Runtimes;
 using NetPad.Scripts;
+using NetPad.Services;
 using NetPad.Sessions;
 using NetPad.UiInterop;
 using NetPad.Utilities;
+using OmniSharp;
 
 namespace NetPad
 {
@@ -63,6 +65,9 @@ namespace NetPad
             //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
+
+            services.AddSingleton<OmniSharpServerCatalog>();
+            services.AddOmniSharpServer();
 
             services.AddHostedService<EventForwardToIpcBackgroundService>();
             services.AddHostedService<ScriptEnvironmentBackgroundService>();

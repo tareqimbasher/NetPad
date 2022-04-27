@@ -195,6 +195,64 @@ export class AssembliesApiClient implements IAssembliesApiClient {
     }
 }
 
+export interface IOmniSharpApiClient {
+
+    getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
+}
+
+export class OmniSharpApiClient implements IOmniSharpApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getCompletion(scriptId: string, request: CompletionRequest, signal?: AbortSignal | undefined): Promise<CompletionResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/completion";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCompletion(_response);
+        });
+    }
+
+    protected processGetCompletion(response: Response): Promise<CompletionResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CompletionResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CompletionResponse>(<any>null);
+    }
+}
+
 export interface IPackagesApiClient {
 
     getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
@@ -1505,6 +1563,451 @@ export interface IPackageReference extends IReference {
     packageId: string;
     version: string;
 }
+
+export class CompletionResponse implements ICompletionResponse {
+    isIncomplete!: boolean;
+    items!: CompletionItem[];
+
+    constructor(data?: ICompletionResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.items = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.isIncomplete = _data["isIncomplete"];
+            if (Array.isArray(_data["items"])) {
+                this.items = [] as any;
+                for (let item of _data["items"])
+                    this.items!.push(CompletionItem.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): CompletionResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["isIncomplete"] = this.isIncomplete;
+        if (Array.isArray(this.items)) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): CompletionResponse {
+        const json = this.toJSON();
+        let result = new CompletionResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionResponse {
+    isIncomplete: boolean;
+    items: CompletionItem[];
+}
+
+export class CompletionItem implements ICompletionItem {
+    label!: string;
+    kind!: CompletionItemKind;
+    tags?: CompletionItemTag[] | undefined;
+    detail?: string | undefined;
+    documentation?: string | undefined;
+    preselect!: boolean;
+    sortText?: string | undefined;
+    filterText?: string | undefined;
+    insertTextFormat!: InsertTextFormat;
+    textEdit?: LinePositionSpanTextChange | undefined;
+    commitCharacters?: string[] | undefined;
+    additionalTextEdits?: LinePositionSpanTextChange[] | undefined;
+    data!: ValueTupleOfLongAndInteger;
+    hasAfterInsertStep!: boolean;
+
+    constructor(data?: ICompletionItem) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.data = new ValueTupleOfLongAndInteger();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.label = _data["label"];
+            this.kind = _data["kind"];
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(item);
+            }
+            this.detail = _data["detail"];
+            this.documentation = _data["documentation"];
+            this.preselect = _data["preselect"];
+            this.sortText = _data["sortText"];
+            this.filterText = _data["filterText"];
+            this.insertTextFormat = _data["insertTextFormat"];
+            this.textEdit = _data["textEdit"] ? LinePositionSpanTextChange.fromJS(_data["textEdit"]) : <any>undefined;
+            if (Array.isArray(_data["commitCharacters"])) {
+                this.commitCharacters = [] as any;
+                for (let item of _data["commitCharacters"])
+                    this.commitCharacters!.push(item);
+            }
+            if (Array.isArray(_data["additionalTextEdits"])) {
+                this.additionalTextEdits = [] as any;
+                for (let item of _data["additionalTextEdits"])
+                    this.additionalTextEdits!.push(LinePositionSpanTextChange.fromJS(item));
+            }
+            this.data = _data["data"] ? ValueTupleOfLongAndInteger.fromJS(_data["data"]) : new ValueTupleOfLongAndInteger();
+            this.hasAfterInsertStep = _data["hasAfterInsertStep"];
+        }
+    }
+
+    static fromJS(data: any): CompletionItem {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionItem();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["label"] = this.label;
+        data["kind"] = this.kind;
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item);
+        }
+        data["detail"] = this.detail;
+        data["documentation"] = this.documentation;
+        data["preselect"] = this.preselect;
+        data["sortText"] = this.sortText;
+        data["filterText"] = this.filterText;
+        data["insertTextFormat"] = this.insertTextFormat;
+        data["textEdit"] = this.textEdit ? this.textEdit.toJSON() : <any>undefined;
+        if (Array.isArray(this.commitCharacters)) {
+            data["commitCharacters"] = [];
+            for (let item of this.commitCharacters)
+                data["commitCharacters"].push(item);
+        }
+        if (Array.isArray(this.additionalTextEdits)) {
+            data["additionalTextEdits"] = [];
+            for (let item of this.additionalTextEdits)
+                data["additionalTextEdits"].push(item.toJSON());
+        }
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        data["hasAfterInsertStep"] = this.hasAfterInsertStep;
+        return data;
+    }
+
+    clone(): CompletionItem {
+        const json = this.toJSON();
+        let result = new CompletionItem();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionItem {
+    label: string;
+    kind: CompletionItemKind;
+    tags?: CompletionItemTag[] | undefined;
+    detail?: string | undefined;
+    documentation?: string | undefined;
+    preselect: boolean;
+    sortText?: string | undefined;
+    filterText?: string | undefined;
+    insertTextFormat: InsertTextFormat;
+    textEdit?: LinePositionSpanTextChange | undefined;
+    commitCharacters?: string[] | undefined;
+    additionalTextEdits?: LinePositionSpanTextChange[] | undefined;
+    data: ValueTupleOfLongAndInteger;
+    hasAfterInsertStep: boolean;
+}
+
+export type CompletionItemKind = "Text" | "Method" | "Function" | "Constructor" | "Field" | "Variable" | "Class" | "Interface" | "Module" | "Property" | "Unit" | "Value" | "Enum" | "Keyword" | "Snippet" | "Color" | "File" | "Reference" | "Folder" | "EnumMember" | "Constant" | "Struct" | "Event" | "Operator" | "TypeParameter";
+
+export type CompletionItemTag = "Deprecated";
+
+export type InsertTextFormat = "PlainText" | "Snippet";
+
+export class LinePositionSpanTextChange implements ILinePositionSpanTextChange {
+    newText?: string | undefined;
+    startLine!: number;
+    startColumn!: number;
+    endLine!: number;
+    endColumn!: number;
+
+    constructor(data?: ILinePositionSpanTextChange) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.newText = _data["newText"];
+            this.startLine = _data["startLine"];
+            this.startColumn = _data["startColumn"];
+            this.endLine = _data["endLine"];
+            this.endColumn = _data["endColumn"];
+        }
+    }
+
+    static fromJS(data: any): LinePositionSpanTextChange {
+        data = typeof data === 'object' ? data : {};
+        let result = new LinePositionSpanTextChange();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["newText"] = this.newText;
+        data["startLine"] = this.startLine;
+        data["startColumn"] = this.startColumn;
+        data["endLine"] = this.endLine;
+        data["endColumn"] = this.endColumn;
+        return data;
+    }
+
+    clone(): LinePositionSpanTextChange {
+        const json = this.toJSON();
+        let result = new LinePositionSpanTextChange();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ILinePositionSpanTextChange {
+    newText?: string | undefined;
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+}
+
+export class ValueTupleOfLongAndInteger implements IValueTupleOfLongAndInteger {
+    item1!: number;
+    item2!: number;
+
+    constructor(data?: IValueTupleOfLongAndInteger) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"];
+            this.item2 = _data["item2"];
+        }
+    }
+
+    static fromJS(data: any): ValueTupleOfLongAndInteger {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValueTupleOfLongAndInteger();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1;
+        data["item2"] = this.item2;
+        return data;
+    }
+
+    clone(): ValueTupleOfLongAndInteger {
+        const json = this.toJSON();
+        let result = new ValueTupleOfLongAndInteger();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IValueTupleOfLongAndInteger {
+    item1: number;
+    item2: number;
+}
+
+export class SimpleFileRequest implements ISimpleFileRequest {
+    fileName?: string | undefined;
+
+    constructor(data?: ISimpleFileRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+        }
+    }
+
+    static fromJS(data: any): SimpleFileRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new SimpleFileRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        return data;
+    }
+
+    clone(): SimpleFileRequest {
+        const json = this.toJSON();
+        let result = new SimpleFileRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISimpleFileRequest {
+    fileName?: string | undefined;
+}
+
+export class Request extends SimpleFileRequest implements IRequest {
+    line!: number;
+    column!: number;
+    buffer?: string | undefined;
+    changes?: LinePositionSpanTextChange[] | undefined;
+    applyChangesTogether!: boolean;
+
+    constructor(data?: IRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.line = _data["line"];
+            this.column = _data["column"];
+            this.buffer = _data["buffer"];
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(LinePositionSpanTextChange.fromJS(item));
+            }
+            this.applyChangesTogether = _data["applyChangesTogether"];
+        }
+    }
+
+    static fromJS(data: any): Request {
+        data = typeof data === 'object' ? data : {};
+        let result = new Request();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["line"] = this.line;
+        data["column"] = this.column;
+        data["buffer"] = this.buffer;
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        data["applyChangesTogether"] = this.applyChangesTogether;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): Request {
+        const json = this.toJSON();
+        let result = new Request();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRequest extends ISimpleFileRequest {
+    line: number;
+    column: number;
+    buffer?: string | undefined;
+    changes?: LinePositionSpanTextChange[] | undefined;
+    applyChangesTogether: boolean;
+}
+
+export class CompletionRequest extends Request implements ICompletionRequest {
+    completionTrigger!: CompletionTriggerKind;
+    triggerCharacter?: string | undefined;
+
+    constructor(data?: ICompletionRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.completionTrigger = _data["completionTrigger"];
+            this.triggerCharacter = _data["triggerCharacter"];
+        }
+    }
+
+    static fromJS(data: any): CompletionRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["completionTrigger"] = this.completionTrigger;
+        data["triggerCharacter"] = this.triggerCharacter;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CompletionRequest {
+        const json = this.toJSON();
+        let result = new CompletionRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionRequest extends IRequest {
+    completionTrigger: CompletionTriggerKind;
+    triggerCharacter?: string | undefined;
+}
+
+export type CompletionTriggerKind = "Invoked" | "TriggerCharacter" | "TriggerForIncompleteCompletions";
 
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;

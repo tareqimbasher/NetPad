@@ -15,14 +15,20 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
     private readonly IEventBus _eventBus;
     private readonly IIpcService _ipcService;
     private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
+    private readonly OmniSharpServerCatalog _omniSharpServerCatalog;
 
     private readonly Dictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens;
 
-    public ScriptEnvironmentBackgroundService(IEventBus eventBus, IIpcService ipcService, IAutoSaveScriptRepository autoSaveScriptRepository)
+    public ScriptEnvironmentBackgroundService(
+        IEventBus eventBus,
+        IIpcService ipcService,
+        IAutoSaveScriptRepository autoSaveScriptRepository,
+        OmniSharpServerCatalog omniSharpServerCatalog)
     {
         _eventBus = eventBus;
         _ipcService = ipcService;
         _autoSaveScriptRepository = autoSaveScriptRepository;
+        _omniSharpServerCatalog = omniSharpServerCatalog;
         _environmentSubscriptionTokens = new Dictionary<Guid, List<EventSubscriptionToken>>();
     }
 
@@ -41,16 +47,24 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             {
                 AutoSaveScriptChanges(environment);
 
+                // We don't want to wait for this, we want it to occur asynchronously
+#pragma warning disable CS4014
+                _omniSharpServerCatalog.StartOmniSharpServerAsync(environment);
+#pragma warning restore CS4014
+
                 environment.SetIO(ActionInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
             }
 
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemoved>(ev =>
+        _eventBus.Subscribe<EnvironmentsRemoved>(async ev =>
         {
-            Unsubscribe(ev.Environments);
-            return Task.CompletedTask;
+            foreach (var environment in ev.Environments)
+            {
+                Unsubscribe(environment);
+                await _omniSharpServerCatalog.StopOmniSharpServerAsync(environment);
+            }
         });
     }
 
@@ -82,21 +96,18 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         tokens.Add(token);
     }
 
-    private void Unsubscribe(ScriptEnvironment[] environments)
+    private void Unsubscribe(ScriptEnvironment environment)
     {
-        foreach (var environment in environments)
+        if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
         {
-            if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
-            {
-                continue;
-            }
-
-            foreach (var token in tokens)
-            {
-                _eventBus.Unsubscribe(token);
-            }
-
-            _environmentSubscriptionTokens.Remove(environment.Script.Id);
+            return;
         }
+
+        foreach (var token in tokens)
+        {
+            _eventBus.Unsubscribe(token);
+        }
+
+        _environmentSubscriptionTokens.Remove(environment.Script.Id);
     }
 }

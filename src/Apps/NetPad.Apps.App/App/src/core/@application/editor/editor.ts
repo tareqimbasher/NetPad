@@ -40,6 +40,7 @@ export class Editor extends ViewModelBase {
             value: this.environment.script.code,
             language: 'csharp'
         });
+
         this.text = this.environment.script.code;
         this.updateEditorSettings();
         this.focus();

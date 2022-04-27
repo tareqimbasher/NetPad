@@ -41,11 +41,13 @@ namespace OmniSharp.Stdio
             _isStopped = true;
         }
 
-        public override async Task<TResponse> Send<TResponse>(object request)
+        public override Task Send(object request) => Send<NoResponse>(request);
+
+        public override async Task<TResponse?> Send<TResponse>(object request) where TResponse : class
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
-            
+
             if (_processIo == null)
                 throw new InvalidOperationException("Server is not started.");
 
@@ -60,36 +62,37 @@ namespace OmniSharp.Stdio
             var requestPacket = new RequestPacket(NextSequence(), endpointAttribute.EndpointName, request);
 
             var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
-            
+
             await _processIo.StandardInput.WriteLineAsync(JsonConvert.SerializeObject(requestPacket)).ConfigureAwait(false);
 
             var responseJToken = await responsePromise.ConfigureAwait(false);
 
             bool success = responseJToken.Success();
-            var response = responseJToken.Body<TResponse>();
-            
-            if (response == null)
-                throw new Exception("Bad response. Could not parse response body.");
 
-            return response;
+            if (typeof(TResponse) != typeof(NoResponse))
+            {
+                return responseJToken.Body<TResponse>();
+            }
+
+            return null;
         }
-        
-        
+
+
         private Task HandleOmniSharpErrorOutput(string error)
         {
             if (string.IsNullOrEmpty(error)) return Task.CompletedTask;
-            
+
             error = StringUtils.RemoveBOMString(error);
             Logger.LogError($"OmniSharpServer Error: {error}");
 
             return Task.CompletedTask;
         }
-        
+
 
         private async Task HandleOmniSharpDataOutput(string output)
         {
             if (string.IsNullOrEmpty(output)) return;
-            
+
             output = StringUtils.RemoveBOMString(output);
 
             if (output[0] != '{')
@@ -99,7 +102,7 @@ namespace OmniSharp.Stdio
 
             var outputPacket = JObject.Parse(output);
             var packetType = (string?)outputPacket["Type"];
-            
+
             if (packetType == null)
             {
                 // Bogus packet
@@ -126,16 +129,16 @@ namespace OmniSharp.Stdio
             Logger.LogDebug($"OmniSharpServer Response: {response}");
 
             var responseJObject = new ResponseJObject(response);
-            
+
             _requestResponseQueue.HandleResponse(responseJObject);
 
             return Task.CompletedTask;
         }
-        
+
         private Task HandleEventPacketReceived(JObject eventPacket)
         {
             var @event = (string?)eventPacket["Event"];
-                
+
             if (@event == "log")
                 Logger.LogDebug($"OmniSharpServer Event Log: {eventPacket}");
             else if (@event == "Error")

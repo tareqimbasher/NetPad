@@ -5,14 +5,16 @@ namespace NetPad.Compilation
     public class CodeParsingResult
     {
 
-        public CodeParsingResult(string program)
+        public CodeParsingResult(string fullProgram, int userCodeStartLine)
         {
-            Program = program;
+            FullProgram = fullProgram;
+            UserCodeStartLine = userCodeStartLine;
             Namespaces = new List<string>();
         }
 
-        public string Program { get; }
+        public string FullProgram { get; }
         public List<string> Namespaces { get; set; }
         public string? UserProgram { get; set; }
+        public int UserCodeStartLine { get; }
     }
 }

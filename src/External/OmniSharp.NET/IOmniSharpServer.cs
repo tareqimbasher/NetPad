@@ -8,7 +8,9 @@ namespace OmniSharp
         Task StartAsync();
         Task StopAsync();
 
-        Task<TResponse> Send<TResponse>(object request)
+        Task Send(object request);
+
+        Task<TResponse?> Send<TResponse>(object request)
             where TResponse : class;
     }
 }

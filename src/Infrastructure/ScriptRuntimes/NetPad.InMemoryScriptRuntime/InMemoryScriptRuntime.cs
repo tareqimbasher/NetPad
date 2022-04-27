@@ -105,7 +105,7 @@ namespace NetPad.Runtimes
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
             var compilationResult = _codeCompiler.Compile(
-                new CompilationInput(parsingResult.Program, referenceAssemblyPaths)
+                new CompilationInput(parsingResult.FullProgram, referenceAssemblyPaths)
                 {
                     OutputAssemblyNameTag = _script.Name
                 });
@@ -185,16 +185,16 @@ namespace NetPad.Runtimes
 
             var alcWeakRef = new WeakReference(assemblyLoader, trackResurrection: true);
 
-            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "UserScriptProgram");
+            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "Program");
             if (userScriptType == null)
             {
-                throw new ScriptRuntimeException("Could not find the UserScriptProgram type");
+                throw new ScriptRuntimeException("Could not find the Program type");
             }
 
             var method = userScriptType.GetMethod("Start", BindingFlags.Static | BindingFlags.NonPublic);
             if (method == null)
             {
-                throw new Exception("Could not find the entry method Start on UserScriptProgram");
+                throw new Exception("Could not find the entry method Start on Program");
             }
 
             var runStart = DateTime.Now;

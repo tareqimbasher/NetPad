@@ -14,11 +14,11 @@ namespace OmniSharp.Utilities
 
             OnOutputReceivedHandlers = new List<Func<string, Task>>();
             OnErrorReceivedHandlers = new List<Func<string, Task>>();
-            
+
             Process.OutputDataReceived += OutputReceived;
             Process.ErrorDataReceived += ErrorReceived;
         }
-        
+
         public Process Process { get; }
 
         public StreamWriter StandardInput => Process.StandardInput;
@@ -30,18 +30,18 @@ namespace OmniSharp.Utilities
             if (ev.Data == null)
                 return;
 
-            foreach (var handler in OnOutputReceivedHandlers)
+            foreach (var handler in OnOutputReceivedHandlers.ToArray())
             {
                 AsyncHelpers.RunSync(() => handler(ev.Data));
             }
         }
-        
+
         private void ErrorReceived(object? sender, DataReceivedEventArgs ev)
         {
             if (ev.Data == null)
                 return;
-            
-            foreach (var handler in OnErrorReceivedHandlers)
+
+            foreach (var handler in OnErrorReceivedHandlers.ToArray())
             {
                 AsyncHelpers.RunSync(() => handler(ev.Data));
             }

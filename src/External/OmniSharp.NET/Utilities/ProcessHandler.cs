@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace OmniSharp.Utilities
@@ -10,6 +11,7 @@ namespace OmniSharp.Utilities
         private readonly string? _args;
         private Process? _process;
         private ProcessIOHandler? _processIOHandler;
+        private Task? _task;
 
         public ProcessHandler(string commandText)
         {
@@ -28,7 +30,7 @@ namespace OmniSharp.Utilities
         {
             if (_process != null && _process.IsProcessRunning())
                 throw new InvalidOperationException($"Process is still running and has not exited yet. Process PID: {_process?.Id}.");
-            
+
             var startInfo = new ProcessStartInfo(_commandText)
             {
                 CreateNoWindow = true,
@@ -38,23 +40,46 @@ namespace OmniSharp.Utilities
                 RedirectStandardError = true
             };
 
-            _process = new Process { StartInfo = startInfo };
-                
             if (!string.IsNullOrWhiteSpace(_args))
-                _process.StartInfo.Arguments = _args;
-                
+                startInfo.Arguments = _args;
+
+            var envVars = Environment.GetEnvironmentVariables();
+            foreach (string key in envVars.Keys)
+            {
+                startInfo.EnvironmentVariables[key] = envVars[key]?.ToString();
+            }
+
+            _process = new Process
+            {
+                StartInfo = startInfo,
+                EnableRaisingEvents = true
+            };
+
             _processIOHandler = new ProcessIOHandler(_process);
-                
+
+            _processIOHandler.OnOutputReceivedHandlers.Add(async o =>
+            {
+                File.AppendAllText("/home/tips/output.txt", o + "\n");
+            });
+
+            _processIOHandler.OnErrorReceivedHandlers.Add(async o =>
+            {
+                File.AppendAllText("/home/tips/errors.txt", o + "\n");
+            });
+
             if (!_process.Start())
                 return Task.FromResult(false);
-            
+
+            // We have to wait for the process or otherwise it exists shortly after its spawned
+            _task = Task.Run(() =>
+            {
+                _process.WaitForExit();
+            });
+
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
 
-            if (waitForExit)
-                _process.WaitForExit();
-
-            return Task.FromResult(true);
+            return Task.FromResult(_process.IsProcessRunning());
         }
 
         public void StopProcess()

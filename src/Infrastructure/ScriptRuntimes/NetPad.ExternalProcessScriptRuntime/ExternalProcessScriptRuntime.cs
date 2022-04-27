@@ -113,10 +113,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
         var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
-        File.WriteAllText("/home/tips/test/test.cs", parsingResult.Program);
-
         var compilationResult = _codeCompiler.Compile(
-            new CompilationInput(parsingResult.Program, referenceAssemblyPaths)
+            new CompilationInput(parsingResult.FullProgram, referenceAssemblyPaths)
             {
                 OutputAssemblyNameTag = _script.Name
             });

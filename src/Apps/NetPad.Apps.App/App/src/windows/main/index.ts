@@ -1,6 +1,12 @@
 import Split from "split.js";
 import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
-import {DefaultCompletionItemProvider, IPaneManager, PaneHost, PaneHostOrientation} from "@application";
+import {
+    BuiltinCompletionProvider,
+    IPaneManager,
+    OmnisharpCompletionProvider,
+    PaneHost,
+    PaneHostOrientation
+} from "@application";
 import {ClipboardPane, NamespacesPane} from "./panes";
 import {KeyCode} from "@common";
 
@@ -8,9 +14,11 @@ export class Index {
     public rightPaneHost: PaneHost;
 
     constructor(
-        readonly settings: Settings,
-        @IShortcutManager readonly shortcutManager: IShortcutManager,
-        @IPaneManager readonly paneManager: IPaneManager) {
+        private readonly settings: Settings,
+        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IPaneManager private readonly paneManager: IPaneManager,
+        private readonly builtinCompletionProvider: BuiltinCompletionProvider,
+        private readonly omnisharpCompletionProvider: OmnisharpCompletionProvider) {
     }
 
     public async binding() {
@@ -43,7 +51,8 @@ export class Index {
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
 
-        new DefaultCompletionItemProvider().register();
+        this.builtinCompletionProvider.register();
+        this.omnisharpCompletionProvider.register();
     }
 
     private registerKeyboardShortcuts() {

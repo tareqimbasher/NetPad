@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NetPad.Scripts;
 
@@ -23,13 +24,27 @@ namespace NetPad.Compilation.CSharp
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode)
                 // TODO implementation should be improved to use syntax tree instead of a simple string replace
-                .Replace("Console.WriteLine", "UserScriptProgram.OutputWriteLine")
-                .Replace("Console.Write", "UserScriptProgram.OutputWrite");
+                .Replace("Console.WriteLine", "Program.OutputWriteLine")
+                .Replace("Console.Write", "Program.OutputWrite");
 
             var baseProgramTemplate = GetBaseProgramTemplate();
-            var program = string.Format(baseProgramTemplate, usings, userProgram);
+            var fullProgram = string.Format(baseProgramTemplate, usings, userProgram);
 
-            return new CodeParsingResult(program)
+            int userCodeStartLine = 0;
+            using var reader = new StringReader(fullProgram);
+            string? line = "";
+            int lineIndex = -1;
+            while ((line = reader.ReadLine()) != null)
+            {
+                lineIndex++;
+                if (line.Contains("// USER CODE STARTS HERE"))
+                {
+                    userCodeStartLine = lineIndex + 1;
+                    break;
+                }
+            }
+
+            return new CodeParsingResult(fullProgram, userCodeStartLine)
             {
                 Namespaces = namespaces.ToList(),
                 UserProgram = userProgram
@@ -49,7 +64,7 @@ namespace NetPad.Compilation.CSharp
         public string GetUserCode(Script script)
         {
             string userCode;
-            string scriptCode = script.Code;
+            string scriptCode = "// USER CODE STARTS HERE\n" + script.Code;
 
             if (script.Config.Kind == ScriptKind.Expression)
             {
@@ -57,10 +72,9 @@ namespace NetPad.Compilation.CSharp
             }
             else if (script.Config.Kind == ScriptKind.Statements)
             {
-                userCode = $@"
-public async Task Main()
+                userCode = $@"public async Task Main()
 {{
-{scriptCode}
+    {scriptCode}
 }}
 ";
             }
@@ -78,10 +92,9 @@ public async Task Main()
 
         public string GetBaseProgramTemplate()
         {
-            return @"
-{0}
+            return @"{0}
 
-public class UserScriptProgram
+public class Program
 {{
     private static IOutputWriter OutputWriter {{ get; set; }}
     private static Exception? Exception {{ get; set; }}
@@ -121,7 +134,7 @@ public static class Exts
 {{
     public static T? Dump<T>(this T? o, string? title = null)
     {{
-        UserScriptProgram.OutputWriteLine(o, title);
+        Program.OutputWriteLine(o, title);
         return o;
     }}
 }}
@@ -135,7 +148,7 @@ public static class Exts
             return @"
 public class UserScript_Program
 {{
-{0}
+    {0}
 }}
 ";
         }

@@ -161,7 +161,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             foreach (var @namespace in scriptNamespaces)
             {
-                Assert.Contains($"using {@namespace};", result.Program);
+                Assert.Contains($"using {@namespace};", result.FullProgram);
             }
         }
 
@@ -172,7 +172,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var baseProgramTemplate = parser.GetBaseProgramTemplate();
 
-            Assert.Contains("public class UserScriptProgram", baseProgramTemplate);
+            Assert.Contains("public class Program", baseProgramTemplate);
         }
 
         [Fact]
@@ -239,7 +239,7 @@ Console.WriteLine(DateTime.Now);
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.Write(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScriptProgram.OutputWrite(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("Program.OutputWrite(\"Some Text\");", result.UserProgram!);
         }
 
         [Fact]
@@ -252,7 +252,7 @@ Console.WriteLine(DateTime.Now);
             var result = parser.Parse(script);
 
             Assert.DoesNotContain("Console.WriteLine(\"Some Text\");", result.UserProgram!);
-            Assert.Contains("UserScriptProgram.OutputWriteLine(\"Some Text\");", result.UserProgram!);
+            Assert.Contains("Program.OutputWriteLine(\"Some Text\");", result.UserProgram!);
         }
 
         private Script GetScript() => new Script("Test Script");
