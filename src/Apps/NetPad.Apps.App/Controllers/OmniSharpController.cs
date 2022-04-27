@@ -26,7 +26,7 @@ public class OmniSharpController : Controller
             return null;
         }
 
-        return await server?.Send<CompletionResponse>(new CompletionRequest
+        return await server.Send<CompletionResponse>(new CompletionRequest
         {
             Line = server.UserCodeStartsOnLine + request.Line,
             Column = request.Column,
