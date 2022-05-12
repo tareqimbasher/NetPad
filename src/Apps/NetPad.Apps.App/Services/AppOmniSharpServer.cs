@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,10 @@ using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
+using OmniSharp.Abstractions.Models.V1.ReAnalyze;
+using OmniSharp.FileWatching;
+using OmniSharp.Models.ChangeBuffer;
+using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
 
 namespace NetPad.Services;
@@ -22,14 +27,11 @@ public class AppOmniSharpServer
     private readonly IOmniSharpServerFactory _omniSharpServerFactory;
     private readonly IEventBus _eventBus;
     private readonly ILogger _logger;
-    private readonly ICodeParser _codeParser;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
-
-    private readonly string _projectDirectoryPath;
-    private readonly string _programFilePath;
     private readonly string? _omnisharpExecutablePath;
 
     private IOmniSharpServer? _omniSharpServer;
+    private readonly ScriptProject _project;
 
     public AppOmniSharpServer(
         ScriptEnvironment environment,
@@ -37,22 +39,20 @@ public class AppOmniSharpServer
         ICodeParser codeParser,
         IEventBus eventBus,
         IConfiguration configuration,
-        ILogger<AppOmniSharpServer> logger)
+        ILogger<AppOmniSharpServer> logger,
+        ILogger<ScriptProject> scriptProjectLogger)
     {
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
         _eventBus = eventBus;
         _logger = logger;
-        _codeParser = codeParser;
         _subscriptionTokens = new ();
 
-        _projectDirectoryPath = Path.Combine(Path.GetTempPath(), "NetPad", _environment.Script.Id.ToString());
-        _programFilePath = Path.Combine(_projectDirectoryPath, "Program.cs");
+        _project = new ScriptProject(environment.Script, codeParser, scriptProjectLogger);
         _omnisharpExecutablePath = configuration.GetSection("OmniSharp").GetValue<string?>("ExecutablePath");
     }
 
-    public int UserCodeStartsOnLine { get; private set; }
-    public string ProgramFilePath => _programFilePath;
+    public ScriptProject Project => _project;
 
     public Task Send(object request)
     {
@@ -85,9 +85,8 @@ public class AppOmniSharpServer
             return false;
         }
 
-        Directory.CreateDirectory(_projectDirectoryPath);
-
-        await UpdateProjectAsync();
+        _logger.LogDebug("Initializing script project for script: {ScriptId}", _environment.Script.Id);
+        await _project.InitializeAsync();
 
         var codeChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev =>
         {
@@ -101,11 +100,91 @@ public class AppOmniSharpServer
                 return;
             }
 
-            await UpdateProjectAsync();
+            var fullProgram = await _project.UpdateProgramCodeAsync();
+
+            if (_omniSharpServer != null)
+            {
+                await Send(new UpdateBufferRequest
+                {
+                    FileName = _project.ProgramFilePath,
+                    Buffer = fullProgram
+                });
+            }
         });
 
         _subscriptionTokens.Add(codeChangeToken);
 
+        var referencesChangeToken = _eventBus.Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
+        {
+            foreach (var addedReference in ev.Added)
+            {
+                if (addedReference is PackageReference pkg)
+                {
+                    await _project.AddPackageAsync(pkg.PackageId, pkg.Version);
+                }
+            }
+
+            foreach (var removedReference in ev.Removed)
+            {
+                if (removedReference is PackageReference pkg)
+                {
+                    await _project.RemovePackageAsync(pkg.PackageId);
+                }
+            }
+
+            await StopOmniSharpServerAsync();
+            await StartOmniSharpServerAsync();
+
+            // await Send(new UpdateBufferRequest
+            // {
+            //     FileName = _project.ProjectFilePath,
+            //     Buffer = await File.ReadAllTextAsync(_project.ProjectFilePath)
+            // });
+            //
+            // await Send(new FilesChangedRequest()
+            // {
+            //     FileName = _project.ProjectFilePath,
+            //     Buffer = await File.ReadAllTextAsync(_project.ProjectFilePath),
+            //     ChangeType = FileChangeType.Change
+            // });
+            //
+            // await Send(new ChangeBufferRequest()
+            // {
+            //     FileName = _project.ProjectFilePath,
+            //     NewText = await File.ReadAllTextAsync(_project.ProjectFilePath),
+            //     StartLine = 1,
+            //     StartColumn = 1,
+            //     EndLine  = File.ReadAllLines(_project.ProjectFilePath).Length,
+            //     EndColumn = File.ReadAllLines(_project.ProjectFilePath).Last().Length
+            // });
+            //
+            // await Send(new ReAnalyzeRequest()
+            // {
+            //     FileName = _project.ProjectFilePath
+            // });
+        });
+
+        _subscriptionTokens.Add(referencesChangeToken);
+
+        await StartOmniSharpServerAsync();
+
+        return true;
+    }
+
+    public async Task StopAsync()
+    {
+        await StopOmniSharpServerAsync();
+
+        foreach (var token in _subscriptionTokens)
+        {
+            _eventBus.Unsubscribe(token);
+        }
+
+        await _project.DeleteAsync();
+    }
+
+    private async Task StartOmniSharpServerAsync()
+    {
         string args = new[]
         {
             //$"--hostPID {Environment.ProcessId}",
@@ -119,72 +198,24 @@ public class AppOmniSharpServer
             "FileOptions:SystemExcludeSearchPatterns:5=**/Thumbs.db",
         }.JoinToString(" ");
 
-        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(_omnisharpExecutablePath, _projectDirectoryPath, args);
+        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(_omnisharpExecutablePath, _project.ProjectDirectoryPath, args);
+
+        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args}", _omnisharpExecutablePath, args);
 
         await omniSharpServer.StartAsync();
 
         _omniSharpServer = omniSharpServer;
-
-        return true;
     }
 
-    public async Task StopAsync()
+    private async Task StopOmniSharpServerAsync()
     {
-        if (_omniSharpServer != null)
+        if (_omniSharpServer == null)
         {
-            await _omniSharpServer.StopAsync();
+            return;
         }
 
-        try
-        {
-            if (Directory.Exists(_projectDirectoryPath))
-            {
-                Directory.Delete(_projectDirectoryPath, recursive: true);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Error deleting temporary project directory at path: {ProjectDirectoryPath}", _projectDirectoryPath);
-        }
+        await _omniSharpServer.StopAsync();
 
-        foreach (var token in _subscriptionTokens)
-        {
-            _eventBus.Unsubscribe(token);
-        }
-    }
-
-    private async Task UpdateProjectAsync()
-    {
-        var projFilePath = Path.Combine(_projectDirectoryPath, "script.csproj");
-
-        if (!File.Exists(projFilePath))
-        {
-            await File.WriteAllTextAsync(projFilePath, @"<Project Sdk=""Microsoft.NET.Sdk"">
-
-    <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-</Project>
-");
-        }
-
-        var parsingResult = _codeParser.Parse(_environment.Script);
-
-        await File.WriteAllTextAsync(_programFilePath, parsingResult.FullProgram);
-
-        UserCodeStartsOnLine = parsingResult.UserCodeStartLine;
-
-        if (_omniSharpServer != null)
-        {
-            await Send(new UpdateBufferRequest
-            {
-                FileName = _programFilePath,
-                Buffer = parsingResult.FullProgram
-            });
-        }
+        _omniSharpServer = null;
     }
 }

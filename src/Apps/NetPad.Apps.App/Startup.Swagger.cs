@@ -41,7 +41,7 @@ public partial class Startup
                     .Replace(
                         "http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }",
                         "@IHttpClient http?: IHttpClient")
-                    .Split(Environment.NewLine)
+                    .Split("\n")
                     .Where(l => !l.StartsWith("import") && !l.StartsWith("@inject"))
                     .ToList();
 

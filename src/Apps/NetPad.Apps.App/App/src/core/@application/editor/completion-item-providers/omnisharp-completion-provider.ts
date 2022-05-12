@@ -27,6 +27,21 @@ export class OmnisharpCompletionProvider {
                 return {
                     suggestions: await this.createCompletionItems(range, ctx, token)
                 };
+            },
+            resolveCompletionItem: async (item: languages.CompletionItem, token: CancellationToken) => {
+                const resolution = await this.omnisharpService.getCompletionResolution(this.session.active.script.id, <any>item);
+
+                const resItem = resolution.item;
+
+                if (resItem.detail) {
+                    item.detail = resItem.detail;
+                }
+
+                if (resItem.documentation) {
+                    item.documentation = resItem.documentation;
+                }
+
+                return item;
             }
         });
     }

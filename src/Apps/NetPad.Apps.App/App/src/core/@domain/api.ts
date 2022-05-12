@@ -198,6 +198,8 @@ export class AssembliesApiClient implements IAssembliesApiClient {
 export interface IOmniSharpApiClient {
 
     getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
+
+    getCompletionResolution(scriptId: string, completionItem: CompletionItem): Promise<CompletionResolveResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -250,6 +252,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<CompletionResponse>(<any>null);
+    }
+
+    getCompletionResolution(scriptId: string, completionItem: CompletionItem, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/completion/resolve";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(completionItem);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCompletionResolution(_response);
+        });
+    }
+
+    protected processGetCompletionResolution(response: Response): Promise<CompletionResolveResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CompletionResolveResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CompletionResolveResponse>(<any>null);
     }
 }
 
@@ -590,7 +634,7 @@ export interface IScriptsApiClient {
 
     setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
 
-    setReferences(id: string, references: Reference[]): Promise<FileResponse | null>;
+    setReferences(id: string, newReferences: Reference[]): Promise<FileResponse | null>;
 
     setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
 }
@@ -858,14 +902,14 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<FileResponse | null>(<any>null);
     }
 
-    setReferences(id: string, references: Reference[], signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    setReferences(id: string, newReferences: Reference[], signal?: AbortSignal | undefined): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/scripts/{id}/references";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(references);
+        const content_ = JSON.stringify(newReferences);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -1479,7 +1523,7 @@ export interface IReference {
 }
 
 export class AssemblyReference extends Reference implements IAssemblyReference {
-    assemblyPath?: string | undefined;
+    assemblyPath!: string;
 
     constructor(data?: IAssemblyReference) {
         super(data);
@@ -1516,7 +1560,7 @@ export class AssemblyReference extends Reference implements IAssemblyReference {
 }
 
 export interface IAssemblyReference extends IReference {
-    assemblyPath?: string | undefined;
+    assemblyPath: string;
 }
 
 export class PackageReference extends Reference implements IPackageReference {
@@ -2008,6 +2052,49 @@ export interface ICompletionRequest extends IRequest {
 }
 
 export type CompletionTriggerKind = "Invoked" | "TriggerCharacter" | "TriggerForIncompleteCompletions";
+
+export class CompletionResolveResponse implements ICompletionResolveResponse {
+    item?: CompletionItem | undefined;
+
+    constructor(data?: ICompletionResolveResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item = _data["item"] ? CompletionItem.fromJS(_data["item"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CompletionResolveResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionResolveResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item"] = this.item ? this.item.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): CompletionResolveResponse {
+        const json = this.toJSON();
+        let result = new CompletionResolveResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionResolveResponse {
+    item?: CompletionItem | undefined;
+}
 
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
