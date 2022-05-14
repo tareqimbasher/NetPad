@@ -50,7 +50,8 @@ public class OmniSharpServerCatalog
             _serviceProvider.GetRequiredService<ICodeParser>(),
             _serviceProvider.GetRequiredService<IEventBus>(),
             _serviceProvider.GetRequiredService<IConfiguration>(),
-            _serviceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>()
+            _serviceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
+            _serviceProvider.GetRequiredService<ILogger<ScriptProject>>()
         );
 
         try

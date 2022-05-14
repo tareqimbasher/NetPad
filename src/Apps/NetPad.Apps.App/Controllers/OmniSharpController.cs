@@ -28,11 +28,26 @@ public class OmniSharpController : Controller
 
         return await server.Send<CompletionResponse>(new CompletionRequest
         {
-            Line = server.UserCodeStartsOnLine + request.Line,
+            Line = server.Project.UserCodeStartsOnLine + request.Line,
             Column = request.Column,
-            FileName = server.ProgramFilePath,
+            FileName = server.Project.ProgramFilePath,
             CompletionTrigger = request.CompletionTrigger,
             TriggerCharacter = request.TriggerCharacter
+        });
+    }
+
+    [HttpPost("{scriptId:guid}/completion/resolve")]
+    public async Task<CompletionResolveResponse?> GetCompletionResolution(Guid scriptId, [FromBody] CompletionItem completionItem)
+    {
+        var server = GetOmniSharpServer(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        return await server.Send<CompletionResolveResponse>(new CompletionResolveRequest
+        {
+            Item = completionItem
         });
     }
 

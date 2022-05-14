@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using NetPad.Exceptions;
 
@@ -8,10 +9,10 @@ namespace NetPad.Scripts
         public AssemblyReference(string assemblyPath)
             : base(!string.IsNullOrWhiteSpace(assemblyPath) ? Path.GetFileName(assemblyPath) : "(Unknown)")
         {
-            AssemblyPath = assemblyPath;
+            AssemblyPath = assemblyPath ?? throw new ArgumentNullException(nameof(assemblyPath));
         }
 
-        public string? AssemblyPath { get; }
+        public string AssemblyPath { get; }
 
         public override void EnsureValid()
         {

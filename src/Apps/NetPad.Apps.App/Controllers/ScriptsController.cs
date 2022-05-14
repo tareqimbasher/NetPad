@@ -71,10 +71,11 @@ namespace NetPad.Controllers
         }
 
         [HttpPut("{id:guid}/references")]
-        public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> references)
+        public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> newReferences)
         {
             var environment = await GetScriptEnvironmentAsync(id);
-            environment.Script.Config.SetReferences(references);
+
+            await _mediator.Send(new UpdateScriptReferencesCommand(environment.Script, newReferences));
 
             return NoContent();
         }
