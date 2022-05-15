@@ -13,7 +13,10 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 
         var str = obj.ToString()?
             .Replace("\n", "<br/>")
-            .Replace(" ", "&nbsp;");
+            .Replace(" ", "&nbsp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+        ;
 
         return new Element("span").WithText(str ?? string.Empty);
     }
