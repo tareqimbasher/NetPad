@@ -14,6 +14,7 @@ namespace NetPad
 
         public static void Main(string[] args)
         {
+            // Configure as an Electron app or a web app
             ApplicationConfigurator = args.Any(a => a.Contains("/ELECTRONPORT", StringComparison.OrdinalIgnoreCase))
                 ? new NetPadElectronConfigurator()
                 : new NetPadWebConfigurator();

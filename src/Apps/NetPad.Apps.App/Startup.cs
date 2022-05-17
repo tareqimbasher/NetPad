@@ -49,41 +49,54 @@ namespace NetPad
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
             services.AddSingleton<HostInfo>();
-            services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
-
             services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
-            services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-            services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
-            services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
-            services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
-            services.AddTransient<ICodeParser, CSharpCodeParser>();
-            services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
-            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-            services.AddTransient<IScriptRuntimeFactory, DefaultInMemoryScriptRuntimeFactory>();
-            //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
-            services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
-            services.AddTransient<IPackageProvider, NuGetPackageProvider>();
-
-            services.AddSingleton<OmniSharpServerCatalog>();
-            services.AddOmniSharpServer();
-
-            services.AddHostedService<EventForwardToIpcBackgroundService>();
-            services.AddHostedService<ScriptEnvironmentBackgroundService>();
-            services.AddHostedService<ScriptDirectoryBackgroundService>();
 
             services.AddMediatR(typeof(Command).Assembly);
 
             if (WebHostEnvironment.IsDevelopment())
             {
                 AddSwagger(services);
+            }
+
+
+            // Repositories
+            services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
+            services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
+            services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
+            services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
+
+            // Script execution
+            services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
+            services.AddTransient<ICodeParser, CSharpCodeParser>();
+            services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
+            services.AddTransient<IScriptRuntimeFactory, DefaultInMemoryScriptRuntimeFactory>();
+            //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
+            services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
+            services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
+
+            // Package management
+            services.AddTransient<IPackageProvider, NuGetPackageProvider>();
+
+            // OmniSharp
+            services.AddSingleton<OmniSharpServerCatalog>();
+            services.AddOmniSharpServer();
+
+            // Hosted services
+            services.AddHostedService<EventForwardToIpcBackgroundService>();
+            services.AddHostedService<ScriptEnvironmentBackgroundService>();
+            services.AddHostedService<ScriptDirectoryBackgroundService>();
+            if (WebHostEnvironment.IsDevelopment())
+            {
                 //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
 
+            // Allow ApplicationConfigurator to add any services it needs
             Program.ApplicationConfigurator.ConfigureServices(services);
 
             // We want to always use SignalR for IPC, overriding Electron's IPC service
+            // This should come after the ApplicationConfigurator adds its services so it overrides it
             services.AddTransient<IIpcService, SignalRIpcService>();
         }
 
@@ -162,6 +175,7 @@ namespace NetPad
                 }
             });
 
+            // Allow ApplicationConfigurator to run any configuration
             Program.ApplicationConfigurator.Configure(app, env);
         }
     }
