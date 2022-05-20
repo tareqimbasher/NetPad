@@ -139,7 +139,7 @@ namespace NetPad.Scripts
 
         public override string ToString()
         {
-            return $"{Id} | {Name}";
+            return $"[{Id}] {Name}".TrimEnd();
         }
 
         public static Script From(string name, string scriptJson, string? path)

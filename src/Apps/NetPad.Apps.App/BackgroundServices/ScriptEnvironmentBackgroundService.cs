@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Scripts;
@@ -10,6 +11,9 @@ using NetPad.UiInterop;
 
 namespace NetPad.BackgroundServices;
 
+/// <summary>
+/// Handles automations that occur when a script environment is added to removed from the session.
+/// </summary>
 public class ScriptEnvironmentBackgroundService : BackgroundService
 {
     private readonly IEventBus _eventBus;
@@ -23,7 +27,8 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         IEventBus eventBus,
         IIpcService ipcService,
         IAutoSaveScriptRepository autoSaveScriptRepository,
-        OmniSharpServerCatalog omniSharpServerCatalog)
+        OmniSharpServerCatalog omniSharpServerCatalog,
+        ILoggerFactory loggerFactory) : base(loggerFactory)
     {
         _eventBus = eventBus;
         _ipcService = ipcService;

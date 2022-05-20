@@ -1,6 +1,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
@@ -8,6 +9,9 @@ using NetPad.UiInterop;
 
 namespace NetPad.BackgroundServices;
 
+/// <summary>
+/// Monitors script directory for changes and notifies IPC clients that it changed.
+/// </summary>
 public class ScriptDirectoryBackgroundService : BackgroundService
 {
     private readonly IScriptRepository _scriptRepository;
@@ -15,7 +19,8 @@ public class ScriptDirectoryBackgroundService : BackgroundService
     private readonly Settings _settings;
     private FileSystemWatcher? _scriptDirWatcher;
 
-    public ScriptDirectoryBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings)
+    public ScriptDirectoryBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
+        base(loggerFactory)
     {
         _scriptRepository = scriptRepository;
         _ipcService = ipcService;
