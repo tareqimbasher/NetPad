@@ -54,11 +54,22 @@ public class OmniSharpServerCatalog
             _serviceProvider.GetRequiredService<ILogger<ScriptProject>>()
         );
 
+        _logger.LogDebug("Initialized a new {Type} for script {Script}",
+            nameof(AppOmniSharpServer),
+            environment.Script);
+
         try
         {
-            if (await server.StartAsync())
+            bool started = await server.StartAsync();
+
+            _logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
+                nameof(AppOmniSharpServer),
+                started);
+
+            if (started)
             {
                 _servers.Add(environment.Script.Id, server);
+                _logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
             }
         }
         catch (Exception ex)
@@ -69,13 +80,21 @@ public class OmniSharpServerCatalog
 
     public async Task StopOmniSharpServerAsync(ScriptEnvironment environment)
     {
+        _logger.LogDebug("Finding OmniSharp server to stop for script {Script}", environment.Script);
+
+        // Continuously try to find an OmniSharp server for the script for a few seconds.
+        // An OmniSharp server could still be starting and so we want to do multiple checks to ensure
+        // we find it if it was slow to start.
         AppOmniSharpServer? server = null;
         int findCounter = 0;
 
-        while (++findCounter <= 7)
+        while (++findCounter <= 10)
         {
             if (_servers.TryGetValue(environment.Script.Id, out server))
             {
+                _logger.LogDebug("Found OmniSharp server to stop for script {Script} on attempt {Attempt}",
+                    environment.Script,
+                    findCounter);
                 break;
             }
 
@@ -84,7 +103,9 @@ public class OmniSharpServerCatalog
 
         if (server == null)
         {
-            // No server found
+            _logger.LogDebug("No OmniSharp server found for script {Script} after {Attempts} attempts",
+                environment.Script,
+                findCounter);
             return;
         }
 
@@ -93,10 +114,11 @@ public class OmniSharpServerCatalog
         try
         {
             await Retry.ExecuteAsync(5, TimeSpan.FromSeconds(1), async () => { await server.StopAsync(); });
+            _logger.LogDebug("Stopped OmniSharp server for script {Script}", environment.Script);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error stopping OmniSharp server for script ID: {ScriptId}", environment.Script.Id);
+            _logger.LogError(ex, "Error stopping OmniSharp server for script {Script}", environment.Script);
         }
     }
 }

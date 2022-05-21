@@ -82,7 +82,7 @@ public class ScriptProject
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error deleting temporary project directory at path: {ProjectDirectoryPath}", ProjectDirectoryPath);
+            _logger.LogError(ex, "Error deleting temporary project directory at path: {ProjectDirectoryPath}", ProjectDirectoryPath);
         }
     }
 

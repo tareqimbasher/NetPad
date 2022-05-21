@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace OmniSharp.Utilities
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static bool WasProcessStarted(this Process process)
         {

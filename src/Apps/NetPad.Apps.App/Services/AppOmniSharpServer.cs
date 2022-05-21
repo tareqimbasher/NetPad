@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -10,16 +9,12 @@ using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
-using OmniSharp.Abstractions.Models.V1.ReAnalyze;
-using OmniSharp.FileWatching;
-using OmniSharp.Models.ChangeBuffer;
-using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
 
 namespace NetPad.Services;
 
 /// <summary>
-/// A wrapper around an <see cref="IOmniSharpServer"/> used for app-specific functionality.
+/// A wrapper around an <see cref="IOmniSharpServer"/> that includes app-specific functionality.
 /// </summary>
 public class AppOmniSharpServer
 {
@@ -54,6 +49,10 @@ public class AppOmniSharpServer
 
     public ScriptProject Project => _project;
 
+    /// <summary>
+    /// Sends a request to the server with no response.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if OmniSharp server has not been started yet.</exception>
     public Task Send(object request)
     {
         if (_omniSharpServer == null)
@@ -62,6 +61,10 @@ public class AppOmniSharpServer
         return _omniSharpServer.Send(request);
     }
 
+    /// <summary>
+    /// Sends a request to the server and returns the server response.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if OmniSharp server has not been started yet.</exception>
     public Task<TResponse?> Send<TResponse>(object request) where TResponse : class
     {
         if (_omniSharpServer == null)
@@ -70,6 +73,9 @@ public class AppOmniSharpServer
         return _omniSharpServer.Send<TResponse>(request);
     }
 
+    /// <summary>
+    /// Starts the server.
+    /// </summary>
     public async Task<bool> StartAsync()
     {
         if (string.IsNullOrWhiteSpace(_omnisharpExecutablePath))
@@ -85,7 +91,7 @@ public class AppOmniSharpServer
             return false;
         }
 
-        _logger.LogDebug("Initializing script project for script: {ScriptId}", _environment.Script.Id);
+        _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
         await _project.InitializeAsync();
 
         var codeChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev =>
@@ -171,6 +177,9 @@ public class AppOmniSharpServer
         return true;
     }
 
+    /// <summary>
+    /// Stops the server.
+    /// </summary>
     public async Task StopAsync()
     {
         await StopOmniSharpServerAsync();
