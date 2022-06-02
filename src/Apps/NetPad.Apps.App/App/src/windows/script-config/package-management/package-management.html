@@ -11,6 +11,10 @@
     </div>
 </template>
 
+<template as-custom-element="error"
+          class="text-red text-center flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+</template>
+
 <template as-custom-element="packages" class="list-group flex-grow-height-restricted overflow-y-auto">
     <bindable property="packages"></bindable>
     <bindable property="selectedPackage"></bindable>
@@ -82,7 +86,6 @@
                     </ul>
                 </div>
             </packages>
-
         </div>
     </div>
 
@@ -142,6 +145,9 @@
                     </div>
                 </div>
             </packages>
+            <error catch>
+                Could not load search results. Check your internet connection.
+            </error>
         </div>
     </div>
 

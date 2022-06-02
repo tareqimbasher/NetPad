@@ -118,7 +118,7 @@ export class PackageManagement {
 
     private async searchPackages(term?: string) {
         this.searchLoadingPromise = this.packageService.search(
-            this.term,
+            term ?? this.term,
             0,
             10,
             false)
