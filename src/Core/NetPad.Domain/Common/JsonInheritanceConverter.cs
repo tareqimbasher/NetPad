@@ -24,10 +24,16 @@ namespace NetPad.Common
         private readonly bool _readTypeProperty;
 
         [ThreadStatic]
+        // We are currently not reading this field, only setting it.
+#pragma warning disable CS0414
         private static bool _isReading;
+#pragma warning restore CS0414
 
         [ThreadStatic]
+        // We are currently not reading this field, only setting it.
+#pragma warning disable CS0414
         private static bool _isWriting;
+#pragma warning restore CS0414
 
         /// <summary>Initializes a new instance of the <see cref="JsonInheritanceConverter{T}"/> class.</summary>
         public JsonInheritanceConverter()
@@ -253,7 +259,8 @@ namespace NetPad.Common
                 var typeInfo = jsonObject.GetProperty("$type").GetString();
                 if (typeInfo != null)
                 {
-                    return Type.GetType(typeInfo);
+                    return Type.GetType(typeInfo) ??
+                           throw new Exception($"Could not load type {typeInfo}");
                 }
             }
 
@@ -278,14 +285,19 @@ namespace NetPad.Common
                         var method = type.GetRuntimeMethod((string)attribute.MethodName, new Type[0]);
                         if (method != null)
                         {
-                            var types = (IEnumerable<Type>)method.Invoke(null, new object[0]);
-                            foreach (var knownType in types)
+                            var types = (IEnumerable<Type>?)method.Invoke(null, new object[0]);
+
+                            if (types != null)
                             {
-                                if (knownType.Name == discriminator)
+                                foreach (var knownType in types)
                                 {
-                                    return knownType;
+                                    if (knownType.Name == discriminator)
+                                    {
+                                        return knownType;
+                                    }
                                 }
                             }
+
                             return null;
                         }
                     }

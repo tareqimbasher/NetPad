@@ -69,13 +69,14 @@ public class NuGetPackageProvider : IPackageProvider
                 var nuspecReader = packageReader.NuspecReader;
                 var installInfo = GetInstallInfo(packageDir.FullName)!;
 
-                var cachedPackage = new CachedPackage
+                string packageId = nuspecReader.GetId();
+                string title = nuspecReader.GetTitle().DefaultIfNullOrWhitespace(nuspecReader.GetId());
+
+                var cachedPackage = new CachedPackage(packageId, title)
                 {
                     InstallReason = installInfo.InstallReason,
                     DirectoryPath = packageDir.FullName,
-                    PackageId = nuspecReader.GetId(),
                     Version = nuspecReader.GetVersion().ToString(),
-                    Title = nuspecReader.GetTitle().DefaultIfNullOrWhitespace(nuspecReader.GetId()),
                     Authors = nuspecReader.GetAuthors(),
                     Description = nuspecReader.GetDescription(),
                     IconUrl = StringUtils.ToUriOrDefault(nuspecReader.GetIconUrl()), // GetIcon()
@@ -102,7 +103,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         if (loadMetadata)
         {
-            await HydrateMetadataAsync(cachedPackages);
+            await HydrateMetadataAsync(cachedPackages, TimeSpan.FromSeconds(10));
         }
 
         return cachedPackages.ToArray();
@@ -219,7 +220,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         foreach (var searchResult in searchResults)
         {
-            var metadata = new PackageMetadata();
+            var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
             await MapAsync(searchResult, metadata);
             packages.Add(metadata);
         }
@@ -427,7 +428,7 @@ public class NuGetPackageProvider : IPackageProvider
         }
     }
 
-    private async Task HydrateMetadataAsync(IEnumerable<PackageMetadata> packages)
+    private async Task HydrateMetadataAsync(IEnumerable<PackageMetadata> packages, TimeSpan? timeout = null)
     {
         var needsProcessing = packages.Where(p => p.IsSomeMetadataMetadataMissing()).ToList();
         if (!needsProcessing.Any())
@@ -435,11 +436,14 @@ public class NuGetPackageProvider : IPackageProvider
 
         using var sourceCacheContext = new SourceCacheContext();
         var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
+        var cancellationTokenSource = timeout == null ? new CancellationTokenSource() : new CancellationTokenSource(timeout.Value);
 
         foreach (var sourceRepository in sourceRepositories)
         {
-            if (!needsProcessing.Any())
+            if (!needsProcessing.Any() || cancellationTokenSource.IsCancellationRequested)
+            {
                 break;
+            }
 
             var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
 
@@ -447,11 +451,16 @@ public class NuGetPackageProvider : IPackageProvider
 
             foreach (var package in needsProcessing)
             {
+                if (cancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 var metadata = await resource.GetMetadataAsync(
                     new PackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                     sourceCacheContext,
                     NuGetNullLogger.Instance,
-                    CancellationToken.None);
+                    cancellationTokenSource.Token);
 
                 await MapAsync(metadata, package);
                 found.Add(package);

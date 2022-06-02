@@ -194,6 +194,11 @@ public class AppOmniSharpServer
 
     private async Task StartOmniSharpServerAsync()
     {
+        if (_omnisharpExecutablePath == null)
+        {
+            throw new NullReferenceException($"OmniSharp executable path is null. It must be set to start the server.");
+        }
+
         string args = new[]
         {
             //$"--hostPID {Environment.ProcessId}",

@@ -71,7 +71,7 @@ public class ScriptProject
         }
     }
 
-    public async Task DeleteAsync()
+    public Task DeleteAsync()
     {
         try
         {
@@ -84,6 +84,8 @@ public class ScriptProject
         {
             _logger.LogError(ex, "Error deleting temporary project directory at path: {ProjectDirectoryPath}", ProjectDirectoryPath);
         }
+
+        return Task.CompletedTask;
     }
 
     public async Task<string> UpdateProgramCodeAsync()
@@ -96,7 +98,7 @@ public class ScriptProject
         return parsingResult.FullProgram;
     }
 
-    public async Task AddPackageAsync(string packageId, string packageVersion)
+    public Task AddPackageAsync(string packageId, string packageVersion)
     {
         Process.Start(new ProcessStartInfo("dotnet",
             $"add {ProjectFilePath} package {packageId} --version {packageVersion}")
@@ -123,9 +125,11 @@ public class ScriptProject
 
         //var project = Project.FromFile(ProjectFilePath, new ProjectOptions());
         // project.Items.FirstOrDefault(i => i.Xml.ElementName == "ItemGroup" && i.Xml.);
+
+        return Task.CompletedTask;
     }
 
-    public async Task RemovePackageAsync(string packageId)
+    public Task RemovePackageAsync(string packageId)
     {
         Process.Start(new ProcessStartInfo("dotnet",
             $"remove {ProjectFilePath} package {packageId}")
@@ -134,5 +138,7 @@ public class ScriptProject
             WorkingDirectory = ProjectDirectoryPath,
             CreateNoWindow = true
         });
+
+        return Task.CompletedTask;
     }
 }

@@ -57,14 +57,16 @@ namespace OmniSharp.Utilities
 
             _processIOHandler = new ProcessIOHandler(_process);
 
-            _processIOHandler.OnOutputReceivedHandlers.Add(async o =>
+            _processIOHandler.OnOutputReceivedHandlers.Add(o =>
             {
                 File.AppendAllText("/home/tips/output.txt", o + "\n");
+                return Task.CompletedTask;
             });
 
-            _processIOHandler.OnErrorReceivedHandlers.Add(async o =>
+            _processIOHandler.OnErrorReceivedHandlers.Add(o =>
             {
                 File.AppendAllText("/home/tips/errors.txt", o + "\n");
+                return Task.CompletedTask;
             });
 
             if (!_process.Start())

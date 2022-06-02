@@ -204,7 +204,7 @@ namespace NetPad.Domain.Tests.Sessions
         }
 
         [Fact(Skip = "WIP")]
-        public async Task ClosingScript_DisposesItsEnvironment()
+        public Task ClosingScript_DisposesItsEnvironment()
         {
             throw new NotImplementedException();
         }

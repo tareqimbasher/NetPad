@@ -8,7 +8,7 @@ namespace NetPad.Tests.Services;
 
 public class NullPackageProvider : IPackageProvider
 {
-    public async Task<HashSet<string>> GetCachedPackageAssembliesAsync(string packageId, string packageVersion)
+    public Task<HashSet<string>> GetCachedPackageAssembliesAsync(string packageId, string packageVersion)
     {
         throw new NotImplementedException();
     }
@@ -18,17 +18,17 @@ public class NullPackageProvider : IPackageProvider
         return Task.FromResult(Array.Empty<CachedPackage>());
     }
 
-    public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
+    public Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion)
+    public Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<string[]> GetPackageVersionsAsync(string packageId)
+    public Task<string[]> GetPackageVersionsAsync(string packageId)
     {
         throw new NotImplementedException();
     }
@@ -48,7 +48,7 @@ public class NullPackageProvider : IPackageProvider
         return Task.CompletedTask;
     }
 
-    public async Task PurgePackageCacheAsync()
+    public Task PurgePackageCacheAsync()
     {
         throw new NotImplementedException();
     }

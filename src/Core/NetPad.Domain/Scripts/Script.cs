@@ -19,9 +19,6 @@ namespace NetPad.Scripts
 
         public Script(Guid id, string name)
         {
-            if (id == null)
-                throw new ArgumentNullException(nameof(id));
-
             if (id == default)
                 throw new ArgumentException($"{nameof(id)} cannot be an empty GUID");
 

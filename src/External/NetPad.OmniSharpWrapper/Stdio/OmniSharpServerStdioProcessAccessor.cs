@@ -22,9 +22,9 @@ namespace NetPad.OmniSharpWrapper.Stdio
             {
                 if (_processHandler != null)
                     throw new Exception("OmniSharp server is already initialized.");
-                
+
                 _processHandler = new ProcessHandler(_configuration.ExecutablePath!, _configuration.ExecutableArgs!);
-                
+
                 if (!await _processHandler.RunAsync(false) || _processHandler.Process == null || _processHandler.ProcessIO == null)
                 {
                     throw new Exception($"Could not run process at: {_configuration.ExecutablePath}. " +
@@ -37,18 +37,18 @@ namespace NetPad.OmniSharpWrapper.Stdio
             {
                 if (_configuration.Process == null)
                     throw new Exception("Could not get process. Process is null.");
-                
+
                 var process = _configuration.Process;
                 if (!process.IsProcessRunning())
                     throw new Exception("OmniSharp process is not running.");
 
                 _processIoHandler = new ProcessIOHandler(process);
-                
+
                 return _processIoHandler;
             }
         }
 
-        public async Task StopProcessAsync()
+        public Task StopProcessAsync()
         {
             if (_configuration.ShouldCreateNewProcess)
             {
@@ -59,6 +59,8 @@ namespace NetPad.OmniSharpWrapper.Stdio
             {
                 // Do nothing. Process is controlled externally.
             }
+
+            return Task.CompletedTask;
         }
 
         public void Dispose()

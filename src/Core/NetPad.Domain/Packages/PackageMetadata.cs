@@ -5,6 +5,13 @@ namespace NetPad.Packages
 {
     public class PackageMetadata
     {
+        public PackageMetadata(string packageId, string title)
+        {
+            PackageId = packageId ?? throw new ArgumentNullException(nameof(packageId));
+            Title = title ?? throw new ArgumentNullException(nameof(title));
+            Dependencies = Array.Empty<string>();
+        }
+
         public string PackageId { get; set; }
         public string? Version { get; set; }
         public string Title { get; set; }

@@ -11,7 +11,7 @@ namespace NetPad.OmniSharpWrapper.Http
         private string? _uri;
 
         public OmniSharpHttpServer(
-            OmniSharpHttpServerConfiguration configuration, 
+            OmniSharpHttpServerConfiguration configuration,
             IOmniSharpServerProcessAccessor<string> omniSharpServerProcessAccessor,
             ILoggerFactory loggerFactory) :
             base(configuration, loggerFactory)
@@ -29,7 +29,7 @@ namespace NetPad.OmniSharpWrapper.Http
             await _omniSharpServerProcessAccessor.StopProcessAsync();
         }
 
-        public override async Task<TResponse> Send<TResponse>(object request)
+        public override Task<TResponse> Send<TResponse>(object request)
         {
             throw new NotImplementedException();
         }
