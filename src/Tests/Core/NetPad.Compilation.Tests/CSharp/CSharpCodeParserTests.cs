@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using NetPad.Compilation.CSharp;
 using NetPad.Scripts;
+using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -206,27 +207,17 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var userCode = parser.GetUserCode(script);
 
-            var expected = @"
-public async Task Main()
+            var expected = @"public async Task Main()
 {
 Console.WriteLine(DateTime.Now);
 }
 ";
+
+            userCode = userCode.Split("\n")
+                .Where(l => !l.Trim().StartsWith("//"))
+                .JoinToString("\n");
+
             Assert.Equal(expected, userCode);
-        }
-
-        [Fact]
-        public void GetUserCode_Returns_Code_As_Is_For_Program_Type_Script()
-        {
-            var scriptCode = "Code that should be returned as is";
-            var script = GetScript();
-            script.Config.SetKind(ScriptKind.Program);
-            script.UpdateCode(scriptCode);
-            var parser = new CSharpCodeParser();
-
-            var userCode = parser.GetUserCode(script);
-
-            Assert.Equal(scriptCode, userCode);
         }
 
         [Fact]
