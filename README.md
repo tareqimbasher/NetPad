@@ -22,14 +22,13 @@ You can currently:
 * Write, save and run your own scripts
 * Add additional namespaces to your script
 * Reference and use your own assemblies in scripts
-* Add and use NuGet packages in scripts (`Basic Support`)
+* Add and use NuGet packages in scripts
 * Dump complex objects to the results console
 
 You cannot, yet:
 
-* More complete NuGet package support (`Coming soon!`)
+* Enjoy code-completion features in the editor (`Coming soon!`)~~~~
 * Add database connections
-* Enjoy code-completion features in the editor
 
 ## Tech Stack
 
