@@ -87,6 +87,42 @@ export class Util {
     }
 
     /**
+     * Removes the specified character from the start of a string.
+     * @param str The string to trim.
+     * @param character The character to remove.
+     */
+    public static trimStart(str: string | null | undefined, character: string) {
+        if (!str)
+            return str;
+
+        let start = 0,
+            end = str.length;
+
+        while(start < end && str[start] === character)
+            ++start;
+
+        return (start > 0 && start < str.length) ? str.substring(start, end) : str;
+    }
+
+    /**
+     * Removes the specified character from the end of a string.
+     * @param str The string to trim.
+     * @param character The character to remove.
+     */
+    public static trimEnd(str: string | null | undefined, character: string) {
+        if (!str)
+            return str;
+
+        let start = 0,
+            end = str.length;
+
+        while(end > start && str[end - 1] === character)
+            --end;
+
+        return (end < str.length) ? str.substring(start, end) : str;
+    }
+
+    /**
      * Checks if a string is a letter.
      * @param str The string to check.
      */

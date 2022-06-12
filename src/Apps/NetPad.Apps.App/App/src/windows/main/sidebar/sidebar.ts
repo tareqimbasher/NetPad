@@ -42,10 +42,11 @@ export class Sidebar {
         this.rootScriptFolder.scripts.splice(0);
         this.rootScriptFolder.folders.splice(0);
 
-        const scriptsDirPath = this.settings.scriptsDirectoryPath.replace("\\", "/");
+        const scriptsDirPath = Util.trimEnd(
+            this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
 
         for (const summary of summaries) {
-            let path = summary.path;
+            let path = summary.path.replaceAll("\\", "/");
 
             if (path.startsWith(scriptsDirPath))
             {
