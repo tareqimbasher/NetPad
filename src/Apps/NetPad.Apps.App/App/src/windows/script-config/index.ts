@@ -4,7 +4,6 @@ import {ConfigStore} from "./config-store";
 export class Index {
     public script: Script;
 
-
     constructor(
         readonly startupOptions: URLSearchParams,
         readonly settings: Settings,

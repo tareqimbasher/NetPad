@@ -36,7 +36,7 @@ const app = Aurelia.register(
     Registration.transient(IBackgroundService, WebWindowBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
-        level: LogLevel.trace,
+        level: LogLevel.debug,
         sinks: [ConsoleSink],
     }),
 

@@ -2,9 +2,10 @@ import {observable} from '@aurelia/runtime';
 import Split from "split.js";
 import {CachedPackage, IAppService, IPackageService, PackageMetadata, PackageReference} from "@domain";
 import {ConfigStore} from "../config-store";
-import {watch} from "aurelia";
+import {ILogger, watch} from "aurelia";
+import {ViewModelBase} from "@application";
 
-export class PackageManagement {
+export class PackageManagement extends ViewModelBase {
     @observable public term: string;
     public searchResults: PackageSearchResult[] = [];
     public cachedPackages: CachedPackageViewModel[] = [];
@@ -21,8 +22,10 @@ export class PackageManagement {
     constructor(
         readonly configStore: ConfigStore,
         @IPackageService readonly packageService: IPackageService,
-        @IAppService readonly appService: IAppService
+        @IAppService readonly appService: IAppService,
+        @ILogger logger: ILogger
     ) {
+        super(logger);
     }
 
     public attached() {

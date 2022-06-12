@@ -154,8 +154,8 @@
     <!-- PACKAGES INFO -->
     <div id="package-info" class="column overflow-y-auto">
         <ul class="list-unstyled details-list" show.bind="selectedPackage">
-            <li><b>Authors:</b> ${selectedPackage.authors}</li>
             <li><b>ID:</b> ${selectedPackage.packageId}</li>
+            <li><b>Authors:</b> ${selectedPackage.authors}</li>
             <li><b>Version:</b> ${selectedPackage.version}</li>
             <li><b>Published:</b> ${selectedPackage.publishedDate | dateTime}</li>
             <li show.bind="selectedPackage.downloadCount !== null">
