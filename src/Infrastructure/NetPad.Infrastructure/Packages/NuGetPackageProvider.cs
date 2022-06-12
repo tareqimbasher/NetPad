@@ -103,7 +103,14 @@ public class NuGetPackageProvider : IPackageProvider
 
         if (loadMetadata)
         {
-            await HydrateMetadataAsync(cachedPackages, TimeSpan.FromSeconds(10));
+            try
+            {
+                await HydrateMetadataAsync(cachedPackages, TimeSpan.FromSeconds(cachedPackages.Count * 5));
+            }
+            catch (FatalProtocolException)
+            {
+                // Ignore. This can occur if there is no internet connection.
+            }
         }
 
         return cachedPackages.ToArray();
@@ -207,7 +214,7 @@ public class NuGetPackageProvider : IPackageProvider
         var searchResource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
 
         var filter = new SearchFilter(includePrerelease);
-        var searchResults = await searchResource.SearchAsync(
+        IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
             term,
             filter,
             skip,
@@ -225,7 +232,7 @@ public class NuGetPackageProvider : IPackageProvider
             packages.Add(metadata);
         }
 
-        await HydrateMetadataAsync(packages);
+        await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
 
         return packages.ToArray();
     }
