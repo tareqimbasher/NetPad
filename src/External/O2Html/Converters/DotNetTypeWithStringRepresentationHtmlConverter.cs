@@ -12,10 +12,10 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
 
         var str = obj.ToString()?
-            .Replace("\n", "<br/>")
             .Replace(" ", "&nbsp;")
             .Replace("<", "&lt;")
             .Replace(">", "&gt;")
+            .Replace("\n", "<br/>")
         ;
 
         return new Element("span").WithText(str ?? string.Empty);
