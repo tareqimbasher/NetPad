@@ -80,6 +80,10 @@ export class OmnisharpCompletionProvider {
             ? newText // TODO might need to convert to a monaco compatible snippet
             : newText;
 
+        // We don't want space to be a commit character for the suggestion, its annoying when one is typing
+        // a variable name 'list' and hits space that the suggestion will be selected
+        const commitCharacters = omnisharpCompletion.commitCharacters.filter(c => c != " ");
+
         const docs = omnisharpCompletion.documentation ? {
             value: omnisharpCompletion.documentation,
             isTrusted: false,
@@ -106,7 +110,7 @@ export class OmnisharpCompletionProvider {
             detail: omnisharpCompletion.detail,
             kind: MonacoCompletionItemKind[omnisharpCompletion.kind],
             documentation: docs,
-            commitCharacters: omnisharpCompletion.commitCharacters,
+            commitCharacters: commitCharacters,
             preselect: omnisharpCompletion.preselect,
             filterText: omnisharpCompletion.filterText,
             insertText: insertText,
