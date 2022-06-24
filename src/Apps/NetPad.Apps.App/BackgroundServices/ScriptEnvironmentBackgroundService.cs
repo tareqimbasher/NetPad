@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.Services;
+using NetPad.Sessions;
 using NetPad.UiInterop;
 
 namespace NetPad.BackgroundServices;
@@ -16,24 +18,30 @@ namespace NetPad.BackgroundServices;
 /// </summary>
 public class ScriptEnvironmentBackgroundService : BackgroundService
 {
+    private readonly ISession _session;
     private readonly IEventBus _eventBus;
     private readonly IIpcService _ipcService;
     private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
     private readonly OmniSharpServerCatalog _omniSharpServerCatalog;
+    private readonly Settings _settings;
 
     private readonly Dictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens;
 
     public ScriptEnvironmentBackgroundService(
+        ISession session,
         IEventBus eventBus,
         IIpcService ipcService,
         IAutoSaveScriptRepository autoSaveScriptRepository,
         OmniSharpServerCatalog omniSharpServerCatalog,
+        Settings settings,
         ILoggerFactory loggerFactory) : base(loggerFactory)
     {
+        _session = session;
         _eventBus = eventBus;
         _ipcService = ipcService;
         _autoSaveScriptRepository = autoSaveScriptRepository;
         _omniSharpServerCatalog = omniSharpServerCatalog;
+        _settings = settings;
         _environmentSubscriptionTokens = new Dictionary<Guid, List<EventSubscriptionToken>>();
     }
 
@@ -52,11 +60,6 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             {
                 AutoSaveScriptChanges(environment);
 
-                // We don't want to wait for this, we want it to occur asynchronously
-#pragma warning disable CS4014
-                _omniSharpServerCatalog.StartOmniSharpServerAsync(environment);
-#pragma warning restore CS4014
-
                 environment.SetIO(ActionInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
             }
 
@@ -70,6 +73,33 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
                 Unsubscribe(environment);
                 await _omniSharpServerCatalog.StopOmniSharpServerAsync(environment);
             }
+        });
+
+        _eventBus.Subscribe<ActiveEnvironmentChanged>(ev =>
+        {
+            var activatedEnvironmentScriptId = ev.ScriptId;
+
+            if (activatedEnvironmentScriptId == null || !_settings.EditorOptions.CodeCompletion.Enabled)
+            {
+                return Task.CompletedTask;
+            }
+
+            bool hasActiveOmniSharpServer = _omniSharpServerCatalog.GetOmniSharpServer(activatedEnvironmentScriptId.Value) != null;
+            if (hasActiveOmniSharpServer)
+            {
+                return Task.CompletedTask;
+            }
+
+            var environment = _session.Get(activatedEnvironmentScriptId.Value);
+            if (environment != null)
+            {
+                // We don't want to wait for this, we want it to occur asynchronously
+#pragma warning disable CS4014
+                _omniSharpServerCatalog.StartOmniSharpServerAsync(environment);
+#pragma warning restore CS4014
+            }
+
+            return Task.CompletedTask;
         });
     }
 

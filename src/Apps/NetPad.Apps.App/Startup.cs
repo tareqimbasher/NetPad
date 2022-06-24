@@ -169,10 +169,7 @@ namespace NetPad
 
                 var autoSavedScripts = await autoSaveScriptRepository.GetScriptsAsync();
 
-                foreach (var autoSavedScript in autoSavedScripts)
-                {
-                    await session.OpenAsync(autoSavedScript);
-                }
+                await session.OpenAsync(autoSavedScripts);
             });
 
             // Allow ApplicationConfigurator to run any configuration

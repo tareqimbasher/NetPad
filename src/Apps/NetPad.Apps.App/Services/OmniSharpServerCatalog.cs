@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
+using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -17,21 +17,21 @@ namespace NetPad.Services;
 /// </summary>
 public class OmniSharpServerCatalog
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceScope _serviceScope;
     private readonly ILogger<OmniSharpServerCatalog> _logger;
-    private readonly Dictionary<Guid, AppOmniSharpServer> _servers;
+    private readonly Dictionary<Guid, CatalogItem> _items;
 
     public OmniSharpServerCatalog(IServiceProvider serviceProvider, ILogger<OmniSharpServerCatalog> logger)
     {
-        _serviceProvider = serviceProvider;
+        _serviceScope = serviceProvider.CreateScope();
         _logger = logger;
-        _servers = new Dictionary<Guid, AppOmniSharpServer>();
+        _items = new Dictionary<Guid, CatalogItem>();
     }
 
     public AppOmniSharpServer? GetOmniSharpServer(Guid scriptId)
     {
-        if (_servers.TryGetValue(scriptId, out var server))
-            return server;
+        if (_items.TryGetValue(scriptId, out var item))
+            return item.AppOmniSharpServer;
 
         // This can occur if omnisharp server is still initializing/starting and is not yet ready
         return null;
@@ -39,19 +39,29 @@ public class OmniSharpServerCatalog
 
     public async Task StartOmniSharpServerAsync(ScriptEnvironment environment)
     {
-        if (_servers.ContainsKey(environment.Script.Id))
+        if (_items.ContainsKey(environment.Script.Id))
         {
             throw new InvalidOperationException($"An OmniSharp server already exists for script ID: {environment.Script.Id}");
         }
 
+        var serviceScope = _serviceScope.ServiceProvider.CreateScope();
+
+        var settings = serviceScope.ServiceProvider.GetRequiredService<Settings>();
+
+        if (settings.EditorOptions.CodeCompletion.Provider is not OmniSharpCodeCompletionProviderOptions omniSharpCodeCompletionProviderOptions)
+        {
+            _logger.LogError("Code completion provider must be of type {ExpectedType}", nameof(OmniSharpCodeCompletionProviderOptions));
+            return;
+        }
+
         var server = new AppOmniSharpServer(
             environment,
-            _serviceProvider.GetRequiredService<IOmniSharpServerFactory>(),
-            _serviceProvider.GetRequiredService<ICodeParser>(),
-            _serviceProvider.GetRequiredService<IEventBus>(),
-            _serviceProvider.GetRequiredService<IConfiguration>(),
-            _serviceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
-            _serviceProvider.GetRequiredService<ILogger<ScriptProject>>()
+            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
+            serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
+            serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
+            omniSharpCodeCompletionProviderOptions,
+            serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
+            serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptProject>>()
         );
 
         _logger.LogDebug("Initialized a new {Type} for script {Script}",
@@ -68,7 +78,7 @@ public class OmniSharpServerCatalog
 
             if (started)
             {
-                _servers.Add(environment.Script.Id, server);
+                _items.Add(environment.Script.Id, new CatalogItem(environment.Script.Id, server, serviceScope));
                 _logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
             }
         }
@@ -85,12 +95,12 @@ public class OmniSharpServerCatalog
         // Continuously try to find an OmniSharp server for the script for a few seconds.
         // An OmniSharp server could still be starting and so we want to do multiple checks to ensure
         // we find it if it was slow to start.
-        AppOmniSharpServer? server = null;
+        CatalogItem? item = null;
         int findCounter = 0;
 
         while (++findCounter <= 10)
         {
-            if (_servers.TryGetValue(environment.Script.Id, out server))
+            if (_items.TryGetValue(environment.Script.Id, out item))
             {
                 _logger.LogDebug("Found OmniSharp server to stop for script {Script} on attempt {Attempt}",
                     environment.Script,
@@ -101,7 +111,7 @@ public class OmniSharpServerCatalog
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
-        if (server == null)
+        if (item == null)
         {
             _logger.LogDebug("No OmniSharp server found for script {Script} after {Attempts} attempts",
                 environment.Script,
@@ -109,10 +119,11 @@ public class OmniSharpServerCatalog
             return;
         }
 
-        _servers.Remove(environment.Script.Id);
+        _items.Remove(environment.Script.Id);
 
         try
         {
+            var server = item.AppOmniSharpServer;
             await Retry.ExecuteAsync(5, TimeSpan.FromSeconds(1), async () => { await server.StopAsync(); });
             _logger.LogDebug("Stopped OmniSharp server for script {Script}", environment.Script);
         }
@@ -120,5 +131,23 @@ public class OmniSharpServerCatalog
         {
             _logger.LogError(ex, "Error stopping OmniSharp server for script {Script}", environment.Script);
         }
+        finally
+        {
+            item.ServiceScope.Dispose();
+        }
+    }
+
+    private class CatalogItem
+    {
+        public CatalogItem(Guid scriptId, AppOmniSharpServer appOmniSharpServer, IServiceScope serviceScope)
+        {
+            ScriptId = scriptId;
+            AppOmniSharpServer = appOmniSharpServer;
+            ServiceScope = serviceScope;
+        }
+
+        public Guid ScriptId { get; }
+        public AppOmniSharpServer AppOmniSharpServer { get; }
+        public IServiceScope ServiceScope { get; }
     }
 }

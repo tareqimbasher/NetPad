@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Events;
 using NetPad.Exceptions;
@@ -38,7 +34,7 @@ namespace NetPad.Sessions
             return _environments.FirstOrDefault(m => m.Script.Id == scriptId);
         }
 
-        public async Task OpenAsync(Script script)
+        public async Task OpenAsync(Script script, bool activate = true)
         {
             var environment = Get(script.Id);
 
@@ -49,7 +45,26 @@ namespace NetPad.Sessions
                 await _eventBus.PublishAsync(new EnvironmentsAdded(environment));
             }
 
-            await ActivateAsync(script.Id);
+            if (activate)
+            {
+                await ActivateAsync(script.Id);
+            }
+        }
+
+        public async Task OpenAsync(IEnumerable<Script> scripts)
+        {
+            Script? last = null;
+
+            foreach (var script in scripts)
+            {
+                await OpenAsync(script, activate: false);
+                last = script;
+            }
+
+            if (last != null)
+            {
+                await ActivateAsync(last.Id);
+            }
         }
 
         public async Task CloseAsync(Guid scriptId)
@@ -78,7 +93,9 @@ namespace NetPad.Sessions
                     }
                 }
                 else
+                {
                     await ActivateAsync(null);
+                }
             }
 
             _logger.LogDebug("Closed script: {ScriptId}", scriptId);

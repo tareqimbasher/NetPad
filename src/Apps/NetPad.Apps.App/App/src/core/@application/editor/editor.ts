@@ -66,7 +66,7 @@ export class Editor extends ViewModelBase {
 
     @watch<Editor>(vm => vm.settings.theme)
     @watch<Editor>(vm => vm.settings.editorBackgroundColor)
-    @watch<Editor>(vm => vm.settings.editorOptions)
+    @watch<Editor>(vm => vm.settings.editorOptions.monacoOptions)
     private updateEditorSettings() {
         let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
 
@@ -86,7 +86,7 @@ export class Editor extends ViewModelBase {
             theme: theme
         };
 
-        Object.assign(options, this.settings.editorOptions || {})
+        Object.assign(options, this.settings.editorOptions.monacoOptions || {})
         this.monacoEditor.updateOptions(options);
     }
 }

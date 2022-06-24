@@ -72,7 +72,7 @@ const bootstrapper = new win.Bootstrapper() as IWindowBootstrap;
 bootstrapper.registerServices(app);
 
 app.container.get(ISettingService).get()
-    .then(settings => app.container.get(Settings).init(settings))
+    .then(settings => Object.assign(app.container.get(Settings), settings))
     .then(async () => {
         const backgroundServices = app.container.getAll(IBackgroundService);
 

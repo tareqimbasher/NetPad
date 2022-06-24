@@ -39,8 +39,44 @@
 
 <div class="section flex-grow-height-restricted d-flex flex-column">
     <div class="header">
+        <i class="bi text-success bi-braces"></i>
+        Code Completion
+    </div>
+    <p>
+        NetPad uses OmniSharp for code completion. Specify the path to the OmniSharp executable.
+    </p>
+    <div class="body flex-grow-height-restricted">
+        <div class="d-flex" title="Whether to enable code completion or not.">
+            <label class="form-check-label" for="chkCodeCompletionEnabled" style="min-width: 120px">Enabled</label>
+            <div class="form-check flex-1">
+                <input class="form-check-input"
+                       type="checkbox"
+                       checked.bind="settings.editorOptions.codeCompletion.enabled"
+                       id="chkCodeCompletionEnabled">
+            </div>
+        </div>
+
+        <div class="d-flex mt-3">
+            <label for="txtCodeCompletionExePath" class="form-label" style="min-width: 120px">Executable Path</label>
+            <div class="flex-grow-1">
+                <input type="text"
+                       class="form-control"
+                       id="txtCodeCompletionExePath"
+                       placeholder="/path/to/omnisharp"
+                       value.bind="settings.editorOptions.codeCompletion.provider.executablePath"
+                       disabled.bind="!settings.editorOptions.codeCompletion.enabled">
+                <div class="form-text">
+                    This should be the <i>absolute</i> path to the OmniSharp executable.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section flex-grow-height-restricted d-flex flex-column">
+    <div class="header">
         <i class="bi bi-text-paragraph"></i>
-        Options
+        Monaco Options
     </div>
     <p>
         NetPad uses the Monaco editor. You can set any number of options here and observe their

@@ -2208,7 +2208,7 @@ export interface IPackageMetadata {
 
 export class CachedPackage extends PackageMetadata implements ICachedPackage {
     installReason!: PackageInstallReason;
-    directoryPath!: string;
+    directoryPath?: string | undefined;
 
     constructor(data?: ICachedPackage) {
         super(data);
@@ -2247,7 +2247,7 @@ export class CachedPackage extends PackageMetadata implements ICachedPackage {
 
 export interface ICachedPackage extends IPackageMetadata {
     installReason: PackageInstallReason;
-    directoryPath: string;
+    directoryPath?: string | undefined;
 }
 
 export type PackageInstallReason = "Explicit" | "Dependency";
@@ -2512,7 +2512,7 @@ export class Settings implements ISettings {
     autoSaveScriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
     editorBackgroundColor?: string | undefined;
-    editorOptions!: any;
+    editorOptions!: EditorOptions;
     resultsOptions!: ResultsOptions;
 
     constructor(data?: ISettings) {
@@ -2523,6 +2523,7 @@ export class Settings implements ISettings {
             }
         }
         if (!data) {
+            this.editorOptions = new EditorOptions();
             this.resultsOptions = new ResultsOptions();
         }
     }
@@ -2534,7 +2535,7 @@ export class Settings implements ISettings {
             this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
             this.editorBackgroundColor = _data["editorBackgroundColor"];
-            this.editorOptions = _data["editorOptions"];
+            this.editorOptions = _data["editorOptions"] ? EditorOptions.fromJS(_data["editorOptions"]) : new EditorOptions();
             this.resultsOptions = _data["resultsOptions"] ? ResultsOptions.fromJS(_data["resultsOptions"]) : new ResultsOptions();
         }
     }
@@ -2553,7 +2554,7 @@ export class Settings implements ISettings {
         data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
         data["editorBackgroundColor"] = this.editorBackgroundColor;
-        data["editorOptions"] = this.editorOptions;
+        data["editorOptions"] = this.editorOptions ? this.editorOptions.toJSON() : <any>undefined;
         data["resultsOptions"] = this.resultsOptions ? this.resultsOptions.toJSON() : <any>undefined;
         return data;
     }
@@ -2572,11 +2573,196 @@ export interface ISettings {
     autoSaveScriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;
     editorBackgroundColor?: string | undefined;
-    editorOptions: any;
+    editorOptions: EditorOptions;
     resultsOptions: ResultsOptions;
 }
 
 export type Theme = "Light" | "Dark";
+
+export class EditorOptions implements IEditorOptions {
+    codeCompletion!: CodeCompletionOptions;
+    monacoOptions!: any;
+
+    constructor(data?: IEditorOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.codeCompletion = new CodeCompletionOptions();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.codeCompletion = _data["codeCompletion"] ? CodeCompletionOptions.fromJS(_data["codeCompletion"]) : new CodeCompletionOptions();
+            this.monacoOptions = _data["monacoOptions"];
+        }
+    }
+
+    static fromJS(data: any): EditorOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new EditorOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["codeCompletion"] = this.codeCompletion ? this.codeCompletion.toJSON() : <any>undefined;
+        data["monacoOptions"] = this.monacoOptions;
+        return data;
+    }
+
+    clone(): EditorOptions {
+        const json = this.toJSON();
+        let result = new EditorOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IEditorOptions {
+    codeCompletion: CodeCompletionOptions;
+    monacoOptions: any;
+}
+
+export class CodeCompletionOptions implements ICodeCompletionOptions {
+    enabled!: boolean;
+    provider?: CodeCompletionProviderOptions | undefined;
+
+    constructor(data?: ICodeCompletionOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enabled = _data["enabled"];
+            this.provider = _data["provider"] ? CodeCompletionProviderOptions.fromJS(_data["provider"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CodeCompletionOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeCompletionOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enabled"] = this.enabled;
+        data["provider"] = this.provider ? this.provider.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): CodeCompletionOptions {
+        const json = this.toJSON();
+        let result = new CodeCompletionOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeCompletionOptions {
+    enabled: boolean;
+    provider?: CodeCompletionProviderOptions | undefined;
+}
+
+export abstract class CodeCompletionProviderOptions implements ICodeCompletionProviderOptions {
+    name?: string | undefined;
+
+    protected _discriminator: string;
+
+    constructor(data?: ICodeCompletionProviderOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        this._discriminator = "CodeCompletionProviderOptions";
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): CodeCompletionProviderOptions {
+        data = typeof data === 'object' ? data : {};
+        if (data["type"] === "OmniSharpCodeCompletionProviderOptions") {
+            let result = new OmniSharpCodeCompletionProviderOptions();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'CodeCompletionProviderOptions' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this._discriminator;
+        data["name"] = this.name;
+        return data;
+    }
+
+    clone(): CodeCompletionProviderOptions {
+        throw new Error("The abstract class 'CodeCompletionProviderOptions' cannot be instantiated.");
+    }
+}
+
+export interface ICodeCompletionProviderOptions {
+    name?: string | undefined;
+}
+
+export class OmniSharpCodeCompletionProviderOptions extends CodeCompletionProviderOptions implements IOmniSharpCodeCompletionProviderOptions {
+    executablePath?: string | undefined;
+
+    constructor(data?: IOmniSharpCodeCompletionProviderOptions) {
+        super(data);
+        this._discriminator = "OmniSharpCodeCompletionProviderOptions";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.executablePath = _data["executablePath"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpCodeCompletionProviderOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpCodeCompletionProviderOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["executablePath"] = this.executablePath;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): OmniSharpCodeCompletionProviderOptions {
+        const json = this.toJSON();
+        let result = new OmniSharpCodeCompletionProviderOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpCodeCompletionProviderOptions extends ICodeCompletionProviderOptions {
+    executablePath?: string | undefined;
+}
 
 export class ResultsOptions implements IResultsOptions {
     openOnRun!: boolean;

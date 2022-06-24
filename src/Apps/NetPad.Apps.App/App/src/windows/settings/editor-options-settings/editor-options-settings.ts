@@ -23,13 +23,13 @@ export class EditorOptionsSettings {
     public attached() {
         const el = document.getElementById("options-editor");
         this.editor = monaco.editor.create(el, {
-            value: JSON.stringify(this.settings.editorOptions, null, 4),
+            value: JSON.stringify(this.settings.editorOptions.monacoOptions, null, 4),
             language: 'json',
             mouseWheelZoom: true,
             automaticLayout: true
         });
 
-        this.updateEditorOptions(this.settings.editorOptions);
+        this.updateEditorOptions(this.settings.editorOptions.monacoOptions);
 
         this.editor.onDidChangeModelContent(ev => {
             const json = this.editor.getValue();
@@ -42,7 +42,7 @@ export class EditorOptionsSettings {
                 return;
             }
 
-            this.settings.editorOptions = options;
+            this.settings.editorOptions.monacoOptions = options;
         });
     }
 
@@ -55,7 +55,7 @@ export class EditorOptionsSettings {
     }
 
     @watch<EditorOptionsSettings>(vm => vm.settings.editorBackgroundColor)
-    @watch<EditorOptionsSettings>(vm => vm.settings.editorOptions)
+    @watch<EditorOptionsSettings>(vm => vm.settings.editorOptions.monacoOptions)
     private updateEditorOptions(editorOptions?: any) {
         let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
 
@@ -75,7 +75,7 @@ export class EditorOptionsSettings {
             theme: theme
         };
 
-        Object.assign(options, this.settings.editorOptions || {})
+        Object.assign(options, this.settings.editorOptions.monacoOptions || {})
         this.editor.updateOptions(options);
 
         if (editorOptions)

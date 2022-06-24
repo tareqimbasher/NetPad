@@ -28,15 +28,23 @@ namespace NetPad.Configuration
                 "Cache",
                 "Packages");
 
-            EditorOptions = new
+            EditorOptions = new EditorOptions
             {
-                cursorBlinking = "blink",
-                lineNumbers = "on",
-                wordWrap = "off",
-                mouseWheelZoom = true,
-                minimap = new
+                CodeCompletion = new CodeCompletionOptions
                 {
-                    enabled = true
+                    Enabled = true,
+                    Provider = new OmniSharpCodeCompletionProviderOptions()
+                },
+                MonacoOptions = new
+                {
+                    cursorBlinking = "blink",
+                    lineNumbers = "on",
+                    wordWrap = "off",
+                    mouseWheelZoom = true,
+                    minimap = new
+                    {
+                        enabled = true
+                    }
                 }
             };
 
@@ -59,7 +67,7 @@ namespace NetPad.Configuration
         public string AutoSaveScriptsDirectoryPath { get; set; }
         public string PackageCacheDirectoryPath { get; set; }
         public string? EditorBackgroundColor { get; set; }
-        public object EditorOptions { get; set; }
+        public EditorOptions EditorOptions { get; set; }
         public ResultsOptions ResultsOptions { get; set; }
 
         public Settings SetTheme(Theme theme)
@@ -86,9 +94,9 @@ namespace NetPad.Configuration
             return this;
         }
 
-        public Settings SetEditorOptions(object options)
+        public Settings SetEditorOptions(EditorOptions options)
         {
-            EditorOptions = options ?? new object();
+            EditorOptions = options ?? throw new ArgumentNullException(nameof(options));
             return this;
         }
 
