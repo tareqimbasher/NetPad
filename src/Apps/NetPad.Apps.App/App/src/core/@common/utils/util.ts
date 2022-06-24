@@ -95,8 +95,8 @@ export class Util {
         if (!str)
             return str;
 
-        let start = 0,
-            end = str.length;
+        let start = 0;
+        const end = str.length;
 
         while(start < end && str[start] === character)
             ++start;
@@ -113,8 +113,8 @@ export class Util {
         if (!str)
             return str;
 
-        let start = 0,
-            end = str.length;
+        const start = 0;
+        let end = str.length;
 
         while(end > start && str[end - 1] === character)
             --end;
