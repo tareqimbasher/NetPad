@@ -2,12 +2,12 @@ import {CompletionItem as OmnisharpCompletionItem, CompletionRequest, IOmniSharp
 import * as monaco from "monaco-editor";
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import ISingleEditOperation = editor.ISingleEditOperation;
-import MonacoCompletionItem = languages.CompletionItem;
-import MonacoCompletionContext = languages.CompletionContext;
 import CompletionItemKind = languages.CompletionItemKind;
 import MonacoCompletionItemKind = languages.CompletionItemKind;
 
 export class OmnisharpCompletionProvider {
+    private lastCompletions?: Map<languages.CompletionItem, OmnisharpCompletionItem>;
+
     constructor(
         @ISession private readonly session: ISession,
         @IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
@@ -25,29 +25,43 @@ export class OmnisharpCompletionProvider {
                     endColumn: word.endColumn
                 };
 
+                const results = await this.getCompletionItems(range, ctx, token);
+
+                const lastCompletions = new Map<languages.CompletionItem, OmnisharpCompletionItem>();
+
+                for (let i = 0; i < results.monacoCompletions.length; i++) {
+                    lastCompletions.set(results.monacoCompletions[i], results.omniSharpCompletions[i]);
+                }
+
+                this.lastCompletions = lastCompletions;
+
                 return {
-                    suggestions: await this.createCompletionItems(range, ctx, token)
+                    suggestions: results.monacoCompletions
                 };
             },
             resolveCompletionItem: async (item: languages.CompletionItem, token: CancellationToken) => {
-                const resolution = await this.omnisharpService.getCompletionResolution(this.session.active.script.id, <any>item);
+                try {
+                    if (!this.lastCompletions) {
+                        return item;
+                    }
 
-                const resItem = resolution.item;
+                    const omnisharpCompletionItem = this.lastCompletions.get(item);
+                    if (!omnisharpCompletionItem) {
+                        return item;
+                    }
 
-                if (resItem.detail) {
-                    item.detail = resItem.detail;
+                    const resolution = await this.omnisharpService.getCompletionResolution(this.session.active.script.id, omnisharpCompletionItem);
+
+                    return this.convertToMonacoCompletionItem(item.range as IRange, resolution.item);
                 }
-
-                if (resItem.documentation) {
-                    item.documentation = resItem.documentation;
+                catch (ex) {
+                    console.error(ex);
                 }
-
-                return item;
             }
         });
     }
 
-    private async createCompletionItems(range: IRange, ctx: MonacoCompletionContext, token: CancellationToken): Promise<MonacoCompletionItem[]> {
+    private async getCompletionItems(range: IRange, ctx: languages.CompletionContext, token: CancellationToken) : Promise<CompletionResults> {
         const request = new CompletionRequest();
         request.line = range.startLineNumber - 1;
         request.column = range.endColumn - 1;
@@ -55,26 +69,29 @@ export class OmnisharpCompletionProvider {
         request.triggerCharacter = ctx.triggerCharacter;
 
         if (token.isCancellationRequested) {
-            return [];
+            return new CompletionResults();
         }
 
         const omnisharpCompletions = await this.omnisharpService.getCompletion(this.session.active.script.id, request);
 
         if (token.isCancellationRequested || !omnisharpCompletions || !omnisharpCompletions.items) {
-            return [];
+            return new CompletionResults();
         }
 
-        const suggestions = omnisharpCompletions.items
+        const monacoCompletions = omnisharpCompletions.items
             .map(omnisharpCompletion => this.convertToMonacoCompletionItem(range, omnisharpCompletion));
 
         if (token.isCancellationRequested) {
-            return [];
+            return new CompletionResults();
         }
 
-        return suggestions;
+        return {
+            omniSharpCompletions: omnisharpCompletions.items,
+            monacoCompletions: monacoCompletions
+        };
     }
 
-    private convertToMonacoCompletionItem(range: IRange, omnisharpCompletion: OmnisharpCompletionItem) {
+    private convertToMonacoCompletionItem(range: IRange, omnisharpCompletion: OmnisharpCompletionItem): languages.CompletionItem {
         const kind = MonacoCompletionItemKind[omnisharpCompletion.kind];
 
         const newText = omnisharpCompletion.textEdit?.newText ?? omnisharpCompletion.label;
@@ -93,7 +110,7 @@ export class OmnisharpCompletionProvider {
 
         // We don't want space to be a commit character for the suggestion, its annoying when one is typing
         // a variable name 'list' and hits space that the suggestion will be selected
-        const commitCharacters = omnisharpCompletion.commitCharacters.filter(c => c != " ");
+        const commitCharacters = omnisharpCompletion.commitCharacters?.filter(c => c != " ");
 
         const docs = omnisharpCompletion.documentation ? {
             value: omnisharpCompletion.documentation,
@@ -116,7 +133,7 @@ export class OmnisharpCompletionProvider {
 
         const tags = omnisharpCompletion.tags && omnisharpCompletion.tags[0] === "Deprecated" ? 1 : [];
 
-        return <MonacoCompletionItem>{
+        return <languages.CompletionItem>{
             label: omnisharpCompletion.label,
             detail: omnisharpCompletion.detail,
             kind: kind,
@@ -137,4 +154,10 @@ export class OmnisharpCompletionProvider {
             } : undefined
         };
     }
+}
+
+class CompletionResults
+{
+    public omniSharpCompletions: OmnisharpCompletionItem[] = [];
+    public monacoCompletions: languages.CompletionItem[] = [];
 }

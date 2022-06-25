@@ -132,6 +132,10 @@ public class Program
 
 public static class Exts
 {{
+        /// <summary>
+        /// Dumps this object to the results view.
+        /// </summary>
+        /// <returns>The object being dumped.</returns>
     public static T? Dump<T>(this T? o, string? title = null)
     {{
         Program.OutputWriteLine(o, title);

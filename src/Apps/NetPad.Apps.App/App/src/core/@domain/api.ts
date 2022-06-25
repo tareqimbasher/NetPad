@@ -199,7 +199,7 @@ export interface IOmniSharpApiClient {
 
     getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
 
-    getCompletionResolution(scriptId: string, completionItem: CompletionItem): Promise<CompletionResolveResponse>;
+    getCompletionResolution(scriptId: string, appCompletionItem: AppCompletionItem): Promise<CompletionResolveResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -254,14 +254,14 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
         return Promise.resolve<CompletionResponse>(<any>null);
     }
 
-    getCompletionResolution(scriptId: string, completionItem: CompletionItem, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse> {
+    getCompletionResolution(scriptId: string, appCompletionItem: AppCompletionItem, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse> {
         let url_ = this.baseUrl + "/omnisharp/{scriptId}/completion/resolve";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(completionItem);
+        const content_ = JSON.stringify(appCompletionItem);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -2094,6 +2094,93 @@ export class CompletionResolveResponse implements ICompletionResolveResponse {
 
 export interface ICompletionResolveResponse {
     item?: CompletionItem | undefined;
+}
+
+export class AppCompletionItem extends CompletionItem implements IAppCompletionItem {
+    data?: CompletionItemData | undefined;
+
+    constructor(data?: IAppCompletionItem) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.data = _data["data"] ? CompletionItemData.fromJS(_data["data"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): AppCompletionItem {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppCompletionItem();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AppCompletionItem {
+        const json = this.toJSON();
+        let result = new AppCompletionItem();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppCompletionItem extends ICompletionItem {
+    data?: CompletionItemData | undefined;
+}
+
+export class CompletionItemData implements ICompletionItemData {
+    item1!: number;
+    item2!: number;
+
+    constructor(data?: ICompletionItemData) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"];
+            this.item2 = _data["item2"];
+        }
+    }
+
+    static fromJS(data: any): CompletionItemData {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionItemData();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1;
+        data["item2"] = this.item2;
+        return data;
+    }
+
+    clone(): CompletionItemData {
+        const json = this.toJSON();
+        let result = new CompletionItemData();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionItemData {
+    item1: number;
+    item2: number;
 }
 
 export class PackageMetadata implements IPackageMetadata {
