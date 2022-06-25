@@ -3,8 +3,9 @@ import * as monaco from "monaco-editor";
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import ISingleEditOperation = editor.ISingleEditOperation;
 import MonacoCompletionItem = languages.CompletionItem;
-import MonacoCompletionItemKind = languages.CompletionItemKind;
 import MonacoCompletionContext = languages.CompletionContext;
+import CompletionItemKind = languages.CompletionItemKind;
+import MonacoCompletionItemKind = languages.CompletionItemKind;
 
 export class OmnisharpCompletionProvider {
     constructor(
@@ -74,11 +75,21 @@ export class OmnisharpCompletionProvider {
     }
 
     private convertToMonacoCompletionItem(range: IRange, omnisharpCompletion: OmnisharpCompletionItem) {
+        const kind = MonacoCompletionItemKind[omnisharpCompletion.kind];
+
         const newText = omnisharpCompletion.textEdit?.newText ?? omnisharpCompletion.label;
 
         const insertText = omnisharpCompletion.insertTextFormat === "Snippet"
             ? newText // TODO might need to convert to a monaco compatible snippet
             : newText;
+
+        let sortText = omnisharpCompletion.sortText;
+        if (kind === CompletionItemKind.Property)
+            sortText = "a" + sortText;
+        else if (kind === CompletionItemKind.Method)
+            sortText = "b" + sortText;
+        else
+            sortText = "c" + sortText;
 
         // We don't want space to be a commit character for the suggestion, its annoying when one is typing
         // a variable name 'list' and hits space that the suggestion will be selected
@@ -108,7 +119,7 @@ export class OmnisharpCompletionProvider {
         return <MonacoCompletionItem>{
             label: omnisharpCompletion.label,
             detail: omnisharpCompletion.detail,
-            kind: MonacoCompletionItemKind[omnisharpCompletion.kind],
+            kind: kind,
             documentation: docs,
             commitCharacters: commitCharacters,
             preselect: omnisharpCompletion.preselect,
@@ -116,7 +127,7 @@ export class OmnisharpCompletionProvider {
             insertText: insertText,
             range: range,
             tags: tags,
-            sortText: omnisharpCompletion.sortText,
+            sortText: sortText,
             additionalTextEdits: additionalTextEdits,
             command: omnisharpCompletion.hasAfterInsertStep ? {
                 id: "",
