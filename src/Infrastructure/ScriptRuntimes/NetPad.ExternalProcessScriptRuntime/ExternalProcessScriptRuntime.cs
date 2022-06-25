@@ -21,7 +21,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
     private readonly HashSet<IOutputWriter> _outputListeners;
     private IServiceScope? _serviceScope;
 
-    private NetPad.IO.ProcessHandler? _processHandler;
+    private ProcessHandler? _processHandler;
 
     public ExternalProcessScriptRuntime(
         Script script,
@@ -57,12 +57,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
     public async Task<RunResult> RunScriptAsync()
     {
+        throw new NotImplementedException("Testing this runtime is not yet complete");
+        var dir = "/home/tips/test/";
+
         var (success, assemblyBytes, referenceAssemblyPaths) = await CompileAndGetRefAssemblyPathsAsync();
 
         if (!success)
             return RunResult.RunAttemptFailure();
 
-        var dir = "/home/tips/test/";
         var scriptName = _script.Name.Replace(" ", "_");
         var assemblyFullPath = Path.Combine(dir, $"{scriptName}.dll");
 
