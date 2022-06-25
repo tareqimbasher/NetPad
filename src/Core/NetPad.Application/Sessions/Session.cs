@@ -67,7 +67,7 @@ namespace NetPad.Sessions
             }
         }
 
-        public async Task CloseAsync(Guid scriptId)
+        public async Task CloseAsync(Guid scriptId, bool activateNextScript = true)
         {
             _logger.LogDebug("Closing script: {ScriptId}", scriptId);
             var environmentToClose = Get(scriptId);
@@ -80,7 +80,7 @@ namespace NetPad.Sessions
             await environmentToClose.DisposeAsync();
             await _eventBus.PublishAsync(new EnvironmentsRemoved(environmentToClose));
 
-            if (Active == environmentToClose)
+            if (activateNextScript && Active == environmentToClose)
             {
                 if (_environments.Any())
                 {
@@ -99,6 +99,20 @@ namespace NetPad.Sessions
             }
 
             _logger.LogDebug("Closed script: {ScriptId}", scriptId);
+        }
+
+        public async Task CloseAsync(IEnumerable<Guid> scriptIds)
+        {
+            var ids = scriptIds.ToArray();
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var id = ids[i];
+
+                bool isLastScriptInBatch = i == (ids.Length - 1);
+
+                await CloseAsync(id, activateNextScript: isLastScriptInBatch);
+            }
         }
 
         public Task ActivateAsync(Guid? scriptId)

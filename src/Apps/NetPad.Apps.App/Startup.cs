@@ -92,6 +92,9 @@ namespace NetPad
                 //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
 
+            // Should be the last hosted service so it runs last on app start
+            services.AddHostedService<AppSetupAndCleanupBackgroundService>();
+
             // Allow ApplicationConfigurator to add any services it needs
             Program.ApplicationConfigurator.ConfigureServices(services);
 
@@ -160,17 +163,6 @@ namespace NetPad
                     .Get<IServerAddressesFeature>()!
                     .Addresses
                     .First(a => a.StartsWith("http:")));
-
-            // Load auto-saved scripts from last session
-            AsyncHelpers.RunSync(async () =>
-            {
-                var session = app.ApplicationServices.GetRequiredService<ISession>();
-                var autoSaveScriptRepository = app.ApplicationServices.GetRequiredService<IAutoSaveScriptRepository>();
-
-                var autoSavedScripts = await autoSaveScriptRepository.GetScriptsAsync();
-
-                await session.OpenAsync(autoSavedScripts);
-            });
 
             // Allow ApplicationConfigurator to run any configuration
             Program.ApplicationConfigurator.Configure(app, env);

@@ -201,7 +201,7 @@ public class AppOmniSharpServer
 
         string args = new[]
         {
-            //$"--hostPID {Environment.ProcessId}",
+            $"--hostPID {Environment.ProcessId}",
             "--encoding utf-8",
             //"--loglevel information",
             "FileOptions:SystemExcludeSearchPatterns:0=**/.git",

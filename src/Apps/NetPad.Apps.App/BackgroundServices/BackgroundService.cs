@@ -26,9 +26,16 @@ namespace NetPad.BackgroundServices
         {
             _logger.LogDebug("Stopping background service");
 
+            await StoppingAsync(cancellationToken);
+
             await base.StopAsync(cancellationToken);
 
             _logger.LogDebug("Background service stopped");
+        }
+
+        protected virtual Task StoppingAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }
