@@ -24,8 +24,9 @@ export * from "./panes/ipane-host-view-state-controller";
 export * from "./panes/pane";
 
 export * from "./editor/editor";
-export * from "./editor/completion-item-providers/builtin-completion-provider";
-export * from "./editor/completion-item-providers/omnisharp-completion-provider";
+export * from "./editor/providers/builtin-completion-provider";
+
+export * from "./omnisharp/omnisharp-completion-provider";
 
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
