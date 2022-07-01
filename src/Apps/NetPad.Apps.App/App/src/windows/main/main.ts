@@ -1,16 +1,23 @@
 import {Aurelia, Registration} from "aurelia";
 import {
     IAppService,
-    IOmniSharpService,
     IScriptService,
     IShortcutManager,
     AppService,
-    OmniSharpService,
     ScriptService,
     ShortcutManager,
 } from "@domain";
 import {Index} from "./index";
-import {Editor, IPaneManager, IWindowBootstrap, PaneHost, PaneManager} from "@application";
+import {
+    BuiltinCompletionProvider,
+    Editor,
+    ICompletionItemProvider,
+    IPaneManager,
+    IWindowBootstrap,
+    PaneHost,
+    PaneManager
+} from "@application";
+import {OmniSharpPlugin} from "@plugins/omnisharp";
 
 export class Bootstrapper implements IWindowBootstrap {
     getEntry = () => Index;
@@ -21,9 +28,11 @@ export class Bootstrapper implements IWindowBootstrap {
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(IAppService, AppService),
-            Registration.singleton(IOmniSharpService, OmniSharpService),
+            Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
             PaneHost,
             Editor
         );
+
+        OmniSharpPlugin.configure(app.container);
     }
 }

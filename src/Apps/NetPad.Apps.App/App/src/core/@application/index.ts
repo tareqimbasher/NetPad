@@ -23,10 +23,10 @@ export * from "./panes/pane-host-view-state";
 export * from "./panes/ipane-host-view-state-controller";
 export * from "./panes/pane";
 
+export * from "./editor/interfaces";
+export * from "./editor/editor-util";
 export * from "./editor/editor";
 export * from "./editor/providers/builtin-completion-provider";
-
-export * from "./omnisharp/omnisharp-completion-provider";
 
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";

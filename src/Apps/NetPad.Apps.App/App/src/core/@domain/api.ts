@@ -200,6 +200,8 @@ export interface IOmniSharpApiClient {
     getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
 
     getCompletionResolution(scriptId: string, appCompletionItem: AppCompletionItem): Promise<CompletionResolveResponse>;
+
+    formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -294,6 +296,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<CompletionResolveResponse>(<any>null);
+    }
+
+    formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-format";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processFormatCode(_response);
+        });
+    }
+
+    protected processFormatCode(response: Response): Promise<CodeFormatResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CodeFormatResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CodeFormatResponse>(<any>null);
     }
 }
 
@@ -2181,6 +2225,101 @@ export class CompletionItemData implements ICompletionItemData {
 export interface ICompletionItemData {
     item1: number;
     item2: number;
+}
+
+export class CodeFormatResponse implements ICodeFormatResponse {
+    buffer?: string | undefined;
+    changes?: LinePositionSpanTextChange[] | undefined;
+
+    constructor(data?: ICodeFormatResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.buffer = _data["buffer"];
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(LinePositionSpanTextChange.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): CodeFormatResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeFormatResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["buffer"] = this.buffer;
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): CodeFormatResponse {
+        const json = this.toJSON();
+        let result = new CodeFormatResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeFormatResponse {
+    buffer?: string | undefined;
+    changes?: LinePositionSpanTextChange[] | undefined;
+}
+
+export class CodeFormatRequest extends Request implements ICodeFormatRequest {
+    wantsTextChanges!: boolean;
+
+    constructor(data?: ICodeFormatRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.wantsTextChanges = _data["wantsTextChanges"];
+        }
+    }
+
+    static fromJS(data: any): CodeFormatRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeFormatRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["wantsTextChanges"] = this.wantsTextChanges;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CodeFormatRequest {
+        const json = this.toJSON();
+        let result = new CodeFormatRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeFormatRequest extends IRequest {
+    wantsTextChanges: boolean;
 }
 
 export class PackageMetadata implements IPackageMetadata {

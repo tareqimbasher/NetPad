@@ -1,7 +1,7 @@
 import {bindable, ILogger, PLATFORM, watch} from "aurelia";
 import * as monaco from "monaco-editor";
 import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
-import {ViewModelBase} from "@application/view-model-base";
+import {ViewModelBase, EditorUtil} from "@application";
 
 export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
@@ -37,8 +37,10 @@ export class Editor extends ViewModelBase {
 
     private initializeEditor() {
         this.monacoEditor = monaco.editor.create(this.element as HTMLElement, {
-            value: this.environment.script.code,
-            language: 'csharp'
+            model: monaco.editor.createModel(
+                this.environment.script.code,
+                "csharp",
+                EditorUtil.constructModelUri(this.environment.script.id)),
         });
 
         this.text = this.environment.script.code;

@@ -18,7 +18,9 @@
             "@common": ["core/@common"],
             "@common/*": ["core/@common/*"],
             "@application": ["core/@application"],
-            "@application/*": ["core/@application/*"]
+            "@application/*": ["core/@application/*"],
+            "@plugins": ["core/@plugins"],
+            "@plugins/*": ["core/@plugins/*"]
         }
     },
     "include": [

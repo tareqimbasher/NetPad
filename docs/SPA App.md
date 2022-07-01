@@ -6,6 +6,7 @@
     * `@common`: contains common utils and non-app specific code.
     * `@domain`: the app-specific domain layer.
     * `@application`: the application layer.
+    * `@plugins`: app plugins.
 * `styles`: application-wide styling.
 * `windows`: each window should have a separate folder within this folder.
 

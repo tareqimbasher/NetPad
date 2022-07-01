@@ -1,24 +1,23 @@
 import * as monaco from "monaco-editor";
 import {IRange, languages} from "monaco-editor";
 import CompletionItem = languages.CompletionItem;
+import {ICompletionItemProvider} from "@application";
 
-export class BuiltinCompletionProvider {
-    public register() {
-        monaco.languages.registerCompletionItemProvider("csharp", {
-            provideCompletionItems: (model, position, ctx, token) => {
-                const word = model.getWordUntilPosition(position);
-                const range = {
-                    startLineNumber: position.lineNumber,
-                    endLineNumber: position.lineNumber,
-                    startColumn: word.startColumn,
-                    endColumn: word.endColumn
-                };
+export class BuiltinCompletionProvider implements ICompletionItemProvider {
+    public triggerCharacters = undefined;
 
-                return {
-                    suggestions: this.createCompletionItems(range)
-                };
-            }
-        });
+    public provideCompletionItems(model, position, ctx, token) {
+        const word = model.getWordUntilPosition(position);
+        const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: word.startColumn,
+            endColumn: word.endColumn
+        };
+
+        return {
+            suggestions: this.createCompletionItems(range)
+        };
     }
 
     private createCompletionItems(range: IRange): CompletionItem[] {

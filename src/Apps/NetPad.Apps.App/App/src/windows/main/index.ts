@@ -1,14 +1,15 @@
+import {all} from "aurelia";
 import Split from "split.js";
+import * as monaco from "monaco-editor";
 import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
 import {
-    BuiltinCompletionProvider,
+    ICompletionItemProvider,
     IPaneManager,
-    OmnisharpCompletionProvider,
     PaneHost,
     PaneHostOrientation
 } from "@application";
-import {ClipboardPane, NamespacesPane} from "./panes";
 import {KeyCode} from "@common";
+import {ClipboardPane, NamespacesPane} from "./panes";
 
 export class Index {
     public rightPaneHost: PaneHost;
@@ -17,13 +18,16 @@ export class Index {
         private readonly settings: Settings,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
-        private readonly builtinCompletionProvider: BuiltinCompletionProvider,
-        private readonly omnisharpCompletionProvider: OmnisharpCompletionProvider) {
+        @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[]) {
     }
 
     public async binding() {
         this.shortcutManager.initialize();
         this.registerKeyboardShortcuts();
+
+        for (const completionItemProvider of this.completionItemProviders) {
+            monaco.languages.registerCompletionItemProvider("csharp", completionItemProvider);
+        }
     }
 
     public attached() {
@@ -50,9 +54,6 @@ export class Index {
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
-
-        this.builtinCompletionProvider.register();
-        this.omnisharpCompletionProvider.register();
     }
 
     private registerKeyboardShortcuts() {

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Services;
+using OmniSharp.Models.CodeFormat;
 using OmniSharp.Models.v1.Completion;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
@@ -66,6 +67,23 @@ public class OmniSharpController : Controller
             Item = completionItem
         });
     }
+
+    [HttpPost("{scriptId:guid}/code-format")]
+    public async Task<CodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] CodeFormatRequest request)
+    {
+        var server = GetOmniSharpServer(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        return await server.Send<CodeFormatResponse>(new CodeFormatRequest()
+        {
+            Buffer = request.Buffer,
+            FileName = server.Project.ProgramFilePath
+        });
+    }
+
 
     private AppOmniSharpServer? GetOmniSharpServer(Guid scriptId)
     {

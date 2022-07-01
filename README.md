@@ -27,7 +27,7 @@ You can currently:
 
 You cannot, yet:
 
-* Enjoy code-completion features in the editor (`Coming soon!`)~~~~
+* Enjoy code-completion features in the editor (`Coming soon!`)
 * Add database connections
 
 ## Tech Stack
