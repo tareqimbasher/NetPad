@@ -8,7 +8,7 @@ declare module '*.html' {
     export const bindables: Record<string, PartialBindableDefinition>;
     export const shadowOptions: { mode: 'open' | 'closed' } | undefined;
 
-    export function register(container: IContainer);
+    export function register(container: IContainer): void;
 }
 
 declare module '*.css';

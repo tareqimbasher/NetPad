@@ -1,5 +1,5 @@
-import {watch} from "aurelia";
 import {observable} from "@aurelia/runtime";
+import {watch} from "@aurelia/runtime-html";
 import {ConfigStore} from "../config-store";
 import {Util} from "@common";
 

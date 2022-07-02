@@ -5,11 +5,13 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["DOM", "ESNext"],
+        "module": "esnext",
         "moduleResolution": "node",
         "skipLibCheck": true,
         "target": "ES2017",
         "esModuleInterop": true,
         "resolveJsonModule": true,
+        "importHelpers": true,
         "sourceMap": true,
         "noImplicitOverride": true,
         "paths": {

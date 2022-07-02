@@ -1,6 +1,7 @@
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmitted, ScriptStatus, Settings} from "@domain";
-import {bindable, IDisposable, ILogger, watch} from "aurelia";
+import {bindable, IDisposable, ILogger} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import {ViewModelBase} from "@application";
 
 export class ResultsView extends ViewModelBase {

@@ -1,4 +1,5 @@
-import {bindable, ILogger, PLATFORM, watch} from "aurelia";
+import {bindable, ILogger, PLATFORM} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
 import {ViewModelBase, EditorUtil} from "@application";
