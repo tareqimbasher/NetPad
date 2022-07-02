@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using NetPad.Services;
+using NetPad.Services.OmniSharp;
 using OmniSharp.Models.CodeFormat;
 using OmniSharp.Models.v1.Completion;
 using JsonSerializer = NetPad.Common.JsonSerializer;

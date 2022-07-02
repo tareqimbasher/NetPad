@@ -10,7 +10,7 @@ using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
 
-namespace NetPad.Services;
+namespace NetPad.Services.OmniSharp;
 
 /// <summary>
 /// Manages and keeps a collection of created OmniSharp servers.
@@ -46,20 +46,12 @@ public class OmniSharpServerCatalog
 
         var serviceScope = _serviceScope.ServiceProvider.CreateScope();
 
-        var settings = serviceScope.ServiceProvider.GetRequiredService<Settings>();
-
-        if (settings.EditorOptions.CodeCompletion.Provider is not OmniSharpCodeCompletionProviderOptions omniSharpCodeCompletionProviderOptions)
-        {
-            _logger.LogError("Code completion provider must be of type {ExpectedType}", nameof(OmniSharpCodeCompletionProviderOptions));
-            return;
-        }
-
         var server = new AppOmniSharpServer(
             environment,
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
+            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
-            omniSharpCodeCompletionProviderOptions,
             serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
             serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptProject>>()
         );

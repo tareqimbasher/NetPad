@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Net.Http;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,10 +20,9 @@ using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Runtimes;
 using NetPad.Scripts;
-using NetPad.Services;
+using NetPad.Services.OmniSharp;
 using NetPad.Sessions;
 using NetPad.UiInterop;
-using NetPad.Utilities;
 using OmniSharp;
 
 namespace NetPad
@@ -60,6 +60,7 @@ namespace NetPad
             services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
             services.AddSingleton<ISession, Session>();
+            services.AddSingleton<HttpClient>();
 
             // Repositories
             services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
@@ -82,6 +83,8 @@ namespace NetPad
 
             // OmniSharp
             services.AddSingleton<OmniSharpServerCatalog>();
+            services.AddTransient<IOmniSharpServerLocator, OmniSharpServerLocator>();
+            services.AddTransient<IOmniSharpServerDownloader, OmniSharpServerDownloader>();
             services.AddOmniSharpServer();
 
             // Hosted services

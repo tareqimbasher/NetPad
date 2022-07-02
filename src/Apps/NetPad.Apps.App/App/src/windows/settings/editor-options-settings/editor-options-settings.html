@@ -43,11 +43,12 @@
         Code Completion
     </div>
     <p>
-        NetPad uses OmniSharp for code completion. Specify the path to the OmniSharp executable.
+        NetPad uses OmniSharp for code completion and downloads it automatically.
+        You can choose to specify a custom path for OmniSharp instead.
     </p>
     <div class="body flex-grow-height-restricted">
         <div class="d-flex" title="Whether to enable code completion or not.">
-            <label class="form-check-label" for="chkCodeCompletionEnabled" style="min-width: 120px">Enabled</label>
+            <label class="form-check-label" for="chkCodeCompletionEnabled" style="min-width: 180px">Enabled</label>
             <div class="form-check flex-1">
                 <input class="form-check-input"
                        type="checkbox"
@@ -57,7 +58,7 @@
         </div>
 
         <div class="d-flex mt-3">
-            <label for="txtCodeCompletionExePath" class="form-label" style="min-width: 120px">Executable Path</label>
+            <label for="txtCodeCompletionExePath" class="form-label" style="min-width: 180px">Custom Executable Path</label>
             <div class="flex-grow-1">
                 <input type="text"
                        class="form-control"
@@ -66,7 +67,8 @@
                        value.bind="settings.editorOptions.codeCompletion.provider.executablePath"
                        disabled.bind="!settings.editorOptions.codeCompletion.enabled">
                 <div class="form-text">
-                    This should be the <i>absolute</i> path to the OmniSharp executable.
+                    This should be the <i>absolute</i> path to the OmniSharp executable. Leave blank to instruct
+                    NetPad to download OmniSharp automatically.
                 </div>
             </div>
         </div>

@@ -4,14 +4,13 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
-using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
 using OmniSharp.Models.UpdateBuffer;
 
-namespace NetPad.Services;
+namespace NetPad.Services.OmniSharp;
 
 /// <summary>
 /// A wrapper around an <see cref="IOmniSharpServer"/> that includes app-specific functionality.
@@ -20,8 +19,8 @@ public class AppOmniSharpServer
 {
     private readonly ScriptEnvironment _environment;
     private readonly IOmniSharpServerFactory _omniSharpServerFactory;
+    private readonly IOmniSharpServerLocator _omniSharpServerLocator;
     private readonly IEventBus _eventBus;
-    private readonly OmniSharpCodeCompletionProviderOptions _options;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
 
@@ -31,16 +30,16 @@ public class AppOmniSharpServer
     public AppOmniSharpServer(
         ScriptEnvironment environment,
         IOmniSharpServerFactory omniSharpServerFactory,
+        IOmniSharpServerLocator omniSharpServerLocator,
         ICodeParser codeParser,
         IEventBus eventBus,
-        OmniSharpCodeCompletionProviderOptions options,
         ILogger<AppOmniSharpServer> logger,
         ILogger<ScriptProject> scriptProjectLogger)
     {
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
+        _omniSharpServerLocator = omniSharpServerLocator;
         _eventBus = eventBus;
-        _options = options;
         _logger = logger;
         _subscriptionTokens = new ();
 
@@ -78,16 +77,19 @@ public class AppOmniSharpServer
     /// </summary>
     public async Task<bool> StartAsync()
     {
-        if (string.IsNullOrWhiteSpace(_options.ExecutablePath))
+        var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
+        var executablePath = omnisharpServerLocation?.ExecutablePath;
+
+        if (string.IsNullOrWhiteSpace(executablePath))
         {
-            _logger.LogWarning($"OmniSharp executable path is not configured. OmniSharp functionality will not be enabled.");
+            _logger.LogError($"Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled.");
             return false;
         }
 
-        if (!File.Exists(_options.ExecutablePath))
+        if (!File.Exists(executablePath))
         {
-            _logger.LogWarning("OmniSharp executable path does not exist: {OmniSharpExecutablePath}. " +
-                               "OmniSharp functionality will not be enabled", _options.ExecutablePath);
+            _logger.LogError("OmniSharp executable path does not exist at: {OmniSharpExecutablePath}. " +
+                               "OmniSharp functionality will not be enabled", executablePath);
             return false;
         }
 
@@ -139,7 +141,7 @@ public class AppOmniSharpServer
             }
 
             await StopOmniSharpServerAsync();
-            await StartOmniSharpServerAsync();
+            await StartOmniSharpServerAsync(executablePath);
 
             // await Send(new UpdateBufferRequest
             // {
@@ -172,7 +174,7 @@ public class AppOmniSharpServer
 
         _subscriptionTokens.Add(referencesChangeToken);
 
-        await StartOmniSharpServerAsync();
+        await StartOmniSharpServerAsync(executablePath);
 
         return true;
     }
@@ -192,13 +194,8 @@ public class AppOmniSharpServer
         await _project.DeleteAsync();
     }
 
-    private async Task StartOmniSharpServerAsync()
+    private async Task StartOmniSharpServerAsync(string executablePath)
     {
-        if (_options.ExecutablePath == null)
-        {
-            throw new NullReferenceException($"OmniSharp executable path is null. It must be set to start the server.");
-        }
-
         string args = new[]
         {
             $"--hostPID {Environment.ProcessId}",
@@ -212,9 +209,9 @@ public class AppOmniSharpServer
             "FileOptions:SystemExcludeSearchPatterns:5=**/Thumbs.db",
         }.JoinToString(" ");
 
-        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(_options.ExecutablePath, _project.ProjectDirectoryPath, args);
+        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);
 
-        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args}", _options.ExecutablePath, args);
+        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args}", executablePath, args);
 
         await omniSharpServer.StartAsync();
 
