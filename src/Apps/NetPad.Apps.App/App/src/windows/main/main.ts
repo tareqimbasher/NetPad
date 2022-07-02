@@ -7,7 +7,7 @@ import {
     ScriptService,
     ShortcutManager,
 } from "@domain";
-import {Index} from "./index";
+import {Window} from "./window";
 import {
     BuiltinCompletionProvider,
     Editor,
@@ -20,7 +20,7 @@ import {
 import {OmniSharpPlugin} from "@plugins/omnisharp";
 
 export class Bootstrapper implements IWindowBootstrap {
-    getEntry = () => Index;
+    getEntry = () => Window;
 
     registerServices(app: Aurelia): void {
         app.register(

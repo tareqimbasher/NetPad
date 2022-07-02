@@ -1,9 +1,9 @@
 import {Aurelia} from "aurelia";
-import {Index} from "./index";
+import {Window} from "./window";
 import {IWindowBootstrap} from "@application";
 
 export class Bootstrapper implements IWindowBootstrap {
-    getEntry = () => Index;
+    getEntry = () => Window;
 
     registerServices(app: Aurelia): void {
     }

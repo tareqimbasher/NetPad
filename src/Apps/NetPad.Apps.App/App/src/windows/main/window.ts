@@ -11,7 +11,7 @@ import {
 import {KeyCode} from "@common";
 import {ClipboardPane, NamespacesPane} from "./panes";
 
-export class Index {
+export class Window {
     public rightPaneHost: PaneHost;
 
     constructor(

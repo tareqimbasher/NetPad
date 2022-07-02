@@ -1,6 +1,6 @@
 import {ISettingService, Settings} from "@domain";
 
-export class Index {
+export class Window {
     public currentSettings: Readonly<Settings>;
     public settings: Settings;
     public selectedTab;

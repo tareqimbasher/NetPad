@@ -1,9 +1,9 @@
 import {render} from './helper';
-import {Index} from '../src/windows/main';
+import {Window} from '../src/windows/main/window';
 
 describe('my-app', () => {
   it('should render message', async () => {
-    const node = (await render('<my-app></my-app>', Index)).firstElementChild;
+    const node = (await render('<my-app></my-app>', Window)).firstElementChild;
     const text =  node.textContent;
     expect(text.trim()).toBe('Hello World!');
   });

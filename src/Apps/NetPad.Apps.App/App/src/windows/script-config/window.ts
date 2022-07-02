@@ -1,7 +1,7 @@
 import {IScriptService, ISession, Script, Settings} from "@domain";
 import {ConfigStore} from "./config-store";
 
-export class Index {
+export class Window {
     public script: Script;
 
     constructor(
