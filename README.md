@@ -107,4 +107,4 @@ options.
 
 * Docs: [Go](https://github.com/tareqimbasher/NetPad/tree/main/docs)
 * More on SPA app startup and running
-  tests: [Go](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Web/App)
+  tests: [Go](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Apps.App/App)
