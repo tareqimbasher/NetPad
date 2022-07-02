@@ -47,7 +47,7 @@ public class OmniSharpController : Controller
     }
 
     [HttpPost("{scriptId:guid}/completion/resolve")]
-    public async Task<CompletionResolveResponse?> GetCompletionResolution(Guid scriptId, [FromBody] AppCompletionItem appCompletionItem)
+    public async Task<CompletionResolveResponse?> GetCompletionResolution(Guid scriptId, [FromBody] CompletionItemDto completionItemDto)
     {
         var server = GetOmniSharpServer(scriptId);
         if (server == null)
@@ -56,10 +56,10 @@ public class OmniSharpController : Controller
         }
 
         // Copy values from AppCompletionItem.Data property to base CompletionItem.Data Tuple property
-        var completionItem = (CompletionItem)appCompletionItem;
-        if (appCompletionItem.Data != null)
+        var completionItem = (CompletionItem)completionItemDto;
+        if (completionItemDto.Data != null)
         {
-            completionItem.Data = (appCompletionItem.Data.Item1, appCompletionItem.Data.Item2);
+            completionItem.Data = (completionItemDto.Data.Item1, completionItemDto.Data.Item2);
         }
 
         return await server.Send<CompletionResolveResponse>(new CompletionResolveRequest
@@ -94,7 +94,7 @@ public class OmniSharpController : Controller
     /// Used to bind <see cref="CompletionItem"/> when posting it to API endpoint. STJ does not know
     /// how to deserialize {item1: 0, item2: 1} into a ValueTuple(long, int)
     /// </summary>
-    public class AppCompletionItem : CompletionItem
+    public class CompletionItemDto : CompletionItem
     {
         /// <summary>
         /// Hides base Data property

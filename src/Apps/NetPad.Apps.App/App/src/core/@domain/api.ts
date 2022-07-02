@@ -199,7 +199,7 @@ export interface IOmniSharpApiClient {
 
     getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
 
-    getCompletionResolution(scriptId: string, appCompletionItem: AppCompletionItem): Promise<CompletionResolveResponse>;
+    getCompletionResolution(scriptId: string, completionItemDto: CompletionItemDto): Promise<CompletionResolveResponse>;
 
     formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
 }
@@ -256,14 +256,14 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
         return Promise.resolve<CompletionResponse>(<any>null);
     }
 
-    getCompletionResolution(scriptId: string, appCompletionItem: AppCompletionItem, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse> {
+    getCompletionResolution(scriptId: string, completionItemDto: CompletionItemDto, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse> {
         let url_ = this.baseUrl + "/omnisharp/{scriptId}/completion/resolve";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(appCompletionItem);
+        const content_ = JSON.stringify(completionItemDto);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -2140,10 +2140,10 @@ export interface ICompletionResolveResponse {
     item?: CompletionItem | undefined;
 }
 
-export class AppCompletionItem extends CompletionItem implements IAppCompletionItem {
+export class CompletionItemDto extends CompletionItem implements ICompletionItemDto {
     data?: CompletionItemData | undefined;
 
-    constructor(data?: IAppCompletionItem) {
+    constructor(data?: ICompletionItemDto) {
         super(data);
     }
 
@@ -2154,9 +2154,9 @@ export class AppCompletionItem extends CompletionItem implements IAppCompletionI
         }
     }
 
-    static fromJS(data: any): AppCompletionItem {
+    static fromJS(data: any): CompletionItemDto {
         data = typeof data === 'object' ? data : {};
-        let result = new AppCompletionItem();
+        let result = new CompletionItemDto();
         result.init(data);
         return result;
     }
@@ -2168,15 +2168,15 @@ export class AppCompletionItem extends CompletionItem implements IAppCompletionI
         return data;
     }
 
-    clone(): AppCompletionItem {
+    clone(): CompletionItemDto {
         const json = this.toJSON();
-        let result = new AppCompletionItem();
+        let result = new CompletionItemDto();
         result.init(json);
         return result;
     }
 }
 
-export interface IAppCompletionItem extends ICompletionItem {
+export interface ICompletionItemDto extends ICompletionItem {
     data?: CompletionItemData | undefined;
 }
 
