@@ -1,17 +1,20 @@
-<div class="d-flex">
-    <div class="ms-3 me-auto">
+<div class="d-flex h-100">
+    <div class="left-column ms-3 me-auto">
         <b>${session.active.status}</b>
 
         <span show.bind="session.active.status === 'Ready' && session.active.runDurationMilliseconds > 0">
             (Took: ${session.active.runDurationMilliseconds} ms)
         </span>
     </div>
-    <div class="me-3">
-        <i class="bi bi-gear-fill action-icon me-2"
-           click.trigger="settingsService.openSettingsWindow()"
-           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+    <div class="right-column me-3">
+        <div show.bind="appStatusMessage">
+            ${appStatusMessage.text}
+        </div>
         <i class="bi bi-sun action-icon"
            click.trigger="settingsService.toggleTheme()"
            title="Toggle Theme"></i>
+        <i class="bi bi-gear-fill action-icon"
+           click.trigger="settingsService.openSettingsWindow()"
+           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
     </div>
 </div>

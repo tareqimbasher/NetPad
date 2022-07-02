@@ -4,4 +4,11 @@
 statusbar {
     @include theme(background-color, statusbarBackground);
     height: $statusbar-height;
+    max-height: 20px;
+
+    .right-column {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5em
+    }
 }

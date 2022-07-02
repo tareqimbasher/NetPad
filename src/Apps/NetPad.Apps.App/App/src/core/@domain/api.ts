@@ -3041,6 +3041,7 @@ export class Types implements ITypes {
     yesNoCancel!: YesNoCancel;
     script?: Script | undefined;
     settingsUpdated?: SettingsUpdated | undefined;
+    appStatusMessagePublished?: AppStatusMessagePublished | undefined;
     scriptPropertyChanged?: ScriptPropertyChanged | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
     scriptOutputEmitted?: ScriptOutputEmitted | undefined;
@@ -3067,6 +3068,7 @@ export class Types implements ITypes {
             this.yesNoCancel = _data["yesNoCancel"];
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdated.fromJS(_data["settingsUpdated"]) : <any>undefined;
+            this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublished.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChanged.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
             this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChanged.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
             this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmitted.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
@@ -3093,6 +3095,7 @@ export class Types implements ITypes {
         data["yesNoCancel"] = this.yesNoCancel;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
+        data["appStatusMessagePublished"] = this.appStatusMessagePublished ? this.appStatusMessagePublished.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
         data["scriptConfigPropertyChanged"] = this.scriptConfigPropertyChanged ? this.scriptConfigPropertyChanged.toJSON() : <any>undefined;
         data["scriptOutputEmitted"] = this.scriptOutputEmitted ? this.scriptOutputEmitted.toJSON() : <any>undefined;
@@ -3119,6 +3122,7 @@ export interface ITypes {
     yesNoCancel: YesNoCancel;
     script?: Script | undefined;
     settingsUpdated?: SettingsUpdated | undefined;
+    appStatusMessagePublished?: AppStatusMessagePublished | undefined;
     scriptPropertyChanged?: ScriptPropertyChanged | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
     scriptOutputEmitted?: ScriptOutputEmitted | undefined;
@@ -3179,6 +3183,109 @@ export class SettingsUpdated implements ISettingsUpdated {
 export interface ISettingsUpdated {
     settings: Settings;
 }
+
+export class AppStatusMessagePublished implements IAppStatusMessagePublished {
+    message!: AppStatusMessage;
+
+    constructor(data?: IAppStatusMessagePublished) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.message = new AppStatusMessage();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.message = _data["message"] ? AppStatusMessage.fromJS(_data["message"]) : new AppStatusMessage();
+        }
+    }
+
+    static fromJS(data: any): AppStatusMessagePublished {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppStatusMessagePublished();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message ? this.message.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): AppStatusMessagePublished {
+        const json = this.toJSON();
+        let result = new AppStatusMessagePublished();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppStatusMessagePublished {
+    message: AppStatusMessage;
+}
+
+export class AppStatusMessage implements IAppStatusMessage {
+    text!: string;
+    priority!: AppStatusMessagePriority;
+    persistant!: boolean;
+    createdDate!: Date;
+
+    constructor(data?: IAppStatusMessage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.text = _data["text"];
+            this.priority = _data["priority"];
+            this.persistant = _data["persistant"];
+            this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): AppStatusMessage {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppStatusMessage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["text"] = this.text;
+        data["priority"] = this.priority;
+        data["persistant"] = this.persistant;
+        data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): AppStatusMessage {
+        const json = this.toJSON();
+        let result = new AppStatusMessage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppStatusMessage {
+    text: string;
+    priority: AppStatusMessagePriority;
+    persistant: boolean;
+    createdDate: Date;
+}
+
+export type AppStatusMessagePriority = "Normal" | "High";
 
 export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     propertyName!: string;

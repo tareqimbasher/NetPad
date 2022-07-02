@@ -24,6 +24,7 @@ namespace NetPad.Controllers
 
             public Script? Script { get; set; }
             public SettingsUpdated? SettingsUpdated { get; set; }
+            public AppStatusMessagePublished? AppStatusMessagePublished { get; set; }
             public ScriptPropertyChanged? ScriptPropertyChanged { get; set; }
             public ScriptConfigPropertyChanged? ScriptConfigPropertyChanged { get; set; }
             public ScriptOutputEmitted? ScriptOutputEmitted { get; set; }

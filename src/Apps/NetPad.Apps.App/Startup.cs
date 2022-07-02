@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetPad.Application;
 using NetPad.Assemblies;
 using NetPad.BackgroundServices;
 using NetPad.CQs;
@@ -48,11 +49,6 @@ namespace NetPad
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
-            services.AddSingleton<HostInfo>();
-            services.AddSingleton<IEventBus, EventBus>();
-            services.AddSingleton<ISession, Session>();
-            services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
-
             services.AddMediatR(typeof(Command).Assembly);
 
             if (WebHostEnvironment.IsDevelopment())
@@ -60,6 +56,10 @@ namespace NetPad
                 AddSwagger(services);
             }
 
+            services.AddSingleton<HostInfo>();
+            services.AddSingleton<IEventBus, EventBus>();
+            services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
+            services.AddSingleton<ISession, Session>();
 
             // Repositories
             services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
@@ -68,6 +68,7 @@ namespace NetPad
             services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
 
             // Script execution
+            services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
             services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
             services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
