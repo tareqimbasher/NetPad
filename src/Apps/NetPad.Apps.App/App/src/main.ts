@@ -1,4 +1,12 @@
-import Aurelia, {ColorOptions, ConsoleSink, ILogger, LoggerConfiguration, LogLevel, Registration} from 'aurelia';
+import Aurelia, {
+    AppTask,
+    ColorOptions,
+    ConsoleSink, IContainer,
+    ILogger,
+    LoggerConfiguration,
+    LogLevel,
+    Registration
+} from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
@@ -51,10 +59,26 @@ const app = Aurelia.register(
     YesNoValueConverter,
 
     // Custom elements
-    ContextMenu
+    ContextMenu,
+
+
+    AppTask.beforeActivate(IContainer, async container => {
+        const backgroundServices = container.getAll(IBackgroundService);
+
+        const logger = container.get(ILogger);
+        logger.info(`Starting ${backgroundServices.length} background services`);
+
+        for (const backgroundService of backgroundServices) {
+            try {
+                await backgroundService.start();
+            } catch (ex) {
+                logger.error(`Error starting background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+            }
+        }
+    })
 );
 
-
+// Determine which window we need to bootstrap and use
 let winOpt = startupOptions.get("win");
 if (!winOpt && !System.isRunningInElectron())
     winOpt = "main";
@@ -71,23 +95,9 @@ else if (winOpt === "script-config")
 const bootstrapper = new win.Bootstrapper() as IWindowBootstrap;
 bootstrapper.registerServices(app);
 
+// Load Settings and then start the app
 app.container.get(ISettingService).get()
     .then(settings => Object.assign(app.container.get(Settings), settings))
-    .then(async () => {
-        const backgroundServices = app.container.getAll(IBackgroundService);
-
-        const logger = app.container.get(ILogger);
-        logger.info(`Starting ${backgroundServices.length} background services`);
-
-        for (const backgroundService of backgroundServices) {
-            try {
-                await backgroundService.start();
-            } catch (ex) {
-                logger.error(`Error starting background service ${backgroundService.constructor.name}. ${ex.toString()}`);
-            }
-        }
-
-    })
     .then(() => {
         app
             .app(bootstrapper.getEntry())
