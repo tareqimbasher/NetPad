@@ -1,9 +1,7 @@
 import * as monaco from "monaco-editor";
 import {IRange, languages} from "monaco-editor";
-import CompletionItem = languages.CompletionItem;
-import {ICompletionItemProvider} from "@application";
 
-export class BuiltinCompletionProvider implements ICompletionItemProvider {
+export class BuiltinCompletionProvider implements languages.CompletionItemProvider {
     public triggerCharacters = undefined;
 
     public provideCompletionItems(model, position, ctx, token) {
@@ -20,7 +18,7 @@ export class BuiltinCompletionProvider implements ICompletionItemProvider {
         };
     }
 
-    private createCompletionItems(range: IRange): CompletionItem[] {
+    private createCompletionItems(range: IRange): languages.CompletionItem[] {
         return [
             {
                 label: "cw",

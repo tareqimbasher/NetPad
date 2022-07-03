@@ -1,9 +1,7 @@
-import {all} from "aurelia";
 import Split from "split.js";
-import * as monaco from "monaco-editor";
 import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
 import {
-    ICompletionItemProvider,
+    EditorSetup,
     IPaneManager,
     PaneHost,
     PaneHostOrientation
@@ -18,16 +16,13 @@ export class Window {
         private readonly settings: Settings,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
-        @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[]) {
+        private readonly editorSetup: EditorSetup) {
     }
 
     public async binding() {
         this.shortcutManager.initialize();
         this.registerKeyboardShortcuts();
-
-        for (const completionItemProvider of this.completionItemProviders) {
-            monaco.languages.registerCompletionItemProvider("csharp", completionItemProvider);
-        }
+        this.editorSetup.setup();
     }
 
     public attached() {

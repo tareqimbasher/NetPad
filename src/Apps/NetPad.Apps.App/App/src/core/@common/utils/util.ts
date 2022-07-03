@@ -162,6 +162,14 @@ export class Util {
     }
 
     /**
+     * Creates an awaitable promise that resolves after the specified number of milliseconds.
+     * @param ms Milliseconds after which to resolve the promise.
+     */
+    public static delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
      * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed since the last time the
      * debounced function was invoked.
      * @param thisArg The value to use as this when calling func.

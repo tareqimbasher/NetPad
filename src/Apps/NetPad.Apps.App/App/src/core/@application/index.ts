@@ -27,6 +27,7 @@ export * from "./editor/interfaces";
 export * from "./editor/editor-util";
 export * from "./editor/editor";
 export * from "./editor/providers/builtin-completion-provider";
+export * from "./editor/editor-setup";
 
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";

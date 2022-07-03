@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Services.OmniSharp;
 using OmniSharp.Models.CodeFormat;
+using OmniSharp.Models.SemanticHighlight;
 using OmniSharp.Models.v1.Completion;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
@@ -68,7 +70,7 @@ public class OmniSharpController : Controller
         });
     }
 
-    [HttpPost("{scriptId:guid}/code-format")]
+    [HttpPost("{scriptId:guid}/format-code")]
     public async Task<CodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] CodeFormatRequest request)
     {
         var server = GetOmniSharpServer(scriptId);
@@ -82,6 +84,36 @@ public class OmniSharpController : Controller
             Buffer = request.Buffer,
             FileName = server.Project.ProgramFilePath
         });
+    }
+
+    [HttpPost("{scriptId:guid}/semantic-highlights")]
+    public async Task<SemanticHighlightResponse?> GetSemanticHighlights(Guid scriptId, [FromBody] SemanticHighlightRequest request)
+    {
+        var server = GetOmniSharpServer(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        var response = await server.Send<SemanticHighlightResponse>(new SemanticHighlightRequest()
+        {
+            FileName = server.Project.ProgramFilePath
+        });
+
+        if (response != null)
+        {
+            // Remove any spans before user code
+            response.Spans = response.Spans.Where(s => s.StartLine >= server.Project.UserCodeStartsOnLine).ToArray();
+
+            // Adjust line numbers
+            foreach (var span in response.Spans)
+            {
+                span.StartLine -= server.Project.UserCodeStartsOnLine;
+                span.EndLine -= server.Project.UserCodeStartsOnLine;
+            }
+        }
+
+        return response;
     }
 
 

@@ -2,7 +2,7 @@ import {bindable, ILogger, PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
-import {ViewModelBase, EditorUtil} from "@application";
+import {ViewModelBase, EditorUtil, EditorSetup} from "@application";
 
 export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
@@ -42,6 +42,7 @@ export class Editor extends ViewModelBase {
                 this.environment.script.code,
                 "csharp",
                 EditorUtil.constructModelUri(this.environment.script.id)),
+            "semanticHighlighting.enabled": true
         });
 
         this.text = this.environment.script.code;
@@ -71,11 +72,13 @@ export class Editor extends ViewModelBase {
     @watch<Editor>(vm => vm.settings.editorBackgroundColor)
     @watch<Editor>(vm => vm.settings.editorOptions.monacoOptions)
     private updateEditorSettings() {
-        let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+        let theme = this.settings.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
 
         if (this.settings.editorBackgroundColor) {
-            monaco.editor.defineTheme("custom-theme", {
-                base: <any>theme,
+            const base: monaco.editor.BuiltinTheme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+
+            EditorSetup.defineTheme("custom-theme", {
+                base: base,
                 inherit: true,
                 rules: [],
                 colors: {

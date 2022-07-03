@@ -1,9 +1,9 @@
 import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "@domain";
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
-import {EditorUtil, ICompletionItemProvider} from "@application";
+import {EditorUtil} from "@application";
 import {IOmniSharpService} from "./omnisharp-service";
 
-export class OmnisharpCompletionProvider implements ICompletionItemProvider {
+export class OmnisharpCompletionProvider implements languages.CompletionItemProvider {
     public triggerCharacters = ["."];
     private lastCompletions?: Map<languages.CompletionItem, {model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem}>;
 

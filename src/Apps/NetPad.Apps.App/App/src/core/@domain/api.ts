@@ -202,6 +202,8 @@ export interface IOmniSharpApiClient {
     getCompletionResolution(scriptId: string, completionItemDto: CompletionItemDto): Promise<CompletionResolveResponse>;
 
     formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
+
+    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest): Promise<SemanticHighlightResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -299,7 +301,7 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
     }
 
     formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse> {
-        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-format";
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/format-code";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
@@ -338,6 +340,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<CodeFormatResponse>(<any>null);
+    }
+
+    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest, signal?: AbortSignal | undefined): Promise<SemanticHighlightResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/semantic-highlights";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetSemanticHighlights(_response);
+        });
+    }
+
+    protected processGetSemanticHighlights(response: Response): Promise<SemanticHighlightResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SemanticHighlightResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<SemanticHighlightResponse>(<any>null);
     }
 }
 
@@ -2320,6 +2364,270 @@ export class CodeFormatRequest extends Request implements ICodeFormatRequest {
 
 export interface ICodeFormatRequest extends IRequest {
     wantsTextChanges: boolean;
+}
+
+export class SemanticHighlightResponse implements ISemanticHighlightResponse {
+    spans?: SemanticHighlightSpan[] | undefined;
+
+    constructor(data?: ISemanticHighlightResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["spans"])) {
+                this.spans = [] as any;
+                for (let item of _data["spans"])
+                    this.spans!.push(SemanticHighlightSpan.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SemanticHighlightResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new SemanticHighlightResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.spans)) {
+            data["spans"] = [];
+            for (let item of this.spans)
+                data["spans"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): SemanticHighlightResponse {
+        const json = this.toJSON();
+        let result = new SemanticHighlightResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISemanticHighlightResponse {
+    spans?: SemanticHighlightSpan[] | undefined;
+}
+
+export class SemanticHighlightSpan implements ISemanticHighlightSpan {
+    startLine!: number;
+    startColumn!: number;
+    endLine!: number;
+    endColumn!: number;
+    type!: SemanticHighlightClassification;
+    modifiers?: SemanticHighlightModifier[] | undefined;
+
+    constructor(data?: ISemanticHighlightSpan) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.startLine = _data["startLine"];
+            this.startColumn = _data["startColumn"];
+            this.endLine = _data["endLine"];
+            this.endColumn = _data["endColumn"];
+            this.type = _data["type"];
+            if (Array.isArray(_data["modifiers"])) {
+                this.modifiers = [] as any;
+                for (let item of _data["modifiers"])
+                    this.modifiers!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): SemanticHighlightSpan {
+        data = typeof data === 'object' ? data : {};
+        let result = new SemanticHighlightSpan();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startLine"] = this.startLine;
+        data["startColumn"] = this.startColumn;
+        data["endLine"] = this.endLine;
+        data["endColumn"] = this.endColumn;
+        data["type"] = this.type;
+        if (Array.isArray(this.modifiers)) {
+            data["modifiers"] = [];
+            for (let item of this.modifiers)
+                data["modifiers"].push(item);
+        }
+        return data;
+    }
+
+    clone(): SemanticHighlightSpan {
+        const json = this.toJSON();
+        let result = new SemanticHighlightSpan();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISemanticHighlightSpan {
+    startLine: number;
+    startColumn: number;
+    endLine: number;
+    endColumn: number;
+    type: SemanticHighlightClassification;
+    modifiers?: SemanticHighlightModifier[] | undefined;
+}
+
+export type SemanticHighlightClassification = "Comment" | "ExcludedCode" | "Identifier" | "Keyword" | "ControlKeyword" | "NumericLiteral" | "Operator" | "OperatorOverloaded" | "PreprocessorKeyword" | "StringLiteral" | "WhiteSpace" | "Text" | "StaticSymbol" | "PreprocessorText" | "Punctuation" | "VerbatimStringLiteral" | "StringEscapeCharacter" | "ClassName" | "DelegateName" | "EnumName" | "InterfaceName" | "ModuleName" | "StructName" | "TypeParameterName" | "FieldName" | "EnumMemberName" | "ConstantName" | "LocalName" | "ParameterName" | "MethodName" | "ExtensionMethodName" | "PropertyName" | "EventName" | "NamespaceName" | "LabelName" | "XmlDocCommentAttributeName" | "XmlDocCommentAttributeQuotes" | "XmlDocCommentAttributeValue" | "XmlDocCommentCDataSection" | "XmlDocCommentComment" | "XmlDocCommentDelimiter" | "XmlDocCommentEntityReference" | "XmlDocCommentName" | "XmlDocCommentProcessingInstruction" | "XmlDocCommentText" | "XmlLiteralAttributeName" | "XmlLiteralAttributeQuotes" | "XmlLiteralAttributeValue" | "XmlLiteralCDataSection" | "XmlLiteralComment" | "XmlLiteralDelimiter" | "XmlLiteralEmbeddedExpression" | "XmlLiteralEntityReference" | "XmlLiteralName" | "XmlLiteralProcessingInstruction" | "XmlLiteralText" | "RegexComment" | "RegexCharacterClass" | "RegexAnchor" | "RegexQuantifier" | "RegexGrouping" | "RegexAlternation" | "RegexText" | "RegexSelfEscapedCharacter" | "RegexOtherEscape";
+
+export type SemanticHighlightModifier = "Static";
+
+export class SemanticHighlightRequest extends Request implements ISemanticHighlightRequest {
+    range?: Range | undefined;
+    versionedText?: string | undefined;
+
+    constructor(data?: ISemanticHighlightRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.range = _data["range"] ? Range.fromJS(_data["range"]) : <any>undefined;
+            this.versionedText = _data["versionedText"];
+        }
+    }
+
+    static fromJS(data: any): SemanticHighlightRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new SemanticHighlightRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["range"] = this.range ? this.range.toJSON() : <any>undefined;
+        data["versionedText"] = this.versionedText;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): SemanticHighlightRequest {
+        const json = this.toJSON();
+        let result = new SemanticHighlightRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISemanticHighlightRequest extends IRequest {
+    range?: Range | undefined;
+    versionedText?: string | undefined;
+}
+
+export class Range implements IRange {
+    start?: Point | undefined;
+    end?: Point | undefined;
+
+    constructor(data?: IRange) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.start = _data["start"] ? Point.fromJS(_data["start"]) : <any>undefined;
+            this.end = _data["end"] ? Point.fromJS(_data["end"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Range {
+        data = typeof data === 'object' ? data : {};
+        let result = new Range();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["start"] = this.start ? this.start.toJSON() : <any>undefined;
+        data["end"] = this.end ? this.end.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): Range {
+        const json = this.toJSON();
+        let result = new Range();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRange {
+    start?: Point | undefined;
+    end?: Point | undefined;
+}
+
+export class Point implements IPoint {
+    line!: number;
+    column!: number;
+
+    constructor(data?: IPoint) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.line = _data["line"];
+            this.column = _data["column"];
+        }
+    }
+
+    static fromJS(data: any): Point {
+        data = typeof data === 'object' ? data : {};
+        let result = new Point();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["line"] = this.line;
+        data["column"] = this.column;
+        return data;
+    }
+
+    clone(): Point {
+        const json = this.toJSON();
+        let result = new Point();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPoint {
+    line: number;
+    column: number;
 }
 
 export class PackageMetadata implements IPackageMetadata {
