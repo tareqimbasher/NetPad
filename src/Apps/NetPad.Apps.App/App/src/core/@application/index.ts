@@ -4,6 +4,8 @@ export * from "./attributes/external-link-attribute";
 export * from "./attributes/platforms-attribute";
 
 export * from "./value-converters/date-time-value-converter";
+export * from "./value-converters/take-value-converter";
+export * from "./value-converters/sort-value-converter";
 export * from "./value-converters/text-to-html-value-converter";
 export * from "./value-converters/sanitize-html-value-converter";
 export * from "./value-converters/yes-no-value-converter";

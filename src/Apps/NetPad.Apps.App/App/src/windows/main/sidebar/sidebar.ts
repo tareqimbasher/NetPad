@@ -18,7 +18,7 @@ export class Sidebar {
                 @IAppService readonly appService: IAppService,
                 @IEventBus readonly eventBus: IEventBus,
                 readonly settings: Settings) {
-        this.rootScriptFolder = new SidebarScriptFolder("/", "/");
+        this.rootScriptFolder = new SidebarScriptFolder("/", "/", null);
         this.rootScriptFolder.expanded = true;
     }
 
@@ -38,9 +38,13 @@ export class Sidebar {
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
-        // Clear existing structure first
-        this.rootScriptFolder.scripts.splice(0);
-        this.rootScriptFolder.folders.splice(0);
+        const expandedFolders = new Set<string>();
+        this.recurseFolders(this.rootScriptFolder, folder => {
+            if (folder.expanded)
+                expandedFolders.add(folder.path);
+        });
+
+        const root = this.rootScriptFolder.clone();
 
         const scriptsDirPath = Util.trimEnd(
             this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
@@ -48,8 +52,7 @@ export class Sidebar {
         for (const summary of summaries) {
             let path = summary.path.replaceAll("\\", "/");
 
-            if (path.startsWith(scriptsDirPath))
-            {
+            if (path.startsWith(scriptsDirPath)) {
                 path = "/" + Util.trim(path.substring(scriptsDirPath.length), "/");
             }
 
@@ -58,24 +61,41 @@ export class Sidebar {
                 .filter(x => !!x)
                 .slice(0, -1);
 
-            const folder = this.getFolder(this.rootScriptFolder, folderParts);
+            const folder = this.getFolder(root, folderParts);
             folder.scripts.push(summary);
         }
+
+        this.recurseFolders(root, folder => {
+            if (expandedFolders.has(folder.path)) {
+                folder.expanded = true;
+            }
+        });
+
+        this.rootScriptFolder.scripts = root.scripts;
+        this.rootScriptFolder.folders = root.folders;
     }
 
-    private getFolder(parent: SidebarScriptFolder, folderPathParts: string[]) {
+    private getFolder(parent: SidebarScriptFolder, folderPathParts: string[]): SidebarScriptFolder {
         let result = parent;
 
         for (const folderName of folderPathParts) {
             let folder = result.folders.find(f => f.name === folderName);
             if (!folder) {
-                folder = new SidebarScriptFolder(folderName, folderPathParts.join("/"));
+                folder = new SidebarScriptFolder(folderName, folderPathParts.join("/"), parent);
                 result.folders.push(folder);
             }
             result = folder;
         }
 
         return result;
+    }
+
+    private recurseFolders(folder: SidebarScriptFolder, func: (f: SidebarScriptFolder) => void) {
+        func(folder);
+
+        for (const subFolder of folder.folders) {
+            this.recurseFolders(subFolder, func);
+        }
     }
 
     public async openScriptsFolder(folder: SidebarScriptFolder) {
@@ -98,10 +118,27 @@ export class Sidebar {
 }
 
 class SidebarScriptFolder {
-    constructor(public name: string, public path: string) {
+    constructor(public name: string, public path: string, public parent: SidebarScriptFolder | null) {
     }
 
     public expanded = false;
     public folders: SidebarScriptFolder[] = [];
     public scripts: ScriptSummary[] = [];
+
+    public clone(deep: boolean = false): SidebarScriptFolder {
+        const clone = new SidebarScriptFolder(this.name, this.path, this.parent);
+
+        clone.expanded = this.expanded;
+
+        if (deep) {
+            for (const folder of this.folders) {
+                clone.folders.push(folder.clone(deep));
+            }
+            for (const script of this.scripts) {
+                clone.scripts.push(script);
+            }
+        }
+
+        return clone;
+    }
 }

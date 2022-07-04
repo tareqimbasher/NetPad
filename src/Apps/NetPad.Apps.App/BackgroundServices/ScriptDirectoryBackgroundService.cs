@@ -41,6 +41,7 @@ public class ScriptDirectoryBackgroundService : BackgroundService
         _scriptDirWatcher.Deleted += async (_, ev) => await PushDirectoryChanged();
         _scriptDirWatcher.Renamed += async (_, ev) => await PushDirectoryChanged();
 
+        _scriptDirWatcher.IncludeSubdirectories = true;
         _scriptDirWatcher.EnableRaisingEvents = true;
 
         return Task.CompletedTask;

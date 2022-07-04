@@ -15,14 +15,14 @@
 
         <div class="list-group-item" show.bind="folder.expanded">
             <div class="list-group">
-                <div class="list-group-item" repeat.for="childFolder of folder.folders">
+                <div class="list-group-item" repeat.for="childFolder of folder.folders | sort:'name'">
                     <script-folder folder.bind="childFolder" vm.bind="vm"></script-folder>
                 </div>
 
                 <div class="list-group-item">
                     <div class="list-group">
                         <div class="list-group-item script-item text-truncate"
-                             repeat.for="script of folder.scripts"
+                             repeat.for="script of folder.scripts | sort:'name'"
                              title.bind="script.path"
                              click.trigger="vm.session.openByPath(script.path)">
                             <i class="bi bi-square" style="visibility: hidden"></i>

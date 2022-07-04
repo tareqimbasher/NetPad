@@ -12,19 +12,21 @@ import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService,} from "@domain";
 import {
-    DateTimeValueConverter,
-    WebDialogBackgroundService,
     EventBus,
-    ExternalLinkCustomAttribute,
     IWindowBootstrap,
-    SanitizeHtmlValueConverter,
-    SettingsBackgroundService,
     SignalRIpcGateway,
-    TextToHtmlValueConverter,
+    WebDialogBackgroundService,
+    SettingsBackgroundService,
     WebWindowBackgroundService,
-    PlatformsCustomAttribute,
     ContextMenu,
-    YesNoValueConverter
+    ExternalLinkCustomAttribute,
+    PlatformsCustomAttribute,
+    DateTimeValueConverter,
+    SanitizeHtmlValueConverter,
+    TextToHtmlValueConverter,
+    YesNoValueConverter,
+    TakeValueConverter,
+    SortValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService, System} from "@common";
 
@@ -54,6 +56,8 @@ const app = Aurelia.register(
 
     // Value Converters
     DateTimeValueConverter,
+    TakeValueConverter,
+    SortValueConverter,
     TextToHtmlValueConverter,
     SanitizeHtmlValueConverter,
     YesNoValueConverter,

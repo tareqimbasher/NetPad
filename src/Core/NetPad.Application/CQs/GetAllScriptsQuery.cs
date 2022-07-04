@@ -16,10 +16,7 @@ public class GetAllScriptsQuery : Query<IEnumerable<ScriptSummary>>
 
         public async Task<IEnumerable<ScriptSummary>> Handle(GetAllScriptsQuery request, CancellationToken cancellationToken)
         {
-            return (await _scriptRepository.GetAllAsync())
-                .OrderBy(s => s.Path)
-                .ToArray();
-
+            return await _scriptRepository.GetAllAsync();
         }
     }
 }
