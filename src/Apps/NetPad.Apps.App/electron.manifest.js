@@ -52,7 +52,8 @@ const config = {
             ]
         },
         win: {
-            target: "portable"
+            target: "portable",
+            icon: "../../../wwwroot/favicon.ico"
         },
         mac: {
             category: "public.app-category.developer-tools",
