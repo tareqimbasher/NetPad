@@ -11,6 +11,7 @@ using NetPad.Services;
 using NetPad.Services.OmniSharp;
 using NetPad.Sessions;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices;
 
@@ -118,18 +119,26 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
     private void AutoSaveScriptChanges(ScriptEnvironment environment)
     {
-        async Task handler(Guid scriptId)
+        var autoSave = new Func<Guid, Task>(async scriptId =>
         {
             if (scriptId != environment.Script.Id)
                 return;
 
             await _autoSaveScriptRepository.SaveAsync(environment.Script);
-        }
+        }).DebounceAsync(300);
 
-        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev => await handler(ev.ScriptId));
+        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(ev =>
+        {
+            autoSave(ev.ScriptId);
+            return Task.CompletedTask;
+        });
         AddEnvironmentEventToken(environment, scriptPropChangeToken);
 
-        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChanged>(async ev => await handler(ev.ScriptId));
+        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChanged>(ev =>
+        {
+            autoSave(ev.ScriptId);
+            return Task.CompletedTask;
+        });
         AddEnvironmentEventToken(environment, scriptConfigPropChangeToken);
     }
 
