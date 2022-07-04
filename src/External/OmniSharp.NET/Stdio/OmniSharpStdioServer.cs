@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -16,6 +17,7 @@ namespace OmniSharp.Stdio
         private readonly RequestResponseQueue _requestResponseQueue;
         private ProcessIOHandler? _processIo;
         private bool _isStopped = true;
+        private readonly SemaphoreSlim _semaphoreSlim;
 
         public OmniSharpStdioServer(
             OmniSharpStdioServerConfiguration configuration,
@@ -25,6 +27,7 @@ namespace OmniSharp.Stdio
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
+            _semaphoreSlim = new SemaphoreSlim(1);
         }
 
         public override async Task StartAsync()
@@ -59,22 +62,40 @@ namespace OmniSharp.Stdio
                                             $"Make sure the request is decorated with a {nameof(OmniSharpEndpointAttribute)} or inherits from a " +
                                             $"type that is decorated with such an attribute.");
 
-            var requestPacket = new RequestPacket(NextSequence(), endpointAttribute.EndpointName, request);
 
-            var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
+            await _semaphoreSlim.WaitAsync();
 
-            await _processIo.StandardInput.WriteLineAsync(JsonConvert.SerializeObject(requestPacket)).ConfigureAwait(false);
-
-            var responseJToken = await responsePromise.ConfigureAwait(false);
-
-            bool success = responseJToken.Success();
-
-            if (typeof(TResponse) != typeof(NoResponse))
+            try
             {
-                return responseJToken.Body<TResponse>();
-            }
+                var requestPacket = new RequestPacket(NextSequence(), endpointAttribute.EndpointName, request);
 
-            return null;
+                var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
+
+                string requestJson = JsonConvert.SerializeObject(requestPacket);
+
+                await _processIo.StandardInput.WriteLineAsync(requestJson).ConfigureAwait(false);
+
+                var responseJToken = await responsePromise.ConfigureAwait(false);
+
+                bool success = responseJToken.Success();
+
+                if (typeof(TResponse) != typeof(NoResponse))
+                {
+                    return responseJToken.Body<TResponse>();
+                }
+
+                return null;
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
+            }
+        }
+
+        public override void Dispose()
+        {
+            _semaphoreSlim.Dispose();
+            base.Dispose();
         }
 
 
