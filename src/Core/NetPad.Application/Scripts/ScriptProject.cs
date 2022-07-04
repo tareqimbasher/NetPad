@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.IO;
@@ -64,9 +66,13 @@ public class ScriptProject
 
         foreach (var reference in Script.Config.References)
         {
-            if (reference is PackageReference package)
+            if (reference is PackageReference pkgRef)
             {
-                await AddPackageAsync(package.PackageId, package.Version);
+                await AddPackageAsync(pkgRef.PackageId, pkgRef.Version);
+            }
+            else if (reference is AssemblyReference asmRef)
+            {
+                await AddAssemblyReferenceAsync(asmRef.AssemblyPath);
             }
         }
     }
@@ -98,6 +104,88 @@ public class ScriptProject
         return parsingResult.FullProgram;
     }
 
+    public async Task AddAssemblyReferenceAsync(string assemblyPath)
+    {
+        var xmlDoc = XDocument.Load(ProjectFilePath);
+
+        var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+        if (root == null)
+        {
+            throw new Exception("Project XML file is not formatted correctly.");
+        }
+
+        // Check if it is already added
+        if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
+        {
+            return;
+        }
+
+        var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
+
+        if (referenceGroup == null)
+        {
+            referenceGroup = new XElement("ItemGroup");
+            root.Add(referenceGroup);
+        }
+
+        var referenceElement = new XElement("Reference");
+
+        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
+
+        var hintPathElement = new XElement("HintPath");
+        hintPathElement.SetValue(assemblyPath);
+        referenceElement.Add(hintPathElement);
+
+        referenceGroup.Add(referenceElement);
+
+        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+    }
+
+    public async Task RemoveAssemblyReferenceAsync(string assemblyPath)
+    {
+        var xmlDoc = XDocument.Load(ProjectFilePath);
+
+        var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+        if (root == null)
+        {
+            throw new Exception("Project XML file is not formatted correctly.");
+        }
+
+        var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
+
+        if (referenceElementToRemove == null)
+        {
+            return;
+        }
+
+        referenceElementToRemove.Remove();
+
+        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+    }
+
+    private XElement? FindAssemblyReferenceElement(string assemblyPath, XDocument xmlDoc)
+    {
+        var root = xmlDoc.Elements("Project").First();
+
+        var itemGroups = root.Elements("ItemGroup");
+        foreach (var itemGroup in itemGroups)
+        {
+            var assemblyReferenceElements = itemGroup.Elements("Reference");
+
+            foreach (var assemblyReferenceElement in assemblyReferenceElements)
+            {
+                if (assemblyReferenceElement.Elements("HintPath").Any(hp => hp.Value == assemblyPath))
+                {
+                    return assemblyReferenceElement;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public async Task AddPackageAsync(string packageId, string packageVersion)
     {
         var process = Process.Start(new ProcessStartInfo("dotnet",
@@ -112,24 +200,6 @@ public class ScriptProject
         {
             await process.WaitForExitAsync();
         }
-
-
-        // XDocument xmldoc = XDocument.Load(ProjectFilePath);
-        // XNamespace msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
-        //
-        // var packagesNode = xmldoc.Elements("Project").Elements()
-        //     .FirstOrDefault(x => x.Name == "ItemGroup" && x.Elements().Any(xe => xe.Name == "PackageReference"));
-        //
-        // if (packagesNode == null)
-        //     return;
-
-        // foreach (var resource in packagesNode.Elements)
-        // {
-        //     Console.WriteLine($"{resource.Name} => {resource.}");
-        // }
-
-        //var project = Project.FromFile(ProjectFilePath, new ProjectOptions());
-        // project.Items.FirstOrDefault(i => i.Xml.ElementName == "ItemGroup" && i.Xml.);
     }
 
     public async Task RemovePackageAsync(string packageId)

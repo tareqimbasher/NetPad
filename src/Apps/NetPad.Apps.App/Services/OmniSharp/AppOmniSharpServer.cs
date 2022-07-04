@@ -110,17 +110,60 @@ public class AppOmniSharpServer
 
             foreach (var addedReference in ev.Added)
             {
-                if (addedReference is PackageReference pkg)
+                if (addedReference is PackageReference pkgRef)
                 {
-                    await _project.AddPackageAsync(pkg.PackageId, pkg.Version);
+                    try
+                    {
+                        await _project.AddPackageAsync(pkgRef.PackageId, pkgRef.Version);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to add package to project. " +
+                                             "Package ID: {PackageId}. Package version: {PackageVersion}",
+                            pkgRef.PackageId,
+                            pkgRef.Version);
+                    }
+                }
+                else if (addedReference is AssemblyReference asmRef)
+                {
+                    try
+                    {
+                        await _project.AddAssemblyReferenceAsync(asmRef.AssemblyPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to add assembly reference to project. " +
+                                             "Assembly path: {AssemblyPath}", asmRef.AssemblyPath);
+                    }
                 }
             }
 
             foreach (var removedReference in ev.Removed)
             {
-                if (removedReference is PackageReference pkg)
+                if (removedReference is PackageReference pkgRef)
                 {
-                    await _project.RemovePackageAsync(pkg.PackageId);
+                    try
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove package from project. " +
+                                             "Package ID: {PackageId}. Package version: {PackageVersion}",
+                            pkgRef.PackageId,
+                            pkgRef.Version);
+                    }
+                }
+                else if (removedReference is AssemblyReference asmRef)
+                {
+                    try
+                    {
+                        await _project.RemoveAssemblyReferenceAsync(asmRef.AssemblyPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to remove assembly reference from project. " +
+                                             "Assembly path: {AssemblyPath}", asmRef.AssemblyPath);
+                    }
                 }
             }
 
@@ -146,12 +189,12 @@ public class AppOmniSharpServer
     /// </summary>
     public async Task StopAsync()
     {
-        await StopOmniSharpServerAsync();
-
         foreach (var token in _subscriptionTokens)
         {
             _eventBus.Unsubscribe(token);
         }
+
+        await StopOmniSharpServerAsync();
 
         await _project.DeleteAsync();
     }
