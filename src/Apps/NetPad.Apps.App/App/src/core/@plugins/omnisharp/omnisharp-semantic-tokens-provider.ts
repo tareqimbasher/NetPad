@@ -41,10 +41,7 @@ export class OmnisharpSemanticTokensProvider implements languages.DocumentSemant
         }
 
         if (cancellationToken.isCancellationRequested) {
-            // Here we cannot return null, because returning null would remove all semantic tokens.
-            // We must throw to indicate that the semantic tokens should not be removed.
-            // Using the string busy here because it is not logged to error telemetry if the error text contains busy.
-            throw new Error("busy");
+            return null;
         }
 
         const versionBeforeRequest = model.getVersionId();
@@ -73,11 +70,14 @@ export class OmnisharpSemanticTokensProvider implements languages.DocumentSemant
         if (versionBeforeRequest !== versionAfterRequest) {
             // Cannot convert result's offsets to (line;col) values correctly
             // a new request will come in soon...
+            //
+            // Here we cannot return null, because returning null would remove all semantic tokens.
+            // We must throw to indicate that the semantic tokens should not be removed.
             throw new Error("busy");
         }
 
-        if (cancellationToken.isCancellationRequested) {
-            throw new Error("busy");
+        if (cancellationToken.isCancellationRequested || !response || !response.spans) {
+            return null;
         }
 
         return this.processResponse(response, model);

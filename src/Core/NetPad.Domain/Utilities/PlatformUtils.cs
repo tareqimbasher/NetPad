@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace NetPad.Utilities;
 
-public static class PlatformUtil
+public static class PlatformUtils
 {
     public static OSPlatform GetOSPlatform()
     {

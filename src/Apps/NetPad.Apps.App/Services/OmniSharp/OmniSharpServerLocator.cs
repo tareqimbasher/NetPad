@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -34,7 +33,7 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
             return new OmniSharpServerLocation(omniSharpCodeCompletionProviderOptions.ExecutablePath);
         }
 
-        var platform = PlatformUtil.GetOSPlatform();
+        var platform = PlatformUtils.GetOSPlatform();
 
         // Lock so that multiple threads don't attempt to download at the same time
         await _downloadLock.WaitAsync();

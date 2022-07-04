@@ -196,7 +196,7 @@ public class AppOmniSharpServer
         {
             $"--hostPID {Environment.ProcessId}",
             "--encoding utf-8",
-            "--loglevel information",
+            "--loglevel Information",
             "FileOptions:SystemExcludeSearchPatterns:0=**/.git",
             "FileOptions:SystemExcludeSearchPatterns:1=**/.svn",
             "FileOptions:SystemExcludeSearchPatterns:2=**/.hg",

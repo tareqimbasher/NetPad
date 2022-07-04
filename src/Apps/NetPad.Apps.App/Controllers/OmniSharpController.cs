@@ -12,7 +12,7 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 namespace NetPad.Controllers;
 
 [ApiController]
-[Route("omnisharp")]
+[Route("omnisharp/{scriptId:guid}")]
 public class OmniSharpController : Controller
 {
     private readonly OmniSharpServerCatalog _omniSharpServerCatalog;
@@ -22,7 +22,7 @@ public class OmniSharpController : Controller
         _omniSharpServerCatalog = omniSharpServerCatalog;
     }
 
-    [HttpPost("{scriptId:guid}/completion")]
+    [HttpPost("completion")]
     public async Task<ActionResult<CompletionResponse?>> GetCompletion(Guid scriptId, [FromBody] CompletionRequest request)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
@@ -48,7 +48,7 @@ public class OmniSharpController : Controller
         return new JsonResult(response, serializationOptions);
     }
 
-    [HttpPost("{scriptId:guid}/completion/resolve")]
+    [HttpPost("completion/resolve")]
     public async Task<CompletionResolveResponse?> GetCompletionResolution(Guid scriptId, [FromBody] CompletionItemDto completionItemDto)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
@@ -57,7 +57,7 @@ public class OmniSharpController : Controller
             return null;
         }
 
-        // Copy values from AppCompletionItem.Data property to base CompletionItem.Data Tuple property
+        // Copy values from CompletionItemDto.Data property to base CompletionItem.Data Tuple property
         var completionItem = (CompletionItem)completionItemDto;
         if (completionItemDto.Data != null)
         {
@@ -70,7 +70,7 @@ public class OmniSharpController : Controller
         });
     }
 
-    [HttpPost("{scriptId:guid}/format-code")]
+    [HttpPost("format-code")]
     public async Task<CodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] CodeFormatRequest request)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
@@ -86,7 +86,7 @@ public class OmniSharpController : Controller
         });
     }
 
-    [HttpPost("{scriptId:guid}/semantic-highlights")]
+    [HttpPost("semantic-highlights")]
     public async Task<SemanticHighlightResponse?> GetSemanticHighlights(Guid scriptId, [FromBody] SemanticHighlightRequest request)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
