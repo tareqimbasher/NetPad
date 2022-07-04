@@ -28,7 +28,7 @@
     <div id="script-environments" class="flex-grow-height-restricted d-flex flex-column">
         <script-environment-view class="flex-grow-height-restricted d-flex flex-column"
                                  repeat.for="env of session.environments"
-                                 show.bind="session.active === env"
+                                 show.bind="session.active.script.id === env.script.id"
                                  environment.bind="env"></script-environment-view>
     </div>
 

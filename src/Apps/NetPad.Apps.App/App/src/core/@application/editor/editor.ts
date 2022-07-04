@@ -28,6 +28,7 @@ export class Editor extends ViewModelBase {
     }
 
     public override detaching() {
+        this.monacoEditor.getModel().dispose();
         this.monacoEditor.dispose();
         super.detaching();
     }
