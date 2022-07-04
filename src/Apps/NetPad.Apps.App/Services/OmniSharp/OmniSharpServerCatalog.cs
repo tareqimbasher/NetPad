@@ -28,12 +28,18 @@ public class OmniSharpServerCatalog
         _items = new Dictionary<Guid, CatalogItem>();
     }
 
-    public AppOmniSharpServer? GetOmniSharpServer(Guid scriptId)
+    public bool HasOmniSharpServer(Guid scriptId)
+    {
+        return _items.ContainsKey(scriptId);
+    }
+
+    public async Task<AppOmniSharpServer?> GetOmniSharpServerAsync(Guid scriptId)
     {
         if (_items.TryGetValue(scriptId, out var item))
-            return item.AppOmniSharpServer;
+            return await item.AppOmniSharpServerTask;
 
         // This can occur if omnisharp server is still initializing/starting and is not yet ready
+        // or if it failed to start
         return null;
     }
 
@@ -62,17 +68,38 @@ public class OmniSharpServerCatalog
 
         try
         {
-            bool started = await server.StartAsync();
+            var startTask = server.StartAsync();
 
-            _logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
-                nameof(AppOmniSharpServer),
-                started);
-
-            if (started)
+            startTask.ContinueWith((task) =>
             {
-                _items.Add(environment.Script.Id, new CatalogItem(environment.Script.Id, server, serviceScope));
-                _logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
-            }
+                bool started = task.Status == TaskStatus.RanToCompletion;
+
+                _logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
+                    nameof(AppOmniSharpServer),
+                    started);
+
+                if (!started)
+                {
+                    _items.Remove(environment.Script.Id);
+                }
+            });
+
+            Task<AppOmniSharpServer?> serverTask = Task.Run(async () =>
+            {
+                try
+                {
+                    await startTask;
+                }
+                catch
+                {
+                    return null;
+                }
+
+                return server;
+            });
+
+            _items.Add(environment.Script.Id, new CatalogItem(environment.Script.Id, serverTask, serviceScope));
+            _logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
         }
         catch (Exception ex)
         {
@@ -115,9 +142,13 @@ public class OmniSharpServerCatalog
 
         try
         {
-            var server = item.AppOmniSharpServer;
-            await Retry.ExecuteAsync(5, TimeSpan.FromSeconds(1), async () => { await server.StopAsync(); });
-            _logger.LogDebug("Stopped OmniSharp server for script {Script}", environment.Script);
+            var server = await item.AppOmniSharpServerTask;
+
+            if (server != null)
+            {
+                await Retry.ExecuteAsync(5, TimeSpan.FromSeconds(1), async () => { await server.StopAsync(); });
+                _logger.LogDebug("Stopped OmniSharp server for script {Script}", environment.Script);
+            }
         }
         catch (Exception ex)
         {
@@ -131,15 +162,15 @@ public class OmniSharpServerCatalog
 
     private class CatalogItem
     {
-        public CatalogItem(Guid scriptId, AppOmniSharpServer appOmniSharpServer, IServiceScope serviceScope)
+        public CatalogItem(Guid scriptId, Task<AppOmniSharpServer?> appOmniSharpServerTask, IServiceScope serviceScope)
         {
             ScriptId = scriptId;
-            AppOmniSharpServer = appOmniSharpServer;
+            AppOmniSharpServerTask = appOmniSharpServerTask;
             ServiceScope = serviceScope;
         }
 
         public Guid ScriptId { get; }
-        public AppOmniSharpServer AppOmniSharpServer { get; }
+        public Task<AppOmniSharpServer?> AppOmniSharpServerTask { get; }
         public IServiceScope ServiceScope { get; }
     }
 }

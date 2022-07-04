@@ -41,7 +41,7 @@ public class AppOmniSharpServer
         _omniSharpServerLocator = omniSharpServerLocator;
         _eventBus = eventBus;
         _logger = logger;
-        _subscriptionTokens = new ();
+        _subscriptionTokens = new();
 
         _project = new ScriptProject(environment.Script, codeParser, scriptProjectLogger);
     }
@@ -89,7 +89,7 @@ public class AppOmniSharpServer
         if (!File.Exists(executablePath))
         {
             _logger.LogError("OmniSharp executable path does not exist at: {OmniSharpExecutablePath}. " +
-                               "OmniSharp functionality will not be enabled", executablePath);
+                             "OmniSharp functionality will not be enabled", executablePath);
             return false;
         }
 
@@ -112,11 +112,7 @@ public class AppOmniSharpServer
 
             if (_omniSharpServer != null)
             {
-                await Send(new UpdateBufferRequest
-                {
-                    FileName = _project.ProgramFilePath,
-                    Buffer = fullProgram
-                });
+                await UpdateOmniSharpCodeBufferAsync(fullProgram);
             }
         });
 
@@ -228,5 +224,14 @@ public class AppOmniSharpServer
         await _omniSharpServer.StopAsync();
 
         _omniSharpServer = null;
+    }
+
+    private async Task UpdateOmniSharpCodeBufferAsync(string fullProgram)
+    {
+        await Send(new UpdateBufferRequest
+        {
+            FileName = _project.ProgramFilePath,
+            Buffer = fullProgram
+        });
     }
 }

@@ -25,7 +25,7 @@ public class OmniSharpController : Controller
     [HttpPost("{scriptId:guid}/completion")]
     public async Task<ActionResult<CompletionResponse?>> GetCompletion(Guid scriptId, [FromBody] CompletionRequest request)
     {
-        var server = GetOmniSharpServer(scriptId);
+        var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null)
         {
             return Ok(null);
@@ -51,7 +51,7 @@ public class OmniSharpController : Controller
     [HttpPost("{scriptId:guid}/completion/resolve")]
     public async Task<CompletionResolveResponse?> GetCompletionResolution(Guid scriptId, [FromBody] CompletionItemDto completionItemDto)
     {
-        var server = GetOmniSharpServer(scriptId);
+        var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null)
         {
             return null;
@@ -73,7 +73,7 @@ public class OmniSharpController : Controller
     [HttpPost("{scriptId:guid}/format-code")]
     public async Task<CodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] CodeFormatRequest request)
     {
-        var server = GetOmniSharpServer(scriptId);
+        var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null)
         {
             return null;
@@ -89,7 +89,7 @@ public class OmniSharpController : Controller
     [HttpPost("{scriptId:guid}/semantic-highlights")]
     public async Task<SemanticHighlightResponse?> GetSemanticHighlights(Guid scriptId, [FromBody] SemanticHighlightRequest request)
     {
-        var server = GetOmniSharpServer(scriptId);
+        var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null)
         {
             return null;
@@ -117,9 +117,9 @@ public class OmniSharpController : Controller
     }
 
 
-    private AppOmniSharpServer? GetOmniSharpServer(Guid scriptId)
+    private async Task<AppOmniSharpServer?> GetOmniSharpServerAsync(Guid scriptId)
     {
-        return _omniSharpServerCatalog.GetOmniSharpServer(scriptId);
+        return await _omniSharpServerCatalog.GetOmniSharpServerAsync(scriptId);
     }
 
     /// <summary>

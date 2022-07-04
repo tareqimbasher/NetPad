@@ -91,8 +91,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
                 return Task.CompletedTask;
             }
 
-            bool hasActiveOmniSharpServer = _omniSharpServerCatalog.GetOmniSharpServer(activatedEnvironmentScriptId.Value) != null;
-            if (hasActiveOmniSharpServer)
+            if (_omniSharpServerCatalog.HasOmniSharpServer(activatedEnvironmentScriptId.Value))
             {
                 return Task.CompletedTask;
             }

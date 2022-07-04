@@ -98,15 +98,20 @@ public class ScriptProject
         return parsingResult.FullProgram;
     }
 
-    public Task AddPackageAsync(string packageId, string packageVersion)
+    public async Task AddPackageAsync(string packageId, string packageVersion)
     {
-        Process.Start(new ProcessStartInfo("dotnet",
+        var process = Process.Start(new ProcessStartInfo("dotnet",
             $"add {ProjectFilePath} package {packageId} --version {packageVersion}")
         {
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath,
             CreateNoWindow = true
         });
+
+        if (process != null)
+        {
+            await process.WaitForExitAsync();
+        }
 
 
         // XDocument xmldoc = XDocument.Load(ProjectFilePath);
@@ -125,13 +130,11 @@ public class ScriptProject
 
         //var project = Project.FromFile(ProjectFilePath, new ProjectOptions());
         // project.Items.FirstOrDefault(i => i.Xml.ElementName == "ItemGroup" && i.Xml.);
-
-        return Task.CompletedTask;
     }
 
-    public Task RemovePackageAsync(string packageId)
+    public async Task RemovePackageAsync(string packageId)
     {
-        Process.Start(new ProcessStartInfo("dotnet",
+        var process = Process.Start(new ProcessStartInfo("dotnet",
             $"remove {ProjectFilePath} package {packageId}")
         {
             UseShellExecute = false,
@@ -139,6 +142,9 @@ public class ScriptProject
             CreateNoWindow = true
         });
 
-        return Task.CompletedTask;
+        if (process != null)
+        {
+            await process.WaitForExitAsync();
+        }
     }
 }

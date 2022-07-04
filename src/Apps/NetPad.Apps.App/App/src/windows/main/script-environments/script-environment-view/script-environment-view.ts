@@ -22,7 +22,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
     public running = false;
 
     private split: Split.Instance;
-    private editorTextChanged: (newText: string) => void;
+    private editorTextChanged: (newText: string, oldText: string) => Promise<void>;
     private textEditorContainer: HTMLElement;
     private resultsContainer: HTMLElement;
     private editor: () => Editor;
@@ -36,9 +36,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
         @ILogger logger: ILogger) {
         super(logger);
 
-        this.editorTextChanged = Util.debounce(this, async (newText: string, oldText: string) => {
-            await this.sendCodeToServer();
-        }, 500, true);
+        this.editorTextChanged = async (newText: string, oldText: string) => await this.sendCodeToServer();
     }
 
     public get script(): Script {
