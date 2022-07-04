@@ -31,7 +31,12 @@
 </div>
 <div class="flex-grow-height-restricted">
     <div ref="textEditorContainer" class="text-editor-container d-flex overflow-hidden">
-        <editor environment.bind="environment"
+        <!--
+            We only want to attach the editor to the DOM if the script is currently active
+            or was activated at some point.
+         -->
+        <editor if.bind="isActive || activatedAtLeastOnce"
+                environment.bind="environment"
                 text.two-way="editorText"
                 view-model.two-way="editor"></editor>
     </div>

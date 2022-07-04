@@ -12,7 +12,6 @@ import {
     Settings
 } from "@domain";
 import Split from "split.js";
-import {Util} from "@common";
 import {observable} from "@aurelia/runtime";
 import {Editor, ViewModelBase} from "@application";
 
@@ -26,6 +25,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
     private textEditorContainer: HTMLElement;
     private resultsContainer: HTMLElement;
     private editor: () => Editor;
+    private activatedAtLeastOnce = false;
 
     constructor(
         readonly settings: Settings,
@@ -51,21 +51,31 @@ export class ScriptEnvironmentView extends ViewModelBase {
         this.scriptService.setScriptKind(this.script.id, value);
     }
 
+    public get isActive(): boolean {
+        return this.session.active === this.environment;
+    }
+
     public attached() {
         this.kind = this.script.config.kind;
 
         const runScriptEventToken = this.eventBus.subscribe(RunScriptEvent, async msg => {
             if ((msg.scriptId && msg.scriptId === this.script.id) ||
-                (!msg.scriptId && this.session.active.script.id === this.script.id)) {
+                (!msg.scriptId && this.isActive)) {
                 await this.run();
             }
         });
         this.disposables.push(() => runScriptEventToken.dispose());
 
         const activeEnvChangedToken = this.eventBus.subscribeToServer(ActiveEnvironmentChanged, message => {
-            if (this.environment.script.id == message.scriptId) {
-                this.editor().focus();
+            if (this.environment.script.id !== message.scriptId) {
+                return;
             }
+
+            if (!this.activatedAtLeastOnce) {
+                this.activatedAtLeastOnce = true;
+            }
+
+            this.editor().focus();
         });
         this.disposables.push(() => activeEnvChangedToken.dispose());
 
