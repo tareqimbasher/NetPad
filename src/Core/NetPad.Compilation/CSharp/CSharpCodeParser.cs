@@ -22,10 +22,7 @@ namespace NetPad.Compilation.CSharp
 
             var userCode = GetUserCode(script);
             var userProgramTemplate = GetUserProgramTemplate();
-            var userProgram = string.Format(userProgramTemplate, userCode)
-                // TODO implementation should be improved to use syntax tree instead of a simple string replace
-                .Replace("Console.WriteLine", "Program.OutputWriteLine")
-                .Replace("Console.Write", "Program.OutputWrite");
+            var userProgram = string.Format(userProgramTemplate, userCode);
 
             var baseProgramTemplate = GetBaseProgramTemplate();
             var fullProgram = string.Format(baseProgramTemplate, usings, userProgram);
