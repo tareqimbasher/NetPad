@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +14,7 @@ using OmniSharp.Utilities;
 
 namespace OmniSharp.Stdio
 {
-    public class OmniSharpStdioServer : OmniSharpServer<OmniSharpStdioServerConfiguration>
+    public class OmniSharpStdioServer : OmniSharpServer<OmniSharpStdioServerConfiguration>, IOmniSharpStdioServer
     {
         private readonly IOmniSharpServerProcessAccessor<ProcessIOHandler> _omniSharpServerProcessAccessor;
         private readonly RequestResponseQueue _requestResponseQueue;
@@ -44,9 +47,31 @@ namespace OmniSharp.Stdio
             _isStopped = true;
         }
 
-        public override Task Send(object request) => Send<NoResponse>(request);
+        public override Task SendAsync(object request) => SendAsync<NoResponse>(request);
 
-        public override async Task<TResponse?> Send<TResponse>(object request) where TResponse : class
+        public override Task<TResponse?> SendAsync<TResponse>(object request) where TResponse : class
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            var endpointAttribute = GetOmniSharpEndpointAttribute(request);
+
+            return SendAsync<TResponse>(endpointAttribute.EndpointName, request);
+        }
+
+        public override Task SendAsync<TRequest>(IEnumerable<TRequest> requests) => SendAsync<TRequest, NoResponse>(requests);
+
+        public override Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class
+        {
+            if (!requests.Any())
+                throw new ArgumentException($"{nameof(requests)} is empty.");
+
+            var endpointAttribute = GetOmniSharpEndpointAttribute(requests);
+
+            return SendAsync<TResponse>(endpointAttribute.EndpointName, requests);
+        }
+
+        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -57,17 +82,11 @@ namespace OmniSharp.Stdio
             if (_isStopped)
                 throw new InvalidOperationException("Server is stopped.");
 
-            if (request.GetType().GetCustomAttribute(typeof(OmniSharpEndpointAttribute), true) is not OmniSharpEndpointAttribute endpointAttribute)
-                throw new ArgumentException($"Could not get endpoint name from OmniSharp request type: {request.GetType().FullName}. " +
-                                            $"Make sure the request is decorated with a {nameof(OmniSharpEndpointAttribute)} or inherits from a " +
-                                            $"type that is decorated with such an attribute.");
-
-
             await _semaphoreSlim.WaitAsync();
 
             try
             {
-                var requestPacket = new RequestPacket(NextSequence(), endpointAttribute.EndpointName, request);
+                var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
 
                 var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
 
@@ -98,6 +117,22 @@ namespace OmniSharp.Stdio
             base.Dispose();
         }
 
+        private OmniSharpEndpointAttribute GetOmniSharpEndpointAttribute(object obj)
+        {
+            var requestType = obj.GetType();
+            if (requestType.IsArray)
+            {
+                requestType = ((IEnumerable<object>)obj).ElementAt(0).GetType();
+            }
+
+            if (requestType.GetCustomAttribute(typeof(OmniSharpEndpointAttribute), true) is not OmniSharpEndpointAttribute endpointAttribute)
+            {
+                throw new ArgumentException($"Request of type '{obj.GetType().FullName}' does not have a {nameof(OmniSharpEndpointAttribute)} " +
+                                            $"and is not an {nameof(IEnumerable)} that contains items that have the {nameof(OmniSharpEndpointAttribute)}.");
+            }
+
+            return endpointAttribute;
+        }
 
         private Task HandleOmniSharpErrorOutput(string error)
         {

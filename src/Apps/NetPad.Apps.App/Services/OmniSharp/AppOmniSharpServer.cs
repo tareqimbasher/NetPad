@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
@@ -8,6 +9,8 @@ using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
+using OmniSharp.FileWatching;
+using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
 
 namespace NetPad.Services.OmniSharp;
@@ -48,29 +51,9 @@ public class AppOmniSharpServer
 
     public ScriptProject Project => _project;
 
-    /// <summary>
-    /// Sends a request to the server with no response.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if OmniSharp server has not been started yet.</exception>
-    public Task Send(object request)
-    {
-        if (_omniSharpServer == null)
-            throw new InvalidOperationException($"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
-
-        return _omniSharpServer.Send(request);
-    }
-
-    /// <summary>
-    /// Sends a request to the server and returns the server response.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if OmniSharp server has not been started yet.</exception>
-    public Task<TResponse?> Send<TResponse>(object request) where TResponse : class
-    {
-        if (_omniSharpServer == null)
-            throw new InvalidOperationException($"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
-
-        return _omniSharpServer.Send<TResponse>(request);
-    }
+    public IOmniSharpServer OmniSharpServer => _omniSharpServer
+                                               ?? throw new InvalidOperationException(
+                                                   $"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
 
     /// <summary>
     /// Starts the server.
@@ -120,6 +103,11 @@ public class AppOmniSharpServer
 
         var referencesChangeToken = _eventBus.Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
         {
+            if (!ev.Added.Any() && !ev.Removed.Any())
+            {
+                return;
+            }
+
             foreach (var addedReference in ev.Added)
             {
                 if (addedReference is PackageReference pkg)
@@ -136,36 +124,14 @@ public class AppOmniSharpServer
                 }
             }
 
-            await StopOmniSharpServerAsync();
-            await StartOmniSharpServerAsync(executablePath);
-
-            // await Send(new UpdateBufferRequest
-            // {
-            //     FileName = _project.ProjectFilePath,
-            //     Buffer = await File.ReadAllTextAsync(_project.ProjectFilePath)
-            // });
-            //
-            // await Send(new FilesChangedRequest()
-            // {
-            //     FileName = _project.ProjectFilePath,
-            //     Buffer = await File.ReadAllTextAsync(_project.ProjectFilePath),
-            //     ChangeType = FileChangeType.Change
-            // });
-            //
-            // await Send(new ChangeBufferRequest()
-            // {
-            //     FileName = _project.ProjectFilePath,
-            //     NewText = await File.ReadAllTextAsync(_project.ProjectFilePath),
-            //     StartLine = 1,
-            //     StartColumn = 1,
-            //     EndLine  = File.ReadAllLines(_project.ProjectFilePath).Length,
-            //     EndColumn = File.ReadAllLines(_project.ProjectFilePath).Last().Length
-            // });
-            //
-            // await Send(new ReAnalyzeRequest()
-            // {
-            //     FileName = _project.ProjectFilePath
-            // });
+            await OmniSharpServer.SendAsync(new[]
+            {
+                new FilesChangedRequest()
+                {
+                    FileName = _project.ProjectFilePath,
+                    ChangeType = FileChangeType.Change
+                }
+            });
         });
 
         _subscriptionTokens.Add(referencesChangeToken);
@@ -207,7 +173,10 @@ public class AppOmniSharpServer
 
         var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);
 
-        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args}", executablePath, args);
+        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args} and project dir: {ProjDirPath}",
+            executablePath,
+            args,
+            _project.ProjectDirectoryPath);
 
         await omniSharpServer.StartAsync();
 
@@ -228,7 +197,7 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferAsync(string fullProgram)
     {
-        await Send(new UpdateBufferRequest
+        await OmniSharpServer.SendAsync(new UpdateBufferRequest
         {
             FileName = _project.ProgramFilePath,
             Buffer = fullProgram

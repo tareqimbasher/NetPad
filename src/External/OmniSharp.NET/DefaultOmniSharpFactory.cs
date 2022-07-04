@@ -15,7 +15,7 @@ namespace OmniSharp
             _serviceProvider = serviceProvider;
         }
 
-        public IOmniSharpServer CreateStdioServerFromNewProcess(string executablePath, string projectPath, string additionalArgs)
+        public IOmniSharpStdioServer CreateStdioServerFromNewProcess(string executablePath, string projectPath, string additionalArgs)
         {
             var args = "-s ";
             args += (projectPath ?? throw new ArgumentNullException(nameof(projectPath))).Trim();
@@ -30,7 +30,7 @@ namespace OmniSharp
             return new OmniSharpStdioServer(config, accessor, _serviceProvider.GetRequiredService<ILoggerFactory>());
         }
 
-        public IOmniSharpServer CreateStdioServerFromExistingProcess(Func<Process> processGetter)
+        public IOmniSharpStdioServer CreateStdioServerFromExistingProcess(Func<Process> processGetter)
         {
             var config = new OmniSharpStdioServerConfiguration(processGetter);
 

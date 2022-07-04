@@ -31,7 +31,7 @@ public class OmniSharpController : Controller
             return Ok(null);
         }
 
-        var response = await server.Send<CompletionResponse>(new CompletionRequest
+        var response = await server.OmniSharpServer.SendAsync<CompletionResponse>(new CompletionRequest
         {
             Line = server.Project.UserCodeStartsOnLine + request.Line,
             Column = request.Column,
@@ -64,7 +64,7 @@ public class OmniSharpController : Controller
             completionItem.Data = (completionItemDto.Data.Item1, completionItemDto.Data.Item2);
         }
 
-        return await server.Send<CompletionResolveResponse>(new CompletionResolveRequest
+        return await server.OmniSharpServer.SendAsync<CompletionResolveResponse>(new CompletionResolveRequest
         {
             Item = completionItem
         });
@@ -79,7 +79,7 @@ public class OmniSharpController : Controller
             return null;
         }
 
-        return await server.Send<CodeFormatResponse>(new CodeFormatRequest()
+        return await server.OmniSharpServer.SendAsync<CodeFormatResponse>(new CodeFormatRequest()
         {
             Buffer = request.Buffer,
             FileName = server.Project.ProgramFilePath
@@ -95,7 +95,7 @@ public class OmniSharpController : Controller
             return null;
         }
 
-        var response = await server.Send<SemanticHighlightResponse>(new SemanticHighlightRequest()
+        var response = await server.OmniSharpServer.SendAsync<SemanticHighlightResponse>(new SemanticHighlightRequest()
         {
             FileName = server.Project.ProgramFilePath
         });

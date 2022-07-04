@@ -146,5 +146,19 @@ public class ScriptProject
         {
             await process.WaitForExitAsync();
         }
+
+        // This is needed so that 'project.assets.json' file is updated properly
+        process = Process.Start(new ProcessStartInfo("dotnet",
+            $"restore {ProjectFilePath}")
+        {
+            UseShellExecute = false,
+            WorkingDirectory = ProjectDirectoryPath,
+            CreateNoWindow = true
+        });
+
+        if (process != null)
+        {
+            await process.WaitForExitAsync();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Utilities;
 
@@ -23,8 +24,11 @@ namespace OmniSharp
 
         public abstract Task StopAsync();
 
-        public abstract Task Send(object request);
-        public abstract Task<TResponse?> Send<TResponse>(object request) where TResponse : class;
+        public abstract Task SendAsync(object request);
+        public abstract Task<TResponse?> SendAsync<TResponse>(object request) where TResponse : class;
+        public abstract Task SendAsync<TRequest>(IEnumerable<TRequest> requests);
+        public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class;
+        public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class;
 
         protected int NextSequence() => ++_sequence;
 

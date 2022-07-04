@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using OmniSharp.Stdio;
 
 namespace OmniSharp
 {
@@ -14,7 +15,7 @@ namespace OmniSharp
         /// <param name="executablePath">The path to the OmniSharp executable.</param>
         /// <param name="projectPath">The path to the project file or directory.</param>
         /// <param name="additionalArgs">Additional arguments to be passed to the spawned OmniSharp process.</param>
-        IOmniSharpServer CreateStdioServerFromNewProcess(
+        IOmniSharpStdioServer CreateStdioServerFromNewProcess(
             string executablePath,
             string projectPath,
             string additionalArgs);
@@ -23,6 +24,6 @@ namespace OmniSharp
         /// Creates a stdio OmniSharp server from an existing process. Standard input and output must already be redirected.
         /// </summary>
         /// <param name="processGetter">A function that returns the existing process to use.</param>
-        IOmniSharpServer CreateStdioServerFromExistingProcess(Func<Process> processGetter);
+        IOmniSharpStdioServer CreateStdioServerFromExistingProcess(Func<Process> processGetter);
     }
 }
