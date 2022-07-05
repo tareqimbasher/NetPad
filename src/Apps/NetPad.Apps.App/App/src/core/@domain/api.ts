@@ -204,6 +204,8 @@ export interface IOmniSharpApiClient {
     formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
 
     getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest): Promise<SemanticHighlightResponse>;
+
+    findImplementations(scriptId: string, request: FindImplementationsRequest): Promise<QuickFixResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -382,6 +384,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<SemanticHighlightResponse>(<any>null);
+    }
+
+    findImplementations(scriptId: string, request: FindImplementationsRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/find-implementations";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processFindImplementations(_response);
+        });
+    }
+
+    protected processFindImplementations(response: Response): Promise<QuickFixResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = QuickFixResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<QuickFixResponse>(<any>null);
     }
 }
 
@@ -2628,6 +2672,166 @@ export class Point implements IPoint {
 export interface IPoint {
     line: number;
     column: number;
+}
+
+export class QuickFixResponse implements IQuickFixResponse {
+    quickFixes?: QuickFix[] | undefined;
+
+    constructor(data?: IQuickFixResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["quickFixes"])) {
+                this.quickFixes = [] as any;
+                for (let item of _data["quickFixes"])
+                    this.quickFixes!.push(QuickFix.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): QuickFixResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new QuickFixResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.quickFixes)) {
+            data["quickFixes"] = [];
+            for (let item of this.quickFixes)
+                data["quickFixes"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): QuickFixResponse {
+        const json = this.toJSON();
+        let result = new QuickFixResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IQuickFixResponse {
+    quickFixes?: QuickFix[] | undefined;
+}
+
+export class QuickFix implements IQuickFix {
+    fileName?: string | undefined;
+    line!: number;
+    column!: number;
+    endLine!: number;
+    endColumn!: number;
+    text?: string | undefined;
+    projects?: string[] | undefined;
+
+    constructor(data?: IQuickFix) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.line = _data["line"];
+            this.column = _data["column"];
+            this.endLine = _data["endLine"];
+            this.endColumn = _data["endColumn"];
+            this.text = _data["text"];
+            if (Array.isArray(_data["projects"])) {
+                this.projects = [] as any;
+                for (let item of _data["projects"])
+                    this.projects!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): QuickFix {
+        data = typeof data === 'object' ? data : {};
+        let result = new QuickFix();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        data["line"] = this.line;
+        data["column"] = this.column;
+        data["endLine"] = this.endLine;
+        data["endColumn"] = this.endColumn;
+        data["text"] = this.text;
+        if (Array.isArray(this.projects)) {
+            data["projects"] = [];
+            for (let item of this.projects)
+                data["projects"].push(item);
+        }
+        return data;
+    }
+
+    clone(): QuickFix {
+        const json = this.toJSON();
+        let result = new QuickFix();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IQuickFix {
+    fileName?: string | undefined;
+    line: number;
+    column: number;
+    endLine: number;
+    endColumn: number;
+    text?: string | undefined;
+    projects?: string[] | undefined;
+}
+
+export class FindImplementationsRequest extends Request implements IFindImplementationsRequest {
+
+    constructor(data?: IFindImplementationsRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): FindImplementationsRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new FindImplementationsRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): FindImplementationsRequest {
+        const json = this.toJSON();
+        let result = new FindImplementationsRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFindImplementationsRequest extends IRequest {
 }
 
 export class PackageMetadata implements IPackageMetadata {

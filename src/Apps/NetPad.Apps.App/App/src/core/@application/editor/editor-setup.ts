@@ -3,7 +3,8 @@ import {all} from "aurelia";
 import {
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
-    IDocumentSemanticTokensProvider
+    IDocumentSemanticTokensProvider,
+    IImplementationProvider
 } from "./interfaces";
 
 export class EditorSetup {
@@ -11,13 +12,15 @@ export class EditorSetup {
         @all(ICompletionItemProvider) private readonly completionItemProviders: monaco.languages.CompletionItemProvider[],
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: monaco.languages.DocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: monaco.languages.DocumentRangeSemanticTokensProvider[],
+        @all(IImplementationProvider) private readonly implementationProviders: monaco.languages.ImplementationProvider[],
     ) {
     }
 
     public setup() {
         this.registerThemes();
         this.registerCompletionProviders();
-        this.registerSemanticTokensProviders()
+        this.registerSemanticTokensProviders();
+        this.registerImplementationProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -59,6 +62,12 @@ export class EditorSetup {
         }
     }
 
+    private registerImplementationProviders() {
+        for (const implementationProvider of this.implementationProviders) {
+            monaco.languages.registerImplementationProvider("csharp", implementationProvider);
+        }
+    }
+
     private static lightThemeTokenThemeRules: monaco.editor.ITokenThemeRule[] = [
         {token: "comment", foreground: "008000"},
         {token: "string", foreground: "a31515"},
@@ -88,7 +97,7 @@ export class EditorSetup {
         {token: "preprocessorKeyword", foreground: "0000ff"},
         {token: "preprocessorText", foreground: "a31515"},
         {token: "excludedCode", foreground: "BEBEBE"},
-        {token: "punctuation", foreground: "AF00DB"},
+        // {token: "punctuation", foreground: "AF00DB"},
         {token: "stringVerbatim", foreground: "a31515"},
         {token: "stringEscapeCharacter", foreground: "EE0000"},
         {token: "delegate", foreground: "267f99"},
@@ -145,7 +154,7 @@ export class EditorSetup {
         {token: "preprocessorKeyword", foreground: "569cd6"},
         {token: "preprocessorText", foreground: "ce9178"},
         {token: "excludedCode", foreground: "EEEEEE"},
-        {token: "punctuation", foreground: "C586C0"},
+        {token: "punctuation", foreground: "ffd700"},
         {token: "stringVerbatim", foreground: "ce9178"},
         {token: "stringEscapeCharacter", foreground: "D7BA7D"},
         {token: "delegate", foreground: "4EC9B0"},

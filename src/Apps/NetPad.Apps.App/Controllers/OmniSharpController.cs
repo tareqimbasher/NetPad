@@ -4,7 +4,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Services.OmniSharp;
+using OmniSharp.Models;
 using OmniSharp.Models.CodeFormat;
+using OmniSharp.Models.FindImplementations;
 using OmniSharp.Models.SemanticHighlight;
 using OmniSharp.Models.v1.Completion;
 using JsonSerializer = NetPad.Common.JsonSerializer;
@@ -111,6 +113,34 @@ public class OmniSharpController : Controller
                 span.StartLine -= server.Project.UserCodeStartsOnLine;
                 span.EndLine -= server.Project.UserCodeStartsOnLine;
             }
+        }
+
+        return response;
+    }
+
+    [HttpPost("find-implementations")]
+    public async Task<QuickFixResponse?> FindImplementations(Guid scriptId, [FromBody] FindImplementationsRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.FileName = server.Project.ProgramFilePath;
+        request.Line += server.Project.UserCodeStartsOnLine - 1;
+
+        var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
+
+        if (response == null)
+        {
+            return response;
+        }
+
+        foreach (var quickFix in response.QuickFixes)
+        {
+            quickFix.Line = quickFix.Line - server.Project.UserCodeStartsOnLine + 1;
+            quickFix.EndLine = quickFix.EndLine - server.Project.UserCodeStartsOnLine + 1;
         }
 
         return response;
