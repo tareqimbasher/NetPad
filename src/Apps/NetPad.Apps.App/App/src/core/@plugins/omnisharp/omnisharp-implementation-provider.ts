@@ -25,7 +25,7 @@ export class OmnisharpImplementationProvider implements languages.Implementation
         return response.quickFixes.map(qf => {
             return {
                 uri: model.uri,
-                range: new Range(qf.line, qf.column, qf.endLine, qf.endColumn)
+                range: new Range(qf.line, qf.column + 1, qf.endLine, qf.endColumn)
             }
         });
     }
