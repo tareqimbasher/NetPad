@@ -1,6 +1,7 @@
 import {IContainer, Registration} from "aurelia";
 import * as monaco from "monaco-editor";
 import {
+    ICodeLensProvider,
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider, IHoverProvider, IImplementationProvider, IReferenceProvider, ISignatureHelpProvider
@@ -13,6 +14,7 @@ import {OmnisharpImplementationProvider} from "./omnisharp-implementation-provid
 import {OmnisharpHoverProvider} from "./omnisharp-hover-provider";
 import {OmnisharpSignatureHelpProvider} from "./omnisharp-signature-help-provider";
 import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
+import {OmnisharpCodeLensProvider} from "./omnisharp-code-lens-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -29,11 +31,17 @@ export class OmniSharpPlugin {
         container.register(Registration.singleton(IHoverProvider, OmnisharpHoverProvider));
         container.register(Registration.singleton(ISignatureHelpProvider, OmnisharpSignatureHelpProvider));
         container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
+        container.register(Registration.singleton(ICodeLensProvider, OmnisharpCodeLensProvider));
 
         this.container = container.createChild();
 
         monaco.editor.onDidCreateEditor(e => {
             const editor = e as monaco.editor.IStandaloneCodeEditor;
+
+            // Check if editor is a IStandaloneCodeEditor
+            if (!editor.addAction) {
+                return;
+            }
 
             // Actions can only be registered on the model, and the editor model at the time of editor creation
             // does not seem to be the same instance as when the editor is completely configured. Registering
@@ -48,7 +56,7 @@ export class OmniSharpPlugin {
         for (const action of actions) {
             if (editor.getAction(action.id)) {
                 // If action is already registered, don't register again
-                return;
+                continue;
             }
 
             editor.addAction(action);

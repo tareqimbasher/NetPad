@@ -8,3 +8,4 @@ export const IImplementationProvider = DI.createInterface<languages.Implementati
 export const IHoverProvider = DI.createInterface<languages.HoverProvider>();
 export const ISignatureHelpProvider = DI.createInterface<languages.SignatureHelpProvider>();
 export const IReferenceProvider = DI.createInterface<languages.ReferenceProvider>();
+export const ICodeLensProvider = DI.createInterface<languages.CodeLensProvider>();

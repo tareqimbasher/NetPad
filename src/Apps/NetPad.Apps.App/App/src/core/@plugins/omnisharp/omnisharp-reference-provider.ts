@@ -9,13 +9,23 @@ export class OmnisharpReferenceProvider implements languages.ReferenceProvider {
 
     public async provideReferences(model: editor.ITextModel, position: Position, context: languages.ReferenceContext, token: CancellationToken)
         : Promise<languages.Location[]> {
+
+        return await OmnisharpReferenceProvider.findUsages(model, this.omnisharpService, position.lineNumber, position.column);
+    }
+
+    public static async findUsages(
+        model: editor.ITextModel,
+        omnisharpService: IOmniSharpService,
+        lineNumber: number,
+        column: number): Promise<languages.Location[]> {
+
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.findUsages(scriptId, new FindUsagesRequest({
+        const response = await omnisharpService.findUsages(scriptId, new FindUsagesRequest({
             onlyThisFile: true,
             excludeDefinition: true,
-            line: position.lineNumber,
-            column: position.column,
+            line: lineNumber,
+            column: column,
             applyChangesTogether: false
         }));
 

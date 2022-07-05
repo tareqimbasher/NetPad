@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -11,7 +12,10 @@ using OmniSharp.Models.FindUsages;
 using OmniSharp.Models.SemanticHighlight;
 using OmniSharp.Models.SignatureHelp;
 using OmniSharp.Models.v1.Completion;
+using OmniSharp.Models.V2;
+using OmniSharp.Models.V2.CodeStructure;
 using JsonSerializer = NetPad.Common.JsonSerializer;
+using Range2 = OmniSharp.Models.V2.Range;
 
 namespace NetPad.Controllers;
 
@@ -206,6 +210,64 @@ public class OmniSharpController : Controller
         return response;
     }
 
+    [HttpGet("code-structure")]
+    public async Task<CodeStructureResponse?> GetCodeStructure(Guid scriptId)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        var response = await server.OmniSharpServer.SendAsync<CodeStructureResponse>(new CodeStructureRequest()
+        {
+            FileName = server.Project.ProgramFilePath
+        });
+
+        if (response == null)
+        {
+            return response;
+        }
+
+        // Correct line numbers
+        int userCodeStartsOnLine = server.Project.UserCodeStartsOnLine;
+        RecurseCodeElements(response.Elements, null, (element, parent) =>
+        {
+            if (!element.Ranges.TryGetValue("name", out Range2? range)) return;
+
+            element.Ranges["name"] = new Range2()
+            {
+                Start = new Point()
+                {
+                    Line = range.Start.Line - userCodeStartsOnLine + 1,
+                    Column = range.Start.Column
+                },
+                End = new Point()
+                {
+                    Line = range.End.Line - userCodeStartsOnLine + 1,
+                    Column = range.End.Column
+                }
+            };
+        });
+
+        return response;
+    }
+
+    private void RecurseCodeElements(
+        IEnumerable<CodeStructureResponse.CodeElement> elements,
+        CodeStructureResponse.CodeElement? parent,
+        Action<CodeStructureResponse.CodeElement, CodeStructureResponse.CodeElement?> action)
+    {
+        foreach (var element in elements)
+        {
+            action(element, parent);
+
+            if (element.Children?.Any() == true)
+            {
+                RecurseCodeElements(element.Children, element, action);
+            }
+        }
+    }
 
     private async Task<AppOmniSharpServer?> GetOmniSharpServerAsync(Guid scriptId)
     {
@@ -227,6 +289,45 @@ public class OmniSharpController : Controller
         {
             public long Item1 { get; set; }
             public int Item2 { get; set; }
+        }
+    }
+
+    /// <summary>
+    /// Used to be able to deserialize CodeElement type from OmniSharp Server return
+    /// The original CodeElement from OmniSharp.Models also uses some readonly properties
+    /// that we need to manipulate (ie. Ranges)
+    /// </summary>
+    public class CodeStructureResponse
+    {
+        public IReadOnlyList<CodeElement> Elements { get; set; }
+
+        public class CodeElement
+        {
+            public CodeElement(
+                string kind,
+                string name,
+                string displayName,
+                IReadOnlyList<CodeElement> children,
+                Dictionary<string, Range2> ranges,
+                IReadOnlyDictionary<string, object> properties)
+            {
+                Kind = kind;
+                Name = name;
+                DisplayName = displayName;
+                Children = children;
+                Ranges = ranges;
+                Properties = properties;
+            }
+
+            public string Kind { get; }
+            public string Name { get; }
+            public string DisplayName { get; }
+            public IReadOnlyList<CodeElement> Children { get; }
+            public Dictionary<string, Range2> Ranges { get; }
+            public IReadOnlyDictionary<string, object> Properties { get; }
+
+            public override string ToString()
+                => $"{Kind} {Name}";
         }
     }
 }

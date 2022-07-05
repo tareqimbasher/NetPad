@@ -212,6 +212,8 @@ export interface IOmniSharpApiClient {
     getSignatureHelp(scriptId: string, request: SignatureHelpRequest): Promise<SignatureHelpResponse>;
 
     findUsages(scriptId: string, request: FindUsagesRequest): Promise<QuickFixResponse>;
+
+    getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -558,6 +560,44 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<QuickFixResponse>(<any>null);
+    }
+
+    getCodeStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<CodeStructureResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-structure";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCodeStructure(_response);
+        });
+    }
+
+    protected processGetCodeStructure(response: Response): Promise<CodeStructureResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CodeStructureResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CodeStructureResponse>(<any>null);
     }
 }
 
@@ -3438,6 +3478,155 @@ export class FindUsagesRequest extends Request implements IFindUsagesRequest {
 export interface IFindUsagesRequest extends IRequest {
     onlyThisFile: boolean;
     excludeDefinition: boolean;
+}
+
+export class CodeStructureResponse implements ICodeStructureResponse {
+    elements!: CodeElement[];
+
+    constructor(data?: ICodeStructureResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.elements = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["elements"])) {
+                this.elements = [] as any;
+                for (let item of _data["elements"])
+                    this.elements!.push(CodeElement.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): CodeStructureResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeStructureResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.elements)) {
+            data["elements"] = [];
+            for (let item of this.elements)
+                data["elements"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): CodeStructureResponse {
+        const json = this.toJSON();
+        let result = new CodeStructureResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeStructureResponse {
+    elements: CodeElement[];
+}
+
+export class CodeElement implements ICodeElement {
+    kind?: string | undefined;
+    name?: string | undefined;
+    displayName?: string | undefined;
+    children?: CodeElement[] | undefined;
+    ranges?: { [key: string]: Range; } | undefined;
+    properties?: { [key: string]: any; } | undefined;
+
+    constructor(data?: ICodeElement) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.kind = _data["kind"];
+            this.name = _data["name"];
+            this.displayName = _data["displayName"];
+            if (Array.isArray(_data["children"])) {
+                this.children = [] as any;
+                for (let item of _data["children"])
+                    this.children!.push(CodeElement.fromJS(item));
+            }
+            if (_data["ranges"]) {
+                this.ranges = {} as any;
+                for (let key in _data["ranges"]) {
+                    if (_data["ranges"].hasOwnProperty(key))
+                        (<any>this.ranges)![key] = _data["ranges"][key] ? Range.fromJS(_data["ranges"][key]) : new Range();
+                }
+            }
+            if (_data["properties"]) {
+                this.properties = {} as any;
+                for (let key in _data["properties"]) {
+                    if (_data["properties"].hasOwnProperty(key))
+                        (<any>this.properties)![key] = _data["properties"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): CodeElement {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeElement();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kind"] = this.kind;
+        data["name"] = this.name;
+        data["displayName"] = this.displayName;
+        if (Array.isArray(this.children)) {
+            data["children"] = [];
+            for (let item of this.children)
+                data["children"].push(item.toJSON());
+        }
+        if (this.ranges) {
+            data["ranges"] = {};
+            for (let key in this.ranges) {
+                if (this.ranges.hasOwnProperty(key))
+                    (<any>data["ranges"])[key] = this.ranges[key] ? this.ranges[key].toJSON() : <any>undefined;
+            }
+        }
+        if (this.properties) {
+            data["properties"] = {};
+            for (let key in this.properties) {
+                if (this.properties.hasOwnProperty(key))
+                    (<any>data["properties"])[key] = this.properties[key];
+            }
+        }
+        return data;
+    }
+
+    clone(): CodeElement {
+        const json = this.toJSON();
+        let result = new CodeElement();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeElement {
+    kind?: string | undefined;
+    name?: string | undefined;
+    displayName?: string | undefined;
+    children?: CodeElement[] | undefined;
+    ranges?: { [key: string]: Range; } | undefined;
+    properties?: { [key: string]: any; } | undefined;
 }
 
 export class PackageMetadata implements IPackageMetadata {
