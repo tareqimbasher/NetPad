@@ -6,7 +6,8 @@ import {
     IDocumentSemanticTokensProvider,
     IImplementationProvider,
     IHoverProvider,
-    ISignatureHelpProvider
+    ISignatureHelpProvider,
+    IReferenceProvider
 } from "./interfaces";
 
 export class EditorSetup {
@@ -17,6 +18,7 @@ export class EditorSetup {
         @all(IImplementationProvider) private readonly implementationProviders: monaco.languages.ImplementationProvider[],
         @all(IHoverProvider) private readonly hoverProviders: monaco.languages.HoverProvider[],
         @all(ISignatureHelpProvider) private readonly signatureHelpProviders: monaco.languages.SignatureHelpProvider[],
+        @all(IReferenceProvider) private readonly referenceProviders: monaco.languages.ReferenceProvider[],
     ) {
     }
 
@@ -27,6 +29,7 @@ export class EditorSetup {
         this.registerImplementationProviders();
         this.registerHoverProviders();
         this.registerSignatureHelpProviders();
+        this.registerReferenceProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -83,6 +86,12 @@ export class EditorSetup {
     private registerSignatureHelpProviders() {
         for (const signatureHelpProvider of this.signatureHelpProviders) {
             monaco.languages.registerSignatureHelpProvider("csharp", signatureHelpProvider);
+        }
+    }
+
+    private registerReferenceProviders() {
+        for (const referenceProvider of this.referenceProviders) {
+            monaco.languages.registerReferenceProvider("csharp", referenceProvider);
         }
     }
 

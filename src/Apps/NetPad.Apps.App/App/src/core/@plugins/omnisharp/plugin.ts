@@ -3,7 +3,7 @@ import * as monaco from "monaco-editor";
 import {
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
-    IDocumentSemanticTokensProvider, IHoverProvider, IImplementationProvider, ISignatureHelpProvider
+    IDocumentSemanticTokensProvider, IHoverProvider, IImplementationProvider, IReferenceProvider, ISignatureHelpProvider
 } from "@application";
 import * as actions from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
@@ -12,6 +12,7 @@ import {OmnisharpSemanticTokensProvider} from "./omnisharp-semantic-tokens-provi
 import {OmnisharpImplementationProvider} from "./omnisharp-implementation-provider";
 import {OmnisharpHoverProvider} from "./omnisharp-hover-provider";
 import {OmnisharpSignatureHelpProvider} from "./omnisharp-signature-help-provider";
+import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -27,6 +28,7 @@ export class OmniSharpPlugin {
         container.register(Registration.singleton(IImplementationProvider, OmnisharpImplementationProvider));
         container.register(Registration.singleton(IHoverProvider, OmnisharpHoverProvider));
         container.register(Registration.singleton(ISignatureHelpProvider, OmnisharpSignatureHelpProvider));
+        container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
 
         this.container = container.createChild();
 

@@ -7,6 +7,7 @@ using NetPad.Services.OmniSharp;
 using OmniSharp.Models;
 using OmniSharp.Models.CodeFormat;
 using OmniSharp.Models.FindImplementations;
+using OmniSharp.Models.FindUsages;
 using OmniSharp.Models.SemanticHighlight;
 using OmniSharp.Models.SignatureHelp;
 using OmniSharp.Models.v1.Completion;
@@ -175,6 +176,34 @@ public class OmniSharpController : Controller
         request.Line = request.Line + server.Project.UserCodeStartsOnLine - 1;
 
         return await server.OmniSharpServer.SendAsync<SignatureHelpResponse>(request);
+    }
+
+    [HttpPost("find-usages")]
+    public async Task<QuickFixResponse?> FindUsages(Guid scriptId, [FromBody] FindUsagesRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.FileName = server.Project.ProgramFilePath;
+        request.Line = request.Line + server.Project.UserCodeStartsOnLine - 1;
+
+        var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
+
+        if (response == null)
+        {
+            return response;
+        }
+
+        foreach (var quickFix in response.QuickFixes)
+        {
+            quickFix.Line = quickFix.Line - server.Project.UserCodeStartsOnLine + 1;
+            quickFix.EndLine = quickFix.EndLine - server.Project.UserCodeStartsOnLine + 1;
+        }
+
+        return response;
     }
 
 

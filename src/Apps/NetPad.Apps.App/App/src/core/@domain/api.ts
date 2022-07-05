@@ -210,6 +210,8 @@ export interface IOmniSharpApiClient {
     getQuickInfo(scriptId: string, request: QuickInfoRequest): Promise<QuickInfoResponse>;
 
     getSignatureHelp(scriptId: string, request: SignatureHelpRequest): Promise<SignatureHelpResponse>;
+
+    findUsages(scriptId: string, request: FindUsagesRequest): Promise<QuickFixResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -514,6 +516,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<SignatureHelpResponse>(<any>null);
+    }
+
+    findUsages(scriptId: string, request: FindUsagesRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/find-usages";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processFindUsages(_response);
+        });
+    }
+
+    protected processFindUsages(response: Response): Promise<QuickFixResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = QuickFixResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<QuickFixResponse>(<any>null);
     }
 }
 
@@ -3350,6 +3394,50 @@ export class SignatureHelpRequest extends Request implements ISignatureHelpReque
 }
 
 export interface ISignatureHelpRequest extends IRequest {
+}
+
+export class FindUsagesRequest extends Request implements IFindUsagesRequest {
+    onlyThisFile!: boolean;
+    excludeDefinition!: boolean;
+
+    constructor(data?: IFindUsagesRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.onlyThisFile = _data["onlyThisFile"];
+            this.excludeDefinition = _data["excludeDefinition"];
+        }
+    }
+
+    static fromJS(data: any): FindUsagesRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new FindUsagesRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["onlyThisFile"] = this.onlyThisFile;
+        data["excludeDefinition"] = this.excludeDefinition;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): FindUsagesRequest {
+        const json = this.toJSON();
+        let result = new FindUsagesRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFindUsagesRequest extends IRequest {
+    onlyThisFile: boolean;
+    excludeDefinition: boolean;
 }
 
 export class PackageMetadata implements IPackageMetadata {

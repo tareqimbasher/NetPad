@@ -7,3 +7,4 @@ export const IDocumentRangeSemanticTokensProvider = DI.createInterface<languages
 export const IImplementationProvider = DI.createInterface<languages.ImplementationProvider>();
 export const IHoverProvider = DI.createInterface<languages.HoverProvider>();
 export const ISignatureHelpProvider = DI.createInterface<languages.SignatureHelpProvider>();
+export const IReferenceProvider = DI.createInterface<languages.ReferenceProvider>();
