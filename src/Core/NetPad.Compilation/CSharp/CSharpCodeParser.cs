@@ -132,6 +132,8 @@ public static class Exts
         /// <summary>
         /// Dumps this object to the results view.
         /// </summary>
+        /// <param name=""o"">The object being dumped.</param>
+        /// <param name=""title"">An optional title for the result.</param>
         /// <returns>The object being dumped.</returns>
     public static T? Dump<T>(this T? o, string? title = null)
     {{

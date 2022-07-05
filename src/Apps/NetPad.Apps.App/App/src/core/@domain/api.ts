@@ -208,6 +208,8 @@ export interface IOmniSharpApiClient {
     findImplementations(scriptId: string, request: FindImplementationsRequest): Promise<QuickFixResponse>;
 
     getQuickInfo(scriptId: string, request: QuickInfoRequest): Promise<QuickInfoResponse>;
+
+    getSignatureHelp(scriptId: string, request: SignatureHelpRequest): Promise<SignatureHelpResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -470,6 +472,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<QuickInfoResponse>(<any>null);
+    }
+
+    getSignatureHelp(scriptId: string, request: SignatureHelpRequest, signal?: AbortSignal | undefined): Promise<SignatureHelpResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/signature-help";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetSignatureHelp(_response);
+        });
+    }
+
+    protected processGetSignatureHelp(response: Response): Promise<SignatureHelpResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SignatureHelpResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<SignatureHelpResponse>(<any>null);
     }
 }
 
@@ -2953,6 +2997,359 @@ export class QuickInfoRequest extends Request implements IQuickInfoRequest {
 }
 
 export interface IQuickInfoRequest extends IRequest {
+}
+
+export class SignatureHelpResponse implements ISignatureHelpResponse {
+    signatures?: SignatureHelpItem[] | undefined;
+    activeSignature!: number;
+    activeParameter!: number;
+
+    constructor(data?: ISignatureHelpResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["signatures"])) {
+                this.signatures = [] as any;
+                for (let item of _data["signatures"])
+                    this.signatures!.push(SignatureHelpItem.fromJS(item));
+            }
+            this.activeSignature = _data["activeSignature"];
+            this.activeParameter = _data["activeParameter"];
+        }
+    }
+
+    static fromJS(data: any): SignatureHelpResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new SignatureHelpResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.signatures)) {
+            data["signatures"] = [];
+            for (let item of this.signatures)
+                data["signatures"].push(item.toJSON());
+        }
+        data["activeSignature"] = this.activeSignature;
+        data["activeParameter"] = this.activeParameter;
+        return data;
+    }
+
+    clone(): SignatureHelpResponse {
+        const json = this.toJSON();
+        let result = new SignatureHelpResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISignatureHelpResponse {
+    signatures?: SignatureHelpItem[] | undefined;
+    activeSignature: number;
+    activeParameter: number;
+}
+
+export class SignatureHelpItem implements ISignatureHelpItem {
+    name?: string | undefined;
+    label?: string | undefined;
+    documentation?: string | undefined;
+    parameters?: SignatureHelpParameter[] | undefined;
+    structuredDocumentation?: DocumentationComment | undefined;
+
+    constructor(data?: ISignatureHelpItem) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.label = _data["label"];
+            this.documentation = _data["documentation"];
+            if (Array.isArray(_data["parameters"])) {
+                this.parameters = [] as any;
+                for (let item of _data["parameters"])
+                    this.parameters!.push(SignatureHelpParameter.fromJS(item));
+            }
+            this.structuredDocumentation = _data["structuredDocumentation"] ? DocumentationComment.fromJS(_data["structuredDocumentation"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): SignatureHelpItem {
+        data = typeof data === 'object' ? data : {};
+        let result = new SignatureHelpItem();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["label"] = this.label;
+        data["documentation"] = this.documentation;
+        if (Array.isArray(this.parameters)) {
+            data["parameters"] = [];
+            for (let item of this.parameters)
+                data["parameters"].push(item.toJSON());
+        }
+        data["structuredDocumentation"] = this.structuredDocumentation ? this.structuredDocumentation.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): SignatureHelpItem {
+        const json = this.toJSON();
+        let result = new SignatureHelpItem();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISignatureHelpItem {
+    name?: string | undefined;
+    label?: string | undefined;
+    documentation?: string | undefined;
+    parameters?: SignatureHelpParameter[] | undefined;
+    structuredDocumentation?: DocumentationComment | undefined;
+}
+
+export class SignatureHelpParameter implements ISignatureHelpParameter {
+    name?: string | undefined;
+    label?: string | undefined;
+    documentation?: string | undefined;
+
+    constructor(data?: ISignatureHelpParameter) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.label = _data["label"];
+            this.documentation = _data["documentation"];
+        }
+    }
+
+    static fromJS(data: any): SignatureHelpParameter {
+        data = typeof data === 'object' ? data : {};
+        let result = new SignatureHelpParameter();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["label"] = this.label;
+        data["documentation"] = this.documentation;
+        return data;
+    }
+
+    clone(): SignatureHelpParameter {
+        const json = this.toJSON();
+        let result = new SignatureHelpParameter();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISignatureHelpParameter {
+    name?: string | undefined;
+    label?: string | undefined;
+    documentation?: string | undefined;
+}
+
+export class DocumentationComment implements IDocumentationComment {
+    summaryText?: string | undefined;
+    typeParamElements?: DocumentationItem[] | undefined;
+    paramElements?: DocumentationItem[] | undefined;
+    returnsText?: string | undefined;
+    remarksText?: string | undefined;
+    exampleText?: string | undefined;
+    valueText?: string | undefined;
+    exception?: DocumentationItem[] | undefined;
+
+    constructor(data?: IDocumentationComment) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.summaryText = _data["summaryText"];
+            if (Array.isArray(_data["typeParamElements"])) {
+                this.typeParamElements = [] as any;
+                for (let item of _data["typeParamElements"])
+                    this.typeParamElements!.push(DocumentationItem.fromJS(item));
+            }
+            if (Array.isArray(_data["paramElements"])) {
+                this.paramElements = [] as any;
+                for (let item of _data["paramElements"])
+                    this.paramElements!.push(DocumentationItem.fromJS(item));
+            }
+            this.returnsText = _data["returnsText"];
+            this.remarksText = _data["remarksText"];
+            this.exampleText = _data["exampleText"];
+            this.valueText = _data["valueText"];
+            if (Array.isArray(_data["exception"])) {
+                this.exception = [] as any;
+                for (let item of _data["exception"])
+                    this.exception!.push(DocumentationItem.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DocumentationComment {
+        data = typeof data === 'object' ? data : {};
+        let result = new DocumentationComment();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["summaryText"] = this.summaryText;
+        if (Array.isArray(this.typeParamElements)) {
+            data["typeParamElements"] = [];
+            for (let item of this.typeParamElements)
+                data["typeParamElements"].push(item.toJSON());
+        }
+        if (Array.isArray(this.paramElements)) {
+            data["paramElements"] = [];
+            for (let item of this.paramElements)
+                data["paramElements"].push(item.toJSON());
+        }
+        data["returnsText"] = this.returnsText;
+        data["remarksText"] = this.remarksText;
+        data["exampleText"] = this.exampleText;
+        data["valueText"] = this.valueText;
+        if (Array.isArray(this.exception)) {
+            data["exception"] = [];
+            for (let item of this.exception)
+                data["exception"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DocumentationComment {
+        const json = this.toJSON();
+        let result = new DocumentationComment();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDocumentationComment {
+    summaryText?: string | undefined;
+    typeParamElements?: DocumentationItem[] | undefined;
+    paramElements?: DocumentationItem[] | undefined;
+    returnsText?: string | undefined;
+    remarksText?: string | undefined;
+    exampleText?: string | undefined;
+    valueText?: string | undefined;
+    exception?: DocumentationItem[] | undefined;
+}
+
+export class DocumentationItem implements IDocumentationItem {
+    name?: string | undefined;
+    documentation?: string | undefined;
+
+    constructor(data?: IDocumentationItem) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.documentation = _data["documentation"];
+        }
+    }
+
+    static fromJS(data: any): DocumentationItem {
+        data = typeof data === 'object' ? data : {};
+        let result = new DocumentationItem();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["documentation"] = this.documentation;
+        return data;
+    }
+
+    clone(): DocumentationItem {
+        const json = this.toJSON();
+        let result = new DocumentationItem();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDocumentationItem {
+    name?: string | undefined;
+    documentation?: string | undefined;
+}
+
+export class SignatureHelpRequest extends Request implements ISignatureHelpRequest {
+
+    constructor(data?: ISignatureHelpRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): SignatureHelpRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new SignatureHelpRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): SignatureHelpRequest {
+        const json = this.toJSON();
+        let result = new SignatureHelpRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISignatureHelpRequest extends IRequest {
 }
 
 export class PackageMetadata implements IPackageMetadata {

@@ -8,6 +8,7 @@ using OmniSharp.Models;
 using OmniSharp.Models.CodeFormat;
 using OmniSharp.Models.FindImplementations;
 using OmniSharp.Models.SemanticHighlight;
+using OmniSharp.Models.SignatureHelp;
 using OmniSharp.Models.v1.Completion;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
@@ -128,7 +129,7 @@ public class OmniSharpController : Controller
         }
 
         request.FileName = server.Project.ProgramFilePath;
-        request.Line += server.Project.UserCodeStartsOnLine - 1;
+        request.Line = request.Line + server.Project.UserCodeStartsOnLine - 1;
 
         var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
 
@@ -156,9 +157,24 @@ public class OmniSharpController : Controller
         }
 
         request.FileName = server.Project.ProgramFilePath;
-        request.Line += server.Project.UserCodeStartsOnLine - 1;
+        request.Line = request.Line + server.Project.UserCodeStartsOnLine - 1;
 
         return await server.OmniSharpServer.SendAsync<QuickInfoResponse>(request);
+    }
+
+    [HttpPost("signature-help")]
+    public async Task<SignatureHelpResponse?> GetSignatureHelp(Guid scriptId, [FromBody] SignatureHelpRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.FileName = server.Project.ProgramFilePath;
+        request.Line = request.Line + server.Project.UserCodeStartsOnLine - 1;
+
+        return await server.OmniSharpServer.SendAsync<SignatureHelpResponse>(request);
     }
 
 
