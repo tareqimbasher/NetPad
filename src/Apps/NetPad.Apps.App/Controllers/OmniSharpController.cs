@@ -146,6 +146,21 @@ public class OmniSharpController : Controller
         return response;
     }
 
+    [HttpPost("quick-info")]
+    public async Task<QuickInfoResponse?> GetQuickInfo(Guid scriptId, [FromBody] QuickInfoRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.FileName = server.Project.ProgramFilePath;
+        request.Line += server.Project.UserCodeStartsOnLine - 1;
+
+        return await server.OmniSharpServer.SendAsync<QuickInfoResponse>(request);
+    }
+
 
     private async Task<AppOmniSharpServer?> GetOmniSharpServerAsync(Guid scriptId)
     {

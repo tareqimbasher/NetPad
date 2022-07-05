@@ -4,7 +4,8 @@ import {
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
-    IImplementationProvider
+    IImplementationProvider,
+    IHoverProvider
 } from "./interfaces";
 
 export class EditorSetup {
@@ -13,6 +14,7 @@ export class EditorSetup {
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: monaco.languages.DocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: monaco.languages.DocumentRangeSemanticTokensProvider[],
         @all(IImplementationProvider) private readonly implementationProviders: monaco.languages.ImplementationProvider[],
+        @all(IHoverProvider) private readonly hoverProviders: monaco.languages.HoverProvider[],
     ) {
     }
 
@@ -21,6 +23,7 @@ export class EditorSetup {
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
         this.registerImplementationProviders();
+        this.registerHoverProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -65,6 +68,12 @@ export class EditorSetup {
     private registerImplementationProviders() {
         for (const implementationProvider of this.implementationProviders) {
             monaco.languages.registerImplementationProvider("csharp", implementationProvider);
+        }
+    }
+
+    private registerHoverProviders() {
+        for (const hoverProvider of this.hoverProviders) {
+            monaco.languages.registerHoverProvider("csharp", hoverProvider);
         }
     }
 
@@ -154,7 +163,7 @@ export class EditorSetup {
         {token: "preprocessorKeyword", foreground: "569cd6"},
         {token: "preprocessorText", foreground: "ce9178"},
         {token: "excludedCode", foreground: "EEEEEE"},
-        {token: "punctuation", foreground: "ffd700"},
+        // {token: "punctuation", foreground: "ffd700"},
         {token: "stringVerbatim", foreground: "ce9178"},
         {token: "stringEscapeCharacter", foreground: "D7BA7D"},
         {token: "delegate", foreground: "4EC9B0"},

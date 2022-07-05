@@ -206,6 +206,8 @@ export interface IOmniSharpApiClient {
     getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest): Promise<SemanticHighlightResponse>;
 
     findImplementations(scriptId: string, request: FindImplementationsRequest): Promise<QuickFixResponse>;
+
+    getQuickInfo(scriptId: string, request: QuickInfoRequest): Promise<QuickInfoResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -426,6 +428,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<QuickFixResponse>(<any>null);
+    }
+
+    getQuickInfo(scriptId: string, request: QuickInfoRequest, signal?: AbortSignal | undefined): Promise<QuickInfoResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/quick-info";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetQuickInfo(_response);
+        });
+    }
+
+    protected processGetQuickInfo(response: Response): Promise<QuickInfoResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = QuickInfoResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<QuickInfoResponse>(<any>null);
     }
 }
 
@@ -2832,6 +2876,83 @@ export class FindImplementationsRequest extends Request implements IFindImplemen
 }
 
 export interface IFindImplementationsRequest extends IRequest {
+}
+
+export class QuickInfoResponse implements IQuickInfoResponse {
+    markdown!: string;
+
+    constructor(data?: IQuickInfoResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.markdown = _data["markdown"];
+        }
+    }
+
+    static fromJS(data: any): QuickInfoResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new QuickInfoResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["markdown"] = this.markdown;
+        return data;
+    }
+
+    clone(): QuickInfoResponse {
+        const json = this.toJSON();
+        let result = new QuickInfoResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IQuickInfoResponse {
+    markdown: string;
+}
+
+export class QuickInfoRequest extends Request implements IQuickInfoRequest {
+
+    constructor(data?: IQuickInfoRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): QuickInfoRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new QuickInfoRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): QuickInfoRequest {
+        const json = this.toJSON();
+        let result = new QuickInfoRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IQuickInfoRequest extends IRequest {
 }
 
 export class PackageMetadata implements IPackageMetadata {
