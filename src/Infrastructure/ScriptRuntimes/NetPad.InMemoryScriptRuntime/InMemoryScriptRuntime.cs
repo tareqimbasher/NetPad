@@ -134,7 +134,7 @@ namespace NetPad.Runtimes
                                 .Select(x => int.Parse(x.Trim()))
                                 .ToArray();
 
-                            return $"({part1[0] - 69},{part1[1]})" + string.Join(")", parts.Skip(1));
+                            return $"({part1[0] - parsingResult.UserCodeStartLine},{part1[1]})" + string.Join(")", parts.Skip(1));
                         }
                         catch
                         {
