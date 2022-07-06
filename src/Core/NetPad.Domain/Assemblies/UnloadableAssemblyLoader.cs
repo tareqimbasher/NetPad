@@ -25,6 +25,7 @@ namespace NetPad.Assemblies
         {
             _referenceAssemblies = referenceAssemblyPaths
                 .Select(p => new ReferencedAssembly(p, true))
+                .Distinct()
                 .ToDictionary(k => k.AssemblyName, v => v);
         }
 
@@ -122,6 +123,57 @@ namespace NetPad.Assemblies
             public string AssemblyName { get; }
             public byte[] Bytes => _bytes ??= File.ReadAllBytes(Path);
             public Dictionary<string, ReferencedAssembly>? AssembliesInSameDir { get; }
+
+            /// <inheritdoc/>
+            public override bool Equals(object? obj)
+            {
+                if (obj == null)
+                {
+                    return false;
+                }
+
+                // Same instances must be considered as equal
+                if (ReferenceEquals(this, obj))
+                {
+                    return true;
+                }
+
+                // Must be same type
+                var typeOfThis = GetType();
+                var typeOfOther = obj.GetType();
+                if (typeOfThis != typeOfOther)
+                {
+                    return false;
+                }
+
+                return AssemblyName == ((ReferencedAssembly)obj).AssemblyName;
+            }
+
+            /// <inheritdoc/>
+            public override int GetHashCode()
+            {
+                return AssemblyName.GetHashCode();
+            }
+
+            /// <inheritdoc/>
+            public static bool operator ==(ReferencedAssembly? left, ReferencedAssembly? right)
+            {
+                if (Equals(left, null))
+                {
+                    return Equals(right, null);
+                }
+
+                if (Equals(right, null))
+                    return false;
+
+                return left.Equals(right);
+            }
+
+            /// <inheritdoc/>
+            public static bool operator !=(ReferencedAssembly? left, ReferencedAssembly? right)
+            {
+                return !(left == right);
+            }
         }
     }
 }
