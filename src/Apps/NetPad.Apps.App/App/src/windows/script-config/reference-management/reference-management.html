@@ -3,7 +3,7 @@
     <p class="text-muted text-center">
         No assembly references.<br/>
         <span platforms="Electron">
-            <a class="btn-link" click.trigger="browse.click()">Browse</a> for an assembly or
+            <a class="btn-link" click.trigger="browseInput.click()">Browse</a> for an assembly or
             <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a NuGet package</a>.
         </span>
         <span platforms="Web">
@@ -66,6 +66,6 @@
 </div>
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'references'" platforms="Electron">
-    <button class="btn btn-secondary" click.trigger="browse.click()">Browse...</button>
-    <input ref="browse" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
+    <button class="btn btn-secondary" click.trigger="browseInput.click()">Browse...</button>
+    <input ref="browseInput" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
 </div>

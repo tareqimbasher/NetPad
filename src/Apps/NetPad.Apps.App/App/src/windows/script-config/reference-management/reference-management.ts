@@ -6,6 +6,7 @@ import {ConfigStore} from "../config-store";
 
 export class ReferenceManagement {
     @observable public browsedAssemblies: FileList;
+    public browseInput: HTMLInputElement;
     public selectedReference?: Reference;
     public namespaces: AssemblyNamespace[] = [];
 
@@ -18,12 +19,12 @@ export class ReferenceManagement {
     public attached() {
         Split(["#references-list", "#namespace-selection"], {
             gutterSize: 6,
-            sizes: [50, 50],
+            sizes: [65, 35],
             minSize: [20, 20]
         });
     }
 
-    public get references(): Reference[] {
+    public get references(): ReadonlyArray<Reference> {
         return this.configStore.references;
     }
 
@@ -35,20 +36,35 @@ export class ReferenceManagement {
 
     public removeReference(reference: Reference) {
         const ix = this.references.indexOf(reference);
-        this.references.splice(ix, 1);
-        this.selectedReference = null;
+        this.configStore.removeReference(reference);
+
+        if (this.selectedReference && this.references.length) {
+            if (ix === this.references.length)
+                this.selectedReference = this.references[this.references.length - 1];
+            else
+                this.selectedReference = this.references[ix];
+        } else {
+            this.selectedReference = null;
+        }
     }
 
     private browsedAssembliesChanged(newValue: FileList) {
-        if (!newValue || newValue.length === 0)
+        if (!newValue || newValue.length === 0) {
             return;
+        }
 
         const references = Array.from(newValue).map((d: File | any) => new AssemblyReference({
             title: path.basename(d.path),
             assemblyPath: d.path
         }));
 
-        this.configStore.references.push(...references);
+        for (const reference of references) {
+            this.configStore.addReference(reference);
+        }
+
+        // Clear file input element so if user selects X.dll, removes it, then re-selects it
+        // the change is observed
+        this.browseInput.value = null;
     }
 }
 
@@ -67,8 +83,7 @@ class AssemblyNamespace {
 
         if (!newValue) {
             this.configStore.removeNamespace(this.name);
-        }
-        else {
+        } else {
             this.configStore.addNamespace(this.name);
         }
     }

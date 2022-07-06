@@ -1,4 +1,4 @@
-import {IScriptService, ISession, Script, Settings} from "@domain";
+import {IScriptService, ISession, Reference, Script, Settings} from "@domain";
 import {ConfigStore} from "./config-store";
 
 export class Window {
@@ -19,14 +19,13 @@ export class Window {
 
         document.title = `${this.script.name} - Properties`;
 
-        this.configStore.namespaces = environment.script.config.namespaces;
-        this.configStore.references = environment.script.config.references;
+        this.configStore.init(this.script);
     }
 
     public async save() {
         try {
-            await this.scriptService.setScriptNamespaces(this.script.id, this.configStore.namespaces);
-            await this.scriptService.setReferences(this.script.id, this.configStore.references);
+            await this.scriptService.setScriptNamespaces(this.script.id, this.configStore.namespaces as string[]);
+            await this.scriptService.setReferences(this.script.id, this.configStore.references as Reference[]);
             window.close();
         }
         catch (ex) {

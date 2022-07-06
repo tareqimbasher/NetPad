@@ -70,7 +70,7 @@ export class PackageManagement extends ViewModelBase {
         if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
             await this.installPackage(pkg, version);
 
-        this.configStore.references.push(new PackageReference({
+        this.configStore.addReference(new PackageReference({
             packageId: pkg.packageId,
             title: pkg.title,
             version: version

@@ -6,6 +6,7 @@ import {Util} from "@common";
 export class NamespaceManagement {
     @observable namespaces: string;
     public error?: string;
+    private lastSet?: Date;
 
     constructor(readonly configStore: ConfigStore) {
     }
@@ -15,33 +16,47 @@ export class NamespaceManagement {
     }
 
     public namespacesChanged(newValue: string) {
-        let namespaces = this.namespaces
-            .split('\n')
-            .map(ns => ns.trim());
+        const namespaces = new Set<string>();
 
-        this.error = this.validate(namespaces);
-        if (this.error) return;
+        for (const namespace of this.namespaces.split("\n")) {
+            if (!namespace) continue;
 
-        namespaces = Util.distinct(namespaces);
-        this.configStore.namespaces = namespaces;
+            const error = this.validate(namespace);
+
+            if (error) {
+                this.error = error;
+                return;
+            }
+
+            namespaces.add(namespace.trim());
+        }
+
+        this.error = null;
+        this.lastSet = new Date();
+
+        this.configStore.updateNamespaces([...namespaces]);
     }
 
     @watch<NamespaceManagement>(vm => vm.configStore.namespaces.length)
     public configStoreChanged() {
-        let namespaces = this.configStore.namespaces.join("\n");
-        if (namespaces)
-            namespaces += "\n";
-        this.namespaces = namespaces;
+        const secondsSinceLastLocalUpdate = (new Date().getTime() - this.lastSet?.getTime()) / 1000;
+
+        // This is so that the local value does not update while the user is typing
+        if (!this.lastSet || secondsSinceLastLocalUpdate >= 1) {
+            this.updateLocal(this.configStore.namespaces);
+        }
     }
 
-    private validate(namespaces: string[]): string | undefined {
-        for (const namespace of namespaces) {
-            if (namespace.startsWith("using "))
-                return `The namespace "${namespace}" should not contain the word "using".`;
-            if (namespace.length > 0 && !Util.isLetter(namespace[0]) && namespace[0] !== "_")
-                return `The namespace "${namespace}" seems incorrect. It must start with an alphabet or underscore.`;
-        }
+    private updateLocal(namespaces: string[] | ReadonlyArray<string>) {
+        this.namespaces = this.configStore.namespaces.join("\n") + "\n";
+    }
 
-        return undefined;
+    private validate(namespace: string): string | null {
+        if (namespace.startsWith("using "))
+            return `The namespace "${namespace}" should not start with "using".`;
+        if (namespace.length > 0 && !Util.isLetter(namespace[0]) && namespace[0] !== "_")
+            return `The namespace "${namespace}" seems incorrect. It must start with an alphabet or underscore.`;
+
+        return null;
     }
 }
