@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Services.OmniSharp;
 using OmniSharp.Models;
+using OmniSharp.Models.CodeCheck;
 using OmniSharp.Models.CodeFormat;
 using OmniSharp.Models.FindImplementations;
 using OmniSharp.Models.FindUsages;
@@ -78,6 +79,28 @@ public class OmniSharpController : Controller
         });
     }
 
+    [HttpPost("completion/after-insert")]
+    public async Task<CompletionAfterInsertResponse?> GetCompletionAfterInsert(Guid scriptId, [FromBody] CompletionItemDto completionItemDto)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        // Copy values from CompletionItemDto.Data property to base CompletionItem.Data Tuple property
+        var completionItem = (CompletionItem)completionItemDto;
+        if (completionItemDto.Data != null)
+        {
+            completionItem.Data = (completionItemDto.Data.Item1, completionItemDto.Data.Item2);
+        }
+
+        return await server.OmniSharpServer.SendAsync<CompletionAfterInsertResponse>(new CompletionAfterInsertRequest
+        {
+            Item = completionItem
+        });
+    }
+
     [HttpPost("format-code")]
     public async Task<CodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] CodeFormatRequest request)
     {
@@ -138,7 +161,7 @@ public class OmniSharpController : Controller
 
         var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
 
-        if (response == null)
+        if (response == null || response.QuickFixes == null)
         {
             return response;
         }
@@ -196,7 +219,7 @@ public class OmniSharpController : Controller
 
         var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
 
-        if (response == null)
+        if (response == null || response.QuickFixes == null)
         {
             return response;
         }
@@ -252,6 +275,34 @@ public class OmniSharpController : Controller
 
         return response;
     }
+
+    [HttpPost("code-check")]
+    public async Task<QuickFixResponse?> CodeCheck(Guid scriptId, [FromBody] CodeCheckRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.FileName = server.Project.ProgramFilePath;
+
+        var response = await server.OmniSharpServer.SendAsync<QuickFixResponse>(request);
+
+        if (response == null || response.QuickFixes == null)
+        {
+            return response;
+        }
+
+        foreach (var quickFix in response.QuickFixes)
+        {
+            quickFix.Line = quickFix.Line - server.Project.UserCodeStartsOnLine + 1;
+            quickFix.EndLine = quickFix.EndLine - server.Project.UserCodeStartsOnLine + 1;
+        }
+
+        return response;
+    }
+
 
     private void RecurseCodeElements(
         IEnumerable<CodeStructureResponse.CodeElement> elements,
