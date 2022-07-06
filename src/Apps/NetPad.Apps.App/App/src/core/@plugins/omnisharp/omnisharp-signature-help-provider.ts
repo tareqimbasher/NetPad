@@ -15,7 +15,7 @@ export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpPr
         const scriptId = EditorUtil.getScriptId(model);
 
 
-        let response = await this.omnisharpService.getSignatureHelp(scriptId, new SignatureHelpRequest({
+        const response = await this.omnisharpService.getSignatureHelp(scriptId, new SignatureHelpRequest({
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
@@ -58,9 +58,9 @@ export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpPr
     }
 
     private getParameterDocumentation(parameter: SignatureHelpParameter): string | IMarkdownString {
-        let summary = parameter.documentation;
+        const summary = parameter.documentation;
         if (summary.length > 0) {
-            let paramText = `**${parameter.name}**: ${summary}`;
+            const paramText = `**${parameter.name}**: ${summary}`;
             return <IMarkdownString>{
                 value: paramText,
                 isTrusted: true,

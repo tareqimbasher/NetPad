@@ -125,7 +125,7 @@ class SidebarScriptFolder {
     public folders: SidebarScriptFolder[] = [];
     public scripts: ScriptSummary[] = [];
 
-    public clone(deep: boolean = false): SidebarScriptFolder {
+    public clone(deep = false): SidebarScriptFolder {
         const clone = new SidebarScriptFolder(this.name, this.path, this.parent);
 
         clone.expanded = this.expanded;

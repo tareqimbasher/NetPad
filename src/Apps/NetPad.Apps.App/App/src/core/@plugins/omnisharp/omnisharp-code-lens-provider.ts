@@ -30,7 +30,7 @@ export class OmnisharpCodeLensProvider implements languages.CodeLensProvider {
             };
         }
 
-        let results: languages.CodeLens[] = [];
+        const results: languages.CodeLens[] = [];
 
         this.recurseCodeElements(response.elements, (element, parent) => {
             if (!this.shouldProvideCodeLens(element, parent)) {
@@ -99,7 +99,7 @@ export class OmnisharpCodeLensProvider implements languages.CodeLensProvider {
 
     private recurseCodeElements(elements: CodeElement[], action: (element: CodeElement, parentElement?: CodeElement) => void) {
         const walker = (elements: CodeElement[], parentElement?: CodeElement) => {
-            for (let element of elements) {
+            for (const element of elements) {
                 action(element, parentElement);
 
                 if (element.children) {
