@@ -4,7 +4,7 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "./omnisharp-service";
 
 export class OmnisharpCompletionProvider implements languages.CompletionItemProvider {
-    public triggerCharacters = ["."];
+    public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, {model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem}>;
 
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {

@@ -11,7 +11,6 @@ export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpPr
 
     public async provideSignatureHelp(model: editor.ITextModel, position: Position, token: CancellationToken, context: languages.SignatureHelpContext)
         : Promise<languages.SignatureHelpResult> {
-        console.warn("Getting signature help");
         const scriptId = EditorUtil.getScriptId(model);
 
 
