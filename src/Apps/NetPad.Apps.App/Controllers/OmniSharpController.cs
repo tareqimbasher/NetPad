@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Application;
 using NetPad.Services.OmniSharp;
+using NetPad.Sessions;
 using OmniSharp.Models;
 using OmniSharp.Models.CodeCheck;
 using OmniSharp.Models.CodeFormat;
@@ -29,6 +31,36 @@ public class OmniSharpController : Controller
     public OmniSharpController(OmniSharpServerCatalog omniSharpServerCatalog)
     {
         _omniSharpServerCatalog = omniSharpServerCatalog;
+    }
+
+    [HttpPatch("restart-server")]
+    public async Task<bool> RestartServer(
+        Guid scriptId,
+        [FromServices] ISession session,
+        [FromServices] IAppStatusMessagePublisher appStatusMessagePublisher)
+    {
+        var environment = session.Get(scriptId);
+        if (environment == null)
+        {
+            throw new Exception($"Could not find script with ID: {scriptId}");
+        }
+
+        string scriptName = environment.Script.Name;
+
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return false;
+        }
+
+        var result = await server.RestartAsync((progress) =>
+        {
+            appStatusMessagePublisher.PublishAsync(scriptId, progress);
+        });
+
+        await appStatusMessagePublisher.PublishAsync(scriptId, $"{(result ? "Restarted" : "Failed to restart")} OmniSharp Server");
+
+        return result;
     }
 
     [HttpPost("completion")]

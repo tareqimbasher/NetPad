@@ -8,7 +8,7 @@
     </div>
     <div class="right-column me-3">
         <div show.bind="appStatusMessage">
-            ${appStatusMessage.text}
+            ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
         </div>
         <i class="bi bi-sun action-icon"
            click.trigger="settingsService.toggleTheme()"

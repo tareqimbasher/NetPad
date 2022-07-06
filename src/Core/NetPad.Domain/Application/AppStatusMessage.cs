@@ -7,6 +7,12 @@ namespace NetPad.Application;
 /// </summary>
 public class AppStatusMessage
 {
+    public AppStatusMessage(Guid scriptId, string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistant = false)
+        : this(text, priority, persistant)
+    {
+        ScriptId = scriptId;
+    }
+
     public AppStatusMessage(string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistant = false)
     {
         Text = text;
@@ -14,6 +20,11 @@ public class AppStatusMessage
         Persistant = persistant;
         CreatedDate = DateTime.Now;
     }
+
+    /// <summary>
+    /// The ID of the script this message relates to.
+    /// </summary>
+    public Guid? ScriptId { get; }
 
     /// <summary>
     /// The text of this message.
@@ -38,5 +49,6 @@ public class AppStatusMessage
 
 public enum AppStatusMessagePriority
 {
-    Normal = 1, High = 2
+    Normal = 1,
+    High = 2
 }

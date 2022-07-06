@@ -197,9 +197,13 @@ export class AssembliesApiClient implements IAssembliesApiClient {
 
 export interface IOmniSharpApiClient {
 
+    restartServer(scriptId: string): Promise<boolean>;
+
     getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
 
     getCompletionResolution(scriptId: string, completionItemDto: CompletionItemDto): Promise<CompletionResolveResponse>;
+
+    getCompletionAfterInsert(scriptId: string, completionItemDto: CompletionItemDto): Promise<CompletionAfterInsertResponse>;
 
     formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
 
@@ -214,6 +218,8 @@ export interface IOmniSharpApiClient {
     findUsages(scriptId: string, request: FindUsagesRequest): Promise<QuickFixResponse>;
 
     getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
+
+    codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -224,6 +230,45 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
     constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    restartServer(scriptId: string, signal?: AbortSignal | undefined): Promise<boolean> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/restart-server";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRestartServer(_response);
+        });
+    }
+
+    protected processRestartServer(response: Response): Promise<boolean> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<boolean>(<any>null);
     }
 
     getCompletion(scriptId: string, request: CompletionRequest, signal?: AbortSignal | undefined): Promise<CompletionResponse> {
@@ -308,6 +353,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<CompletionResolveResponse>(<any>null);
+    }
+
+    getCompletionAfterInsert(scriptId: string, completionItemDto: CompletionItemDto, signal?: AbortSignal | undefined): Promise<CompletionAfterInsertResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/completion/after-insert";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(completionItemDto);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCompletionAfterInsert(_response);
+        });
+    }
+
+    protected processGetCompletionAfterInsert(response: Response): Promise<CompletionAfterInsertResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CompletionAfterInsertResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<CompletionAfterInsertResponse>(<any>null);
     }
 
     formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse> {
@@ -598,6 +685,48 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<CodeStructureResponse>(<any>null);
+    }
+
+    codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-check";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCodeCheck(_response);
+        });
+    }
+
+    protected processCodeCheck(response: Response): Promise<QuickFixResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = QuickFixResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<QuickFixResponse>(<any>null);
     }
 }
 
@@ -2487,6 +2616,65 @@ export interface ICompletionItemData {
     item2: number;
 }
 
+export class CompletionAfterInsertResponse implements ICompletionAfterInsertResponse {
+    changes?: LinePositionSpanTextChange[] | undefined;
+    line?: number | undefined;
+    column?: number | undefined;
+
+    constructor(data?: ICompletionAfterInsertResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(LinePositionSpanTextChange.fromJS(item));
+            }
+            this.line = _data["line"];
+            this.column = _data["column"];
+        }
+    }
+
+    static fromJS(data: any): CompletionAfterInsertResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new CompletionAfterInsertResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        data["line"] = this.line;
+        data["column"] = this.column;
+        return data;
+    }
+
+    clone(): CompletionAfterInsertResponse {
+        const json = this.toJSON();
+        let result = new CompletionAfterInsertResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICompletionAfterInsertResponse {
+    changes?: LinePositionSpanTextChange[] | undefined;
+    line?: number | undefined;
+    column?: number | undefined;
+}
+
 export class CodeFormatResponse implements ICodeFormatResponse {
     buffer?: string | undefined;
     changes?: LinePositionSpanTextChange[] | undefined;
@@ -3629,6 +3817,40 @@ export interface ICodeElement {
     properties?: { [key: string]: any; } | undefined;
 }
 
+export class CodeCheckRequest extends Request implements ICodeCheckRequest {
+
+    constructor(data?: ICodeCheckRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): CodeCheckRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeCheckRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CodeCheckRequest {
+        const json = this.toJSON();
+        let result = new CodeCheckRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeCheckRequest extends IRequest {
+}
+
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
     version?: string | undefined;
@@ -4538,6 +4760,7 @@ export interface IAppStatusMessagePublished {
 }
 
 export class AppStatusMessage implements IAppStatusMessage {
+    scriptId?: string | undefined;
     text!: string;
     priority!: AppStatusMessagePriority;
     persistant!: boolean;
@@ -4554,6 +4777,7 @@ export class AppStatusMessage implements IAppStatusMessage {
 
     init(_data?: any) {
         if (_data) {
+            this.scriptId = _data["scriptId"];
             this.text = _data["text"];
             this.priority = _data["priority"];
             this.persistant = _data["persistant"];
@@ -4570,6 +4794,7 @@ export class AppStatusMessage implements IAppStatusMessage {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
         data["text"] = this.text;
         data["priority"] = this.priority;
         data["persistant"] = this.persistant;
@@ -4586,6 +4811,7 @@ export class AppStatusMessage implements IAppStatusMessage {
 }
 
 export interface IAppStatusMessage {
+    scriptId?: string | undefined;
     text: string;
     priority: AppStatusMessagePriority;
     persistant: boolean;

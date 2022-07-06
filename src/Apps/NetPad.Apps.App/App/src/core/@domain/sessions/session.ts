@@ -18,6 +18,8 @@ export interface ISession extends ISessionApiClient {
     get active(): ScriptEnvironment | undefined;
 
     initialize(): Promise<void>;
+
+    getScriptName(scriptId: string): string | null;
 }
 
 export const ISession = DI.createInterface<ISession>();
@@ -53,6 +55,10 @@ export class Session extends SessionApiClient implements ISession {
         if (activeScriptId) {
             this._active = this._environments.find(e => e.script.id === activeScriptId);
         }
+    }
+
+    public getScriptName(scriptId: string): string | null {
+        return this.environments.find(e => e.script.id === scriptId)?.script.name;
     }
 
     private subscribeToEvents() {

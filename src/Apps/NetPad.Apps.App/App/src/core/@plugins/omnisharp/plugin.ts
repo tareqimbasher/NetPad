@@ -47,7 +47,10 @@ export class OmniSharpPlugin {
             // does not seem to be the same instance as when the editor is completely configured. Registering
             // the actions on the model of the editor when its first created does not seem to work.
             editor.onDidChangeModel(ev => {
-                this.registerActions(editor, [actions.codeFormatAction]);
+                this.registerActions(editor, [
+                    actions.codeFormatAction,
+                    actions.restartOmniSharpServerAction,
+                ]);
             });
         });
     }

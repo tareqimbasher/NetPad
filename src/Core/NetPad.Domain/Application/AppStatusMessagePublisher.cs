@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using NetPad.Events;
 
@@ -14,6 +15,13 @@ public class AppStatusMessagePublisher : IAppStatusMessagePublisher
 
     public async Task PublishAsync(string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistant = false)
     {
-        await _eventBus.PublishAsync(new AppStatusMessagePublished(new AppStatusMessage(text, priority, persistant)));
+        await PublishAsync(new AppStatusMessage(text, priority, persistant));
     }
+
+    public async Task PublishAsync(Guid scriptId, string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistant = false)
+    {
+        await PublishAsync(new AppStatusMessage(scriptId, text, priority, persistant));
+    }
+
+    private async Task PublishAsync(AppStatusMessage message) => await _eventBus.PublishAsync(new AppStatusMessagePublished(message));
 }

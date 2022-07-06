@@ -9,7 +9,7 @@ import {
 import {PLATFORM, Task} from "aurelia";
 
 export class Statusbar {
-    public appStatusMessage?: AppStatusMessage;
+    public appStatusMessage?: IAppStatusMessage;
 
     constructor(@ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
@@ -26,6 +26,9 @@ export class Statusbar {
 
         this.eventBus.subscribeToServer(AppStatusMessagePublished, ev => {
             this.appStatusMessage = ev.message;
+            if (this.appStatusMessage.scriptId) {
+                this.appStatusMessage.scriptName = this.session.getScriptName(this.appStatusMessage.scriptId);
+            }
 
             if (clearMsgTask) {
                 clearMsgTask.cancel();
@@ -38,7 +41,11 @@ export class Statusbar {
             clearMsgTask = PLATFORM.taskQueue.queueTask(() => {
                 this.appStatusMessage = null;
                 clearMsgTask = null;
-            }, { delay: 5000 });
+            }, { delay: 10000 });
         });
     }
+}
+
+interface IAppStatusMessage extends AppStatusMessage {
+    scriptName?: string;
 }

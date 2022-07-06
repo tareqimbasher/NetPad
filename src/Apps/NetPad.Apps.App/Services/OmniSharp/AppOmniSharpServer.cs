@@ -63,16 +63,8 @@ public class AppOmniSharpServer
         var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
         var executablePath = omnisharpServerLocation?.ExecutablePath;
 
-        if (string.IsNullOrWhiteSpace(executablePath))
+        if (!IsValidServerExecutablePath(executablePath))
         {
-            _logger.LogError($"Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled.");
-            return false;
-        }
-
-        if (!File.Exists(executablePath))
-        {
-            _logger.LogError("OmniSharp executable path does not exist at: {OmniSharpExecutablePath}. " +
-                             "OmniSharp functionality will not be enabled", executablePath);
             return false;
         }
 
@@ -199,6 +191,25 @@ public class AppOmniSharpServer
         await _project.DeleteAsync();
     }
 
+    public async Task<bool> RestartAsync(Action<string>? progress = null)
+    {
+        progress?.Invoke("Stopping OmniSharp server...");
+        await StopOmniSharpServerAsync();
+
+        var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
+        var executablePath = omnisharpServerLocation?.ExecutablePath;
+
+        if (!IsValidServerExecutablePath(executablePath))
+        {
+            return false;
+        }
+
+        progress?.Invoke("Starting OmniSharp server...");
+        await StartOmniSharpServerAsync(executablePath!);
+
+        return true;
+    }
+
     private async Task StartOmniSharpServerAsync(string executablePath)
     {
         string args = new[]
@@ -236,6 +247,24 @@ public class AppOmniSharpServer
         await _omniSharpServer.StopAsync();
 
         _omniSharpServer = null;
+    }
+
+    private bool IsValidServerExecutablePath(string? executablePath)
+    {
+        if (string.IsNullOrWhiteSpace(executablePath))
+        {
+            _logger.LogError($"Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled.");
+            return false;
+        }
+
+        if (!File.Exists(executablePath))
+        {
+            _logger.LogError("OmniSharp executable path does not exist at: {OmniSharpExecutablePath}. " +
+                             "OmniSharp functionality will not be enabled", executablePath);
+            return false;
+        }
+
+        return true;
     }
 
     private async Task UpdateOmniSharpCodeBufferAsync(string fullProgram)
