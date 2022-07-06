@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -92,7 +93,7 @@ namespace NetPad.Scripts
         {
             EnsureNotDisposed();
 
-            if (Script.IsNew)
+            if (Script.IsNew && !Script.Config.Namespaces.Any())
             {
                 Script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
             }
