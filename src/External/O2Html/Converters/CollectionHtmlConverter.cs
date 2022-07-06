@@ -33,7 +33,7 @@ public class CollectionHtmlConverter : HtmlConverter
         var oType = collection.FirstOrDefault(x => x != null)?.GetType();
         if (oType != null && oType.IsObjectType())
         {
-            var properties = oType.GetReadableProperties().ToArray();
+            var properties = oType.GetReadableProperties().OrderBy(p => p.Name).ToArray();
             foreach (var property in properties)
             {
                 table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(withNamespace: false, forHtml: true))

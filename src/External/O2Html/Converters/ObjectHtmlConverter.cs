@@ -33,7 +33,7 @@ public class ObjectHtmlConverter : HtmlConverter
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
             .AddText(oType.FullName!);
 
-        foreach (var property in properties.Where(p => p.CanRead))
+        foreach (var property in properties.OrderBy(p => p.Name))
         {
             var name = property.Name;
             object? value = GetPropertyValue(property, obj);
