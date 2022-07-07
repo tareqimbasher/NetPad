@@ -23,7 +23,7 @@ namespace NetPad.OmniSharpWrapper.Stdio
             base(configuration, loggerFactory)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
-            _requestResponseQueue = new RequestResponseQueue();
+            _requestResponseQueue = new RequestResponseQueue(loggerFactory.CreateLogger<RequestResponseQueue>());
         }
 
         public override async Task StartAsync()
@@ -49,7 +49,7 @@ namespace NetPad.OmniSharpWrapper.Stdio
             var requestPacket = new RequestPacket(++Sequence, endpointAttribute.EndpointName, request);
 
             var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
-            
+
             await _processIo.StandardInput.WriteLineAsync(JsonConvert.SerializeObject(requestPacket)).ConfigureAwait(false);
 
             var responseJToken = await responsePromise.ConfigureAwait(false);
@@ -61,11 +61,11 @@ namespace NetPad.OmniSharpWrapper.Stdio
 
             return response;
         }
-        
+
         private async Task HandleOmniSharpOutput(string output)
         {
             if (string.IsNullOrEmpty(output)) return;
-            
+
             output = StringUtils.RemoveBOMString(output);
 
             if (output[0] != '{')
@@ -75,7 +75,7 @@ namespace NetPad.OmniSharpWrapper.Stdio
 
             var outputPacket = JObject.Parse(output);
             var packetType = (string?)outputPacket["Type"];
-            
+
             if (packetType == null)
             {
                 // Bogus packet
@@ -89,20 +89,20 @@ namespace NetPad.OmniSharpWrapper.Stdio
                 else if (packetType == "event")
                     await HandleEventPacketReceived(outputPacket);
                 else
-                    Logger.LogError($"Unknown packet type: ${packetType}");
+                    Logger.LogError("Unknown packet type: {PacketType}", packetType);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error while handling omnisharp output. {ex}");
+                Logger.LogError(ex, "Error while handling omnisharp output");
             }
         }
-        
+
         private Task HandleOmniSharpError(string error)
         {
             if (string.IsNullOrEmpty(error)) return Task.CompletedTask;
-            
+
             error = StringUtils.RemoveBOMString(error);
-            Logger.LogError($"OMNISHARP ERROR: {error}");
+            Logger.LogError("OmniSharp server error: {Error}", error);
 
             return Task.CompletedTask;
         }
@@ -110,23 +110,24 @@ namespace NetPad.OmniSharpWrapper.Stdio
         private Task HandleEventPacketReceived(JObject eventPacket)
         {
             var @event = (string?)eventPacket["Event"];
-                
+
             if (@event == "log")
-                Logger.LogDebug($"OMNISHARP LOG: {eventPacket}");
+                Logger.LogDebug("OmniSharp server log: {Log}", eventPacket.ToString());
             else if (@event == "Error")
-                Logger.LogDebug($"OMNISHARP LOG ERROR: {eventPacket}");
+                Logger.LogDebug("OmniSharp server error: {Error}", eventPacket.ToString());
 
             return Task.CompletedTask;
         }
-        
+
         private Task HandleResponsePacketReceived(JObject response)
         {
-            Logger.LogDebug($"OMNISHARP RESPONSE: {response}");
-                
+            Logger.LogDebug("OmniSharp server response received: {Response}", response.ToString());
+
             var requestSeq = (int)(response["Request_seq"] ?? throw new Exception("Response did not have a value for 'Request_seq'"));
             var responseJToken = response["Body"] ?? throw new Exception("Response did not have a value for 'Body'");
-                
-            _requestResponseQueue.HandleResponse(requestSeq, responseJToken);
+            var command = (string?)response["Command"];
+
+            _requestResponseQueue.HandleResponse(requestSeq, command, responseJToken);
 
             return Task.CompletedTask;
         }
