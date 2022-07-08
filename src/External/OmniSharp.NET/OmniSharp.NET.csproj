@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OmniSharp.Abstractions" Version="1.37.14" />
+        <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2" />
     </ItemGroup>
 
 </Project>
