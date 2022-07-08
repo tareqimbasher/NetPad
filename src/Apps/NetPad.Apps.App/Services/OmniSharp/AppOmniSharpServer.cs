@@ -223,6 +223,25 @@ public class AppOmniSharpServer
             "FileOptions:SystemExcludeSearchPatterns:3=**/CVS",
             "FileOptions:SystemExcludeSearchPatterns:4=**/.DS_Store",
             "FileOptions:SystemExcludeSearchPatterns:5=**/Thumbs.db",
+            "RoslynExtensionsOptions:EnableAnalyzersSupport=true",
+            "RoslynExtensionsOptions:EnableEditorConfigSupport=false",
+            "RoslynExtensionsOptions:EnableDecompilationSupport=true",
+            "RoslynExtensionsOptions:EnableImportCompletion=true",
+            // "RoslynExtensionsOptions:EnableAsyncCompletion=true",
+
+            "RoslynExtensionsOptions:InlayHintsOptions:EnableForParameters=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForLiteralParameters=false",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForIndexerParameters=false",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForObjectCreationParameters=false",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForOtherParameters=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatDifferOnlyBySuffix=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchMethodIntent=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchArgumentName=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:EnableForTypes=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes=false",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes=true",
+            "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation=true",
+
         }.JoinToString(" ");
 
         var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);

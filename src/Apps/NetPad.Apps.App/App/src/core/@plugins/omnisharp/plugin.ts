@@ -4,7 +4,12 @@ import {
     ICodeLensProvider,
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
-    IDocumentSemanticTokensProvider, IHoverProvider, IImplementationProvider, IReferenceProvider, ISignatureHelpProvider
+    IDocumentSemanticTokensProvider,
+    IHoverProvider,
+    IImplementationProvider,
+    IInlayHintsProvider,
+    IReferenceProvider,
+    ISignatureHelpProvider
 } from "@application";
 import * as actions from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
@@ -15,6 +20,7 @@ import {OmnisharpHoverProvider} from "./omnisharp-hover-provider";
 import {OmnisharpSignatureHelpProvider} from "./omnisharp-signature-help-provider";
 import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
 import {OmnisharpCodeLensProvider} from "./omnisharp-code-lens-provider";
+import {OmnisharpInlayHintProvider} from "./omnisharp-inlay-hint-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -32,6 +38,7 @@ export class OmniSharpPlugin {
         container.register(Registration.singleton(ISignatureHelpProvider, OmnisharpSignatureHelpProvider));
         container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
         container.register(Registration.singleton(ICodeLensProvider, OmnisharpCodeLensProvider));
+        container.register(Registration.singleton(IInlayHintsProvider, OmnisharpInlayHintProvider));
 
         this.container = container.createChild();
 

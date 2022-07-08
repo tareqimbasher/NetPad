@@ -335,6 +335,100 @@ public class OmniSharpController : Controller
         return response;
     }
 
+    [HttpPost("inlay-hints")]
+    public async Task<ActionResult<OmniSharp.Models.v1.InlayHints.InlayHintResponse?>> GetInlayHints(Guid scriptId, [FromBody] OmniSharp.Models.v1.InlayHints.InlayHintRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null || request.Location == null)
+        {
+            return null;
+        }
+
+        request = new OmniSharp.Models.v1.InlayHints.InlayHintRequest()
+        {
+            Location = new Location()
+            {
+                FileName = server.Project.ProgramFilePath,
+                Range = new OmniSharp.Models.V2.Range()
+                {
+                    Start = new Point()
+                    {
+                        Line = request.Location.Range.Start.Line + server.Project.UserCodeStartsOnLine,
+                        Column = request.Location.Range.Start.Column
+                    },
+                    End = new Point()
+                    {
+                        Line = request.Location.Range.End.Line + server.Project.UserCodeStartsOnLine,
+                        Column = request.Location.Range.End.Column
+                    }
+                }
+            }
+        };
+
+        var response = await server.OmniSharpServer.SendAsync<OmniSharp.Models.v1.InlayHints.InlayHintResponse>(request);
+
+        if (response == null)
+        {
+            return response;
+        }
+
+        foreach (var inlayHint in response.InlayHints)
+        {
+            inlayHint.Position = new Point()
+            {
+                Line = inlayHint.Position.Line - server.Project.UserCodeStartsOnLine + 1,
+                Column = inlayHint.Position.Column
+            };
+        }
+
+        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions()
+        {
+            IncludeFields = true
+        });
+
+        return new JsonResult(response, serializationOptions);
+    }
+
+    [HttpPost("inlay-hints/resolve")]
+    public async Task<OmniSharp.Models.v1.InlayHints.InlayHint?> ResolveInlayHint(Guid scriptId, [FromBody] InlayHintResolveRequest request)
+    {
+        var server = await GetOmniSharpServerAsync(scriptId);
+        if (server == null)
+        {
+            return null;
+        }
+
+        request.Hint.Position = new Point()
+        {
+            Line = request.Hint.Position.Line + server.Project.UserCodeStartsOnLine - 1,
+            Column = request.Hint.Position.Column
+        };
+
+        var response = await server.OmniSharpServer.SendAsync<OmniSharp.Models.v1.InlayHints.InlayHint>(new OmniSharp.Models.v1.InlayHints.InlayHintResolveRequest()
+        {
+            Hint = new OmniSharp.Models.v1.InlayHints.InlayHint()
+            {
+                Label = request.Hint.Label,
+                Tooltip = request.Hint.Tooltip,
+                Position = request.Hint.Position,
+                Data = (request.Hint.Data.Item1, request.Hint.Data.Item2)
+            }
+        });
+
+        if (response == null)
+        {
+            return response;
+        }
+
+        response.Position = new Point()
+        {
+            Line = response.Position.Line - server.Project.UserCodeStartsOnLine + 1,
+            Column = response.Position.Column
+        };
+
+        return response;
+    }
+
 
     private void RecurseCodeElements(
         IEnumerable<CodeStructureResponse.CodeElement> elements,
@@ -371,6 +465,32 @@ public class OmniSharpController : Controller
         public class CompletionItemData
         {
             public long Item1 { get; set; }
+            public int Item2 { get; set; }
+        }
+    }
+
+    /// <summary>
+    /// Used to bind <see cref="InlayHint"/> when posting it to API endpoint. STJ does not know
+    /// how to deserialize {item1: 0, item2: 1} into a ValueTuple(long, int)
+    /// </summary>
+    public record InlayHintResolveRequest : OmniSharp.Models.v1.InlayHints.InlayHintResolveRequest
+    {
+        /// <summary>
+        /// Hides base Hint property
+        /// </summary>
+        public new InlayHint Hint { get; set; }
+
+        public class InlayHint
+        {
+            public Point Position { get; set; }
+            public string Label { get; set; }
+            public string? Tooltip { get; set; }
+            public InlayHintData Data { get; set; }
+        }
+
+        public class InlayHintData
+        {
+            public string Item1 { get; set; }
             public int Item2 { get; set; }
         }
     }

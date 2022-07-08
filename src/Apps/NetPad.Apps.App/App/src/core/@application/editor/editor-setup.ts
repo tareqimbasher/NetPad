@@ -8,7 +8,8 @@ import {
     IHoverProvider,
     ISignatureHelpProvider,
     IReferenceProvider,
-    ICodeLensProvider
+    ICodeLensProvider,
+    IInlayHintsProvider
 } from "./interfaces";
 
 export class EditorSetup {
@@ -21,6 +22,7 @@ export class EditorSetup {
         @all(ISignatureHelpProvider) private readonly signatureHelpProviders: monaco.languages.SignatureHelpProvider[],
         @all(IReferenceProvider) private readonly referenceProviders: monaco.languages.ReferenceProvider[],
         @all(ICodeLensProvider) private readonly codeLensProviders: monaco.languages.CodeLensProvider[],
+        @all(IInlayHintsProvider) private readonly inlayHintsProviders: monaco.languages.InlayHintsProvider[],
     ) {
     }
 
@@ -33,6 +35,7 @@ export class EditorSetup {
         this.registerSignatureHelpProviders();
         this.registerReferenceProviders();
         this.registerCodeLensProviders();
+        this.registerInlayHintsProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -101,6 +104,12 @@ export class EditorSetup {
     private registerCodeLensProviders() {
         for (const codeLensProvider of this.codeLensProviders) {
             monaco.languages.registerCodeLensProvider("csharp", codeLensProvider);
+        }
+    }
+
+    private registerInlayHintsProviders() {
+        for (const inlayHintsProvider of this.inlayHintsProviders) {
+            monaco.languages.registerInlayHintsProvider("csharp", inlayHintsProvider);
         }
     }
 

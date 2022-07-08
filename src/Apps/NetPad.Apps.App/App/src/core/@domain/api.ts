@@ -220,6 +220,10 @@ export interface IOmniSharpApiClient {
     getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
 
     codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
+
+    getInlayHints(scriptId: string, request: InlayHintRequest): Promise<InlayHintResponse>;
+
+    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest): Promise<InlayHint>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -727,6 +731,90 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<QuickFixResponse>(<any>null);
+    }
+
+    getInlayHints(scriptId: string, request: InlayHintRequest, signal?: AbortSignal | undefined): Promise<InlayHintResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/inlay-hints";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetInlayHints(_response);
+        });
+    }
+
+    protected processGetInlayHints(response: Response): Promise<InlayHintResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = InlayHintResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<InlayHintResponse>(<any>null);
+    }
+
+    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest, signal?: AbortSignal | undefined): Promise<InlayHint> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/inlay-hints/resolve";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processResolveInlayHint(_response);
+        });
+    }
+
+    protected processResolveInlayHint(response: Response): Promise<InlayHint> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = InlayHint.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<InlayHint>(<any>null);
     }
 }
 
@@ -3849,6 +3937,450 @@ export class CodeCheckRequest extends Request implements ICodeCheckRequest {
 }
 
 export interface ICodeCheckRequest extends IRequest {
+}
+
+export class InlayHintResponse implements IInlayHintResponse {
+    inlayHints!: InlayHint[];
+
+    constructor(data?: IInlayHintResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.inlayHints = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["inlayHints"])) {
+                this.inlayHints = [] as any;
+                for (let item of _data["inlayHints"])
+                    this.inlayHints!.push(InlayHint.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): InlayHintResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHintResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.inlayHints)) {
+            data["inlayHints"] = [];
+            for (let item of this.inlayHints)
+                data["inlayHints"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): InlayHintResponse {
+        const json = this.toJSON();
+        let result = new InlayHintResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHintResponse {
+    inlayHints: InlayHint[];
+}
+
+export class InlayHint implements IInlayHint {
+    position!: Point;
+    label!: string;
+    tooltip?: string | undefined;
+    data!: ValueTupleOfStringAndInteger;
+
+    constructor(data?: IInlayHint) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.position = new Point();
+            this.data = new ValueTupleOfStringAndInteger();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.position = _data["position"] ? Point.fromJS(_data["position"]) : new Point();
+            this.label = _data["label"];
+            this.tooltip = _data["tooltip"];
+            this.data = _data["data"] ? ValueTupleOfStringAndInteger.fromJS(_data["data"]) : new ValueTupleOfStringAndInteger();
+        }
+    }
+
+    static fromJS(data: any): InlayHint {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHint();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["position"] = this.position ? this.position.toJSON() : <any>undefined;
+        data["label"] = this.label;
+        data["tooltip"] = this.tooltip;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): InlayHint {
+        const json = this.toJSON();
+        let result = new InlayHint();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHint {
+    position: Point;
+    label: string;
+    tooltip?: string | undefined;
+    data: ValueTupleOfStringAndInteger;
+}
+
+export class ValueTupleOfStringAndInteger implements IValueTupleOfStringAndInteger {
+    item1!: string;
+    item2!: number;
+
+    constructor(data?: IValueTupleOfStringAndInteger) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"];
+            this.item2 = _data["item2"];
+        }
+    }
+
+    static fromJS(data: any): ValueTupleOfStringAndInteger {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValueTupleOfStringAndInteger();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1;
+        data["item2"] = this.item2;
+        return data;
+    }
+
+    clone(): ValueTupleOfStringAndInteger {
+        const json = this.toJSON();
+        let result = new ValueTupleOfStringAndInteger();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IValueTupleOfStringAndInteger {
+    item1: string;
+    item2: number;
+}
+
+export class InlayHintRequest implements IInlayHintRequest {
+    location!: Location;
+
+    constructor(data?: IInlayHintRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.location = new Location();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.location = _data["location"] ? Location.fromJS(_data["location"]) : new Location();
+        }
+    }
+
+    static fromJS(data: any): InlayHintRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHintRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["location"] = this.location ? this.location.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): InlayHintRequest {
+        const json = this.toJSON();
+        let result = new InlayHintRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHintRequest {
+    location: Location;
+}
+
+export class Location implements ILocation {
+    fileName!: string;
+    range!: Range;
+
+    constructor(data?: ILocation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.range = new Range();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.range = _data["range"] ? Range.fromJS(_data["range"]) : new Range();
+        }
+    }
+
+    static fromJS(data: any): Location {
+        data = typeof data === 'object' ? data : {};
+        let result = new Location();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        data["range"] = this.range ? this.range.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): Location {
+        const json = this.toJSON();
+        let result = new Location();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ILocation {
+    fileName: string;
+    range: Range;
+}
+
+export class InlayHintResolveRequest2 implements IInlayHintResolveRequest2 {
+    hint?: InlayHint | undefined;
+
+    constructor(data?: IInlayHintResolveRequest2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.hint = _data["hint"] ? InlayHint.fromJS(_data["hint"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): InlayHintResolveRequest2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHintResolveRequest2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["hint"] = this.hint ? this.hint.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): InlayHintResolveRequest2 {
+        const json = this.toJSON();
+        let result = new InlayHintResolveRequest2();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHintResolveRequest2 {
+    hint?: InlayHint | undefined;
+}
+
+export class InlayHintResolveRequest extends InlayHintResolveRequest2 implements IInlayHintResolveRequest {
+    hint!: InlayHint2;
+
+    constructor(data?: IInlayHintResolveRequest) {
+        super(data);
+        if (!data) {
+            this.hint = new InlayHint2();
+        }
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.hint = _data["hint"] ? InlayHint2.fromJS(_data["hint"]) : new InlayHint2();
+        }
+    }
+
+    static fromJS(data: any): InlayHintResolveRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHintResolveRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["hint"] = this.hint ? this.hint.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): InlayHintResolveRequest {
+        const json = this.toJSON();
+        let result = new InlayHintResolveRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHintResolveRequest extends IInlayHintResolveRequest2 {
+    hint: InlayHint2;
+}
+
+export class InlayHint2 implements IInlayHint2 {
+    position?: Point | undefined;
+    label?: string | undefined;
+    tooltip?: string | undefined;
+    data?: InlayHintData | undefined;
+
+    constructor(data?: IInlayHint2) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.position = _data["position"] ? Point.fromJS(_data["position"]) : <any>undefined;
+            this.label = _data["label"];
+            this.tooltip = _data["tooltip"];
+            this.data = _data["data"] ? InlayHintData.fromJS(_data["data"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): InlayHint2 {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHint2();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["position"] = this.position ? this.position.toJSON() : <any>undefined;
+        data["label"] = this.label;
+        data["tooltip"] = this.tooltip;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): InlayHint2 {
+        const json = this.toJSON();
+        let result = new InlayHint2();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHint2 {
+    position?: Point | undefined;
+    label?: string | undefined;
+    tooltip?: string | undefined;
+    data?: InlayHintData | undefined;
+}
+
+export class InlayHintData implements IInlayHintData {
+    item1?: string | undefined;
+    item2!: number;
+
+    constructor(data?: IInlayHintData) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.item1 = _data["item1"];
+            this.item2 = _data["item2"];
+        }
+    }
+
+    static fromJS(data: any): InlayHintData {
+        data = typeof data === 'object' ? data : {};
+        let result = new InlayHintData();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["item1"] = this.item1;
+        data["item2"] = this.item2;
+        return data;
+    }
+
+    clone(): InlayHintData {
+        const json = this.toJSON();
+        let result = new InlayHintData();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IInlayHintData {
+    item1?: string | undefined;
+    item2: number;
 }
 
 export class PackageMetadata implements IPackageMetadata {
