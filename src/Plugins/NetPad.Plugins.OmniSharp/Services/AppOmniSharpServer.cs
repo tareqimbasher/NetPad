@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Events;
@@ -13,7 +8,7 @@ using OmniSharp.FileWatching;
 using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
 
-namespace NetPad.Services.OmniSharp;
+namespace NetPad.Plugins.OmniSharp.Services;
 
 /// <summary>
 /// A wrapper around an <see cref="IOmniSharpServer"/> that includes app-specific functionality.

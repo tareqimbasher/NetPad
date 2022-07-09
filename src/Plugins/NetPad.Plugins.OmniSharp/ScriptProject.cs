@@ -4,8 +4,9 @@ using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.IO;
+using NetPad.Scripts;
 
-namespace NetPad.Scripts;
+namespace NetPad.Plugins.OmniSharp;
 
 public class ScriptProject
 {

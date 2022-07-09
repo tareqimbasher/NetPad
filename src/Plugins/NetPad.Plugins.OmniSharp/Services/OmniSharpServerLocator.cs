@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
 using NetPad.Utilities;
 
-namespace NetPad.Services.OmniSharp;
+namespace NetPad.Plugins.OmniSharp.Services;
 
 public class OmniSharpServerLocator : IOmniSharpServerLocator
 {

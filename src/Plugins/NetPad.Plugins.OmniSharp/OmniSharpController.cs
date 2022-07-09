@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Application;
-using NetPad.Services.OmniSharp;
+using NetPad.Plugins.OmniSharp.Services;
 using NetPad.Sessions;
 using OmniSharp.Models;
 using OmniSharp.Models.CodeCheck;
@@ -17,10 +17,12 @@ using OmniSharp.Models.SignatureHelp;
 using OmniSharp.Models.v1.Completion;
 using OmniSharp.Models.V2;
 using OmniSharp.Models.V2.CodeStructure;
+using ISession = NetPad.Sessions.ISession;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 using Range2 = OmniSharp.Models.V2.Range;
+using OmniSharpInlayHints = OmniSharp.Models.v1.InlayHints;
 
-namespace NetPad.Controllers;
+namespace NetPad.Plugins.OmniSharp;
 
 [ApiController]
 [Route("omnisharp/{scriptId:guid}")]
@@ -336,7 +338,7 @@ public class OmniSharpController : Controller
     }
 
     [HttpPost("inlay-hints")]
-    public async Task<ActionResult<OmniSharp.Models.v1.InlayHints.InlayHintResponse?>> GetInlayHints(Guid scriptId, [FromBody] OmniSharp.Models.v1.InlayHints.InlayHintRequest request)
+    public async Task<ActionResult<OmniSharpInlayHints.InlayHintResponse?>> GetInlayHints(Guid scriptId, [FromBody] OmniSharpInlayHints.InlayHintRequest request)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null || request.Location == null)
@@ -344,12 +346,12 @@ public class OmniSharpController : Controller
             return null;
         }
 
-        request = new OmniSharp.Models.v1.InlayHints.InlayHintRequest()
+        request = new OmniSharpInlayHints.InlayHintRequest()
         {
             Location = new Location()
             {
                 FileName = server.Project.ProgramFilePath,
-                Range = new OmniSharp.Models.V2.Range()
+                Range = new Range2()
                 {
                     Start = new Point()
                     {
@@ -365,7 +367,7 @@ public class OmniSharpController : Controller
             }
         };
 
-        var response = await server.OmniSharpServer.SendAsync<OmniSharp.Models.v1.InlayHints.InlayHintResponse>(request);
+        var response = await server.OmniSharpServer.SendAsync<OmniSharpInlayHints.InlayHintResponse>(request);
 
         if (response == null)
         {
@@ -390,7 +392,7 @@ public class OmniSharpController : Controller
     }
 
     [HttpPost("inlay-hints/resolve")]
-    public async Task<OmniSharp.Models.v1.InlayHints.InlayHint?> ResolveInlayHint(Guid scriptId, [FromBody] InlayHintResolveRequest request)
+    public async Task<OmniSharpInlayHints.InlayHint?> ResolveInlayHint(Guid scriptId, [FromBody] InlayHintResolveRequest request)
     {
         var server = await GetOmniSharpServerAsync(scriptId);
         if (server == null)
@@ -404,9 +406,9 @@ public class OmniSharpController : Controller
             Column = request.Hint.Position.Column
         };
 
-        var response = await server.OmniSharpServer.SendAsync<OmniSharp.Models.v1.InlayHints.InlayHint>(new OmniSharp.Models.v1.InlayHints.InlayHintResolveRequest()
+        var response = await server.OmniSharpServer.SendAsync<OmniSharpInlayHints.InlayHint>(new OmniSharpInlayHints.InlayHintResolveRequest()
         {
-            Hint = new OmniSharp.Models.v1.InlayHints.InlayHint()
+            Hint = new OmniSharpInlayHints.InlayHint()
             {
                 Label = request.Hint.Label,
                 Tooltip = request.Hint.Tooltip,
@@ -473,7 +475,7 @@ public class OmniSharpController : Controller
     /// Used to bind <see cref="InlayHint"/> when posting it to API endpoint. STJ does not know
     /// how to deserialize {item1: 0, item2: 1} into a ValueTuple(long, int)
     /// </summary>
-    public record InlayHintResolveRequest : OmniSharp.Models.v1.InlayHints.InlayHintResolveRequest
+    public record InlayHintResolveRequest : OmniSharpInlayHints.InlayHintResolveRequest
     {
         /// <summary>
         /// Hides base Hint property

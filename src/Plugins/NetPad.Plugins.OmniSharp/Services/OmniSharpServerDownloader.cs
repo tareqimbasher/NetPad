@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using NetPad.Application;
 using NetPad.Utilities;
 
-namespace NetPad.Services.OmniSharp;
+namespace NetPad.Plugins.OmniSharp.Services;
 
 class DownloadProgress : IProgress<float>
 {

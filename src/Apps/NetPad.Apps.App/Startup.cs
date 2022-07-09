@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,17 +20,23 @@ using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
+using NetPad.Plugins;
 using NetPad.Runtimes;
 using NetPad.Scripts;
-using NetPad.Services.OmniSharp;
+using NetPad.Services;
 using NetPad.Sessions;
 using NetPad.UiInterop;
-using OmniSharp;
+using ISession = NetPad.Sessions.ISession;
 
 namespace NetPad
 {
     public partial class Startup
     {
+        private readonly Assembly[] _pluginAssemblies =
+        {
+            typeof(NetPad.Plugins.OmniSharp.Plugin).Assembly
+        };
+
         public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             Configuration = configuration;
@@ -40,8 +48,13 @@ namespace NetPad
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews()
+            var mvcBuilder = services.AddControllersWithViews()
                 .AddJsonOptions(options => { JsonSerializer.Configure(options.JsonSerializerOptions); });
+
+            foreach (var pluginAssembly in _pluginAssemblies)
+            {
+                mvcBuilder.AddApplicationPart(pluginAssembly);
+            }
 
             services.AddSignalR()
                 .AddJsonProtocol(options => { JsonSerializer.Configure(options.PayloadSerializerOptions); });
@@ -49,21 +62,22 @@ namespace NetPad
             // In production, the SPA files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "App/dist"; });
 
-            services.AddMediatR(typeof(Command).Assembly);
-
             if (WebHostEnvironment.IsDevelopment())
             {
                 AddSwagger(services);
             }
 
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatorRequestPipeline<,>));
+
+
             services.AddSingleton<HostInfo>();
+            services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
             services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<HttpClient>();
 
             // Repositories
-            services.AddSingleton(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
@@ -81,11 +95,11 @@ namespace NetPad
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
 
-            // OmniSharp
-            services.AddSingleton<OmniSharpServerCatalog>();
-            services.AddTransient<IOmniSharpServerLocator, OmniSharpServerLocator>();
-            services.AddTransient<IOmniSharpServerDownloader, OmniSharpServerDownloader>();
-            services.AddOmniSharpServer();
+            // Plugins
+            var pluginInitialization = new PluginInitialization(Configuration, WebHostEnvironment);
+            IPluginManager pluginManager = new PluginManager(pluginInitialization);
+            services.AddSingleton(pluginInitialization);
+            services.AddSingleton<IPluginManager>(pluginManager);
 
             // Hosted services
             services.AddHostedService<EventForwardToIpcBackgroundService>();
@@ -105,6 +119,18 @@ namespace NetPad
             // We want to always use SignalR for IPC, overriding Electron's IPC service
             // This should come after the ApplicationConfigurator adds its services so it overrides it
             services.AddTransient<IIpcService, SignalRIpcService>();
+
+            var assembliesToRegisterWithMediator = new List<Assembly> { typeof(Command).Assembly };
+
+            // Register plugins
+            foreach (var pluginAssembly in _pluginAssemblies)
+            {
+                pluginManager.RegisterPlugin(pluginAssembly, services);
+                mvcBuilder.AddApplicationPart(pluginAssembly);
+                assembliesToRegisterWithMediator.Add(pluginAssembly);
+            }
+
+            services.AddMediatR(assembliesToRegisterWithMediator.ToArray());
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -135,7 +161,19 @@ namespace NetPad
                 app.UseSwaggerUi3();
             }
 
+            // Set host url
+            services.GetRequiredService<HostInfo>().SetHostUrl(
+                app.ServerFeatures
+                    .Get<IServerAddressesFeature>()!
+                    .Addresses
+                    .First(a => a.StartsWith("http:")));
+
+            // Add middlewares
             app.UseMiddleware<ExceptionHandlerMiddleware>();
+
+            // Initialize plugins
+            var pluginManager = app.ApplicationServices.GetRequiredService<IPluginManager>();
+            pluginManager.ConfigurePlugins(app, env);
 
             app.UseRouting();
 
@@ -160,13 +198,6 @@ namespace NetPad
                     spa.UseProxyToSpaDevelopmentServer("http://localhost:9000/");
                 }
             });
-
-            // Set host url
-            services.GetRequiredService<HostInfo>().SetHostUrl(
-                app.ServerFeatures
-                    .Get<IServerAddressesFeature>()!
-                    .Addresses
-                    .First(a => a.StartsWith("http:")));
 
             // Allow ApplicationConfigurator to run any configuration
             Program.ApplicationConfigurator.Configure(app, env);

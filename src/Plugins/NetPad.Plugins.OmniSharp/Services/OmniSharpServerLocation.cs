@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace NetPad.Services.OmniSharp;
+namespace NetPad.Plugins.OmniSharp.Services;
 
 public class OmniSharpServerLocation
 {

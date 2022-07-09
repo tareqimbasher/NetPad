@@ -6,11 +6,12 @@ using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Events;
+using NetPad.Plugins.OmniSharp.Services;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
 
-namespace NetPad.Services.OmniSharp;
+namespace NetPad.Plugins.OmniSharp.Services;
 
 /// <summary>
 /// Manages and keeps a collection of created OmniSharp servers.

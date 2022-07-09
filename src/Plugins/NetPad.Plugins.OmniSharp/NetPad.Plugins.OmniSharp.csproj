@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
+      <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+      <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj" />
+    </ItemGroup>
+
+</Project>
