@@ -7,7 +7,7 @@ import {
     Location,
     Point,
     Range
-} from "@domain";
+} from "./api";
 import {
     CancellationToken,
     editor,

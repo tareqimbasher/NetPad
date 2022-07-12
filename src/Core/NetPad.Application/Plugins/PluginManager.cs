@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,14 +7,16 @@ namespace NetPad.Plugins;
 
 public class PluginManager : IPluginManager
 {
+    private readonly Dictionary<string, PluginRegistration> _pluginRegistrations;
     private readonly PluginInitialization _pluginInitialization;
 
     public PluginManager(PluginInitialization pluginInitialization)
     {
+        _pluginRegistrations = new Dictionary<string, PluginRegistration>(StringComparer.OrdinalIgnoreCase);
         _pluginInitialization = pluginInitialization;
     }
 
-    public void RegisterPlugin(Assembly assembly, IServiceCollection services)
+    public PluginRegistration RegisterPlugin(Assembly assembly, IServiceCollection services)
     {
         var pluginTypes = assembly.GetExportedTypes().Where(t => t.IsClass && typeof(IPlugin).IsAssignableFrom(t)).ToArray();
 
@@ -54,9 +52,36 @@ public class PluginManager : IPluginManager
             throw new Exception($"Could not construct an instance of type {pluginType.FullName}.");
         }
 
-        services.AddSingleton(typeof(IPlugin), plugin);
+        if (string.IsNullOrWhiteSpace(plugin.Id))
+        {
+            throw new Exception($"Plugin '{assembly.FullName}' has an empty ID.");
+        }
+
+        if (plugin.Id.Contains(' '))
+        {
+            throw new Exception($"Plugin '{assembly.FullName}' has an ID with a space. Plugin IDs cannot contain spaces.");
+        }
+
+        if (_pluginRegistrations.ContainsKey(plugin.Id))
+        {
+            throw new Exception($"Plugin from assembly '{assembly.FullName}' has ID '{plugin.Id}', " +
+                                $"but another plugin is already registered with this ID.");
+        }
+
+        if (string.IsNullOrWhiteSpace(plugin.Name))
+        {
+            throw new Exception($"Plugin '{assembly.FullName}' has an empty Name.");
+        }
 
         plugin.ConfigureServices(services);
+
+        var registration = new PluginRegistration(assembly, plugin);
+
+        _pluginRegistrations.Add(plugin.Id, registration);
+
+        services.AddSingleton(typeof(IPlugin), plugin);
+
+        return registration;
     }
 
     public void ConfigurePlugins(IApplicationBuilder app, IHostEnvironment env)

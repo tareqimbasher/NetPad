@@ -1,4 +1,5 @@
-﻿using NetPad.Plugins.OmniSharp.BackgroundServices;
+﻿using MediatR;
+using NetPad.Plugins.OmniSharp.BackgroundServices;
 using NetPad.Plugins.OmniSharp.Services;
 using OmniSharp;
 
@@ -6,14 +7,12 @@ namespace NetPad.Plugins.OmniSharp;
 
 public class Plugin : IPlugin
 {
-    private readonly IConfiguration _configuration;
-    private readonly IHostEnvironment _hostEnviornment;
-
     public Plugin(PluginInitialization initialization)
     {
-        _configuration = initialization.Configuration;
-        _hostEnviornment = initialization.HostEnvironment;
     }
+
+    public string Id => "netpad.plugins.omnisharp";
+    public string Name => "OmniSharp";
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -22,7 +21,12 @@ public class Plugin : IPlugin
         services.AddTransient<IOmniSharpServerDownloader, OmniSharpServerDownloader>();
         services.AddOmniSharpServer();
 
+        services.AddScoped<AppOmniSharpServerAccessor>();
+        services.AddScoped<AppOmniSharpServer>(sp => sp.GetRequiredService<AppOmniSharpServerAccessor>().AppOmniSharpServer);
+
         services.AddHostedService<ServerManagementBackgroundService>();
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(OmniSharpMediatorPipeline<,>));
     }
 
     public void Configure(IApplicationBuilder app, IHostEnvironment env)

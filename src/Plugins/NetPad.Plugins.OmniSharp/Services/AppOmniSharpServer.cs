@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Events;
 using NetPad.Scripts;
@@ -212,6 +211,8 @@ public class AppOmniSharpServer
             $"--hostPID {Environment.ProcessId}",
             "--encoding utf-8",
             "--loglevel Information",
+            // "-z",
+
             "FileOptions:SystemExcludeSearchPatterns:0=**/.git",
             "FileOptions:SystemExcludeSearchPatterns:1=**/.svn",
             "FileOptions:SystemExcludeSearchPatterns:2=**/.hg",
@@ -236,7 +237,6 @@ public class AppOmniSharpServer
             "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes=false",
             "RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes=true",
             "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation=true",
-
         }.JoinToString(" ");
 
         var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);

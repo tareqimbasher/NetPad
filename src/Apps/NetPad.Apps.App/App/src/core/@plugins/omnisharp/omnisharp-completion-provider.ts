@@ -1,4 +1,4 @@
-import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "@domain";
+import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "./api";
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "./omnisharp-service";

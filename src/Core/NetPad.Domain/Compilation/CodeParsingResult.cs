@@ -4,7 +4,6 @@ namespace NetPad.Compilation
 {
     public class CodeParsingResult
     {
-
         public CodeParsingResult(string fullProgram, int userCodeStartLine)
         {
             FullProgram = fullProgram;

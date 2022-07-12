@@ -1,7 +1,7 @@
 import {languages, editor, Position, CancellationToken, Range} from "monaco-editor";
 import {IOmniSharpService} from "./omnisharp-service";
 import {EditorUtil} from "@application";
-import {FindImplementationsRequest} from "@domain";
+import {FindImplementationsRequest} from "./api";
 
 export class OmnisharpImplementationProvider implements languages.ImplementationProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {

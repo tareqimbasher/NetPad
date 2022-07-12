@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor";
-import {CodeFormatRequest} from "@domain";
+import {CodeFormatRequest} from "./api";
 import {EditorUtil} from "@application";
 import {OmniSharpPlugin} from "./plugin";
 import {IOmniSharpService} from "./omnisharp-service";

@@ -1,5 +1,5 @@
 import {languages, editor, CancellationToken, Range} from "monaco-editor";
-import {SemanticHighlightRequest, Range as ApiRange, Point, SemanticHighlightResponse} from "@domain";
+import {SemanticHighlightRequest, Range as ApiRange, Point, SemanticHighlightResponse} from "./api";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "./omnisharp-service";
 import {Util} from "@common";

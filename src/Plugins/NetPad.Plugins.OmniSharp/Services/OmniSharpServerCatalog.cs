@@ -99,7 +99,7 @@ public class OmniSharpServerCatalog
                 return server;
             });
 
-            _items.Add(environment.Script.Id, new CatalogItem(environment.Script.Id, serverTask, serviceScope));
+            _items.Add(environment.Script.Id, new CatalogItem(serverTask, serviceScope));
             _logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
         }
         catch (Exception ex)
@@ -163,14 +163,12 @@ public class OmniSharpServerCatalog
 
     private class CatalogItem
     {
-        public CatalogItem(Guid scriptId, Task<AppOmniSharpServer?> appOmniSharpServerTask, IServiceScope serviceScope)
+        public CatalogItem(Task<AppOmniSharpServer?> appOmniSharpServerTask, IServiceScope serviceScope)
         {
-            ScriptId = scriptId;
             AppOmniSharpServerTask = appOmniSharpServerTask;
             ServiceScope = serviceScope;
         }
 
-        public Guid ScriptId { get; }
         public Task<AppOmniSharpServer?> AppOmniSharpServerTask { get; }
         public IServiceScope ServiceScope { get; }
     }

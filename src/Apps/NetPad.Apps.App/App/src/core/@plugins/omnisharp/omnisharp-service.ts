@@ -1,4 +1,4 @@
-import {IOmniSharpApiClient, OmniSharpApiClient} from "@domain";
+import {IOmniSharpApiClient, OmniSharpApiClient} from "./api";
 import {DI} from "aurelia";
 
 export interface IOmniSharpService extends IOmniSharpApiClient {}

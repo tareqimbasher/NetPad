@@ -3,14 +3,16 @@ using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using NetPad.Electron;
 using NetPad.Web;
 
 namespace NetPad
 {
-    public class Program
+    public static class Program
     {
-        public static IApplicationConfigurator ApplicationConfigurator { get; private set; } = null!;
+        internal static IApplicationConfigurator ApplicationConfigurator { get; private set; } = null!;
 
         public static void Main(string[] args)
         {
@@ -22,9 +24,15 @@ namespace NetPad
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        public static void ConfigureLogging(ILoggingBuilder builder)
+        {
+            builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Enabled);
+        }
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.Local.json", optional: true); })
+                .ConfigureAppConfiguration(config => { config.AddJsonFile("appsettings.Local.json", optional: true); })
+                .ConfigureLogging(ConfigureLogging)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     ApplicationConfigurator.ConfigureWebHost(webBuilder, args);

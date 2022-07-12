@@ -1,6 +1,6 @@
 import {languages, editor, Position, CancellationToken, Range} from "monaco-editor";
 import {EditorUtil} from "@application";
-import {CodeElement} from "@domain";
+import {CodeElement} from "./api";
 import {IOmniSharpService} from "./omnisharp-service";
 import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
 

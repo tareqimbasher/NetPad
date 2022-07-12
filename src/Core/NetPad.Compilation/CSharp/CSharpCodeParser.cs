@@ -30,13 +30,13 @@ namespace NetPad.Compilation.CSharp
             int userCodeStartLine = 0;
             using var reader = new StringReader(fullProgram);
             string? line = "";
-            int lineIndex = -1;
+            int lineNumber = 0;
             while ((line = reader.ReadLine()) != null)
             {
-                lineIndex++;
-                if (line.Contains("// USER CODE STARTS HERE"))
+                lineNumber++;
+                if (line.Contains("// USER CODE STARTS BELOW THIS LINE"))
                 {
-                    userCodeStartLine = lineIndex + 1;
+                    userCodeStartLine = lineNumber;
                     break;
                 }
             }
@@ -61,7 +61,7 @@ namespace NetPad.Compilation.CSharp
         public string GetUserCode(Script script)
         {
             string userCode;
-            string scriptCode = "// USER CODE STARTS HERE\n" + script.Code;
+            string scriptCode = "// USER CODE STARTS BELOW THIS LINE\n" + script.Code;
 
             if (script.Config.Kind == ScriptKind.Expression)
             {
