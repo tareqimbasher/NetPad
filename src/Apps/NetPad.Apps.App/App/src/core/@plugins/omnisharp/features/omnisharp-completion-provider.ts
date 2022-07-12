@@ -1,11 +1,11 @@
-import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "./api";
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {EditorUtil} from "@application";
-import {IOmniSharpService} from "./omnisharp-service";
+import {IOmniSharpService} from "../omnisharp-service";
+import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "../api";
 
 export class OmnisharpCompletionProvider implements languages.CompletionItemProvider {
     public triggerCharacters = [".", " "];
-    private lastCompletions?: Map<languages.CompletionItem, {model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem}>;
+    private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>;
 
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
     }
@@ -21,7 +21,7 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
 
         const results = await this.getCompletionItems(model, range, ctx, token);
 
-        const lastCompletions = new Map<languages.CompletionItem, {model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem}>();
+        const lastCompletions = new Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>();
 
         for (let i = 0; i < results.monacoCompletions.length; i++) {
             lastCompletions.set(results.monacoCompletions[i], {

@@ -1,3 +1,6 @@
+import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
+import {EditorUtil} from "@application";
+import {IOmniSharpService} from "../omnisharp-service";
 import {
     InlayHint,
     InlayHint2,
@@ -7,21 +10,10 @@ import {
     Location,
     Point,
     Range
-} from "./api";
-import {
-    CancellationToken,
-    editor,
-    IEvent,
-    languages,
-    Range as MonacoRange,
-    Emitter
-} from "monaco-editor";
-import {EditorUtil} from "@application";
-import {IOmniSharpService} from "./omnisharp-service";
-import InlayHintKind = languages.InlayHintKind;
+} from "../api";
 
-export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider{
-    private inlayHintsMap?: Map<languages.InlayHint, {model: editor.ITextModel, omnisharpHint: InlayHint}>;
+export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider {
+    private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: InlayHint }>;
     private _onDidChangeInlayHints: Emitter<void>;
 
     public displayName: string;
@@ -65,7 +57,7 @@ export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider{
             };
         }
 
-        const inlayHintsMap = new Map<languages.InlayHint, {model: editor.ITextModel, omnisharpHint: InlayHint}>();
+        const inlayHintsMap = new Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: InlayHint }>();
 
         const hints = response.inlayHints.map(inlayHint => {
             const mappedHint = this.toMonacoInlayHint(inlayHint);
@@ -128,7 +120,7 @@ export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider{
                 supportThemeIcons: true,
                 isTrusted: true
             },
-            kind: InlayHintKind.Type,
+            kind: languages.InlayHintKind.Type,
             position: {
                 lineNumber: inlayHint.position.line,
                 column: inlayHint.position.column + 1

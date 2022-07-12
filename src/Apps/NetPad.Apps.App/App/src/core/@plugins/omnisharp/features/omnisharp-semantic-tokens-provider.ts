@@ -1,8 +1,8 @@
-import {languages, editor, CancellationToken, Range} from "monaco-editor";
-import {SemanticHighlightRequest, Range as ApiRange, Point, SemanticHighlightResponse} from "./api";
-import {EditorUtil} from "@application";
-import {IOmniSharpService} from "./omnisharp-service";
+import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {Util} from "@common";
+import {EditorUtil} from "@application";
+import {IOmniSharpService} from "../omnisharp-service";
+import {Point, Range as ApiRange, SemanticHighlightRequest, SemanticHighlightResponse} from "../api";
 
 export class OmnisharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;

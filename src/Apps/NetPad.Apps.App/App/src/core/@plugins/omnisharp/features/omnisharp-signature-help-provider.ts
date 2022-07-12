@@ -1,7 +1,7 @@
-import {languages, editor, Position, CancellationToken, IMarkdownString} from "monaco-editor";
-import {IOmniSharpService} from "./omnisharp-service";
+import {CancellationToken, editor, IMarkdownString, languages, Position} from "monaco-editor";
 import {EditorUtil} from "@application";
-import {SignatureHelpParameter, SignatureHelpRequest} from "./api";
+import {IOmniSharpService} from "../omnisharp-service";
+import {SignatureHelpParameter, SignatureHelpRequest} from "../api";
 
 export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpProvider {
     public signatureHelpTriggerCharacters = ["(", ","];

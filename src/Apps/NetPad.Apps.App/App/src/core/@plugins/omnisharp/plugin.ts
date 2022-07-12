@@ -13,14 +13,14 @@ import {
 } from "@application";
 import * as actions from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
-import {OmnisharpCompletionProvider} from "./omnisharp-completion-provider";
-import {OmnisharpSemanticTokensProvider} from "./omnisharp-semantic-tokens-provider";
-import {OmnisharpImplementationProvider} from "./omnisharp-implementation-provider";
-import {OmnisharpHoverProvider} from "./omnisharp-hover-provider";
-import {OmnisharpSignatureHelpProvider} from "./omnisharp-signature-help-provider";
-import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
-import {OmnisharpCodeLensProvider} from "./omnisharp-code-lens-provider";
-import {OmnisharpInlayHintProvider} from "./omnisharp-inlay-hint-provider";
+import {OmnisharpCompletionProvider} from "./features/omnisharp-completion-provider";
+import {OmnisharpSemanticTokensProvider} from "./features/omnisharp-semantic-tokens-provider";
+import {OmnisharpImplementationProvider} from "./features/omnisharp-implementation-provider";
+import {OmnisharpHoverProvider} from "./features/omnisharp-hover-provider";
+import {OmnisharpSignatureHelpProvider} from "./features/omnisharp-signature-help-provider";
+import {OmnisharpReferenceProvider} from "./features/omnisharp-reference-provider";
+import {OmnisharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
+import {OmnisharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.

@@ -1,8 +1,8 @@
 import * as monaco from "monaco-editor";
-import {CodeFormatRequest} from "./api";
 import {EditorUtil} from "@application";
 import {OmniSharpPlugin} from "./plugin";
 import {IOmniSharpService} from "./omnisharp-service";
+import {CodeFormatRequest} from "./api";
 
 export const codeFormatAction: monaco.editor.IActionDescriptor = {
     id: "netpad-omnisharp-code-format",
