@@ -16,7 +16,7 @@ export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpPr
 
         const response = await this.omnisharpService.getSignatureHelp(scriptId, new SignatureHelpRequest({
             line: position.lineNumber,
-            column: position.column,
+            column: position.column - 1,
             applyChangesTogether: false
         }));
 
