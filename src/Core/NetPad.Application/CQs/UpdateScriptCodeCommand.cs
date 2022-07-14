@@ -30,6 +30,11 @@ public class UpdateScriptCodeCommand : Command
 
             var oldCode = script.Code;
 
+            if (oldCode == request.Code)
+            {
+                return Unit.Value;
+            }
+
             request.Script.UpdateCode(request.Code);
 
             await _eventBus.PublishAsync(new ScriptCodeUpdatedEvent(script, script.Code, oldCode));

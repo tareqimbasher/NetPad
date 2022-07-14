@@ -102,7 +102,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     private async sendCodeToServer() {
-        if (this.environment.script.code === this.editorText) return;
         await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
     }
 
