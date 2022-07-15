@@ -8,9 +8,9 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
-        private const string UserCodeMarker = "// USER CODE STARTS BELOW THIS LINE";
-        private const string BootstrapperClassName = "ScriptProgram_Bootstrap";
-        private const string BootstrapperSetIOMethodName = "SetIO";
+        public const string UserCodeMarker = "// USER CODE STARTS BELOW THIS LINE";
+        public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
+        public const string BootstrapperSetIOMethodName = "SetIO";
 
         public static readonly string[] NamespacesNeededByBaseProgram =
         {
@@ -98,7 +98,7 @@ class {2}
     // Entry point used when running script in external process
     static async Task Main(string[] args)
     {{
-        SetIO(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
+        {3}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
     }}
 
     private static void {3}(IOutputWriter outputWriter)
