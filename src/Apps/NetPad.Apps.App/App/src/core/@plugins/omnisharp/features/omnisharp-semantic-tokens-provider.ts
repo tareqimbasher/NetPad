@@ -1,17 +1,32 @@
-import {CancellationToken, editor, languages, Range} from "monaco-editor";
+import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
 import {Util} from "@common";
+import {IEventBus, ScriptConfigPropertyChanged} from "@domain";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {Point, Range as ApiRange, SemanticHighlightRequest, SemanticHighlightResponse} from "../api";
 
 export class OmnisharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
+    private _onDidChange: Emitter<void>;
 
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+    public onDidChange: IEvent<void>;
+
+    constructor(
+        @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
+        @IEventBus private readonly eventBus: IEventBus) {
         this.legend = {
             tokenTypes: tokenTypes,
             tokenModifiers: tokenModifiers
         };
+
+        this._onDidChange = new Emitter<void>();
+        this.onDidChange = this._onDidChange.event;
+
+        this.eventBus.subscribeToServer(ScriptConfigPropertyChanged, message => {
+            if (message.propertyName === "Namespaces") {
+                this._onDidChange.fire();
+            }
+        });
     }
 
     public getLegend(): languages.SemanticTokensLegend {

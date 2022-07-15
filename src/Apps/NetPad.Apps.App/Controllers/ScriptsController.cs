@@ -65,7 +65,8 @@ namespace NetPad.Controllers
         public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
         {
             var environment = await GetScriptEnvironmentAsync(id);
-            environment.Script.Config.SetNamespaces(namespaces);
+
+            await _mediator.Send(new UpdateScriptNamespacesCommand(environment.Script, namespaces));
 
             return NoContent();
         }

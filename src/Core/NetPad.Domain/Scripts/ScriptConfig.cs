@@ -57,7 +57,16 @@ namespace NetPad.Scripts
             if (Namespaces.SequenceEqual(namespaces))
                 return;
 
-            Namespaces = namespaces.Distinct().Where(ns => !string.IsNullOrWhiteSpace(ns)).ToList();
+            namespaces = namespaces
+                .Where(ns => !string.IsNullOrWhiteSpace(ns))
+                .Select(ns => ns.Trim());
+
+            if (namespaces.Any(ns => ns.StartsWith("using ") || ns.EndsWith(';')))
+            {
+                throw new ArgumentException("Namespaces should not start with 'using ' and must not end with ';'");
+            }
+
+            Namespaces = namespaces.Distinct().ToList();
         }
 
         public void SetReferences(IEnumerable<Reference> references)

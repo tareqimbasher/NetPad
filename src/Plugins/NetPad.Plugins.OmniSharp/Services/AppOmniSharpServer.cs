@@ -65,27 +65,31 @@ public class AppOmniSharpServer
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
         await _project.InitializeAsync();
 
-        var codeChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(async ev =>
+        var codeChangeToken = _eventBus.Subscribe<ScriptCodeUpdatedEvent>(async ev =>
         {
-            if (ev.ScriptId != _environment.Script.Id || ev.PropertyName != nameof(Script.Code))
-            {
-                return;
-            }
-
-            if (_omniSharpServer == null)
+            if (ev.Script.Id != _environment.Script.Id || _omniSharpServer == null)
             {
                 return;
             }
 
             var fullProgram = await _project.UpdateProgramCodeAsync();
-
-            if (_omniSharpServer != null)
-            {
-                await UpdateOmniSharpCodeBufferAsync(fullProgram);
-            }
+            await UpdateOmniSharpCodeBufferAsync(fullProgram);
         });
 
         _subscriptionTokens.Add(codeChangeToken);
+
+        var namespacesChangeToken = _eventBus.Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id || _omniSharpServer == null)
+            {
+                return;
+            }
+
+            var fullProgram = await _project.UpdateProgramCodeAsync();
+            await UpdateOmniSharpCodeBufferAsync(fullProgram);
+        });
+
+        _subscriptionTokens.Add(namespacesChangeToken);
 
         var referencesChangeToken = _eventBus.Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
         {
@@ -165,7 +169,7 @@ public class AppOmniSharpServer
 
         _subscriptionTokens.Add(referencesChangeToken);
 
-        await StartOmniSharpServerAsync(executablePath);
+        await StartOmniSharpServerAsync(executablePath!);
 
         return true;
     }
