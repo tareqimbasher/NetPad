@@ -35,7 +35,7 @@ namespace NetPad.Runtimes
         /// <summary>
         /// Returns a <see cref="RunResult"/> that indicates that the script ran but did not complete successfully.
         /// </summary>
-        public static RunResult ScriptCompletionFailure() => new RunResult(true, false, 0);
+        public static RunResult ScriptCompletionFailure(double durationMs) => new RunResult(true, false, durationMs);
 
         /// <summary>
         /// Returns a <see cref="RunResult"/> that indicates that the script ran and completed successfully.

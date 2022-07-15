@@ -62,7 +62,7 @@ namespace NetPad.Domain.Tests.Runtimes
         [Fact]
         public void ScriptCompletionFailureHelper_MarksRunAttemptAsSuccessful()
         {
-            var result = RunResult.ScriptCompletionFailure();
+            var result = RunResult.ScriptCompletionFailure(0);
 
             Assert.True(result.IsRunAttemptSuccessful);
         }
@@ -70,7 +70,7 @@ namespace NetPad.Domain.Tests.Runtimes
         [Fact]
         public void ScriptCompletionFailureHelper_MarksScriptCompletionAsFailure()
         {
-            var result = RunResult.ScriptCompletionFailure();
+            var result = RunResult.ScriptCompletionFailure(0);
 
             Assert.False(result.IsScriptCompletedSuccessfully);
         }
@@ -78,7 +78,7 @@ namespace NetPad.Domain.Tests.Runtimes
         [Fact]
         public void ScriptCompletionFailureHelper_SetsDurationTo0()
         {
-            var result = RunResult.ScriptCompletionFailure();
+            var result = RunResult.ScriptCompletionFailure(0);
 
             Assert.Equal(0, result.DurationMs);
         }

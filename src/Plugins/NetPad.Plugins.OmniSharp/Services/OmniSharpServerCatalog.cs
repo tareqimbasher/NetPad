@@ -91,8 +91,9 @@ public class OmniSharpServerCatalog
                 {
                     await startTask;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(ex, "Error occurred starting OmniSharp server");
                     return null;
                 }
 

@@ -8,6 +8,10 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
+        private const string UserCodeMarker = "// USER CODE STARTS BELOW THIS LINE";
+        private const string BootstrapperClassName = "ScriptProgram_Bootstrap";
+        private const string BootstrapperSetIOMethodName = "SetIO";
+
         public static readonly string[] NamespacesNeededByBaseProgram =
         {
             "System",
@@ -24,8 +28,13 @@ namespace NetPad.Compilation.CSharp
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode);
 
-            var baseProgramTemplate = GetBaseProgramTemplate();
-            var fullProgram = string.Format(baseProgramTemplate, usings, userProgram);
+            var fullProgramTemplate = GetFullProgramTemplate();
+            var fullProgram = string.Format(
+                fullProgramTemplate,
+                usings,
+                userProgram,
+                BootstrapperClassName,
+                BootstrapperSetIOMethodName);
 
             int userCodeStartLine = 0;
             using var reader = new StringReader(fullProgram);
@@ -34,18 +43,15 @@ namespace NetPad.Compilation.CSharp
             while ((line = reader.ReadLine()) != null)
             {
                 lineNumber++;
-                if (line.Contains("// USER CODE STARTS BELOW THIS LINE"))
+                if (line.Contains(UserCodeMarker))
                 {
                     userCodeStartLine = lineNumber;
                     break;
                 }
             }
 
-            return new CodeParsingResult(fullProgram, userCodeStartLine)
-            {
-                Namespaces = namespaces.ToList(),
-                UserProgram = userProgram
-            };
+            return new CodeParsingResult(fullProgram, userProgram,
+                new ParsedCodeInformation(userCodeStartLine, namespaces.ToHashSet(), BootstrapperClassName, BootstrapperSetIOMethodName));
         }
 
         public IEnumerable<string> GetNamespaces(Script script, params string[] additionalNamespaces)
@@ -61,59 +67,43 @@ namespace NetPad.Compilation.CSharp
         public string GetUserCode(Script script)
         {
             string userCode;
-            string scriptCode = "// USER CODE STARTS BELOW THIS LINE\n" + script.Code;
+            string scriptCode = script.Code;
 
             if (script.Config.Kind == ScriptKind.Expression)
             {
                 throw new NotImplementedException("Expression code parsing is not implemented yet.");
             }
-            else if (script.Config.Kind == ScriptKind.Statements)
-            {
-                userCode = $@"public async Task Main()
-{{
-    {scriptCode}
-}}
-";
-            }
-            else if (script.Config.Kind == ScriptKind.Program)
-            {
-                userCode = scriptCode;
-            }
             else
             {
-                throw new Exception($"Unrecognized script kind: {script.Config.Kind}");
+                userCode = scriptCode;
             }
 
             return userCode;
         }
 
-        public string GetBaseProgramTemplate()
+        public string GetFullProgramTemplate()
         {
             return @"{0}
 
-public class Program
+
+
+{1}
+
+
+
+class {2}
 {{
     private static IOutputWriter OutputWriter {{ get; set; }}
-    private static Exception? Exception {{ get; set; }}
 
     // Entry point used when running script in external process
     static async Task Main(string[] args)
     {{
-        await Start(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
+        SetIO(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
     }}
 
-    private static async Task Start(IOutputWriter outputWriter)
+    private static void {3}(IOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
-
-        try
-        {{
-            await new UserScript_Program().Main();
-        }}
-        catch (Exception ex)
-        {{
-            Exception = ex;
-        }}
     }}
 
     public static void OutputWrite(object? o = null, string? title = null)
@@ -127,33 +117,26 @@ public class Program
     }}
 }}
 
-public static class Exts
+static class Exts
 {{
-        /// <summary>
-        /// Dumps this object to the results view.
-        /// </summary>
-        /// <param name=""o"">The object being dumped.</param>
-        /// <param name=""title"">An optional title for the result.</param>
-        /// <returns>The object being dumped.</returns>
+    /// <summary>
+    /// Dumps this object to the results view.
+    /// </summary>
+    /// <param name=""o"">The object being dumped.</param>
+    /// <param name=""title"">An optional title for the result.</param>
+    /// <returns>The object being dumped.</returns>
     public static T? Dump<T>(this T? o, string? title = null)
     {{
-        Program.OutputWriteLine(o, title);
+        {2}.OutputWriteLine(o, title);
         return o;
     }}
 }}
-
-{1}
 ";
         }
 
         public string GetUserProgramTemplate()
         {
-            return @"
-public class UserScript_Program
-{{
-    {0}
-}}
-";
+            return $"{UserCodeMarker}\n{{0}}";
         }
     }
 }

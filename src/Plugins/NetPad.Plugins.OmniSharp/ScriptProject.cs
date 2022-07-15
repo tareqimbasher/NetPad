@@ -101,7 +101,7 @@ public class ScriptProject
 
         await File.WriteAllTextAsync(ProgramFilePath, parsingResult.FullProgram);
 
-        UserCodeStartsOnLine = parsingResult.UserCodeStartLine;
+        UserCodeStartsOnLine = parsingResult.ParsedCodeInformation.UserCodeStartLine;
         return parsingResult.FullProgram;
     }
 

@@ -61,7 +61,7 @@ namespace NetPad.Runtimes
         {
             try
             {
-                var (success, assemblyBytes, referenceAssemblyPaths) = await CompileAndGetRefAssemblyPathsAsync();
+                var (success, assemblyBytes, referenceAssemblyPaths, parsingResult) = await CompileAndGetRefAssemblyPathsAsync();
 
                 if (!success)
                     return RunResult.RunAttemptFailure();
@@ -70,6 +70,7 @@ namespace NetPad.Runtimes
                     _serviceScope!,
                     assemblyBytes,
                     referenceAssemblyPaths,
+                    parsingResult.ParsedCodeInformation,
                     _outputWriter
                 );
 
@@ -78,7 +79,7 @@ namespace NetPad.Runtimes
                     GCUtil.CollectAndWait();
                 }
 
-                return !completionSuccess ? RunResult.ScriptCompletionFailure() : RunResult.Success(elapsedMs);
+                return !completionSuccess ? RunResult.ScriptCompletionFailure(elapsedMs) : RunResult.Success(elapsedMs);
             }
             catch (Exception ex)
             {
@@ -98,15 +99,15 @@ namespace NetPad.Runtimes
             _outputListeners.Remove(outputWriter);
         }
 
-        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths)> CompileAndGetRefAssemblyPathsAsync()
+        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)> CompileAndGetRefAssemblyPathsAsync()
         {
             var parsingResult = _codeParser.Parse(_script);
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
             var fullProgram = parsingResult.FullProgram
-                .Replace("Console.WriteLine", "Program.OutputWriteLine")
-                .Replace("Console.Write", "Program.OutputWrite");
+                .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
+                .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
 
             var compilationResult = _codeCompiler.Compile(
                 new CompilationInput(fullProgram, referenceAssemblyPaths)
@@ -134,7 +135,7 @@ namespace NetPad.Runtimes
                                 .Select(x => int.Parse(x.Trim()))
                                 .ToArray();
 
-                            return $"({part1[0] - parsingResult.UserCodeStartLine},{part1[1]})" + string.Join(")", parts.Skip(1));
+                            return $"({part1[0] - parsingResult.ParsedCodeInformation.UserCodeStartLine},{part1[1]})" + string.Join(")", parts.Skip(1));
                         }
                         catch
                         {
@@ -144,10 +145,10 @@ namespace NetPad.Runtimes
                     })
                     .JoinToString("\n") + "\n");
 
-                return (false, Array.Empty<byte>(), Array.Empty<string>());
+                return (false, Array.Empty<byte>(), Array.Empty<string>(), parsingResult);
             }
 
-            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths);
+            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths, parsingResult);
         }
 
         private async Task<string[]> GetReferenceAssemblyPathsAsync()
@@ -176,6 +177,7 @@ namespace NetPad.Runtimes
             IServiceScope serviceScope,
             byte[] targetAssembly,
             string[] referenceAssemblyPaths,
+            ParsedCodeInformation parsedCodeInformation,
             IOutputWriter outputWriter
         )
         {
@@ -189,38 +191,40 @@ namespace NetPad.Runtimes
 
             var alcWeakRef = new WeakReference(assemblyLoader, trackResurrection: true);
 
-            var userScriptType = assembly.GetExportedTypes().FirstOrDefault(t => t.Name == "Program");
-            if (userScriptType == null)
+            string bootstrapperClassName = parsedCodeInformation.BootstrapperClassName;
+            Type? bootstrapperType = assembly.GetTypes().FirstOrDefault(t => t.Name == bootstrapperClassName);
+            if (bootstrapperType == null)
             {
-                throw new ScriptRuntimeException("Could not find the Program type");
+                throw new ScriptRuntimeException($"Could not find the bootstrapper type: {bootstrapperClassName}");
             }
 
-            var method = userScriptType.GetMethod("Start", BindingFlags.Static | BindingFlags.NonPublic);
-            if (method == null)
+            string setIOMethodName = parsedCodeInformation.BootstrapperSetIOMethodName;
+            MethodInfo? setIOMethod = bootstrapperType.GetMethod(setIOMethodName, BindingFlags.Static | BindingFlags.NonPublic);
+            if (setIOMethod == null)
             {
-                throw new Exception("Could not find the entry method Start on Program");
+                throw new Exception($"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
+            }
+            setIOMethod.Invoke(null, new object?[] { outputWriter });
+
+            MethodInfo? entryPoint = assembly.EntryPoint;
+            if (entryPoint == null)
+            {
+                throw new ScriptRuntimeException("Could not find assembly entry point method.");
             }
 
             var runStart = DateTime.Now;
 
-            var task = method.Invoke(null, new object?[] { outputWriter }) as Task;
-
-            if (task == null)
+            try
             {
-                throw new ScriptRuntimeException("Expected a Task to be returned by executing the " +
-                                                 $"script's Main method but got a {task?.GetType().FullName} ");
+                _ = entryPoint.Invoke(null, new object?[] { Array.Empty<string>() });
+            }
+            catch (Exception ex)
+            {
+                await outputWriter.WriteAsync((ex.InnerException ?? ex).ToString());
+                return (alcWeakRef, false, GetElapsedMilliseconds(runStart));
             }
 
-            await task;
-            var elapsedMs = (DateTime.Now - runStart).TotalMilliseconds;
-
-            if (userScriptType.GetProperty("Exception", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null) is Exception exception)
-            {
-                await outputWriter.WriteAsync(exception);
-                return (alcWeakRef, false, elapsedMs);
-            }
-
-            return (alcWeakRef, true, elapsedMs);
+            return (alcWeakRef, true, GetElapsedMilliseconds(runStart));
         }
 
         public void Dispose()
@@ -250,6 +254,11 @@ namespace NetPad.Runtimes
 
             _logger.LogTrace("DisposeAsync end");
             return ValueTask.CompletedTask;
+        }
+
+        private double GetElapsedMilliseconds(DateTime start)
+        {
+            return (DateTime.Now - start).TotalMilliseconds;
         }
     }
 }

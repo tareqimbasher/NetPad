@@ -171,7 +171,7 @@ namespace NetPad.Compilation.Tests.CSharp
         {
             var parser = new CSharpCodeParser();
 
-            var baseProgramTemplate = parser.GetBaseProgramTemplate();
+            var baseProgramTemplate = parser.GetFullProgramTemplate();
 
             Assert.Contains("public class Program", baseProgramTemplate);
         }

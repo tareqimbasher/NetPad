@@ -1,19 +1,16 @@
-using System.Collections.Generic;
-
 namespace NetPad.Compilation
 {
     public class CodeParsingResult
     {
-        public CodeParsingResult(string fullProgram, int userCodeStartLine)
+        public CodeParsingResult(string fullProgram, string userProgram, ParsedCodeInformation parsedCodeInformation)
         {
             FullProgram = fullProgram;
-            UserCodeStartLine = userCodeStartLine;
-            Namespaces = new List<string>();
+            UserProgram = userProgram;
+            ParsedCodeInformation = parsedCodeInformation;
         }
 
         public string FullProgram { get; }
-        public List<string> Namespaces { get; set; }
-        public string? UserProgram { get; set; }
-        public int UserCodeStartLine { get; }
+        public string UserProgram { get; }
+        public ParsedCodeInformation ParsedCodeInformation { get; }
     }
 }
