@@ -42,6 +42,7 @@ package-management {
 
             .package-description {
                 flex-grow: 1;
+                min-width: 0;
             }
 
             .package-actions {
