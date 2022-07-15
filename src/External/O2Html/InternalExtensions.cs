@@ -40,7 +40,7 @@ internal static class InternalExtensions
 
     public static IEnumerable<PropertyInfo> GetReadableProperties(this Type type)
     {
-        return type.GetProperties().Where(p => p.CanRead);
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
     }
 
     public static IEnumerable<PropertyInfo> GetReadableProperties(this object obj)
