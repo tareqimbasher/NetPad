@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Plugins.OmniSharp.Features.CodeActions;
 using NetPad.Plugins.OmniSharp.Features.CodeChecking;
 using NetPad.Plugins.OmniSharp.Features.CodeFormatting;
 using NetPad.Plugins.OmniSharp.Features.CodeStructure;
@@ -108,4 +109,12 @@ public class OmniSharpController : Controller
     [HttpPost("inlay-hints/resolve")]
     public async Task<OmniSharpInlayHint?> ResolveInlayHint(Guid scriptId, [FromBody] InlayHintResolveRequest request) =>
         await _mediator.Send(new ResolveInlayHintQuery(scriptId, request));
+
+    [HttpPost("code-actions")]
+    public async Task<OmniSharpGetCodeActionsResponse?> GetCodeActions(Guid scriptId, [FromBody] OmniSharpGetCodeActionsRequest request) =>
+        await _mediator.Send(new GetCodeActionsQuery(scriptId, request));
+
+    [HttpPost("code-actions/run")]
+    public async Task<ActionResult<RunCodeActionResponse?>> RunCodeAction(Guid scriptId, [FromBody] OmniSharpRunCodeActionRequest request) =>
+        await _mediator.Send(new RunCodeActionCommand(scriptId, request));
 }

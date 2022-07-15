@@ -39,6 +39,10 @@ export interface IOmniSharpApiClient {
     getInlayHints(scriptId: string, request: InlayHintRequest): Promise<InlayHintResponse>;
 
     resolveInlayHint(scriptId: string, request: InlayHintResolveRequest): Promise<InlayHint>;
+
+    getCodeActions(scriptId: string, request: GetCodeActionsRequest): Promise<GetCodeActionsResponse>;
+
+    runCodeAction(scriptId: string, request: RunCodeActionRequest): Promise<RunCodeActionResponse>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -630,6 +634,90 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<InlayHint>(<any>null);
+    }
+
+    getCodeActions(scriptId: string, request: GetCodeActionsRequest, signal?: AbortSignal | undefined): Promise<GetCodeActionsResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-actions";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCodeActions(_response);
+        });
+    }
+
+    protected processGetCodeActions(response: Response): Promise<GetCodeActionsResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = GetCodeActionsResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<GetCodeActionsResponse>(<any>null);
+    }
+
+    runCodeAction(scriptId: string, request: RunCodeActionRequest, signal?: AbortSignal | undefined): Promise<RunCodeActionResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-actions/run";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRunCodeAction(_response);
+        });
+    }
+
+    protected processRunCodeAction(response: Response): Promise<RunCodeActionResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RunCodeActionResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RunCodeActionResponse>(<any>null);
     }
 }
 
@@ -2891,6 +2979,446 @@ export class InlayHintData implements IInlayHintData {
 export interface IInlayHintData {
     item1: string;
     item2: number;
+}
+
+export class GetCodeActionsResponse implements IGetCodeActionsResponse {
+    codeActions?: OmniSharpCodeAction[] | undefined;
+
+    constructor(data?: IGetCodeActionsResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["codeActions"])) {
+                this.codeActions = [] as any;
+                for (let item of _data["codeActions"])
+                    this.codeActions!.push(OmniSharpCodeAction.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): GetCodeActionsResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetCodeActionsResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.codeActions)) {
+            data["codeActions"] = [];
+            for (let item of this.codeActions)
+                data["codeActions"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): GetCodeActionsResponse {
+        const json = this.toJSON();
+        let result = new GetCodeActionsResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetCodeActionsResponse {
+    codeActions?: OmniSharpCodeAction[] | undefined;
+}
+
+export class OmniSharpCodeAction implements IOmniSharpCodeAction {
+    identifier?: string | undefined;
+    name?: string | undefined;
+
+    constructor(data?: IOmniSharpCodeAction) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.identifier = _data["identifier"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpCodeAction {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpCodeAction();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["identifier"] = this.identifier;
+        data["name"] = this.name;
+        return data;
+    }
+
+    clone(): OmniSharpCodeAction {
+        const json = this.toJSON();
+        let result = new OmniSharpCodeAction();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpCodeAction {
+    identifier?: string | undefined;
+    name?: string | undefined;
+}
+
+export class GetCodeActionsRequest extends Request implements IGetCodeActionsRequest {
+    selection?: Range | undefined;
+
+    constructor(data?: IGetCodeActionsRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.selection = _data["selection"] ? Range.fromJS(_data["selection"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): GetCodeActionsRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetCodeActionsRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["selection"] = this.selection ? this.selection.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): GetCodeActionsRequest {
+        const json = this.toJSON();
+        let result = new GetCodeActionsRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetCodeActionsRequest extends IRequest {
+    selection?: Range | undefined;
+}
+
+export class RunCodeActionResponse implements IRunCodeActionResponse {
+    changes?: FileOperationResponse[] | undefined;
+
+    constructor(data?: IRunCodeActionResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(FileOperationResponse.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): RunCodeActionResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RunCodeActionResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): RunCodeActionResponse {
+        const json = this.toJSON();
+        let result = new RunCodeActionResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRunCodeActionResponse {
+    changes?: FileOperationResponse[] | undefined;
+}
+
+export abstract class FileOperationResponse implements IFileOperationResponse {
+    fileName!: string;
+    modificationType!: FileModificationType;
+
+    protected _discriminator: string;
+
+    constructor(data?: IFileOperationResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        this._discriminator = "FileOperationResponse";
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.modificationType = _data["modificationType"];
+        }
+    }
+
+    static fromJS(data: any): FileOperationResponse {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "ModifiedFileResponse") {
+            let result = new ModifiedFileResponse();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "OpenFileResponse") {
+            let result = new OpenFileResponse();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "RenamedFileResponse") {
+            let result = new RenamedFileResponse();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'FileOperationResponse' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
+        data["fileName"] = this.fileName;
+        data["modificationType"] = this.modificationType;
+        return data;
+    }
+
+    clone(): FileOperationResponse {
+        throw new Error("The abstract class 'FileOperationResponse' cannot be instantiated.");
+    }
+}
+
+export interface IFileOperationResponse {
+    fileName: string;
+    modificationType: FileModificationType;
+}
+
+export type FileModificationType = "Modified" | "Opened" | "Renamed";
+
+export class ModifiedFileResponse extends FileOperationResponse implements IModifiedFileResponse {
+    buffer!: string;
+    changes!: LinePositionSpanTextChange[];
+
+    constructor(data?: IModifiedFileResponse) {
+        super(data);
+        if (!data) {
+            this.changes = [];
+        }
+        this._discriminator = "ModifiedFileResponse";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.buffer = _data["buffer"];
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(LinePositionSpanTextChange.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): ModifiedFileResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new ModifiedFileResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["buffer"] = this.buffer;
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): ModifiedFileResponse {
+        const json = this.toJSON();
+        let result = new ModifiedFileResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IModifiedFileResponse extends IFileOperationResponse {
+    buffer: string;
+    changes: LinePositionSpanTextChange[];
+}
+
+export class OpenFileResponse extends FileOperationResponse implements IOpenFileResponse {
+
+    constructor(data?: IOpenFileResponse) {
+        super(data);
+        this._discriminator = "OpenFileResponse";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): OpenFileResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new OpenFileResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): OpenFileResponse {
+        const json = this.toJSON();
+        let result = new OpenFileResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOpenFileResponse extends IFileOperationResponse {
+}
+
+export class RenamedFileResponse extends FileOperationResponse implements IRenamedFileResponse {
+    newFileName!: string;
+
+    constructor(data?: IRenamedFileResponse) {
+        super(data);
+        this._discriminator = "RenamedFileResponse";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.newFileName = _data["newFileName"];
+        }
+    }
+
+    static fromJS(data: any): RenamedFileResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RenamedFileResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["newFileName"] = this.newFileName;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): RenamedFileResponse {
+        const json = this.toJSON();
+        let result = new RenamedFileResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRenamedFileResponse extends IFileOperationResponse {
+    newFileName: string;
+}
+
+export class RunCodeActionRequest extends Request implements IRunCodeActionRequest {
+    identifier?: string | undefined;
+    selection?: Range | undefined;
+    wantsTextChanges!: boolean;
+    applyTextChanges!: boolean;
+    wantsAllCodeActionOperations!: boolean;
+
+    constructor(data?: IRunCodeActionRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.identifier = _data["identifier"];
+            this.selection = _data["selection"] ? Range.fromJS(_data["selection"]) : <any>undefined;
+            this.wantsTextChanges = _data["wantsTextChanges"];
+            this.applyTextChanges = _data["applyTextChanges"];
+            this.wantsAllCodeActionOperations = _data["wantsAllCodeActionOperations"];
+        }
+    }
+
+    static fromJS(data: any): RunCodeActionRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new RunCodeActionRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["identifier"] = this.identifier;
+        data["selection"] = this.selection ? this.selection.toJSON() : <any>undefined;
+        data["wantsTextChanges"] = this.wantsTextChanges;
+        data["applyTextChanges"] = this.applyTextChanges;
+        data["wantsAllCodeActionOperations"] = this.wantsAllCodeActionOperations;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): RunCodeActionRequest {
+        const json = this.toJSON();
+        let result = new RunCodeActionRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRunCodeActionRequest extends IRequest {
+    identifier?: string | undefined;
+    selection?: Range | undefined;
+    wantsTextChanges: boolean;
+    applyTextChanges: boolean;
+    wantsAllCodeActionOperations: boolean;
 }
 
 export class ApiException extends Error {

@@ -30,5 +30,11 @@ namespace NetPad.Common
         {
             return System.Text.Json.JsonSerializer.Deserialize<T>(json, DefaultOptions);
         }
+
+        public static T? Deserialize<T>(string json, JsonSerializerOptions options)
+        {
+            Configure(options);
+            return System.Text.Json.JsonSerializer.Deserialize<T>(json, options);
+        }
     }
 }

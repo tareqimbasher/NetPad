@@ -9,7 +9,9 @@ import {
     IImplementationProvider,
     IInlayHintsProvider,
     IReferenceProvider,
-    ISignatureHelpProvider
+    ISignatureHelpProvider,
+    ICodeActionProvider,
+    ICommandProvider
 } from "@application";
 import * as actions from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
@@ -21,6 +23,7 @@ import {OmnisharpSignatureHelpProvider} from "./features/omnisharp-signature-hel
 import {OmnisharpReferenceProvider} from "./features/omnisharp-reference-provider";
 import {OmnisharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
 import {OmnisharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
+import {OmnisharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -39,6 +42,8 @@ export class OmniSharpPlugin {
         container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
         container.register(Registration.singleton(ICodeLensProvider, OmnisharpCodeLensProvider));
         container.register(Registration.singleton(IInlayHintsProvider, OmnisharpInlayHintProvider));
+        container.register(Registration.singleton(ICodeActionProvider, OmnisharpCodeActionProvider));
+        container.register(Registration.cachedCallback(ICommandProvider, c => c.get(ICodeActionProvider)));
 
         this.container = container.createChild();
 

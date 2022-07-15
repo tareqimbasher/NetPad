@@ -1,6 +1,8 @@
 import * as monaco from "monaco-editor";
 import {all} from "aurelia";
 import {
+    ICommandProvider,
+
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
@@ -9,11 +11,13 @@ import {
     ISignatureHelpProvider,
     IReferenceProvider,
     ICodeLensProvider,
-    IInlayHintsProvider
+    IInlayHintsProvider,
+    ICodeActionProvider
 } from "./interfaces";
 
 export class EditorSetup {
     constructor(
+        @all(ICommandProvider) private readonly commandProviders: ICommandProvider[],
         @all(ICompletionItemProvider) private readonly completionItemProviders: monaco.languages.CompletionItemProvider[],
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: monaco.languages.DocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: monaco.languages.DocumentRangeSemanticTokensProvider[],
@@ -23,11 +27,13 @@ export class EditorSetup {
         @all(IReferenceProvider) private readonly referenceProviders: monaco.languages.ReferenceProvider[],
         @all(ICodeLensProvider) private readonly codeLensProviders: monaco.languages.CodeLensProvider[],
         @all(IInlayHintsProvider) private readonly inlayHintsProviders: monaco.languages.InlayHintsProvider[],
+        @all(ICodeActionProvider) private readonly codeActionProviders: monaco.languages.CodeActionProvider[],
     ) {
     }
 
     public setup() {
         this.registerThemes();
+        this.registerCommands();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
         this.registerImplementationProviders();
@@ -36,6 +42,7 @@ export class EditorSetup {
         this.registerReferenceProviders();
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
+        this.registerCodeActionProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -59,6 +66,14 @@ export class EditorSetup {
             rules: [],
             colors: {}
         });
+    }
+
+    private registerCommands() {
+        for (const commandProvider of this.commandProviders) {
+            for (const command of commandProvider.provideCommands()) {
+                monaco.editor.registerCommand(command.id, command.handler);
+            }
+        }
     }
 
     private registerCompletionProviders() {
@@ -110,6 +125,12 @@ export class EditorSetup {
     private registerInlayHintsProviders() {
         for (const inlayHintsProvider of this.inlayHintsProviders) {
             monaco.languages.registerInlayHintsProvider("csharp", inlayHintsProvider);
+        }
+    }
+
+    private registerCodeActionProviders() {
+        for (const codeActionProvider of this.codeActionProviders) {
+            monaco.languages.registerCodeActionProvider("csharp", codeActionProvider);
         }
     }
 
