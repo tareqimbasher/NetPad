@@ -14,23 +14,50 @@ open-source, web-enabled, cross-platform alternative.
 
 ## Contribution
 
-This is a work in progress, and still in its infancy. We welcome all
-contributions!
+This is a work in progress and still in alpha. All
+contributions are welcome!
 
-You can currently:
+## Roadmap
 
-* Write, save and run your own scripts
-* Add additional namespaces to your script
-* Reference and use your own assemblies in scripts
-* Add and use NuGet packages in scripts
+**What is working** :tada:
+
+* The basics:
+  * Write, save and run your own scripts 
+  * Manage namespaces
+  * Standard code editor features
 * Dump complex objects to the results console
+* Auto-save: If you close NetPad, it will auto-save your changes and
+  restore them the next time you fire it up
+* Add NuGet packages
+* Reference assemblies from disk
+* OmniSharp integration:
+  * CodeLens
+  * Code completion (Intellisense)
+  * Semantic highlighting
+  * Hover for documentation
+  * Format document
+  * Go-to implementation
+  * Find references
+  * Action suggestions
 
-You cannot, yet:
+**What is yet to come** :construction:
 
-* Enjoy code-completion features in the editor (`Coming soon!`)
+* More OmniSharp integrations:
+  * Code fix suggestions
+  * Format selection
+  * Format as you type
+  * Go-to definition
+  * Go-to symbol
+  * Rename symbol
+  * Diagnostics
+  * ...and more
 * Add database connections
+* Workspaces/Sessions
+* More results console features:
+  * Support for more complex objects in the results console, ex: Dumping images
+  * Exporting results to different file formats, or to the clipboard
 
-## Tech Stack
+## Tech Stack :computer:
 
 * Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
 * ASP.NET Core
@@ -85,7 +112,7 @@ dotnet run
 
 and access the app via your web browser, ex: `http://localhost:5000`
 
-## Packaging
+## Packaging :package:
 
 The app is built and packaged
 using [electron-builder](https://www.electron.build/). Build the app for the
@@ -103,7 +130,7 @@ for additional CLI options when packaging the app,
 and [electron-builder](https://www.electron.build/) for additional configuration
 options.
 
-## Resources:
+## Resources :books::
 
 * Docs: [Go](https://github.com/tareqimbasher/NetPad/tree/main/docs)
 * More on SPA app startup and running

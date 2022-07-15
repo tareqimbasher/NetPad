@@ -42,6 +42,7 @@ const config = {
         ],
         linux: {
             category: "Development",
+            icon: "../../../wwwroot/256x256.png",
             target: [
                 {
                     target: "dir"
