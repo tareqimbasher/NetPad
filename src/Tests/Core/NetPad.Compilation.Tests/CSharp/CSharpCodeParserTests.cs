@@ -171,19 +171,19 @@ namespace NetPad.Compilation.Tests.CSharp
         {
             var parser = new CSharpCodeParser();
 
-            var baseProgramTemplate = parser.GetFullProgramTemplate();
+            var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains("public class Program", baseProgramTemplate);
+            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.FullProgram);
         }
 
         [Fact]
-        public void UserProgramTemplate_Has_Correct_Class_Declaration()
+        public void BaseProgramTemplate_Has_Correct_SetIO_Method()
         {
             var parser = new CSharpCodeParser();
 
-            var userProgramTemplate = parser.GetUserProgramTemplate();
+            var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains("public class UserScript_Program", userProgramTemplate);
+            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.FullProgram);
         }
 
         [Fact]
@@ -195,29 +195,6 @@ namespace NetPad.Compilation.Tests.CSharp
             var parser = new CSharpCodeParser();
 
             Assert.Throws<NotImplementedException>(() => parser.GetUserCode(script));
-        }
-
-        [Fact]
-        public void GetUserCode_Returns_Code_Wrapped_In_Main_Method_For_Statements_Type_Script()
-        {
-            var script = GetScript();
-            script.Config.SetKind(ScriptKind.Statements);
-            script.UpdateCode("Console.WriteLine(DateTime.Now);");
-            var parser = new CSharpCodeParser();
-
-            var userCode = parser.GetUserCode(script);
-
-            var expected = @"public async Task Main()
-{
-Console.WriteLine(DateTime.Now);
-}
-";
-
-            userCode = userCode.Split("\n")
-                .Where(l => !l.Trim().StartsWith("//"))
-                .JoinToString("\n");
-
-            Assert.Equal(expected, userCode);
         }
 
         private Script GetScript() => new Script("Test Script");

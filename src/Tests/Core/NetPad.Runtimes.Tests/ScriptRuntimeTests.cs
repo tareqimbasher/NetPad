@@ -77,11 +77,7 @@ namespace NetPad.Runtimes.Tests
         {
             var script = GetScript();
             script.Config.SetKind(ScriptKind.Program);
-            script.UpdateCode($@"
-public async System.Threading.Tasks.Task Main() {{
-    Console.Write({code});
-}}
-");
+            script.UpdateCode($@"Console.Write({code});");
 
             string? result = null;
             var runtime = await GetScriptRuntimeAsync(script);
