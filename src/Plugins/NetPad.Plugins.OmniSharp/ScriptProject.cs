@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
+using NetPad.Configuration;
 using NetPad.IO;
 using NetPad.Scripts;
 
@@ -10,11 +10,17 @@ namespace NetPad.Plugins.OmniSharp;
 
 public class ScriptProject
 {
+    private readonly Settings _settings;
     private readonly ICodeParser _codeParser;
     private readonly ILogger<ScriptProject> _logger;
 
-    public ScriptProject(Script script, ICodeParser codeParser, ILogger<ScriptProject> logger)
+    public ScriptProject(
+        Script script,
+        Settings settings,
+        ICodeParser codeParser,
+        ILogger<ScriptProject> logger)
     {
+        _settings = settings;
         _codeParser = codeParser;
         _logger = logger;
         Script = script;
@@ -190,7 +196,9 @@ public class ScriptProject
     public async Task AddPackageAsync(string packageId, string packageVersion)
     {
         var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"add {ProjectFilePath} package {packageId} --version {packageVersion}")
+            $"add {ProjectFilePath} package {packageId} " +
+            $"--version {packageVersion} " +
+            $"--package-directory {Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet")}")
         {
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath,
@@ -206,7 +214,8 @@ public class ScriptProject
     public async Task RemovePackageAsync(string packageId)
     {
         var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"remove {ProjectFilePath} package {packageId}")
+            $"remove {ProjectFilePath} package {packageId} " +
+            $"--package-directory {Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet")}")
         {
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath,

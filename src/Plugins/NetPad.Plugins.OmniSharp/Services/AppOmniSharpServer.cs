@@ -1,4 +1,5 @@
 using NetPad.Compilation;
+using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -28,6 +29,7 @@ public class AppOmniSharpServer
         ScriptEnvironment environment,
         IOmniSharpServerFactory omniSharpServerFactory,
         IOmniSharpServerLocator omniSharpServerLocator,
+        Settings settings,
         ICodeParser codeParser,
         IEventBus eventBus,
         ILogger<AppOmniSharpServer> logger,
@@ -40,7 +42,7 @@ public class AppOmniSharpServer
         _logger = logger;
         _subscriptionTokens = new();
 
-        _project = new ScriptProject(environment.Script, codeParser, scriptProjectLogger);
+        _project = new ScriptProject(environment.Script, settings, codeParser, scriptProjectLogger);
     }
 
     public ScriptProject Project => _project;
