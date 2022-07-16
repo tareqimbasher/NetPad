@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,24 +14,45 @@ namespace NetPad.BackgroundServices
             _logger = loggerFactory.CreateLogger(GetType());
         }
 
-        public override async Task StartAsync(CancellationToken cancellationToken)
+        public sealed override async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Starting background service");
+            _logger.LogDebug("Starting service");
 
-            await base.StartAsync(cancellationToken);
+            try
+            {
+                await StartingAsync(cancellationToken);
 
-            _logger.LogDebug("Background service started");
+                await base.StartAsync(cancellationToken);
+
+                _logger.LogDebug("Service started");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failure while starting service");
+            }
         }
 
-        public override async Task StopAsync(CancellationToken cancellationToken)
+        public sealed override async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Stopping background service");
+            _logger.LogDebug("Stopping service");
 
-            await StoppingAsync(cancellationToken);
+            try
+            {
+                await StoppingAsync(cancellationToken);
 
-            await base.StopAsync(cancellationToken);
+                await base.StopAsync(cancellationToken);
 
-            _logger.LogDebug("Background service stopped");
+                _logger.LogDebug("Service stopped");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failure while stopping service");
+            }
+        }
+
+        protected virtual Task StartingAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         protected virtual Task StoppingAsync(CancellationToken cancellationToken)

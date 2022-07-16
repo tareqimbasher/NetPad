@@ -62,18 +62,25 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         foreach (var filePath in Directory.GetFiles(GetRepositoryDirPath()))
         {
-            if (!Guid.TryParse(Path.GetFileNameWithoutExtension(filePath), out var scriptId))
+            try
             {
-                continue;
-            }
+                if (!Guid.TryParse(Path.GetFileNameWithoutExtension(filePath), out var scriptId))
+                {
+                    continue;
+                }
 
-            var script = await GetScriptAsync(scriptId);
-            if (script == null)
+                var script = await GetScriptAsync(scriptId);
+                if (script == null)
+                {
+                    continue;
+                }
+
+                scripts.Add(script);
+            }
+            catch (Exception ex)
             {
-                continue;
+                _logger.LogError(ex, "Failed to load script at path: {ScriptPath}", filePath);
             }
-
-            scripts.Add(script);
         }
 
         return scripts;
