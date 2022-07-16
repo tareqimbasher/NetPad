@@ -17,10 +17,8 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
     {
         private readonly AppOmniSharpServer _server;
 
-        private static readonly JsonSerializerOptions fileOperationResponseCollectionSerializationOptions = new JsonSerializerOptions
-        {
-            Converters = { new FileOperationResponseCollectionJsonConverter() }
-        };
+        private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter =
+            new FileOperationResponseCollectionJsonConverter();
 
         public Handler(AppOmniSharpServer server)
         {
@@ -58,8 +56,8 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
                 if (change is not ModifiedFileResponse modifiedFileResponse) continue;
                 foreach (var modifiedFileChange in modifiedFileResponse.Changes)
                 {
-                    modifiedFileChange.StartLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.StartLine);
-                    modifiedFileChange.EndLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.EndLine);
+                    modifiedFileChange.StartLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.StartLine) - 1; // Special case
+                    modifiedFileChange.EndLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.EndLine) - 1; // Special case
                 }
             }
 
@@ -80,11 +78,13 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
                 return null;
             }
 
-
             return new RunCodeActionResponse()
             {
                 Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(changesArr.ToString(),
-                    fileOperationResponseCollectionSerializationOptions)
+                    new JsonSerializerOptions
+                    {
+                        Converters = { _fileOperationResponseCollectionJsonConverter }
+                    })
             };
         }
     }

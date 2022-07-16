@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace NetPad.Plugins.OmniSharp.Services;
 
 public interface IOmniSharpServerLocator

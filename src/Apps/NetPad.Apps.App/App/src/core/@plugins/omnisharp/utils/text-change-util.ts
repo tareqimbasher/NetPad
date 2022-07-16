@@ -16,8 +16,6 @@ export class TextChangeUtil {
         const edits: editor.IIdentifiedSingleEditOperation[] = [];
 
         for (const textChange of textChanges) {
-            textChange.endColumn++; // OmniSharp sends this back short one char
-
             const isOutOfEditorRange = (textChange.startLine < 1 && textChange.endLine < 1)
                 || (textChange.startLine > editorLineCount)
 

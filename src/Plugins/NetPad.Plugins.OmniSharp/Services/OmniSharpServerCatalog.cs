@@ -89,6 +89,7 @@ public class OmniSharpServerCatalog
                 if (!started)
                 {
                     _items.Remove(environment.Script.Id);
+                    serviceScope.Dispose();
                 }
             });
 

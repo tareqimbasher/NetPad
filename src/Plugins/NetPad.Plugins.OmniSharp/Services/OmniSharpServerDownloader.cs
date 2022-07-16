@@ -1,12 +1,8 @@
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
-using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using NetPad.Application;
+using NetPad.Configuration;
 using NetPad.Utilities;
 
 namespace NetPad.Plugins.OmniSharp.Services;
@@ -120,10 +116,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         return new OmniSharpServerLocation(executableFile.FullName);
     }
 
-    private DirectoryInfo GetDownloadDirectory() => new DirectoryInfo(Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "NetPad",
-        "OmniSharp"));
+    private DirectoryInfo GetDownloadDirectory() => new DirectoryInfo(Path.Combine(Settings.AppDataFolderPath, "OmniSharp"));
 
     private string GetDownloadUrl(OSPlatform platform)
     {
