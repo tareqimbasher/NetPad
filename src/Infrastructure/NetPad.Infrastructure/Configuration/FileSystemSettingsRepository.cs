@@ -1,7 +1,8 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
-using NetPad.Common;
+using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Configuration
 {
@@ -11,10 +12,7 @@ namespace NetPad.Configuration
 
         public FileSystemSettingsRepository()
         {
-            _settingsFilePath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NetPad",
-                "settings.json");
+            _settingsFilePath = Path.Combine(Settings.AppDataFolderPath, "settings.json");
         }
 
         public Task<string> GetSettingsFileLocationAsync()
@@ -27,8 +25,27 @@ namespace NetPad.Configuration
             if (!File.Exists(_settingsFilePath))
                 return new Settings();
 
+            Settings settings;
+
             var json = await File.ReadAllTextAsync(_settingsFilePath).ConfigureAwait(false);
-            return JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not get settings.");
+
+            // Validate settings file has a valid version
+            var jsonRoot = JsonDocument.Parse(json).RootElement;
+            if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLower(), out var versionProp)
+                || !Version.TryParse(versionProp.GetString(), out _))
+            {
+                settings = new Settings();
+                await SaveSettingsAsync(settings);
+            }
+
+            settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not deserialize settings file.");
+
+            if (settings.Upgrade())
+            {
+                await SaveSettingsAsync(settings);
+            }
+
+            return settings;
         }
 
         public async Task SaveSettingsAsync(Settings settings)

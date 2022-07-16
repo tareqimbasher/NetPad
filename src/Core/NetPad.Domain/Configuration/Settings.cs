@@ -11,9 +11,13 @@ namespace NetPad.Configuration
 
         public static readonly string LogFolderPath = Path.Combine(AppDataFolderPath, "Logs");
 
+        private const string LatestSettingsVersion = "1.0";
+
         public Settings()
         {
             // Defaults
+            Version = Version.Parse(LatestSettingsVersion);
+
             Theme = Theme.Dark;
 
             ScriptsDirectoryPath = Path.Combine(
@@ -39,7 +43,7 @@ namespace NetPad.Configuration
                 },
                 MonacoOptions = new
                 {
-                    cursorBlinking = "blink",
+                    cursorBlinking = "smooth",
                     lineNumbers = "on",
                     wordWrap = "off",
                     mouseWheelZoom = true,
@@ -64,6 +68,7 @@ namespace NetPad.Configuration
             PackageCacheDirectoryPath = packageCacheDirectoryPath;
         }
 
+        public Version Version { get; set; }
         public Theme Theme { get; set; }
         public string ScriptsDirectoryPath { get; set; }
         public string AutoSaveScriptsDirectoryPath { get; set; }
@@ -106,6 +111,15 @@ namespace NetPad.Configuration
         {
             ResultsOptions = resultsOptions ?? throw new ArgumentNullException(nameof(resultsOptions));
             return this;
+        }
+
+        /// <summary>
+        /// Upgrades a <see cref="Settings"/> object to the latest version.
+        /// </summary>
+        /// <returns>True if changes were made, otherwise false.</returns>
+        public bool Upgrade()
+        {
+            return false;
         }
     }
 }
