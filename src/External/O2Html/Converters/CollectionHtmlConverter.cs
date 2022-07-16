@@ -36,7 +36,7 @@ public class CollectionHtmlConverter : HtmlConverter
             var properties = oType.GetReadableProperties().OrderBy(p => p.Name).ToArray();
             foreach (var property in properties)
             {
-                table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(withNamespace: false, forHtml: true))
+                table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(withNamespace: true, forHtml: true))
                     .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
             }
 

@@ -25,13 +25,14 @@ public class ObjectHtmlConverter : HtmlConverter
         }
 
         var oType = obj.GetType();
-        var properties = oType.GetReadableProperties();
 
         var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);
 
         table.Head.AddAndGetElement("tr")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
             .AddText(oType.FullName!);
+
+        var properties = oType.GetReadableProperties().OrderBy(p => p.Name);
 
         foreach (var property in properties.OrderBy(p => p.Name))
         {
@@ -60,7 +61,7 @@ public class ObjectHtmlConverter : HtmlConverter
             return;
         }
 
-        var properties = obj.GetReadableProperties();
+        var properties = obj.GetReadableProperties().OrderBy(p => p.Name);
 
         foreach (var property in properties.Where(p => p.CanRead))
         {

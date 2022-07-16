@@ -6,7 +6,7 @@ public class CyclicReference : Element
     {
         if (obj != null)
         {
-            AddText($"Cyclic reference ({obj.GetType().GetReadableName(forHtml: true)})");
+            AddText($"Cyclic reference ({obj.GetType().GetReadableName(withNamespace: true, forHtml: true)})");
         }
     }
 }
