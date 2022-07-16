@@ -13,22 +13,34 @@ public class RestartOmniSharpServerCommand : OmniSharpScriptCommand<bool>
     {
         private readonly AppOmniSharpServer _server;
         private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(AppOmniSharpServer server, IAppStatusMessagePublisher appStatusMessagePublisher)
+        public Handler(AppOmniSharpServer server, IAppStatusMessagePublisher appStatusMessagePublisher, ILogger<Handler> logger)
         {
             _server = server;
             _appStatusMessagePublisher = appStatusMessagePublisher;
+            _logger = logger;
         }
 
         public async Task<bool> Handle(RestartOmniSharpServerCommand request, CancellationToken cancellationToken)
         {
             var scriptId = request.ScriptId;
 
-            var result = await _server.RestartAsync((progress) => { _appStatusMessagePublisher.PublishAsync(scriptId, progress); });
+            bool success;
 
-            await _appStatusMessagePublisher.PublishAsync(scriptId, $"{(result ? "Restarted" : "Failed to restart")} OmniSharp Server");
+            try
+            {
+                success = await _server.RestartAsync((progress) => { _appStatusMessagePublisher.PublishAsync(scriptId, progress, persistant: true); });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to restart OmniSharp server for script {ScriptId}", scriptId);
+                success = false;
+            }
 
-            return result;
+            await _appStatusMessagePublisher.PublishAsync(scriptId, $"{(success ? "Restarted" : "Failed to restart")} OmniSharp Server");
+
+            return success;
         }
     }
 }

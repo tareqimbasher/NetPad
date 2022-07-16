@@ -49,47 +49,55 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
     public async Task<OmniSharpServerLocation> DownloadAsync(OSPlatform platform)
     {
-        if (RuntimeInformation.OSArchitecture != Architecture.X64 && RuntimeInformation.OSArchitecture != Architecture.X86)
+        try
         {
-            throw new NotSupportedException($"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported");
+            if (RuntimeInformation.OSArchitecture != Architecture.X64 && RuntimeInformation.OSArchitecture != Architecture.X86)
+            {
+                throw new NotSupportedException($"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported");
+            }
+
+            var downloadUrl = GetDownloadUrl(platform);
+
+            var downloadDir = GetDownloadDirectory();
+
+            if (downloadDir.Exists)
+            {
+                downloadDir.Delete(true);
+                downloadDir.Create();
+            }
+
+            var start = DateTime.Now;
+
+            _httpClient.Timeout = TimeSpan.FromMinutes(1);
+            using var archiveStream = new MemoryStream();
+            await _httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(_appStatusMessagePublisher));
+
+            await _appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...", persistant: true);
+            var zipArchive = new ZipArchive(archiveStream);
+            zipArchive.ExtractToDirectory(downloadDir.FullName);
+
+            var downloadedLocation = GetDownloadedLocation(platform);
+
+            if (downloadedLocation == null)
+            {
+                downloadDir.Delete();
+                throw new Exception($"Could not find executable in download dir '{downloadDir.FullName}'");
+            }
+
+            if (platform != OSPlatform.Windows)
+            {
+                Process.Start("chmod", $"+x {downloadedLocation.ExecutablePath}");
+            }
+
+            await _appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
+
+            return downloadedLocation;
         }
-
-        var downloadUrl = GetDownloadUrl(platform);
-
-        var downloadDir = GetDownloadDirectory();
-
-        if (downloadDir.Exists)
+        catch
         {
-            downloadDir.Delete(true);
-            downloadDir.Create();
+            await _appStatusMessagePublisher.PublishAsync($"OmniSharp download failed", AppStatusMessagePriority.High, persistant: true);
+            throw;
         }
-
-        var start = DateTime.Now;
-
-        _httpClient.Timeout = TimeSpan.FromMinutes(1);
-        using var archiveStream = new MemoryStream();
-        await _httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(_appStatusMessagePublisher));
-
-        await _appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...");
-        var zipArchive = new ZipArchive(archiveStream);
-        zipArchive.ExtractToDirectory(downloadDir.FullName);
-
-        var downloadedLocation = GetDownloadedLocation(platform);
-
-        if (downloadedLocation == null)
-        {
-            downloadDir.Delete();
-            throw new Exception($"Could not find executable in download dir '{downloadDir.FullName}'");
-        }
-
-        if (platform != OSPlatform.Windows)
-        {
-            Process.Start("chmod", $"+x {downloadedLocation.ExecutablePath}");
-        }
-
-        await _appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
-
-        return downloadedLocation;
     }
 
     public OmniSharpServerLocation? GetDownloadedLocation(OSPlatform platform)

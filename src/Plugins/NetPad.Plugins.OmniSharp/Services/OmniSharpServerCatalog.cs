@@ -70,7 +70,7 @@ public class OmniSharpServerCatalog
 
         try
         {
-            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
+            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...", persistant: true);
             var startTask = server.StartAsync();
 
             startTask.ContinueWith(async (task) =>
