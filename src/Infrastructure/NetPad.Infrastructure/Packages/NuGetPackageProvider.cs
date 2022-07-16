@@ -379,7 +379,7 @@ public class NuGetPackageProvider : IPackageProvider
         CancellationToken cancellationToken)
     {
         await _appStatusMessagePublisher.PublishAsync(
-            $"Installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})...");
+            $"Installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})...", persistant: true);
 
         foreach (var packageToInstall in packagesToInstall)
         {
@@ -388,19 +388,21 @@ public class NuGetPackageProvider : IPackageProvider
 
             var installPath = GetInstallPath(packageToInstall);
 
-            if (installPath == null)
+            try
             {
-                var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
+                if (installPath == null)
+                {
+                    var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
 
-                // Download the package.
-                var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
-                    packageToInstall,
-                    new PackageDownloadContext(sourceCacheContext),
-                    GetNuGetCacheDirectoryPath(),
-                    logger,
-                    cancellationToken);
+                    // Download the package.
+                    var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
+                        packageToInstall,
+                        new PackageDownloadContext(sourceCacheContext),
+                        GetNuGetCacheDirectoryPath(),
+                        logger,
+                        cancellationToken);
 
-                /*
+                    /*
                  * Removed extracting of package since there is no way to control it to extract to the same directory
                  * the downloader resource above extracts to.
                  *
@@ -408,43 +410,50 @@ public class NuGetPackageProvider : IPackageProvider
                  * The PackageExtractor will extract the package in dir "GetNuGetCacheDirectoryPath()/packageID.version/"
                  */
 
-                // Extract the package into the target directory.
-                // var packageExtractionContext = new PackageExtractionContext(
-                //     PackageSaveMode.Defaultv3,
-                //     XmlDocFileSaveMode.None,
-                //     ClientPolicyContext.GetClientPolicy(nuGetSettings, logger),
-                //     logger);
-                //
-                // await PackageExtractor.ExtractPackageAsync(
-                //     downloadResult.PackageSource,
-                //     downloadResult.PackageStream,
-                //     packagePathResolver,
-                //     packageExtractionContext,
-                //     cancellationToken);
+                    // Extract the package into the target directory.
+                    // var packageExtractionContext = new PackageExtractionContext(
+                    //     PackageSaveMode.Defaultv3,
+                    //     XmlDocFileSaveMode.None,
+                    //     ClientPolicyContext.GetClientPolicy(nuGetSettings, logger),
+                    //     logger);
+                    //
+                    // await PackageExtractor.ExtractPackageAsync(
+                    //     downloadResult.PackageSource,
+                    //     downloadResult.PackageStream,
+                    //     packagePathResolver,
+                    //     packageExtractionContext,
+                    //     cancellationToken);
 
-                installPath = GetInstallPath(packageToInstall);
+                    installPath = GetInstallPath(packageToInstall);
 
-                if (installPath == null)
+                    if (installPath == null)
+                    {
+                        throw new Exception(
+                            $"Could not locate install path after package was installed. Package ID: {packageToInstall.Id}, Version: {packageToInstall.Version}");
+                    }
+                }
+
+                // Package is already installed, but could be installed by other tools
+                var installInfo = GetInstallInfo(installPath);
+                if (installInfo == null)
                 {
-                    throw new Exception(
-                        $"Could not locate install path after package was installed. Package ID: {packageToInstall.Id}, Version: {packageToInstall.Version}");
+                    installInfo = isExplicitPackageToInstall
+                        ? new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Explicit)
+                        : new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Dependency);
+
+                    SaveInstallInfo(installPath, installInfo);
+                }
+                else if (installInfo.InstallReason == PackageInstallReason.Dependency && isExplicitPackageToInstall)
+                {
+                    installInfo.ChangeInstallReason(PackageInstallReason.Explicit);
+                    SaveInstallInfo(installPath, installInfo);
                 }
             }
-
-            // Package is already installed, but could be installed by other tools
-            var installInfo = GetInstallInfo(installPath);
-            if (installInfo == null)
+            catch
             {
-                installInfo = isExplicitPackageToInstall
-                    ? new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Explicit)
-                    : new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Dependency);
-
-                SaveInstallInfo(installPath, installInfo);
-            }
-            else if (installInfo.InstallReason == PackageInstallReason.Dependency && isExplicitPackageToInstall)
-            {
-                installInfo.ChangeInstallReason(PackageInstallReason.Explicit);
-                SaveInstallInfo(installPath, installInfo);
+                await _appStatusMessagePublisher.PublishAsync(
+                    $"Error installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})");
+                throw;
             }
         }
 
@@ -597,12 +606,6 @@ public class NuGetPackageProvider : IPackageProvider
         string dirPath = Path.Combine(GetNuGetCacheDirectoryPath(), packageIdentity.Id.ToLower(), packageIdentity.Version.ToString().ToLower());
         if (TryGetPath(dirPath, out string? installPath))
             return installPath;
-
-        // if (TryGetPath(packagePathResolver.GetInstalledPath(packageIdentity), out string? installPath))
-        //     return installPath;
-        //
-        // if (TryGetPath(packagePathResolver.GetInstallPath(packageIdentity), out installPath))
-        //     return installPath;
 
         return null;
     }
