@@ -2,6 +2,7 @@ import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
+import {TextChangeUtil} from "../utils";
 import {
     GetCodeActionsRequest, LinePositionSpanTextChange,
     ModifiedFileResponse,
@@ -107,44 +108,11 @@ export class OmnisharpCodeActionProvider implements languages.CodeActionProvider
             return true;
         }
 
-        const editorLineCount = model.getLineCount();
-        const edits: editor.IIdentifiedSingleEditOperation[] = [];
+        const modifications: LinePositionSpanTextChange[] = [];
 
         for (const change of response.changes) {
             if (change.modificationType === "Modified") {
-                const modifiedFileResponse = change as ModifiedFileResponse;
-
-                for (const textChange of modifiedFileResponse.changes) {
-                    textChange.endColumn++; // OmniSharp sends this back short one char
-
-                    const isOutOfEditorRange = (textChange.startLine < 1 && textChange.endLine < 1)
-                        || (textChange.startLine > editorLineCount)
-
-                    if (isOutOfEditorRange) {
-                        await this.processOutOfEditorRangeTextChange(scriptId, textChange);
-                        continue;
-                    }
-
-                    if (textChange.startLine < 1) {
-                        // Discard text changes that occur before the first line
-                        textChange.newText = textChange.newText.split("\n")
-                            .slice(1 - textChange.startLine)
-                            .join("\n");
-
-                        textChange.startLine = 1;
-                    }
-
-                    edits.push({
-                        text: textChange.newText,
-                        range: {
-                            startLineNumber: textChange.startLine,
-                            startColumn: textChange.startColumn,
-                            endLineNumber: textChange.endLine,
-                            endColumn: textChange.endColumn
-                        },
-                        forceMoveMarkers: false
-                    });
-                }
+                modifications.push(...(change as ModifiedFileResponse).changes);
             }
             else if (change.modificationType === "Renamed") {
                 console.warn("Not handling Rename modification types")
@@ -154,10 +122,8 @@ export class OmnisharpCodeActionProvider implements languages.CodeActionProvider
             }
         }
 
-        if (edits.length > 0) {
-            // Using this instead of 'model.applyEdits()' so that undo stack is preserved
-            model.pushEditOperations([], edits, () => []);
-            model.pushStackElement();
+        if (modifications.length) {
+            await TextChangeUtil.applyTextChanges(model, modifications, this.session, this.scriptService);
         }
     }
 

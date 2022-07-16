@@ -1,13 +1,29 @@
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {Util} from "@common";
+import {IScriptService, ISession} from "@domain";
+import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {CompletionItem as OmnisharpCompletionItem, CompletionRequest} from "../api";
+import {TextChangeUtil} from "../utils";
+import {CompletionItem as OmnisharpCompletionItem, CompletionRequest, LinePositionSpanTextChange} from "../api";
 
-export class OmnisharpCompletionProvider implements languages.CompletionItemProvider {
+export class OmnisharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>;
+    private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
 
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+    constructor(
+        @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
+        @ISession private readonly session: ISession,
+        @IScriptService private readonly scriptService: IScriptService) {
+    }
+
+    public provideCommands(): { id: string; handler: (accessor: any, ...args: any[]) => void; }[] {
+        return [{
+            id: this.insertAdditionalTextEditsCommandId,
+            handler: (accessor: any, ...args: any[]) => {
+                return this.insertAdditionalTextEdits(args[0], args[1]);
+            }
+        }];
     }
 
     public async provideCompletionItems(model, position, ctx, token) {
@@ -52,7 +68,7 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
 
             const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.omnisharpCompletionItem);
 
-            return this.convertToMonacoCompletionItem(item.range as IRange, resolution.item);
+            return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
             console.error(ex);
         }
@@ -78,7 +94,7 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
         }
 
         const monacoCompletions = omnisharpCompletions.items
-            .map(omnisharpCompletion => this.convertToMonacoCompletionItem(range, omnisharpCompletion));
+            .map(omnisharpCompletion => this.convertToMonacoCompletionItem(model, range, omnisharpCompletion));
 
         if (token.isCancellationRequested) {
             return new CompletionResults();
@@ -90,7 +106,7 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
         };
     }
 
-    private convertToMonacoCompletionItem(range: IRange, omnisharpCompletion: OmnisharpCompletionItem): languages.CompletionItem {
+    private convertToMonacoCompletionItem(model: editor.ITextModel, range: IRange, omnisharpCompletion: OmnisharpCompletionItem): languages.CompletionItem {
         const kind = languages.CompletionItemKind[omnisharpCompletion.kind];
 
         const newText = omnisharpCompletion.textEdit?.newText ?? omnisharpCompletion.label;
@@ -118,19 +134,24 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
             supportThemeIcons: true
         } : undefined;
 
-        const additionalTextEdits = omnisharpCompletion.additionalTextEdits?.map(ate => {
-            return <editor.ISingleEditOperation>{
-                text: ate.newText,
-                range: {
-                    startLineNumber: ate.startLine,
-                    startColumn: ate.startColumn,
-                    endLineNumber: ate.endLine,
-                    endColumn: ate.endColumn
-                }
-            };
-        });
-
         const tags = omnisharpCompletion.tags && omnisharpCompletion.tags[0] === "Deprecated" ? 1 : [];
+
+        let command: languages.Command = undefined;
+
+        if (omnisharpCompletion.hasAfterInsertStep) {
+            command = {
+                id: "csharp.completion.afterInsert",
+                title: "",
+                arguments: [omnisharpCompletion]
+            };
+        }
+        else if (omnisharpCompletion.additionalTextEdits?.length > 0) {
+            command = {
+                id: this.insertAdditionalTextEditsCommandId,
+                title: "Insert additional text",
+                arguments: [model, omnisharpCompletion.additionalTextEdits]
+            };
+        }
 
         return <languages.CompletionItem>{
             label: omnisharpCompletion.label,
@@ -144,14 +165,13 @@ export class OmnisharpCompletionProvider implements languages.CompletionItemProv
             range: range,
             tags: tags,
             sortText: sortText,
-            additionalTextEdits: additionalTextEdits,
-            command: omnisharpCompletion.hasAfterInsertStep ? {
-                id: "",
-                command: "csharp.completion.afterInsert",
-                title: "",
-                arguments: [omnisharpCompletion]
-            } : undefined
+            additionalTextEdits: null,
+            command: command
         };
+    }
+
+    private async insertAdditionalTextEdits(model: editor.ITextModel, additionalTextEdits: LinePositionSpanTextChange[]) {
+        await TextChangeUtil.applyTextChanges(model, additionalTextEdits, this.session, this.scriptService);
     }
 }
 

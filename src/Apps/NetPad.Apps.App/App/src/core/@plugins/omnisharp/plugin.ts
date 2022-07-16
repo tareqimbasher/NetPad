@@ -33,17 +33,24 @@ export class OmniSharpPlugin {
 
     public static configure(container: IContainer) {
         container.register(Registration.singleton(IOmniSharpService, OmniSharpService));
-        container.register(Registration.singleton(ICompletionItemProvider, OmnisharpCompletionProvider));
-        container.register(Registration.singleton(IDocumentSemanticTokensProvider, OmnisharpSemanticTokensProvider));
-        container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(IDocumentSemanticTokensProvider)));
         container.register(Registration.singleton(IImplementationProvider, OmnisharpImplementationProvider));
         container.register(Registration.singleton(IHoverProvider, OmnisharpHoverProvider));
         container.register(Registration.singleton(ISignatureHelpProvider, OmnisharpSignatureHelpProvider));
         container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
         container.register(Registration.singleton(ICodeLensProvider, OmnisharpCodeLensProvider));
         container.register(Registration.singleton(IInlayHintsProvider, OmnisharpInlayHintProvider));
-        container.register(Registration.singleton(ICodeActionProvider, OmnisharpCodeActionProvider));
-        container.register(Registration.cachedCallback(ICommandProvider, c => c.get(ICodeActionProvider)));
+
+        container.register(Registration.singleton(OmnisharpSemanticTokensProvider, OmnisharpSemanticTokensProvider));
+        container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmnisharpSemanticTokensProvider)));
+        container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmnisharpSemanticTokensProvider)));
+
+        container.register(Registration.singleton(OmnisharpCompletionProvider, OmnisharpCompletionProvider));
+        container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmnisharpCompletionProvider)));
+        container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmnisharpCompletionProvider)));
+
+        container.register(Registration.singleton(OmnisharpCodeActionProvider, OmnisharpCodeActionProvider));
+        container.register(Registration.cachedCallback(ICodeActionProvider, c => c.get(OmnisharpCodeActionProvider)));
+        container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmnisharpCodeActionProvider)));
 
         this.container = container.createChild();
 
