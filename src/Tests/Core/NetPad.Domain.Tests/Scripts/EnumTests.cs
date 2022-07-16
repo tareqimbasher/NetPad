@@ -18,7 +18,6 @@ namespace NetPad.Domain.Tests.Scripts
             Assert.Equal(new[]
             {
                 "Expression",
-                "Statements",
                 "Program"
             }, values);
         }
