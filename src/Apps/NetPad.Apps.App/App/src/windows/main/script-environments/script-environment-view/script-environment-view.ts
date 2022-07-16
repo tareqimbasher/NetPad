@@ -21,7 +21,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
     public running = false;
 
     private split: Split.Instance;
-    private editorTextChanged: (newText: string, oldText: string) => Promise<void>;
     private textEditorContainer: HTMLElement;
     private resultsContainer: HTMLElement;
     private editor: () => Editor;
@@ -35,8 +34,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
         @IEventBus readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
-
-        this.editorTextChanged = async (newText: string, oldText: string) => await this.sendCodeToServer();
     }
 
     public get script(): Script {
@@ -86,6 +83,10 @@ export class ScriptEnvironmentView extends ViewModelBase {
             minSize: [50, 0],
         });
         this.disposables.push(() => this.split.destroy());
+    }
+
+    private async editorTextChanged(newText: string, oldText: string) {
+        await this.sendCodeToServer();
     }
 
     private async run() {

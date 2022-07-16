@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using MediatR;
 using NetPad.Exceptions;
 using NetPad.Scripts;
@@ -34,7 +33,7 @@ public class GetOpenedScriptEnviornmentQuery : Query<ScriptEnvironment?>
             {
                 throw new EnvironmentNotFoundException(request.ScriptId);
             }
-            new Regex("t.*").Matches("tareq");
+
             return Task.FromResult(environment);
         }
     }

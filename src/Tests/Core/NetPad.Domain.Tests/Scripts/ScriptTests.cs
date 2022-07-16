@@ -75,9 +75,9 @@ namespace NetPad.Domain.Tests.Scripts
         }
 
         [Fact]
-        public void Kind_Is_Statements_When_Script_Instantiated()
+        public void Kind_Is_Program_When_Script_Instantiated()
         {
-            Assert.Equal(ScriptKind.Statements, new Script("Test").Config.Kind);
+            Assert.Equal(ScriptKind.Program, new Script("Test").Config.Kind);
         }
 
         [Fact]

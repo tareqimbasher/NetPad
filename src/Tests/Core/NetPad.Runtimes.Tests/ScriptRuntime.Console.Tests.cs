@@ -43,7 +43,7 @@ namespace NetPad.Runtimes.Tests
         public async Task ScriptRuntime_Redirects_Console_Output(string code, string expectedOutput)
         {
             var script = new Script("Test");
-            script.Config.SetKind(ScriptKind.Statements);
+            script.Config.SetKind(ScriptKind.Program);
             script.UpdateCode($"Console.Write({code});");
 
             string? result = null;

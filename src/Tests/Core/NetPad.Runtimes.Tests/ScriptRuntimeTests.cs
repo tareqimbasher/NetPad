@@ -56,23 +56,6 @@ namespace NetPad.Runtimes.Tests
 
         [Theory]
         [MemberData(nameof(ConsoleOutputTestData))]
-        public async Task Can_Run_Statements_Kind_Script(string code, string expectedOutput)
-        {
-            var script = GetScript();
-            script.Config.SetKind(ScriptKind.Statements);
-            script.UpdateCode($"Console.Write({code});");
-
-            string? result = null;
-            var runtime = await GetScriptRuntimeAsync(script);
-            runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
-
-            await runtime.RunScriptAsync();
-
-            Assert.Equal(expectedOutput, result);
-        }
-
-        [Theory]
-        [MemberData(nameof(ConsoleOutputTestData))]
         public async Task Can_Run_Program_Kind_Script(string code, string expectedOutput)
         {
             var script = GetScript();
@@ -96,7 +79,7 @@ namespace NetPad.Runtimes.Tests
             for (int i = 0; i < 5; i++)
             {
                 var script = GetScript();
-                script.Config.SetKind(ScriptKind.Statements);
+                script.Config.SetKind(ScriptKind.Program);
                 script.UpdateCode($"Console.Write(4 + 7);");
 
                 var scope = ServiceProvider.CreateScope();

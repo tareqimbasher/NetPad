@@ -31,7 +31,7 @@ namespace NetPad.Scripts
             Id = id;
             _name = name;
             _code = string.Empty;
-            Config = new ScriptConfig(ScriptKind.Statements);
+            Config = new ScriptConfig(ScriptKind.Program);
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
         }
 
