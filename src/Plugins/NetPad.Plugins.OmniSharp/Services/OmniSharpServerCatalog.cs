@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Events;
-using NetPad.Plugins.OmniSharp.Services;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
@@ -19,12 +14,17 @@ namespace NetPad.Plugins.OmniSharp.Services;
 public class OmniSharpServerCatalog
 {
     private readonly IServiceScope _serviceScope;
+    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly ILogger<OmniSharpServerCatalog> _logger;
     private readonly Dictionary<Guid, CatalogItem> _items;
 
-    public OmniSharpServerCatalog(IServiceProvider serviceProvider, ILogger<OmniSharpServerCatalog> logger)
+    public OmniSharpServerCatalog(
+        IServiceProvider serviceProvider,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
+        ILogger<OmniSharpServerCatalog> logger)
     {
         _serviceScope = serviceProvider.CreateScope();
+        _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
         _items = new Dictionary<Guid, CatalogItem>();
     }
@@ -57,6 +57,7 @@ public class OmniSharpServerCatalog
             environment,
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
+            serviceScope.ServiceProvider.GetRequiredService<Settings>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
             serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
@@ -69,15 +70,21 @@ public class OmniSharpServerCatalog
 
         try
         {
+            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
             var startTask = server.StartAsync();
 
-            startTask.ContinueWith((task) =>
+            startTask.ContinueWith(async (task) =>
             {
                 bool started = task.Status == TaskStatus.RanToCompletion;
 
                 _logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
                     nameof(AppOmniSharpServer),
                     started);
+
+                await _appStatusMessagePublisher.PublishAsync(
+                    environment.Script.Id,
+                    $"OmniSharp Server {(started ? "started" : "failed to start")}",
+                    priority: started ? AppStatusMessagePriority.Normal : AppStatusMessagePriority.High);
 
                 if (!started)
                 {
