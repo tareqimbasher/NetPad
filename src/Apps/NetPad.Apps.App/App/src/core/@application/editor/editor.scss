@@ -5,4 +5,11 @@ editor {
     .code-text-error {
         text-decoration: wavy underline red;
     }
+
+    span[class*=' dyn-rule'], span[class^='dyn-rule'] {
+        margin-right: 2px;
+        color: gray;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 }

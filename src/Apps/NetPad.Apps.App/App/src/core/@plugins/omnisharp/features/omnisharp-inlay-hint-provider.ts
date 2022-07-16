@@ -113,7 +113,7 @@ export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider 
 
     private toMonacoInlayHint(inlayHint: InlayHint): languages.InlayHint {
         return {
-            label: inlayHint.label,
+            label: inlayHint.label?.trim(),
             tooltip: {
                 value: inlayHint.tooltip,
                 supportHtml: true,
