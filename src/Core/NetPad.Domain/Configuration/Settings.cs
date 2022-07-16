@@ -5,6 +5,12 @@ namespace NetPad.Configuration
 {
     public class Settings
     {
+        public static readonly string AppDataFolderPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NetPad");
+
+        public static readonly string LogFolderPath = Path.Combine(AppDataFolderPath, "Logs");
+
         public Settings()
         {
             // Defaults
@@ -16,15 +22,11 @@ namespace NetPad.Configuration
                 "NetPad",
                 "Scripts");
 
-            AutoSaveScriptsDirectoryPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NetPad",
+            AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath,
                 "AutoSave",
                 "Scripts");
 
-            PackageCacheDirectoryPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NetPad",
+            PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath,
                 "Cache",
                 "Packages");
 

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Assemblies;
 using NetPad.BackgroundServices;
@@ -34,8 +33,6 @@ namespace NetPad
 {
     public partial class Startup
     {
-        private readonly ILogger<Startup> _logger;
-
         private readonly Assembly[] _pluginAssemblies =
         {
             typeof(Plugin).Assembly
@@ -43,7 +40,6 @@ namespace NetPad
 
         public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
-            _logger = LoggerFactory.Create(Program.ConfigureLogging).CreateLogger<Startup>();
             Configuration = configuration;
             WebHostEnvironment = webHostEnvironment;
         }
@@ -106,13 +102,13 @@ namespace NetPad
                     var registration = pluginManager.RegisterPlugin(pluginAssembly, services);
                     pluginRegistrations.Add(registration);
 
-                    _logger.LogDebug("Registered plugin '{PluginName}' from '{AssemblyName}'",
+                    Console.WriteLine("Registered plugin '{0}' from '{1}'",
                         registration.Plugin.Name,
                         registration.Assembly.FullName);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Could not register plugin: '{Assembly}'", pluginAssembly.FullName);
+                    Console.Error.WriteLine("Could not register plugin: '{0}'. {1}", pluginAssembly.FullName, ex);
                 }
             }
 
