@@ -23,6 +23,7 @@ using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Plugins;
 using NetPad.Plugins.OmniSharp;
+using NetPad.Resources;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Services;
@@ -55,6 +56,7 @@ namespace NetPad
             services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
             services.AddSingleton<ISession, Session>();
             services.AddSingleton<HttpClient>();
+            services.AddTransient<ILogoService, LogoService>();
 
             // Repositories
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
@@ -175,7 +177,9 @@ namespace NetPad
             }
 
             // Set host url
-            services.GetRequiredService<HostInfo>().SetHostUrl(
+            var hostInfo = services.GetRequiredService<HostInfo>();
+            hostInfo.SetWorkingDirectory(env.ContentRootPath);
+            hostInfo.SetHostUrl(
                 app.ServerFeatures
                     .Get<IServerAddressesFeature>()!
                     .Addresses

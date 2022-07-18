@@ -10,12 +10,12 @@ namespace NetPad.Electron.UiInterop
     public class ElectronWindowService : IUiWindowService
     {
         private readonly IHostApplicationLifetime _applicationLifetime;
-        private readonly string _hostUrl;
+        private readonly HostInfo _hostInfo;
 
         public ElectronWindowService(HostInfo hostInfo, IHostApplicationLifetime applicationLifetime)
         {
             _applicationLifetime = applicationLifetime;
-            _hostUrl = hostInfo.HostUrl;
+            _hostInfo = hostInfo;
         }
 
         private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
@@ -28,7 +28,7 @@ namespace NetPad.Electron.UiInterop
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 2 / 3,
                 X = display.Bounds.X,
-                Y = display.Bounds.Y
+                Y = display.Bounds.Y,
             });
 
             window.Center();
@@ -90,7 +90,7 @@ namespace NetPad.Electron.UiInterop
             BrowserWindowOptions options,
             params (string key, object? value)[] queryParams)
         {
-            var url = $"{_hostUrl}?win={windowName}";
+            var url = $"{_hostInfo.HostUrl}?win={windowName}";
 
             if (queryParams.Any())
             {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NetPad.Electron.BackgroundServices;
 using NetPad.Electron.UiInterop;
 using NetPad.UiInterop;
 
@@ -25,6 +26,8 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
         services.AddTransient<IUiWindowService, ElectronWindowService>();
         services.AddTransient<IUiDialogService, ElectronDialogService>();
         services.AddTransient<IIpcService, ElectronIpcService>();
+
+        services.AddHostedService<NotificationBackgroundService>();
     }
 
     public void Configure(IApplicationBuilder app, IHostEnvironment env)
