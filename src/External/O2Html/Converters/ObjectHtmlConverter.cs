@@ -30,7 +30,7 @@ public class ObjectHtmlConverter : HtmlConverter
 
         table.Head.AddAndGetElement("tr")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
-            .AddText(oType.FullName!);
+            .AddText(oType.GetReadableName(withNamespace: true, forHtml: true));
 
         var properties = oType.GetReadableProperties().OrderBy(p => p.Name);
 
