@@ -17,7 +17,7 @@ export * from "./background-services/settings-background-service";
 export * from "./background-services/web-window-background-service";
 export * from "./background-services/web-dialog-background-service";
 
-export * from "./windows/iwindow-bootstrap";
+export * from "./windows/iwindow-bootstrapper";
 export * from "./panes/pane-manager";
 export * from "./panes/pane-host/pane-host";
 export * from "./panes/pane-host-orientation";

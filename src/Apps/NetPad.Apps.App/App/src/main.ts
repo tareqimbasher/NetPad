@@ -1,7 +1,8 @@
 import Aurelia, {
     AppTask,
     ColorOptions,
-    ConsoleSink, IContainer,
+    ConsoleSink,
+    IContainer,
     ILogger,
     LoggerConfiguration,
     LogLevel,
@@ -10,28 +11,27 @@ import Aurelia, {
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import 'bootstrap-icons/font/bootstrap-icons.scss';
-import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService,} from "@domain";
+import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService} from "@domain";
 import {
-    EventBus,
-    IWindowBootstrap,
-    SignalRIpcGateway,
-    WebDialogBackgroundService,
-    SettingsBackgroundService,
-    WebWindowBackgroundService,
     ContextMenu,
-    ExternalLinkCustomAttribute,
-    PlatformsCustomAttribute,
     DateTimeValueConverter,
+    EventBus,
+    ExternalLinkCustomAttribute,
+    IWindowBootstrapperConstructor,
+    PlatformsCustomAttribute,
     SanitizeHtmlValueConverter,
-    TextToHtmlValueConverter,
-    YesNoValueConverter,
+    SettingsBackgroundService,
+    SignalRIpcGateway,
+    SortValueConverter,
     TakeValueConverter,
-    SortValueConverter
+    TextToHtmlValueConverter,
+    YesNoValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService, System} from "@common";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
+// Register common dependencies
 const app = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, startupOptions),
@@ -42,8 +42,6 @@ const app = Aurelia.register(
     Registration.singleton(ISettingService, SettingService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.transient(IBackgroundService, SettingsBackgroundService),
-    Registration.transient(IBackgroundService, WebDialogBackgroundService),
-    Registration.transient(IBackgroundService, WebWindowBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
         level: LogLevel.debug,
@@ -87,21 +85,21 @@ let winOpt = startupOptions.get("win");
 if (!winOpt && !System.isRunningInElectron())
     winOpt = "main";
 
-let win: any;
+let bootstrapperCtor: IWindowBootstrapperConstructor;
 
 if (winOpt === "main")
-    win = require("./windows/main/main");
+    bootstrapperCtor = require("./windows/main/main").Bootstrapper;
 else if (winOpt === "settings")
-    win = require("./windows/settings/main");
+    bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
 else if (winOpt === "script-config")
-    win = require("./windows/script-config/main");
+    bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
 
-const bootstrapper = new win.Bootstrapper() as IWindowBootstrap;
+const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
 bootstrapper.registerServices(app);
 
 // Load Settings and then start the app
 app.container.get(ISettingService).get()
-    .then(settings => Object.assign(app.container.get(Settings), settings))
+    .then(settings => app.container.get(Settings).init(settings.toJSON()))
     .then(() => {
         app
             .app(bootstrapper.getEntry())
