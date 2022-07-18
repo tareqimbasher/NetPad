@@ -1,15 +1,22 @@
 const config = {
-    executable: "NetPad.Apps.App",
-    splashscreen: {
-        imageFile: ""
-    },
     name: "netpad",
+    description: "A cross-platform C# editor and playground.",
+    executable: "NetPad.Apps.App",
     author: {
         name: "Tareq Imbasher",
         email: "tareq@meccasoft.com"
     },
-    singleInstance: false,
+    license: "MIT",
+    repository: {
+        type: "git",
+        url: "https://github.com/tareqimbasher/NetPad"
+    },
+    homepage: "https://github.com/tareqimbasher/NetPad#readme",
+    splashscreen: {
+        imageFile: "./wwwroot/256x256.png"
+    },
     environment: "Production",
+    singleInstance: false,
     aspCoreBackendPort: 50900,
     electronPort: 50901,
     build: {
