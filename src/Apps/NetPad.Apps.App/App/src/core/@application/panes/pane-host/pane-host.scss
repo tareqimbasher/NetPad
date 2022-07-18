@@ -1,9 +1,13 @@
 @import "~styles/themes";
 
+$ribbon-width: 23px;
+
 pane-host {
+    min-width: $ribbon-width;
+
     .ribbon {
         @include theme(background, sidebarBackground);
-        width: 23px;
+        width: $ribbon-width;
 
         .pane-tag {
             font-size: 0.75rem;
