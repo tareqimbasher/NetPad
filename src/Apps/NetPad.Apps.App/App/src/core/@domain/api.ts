@@ -1713,7 +1713,7 @@ export interface IScriptSummary {
     path: string;
 }
 
-export type ScriptKind = "Expression" | "Statements" | "Program";
+export type ScriptKind = "Expression" | "Program";
 
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
@@ -1917,6 +1917,7 @@ export interface IScriptConfig {
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 export class Settings implements ISettings {
+    version!: string;
     theme!: Theme;
     scriptsDirectoryPath!: string;
     autoSaveScriptsDirectoryPath!: string;
@@ -1940,6 +1941,7 @@ export class Settings implements ISettings {
 
     init(_data?: any) {
         if (_data) {
+            this.version = _data["version"];
             this.theme = _data["theme"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
             this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
@@ -1959,6 +1961,7 @@ export class Settings implements ISettings {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["version"] = this.version;
         data["theme"] = this.theme;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
@@ -1978,6 +1981,7 @@ export class Settings implements ISettings {
 }
 
 export interface ISettings {
+    version: string;
     theme: Theme;
     scriptsDirectoryPath: string;
     autoSaveScriptsDirectoryPath: string;
@@ -2224,16 +2228,16 @@ export interface IResultsOptions {
 export class Types implements ITypes {
     yesNoCancel!: YesNoCancel;
     script?: Script | undefined;
-    settingsUpdated?: SettingsUpdated | undefined;
-    appStatusMessagePublished?: AppStatusMessagePublished | undefined;
-    scriptPropertyChanged?: ScriptPropertyChanged | undefined;
-    scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
-    scriptOutputEmitted?: ScriptOutputEmitted | undefined;
-    environmentsAdded?: EnvironmentsAdded | undefined;
-    environmentsRemoved?: EnvironmentsRemoved | undefined;
-    environmentPropertyChanged?: EnvironmentPropertyChanged | undefined;
-    activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
-    scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
+    settingsUpdated?: SettingsUpdatedEvent | undefined;
+    appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
+    scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
+    scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
+    scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    environmentsAdded?: EnvironmentsAddedEvent | undefined;
+    environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
+    environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
+    activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
+    scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -2251,16 +2255,16 @@ export class Types implements ITypes {
         if (_data) {
             this.yesNoCancel = _data["yesNoCancel"];
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
-            this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdated.fromJS(_data["settingsUpdated"]) : <any>undefined;
-            this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublished.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
-            this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChanged.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
-            this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChanged.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
-            this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmitted.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
-            this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAdded.fromJS(_data["environmentsAdded"]) : <any>undefined;
-            this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemoved.fromJS(_data["environmentsRemoved"]) : <any>undefined;
-            this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChanged.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
-            this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChanged.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
-            this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChanged.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
+            this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdatedEvent.fromJS(_data["settingsUpdated"]) : <any>undefined;
+            this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublishedEvent.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
+            this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
+            this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChangedEvent.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
+            this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmittedEvent.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
+            this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAddedEvent.fromJS(_data["environmentsAdded"]) : <any>undefined;
+            this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemovedEvent.fromJS(_data["environmentsRemoved"]) : <any>undefined;
+            this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
+            this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChangedEvent.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
+            this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChangedEvent.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
@@ -2305,16 +2309,16 @@ export class Types implements ITypes {
 export interface ITypes {
     yesNoCancel: YesNoCancel;
     script?: Script | undefined;
-    settingsUpdated?: SettingsUpdated | undefined;
-    appStatusMessagePublished?: AppStatusMessagePublished | undefined;
-    scriptPropertyChanged?: ScriptPropertyChanged | undefined;
-    scriptConfigPropertyChanged?: ScriptConfigPropertyChanged | undefined;
-    scriptOutputEmitted?: ScriptOutputEmitted | undefined;
-    environmentsAdded?: EnvironmentsAdded | undefined;
-    environmentsRemoved?: EnvironmentsRemoved | undefined;
-    environmentPropertyChanged?: EnvironmentPropertyChanged | undefined;
-    activeEnvironmentChanged?: ActiveEnvironmentChanged | undefined;
-    scriptDirectoryChanged?: ScriptDirectoryChanged | undefined;
+    settingsUpdated?: SettingsUpdatedEvent | undefined;
+    appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
+    scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
+    scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
+    scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    environmentsAdded?: EnvironmentsAddedEvent | undefined;
+    environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
+    environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
+    activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
+    scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -2322,10 +2326,10 @@ export interface ITypes {
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
 
-export class SettingsUpdated implements ISettingsUpdated {
+export class SettingsUpdatedEvent implements ISettingsUpdatedEvent {
     settings!: Settings;
 
-    constructor(data?: ISettingsUpdated) {
+    constructor(data?: ISettingsUpdatedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2343,9 +2347,9 @@ export class SettingsUpdated implements ISettingsUpdated {
         }
     }
 
-    static fromJS(data: any): SettingsUpdated {
+    static fromJS(data: any): SettingsUpdatedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new SettingsUpdated();
+        let result = new SettingsUpdatedEvent();
         result.init(data);
         return result;
     }
@@ -2356,22 +2360,22 @@ export class SettingsUpdated implements ISettingsUpdated {
         return data;
     }
 
-    clone(): SettingsUpdated {
+    clone(): SettingsUpdatedEvent {
         const json = this.toJSON();
-        let result = new SettingsUpdated();
+        let result = new SettingsUpdatedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface ISettingsUpdated {
+export interface ISettingsUpdatedEvent {
     settings: Settings;
 }
 
-export class AppStatusMessagePublished implements IAppStatusMessagePublished {
+export class AppStatusMessagePublishedEvent implements IAppStatusMessagePublishedEvent {
     message!: AppStatusMessage;
 
-    constructor(data?: IAppStatusMessagePublished) {
+    constructor(data?: IAppStatusMessagePublishedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2389,9 +2393,9 @@ export class AppStatusMessagePublished implements IAppStatusMessagePublished {
         }
     }
 
-    static fromJS(data: any): AppStatusMessagePublished {
+    static fromJS(data: any): AppStatusMessagePublishedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new AppStatusMessagePublished();
+        let result = new AppStatusMessagePublishedEvent();
         result.init(data);
         return result;
     }
@@ -2402,15 +2406,15 @@ export class AppStatusMessagePublished implements IAppStatusMessagePublished {
         return data;
     }
 
-    clone(): AppStatusMessagePublished {
+    clone(): AppStatusMessagePublishedEvent {
         const json = this.toJSON();
-        let result = new AppStatusMessagePublished();
+        let result = new AppStatusMessagePublishedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IAppStatusMessagePublished {
+export interface IAppStatusMessagePublishedEvent {
     message: AppStatusMessage;
 }
 
@@ -2517,10 +2521,10 @@ export interface IPropertyChangedEvent {
     newValue?: any | undefined;
 }
 
-export class ScriptPropertyChanged extends PropertyChangedEvent implements IScriptPropertyChanged {
+export class ScriptPropertyChangedEvent extends PropertyChangedEvent implements IScriptPropertyChangedEvent {
     scriptId!: string;
 
-    constructor(data?: IScriptPropertyChanged) {
+    constructor(data?: IScriptPropertyChangedEvent) {
         super(data);
     }
 
@@ -2531,9 +2535,9 @@ export class ScriptPropertyChanged extends PropertyChangedEvent implements IScri
         }
     }
 
-    static fromJS(data: any): ScriptPropertyChanged {
+    static fromJS(data: any): ScriptPropertyChangedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new ScriptPropertyChanged();
+        let result = new ScriptPropertyChangedEvent();
         result.init(data);
         return result;
     }
@@ -2545,22 +2549,22 @@ export class ScriptPropertyChanged extends PropertyChangedEvent implements IScri
         return data;
     }
 
-    clone(): ScriptPropertyChanged {
+    clone(): ScriptPropertyChangedEvent {
         const json = this.toJSON();
-        let result = new ScriptPropertyChanged();
+        let result = new ScriptPropertyChangedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IScriptPropertyChanged extends IPropertyChangedEvent {
+export interface IScriptPropertyChangedEvent extends IPropertyChangedEvent {
     scriptId: string;
 }
 
-export class ScriptConfigPropertyChanged extends PropertyChangedEvent implements IScriptConfigPropertyChanged {
+export class ScriptConfigPropertyChangedEvent extends PropertyChangedEvent implements IScriptConfigPropertyChangedEvent {
     scriptId!: string;
 
-    constructor(data?: IScriptConfigPropertyChanged) {
+    constructor(data?: IScriptConfigPropertyChangedEvent) {
         super(data);
     }
 
@@ -2571,9 +2575,9 @@ export class ScriptConfigPropertyChanged extends PropertyChangedEvent implements
         }
     }
 
-    static fromJS(data: any): ScriptConfigPropertyChanged {
+    static fromJS(data: any): ScriptConfigPropertyChangedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new ScriptConfigPropertyChanged();
+        let result = new ScriptConfigPropertyChangedEvent();
         result.init(data);
         return result;
     }
@@ -2585,23 +2589,23 @@ export class ScriptConfigPropertyChanged extends PropertyChangedEvent implements
         return data;
     }
 
-    clone(): ScriptConfigPropertyChanged {
+    clone(): ScriptConfigPropertyChangedEvent {
         const json = this.toJSON();
-        let result = new ScriptConfigPropertyChanged();
+        let result = new ScriptConfigPropertyChangedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IScriptConfigPropertyChanged extends IPropertyChangedEvent {
+export interface IScriptConfigPropertyChangedEvent extends IPropertyChangedEvent {
     scriptId: string;
 }
 
-export class ScriptOutputEmitted implements IScriptOutputEmitted {
+export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
     scriptId!: string;
     output?: string | undefined;
 
-    constructor(data?: IScriptOutputEmitted) {
+    constructor(data?: IScriptOutputEmittedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2617,9 +2621,9 @@ export class ScriptOutputEmitted implements IScriptOutputEmitted {
         }
     }
 
-    static fromJS(data: any): ScriptOutputEmitted {
+    static fromJS(data: any): ScriptOutputEmittedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new ScriptOutputEmitted();
+        let result = new ScriptOutputEmittedEvent();
         result.init(data);
         return result;
     }
@@ -2631,23 +2635,23 @@ export class ScriptOutputEmitted implements IScriptOutputEmitted {
         return data;
     }
 
-    clone(): ScriptOutputEmitted {
+    clone(): ScriptOutputEmittedEvent {
         const json = this.toJSON();
-        let result = new ScriptOutputEmitted();
+        let result = new ScriptOutputEmittedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IScriptOutputEmitted {
+export interface IScriptOutputEmittedEvent {
     scriptId: string;
     output?: string | undefined;
 }
 
-export class EnvironmentsAdded implements IEnvironmentsAdded {
+export class EnvironmentsAddedEvent implements IEnvironmentsAddedEvent {
     environments!: ScriptEnvironment[];
 
-    constructor(data?: IEnvironmentsAdded) {
+    constructor(data?: IEnvironmentsAddedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2669,9 +2673,9 @@ export class EnvironmentsAdded implements IEnvironmentsAdded {
         }
     }
 
-    static fromJS(data: any): EnvironmentsAdded {
+    static fromJS(data: any): EnvironmentsAddedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new EnvironmentsAdded();
+        let result = new EnvironmentsAddedEvent();
         result.init(data);
         return result;
     }
@@ -2686,22 +2690,22 @@ export class EnvironmentsAdded implements IEnvironmentsAdded {
         return data;
     }
 
-    clone(): EnvironmentsAdded {
+    clone(): EnvironmentsAddedEvent {
         const json = this.toJSON();
-        let result = new EnvironmentsAdded();
+        let result = new EnvironmentsAddedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IEnvironmentsAdded {
+export interface IEnvironmentsAddedEvent {
     environments: ScriptEnvironment[];
 }
 
-export class EnvironmentsRemoved implements IEnvironmentsRemoved {
+export class EnvironmentsRemovedEvent implements IEnvironmentsRemovedEvent {
     environments!: ScriptEnvironment[];
 
-    constructor(data?: IEnvironmentsRemoved) {
+    constructor(data?: IEnvironmentsRemovedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2723,9 +2727,9 @@ export class EnvironmentsRemoved implements IEnvironmentsRemoved {
         }
     }
 
-    static fromJS(data: any): EnvironmentsRemoved {
+    static fromJS(data: any): EnvironmentsRemovedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new EnvironmentsRemoved();
+        let result = new EnvironmentsRemovedEvent();
         result.init(data);
         return result;
     }
@@ -2740,22 +2744,22 @@ export class EnvironmentsRemoved implements IEnvironmentsRemoved {
         return data;
     }
 
-    clone(): EnvironmentsRemoved {
+    clone(): EnvironmentsRemovedEvent {
         const json = this.toJSON();
-        let result = new EnvironmentsRemoved();
+        let result = new EnvironmentsRemovedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IEnvironmentsRemoved {
+export interface IEnvironmentsRemovedEvent {
     environments: ScriptEnvironment[];
 }
 
-export class EnvironmentPropertyChanged extends PropertyChangedEvent implements IEnvironmentPropertyChanged {
+export class EnvironmentPropertyChangedEvent extends PropertyChangedEvent implements IEnvironmentPropertyChangedEvent {
     scriptId!: string;
 
-    constructor(data?: IEnvironmentPropertyChanged) {
+    constructor(data?: IEnvironmentPropertyChangedEvent) {
         super(data);
     }
 
@@ -2766,9 +2770,9 @@ export class EnvironmentPropertyChanged extends PropertyChangedEvent implements 
         }
     }
 
-    static fromJS(data: any): EnvironmentPropertyChanged {
+    static fromJS(data: any): EnvironmentPropertyChangedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new EnvironmentPropertyChanged();
+        let result = new EnvironmentPropertyChangedEvent();
         result.init(data);
         return result;
     }
@@ -2780,22 +2784,22 @@ export class EnvironmentPropertyChanged extends PropertyChangedEvent implements 
         return data;
     }
 
-    clone(): EnvironmentPropertyChanged {
+    clone(): EnvironmentPropertyChangedEvent {
         const json = this.toJSON();
-        let result = new EnvironmentPropertyChanged();
+        let result = new EnvironmentPropertyChangedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IEnvironmentPropertyChanged extends IPropertyChangedEvent {
+export interface IEnvironmentPropertyChangedEvent extends IPropertyChangedEvent {
     scriptId: string;
 }
 
-export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {
+export class ActiveEnvironmentChangedEvent implements IActiveEnvironmentChangedEvent {
     scriptId?: string | undefined;
 
-    constructor(data?: IActiveEnvironmentChanged) {
+    constructor(data?: IActiveEnvironmentChangedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2810,9 +2814,9 @@ export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {
         }
     }
 
-    static fromJS(data: any): ActiveEnvironmentChanged {
+    static fromJS(data: any): ActiveEnvironmentChangedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new ActiveEnvironmentChanged();
+        let result = new ActiveEnvironmentChangedEvent();
         result.init(data);
         return result;
     }
@@ -2823,22 +2827,22 @@ export class ActiveEnvironmentChanged implements IActiveEnvironmentChanged {
         return data;
     }
 
-    clone(): ActiveEnvironmentChanged {
+    clone(): ActiveEnvironmentChangedEvent {
         const json = this.toJSON();
-        let result = new ActiveEnvironmentChanged();
+        let result = new ActiveEnvironmentChangedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IActiveEnvironmentChanged {
+export interface IActiveEnvironmentChangedEvent {
     scriptId?: string | undefined;
 }
 
-export class ScriptDirectoryChanged implements IScriptDirectoryChanged {
+export class ScriptDirectoryChangedEvent implements IScriptDirectoryChangedEvent {
     scripts!: ScriptSummary[];
 
-    constructor(data?: IScriptDirectoryChanged) {
+    constructor(data?: IScriptDirectoryChangedEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2860,9 +2864,9 @@ export class ScriptDirectoryChanged implements IScriptDirectoryChanged {
         }
     }
 
-    static fromJS(data: any): ScriptDirectoryChanged {
+    static fromJS(data: any): ScriptDirectoryChangedEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new ScriptDirectoryChanged();
+        let result = new ScriptDirectoryChangedEvent();
         result.init(data);
         return result;
     }
@@ -2877,15 +2881,15 @@ export class ScriptDirectoryChanged implements IScriptDirectoryChanged {
         return data;
     }
 
-    clone(): ScriptDirectoryChanged {
+    clone(): ScriptDirectoryChangedEvent {
         const json = this.toJSON();
-        let result = new ScriptDirectoryChanged();
+        let result = new ScriptDirectoryChangedEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IScriptDirectoryChanged {
+export interface IScriptDirectoryChangedEvent {
     scripts: ScriptSummary[];
 }
 

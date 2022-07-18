@@ -1,5 +1,5 @@
 import {IBackgroundService} from "@common";
-import {IEventBus, Settings, SettingsUpdated} from "@domain";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
 import {IDisposable} from "aurelia";
 
 export class SettingsBackgroundService implements IBackgroundService {
@@ -11,7 +11,7 @@ export class SettingsBackgroundService implements IBackgroundService {
     }
 
     public start(): Promise<void> {
-        this.settingsUpdatedEventToken = this.eventBus.subscribeToServer(SettingsUpdated, msg => {
+        this.settingsUpdatedEventToken = this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => {
             this.settings.init(msg.settings);
         });
         return Promise.resolve(undefined);

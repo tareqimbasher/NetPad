@@ -44,7 +44,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
     private void ListenToEnvironmentsChanges()
     {
-        _eventBus.Subscribe<EnvironmentsAdded>(ev =>
+        _eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -56,7 +56,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemoved>(ev =>
+        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -77,14 +77,14 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             await _autoSaveScriptRepository.SaveAsync(environment.Script);
         }).DebounceAsync(300);
 
-        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChanged>(ev =>
+        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChangedEvent>(ev =>
         {
             autoSave(ev.ScriptId);
             return Task.CompletedTask;
         });
         AddEnvironmentEventToken(environment, scriptPropChangeToken);
 
-        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChanged>(ev =>
+        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(ev =>
         {
             autoSave(ev.ScriptId);
             return Task.CompletedTask;

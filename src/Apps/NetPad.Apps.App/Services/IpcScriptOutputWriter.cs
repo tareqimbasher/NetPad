@@ -54,6 +54,6 @@ public class IpcScriptOutputWriter : IOutputWriter
 
         group.AddChild(element);
 
-        await _ipcService.SendAsync(new ScriptOutputEmitted(Environment.Script.Id, group.ToHtml()));
+        await _ipcService.SendAsync(new ScriptOutputEmittedEvent(Environment.Script.Id, group.ToHtml()));
     }
 }

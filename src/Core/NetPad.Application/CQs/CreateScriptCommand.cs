@@ -24,6 +24,8 @@ public class CreateScriptCommand : Command<Script>
             var name = _scriptNameGenerator.Generate();
             var script = await _scriptRepository.CreateAsync(name);
 
+            script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
+
             await _eventBus.PublishAsync(new ScriptCreatedEvent(script));
 
             return script;

@@ -2,9 +2,9 @@ using NetPad.Application;
 
 namespace NetPad.Events;
 
-public class AppStatusMessagePublished : IEvent
+public class AppStatusMessagePublishedEvent : IEvent
 {
-    public AppStatusMessagePublished(AppStatusMessage message)
+    public AppStatusMessagePublishedEvent(AppStatusMessage message)
     {
         Message = message;
     }

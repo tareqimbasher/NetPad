@@ -35,29 +35,29 @@ public class EventForwardToIpcBackgroundService : BackgroundService
 
     private void ForwardApplicationLevelEvents()
     {
-        SubscribeAndForwardToIpc<ActiveEnvironmentChanged>();
-        SubscribeAndForwardToIpc<EnvironmentsAdded>();
-        SubscribeAndForwardToIpc<EnvironmentsRemoved>();
-        SubscribeAndForwardToIpc<SettingsUpdated>();
-        SubscribeAndForwardToIpc<AppStatusMessagePublished>();
+        SubscribeAndForwardToIpc<ActiveEnvironmentChangedEvent>();
+        SubscribeAndForwardToIpc<EnvironmentsAddedEvent>();
+        SubscribeAndForwardToIpc<EnvironmentsRemovedEvent>();
+        SubscribeAndForwardToIpc<SettingsUpdatedEvent>();
+        SubscribeAndForwardToIpc<AppStatusMessagePublishedEvent>();
     }
 
     private void ForwardEnvironmentLevelEvents()
     {
-        _eventBus.Subscribe<EnvironmentsAdded>(ev =>
+        _eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
-                SubscribeAndForwardToIpc<EnvironmentPropertyChanged>(environment, e => e.ScriptId == environment.Script.Id);
-                SubscribeAndForwardToIpc<ScriptPropertyChanged>(environment,
+                SubscribeAndForwardToIpc<EnvironmentPropertyChangedEvent>(environment, e => e.ScriptId == environment.Script.Id);
+                SubscribeAndForwardToIpc<ScriptPropertyChangedEvent>(environment,
                     e => e.ScriptId == environment.Script.Id && e.PropertyName != nameof(Script.Code));
-                SubscribeAndForwardToIpc<ScriptConfigPropertyChanged>(environment, e => e.ScriptId == environment.Script.Id);
+                SubscribeAndForwardToIpc<ScriptConfigPropertyChangedEvent>(environment, e => e.ScriptId == environment.Script.Id);
             }
 
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemoved>(ev =>
+        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             Unsubscribe(ev.Environments);
             return Task.CompletedTask;

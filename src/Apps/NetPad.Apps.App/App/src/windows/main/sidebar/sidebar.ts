@@ -3,7 +3,7 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    ScriptDirectoryChanged,
+    ScriptDirectoryChangedEvent,
     ScriptSummary,
     Settings
 } from "@domain";
@@ -32,7 +32,7 @@ export class Sidebar {
             minSize: [100, 100],
         });
 
-        this.eventBus.subscribeToServer(ScriptDirectoryChanged, msg => {
+        this.eventBus.subscribeToServer(ScriptDirectoryChangedEvent, msg => {
             this.loadScripts(msg.scripts);
         });
     }

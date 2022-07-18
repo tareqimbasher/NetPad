@@ -93,32 +93,27 @@ namespace NetPad.Scripts
         {
             EnsureNotDisposed();
 
-            if (Script.IsNew && !Script.Config.Namespaces.Any())
-            {
-                Script.Config.SetNamespaces(ScriptConfigDefaults.DefaultNamespaces);
-            }
-
             Script.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptPropertyChanged(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
             });
 
             Script.Config.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptConfigPropertyChanged(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
             });
         }
 
         private async Task SetStatusAsync(ScriptStatus status)
         {
             _status = status;
-            await _eventBus.PublishAsync(new EnvironmentPropertyChanged(Script.Id, nameof(Status), status));
+            await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), status));
         }
 
         private async Task SetRunDurationAsync(double runDurationMs)
         {
             _runDurationMilliseconds = runDurationMs;
-            await _eventBus.PublishAsync(new EnvironmentPropertyChanged(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
+            await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
         }
 
         private async Task<IScriptRuntime> GetRuntimeAsync()

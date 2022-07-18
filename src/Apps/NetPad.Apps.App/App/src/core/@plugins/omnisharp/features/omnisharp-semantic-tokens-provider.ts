@@ -1,6 +1,6 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
 import {Util} from "@common";
-import {IEventBus, ScriptConfigPropertyChanged} from "@domain";
+import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {Point, Range as ApiRange, SemanticHighlightRequest, SemanticHighlightResponse} from "../api";
@@ -22,7 +22,7 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
         this._onDidChange = new Emitter<void>();
         this.onDidChange = this._onDidChange.event;
 
-        this.eventBus.subscribeToServer(ScriptConfigPropertyChanged, message => {
+        this.eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, message => {
             if (message.propertyName === "Namespaces") {
                 this._onDidChange.fire();
             }

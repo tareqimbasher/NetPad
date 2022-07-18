@@ -1,13 +1,13 @@
 import {
-    ActiveEnvironmentChanged,
-    EnvironmentPropertyChanged,
-    EnvironmentsAdded,
-    EnvironmentsRemoved,
+    ActiveEnvironmentChangedEvent,
+    EnvironmentPropertyChangedEvent,
+    EnvironmentsAddedEvent,
+    EnvironmentsRemovedEvent,
     IEventBus,
     ISessionApiClient,
-    ScriptConfigPropertyChanged,
+    ScriptConfigPropertyChangedEvent,
     ScriptEnvironment,
-    ScriptPropertyChanged,
+    ScriptPropertyChangedEvent,
     SessionApiClient
 } from "@domain";
 import {DI, IHttpClient, ILogger} from "aurelia";
@@ -62,11 +62,11 @@ export class Session extends SessionApiClient implements ISession {
     }
 
     private subscribeToEvents() {
-        this.eventBus.subscribeToServer(EnvironmentsAdded, message => {
+        this.eventBus.subscribeToServer(EnvironmentsAddedEvent, message => {
             this.environments.push(...message.environments);
         });
 
-        this.eventBus.subscribeToServer(EnvironmentsRemoved, message => {
+        this.eventBus.subscribeToServer(EnvironmentsRemovedEvent, message => {
             for (const environment of message.environments) {
                 const ix = this.environments.findIndex(e => e.script.id == environment.script.id);
                 if (ix >= 0)
@@ -74,7 +74,7 @@ export class Session extends SessionApiClient implements ISession {
             }
         });
 
-        this.eventBus.subscribeToServer(ActiveEnvironmentChanged, message => {
+        this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, message => {
             const activeScriptId = message.scriptId;
 
             if (!activeScriptId)
@@ -84,15 +84,15 @@ export class Session extends SessionApiClient implements ISession {
                 if (environment)
                     this._active = environment;
                 else
-                    this.logger.error(`${nameof(ActiveEnvironmentChanged)}: No environment found with script id: ` + activeScriptId);
+                    this.logger.error(`${nameof(ActiveEnvironmentChangedEvent)}: No environment found with script id: ` + activeScriptId);
             }
         });
 
-        this.eventBus.subscribeToServer(EnvironmentPropertyChanged, message => {
+        this.eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, message => {
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
-                this.logger.error(`${nameof(EnvironmentPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
+                this.logger.error(`${nameof(EnvironmentPropertyChangedEvent)}: Could not find an environment for script id: ` + message.scriptId);
                 return;
             }
 
@@ -100,11 +100,11 @@ export class Session extends SessionApiClient implements ISession {
             environment[propName] = message.newValue;
         });
 
-        this.eventBus.subscribeToServer(ScriptPropertyChanged, message => {
+        this.eventBus.subscribeToServer(ScriptPropertyChangedEvent, message => {
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
-                this.logger.error(`${nameof(ScriptPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
+                this.logger.error(`${nameof(ScriptPropertyChangedEvent)}: Could not find an environment for script id: ` + message.scriptId);
                 return;
             }
 
@@ -113,11 +113,11 @@ export class Session extends SessionApiClient implements ISession {
             script[propName] = message.newValue;
         });
 
-        this.eventBus.subscribeToServer(ScriptConfigPropertyChanged, message => {
+        this.eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, message => {
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
             if (!environment) {
-                this.logger.error(`${nameof(ScriptConfigPropertyChanged)}: Could not find an environment for script id: ` + message.scriptId);
+                this.logger.error(`${nameof(ScriptConfigPropertyChangedEvent)}: Could not find an environment for script id: ` + message.scriptId);
                 return;
             }
 

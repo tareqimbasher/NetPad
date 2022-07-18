@@ -41,7 +41,7 @@ public class UpdateSettingsCommand : Command
 
             await _settingsRepository.SaveSettingsAsync(_settings);
 
-            await _eventBus.PublishAsync(new SettingsUpdated(_settings));
+            await _eventBus.PublishAsync(new SettingsUpdatedEvent(_settings));
 
             return Unit.Value;;
         }

@@ -23,5 +23,5 @@ public class AppStatusMessagePublisher : IAppStatusMessagePublisher
         await PublishAsync(new AppStatusMessage(scriptId, text, priority, persistant));
     }
 
-    private async Task PublishAsync(AppStatusMessage message) => await _eventBus.PublishAsync(new AppStatusMessagePublished(message));
+    private async Task PublishAsync(AppStatusMessage message) => await _eventBus.PublishAsync(new AppStatusMessagePublishedEvent(message));
 }

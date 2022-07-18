@@ -1,6 +1,6 @@
 import {bindable, ILogger} from "aurelia";
 import {
-    ActiveEnvironmentChanged,
+    ActiveEnvironmentChangedEvent,
     IEventBus,
     IScriptService,
     ISession,
@@ -63,7 +63,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
         });
         this.disposables.push(() => runScriptEventToken.dispose());
 
-        const activeEnvChangedToken = this.eventBus.subscribeToServer(ActiveEnvironmentChanged, message => {
+        const activeEnvChangedToken = this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, message => {
             if (this.environment.script.id !== message.scriptId) {
                 return;
             }

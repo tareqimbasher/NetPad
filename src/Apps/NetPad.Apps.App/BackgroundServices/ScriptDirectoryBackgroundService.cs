@@ -50,6 +50,6 @@ public class ScriptDirectoryBackgroundService : BackgroundService
     private async Task PushDirectoryChanged()
     {
         var scripts = await _scriptRepository.GetAllAsync();
-        await _ipcService.SendAsync(new ScriptDirectoryChanged(scripts));
+        await _ipcService.SendAsync(new ScriptDirectoryChangedEvent(scripts));
     }
 }

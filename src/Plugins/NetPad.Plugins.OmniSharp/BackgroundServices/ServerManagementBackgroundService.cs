@@ -29,7 +29,7 @@ public class ServerManagementBackgroundService : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _eventBus.Subscribe<ActiveEnvironmentChanged>(ev =>
+        _eventBus.Subscribe<ActiveEnvironmentChangedEvent>(ev =>
         {
             var activatedEnvironmentScriptId = ev.ScriptId;
 
@@ -62,7 +62,7 @@ public class ServerManagementBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemoved>(ev =>
+        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {

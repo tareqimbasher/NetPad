@@ -42,7 +42,7 @@ namespace NetPad.Sessions
             {
                 environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
                 _environments.Add(environment);
-                await _eventBus.PublishAsync(new EnvironmentsAdded(environment));
+                await _eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
             }
 
             if (activate)
@@ -78,7 +78,7 @@ namespace NetPad.Sessions
 
             _environments.Remove(environmentToClose);
             await environmentToClose.DisposeAsync();
-            await _eventBus.PublishAsync(new EnvironmentsRemoved(environmentToClose));
+            await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environmentToClose));
 
             if (activateNextScript && Active == environmentToClose)
             {
@@ -129,7 +129,7 @@ namespace NetPad.Sessions
             }
 
             Active = newActive;
-            _eventBus.PublishAsync(new ActiveEnvironmentChanged(newActive?.Script.Id));
+            _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
 
             return Task.CompletedTask;
         }

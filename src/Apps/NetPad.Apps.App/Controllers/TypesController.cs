@@ -23,16 +23,16 @@ namespace NetPad.Controllers
             public YesNoCancel YesNoCancel { get; set; }
 
             public Script? Script { get; set; }
-            public SettingsUpdated? SettingsUpdated { get; set; }
-            public AppStatusMessagePublished? AppStatusMessagePublished { get; set; }
-            public ScriptPropertyChanged? ScriptPropertyChanged { get; set; }
-            public ScriptConfigPropertyChanged? ScriptConfigPropertyChanged { get; set; }
-            public ScriptOutputEmitted? ScriptOutputEmitted { get; set; }
-            public EnvironmentsAdded? EnvironmentsAdded { get; set; }
-            public EnvironmentsRemoved? EnvironmentsRemoved { get; set; }
-            public EnvironmentPropertyChanged? EnvironmentPropertyChanged { get; set; }
-            public ActiveEnvironmentChanged? ActiveEnvironmentChanged { get; set; }
-            public ScriptDirectoryChanged? ScriptDirectoryChanged { get; set; }
+            public SettingsUpdatedEvent? SettingsUpdated { get; set; }
+            public AppStatusMessagePublishedEvent? AppStatusMessagePublished { get; set; }
+            public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }
+            public ScriptConfigPropertyChangedEvent? ScriptConfigPropertyChanged { get; set; }
+            public ScriptOutputEmittedEvent? ScriptOutputEmitted { get; set; }
+            public EnvironmentsAddedEvent? EnvironmentsAdded { get; set; }
+            public EnvironmentsRemovedEvent? EnvironmentsRemoved { get; set; }
+            public EnvironmentPropertyChangedEvent? EnvironmentPropertyChanged { get; set; }
+            public ActiveEnvironmentChangedEvent? ActiveEnvironmentChanged { get; set; }
+            public ScriptDirectoryChangedEvent? ScriptDirectoryChanged { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
             public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
             public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }

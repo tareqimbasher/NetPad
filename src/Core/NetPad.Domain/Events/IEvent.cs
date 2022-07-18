@@ -1,9 +1,8 @@
-﻿namespace NetPad.Events
+﻿namespace NetPad.Events;
+
+/// <summary>
+/// An event.
+/// </summary>
+public interface IEvent
 {
-    /// <summary>
-    /// An event.
-    /// </summary>
-    public interface IEvent
-    {
-    }
 }

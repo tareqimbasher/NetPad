@@ -1,6 +1,6 @@
 import {
     AppStatusMessage,
-    AppStatusMessagePublished,
+    AppStatusMessagePublishedEvent,
     IEventBus,
     ISession,
     ISettingService,
@@ -24,7 +24,7 @@ export class Statusbar {
     private listenToAppStatusMessages() {
         let clearMsgTask: Task<void>;
 
-        this.eventBus.subscribeToServer(AppStatusMessagePublished, ev => {
+        this.eventBus.subscribeToServer(AppStatusMessagePublishedEvent, ev => {
             this.appStatusMessage = ev.message;
             if (this.appStatusMessage.scriptId) {
                 this.appStatusMessage.scriptName = this.session.getScriptName(this.appStatusMessage.scriptId);

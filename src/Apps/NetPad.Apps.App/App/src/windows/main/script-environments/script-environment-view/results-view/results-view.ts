@@ -1,5 +1,5 @@
 import {ResultsPaneViewSettings} from "./results-view-settings";
-import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmitted, ScriptStatus, Settings} from "@domain";
+import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
 import {bindable, IDisposable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {ViewModelBase} from "@application";
@@ -24,7 +24,7 @@ export class ResultsView extends ViewModelBase {
     public attached() {
         this.resultControls = new ResultControls(this.resultsEl);
 
-        const token = this.eventBus.subscribeToServer(ScriptOutputEmitted, msg => {
+        const token = this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
             if (msg.scriptId === this.environment.script.id) {
                 this.appendResults(msg.output);
             }
