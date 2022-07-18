@@ -13,7 +13,7 @@ const config = {
     },
     homepage: "https://github.com/tareqimbasher/NetPad#readme",
     splashscreen: {
-        imageFile: "./wwwroot/256x256.png"
+        imageFile: "./wwwroot/logo/square/256x256.png"
     },
     environment: "Production",
     singleInstance: false,
@@ -48,8 +48,18 @@ const config = {
             "**/*"
         ],
         linux: {
-            category: "Development",
-            icon: "../../../wwwroot/256x256.png",
+            category: "Development;IDE;Building;Database;TextEditor;",
+            icon: "../../../wwwroot/logo/circle/",
+            artifactName: "${name}-${arch}-${version}.${ext}",
+            desktop: {
+                Type: "Application",
+                Name: "NetPad",
+                Categories: "Development;IDE;Building;Database;TextEditor;",
+                StartupNotify: "true",
+                StartupWMClass: "netpad",
+                Encoding: "UTF-8",
+                MimeType: "application/x-netpad"
+            },
             target: [
                 {
                     target: "dir"
