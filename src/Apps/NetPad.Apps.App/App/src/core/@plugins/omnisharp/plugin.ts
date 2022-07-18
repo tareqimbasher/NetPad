@@ -15,40 +15,39 @@ import {
 } from "@application";
 import {Actions} from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
-import {OmnisharpCompletionProvider} from "./features/omnisharp-completion-provider";
-import {OmnisharpSemanticTokensProvider} from "./features/omnisharp-semantic-tokens-provider";
-import {OmnisharpImplementationProvider} from "./features/omnisharp-implementation-provider";
-import {OmnisharpHoverProvider} from "./features/omnisharp-hover-provider";
-import {OmnisharpSignatureHelpProvider} from "./features/omnisharp-signature-help-provider";
-import {OmnisharpReferenceProvider} from "./features/omnisharp-reference-provider";
-import {OmnisharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
-import {OmnisharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
-import {OmnisharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
+import {OmniSharpCompletionProvider} from "./features/omnisharp-completion-provider";
+import {OmniSharpSemanticTokensProvider} from "./features/omnisharp-semantic-tokens-provider";
+import {OmniSharpImplementationProvider} from "./features/omnisharp-implementation-provider";
+import {OmniSharpHoverProvider} from "./features/omnisharp-hover-provider";
+import {OmniSharpSignatureHelpProvider} from "./features/omnisharp-signature-help-provider";
+import {OmniSharpReferenceProvider} from "./features/omnisharp-reference-provider";
+import {OmniSharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
+import {OmniSharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
+import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
  */
-
 export function configure(container: IContainer) {
     container.register(Registration.singleton(IOmniSharpService, OmniSharpService));
-    container.register(Registration.singleton(IImplementationProvider, OmnisharpImplementationProvider));
-    container.register(Registration.singleton(IHoverProvider, OmnisharpHoverProvider));
-    container.register(Registration.singleton(ISignatureHelpProvider, OmnisharpSignatureHelpProvider));
-    container.register(Registration.singleton(IReferenceProvider, OmnisharpReferenceProvider));
-    container.register(Registration.singleton(ICodeLensProvider, OmnisharpCodeLensProvider));
-    container.register(Registration.singleton(IInlayHintsProvider, OmnisharpInlayHintProvider));
+    container.register(Registration.singleton(IImplementationProvider, OmniSharpImplementationProvider));
+    container.register(Registration.singleton(IHoverProvider, OmniSharpHoverProvider));
+    container.register(Registration.singleton(ISignatureHelpProvider, OmniSharpSignatureHelpProvider));
+    container.register(Registration.singleton(IReferenceProvider, OmniSharpReferenceProvider));
+    container.register(Registration.singleton(ICodeLensProvider, OmniSharpCodeLensProvider));
+    container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
 
-    container.register(Registration.singleton(OmnisharpSemanticTokensProvider, OmnisharpSemanticTokensProvider));
-    container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmnisharpSemanticTokensProvider)));
-    container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmnisharpSemanticTokensProvider)));
+    container.register(Registration.singleton(OmniSharpSemanticTokensProvider, OmniSharpSemanticTokensProvider));
+    container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
+    container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
 
-    container.register(Registration.singleton(OmnisharpCompletionProvider, OmnisharpCompletionProvider));
-    container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmnisharpCompletionProvider)));
-    container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmnisharpCompletionProvider)));
+    container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
+    container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));
+    container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmniSharpCompletionProvider)));
 
-    container.register(Registration.singleton(OmnisharpCodeActionProvider, OmnisharpCodeActionProvider));
-    container.register(Registration.cachedCallback(ICodeActionProvider, c => c.get(OmnisharpCodeActionProvider)));
-    container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmnisharpCodeActionProvider)));
+    container.register(Registration.singleton(OmniSharpCodeActionProvider, OmniSharpCodeActionProvider));
+    container.register(Registration.cachedCallback(ICodeActionProvider, c => c.get(OmniSharpCodeActionProvider)));
+    container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmniSharpCodeActionProvider)));
 
     const actions = new Actions(container);
 

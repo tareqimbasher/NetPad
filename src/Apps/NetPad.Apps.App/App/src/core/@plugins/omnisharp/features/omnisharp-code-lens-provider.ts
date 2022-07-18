@@ -1,10 +1,10 @@
 import {CancellationToken, editor, languages, Position, Range} from "monaco-editor";
 import {EditorUtil} from "@application";
-import {OmnisharpReferenceProvider} from "./omnisharp-reference-provider";
+import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
 import {IOmniSharpService} from "../omnisharp-service";
 import {CodeElement} from "../api";
 
-export class OmnisharpCodeLensProvider implements languages.CodeLensProvider {
+export class OmniSharpCodeLensProvider implements languages.CodeLensProvider {
     private methodNamesToExclude = [
         "Equals",
         "Finalize",
@@ -56,7 +56,7 @@ export class OmnisharpCodeLensProvider implements languages.CodeLensProvider {
     }
 
     public async resolveCodeLens(model: editor.ITextModel, codeLens: languages.CodeLens, token: CancellationToken): Promise<languages.CodeLens> {
-        const references = await OmnisharpReferenceProvider.findUsages(
+        const references = await OmniSharpReferenceProvider.findUsages(
             model,
             this.omnisharpService,
             codeLens.range.startLineNumber,

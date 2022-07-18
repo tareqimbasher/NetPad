@@ -12,7 +12,7 @@ import {
     Range
 } from "../api";
 
-export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider {
+export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider {
     private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: InlayHint }>;
     private _onDidChangeInlayHints: Emitter<void>;
 
@@ -75,8 +75,6 @@ export class OmnisharpInlayHintProvider implements languages.InlayHintsProvider 
     }
 
     public async resolveInlayHint(hint: languages.InlayHint, token: CancellationToken): Promise<languages.InlayHint> {
-        console.warn("resolveinlayhint", hint);
-
         if (!this.inlayHintsMap.has(hint)) {
             return Promise.reject("Outdated inlay hint was requested to be resolved, aborting.");
         }

@@ -3,14 +3,14 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {FindUsagesRequest} from "../api";
 
-export class OmnisharpReferenceProvider implements languages.ReferenceProvider {
+export class OmniSharpReferenceProvider implements languages.ReferenceProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
     }
 
     public async provideReferences(model: editor.ITextModel, position: Position, context: languages.ReferenceContext, token: CancellationToken)
         : Promise<languages.Location[]> {
 
-        return await OmnisharpReferenceProvider.findUsages(model, this.omnisharpService, position.lineNumber, position.column);
+        return await OmniSharpReferenceProvider.findUsages(model, this.omnisharpService, position.lineNumber, position.column);
     }
 
     public static async findUsages(

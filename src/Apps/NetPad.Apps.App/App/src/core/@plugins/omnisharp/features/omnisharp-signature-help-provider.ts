@@ -3,7 +3,7 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {SignatureHelpParameter, SignatureHelpRequest} from "../api";
 
-export class OmnisharpSignatureHelpProvider implements languages.SignatureHelpProvider {
+export class OmniSharpSignatureHelpProvider implements languages.SignatureHelpProvider {
     public signatureHelpTriggerCharacters = ["(", ","];
 
     constructor(@IOmniSharpService private omnisharpService: IOmniSharpService) {

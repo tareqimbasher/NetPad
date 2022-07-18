@@ -6,7 +6,7 @@ import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import {CompletionItem as OmnisharpCompletionItem, CompletionRequest, LinePositionSpanTextChange} from "../api";
 
-export class OmnisharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
+export class OmniSharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";

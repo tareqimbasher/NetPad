@@ -3,7 +3,7 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {QuickInfoRequest} from "../api";
 
-export class OmnisharpHoverProvider implements languages.HoverProvider {
+export class OmniSharpHoverProvider implements languages.HoverProvider {
     constructor(@IOmniSharpService private omnisharpService: IOmniSharpService) {
     }
 

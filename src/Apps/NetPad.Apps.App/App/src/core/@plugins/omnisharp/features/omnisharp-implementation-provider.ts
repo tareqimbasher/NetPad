@@ -3,7 +3,7 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {FindImplementationsRequest} from "../api";
 
-export class OmnisharpImplementationProvider implements languages.ImplementationProvider {
+export class OmniSharpImplementationProvider implements languages.ImplementationProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
     }
 

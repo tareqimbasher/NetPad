@@ -12,7 +12,7 @@ import {
 } from "../api";
 import {Util} from "@common";
 
-export class OmnisharpCodeActionProvider implements languages.CodeActionProvider, ICommandProvider {
+export class OmniSharpCodeActionProvider implements languages.CodeActionProvider, ICommandProvider {
     private readonly commandId = "omnisharp.runCodeAction";
     private readonly excludedCodeActionIdentifiers = [
         "Convert_to_Program_Main_style_program",

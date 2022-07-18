@@ -5,7 +5,7 @@ import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {Point, Range as ApiRange, SemanticHighlightRequest, SemanticHighlightResponse} from "../api";
 
-export class OmnisharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
+export class OmniSharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
     private _onDidChange: Emitter<void>;
 
