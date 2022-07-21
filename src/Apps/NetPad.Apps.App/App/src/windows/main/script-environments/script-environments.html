@@ -6,18 +6,28 @@
             repeat.for="env of session.environments"
             data-script-id.bind="env.script.id"
             title.bind="env.script.path || 'Unsaved'">
-            <div class="text d-flex align-items-center"
+            <div class="script-tab-content d-flex align-items-center"
                  click.trigger="session.activate(env.script.id)"
                  auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">
-                            <span>
-                                ${env.script.name}
-                                ${env.status === 'Running' ? '[Running]' : ''}
-                                ${env.script.isDirty ? '*' : ''}
-                            </span>
+
+                <span class="script-name">${env.script.name}</span>
+
+                <span class="script-status" switch.bind="env.status">
+                    <span case="Running" class="spinner-border"></span>
+                    <span case="Ready" if.bind="env.runDurationMilliseconds"
+                          class="p-2 rounded-circle d-inline-block bg-success"
+                          title="Script ran successfully"></span>
+                    <span case="Error" class="p-2 rounded-circle d-inline-block bg-danger"
+                          title="Error occurred"></span>
+                </span>
             </div>
-            <i class="bi bi-x action-icon hover-text-red"
-               title="${shortcutManager.getShortcutByName('Close').toString()}"
-               click.trigger="session.close(env.script.id)"></i>
+            <span class="script-tab-metadata ${env.script.isDirty ? 'is-dirty' : ''}">
+                <span class="script-dirty-flag p-2 rounded-circle d-inline-block bg-secondary"
+                      title="Error occurred"></span>
+                <i class="script-tab-close-button bi bi-x action-icon hover-text-red"
+                   title="${shortcutManager.getShortcutByName('Close').toString()}"
+                   click.trigger="session.close(env.script.id)"></i>
+            </span>
         </li>
         <li class="nav-item script-tab new-script-tab d-flex align-items-center"
             click.trigger="scriptService.create()"
