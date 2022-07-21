@@ -2,7 +2,7 @@
     <div class="left-column ms-3 me-auto">
         <b>${session.active.status}</b>
 
-        <span show.bind="session.active.runDurationMilliseconds">
+        <span show.bind="session.active.status !== 'Running' && session.active.runDurationMilliseconds">
             (Took: ${session.active.runDurationMilliseconds} ms)
         </span>
     </div>
