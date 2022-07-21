@@ -3,7 +3,7 @@
     <bindable property="vm"></bindable>
 
     <div class="list-group">
-        <div class="list-group-item script-folder-item text-truncate d-flex justify-content-between">
+        <div class="list-group-item script-folder text-truncate d-flex justify-content-between">
                 <span click.trigger="folder.expanded = !folder.expanded">
                     <i class="action-icon text-orange bi ${folder.expanded ? 'bi-dash' : 'bi-plus'}"></i>
                     <i class="bi bi-folder-fill text-yellow"></i> ${folder.name}
@@ -21,12 +21,22 @@
 
                 <div class="list-group-item">
                     <div class="list-group">
-                        <div class="list-group-item script-item text-truncate"
+                        <div class="list-group-item script ${script.cssClasses}"
                              repeat.for="script of folder.scripts | sort:'name'"
-                             title.bind="script.path"
                              click.trigger="vm.session.openByPath(script.path)">
-                            <i class="bi bi-square" style="visibility: hidden"></i>
-                            <i class="bi bi-file-code-fill"></i> ${script.name}
+                            <div class="script-content text-truncate"
+                                 title.bind="script.path">
+                                <i class="bi bi-square" style="visibility: hidden"></i>
+                                <span class="script-icon"><i class="bi bi-code"></i></span>
+                                <span class="script-name">${script.name}</span>
+                            </div>
+                            <div class="script-metadata">
+                                <span class="script-status spinner-border"
+                                      if.bind="script.environment.status === 'Running'"></span>
+                                <span class="script-dirty-flag ms-1"
+                                      if.bind="script.environment.script.isDirty"
+                                      title="Modified (unsaved changes)">M</span>
+                            </div>
                         </div>
                     </div>
                 </div>

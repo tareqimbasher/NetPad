@@ -1,3 +1,4 @@
+@import "~styles/main";
 @import "~styles/themes";
 
 sidebar {
@@ -16,7 +17,7 @@ sidebar {
             user-select: none;
             @include theme(background-color, sidebarBackground);
 
-            &.script-folder-item {
+            &.script-folder {
                 padding: 4px 8px;
 
                 &:hover {
@@ -26,8 +27,47 @@ sidebar {
                 }
             }
 
-            &.script-item {
+            &.script {
                 padding: 4px 8px;
+                display: flex;
+                flex-direction: row;
+
+                .script-content {
+                    flex-grow: 1;
+                }
+
+                .script-metadata {
+                    text-align: right;
+                    white-space: nowrap;
+                    padding-left: 0.25rem;
+                }
+
+                .script-status {
+                    &.spinner-border {
+                        height: 0.75rem;
+                        width: 0.75rem;
+                    }
+                }
+
+                .script-dirty-flag {
+                    @extend .text-yellow;
+                }
+
+                &.is-active {
+                    .script-name {
+                        @extend .text-blue;
+                    }
+                }
+
+                &.is-open {
+                    .script-icon {
+                        @extend .text-blue;
+                    }
+                }
+
+                &.is-dirty {
+
+                }
 
                 &:hover {
                     @include theme(background-color, hoverColor);

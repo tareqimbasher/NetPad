@@ -1,9 +1,10 @@
+import {watch} from "@aurelia/runtime-html";
 import {
     IAppService,
     IEventBus,
     IScriptService,
     ISession,
-    ScriptDirectoryChangedEvent,
+    ScriptDirectoryChangedEvent, ScriptEnvironment, ScriptStatus,
     ScriptSummary,
     Settings
 } from "@domain";
@@ -12,12 +13,15 @@ import {Util} from "@common";
 
 export class Sidebar {
     private readonly rootScriptFolder: SidebarScriptFolder;
+    private scriptsMap: Map<string, SidebarScript>;
 
     constructor(@ISession readonly session: ISession,
                 @IScriptService readonly scriptService: IScriptService,
                 @IAppService readonly appService: IAppService,
                 @IEventBus readonly eventBus: IEventBus,
                 readonly settings: Settings) {
+
+        this.scriptsMap = new Map<string, SidebarScript>();
         this.rootScriptFolder = new SidebarScriptFolder("/", "/", null);
         this.rootScriptFolder.expanded = true;
     }
@@ -37,7 +41,27 @@ export class Sidebar {
         });
     }
 
+    public async openScriptsFolder(folder: SidebarScriptFolder) {
+        await this.appService.openScriptsFolder(folder.path);
+    }
+
+    public expandAllFolders(folder: SidebarScriptFolder) {
+        folder.expanded = true;
+        folder.folders.forEach(f => this.expandAllFolders(f));
+    }
+
+    public collapseAllFolders(folder: SidebarScriptFolder) {
+        folder.expanded = false;
+        folder.folders.forEach(f => this.collapseAllFolders(f));
+    }
+
+    public async addConnection() {
+        alert("Adding connections is not implemented yet.");
+    }
+
     private loadScripts(summaries: ScriptSummary[]) {
+        const scripts = summaries.map(s => new SidebarScript(s));
+
         const expandedFolders = new Set<string>();
         this.recurseFolders(this.rootScriptFolder, folder => {
             if (folder.expanded)
@@ -49,8 +73,8 @@ export class Sidebar {
         const scriptsDirPath = Util.trimEnd(
             this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
 
-        for (const summary of summaries) {
-            let path = summary.path.replaceAll("\\", "/");
+        for (const script of scripts) {
+            let path = script.path.replaceAll("\\", "/");
 
             if (path.startsWith(scriptsDirPath)) {
                 path = "/" + Util.trim(path.substring(scriptsDirPath.length), "/");
@@ -62,7 +86,7 @@ export class Sidebar {
                 .slice(0, -1);
 
             const folder = this.getFolder(root, folderParts);
-            folder.scripts.push(summary);
+            folder.scripts.push(script);
         }
 
         this.recurseFolders(root, folder => {
@@ -73,6 +97,9 @@ export class Sidebar {
 
         this.rootScriptFolder.scripts = root.scripts;
         this.rootScriptFolder.folders = root.folders;
+
+        this.scriptsMap = new Map<string, SidebarScript>(scripts.map(s => [s.id, s]));
+        this.hydrateScriptMarkers();
     }
 
     private getFolder(parent: SidebarScriptFolder, folderPathParts: string[]): SidebarScriptFolder {
@@ -98,22 +125,26 @@ export class Sidebar {
         }
     }
 
-    public async openScriptsFolder(folder: SidebarScriptFolder) {
-        await this.appService.openScriptsFolder(folder.path);
+    @watch<Sidebar>(vm => vm.session.environments.length)
+    private hydrateScriptMarkers() {
+        const openEnvs = new Map<string, ScriptEnvironment>(this.session.environments.map(e => [e.script.id, e]));
+        for (const script of this.scriptsMap.values()) {
+            script.environment = openEnvs.get(script.id);
+        }
     }
 
-    public expandAllFolders(folder: SidebarScriptFolder) {
-        folder.expanded = true;
-        folder.folders.forEach(f => this.expandAllFolders(f));
-    }
+    @watch<Sidebar>(vm => vm.session.active)
+    private hydrateActiveScript() {
+        const activeScriptId = this.session.active?.script.id;
 
-    public collapseAllFolders(folder: SidebarScriptFolder) {
-        folder.expanded = false;
-        folder.folders.forEach(f => this.collapseAllFolders(f));
-    }
+        for (const script of this.scriptsMap.values()) {
+            script.isActive = false;
+        }
 
-    public async addConnection() {
-        alert("Adding connections is not implemented yet.");
+        if (activeScriptId) {
+            const script = this.scriptsMap.get(activeScriptId);
+            if (script) script.isActive = true;
+        }
     }
 }
 
@@ -123,7 +154,7 @@ class SidebarScriptFolder {
 
     public expanded = false;
     public folders: SidebarScriptFolder[] = [];
-    public scripts: ScriptSummary[] = [];
+    public scripts: SidebarScript[] = [];
 
     public clone(deep = false): SidebarScriptFolder {
         const clone = new SidebarScriptFolder(this.name, this.path, this.parent);
@@ -140,5 +171,28 @@ class SidebarScriptFolder {
         }
 
         return clone;
+    }
+}
+
+class SidebarScript extends ScriptSummary {
+    constructor(summary: ScriptSummary) {
+        super(summary);
+    }
+
+    public environment?: ScriptEnvironment;
+    public isActive: boolean;
+
+    public get cssClasses() : string {
+        let classes = this.isActive ? 'is-active' : "";
+
+        if (this.environment) {
+            classes += " is-open";
+            if (this.environment.script.isDirty) classes += " is-dirty";
+            if (this.environment.status === "Ready") classes += " is-ready";
+            else if (this.environment.status === "Running") classes += " is-running";
+            else if (this.environment.status === "Error") classes += " is-error";
+        }
+
+        return classes;
     }
 }
