@@ -1,0 +1,226 @@
+/* stylelint-disable scss/at-extend-no-missing-placeholder -- font-awesome doesn't provide placeholders */
+
+%icon-base {
+    @extend .fa;
+    line-height: inherit;
+}
+
+button > .icon-base {
+    vertical-align: middle;
+}
+
+// GENERIC ICONS
+.icon-2xs {
+    @extend .fa-2xs;
+}
+
+.icon-xs {
+    @extend .fa-xs;
+}
+
+.icon-sm {
+    @extend .fa-sm;
+}
+
+.icon-lg {
+    @extend .fa-lg;
+}
+
+.icon-xl {
+    @extend .fa-xl;
+}
+
+.icon-2xl {
+    @extend .fa-2xl;
+}
+
+.close-icon {
+    @extend %icon-base;
+    @extend .fa-xmark;
+}
+
+.save-icon {
+    @extend %icon-base;
+    @extend .fa-floppy-disk;
+}
+
+.delete-icon {
+    @extend %icon-base;
+    @extend .fa-trash;
+}
+
+.backspace-icon {
+    @extend %icon-base;
+    @extend .fa-delete-left;
+}
+
+.check-circle-icon {
+    @extend %icon-base;
+    @extend .fa-circle-check;
+}
+
+.actions-icon {
+    @extend %icon-base;
+    @extend .fa-bolt;
+}
+
+.keyboard-icon {
+    @extend %icon-base;
+    @extend .fa-keyboard;
+}
+
+.code-icon {
+    @extend %icon-base;
+    @extend .fa-code;
+}
+
+.folder-icon {
+    @extend %icon-base;
+    @extend .fa-folder;
+    @extend .text-yellow;
+}
+
+.folder-open-icon {
+    @extend %icon-base;
+    @extend .fa-folder-open;
+    @extend .text-yellow;
+}
+
+.caret-down-icon {
+    @extend %icon-base;
+    @extend .fa-caret-down;
+}
+
+.tree-collapse-node-icon {
+    @extend %icon-base;
+    @extend .fa-minus;
+}
+
+.tree-collapse-all-icon {
+    @extend %icon-base;
+    @extend .fa-down-left-and-up-right-to-center;
+}
+
+.tree-expand-node-icon {
+    @extend %icon-base;
+    @extend .fa-plus;
+}
+
+.tree-expand-all-icon {
+    @extend %icon-base;
+    @extend .fa-up-right-and-down-left-from-center;
+}
+
+// CONTEXTUAL ICONS
+.script-icon {
+    @extend %icon-base;
+    @extend .fa-code;
+}
+
+.run-icon {
+    @extend %icon-base;
+    @extend .fa-play;
+}
+
+.script-properties-icon {
+    @extend %icon-base;
+    @extend .fa-wrench;
+}
+
+.open-folder-icon {
+    @extend %icon-base;
+    @extend .fa-up-right-from-square;
+}
+
+.add-script-icon {
+    @extend %icon-base;
+    @extend .fa-plus;
+}
+
+.clipboard-icon {
+    @extend %icon-base;
+    @extend .fa-clipboard;
+}
+
+.namespaces-icon {
+    @extend %icon-base;
+    @extend .fa-bars;
+}
+
+.theme-icon {
+    @extend %icon-base;
+    @extend .fa-circle-half-stroke;
+}
+
+.settings-icon {
+    @extend %icon-base;
+    @extend .fa-gear;
+}
+
+.pane-collapse-icon {
+    @extend %icon-base;
+    @extend .fa-minus;
+}
+
+.text-wrap-icon {
+    @extend %icon-base;
+    @extend .fa-align-center;
+}
+
+.script-status-success-icon {
+    @extend %icon-base;
+    @extend .fa-circle;
+    @extend .text-green;
+}
+
+.script-status-error-icon {
+    @extend %icon-base;
+    @extend .fa-circle;
+    @extend .text-red;
+}
+
+.script-status-dirty-icon {
+    @extend %icon-base;
+    @extend .fa-circle;
+    @extend .text-gray;
+}
+
+.add-package-icon {
+    @extend %icon-base;
+    @extend .fa-plus;
+}
+
+.download-package-icon {
+    @extend %icon-base;
+    @extend .fa-download;
+}
+
+.add-package-specific-icon {
+    @extend %icon-base;
+    @extend .fa-hashtag;
+}
+
+.edit-keyboard-shortcut-icon {
+    @extend %icon-base;
+    @extend .fa-pencil;
+}
+
+.editor-background-settings-icon {
+    @extend %icon-base;
+    @extend .fa-align-left;
+}
+
+.monaco-settings-icon {
+    @extend %icon-base;
+    @extend .fa-align-left;
+}
+
+.add-database-connection-icon {
+    @extend %icon-base;
+    @extend .fa-cloud-arrow-up;
+}
+
+.script-folder-open-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-up-right-from-square;
+}

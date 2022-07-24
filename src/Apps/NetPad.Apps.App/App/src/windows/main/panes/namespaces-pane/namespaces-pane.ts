@@ -13,7 +13,7 @@ export class NamespacesPane extends Pane {
         @IScriptService private readonly scriptService: IScriptService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager
     ) {
-        super("Namespaces", "list");
+        super("Namespaces", "namespaces-icon");
         this.hasShortcut(shortcutManager.getShortcutByName("Namespaces Pane"));
     }
 

@@ -22,19 +22,19 @@ export class ScriptEnvironments {
             selector: ".script-tab:not(.new-script-tab)",
             items: [
                 {
-                    icon: "bi bi-play-fill",
+                    icon: "run-icon",
                     text: "Run",
                     shortcut: this.shortcutManager.getShortcutByName("Run"),
                     selected: async (clickTarget) => this.eventBus.publish(new RunScriptEvent(this.getScriptId(clickTarget)))
                 },
                 {
-                    icon: "bi bi-disc-fill",
+                    icon: "save-icon",
                     text: "Save",
                     shortcut: this.shortcutManager.getShortcutByName("Save"),
                     selected: async (clickTarget) => await this.scriptService.save(this.getScriptId(clickTarget))
                 },
                 {
-                    icon: "bi bi-gear-fill",
+                    icon: "script-properties-icon",
                     text: "Properties",
                     shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
                     selected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget))
@@ -43,12 +43,13 @@ export class ScriptEnvironments {
                     isDivider: true
                 },
                 {
+                    icon: "open-folder-icon",
                     text: "Open Containing Folder",
                     selected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
                     show: (clickTarget) => !!this.getScript(clickTarget).path
                 },
                 {
-                    icon: "bi bi-x",
+                    icon: "close-icon",
                     text: "Close",
                     shortcut: this.shortcutManager.getShortcutByName("Close"),
                     selected: async (clickTarget) => await this.session.close(this.getScriptId(clickTarget))

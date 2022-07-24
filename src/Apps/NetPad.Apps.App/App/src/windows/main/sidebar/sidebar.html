@@ -5,11 +5,11 @@
     <div class="list-group">
         <div class="list-group-item script-folder text-truncate d-flex justify-content-between">
                 <span click.trigger="folder.expanded = !folder.expanded">
-                    <i class="action-icon text-orange bi ${folder.expanded ? 'bi-dash' : 'bi-plus'}"></i>
-                    <i class="bi bi-folder-fill text-yellow"></i> ${folder.name}
+                    <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
+                    <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 fa-fw"></i> ${folder.name}
                 </span>
-            <i class="action-icon bi bi-box-arrow-up-right open-folder-button text-blue"
-               title="Open"
+            <i class="action-icon script-folder-open-icon"
+               title="Open in File Manager"
                click.trigger="vm.openScriptsFolder(folder)"></i>
         </div>
 
@@ -26,8 +26,8 @@
                              click.trigger="vm.session.openByPath(script.path)">
                             <div class="script-content text-truncate"
                                  title.bind="script.path">
-                                <i class="bi bi-square" style="visibility: hidden"></i>
-                                <span class="script-icon"><i class="bi bi-code"></i></span>
+                                <i class="tree-expand-node-icon" style="visibility: hidden"></i>
+                                <i class="script-icon fa-fw"></i>
                                 <span class="script-name">${script.name}</span>
                             </div>
                             <div class="script-metadata">
@@ -48,7 +48,7 @@
 <div id="connection-list" class="flex-grow-height-restricted d-flex flex-column pt-2">
     <h6>
         <b class="ps-3">Connections</b>
-        <i class="action-icon bi bi-cloud-plus-fill float-end pe-2"
+        <i class="action-icon add-database-connection-icon float-end pe-2"
            title="Add Connection"
            click.trigger="addConnection()"></i>
         <hr class="m-0 mt-2" style="height: 2px"/>
@@ -64,10 +64,10 @@
 <div id="script-list" class="pt-2 flex-grow-height-restricted d-flex flex-column">
     <h6>
         <b class="ps-3">Scripts</b>
-        <i class="action-icon bi bi-arrows-expand float-end me-2"
+        <i class="action-icon tree-expand-all-icon float-end me-2"
            title="Expand All"
            click.trigger="expandAllFolders(rootScriptFolder)"></i>
-        <i class="action-icon bi bi-arrows-collapse float-end me-3"
+        <i class="action-icon tree-collapse-all-icon float-end me-3"
            title="Collapse All"
            click.trigger="collapseAllFolders(rootScriptFolder)"></i>
         <hr class="m-0 mt-2" style="height: 2px"/>

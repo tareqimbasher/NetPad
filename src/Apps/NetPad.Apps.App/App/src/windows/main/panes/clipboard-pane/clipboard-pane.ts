@@ -6,7 +6,7 @@ export class ClipboardPane extends Pane {
     private readonly maxHistorySize = 200;
 
     constructor() {
-        super("Clipboard", "clipboard-fill");
+        super("Clipboard", "clipboard-icon");
         this.history = new Set<string>();
     }
 

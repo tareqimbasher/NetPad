@@ -2,6 +2,8 @@
 
 @import "./variables";
 @import "./bootstrap";
+@import "./font-awesome";
+@import "./icons";
 @import "./splitjs";
 @import "~styles/themes";
 
@@ -111,10 +113,6 @@ a.btn-link:hover {
     cursor: pointer;
 }
 
-.bi.invisible {
-    visibility: hidden;
-}
-
 .tabs {
     .nav-item {
         @include theme(background-color, tabColor);
@@ -147,8 +145,10 @@ a.btn-link:hover {
 
 .tab-content {
     @extend %flex-grow-height-restricted;
+    /* stylelint-disable scss/at-extend-no-missing-placeholder -- bootstrap doesn't provide placeholders */
     @extend .d-flex;
     @extend .flex-column;
+    /* stylelint-enable scss/at-extend-no-missing-placeholder */
 }
 
 ::-webkit-scrollbar {

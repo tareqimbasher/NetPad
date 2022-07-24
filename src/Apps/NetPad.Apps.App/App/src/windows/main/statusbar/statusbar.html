@@ -10,10 +10,10 @@
         <div show.bind="appStatusMessage">
             ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
         </div>
-        <i class="bi bi-sun action-icon"
+        <i class="theme-icon action-icon"
            click.trigger="settingsService.toggleTheme()"
            title="Toggle Theme"></i>
-        <i class="bi bi-gear-fill action-icon"
+        <i class="settings-icon action-icon"
            click.trigger="settingsService.openSettingsWindow()"
            title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
     </div>

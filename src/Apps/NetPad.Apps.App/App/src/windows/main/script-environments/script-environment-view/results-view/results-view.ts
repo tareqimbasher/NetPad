@@ -81,7 +81,7 @@ class ResultControls implements IDisposable {
 
             const caret = document.createElement("i");
             collapseTarget.prepend(caret);
-            caret.classList.add("bi", "bi-caret-down-fill", "me-2");
+            caret.classList.add("caret-down-icon", "icon-lg", "me-2");
         }
     }
 

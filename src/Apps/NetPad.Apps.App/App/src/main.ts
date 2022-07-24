@@ -10,7 +10,6 @@ import Aurelia, {
 } from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
-import 'bootstrap-icons/font/bootstrap-icons.scss';
 import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService} from "@domain";
 import {
     ContextMenu,

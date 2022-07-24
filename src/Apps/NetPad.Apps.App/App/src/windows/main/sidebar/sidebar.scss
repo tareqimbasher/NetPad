@@ -21,7 +21,7 @@ sidebar {
                 padding: 4px 8px;
 
                 &:hover {
-                    .open-folder-button {
+                    .script-folder-open-icon {
                         visibility: visible;
                     }
                 }
@@ -50,7 +50,7 @@ sidebar {
                 }
 
                 .script-dirty-flag {
-                    @extend .text-yellow;
+                    @extend .text-orange;
                 }
 
                 &.is-active {
@@ -74,13 +74,14 @@ sidebar {
                 }
             }
 
-            .open-folder-button {
+            .script-folder-open-icon {
+                @extend .text-blue;
                 visibility: hidden;
             }
-        }
 
-        .open-folder-button {
-            visibility: hidden;
+            .tree-expand-node-icon, .tree-collapse-node-icon {
+                @extend .text-gray;
+            }
         }
     }
 }

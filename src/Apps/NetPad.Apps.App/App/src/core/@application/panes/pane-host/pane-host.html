@@ -5,7 +5,7 @@
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="activateOrCollapse(pane)"
              title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyComboString + ')') : ''}">
-            <i class="mb-3 bi bi-${pane.icon}" show.bind="pane.icon"></i>
+            <i class="mb-3 ${pane.icon}" show.bind="pane.icon"></i>
             <span>${pane.name}</span>
         </div>
     </div>
@@ -15,7 +15,7 @@
                 ${active.name}
             </div>
             <div class="justify-content-end ms-1">
-                <i class="action-icon bi bi-dash-lg pane-collapser fw-bold"
+                <i class="action-icon pane-collapse-icon pane-collapser"
                    click.trigger="collapse()"
                    title="Hide"></i>
             </div>

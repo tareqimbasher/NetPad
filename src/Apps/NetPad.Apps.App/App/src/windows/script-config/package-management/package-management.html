@@ -68,7 +68,7 @@
                             class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
                             title="Add to Script"
                             click.trigger="referencePackage(package)">
-                        <i class="bi bi-plus" show.bind="!package.referenced"></i>
+                        <i class="add-package-icon" show.bind="!package.referenced"></i>
                         ${package.referenced ? 'Added' : 'Add'}
                     </button>
                     <button type="button"
@@ -79,7 +79,7 @@
                         <li title="Delete from Local Cache"
                             click.trigger="deleteFromCache(package)">
                             <button class="dropdown-item btn btn-link">
-                                <i class="bi bi-x"></i>
+                                <i class="delete-icon"></i>
                                 Delete
                             </button>
                         </li>
@@ -111,7 +111,7 @@
                                 class="btn ${package.referenced ? 'btn-success' : 'btn-secondary'}"
                                 title="Add to Script"
                                 click.trigger="referencePackage(package)">
-                            <i class="bi bi-plus" show.bind="!package.referenced"></i>
+                            <i class="add-package-icon" show.bind="!package.referenced"></i>
                             ${package.referenced ? 'Added' : 'Add'}
                         </button>
                         <button type="button"
@@ -123,14 +123,14 @@
                                 show.bind="!package.existsInLocalCache"
                                 click.trigger="installPackage(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="bi bi-download"></i>
+                                    <i class="download-package-icon"></i>
                                     Download Only
                                 </button>
                             </li>
                             <li title="Add specific version"
                                 click.trigger="selectPackageVersionToInstall(package)">
                                 <button class="dropdown-item btn btn-link">
-                                    <i class="bi bi-tag"></i>
+                                    <i class="add-package-specific-icon"></i>
                                     Add Specific Version
                                 </button>
                             </li>
@@ -203,7 +203,7 @@
                  repeat.for="version of versionsToPickFrom"
                  click.trigger="selectedVersion == version ? selectedVersion = null : selectedVersion = version">
                 ${version}
-                <i class="text-success bi bi-check-circle-fill float-end"
+                <i class="text-success check-circle-icon float-end"
                    show.bind="version === selectedVersion"></i>
             </div>
         </div>

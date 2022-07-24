@@ -6,7 +6,7 @@
             repeat.for="env of session.environments"
             data-script-id.bind="env.script.id"
             title.bind="env.script.path || 'Unsaved'">
-            <div class="script-tab-content d-flex align-items-center"
+            <div class="script-tab-content"
                  click.trigger="session.activate(env.script.id)"
                  auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">
 
@@ -14,25 +14,25 @@
 
                 <span class="script-status" switch.bind="env.status">
                     <span case="Running" class="spinner-border"></span>
-                    <span case="Ready" if.bind="env.runDurationMilliseconds"
-                          class="p-2 rounded-circle d-inline-block bg-success"
-                          title="Script ran successfully"></span>
-                    <span case="Error" class="p-2 rounded-circle d-inline-block bg-danger"
-                          title="Error occurred"></span>
+                    <i case="Ready" if.bind="env.runDurationMilliseconds"
+                          class="script-status-success-icon icon-xs"
+                          title="Script ran successfully"></i>
+                    <i case="Error" class="script-status-error-icon icon-xs"
+                          title="Error occurred"></i>
                 </span>
             </div>
-            <span class="script-tab-metadata ${env.script.isDirty ? 'is-dirty' : ''}">
-                <span class="script-dirty-flag p-2 rounded-circle d-inline-block bg-secondary"
-                      title="Error occurred"></span>
-                <i class="script-tab-close-button bi bi-x action-icon hover-text-red"
+            <div class="script-tab-metadata ${env.script.isDirty ? 'is-dirty' : ''}">
+                <i class="script-dirty-flag script-status-dirty-icon icon-xs"
+                   title="Error occurred"></i>
+                <i class="script-tab-close-button close-icon action-icon"
                    title="${shortcutManager.getShortcutByName('Close').toString()}"
                    click.trigger="session.close(env.script.id)"></i>
-            </span>
+            </div>
         </li>
         <li class="nav-item script-tab new-script-tab d-flex align-items-center"
             click.trigger="scriptService.create()"
             title="${shortcutManager.getShortcutByName('New').toString()}">
-            <i class="bi bi-plus-lg"></i>
+            <i class="add-script-icon"></i>
         </li>
     </ul>
     <div id="script-environments" class="flex-grow-height-restricted d-flex flex-column">

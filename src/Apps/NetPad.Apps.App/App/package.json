@@ -42,12 +42,12 @@
         }
     },
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^6.1.1",
         "@microsoft/signalr": "^6.0.2",
         "@popperjs/core": "^2.11.2",
         "@types/ts-nameof": "^4.2.1",
         "aurelia": "^2.0.0-alpha.35",
         "bootstrap": "^5.1.3",
-        "bootstrap-icons": "^1.8.1",
         "monaco-editor": "^0.32.1",
         "path-browserify": "^1.0.1",
         "sanitize-html": "^2.7.0",
@@ -70,6 +70,7 @@
         "cypress": "^8.7.0",
         "dotenv-webpack": "^7.1.0",
         "electron": "^15.5.5",
+        "electron-builder": "^23.1.0",
         "eslint": "^8.9.0",
         "eslint-plugin-cypress": "^2.12.1",
         "html-webpack-plugin": "^5.5.0",
@@ -93,5 +94,8 @@
         "webpack-bundle-analyzer": "^4.5.0",
         "webpack-cli": "^4.9.2",
         "webpack-dev-server": "^4.9.2"
+    },
+    "devDependenciesComments": {
+        "electron-builder": "Only installed for the TS type definitions to be used in 'electron.manifest.js' in proj root"
     }
 }

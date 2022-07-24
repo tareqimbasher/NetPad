@@ -5,8 +5,12 @@
         <span class="text-truncate user-select-none" title.bind="entry.substr(0, 1000)">
             ${$index + 1}. ${entry.substr(0, 200)}
         </span>
-        <i class="ms-2 bi ${selected === entry ? 'bi-check-circle-fill text-success' : 'action-icon bi-trash-fill'}"
-           click.trigger="removeEntry(entry)"></i>
+        <span class="ms-2">
+            <i class="check-circle-icon text-success" if.bind="selected === entry"></i>
+            <i class="action-icon delete-icon" else
+               title="Delete"
+               click.trigger="removeEntry(entry)"></i>
+        </span>
     </div>
 </div>
 <div else class="flex-fill d-flex align-items-center justify-content-center">
