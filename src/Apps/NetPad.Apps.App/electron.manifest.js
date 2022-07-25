@@ -1,4 +1,84 @@
-const config = {
+/**
+ * @type {import('./App/node_modules/electron-builder').Configuration}
+ * @see https://www.electron.build/configuration/configuration
+ */
+const electronBuilderConfig = {
+    appId: "com.netpad.app",
+    productName: "NetPad",
+    copyright: "Copyright © 2020 Tareq Imbasher",
+    buildVersion: "0.1.0",
+    compression: "maximum",
+    directories: {
+        output: "../../../bin/Desktop"
+    },
+    extraResources: [
+        {
+            from: "./bin",
+            to: "bin",
+            filter: [
+                "**/*"
+            ]
+        },
+        // {
+        //     from: "../../../res",
+        //     to: "bin/res",
+        //     filter: [
+        //         "**/*"
+        //     ]
+        // },
+    ],
+    files: [
+        {
+            from: "./ElectronHostHook/node_modules",
+            to: "ElectronHostHook/node_modules",
+            filter: [
+                "**/*"
+            ]
+        },
+        "**/*"
+    ],
+    // pacman: {
+    //     afterInstall: "bin/res/install-mime.sh"
+    // },
+    linux: {
+        category: "Development;IDE;Building;Database;TextEditor;",
+        icon: "../../../wwwroot/logo/circle/",
+        artifactName: "${name}-${arch}-${version}.${ext}",
+        desktop: {
+            Type: "Application",
+            Name: "NetPad",
+            Categories: "Development;IDE;Building;Database;TextEditor;",
+            StartupNotify: "true",
+            StartupWMClass: "netpad",
+            Encoding: "UTF-8",
+            MimeType: "application/x-netpad"
+        },
+        target: [
+            {
+                target: "dir"
+            },
+            {
+                target: "pacman",
+            }
+        ]
+    },
+    win: {
+        target: "portable",
+        icon: "../../../wwwroot/favicon.ico"
+    },
+    mac: {
+        category: "public.app-category.developer-tools",
+        icon: "../../../wwwroot/logo/circle/logo.icns",
+        darkModeSupport: true,
+        target: [
+            {
+                target: "dir"
+            },
+        ]
+    }
+}
+
+const electronNetConfig = {
     name: "netpad",
     description: "A cross-platform C# editor and playground.",
     executable: "NetPad.Apps.App",
@@ -19,70 +99,7 @@ const config = {
     singleInstance: false,
     aspCoreBackendPort: 50900,
     electronPort: 50901,
-    build: {
-        appId: "com.netpad.app",
-        productName: "NetPad",
-        copyright: "Copyright © 2020 Tareq Imbasher",
-        buildVersion: "0.1.0",
-        compression: "maximum",
-        directories: {
-            output: "../../../bin/Desktop"
-        },
-        extraResources: [
-            {
-                from: "./bin",
-                to: "bin",
-                filter: [
-                    "**/*"
-                ]
-            },
-        ],
-        files: [
-            {
-                from: "./ElectronHostHook/node_modules",
-                to: "ElectronHostHook/node_modules",
-                filter: [
-                    "**/*"
-                ]
-            },
-            "**/*"
-        ],
-        linux: {
-            category: "Development;IDE;Building;Database;TextEditor;",
-            icon: "../../../wwwroot/logo/circle/",
-            artifactName: "${name}-${arch}-${version}.${ext}",
-            desktop: {
-                Type: "Application",
-                Name: "NetPad",
-                Categories: "Development;IDE;Building;Database;TextEditor;",
-                StartupNotify: "true",
-                StartupWMClass: "netpad",
-                Encoding: "UTF-8",
-                MimeType: "application/x-netpad"
-            },
-            target: [
-                {
-                    target: "dir"
-                },
-                // {
-                //     target: "pacman"
-                // }
-            ]
-        },
-        win: {
-            target: "portable",
-            icon: "../../../wwwroot/favicon.ico"
-        },
-        mac: {
-            category: "public.app-category.developer-tools",
-            darkModeSupport: true,
-            target: [
-                {
-                    target: "dir"
-                },
-            ]
-        }
-    }
+    build: electronBuilderConfig
 };
 
-module.exports = config;
+module.exports = electronNetConfig;
