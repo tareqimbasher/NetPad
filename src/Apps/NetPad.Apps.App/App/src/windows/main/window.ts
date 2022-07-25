@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {BuiltinShortcuts, IShortcutManager, Settings, Shortcut} from "@domain";
+import {BuiltinShortcuts, ISession, IShortcutManager, Settings, Shortcut} from "@domain";
 import {
     EditorSetup,
     IPaneManager,
@@ -14,6 +14,7 @@ export class Window {
 
     constructor(
         private readonly settings: Settings,
+        @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
         private readonly editorSetup: EditorSetup) {
@@ -23,6 +24,8 @@ export class Window {
         this.shortcutManager.initialize();
         this.registerKeyboardShortcuts();
         this.editorSetup.setup();
+
+        await this.session.initialize();
     }
 
     public attached() {

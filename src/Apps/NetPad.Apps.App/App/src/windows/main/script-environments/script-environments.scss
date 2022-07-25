@@ -1,24 +1,38 @@
+@import "~styles/placeholders";
 @import "~styles/themes";
 
-script-environments .nav-tabs {
-    overflow-x: auto;
-    overflow-y:hidden;
+script-environments .script-tabs {
     flex-wrap: nowrap;
+    display: flex;
+    align-items: center;
+    @include theme(border-bottom, borderColor, 1px solid);
+
+    .drag-drop-container {
+        @extend %hide-scrollbar;
+        flex-wrap: nowrap;
+        flex-shrink: 1;
+        display: flex;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
 
     .script-tab {
+        height: 1.6rem;
+        display: flex;
+        align-items: center;
         white-space: nowrap;
-        margin-right: 1px;
-
-        @include theme(background-color, tabColor);
+        font-size: 0.75rem;
         font-weight: bold;
         cursor: default;
-        height: 1.6rem;
-        font-size: 0.75rem;
-        padding-right: 3px;
+        @include theme(background-color, tabColor);
+
+        &:not(:last-child) {
+            margin-right: 1px;
+        }
 
         .script-tab-content {
             display: flex;
-            align-items: center;
             padding-left: 0.5rem;
             padding-right: 0.3rem;
             user-select: none;
@@ -30,7 +44,7 @@ script-environments .nav-tabs {
             align-items: center;
         }
 
-        .script-tab-metadata {
+        .script-tab-addon {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -53,7 +67,7 @@ script-environments .nav-tabs {
             }
         }
 
-        .spinner-border {
+        .script-running-indicator {
             height: 0.65rem;
             width: 0.65rem;
         }
@@ -71,6 +85,7 @@ script-environments .nav-tabs {
         }
 
         &.new-script-tab {
+            margin-left: 1px;
             padding-left: 0.4rem;
             padding-right: 0.4rem;
         }

@@ -1,19 +1,23 @@
+import {ILogger} from "aurelia";
+import dragula from "dragula";
 import {IAppService, IEventBus, IScriptService, ISession, IShortcutManager, RunScriptEvent, Script} from "@domain";
-import {ContextMenuOptions} from "@application";
+import {ContextMenuOptions, ViewModelBase} from "@application";
 
-export class ScriptEnvironments {
+export class ScriptEnvironments extends ViewModelBase {
     public tabContextMenuOptions: ContextMenuOptions;
 
     constructor(
+        private readonly element: Element,
         @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService,
         @IAppService private readonly appService: IAppService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
-        @IEventBus private readonly eventBus: IEventBus) {
+        @IEventBus private readonly eventBus: IEventBus,
+        @ILogger logger: ILogger) {
+        super(logger);
     }
 
     public async binding() {
-        await this.session.initialize();
         if (this.session.environments.length === 0) {
             await this.scriptService.create();
         }
@@ -58,7 +62,29 @@ export class ScriptEnvironments {
         };
     }
 
-    public async tabSecondaryClicked(scriptId: string, event: MouseEvent) {
+    public attached() {
+        const dndContainer = this.element.querySelector(".script-tabs > .drag-drop-container");
+        const drake = dragula([dndContainer], {
+            direction: "horizontal",
+            mirrorContainer: dndContainer,
+            invalid: (el, target) => {
+                return el && el.classList.contains("new-script-tab");
+            }
+        });
+
+        this.disposables.push(() => drake.destroy());
+
+        const horizontalScroll = (ev: WheelEvent) => {
+            dndContainer.scrollLeft += (ev.deltaY ?? 1);
+            ev.preventDefault();
+        };
+
+        dndContainer.addEventListener("wheel", horizontalScroll);
+
+        this.disposables.push(() => dndContainer.removeEventListener("wheel", horizontalScroll))
+    }
+
+    public async tabWheelButtonClicked(scriptId: string, event: MouseEvent) {
         if (event.button !== 1) return;
         await this.session.close(scriptId);
     }

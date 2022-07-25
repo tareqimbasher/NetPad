@@ -1,41 +1,45 @@
 <template class="d-flex flex-column">
     <require from="./script-environment-view/script-environment-view"></require>
 
-    <ul class="nav nav-tabs flex-shrink-0">
-        <li class="nav-item d-flex flex-row align-items-center script-tab ${session.active === env ? 'active' : ''}"
-            repeat.for="env of session.environments"
-            data-script-id.bind="env.script.id"
-            title.bind="env.script.path || 'Unsaved'">
-            <div class="script-tab-content"
-                 click.trigger="session.activate(env.script.id)"
-                 auxclick.trigger="tabSecondaryClicked(env.script.id, $event)">
+    <div class="script-tabs">
+        <div class="drag-drop-container">
+            <div class="script-tab ${session.active === env ? 'active' : ''}"
+                 repeat.for="env of session.environments"
+                 data-script-id.bind="env.script.id"
+                 title.bind="env.script.path || 'Unsaved'">
+                <div class="script-tab-content"
+                     click.trigger="session.activate(env.script.id)"
+                     auxclick.trigger="tabWheelButtonClicked(env.script.id, $event)">
 
-                <span class="script-name">${env.script.name}</span>
+                    <span class="script-name">${env.script.name}</span>
 
-                <span class="script-status" switch.bind="env.status">
-                    <span case="Running" class="spinner-border"></span>
-                    <i case="Ready" if.bind="env.runDurationMilliseconds"
-                          class="script-status-success-icon icon-xs"
-                          title="Script ran successfully"></i>
-                    <i case="Error" class="script-status-error-icon icon-xs"
-                          title="Error occurred"></i>
-                </span>
+                    <span class="script-status" switch.bind="env.status">
+                        <span case="Running" class="spinner-border script-running-indicator"></span>
+                        <i case="Ready" if.bind="env.runDurationMilliseconds"
+                           class="script-status-success-icon icon-xs"
+                           title="Script ran successfully"></i>
+                        <i case="Error" class="script-status-error-icon icon-xs"
+                           title="Error occurred"></i>
+                    </span>
+                </div>
+                <div class="script-tab-addon ${env.script.isDirty ? 'is-dirty' : ''}">
+                    <i class="script-dirty-flag script-status-dirty-icon icon-xs"
+                       title="Error occurred"></i>
+                    <i class="script-tab-close-button close-icon action-icon"
+                       title="${shortcutManager.getShortcutByName('Close').toString()}"
+                       click.trigger="session.close(env.script.id)"></i>
+                </div>
             </div>
-            <div class="script-tab-metadata ${env.script.isDirty ? 'is-dirty' : ''}">
-                <i class="script-dirty-flag script-status-dirty-icon icon-xs"
-                   title="Error occurred"></i>
-                <i class="script-tab-close-button close-icon action-icon"
-                   title="${shortcutManager.getShortcutByName('Close').toString()}"
-                   click.trigger="session.close(env.script.id)"></i>
-            </div>
-        </li>
-        <li class="nav-item script-tab new-script-tab d-flex align-items-center"
-            click.trigger="scriptService.create()"
-            title="${shortcutManager.getShortcutByName('New').toString()}">
+        </div>
+
+        <div class="script-tab new-script-tab"
+             click.trigger="scriptService.create()"
+             title="${shortcutManager.getShortcutByName('New').toString()}">
             <i class="add-script-icon"></i>
-        </li>
-    </ul>
-    <div id="script-environments" class="flex-grow-height-restricted d-flex flex-column">
+        </div>
+    </div>
+
+    <div class="flex-grow-height-restricted d-flex flex-column">
         <script-environment-view class="flex-grow-height-restricted d-flex flex-column"
                                  repeat.for="env of session.environments"
                                  show.bind="session.active.script.id === env.script.id"
