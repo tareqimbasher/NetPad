@@ -1,12 +1,13 @@
 @use "sass:map";
 
+@import "./vendors/bootstrap";
+@import "./vendors/font-awesome";
+@import "./vendors/splitjs";
+@import "./vendors/dragula";
 @import "./variables";
-@import "./bootstrap";
-@import "./font-awesome";
+@import "./common";
 @import "./icons";
-@import "./splitjs";
-@import "dragula/dist/dragula.css";
-@import "~styles/themes";
+@import "./themes";
 
 body,
 html {
@@ -18,100 +19,6 @@ html {
 
     @include theme(background-color, backgroundColor);
     @include theme(color, textColor);
-}
-
-.flex-grow-height-restricted,
-%flex-grow-height-restricted {
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.flex-1 {
-    flex: 1;
-}
-
-.min-h-0 {
-    min-height: 0;
-}
-
-.min-w-0 {
-    min-width: 0;
-}
-
-.overflow-x-hidden {
-    overflow-x: hidden;
-}
-
-.overflow-y-hidden {
-    overflow-y: hidden;
-}
-
-.overflow-x-auto {
-    overflow-x: auto;
-}
-
-.overflow-y-auto {
-    overflow-y: auto;
-}
-
-hr {
-    @include theme(color, borderColor);
-}
-
-.clickable,
-%clickable {
-    cursor: pointer;
-}
-
-.action-icon {
-    @extend %clickable;
-    @include theme(color, actionIconColor);
-
-    &:hover {
-        @include theme(color, actionIconHoverColor);
-
-        // &::before {
-        //     font-weight: bold !important;
-        // }
-    }
-}
-
-table thead td {
-    font-weight: bold;
-}
-
-.grid.gutterless {
-    > .row {
-        margin-right: 0;
-        margin-left: 0;
-
-        > * {
-            padding-right: 0;
-            padding-left: 0;
-        }
-    }
-}
-
-.text-truncate-1-line,
-%text-truncate-1-line {
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    display: -webkit-box;
-    overflow: hidden;
-}
-
-.text-truncate-2-lines {
-    @extend %text-truncate-1-line;
-    -webkit-line-clamp: 2;
-}
-
-.text-truncate-3-lines {
-    @extend %text-truncate-1-line;
-    -webkit-line-clamp: 3;
-}
-
-a.btn-link:hover {
-    cursor: pointer;
 }
 
 .tabs {
@@ -152,29 +59,12 @@ a.btn-link:hover {
     /* stylelint-enable scss/at-extend-no-missing-placeholder */
 }
 
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    @include theme(background-color, scrollbarTrackColor);
-}
-
-::-webkit-scrollbar-thumb {
-    @include theme(background-color, scrollbarThumbColor);
-}
-
-::-webkit-scrollbar-corner {
-    @include theme(background-color, scrollbarTrackColor);
-}
-
 @each $color in map-keys($colors) {
-    .text-#{"" + $color} {
+    .text-#{"" + $color}, %text-#{"" + $color} {
         color: map.get($colors, $color) !important;
     }
 
-    .hover-text-#{"" + $color}:hover {
+    .hover-text-#{"" + $color}:hover, %hover-text-#{"" + $color}:hover {
         color: map.get($colors, $color) !important;
     }
 }

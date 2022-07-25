@@ -17,6 +17,22 @@ $form-select-indicator-color: silver;
 @import "~bootstrap/scss/bootstrap";
 @import "~styles/themes";
 
+a.btn-link:hover {
+    cursor: pointer;
+}
+
+.grid.gutterless {
+    > .row {
+        margin-right: 0;
+        margin-left: 0;
+
+        > * {
+            padding-right: 0;
+            padding-left: 0;
+        }
+    }
+}
+
 .form-control {
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
@@ -88,8 +104,4 @@ $form-select-indicator-color: silver;
     .dropdown-item:hover {
         @include theme(background-color, hoverColor);
     }
-}
-
-kbd {
-    @include theme(background-color, kbdBackground);
 }

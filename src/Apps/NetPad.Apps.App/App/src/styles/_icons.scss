@@ -77,7 +77,7 @@ button > .icon-base {
 .folder-icon {
     @extend %icon-base;
     @extend .fa-folder;
-    @extend .text-yellow;
+    @extend %text-yellow;
 }
 
 .folder-open-icon {
