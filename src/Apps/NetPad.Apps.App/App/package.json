@@ -12,7 +12,7 @@
         "url": "https://github.com/tareqimbasher/NetPad"
     },
     "scripts": {
-        "lint:js": "eslint src test cypress --ext .js,.ts",
+        "lint:js": "eslint src test --ext .js,.ts",
         "lint:html": "htmlhint -c .htmlhintrc src",
         "lint:css": "stylelint src/**/*.scss",
         "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
@@ -20,9 +20,7 @@
         "start": "webpack serve",
         "build": "rimraf dist && webpack --env production",
         "analyze": "rimraf dist && webpack --env production --analyze",
-        "test": "jest",
-        "cypress": "cypress run",
-        "test:e2e": "cross-env CI=1 start-server-and-test start http://localhost:9000 cypress"
+        "test": "jest"
     },
     "jest": {
         "testEnvironment": "jsdom",
@@ -77,12 +75,10 @@
         "autoprefixer": "^10.4.8",
         "cross-env": "^7.0.3",
         "css-loader": "^6.7.1",
-        "cypress": "^8.7.0",
         "dotenv-webpack": "^8.0.0",
         "electron": "^15.5.5",
         "electron-builder": "^23.1.0",
         "eslint": "^8.20.0",
-        "eslint-plugin-cypress": "^2.12.1",
         "html-webpack-plugin": "^5.5.0",
         "htmlhint": "^1.1.4",
         "jest": "^28.1.3",

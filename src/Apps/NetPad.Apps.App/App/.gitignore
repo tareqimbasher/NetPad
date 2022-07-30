@@ -33,8 +33,5 @@ node_modules
 # Compiled files
 /dist
 /.nyc_output
-/coverage
-/cypress/videos
-/cypress/screenshots
 
 !src/**/packages/*
