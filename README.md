@@ -18,12 +18,9 @@ open-source, web-enabled, cross-platform alternative.
 This is a work in progress and still in alpha. All
 contributions are welcome!
 
-## Roadmap
-
-**What is working** :tada:
-
+## Features :tada:
 * The basics:
-  * Write, save and run your own scripts 
+  * Write, save and run your own scripts
   * Manage namespaces
   * Standard code editor features
 * Dump complex objects to the results console
@@ -39,10 +36,10 @@ contributions are welcome!
   * Format document
   * Go-to implementation
   * Find references
-  * Action suggestions
+  * Action suggestions (_experimental_)
 
-**What is yet to come** :construction:
-
+## Roadmap :construction:
+* Add database connections
 * More OmniSharp integrations:
   * Code fix suggestions
   * Format selection
@@ -52,11 +49,12 @@ contributions are welcome!
   * Rename symbol
   * Diagnostics
   * ...and more
-* Add database connections
 * Workspaces/Sessions
 * More results console features:
   * Support for more complex objects in the results console, ex: Dumping images
   * Exporting results to different file formats, or to the clipboard
+  * CTRL-F to find text
+* Plugins
 
 ## Tech Stack :computer:
 
