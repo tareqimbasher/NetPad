@@ -4,19 +4,24 @@ import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import {
-    GetCodeActionsRequest, LinePositionSpanTextChange,
+    GetCodeActionsRequest,
+    LinePositionSpanTextChange,
     ModifiedFileResponse,
+    OmniSharpCodeAction,
     Point,
     Range as OmniSharpRange,
     RunCodeActionRequest
 } from "../api";
-import {Util} from "@common";
 
 export class OmniSharpCodeActionProvider implements languages.CodeActionProvider, ICommandProvider {
     private readonly commandId = "omnisharp.runCodeAction";
-    private readonly excludedCodeActionIdentifiers = [
+    private readonly excludedCodeActionIdentifiers: (string | ((str: string) => boolean))[] = [
         "Convert_to_Program_Main_style_program",
-        "Remove Unnecessary Usings"
+        "Remove Unnecessary Usings",
+        "Convert_to_Program_Main_style_program",
+        id => id.indexOf("in new file") >= 0,
+        id => id.indexOf("Move type ") >= 0,
+        id => id.indexOf("Rename file ") >= 0,
     ];
 
     constructor(
@@ -66,11 +71,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
 
         const codeActions: languages.CodeAction[] = [];
 
-        for (const codeAction of response.codeActions) {
-            if (this.excludedCodeActionIdentifiers.indexOf(codeAction.identifier) >= 0) {
-                continue;
-            }
-
+        for (const codeAction of this.filterCodeActions(response.codeActions)) {
             const runRequest = new RunCodeActionRequest({
                 identifier: codeAction.identifier,
                 line: request.line,
@@ -115,11 +116,9 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         for (const change of response.changes) {
             if (change.modificationType === "Modified") {
                 modifications.push(...(change as ModifiedFileResponse).changes);
-            }
-            else if (change.modificationType === "Renamed") {
+            } else if (change.modificationType === "Renamed") {
                 console.warn("Not handling Rename modification types")
-            }
-            else if (change.modificationType === "Opened") {
+            } else if (change.modificationType === "Opened") {
                 console.warn("Not handling Open modification types")
             }
         }
@@ -129,24 +128,20 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         }
     }
 
-    private async processOutOfEditorRangeTextChange(scriptId: string, textChange: LinePositionSpanTextChange) {
-        const newLines = textChange.newText.split("\n")
-            .map(l => l.trim())
-            .filter(l => l);
+    private filterCodeActions(actions: OmniSharpCodeAction[]): OmniSharpCodeAction[] {
+        return actions.filter(a => {
+            if (!a.identifier)
+                return true;
 
-        if (newLines.filter(l => l.startsWith("using ")).length == newLines.length) {
-            const environment = await this.session.environments.find(e => e.script.id === scriptId);
-            if (environment) {
-                const namespaces = new Set<string>([...environment.script.config.namespaces]);
-
-                for (const newLine of newLines) {
-                    let namespace = newLine.slice("using ".length - 1);
-                    namespace = Util.trimEnd(namespace, ";").trim();
-                    namespaces.add(namespace);
-                }
-
-                await this.scriptService.setScriptNamespaces(scriptId, [...namespaces]);
+            for (const excludedCodeActionIdentifier of this.excludedCodeActionIdentifiers) {
+                if (typeof excludedCodeActionIdentifier === "string") {
+                    if (a.identifier.indexOf(excludedCodeActionIdentifier) >= 0)
+                        return false;
+                } else if (excludedCodeActionIdentifier(a.identifier))
+                    return false;
             }
-        }
+
+            return true;
+        });
     }
 }
