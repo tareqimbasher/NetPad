@@ -56,8 +56,8 @@ export class ContextMenu extends ViewModelBase {
     }
 
     private async selectMenuItem(item: IContextMenuItem) {
-        if (item.selected) {
-            await item.selected(this.activeClickTarget);
+        if (item.onSelected) {
+            await item.onSelected(this.activeClickTarget);
         } else if (item.shortcut) {
             this.shortcutManager.executeShortcut(item.shortcut);
         }

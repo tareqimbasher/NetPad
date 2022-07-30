@@ -20,9 +20,9 @@
         "jest": true
     },
     "rules": {
-        "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/no-empty-interface": "off",
-        "@typescript-eslint/no-empty-function": "warn"
+        "@typescript-eslint/no-explicit-any": "error",      // Use unknown where acceptable instead of any
+        "@typescript-eslint/no-unused-vars": "off",         // It is useful to keep function params around even when not used
+        "@typescript-eslint/no-empty-interface": "off"      // Some interfaces are used as markers
     },
     "overrides": [
         {

@@ -14,10 +14,10 @@ export class ElectronIpcGateway implements IIpcGateway {
         this.logger = logger.scopeTo(nameof(ElectronIpcGateway));
     }
 
-    public subscribe(channelName: string, callback: (message: any, channel: string) => void): SubscriptionToken {
-        const handler = (event: IpcRendererEvent, ...args: any[]) => {
+    public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
+        const handler = (event: IpcRendererEvent, ...args: unknown[]) => {
             this.logger.debug(`ElectronIpcGateway: Got server message`, event, ...args);
-            const json = args.length > 0 ? args[0] : null;
+            const json = args.length > 0 ? args[0] as string : null;
             callback(!json ? null : JSON.parse(json), channelName);
         };
 
@@ -25,7 +25,7 @@ export class ElectronIpcGateway implements IIpcGateway {
         return new SubscriptionToken(() => ipcRenderer.off(channelName, handler));
     }
 
-    send<TResult>(channelName: string, ...params: any[]): Promise<TResult> {
+    send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult> {
         throw new Error("Platform not supported");
     }
 }

@@ -2,7 +2,7 @@ import {DI} from "aurelia";
 import {languages} from "monaco-editor";
 
 export interface ICommandProvider {
-    provideCommands(): {id: string, handler: (accessor: any, ...args: any[]) => void}[];
+    provideCommands(): {id: string, handler: (accessor: unknown, ...args: unknown[]) => void}[];
 }
 
 export const ICommandProvider = DI.createInterface<ICommandProvider>();

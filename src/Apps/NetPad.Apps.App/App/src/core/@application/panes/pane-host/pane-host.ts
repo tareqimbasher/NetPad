@@ -51,6 +51,7 @@ export class PaneHost {
         return this.panes.has(pane);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public getPane<TPane extends Pane>(paneType: any): TPane | null {
         for (const pane of this.panes) {
             if (pane instanceof paneType)

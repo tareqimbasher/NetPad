@@ -21,8 +21,8 @@ export class SignalRIpcGateway implements IIpcGateway {
         this.connection.start();
     }
 
-    public subscribe(channelName: string, callback: (message: any, channel: string) => void): SubscriptionToken {
-        const handler = (...args: any[]) => {
+    public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
+        const handler = (...args: unknown[]) => {
             this.logger.debug(`Received server push message of type ${channelName}`, ...args);
             const arg = args.length > 0 ? args[0] : null;
             callback(arg, channelName);
@@ -32,7 +32,7 @@ export class SignalRIpcGateway implements IIpcGateway {
         return new SubscriptionToken(() => this.connection.off(channelName, handler));
     }
 
-    public async send<TResult>(channelName: string, ...params: any[]): Promise<TResult> {
+    public async send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult> {
         return await this.connection.invoke(channelName, ...params);
     }
 }

@@ -31,6 +31,7 @@ export class OmniSharpSignatureHelpProvider implements languages.SignatureHelpPr
                 signatures: []
             },
             dispose: () => {
+                // do nothing
             }
         };
 

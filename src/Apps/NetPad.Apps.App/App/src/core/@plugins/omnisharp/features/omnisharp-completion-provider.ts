@@ -1,10 +1,14 @@
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
-import {Util} from "@common";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
-import {CompletionItem as OmnisharpCompletionItem, CompletionRequest, LinePositionSpanTextChange} from "../api";
+import {
+    CompletionItem as OmnisharpCompletionItem,
+    CompletionRequest,
+    CompletionTriggerKind,
+    LinePositionSpanTextChange
+} from "../api";
 
 export class OmniSharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
@@ -17,11 +21,11 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
         @IScriptService private readonly scriptService: IScriptService) {
     }
 
-    public provideCommands(): { id: string; handler: (accessor: any, ...args: any[]) => void; }[] {
+    public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {
         return [{
             id: this.insertAdditionalTextEditsCommandId,
-            handler: (accessor: any, ...args: any[]) => {
-                return this.insertAdditionalTextEdits(args[0], args[1]);
+            handler: (accessor: unknown, ...args: unknown[]) => {
+                return this.insertAdditionalTextEdits(args[0] as editor.ITextModel, args[1] as LinePositionSpanTextChange[]);
             }
         }];
     }
@@ -78,7 +82,7 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
         const request = new CompletionRequest();
         request.line = range.startLineNumber - 1;
         request.column = range.endColumn - 1;
-        request.completionTrigger = (ctx.triggerKind + 1) as any;
+        request.completionTrigger = (ctx.triggerKind + 1) as unknown as CompletionTriggerKind;
         request.triggerCharacter = ctx.triggerCharacter;
 
         if (token.isCancellationRequested) {

@@ -53,6 +53,7 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
             return {
                 hints: [],
                 dispose: () => {
+                    // do nothing
                 }
             };
         }
@@ -70,6 +71,7 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
         return {
             hints: hints,
             dispose: () => {
+                // do nothing
             }
         };
     }

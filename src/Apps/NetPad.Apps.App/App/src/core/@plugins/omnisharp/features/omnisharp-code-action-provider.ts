@@ -25,11 +25,11 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         @IScriptService private readonly scriptService: IScriptService) {
     }
 
-    public provideCommands(): { id: string; handler: (accessor: any, ...args: any[]) => void; }[] {
+    public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {
         return [{
             id: this.commandId,
-            handler: (accessor: any, ...args: any[]) => {
-                return this.runCodeAction(args[0], args[1], args[2]);
+            handler: (accessor: unknown, ...args: unknown[]) => {
+                return this.runCodeAction(args[0] as string, args[1] as editor.ITextModel, args[2] as RunCodeActionRequest);
             }
         }];
     }
@@ -59,6 +59,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
             return {
                 actions: [],
                 dispose: () => {
+                    // do nothing
                 }
             }
         }
@@ -94,6 +95,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         return {
             actions: codeActions,
             dispose: () => {
+                // do nothing
             }
         }
     }

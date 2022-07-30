@@ -4,7 +4,7 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    ScriptDirectoryChangedEvent, ScriptEnvironment, ScriptStatus,
+    ScriptDirectoryChangedEvent, ScriptEnvironment,
     ScriptSummary,
     Settings
 } from "@domain";

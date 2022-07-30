@@ -5,13 +5,13 @@ import {Constructable} from "aurelia";
  */
 export class Mapper
 {
-    public static toNew<TModel>(modelType: Constructable, source: any): TModel {
+    public static toNew<TModel>(modelType: Constructable, source: unknown): TModel {
         const model = new modelType() as TModel;
         Object.assign(model, source);
         return model;
     }
 
-    public static toInstance<TModel>(instance: TModel, source: any): TModel {
+    public static toInstance<TModel>(instance: TModel, source: unknown): TModel {
         Object.assign(instance, source);
         return instance;
     }

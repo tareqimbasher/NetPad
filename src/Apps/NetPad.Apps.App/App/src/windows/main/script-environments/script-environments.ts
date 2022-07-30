@@ -22,44 +22,41 @@ export class ScriptEnvironments extends ViewModelBase {
             await this.scriptService.create();
         }
 
-        this.tabContextMenuOptions = {
-            selector: ".script-tab:not(.new-script-tab)",
-            items: [
-                {
-                    icon: "run-icon",
-                    text: "Run",
-                    shortcut: this.shortcutManager.getShortcutByName("Run"),
-                    selected: async (clickTarget) => this.eventBus.publish(new RunScriptEvent(this.getScriptId(clickTarget)))
-                },
-                {
-                    icon: "save-icon",
-                    text: "Save",
-                    shortcut: this.shortcutManager.getShortcutByName("Save"),
-                    selected: async (clickTarget) => await this.scriptService.save(this.getScriptId(clickTarget))
-                },
-                {
-                    icon: "script-properties-icon",
-                    text: "Properties",
-                    shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
-                    selected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget))
-                },
-                {
-                    isDivider: true
-                },
-                {
-                    icon: "open-folder-icon",
-                    text: "Open Containing Folder",
-                    selected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
-                    show: (clickTarget) => !!this.getScript(clickTarget).path
-                },
-                {
-                    icon: "close-icon",
-                    text: "Close",
-                    shortcut: this.shortcutManager.getShortcutByName("Close"),
-                    selected: async (clickTarget) => await this.session.close(this.getScriptId(clickTarget))
-                }
-            ]
-        };
+        this.tabContextMenuOptions = new ContextMenuOptions(".script-tab:not(.new-script-tab)", [
+            {
+                icon: "run-icon",
+                text: "Run",
+                shortcut: this.shortcutManager.getShortcutByName("Run"),
+                onSelected: async (clickTarget) => this.eventBus.publish(new RunScriptEvent(this.getScriptId(clickTarget)))
+            },
+            {
+                icon: "save-icon",
+                text: "Save",
+                shortcut: this.shortcutManager.getShortcutByName("Save"),
+                onSelected: async (clickTarget) => await this.scriptService.save(this.getScriptId(clickTarget))
+            },
+            {
+                icon: "script-properties-icon",
+                text: "Properties",
+                shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
+                onSelected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget))
+            },
+            {
+                isDivider: true
+            },
+            {
+                icon: "open-folder-icon",
+                text: "Open Containing Folder",
+                onSelected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
+                show: (clickTarget) => !!this.getScript(clickTarget).path
+            },
+            {
+                icon: "close-icon",
+                text: "Close",
+                shortcut: this.shortcutManager.getShortcutByName("Close"),
+                onSelected: async (clickTarget) => await this.session.close(this.getScriptId(clickTarget))
+            }
+        ]);
     }
 
     public attached() {

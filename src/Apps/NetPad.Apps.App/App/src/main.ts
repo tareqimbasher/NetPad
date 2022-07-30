@@ -86,12 +86,14 @@ if (!winOpt && !System.isRunningInElectron())
 
 let bootstrapperCtor: IWindowBootstrapperConstructor;
 
+/* eslint-disable @typescript-eslint/no-var-requires */
 if (winOpt === "main")
     bootstrapperCtor = require("./windows/main/main").Bootstrapper;
 else if (winOpt === "settings")
     bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
 else if (winOpt === "script-config")
     bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
+/* eslint-enable @typescript-eslint/no-var-requires */
 
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
 bootstrapper.registerServices(app);

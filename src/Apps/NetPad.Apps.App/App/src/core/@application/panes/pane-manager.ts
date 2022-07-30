@@ -3,10 +3,14 @@ import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation} from 
 
 export interface IPaneManager {
     get paneHosts(): ReadonlyArray<PaneHost>;
+
     createPaneHost(orientation: PaneHostOrientation, viewStateController: IPaneHostViewStateController): PaneHost;
-    addPaneToHost<TPane extends Pane>(paneType: any, paneHost: PaneHost): TPane;
+
+    addPaneToHost<TPane extends Pane>(paneType: unknown, paneHost: PaneHost): TPane;
+
     activateOrCollapse(pane: Pane): void;
-    activateOrCollapse(paneType: any): void;
+
+    activateOrCollapse(paneType: unknown): void;
 }
 
 export const IPaneManager = DI.createInterface<IPaneManager>();
@@ -27,6 +31,7 @@ export class PaneManager implements IPaneManager {
         return host;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public addPaneToHost<TPane extends Pane>(paneType: any, targetPaneHost: PaneHost): TPane {
         if (!(paneType.prototype instanceof Pane))
             throw new Error("paneType is not a type of Pane");
@@ -37,8 +42,7 @@ export class PaneManager implements IPaneManager {
         if (existing) {
             pane = existing.pane;
             existing.paneHost.removePane(pane);
-        }
-        else
+        } else
             pane = this.container.get(paneType);
 
         targetPaneHost.addPane(pane);
@@ -46,15 +50,14 @@ export class PaneManager implements IPaneManager {
         return pane as TPane;
     }
 
-    public activateOrCollapse(paneOrPaneType: Pane | any): void {
+    public activateOrCollapse(paneOrPaneType: Pane | unknown): void {
         let paneHost: PaneHost | undefined;
         let pane: Pane | undefined;
 
         if (paneOrPaneType instanceof Pane) {
             pane = paneOrPaneType;
             paneHost = pane.host || this.findPaneHostByPane(pane);
-        }
-        else {
+        } else {
             const paneAndHost = this.findPaneAndHostByPaneType(paneOrPaneType);
             paneHost = paneAndHost?.paneHost;
             pane = paneAndHost.pane;
@@ -67,7 +70,7 @@ export class PaneManager implements IPaneManager {
         return this._paneHosts.find(h => h.hasPane(pane));
     }
 
-    private findPaneAndHostByPaneType(paneType: any): {paneHost: PaneHost, pane: Pane} | null {
+    private findPaneAndHostByPaneType(paneType: unknown): { paneHost: PaneHost, pane: Pane } | null {
         for (const paneHost of this._paneHosts) {
             const pane = paneHost.getPane(paneType);
             if (pane) {

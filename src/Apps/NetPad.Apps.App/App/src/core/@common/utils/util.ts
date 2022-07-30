@@ -177,11 +177,11 @@ export class Util {
      * @param waitMs The number of milliseconds to debounce.
      * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
      */
-    public static debounce(thisArg: unknown, func: (...args: any[]) => void, waitMs: number, immediate?: boolean) : (...args:any[]) => void {
+    public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean) : (...args:unknown[]) => void {
         let timeout: number;
         let isImmediateCall = false;
 
-        return (...args: any[]) => {
+        return (...args: unknown[]) => {
             const later = () => {
                 timeout = null;
                 if (!isImmediateCall) func.call(thisArg, ...args);

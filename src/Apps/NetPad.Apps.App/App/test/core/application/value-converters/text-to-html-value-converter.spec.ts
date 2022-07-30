@@ -6,6 +6,7 @@ describe("Text to HTML Value Converter", () => {
         const converter = getConverter();
 
         for (const invalidValue of invalidValues) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = converter.toView(invalidValue as any);
             expect(result).toBeNull();
         }

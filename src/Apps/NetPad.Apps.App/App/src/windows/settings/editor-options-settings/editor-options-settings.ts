@@ -57,12 +57,12 @@ export class EditorOptionsSettings {
 
     @watch<EditorOptionsSettings>(vm => vm.settings.editorBackgroundColor)
     @watch<EditorOptionsSettings>(vm => vm.settings.editorOptions.monacoOptions)
-    private updateEditorOptions(editorOptions?: any) {
+    private updateEditorOptions(editorOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
         let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
 
         if (this.settings.editorBackgroundColor) {
             monaco.editor.defineTheme("custom-theme", {
-                base: <any>theme,
+                base: theme as monaco.editor.BuiltinTheme,
                 inherit: true,
                 rules: [],
                 colors: {

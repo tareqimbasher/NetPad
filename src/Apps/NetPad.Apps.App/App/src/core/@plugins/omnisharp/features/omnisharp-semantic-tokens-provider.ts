@@ -42,6 +42,7 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
     }
 
     public releaseDocumentSemanticTokens(resultId: string | undefined): void {
+        // do nothing
     }
 
     private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, cancellationToken: CancellationToken) {

@@ -26,6 +26,7 @@ export class OmniSharpCodeLensProvider implements languages.CodeLensProvider {
             return {
                 lenses: [],
                 dispose: () => {
+                    // do nothing
                 }
             };
         }
@@ -51,6 +52,7 @@ export class OmniSharpCodeLensProvider implements languages.CodeLensProvider {
         return {
             lenses: results,
             dispose: () => {
+                // do nothing
             }
         };
     }

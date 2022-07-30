@@ -7,6 +7,7 @@ describe("Take Value Converter", () => {
         const converter = getConverter();
 
         for (const invalidValue of invalidValues) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = converter.toView(invalidValue as any, 1);
             expect(result).toStrictEqual([]);
         }
@@ -14,18 +15,21 @@ describe("Take Value Converter", () => {
 
     it("should return an empty array if passed null or undefined", () => {
         const converter = getConverter();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = converter.toView(null as any, 1);
         expect(result).toStrictEqual([]);
     });
 
     it("should return an empty array if take param is passed as null", () => {
         const converter = getConverter();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = converter.toView([1, 2], null as any);
         expect(result).toStrictEqual([]);
     });
 
     it("should return an empty array if take param is passed as undefined", () => {
         const converter = getConverter();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = converter.toView([1, 2], undefined as any);
         expect(result).toStrictEqual([]);
     });

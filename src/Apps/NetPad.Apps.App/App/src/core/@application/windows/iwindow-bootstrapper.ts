@@ -6,5 +6,5 @@ export interface IWindowBootstrapperConstructor {
 
 export interface IWindowBootstrapper {
     registerServices(app: Aurelia): void;
-    getEntry(): any;
+    getEntry(): unknown;
 }

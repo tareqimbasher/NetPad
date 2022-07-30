@@ -6,5 +6,6 @@ export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;
 
     public registerServices(app: Aurelia): void {
+        // No deps to register
     }
 }

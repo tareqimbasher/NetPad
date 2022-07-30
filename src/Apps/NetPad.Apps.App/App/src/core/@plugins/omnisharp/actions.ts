@@ -21,9 +21,9 @@ export class Actions {
             const cursorPos = editor.getPosition();
             const editorValue = model.getValue();
 
-            const request = new CodeFormatRequest(<any>{
+            const request = new CodeFormatRequest({
                 buffer: editorValue
-            });
+            } as unknown as CodeFormatRequest);
 
             const scriptId = EditorUtil.getScriptId(model);
             const omnisharpService = this.container.get(IOmniSharpService);

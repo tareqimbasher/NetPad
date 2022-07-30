@@ -20,7 +20,7 @@ export class SortValueConverter {
 
         if (!comparison) comparison = "ordinal";
 
-        const self = this as any;
+        const self = this as unknown;
         const directionFactor = direction === "asc" ? 1 : -1,
             comparer = self[comparison + "Comparison"];
 
@@ -33,7 +33,7 @@ export class SortValueConverter {
         return array.sort((a, b) => comparer(a[propertyName], b[propertyName]) * directionFactor);
     }
 
-    private ordinalIgnoreCaseComparison(a: any, b: any) {
+    private ordinalIgnoreCaseComparison(a: unknown, b: unknown) {
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
         if (a === null || a === undefined) return -1;
         if (b === null || b === undefined) return 1;
@@ -44,7 +44,7 @@ export class SortValueConverter {
         return 0;
     }
 
-    private ordinalComparison(a: any, b: any) {
+    private ordinalComparison(a: unknown, b: unknown) {
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
         if (a === null || a === undefined) return -1;
         if (b === null || b === undefined) return 1;
@@ -55,7 +55,7 @@ export class SortValueConverter {
         return 0;
     }
 
-    private dateComparison(a: any, b: any) {
+    private dateComparison(a: number | string | Date, b: number | string | Date) {
         a = new Date(a);
         b = new Date(b);
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
@@ -64,6 +64,8 @@ export class SortValueConverter {
         return a.getTime() > b.getTime() ? 1 : -1;
     }
 
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private numeralComparison(a: any, b: any) {
         if ((a === null || a === undefined || isNaN(a)) && (b === null || b === undefined || isNaN(b)))
             return 0;
@@ -76,7 +78,7 @@ export class SortValueConverter {
         return 0;
     }
 
-    private numberComparison(a: any, b: any) {
+    private numberComparison(a: number | null | undefined, b: number | null | undefined) {
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
         if (a === null || a === undefined) return -1;
         if (b === null || b === undefined) return 1;

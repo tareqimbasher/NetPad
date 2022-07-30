@@ -1,19 +1,35 @@
 import {Shortcut} from "@domain";
 
 export class ContextMenuOptions {
+    public selector: string;
     public items: IContextMenuItem[];
 
-    constructor(public selector: string) {
-        this.items = [];
+    constructor(selector: string, items: IContextMenuItem[]) {
+        this.selector = selector;
+        this.items = items ?? [];
     }
 }
 
+/**
+ * A single item in a context menu.
+ */
 export interface IContextMenuItem {
+    /** Display text. */
     text?: string;
+    /** Display icon. */
     icon?: string;
-    shortcut?: Shortcut,
+    /** Whether this menu item is meant to act as a divider. */
     isDivider?: boolean;
-    selected?: (target: Element) => Promise<any>;
+    /**
+     * The action that should be executed when this menu item is selected.
+     */
+    onSelected?: (target: Element) => Promise<unknown | void>;
+    /**
+     * Associated shortcut. If assigned, menu item will show shortcut keystroke next to text.
+     * If onSelected is assigned, this has no affect besides showing keystroke next to text.
+     */
+    shortcut?: Shortcut,
+    /** A function to calculate when to show this menu item. */
     show?: (target: Element) => boolean;
 }
 
