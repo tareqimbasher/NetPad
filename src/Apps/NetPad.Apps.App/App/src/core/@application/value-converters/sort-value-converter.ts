@@ -1,10 +1,24 @@
 export class SortValueConverter {
-    public toView(array: any[], propertyName: string, direction = "asc", comparison = "ordinal"): any[] {
+    /**
+     * Sorts an array by a property.
+     * @param array The array to sort
+     * @param propertyName The name of the property to sort by.
+     * @param direction The sort direction.
+     * @param comparison Type of comparison.
+     */
+    public toView<T>(
+        array: T[],
+        propertyName: string,
+        direction: "asc" | "desc" = "asc",
+        comparison: "ordinal" | "ordinalIgnoreCase" | "date" | "numeral" | "number" = "ordinal"): T[] {
+
+        if (!Array.isArray(array))
+            return [];
 
         if (array == null || !array.length)
             return array;
 
-        if (!comparison) comparison = "ordinalIgnoreCase";
+        if (!comparison) comparison = "ordinal";
 
         const self = this as any;
         const directionFactor = direction === "asc" ? 1 : -1,

@@ -1,8 +1,19 @@
 export class TextToHtmlValueConverter {
-    public toView(text?: string): string | undefined | null {
-        if (!text)
+    /**
+     * Converts text to an HTML escaped string.
+     * @param text The text to convert.
+     */
+    public toView(text?: string): string | null {
+        if (text === "")
             return text;
 
-        return text.replaceAll("\n", "<br/>");
+        if (!text || typeof text !== "string")
+            return null;
+
+        return text
+            .replaceAll(" ", "&nbsp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("\n", "<br/>");
     }
 }

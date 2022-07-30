@@ -1,5 +1,5 @@
 import {System} from "@common";
-import {ViewModelBase} from "@application/view-model-base";
+import {ViewModelBase} from "@application";
 import {ILogger} from "aurelia";
 
 export class ExternalLinkCustomAttribute extends ViewModelBase {
