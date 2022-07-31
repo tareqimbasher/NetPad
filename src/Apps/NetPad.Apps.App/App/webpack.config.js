@@ -109,6 +109,9 @@ module.exports = function (env, {analyze}) {
                 ]
             }),
             analyze && new BundleAnalyzerPlugin()
-        ].filter(p => p)
+        ].filter(p => p),
+        experiments: {
+            topLevelAwait: true // Enables us to use await in src/main.ts
+        }
     }
 }
