@@ -15,7 +15,7 @@ export class Window {
     constructor(currentSettings: Settings, @ISettingService readonly settingService: ISettingService) {
         document.title = "Settings";
 
-        this.selectedTab = this.tabs[4];
+        this.selectedTab = this.tabs[0];
         this.currentSettings = currentSettings;
         this.settings = this.currentSettings.clone();
     }
