@@ -62,7 +62,7 @@ const app = Aurelia.register(
     // Custom elements
     ContextMenu,
 
-
+    // Tasks
     AppTask.beforeActivate(IContainer, async container => {
         const backgroundServices = container.getAll(IBackgroundService);
 
@@ -78,6 +78,10 @@ const app = Aurelia.register(
         }
     })
 );
+
+// Load app settings
+const settings = await app.container.get(ISettingService).get();
+app.container.get(Settings).init(settings.toJSON());
 
 // Determine which window we need to bootstrap and use
 let winOpt = startupOptions.get("win");
@@ -98,12 +102,5 @@ else if (winOpt === "script-config")
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
 bootstrapper.registerServices(app);
 
-// Load Settings and then start the app
-app.container.get(ISettingService).get()
-    .then(settings => app.container.get(Settings).init(settings.toJSON()))
-    .then(() => {
-        app
-            .app(bootstrapper.getEntry())
-            .start();
-    })
-;
+// Start the app
+app.app(bootstrapper.getEntry()).start();
