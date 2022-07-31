@@ -9,12 +9,13 @@ export class Window {
         {route: "editor", text: "Editor"},
         {route: "results", text: "Results"},
         {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
+        {route: "omnisharp", text: "OmniSharp"},
     ];
 
     constructor(currentSettings: Settings, @ISettingService readonly settingService: ISettingService) {
         document.title = "Settings";
 
-        this.selectedTab = this.tabs[0];
+        this.selectedTab = this.tabs[4];
         this.currentSettings = currentSettings;
         this.settings = this.currentSettings.clone();
     }

@@ -1,87 +1,39 @@
 using System;
 using System.IO;
+using System.Text.Json.Serialization;
 
 namespace NetPad.Configuration
 {
-    public class Settings
+    public class Settings : ISettingsOptions
     {
+        public const string LatestSettingsVersion = "1.0";
+
         public static readonly string AppDataFolderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "NetPad");
 
         public static readonly string LogFolderPath = Path.Combine(AppDataFolderPath, "Logs");
 
-        private const string LatestSettingsVersion = "1.0";
 
         public Settings()
         {
-            // Defaults
-            Version = Version.Parse(LatestSettingsVersion);
-
-            Theme = Theme.Dark;
-
-            ScriptsDirectoryPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Documents",
-                "NetPad",
-                "Scripts");
-
-            AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath,
-                "AutoSave",
-                "Scripts");
-
-            PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath,
-                "Cache",
-                "Packages");
-
-            EditorOptions = new EditorOptions
-            {
-                CodeCompletion = new CodeCompletionOptions
-                {
-                    Enabled = true,
-                    Provider = new OmniSharpCodeCompletionProviderOptions()
-                },
-                MonacoOptions = new
-                {
-                    cursorBlinking = "smooth",
-                    lineNumbers = "on",
-                    wordWrap = "off",
-                    mouseWheelZoom = true,
-                    minimap = new
-                    {
-                        enabled = true
-                    }
-                }
-            };
-
-            ResultsOptions = new ResultsOptions
-            {
-                OpenOnRun = true,
-                TextWrap = false
-            };
+            DefaultMissingValues();
         }
 
-        public Settings(Theme theme, string scriptsDirectoryPath, string packageCacheDirectoryPath) : this()
+        public Settings(string scriptsDirectoryPath, string packageCacheDirectoryPath) : this()
         {
-            Theme = theme;
             ScriptsDirectoryPath = scriptsDirectoryPath;
             PackageCacheDirectoryPath = packageCacheDirectoryPath;
         }
 
-        public Version Version { get; set; }
-        public Theme Theme { get; set; }
-        public string ScriptsDirectoryPath { get; set; }
-        public string AutoSaveScriptsDirectoryPath { get; set; }
-        public string PackageCacheDirectoryPath { get; set; }
-        public string? EditorBackgroundColor { get; set; }
-        public EditorOptions EditorOptions { get; set; }
-        public ResultsOptions ResultsOptions { get; set; }
-
-        public Settings SetTheme(Theme theme)
-        {
-            Theme = theme;
-            return this;
-        }
+        [JsonInclude] public Version Version { get; private set; }
+        [JsonInclude] public string ScriptsDirectoryPath { get; private set; }
+        [JsonInclude] public string AutoSaveScriptsDirectoryPath { get; private set; }
+        [JsonInclude] public string PackageCacheDirectoryPath { get; private set; }
+        [JsonInclude] public AppearanceOptions Appearance { get; private set; }
+        [JsonInclude] public EditorOptions Editor { get; private set; }
+        [JsonInclude] public ResultsOptions Results { get; private set; }
+        [JsonInclude] public OmniSharpOptions OmniSharp { get; set; }
 
         public Settings SetScriptsDirectoryPath(string scriptsDirectoryPath)
         {
@@ -95,22 +47,92 @@ namespace NetPad.Configuration
             return this;
         }
 
-        public Settings SetEditorBackgroundColor(string? editorBackgroundColor)
+        public Settings SetAppearanceOptions(AppearanceOptions options)
         {
-            EditorBackgroundColor = editorBackgroundColor;
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            Appearance
+                .SetTheme(options.Theme)
+                .SetShowScriptRunStatusIndicatorInTab(options.ShowScriptRunStatusIndicatorInTab)
+                .SetShowScriptRunStatusIndicatorInScriptsList(options.ShowScriptRunStatusIndicatorInScriptsList)
+                .SetShowScriptRunningIndicatorInScriptsList(options.ShowScriptRunningIndicatorInScriptsList);
+
             return this;
         }
 
         public Settings SetEditorOptions(EditorOptions options)
         {
-            EditorOptions = options ?? throw new ArgumentNullException(nameof(options));
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            Editor
+                .SetBackgroundColor(options.BackgroundColor)
+                .SetMonacoOptions(options.MonacoOptions);
+
             return this;
         }
 
-        public Settings SetResultsOptions(ResultsOptions resultsOptions)
+        public Settings SetResultsOptions(ResultsOptions options)
         {
-            ResultsOptions = resultsOptions ?? throw new ArgumentNullException(nameof(resultsOptions));
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            Results
+                .SetOpenOnRun(options.OpenOnRun)
+                .SetTextWrap(options.TextWrap);
+
             return this;
+        }
+
+        public Settings SetOmniSharpOptions(OmniSharpOptions options)
+        {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
+            OmniSharp
+                .SetEnabled(options.Enabled)
+                .SetExecutablePath(options.ExecutablePath)
+                .SetEnableAnalyzersSupport(options.EnableAnalyzersSupport)
+                .SetEnableImportCompletion(options.EnableImportCompletion)
+                .SetEnableSemanticHighlighting(options.EnableSemanticHighlighting)
+                .SetEnableCodeLensReferences(options.EnableCodeLensReferences)
+                .SetInlayHintsOptions(options.InlayHints);
+
+            return this;
+        }
+
+
+        public void DefaultMissingValues()
+        {
+            // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+
+            if (Version == null)
+                Version.Parse(LatestSettingsVersion);
+
+            if (string.IsNullOrWhiteSpace(ScriptsDirectoryPath))
+                ScriptsDirectoryPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Documents",
+                    "NetPad",
+                    "Scripts");
+
+            if (string.IsNullOrWhiteSpace(AutoSaveScriptsDirectoryPath))
+                AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath,
+                    "AutoSave",
+                    "Scripts");
+
+            if (string.IsNullOrWhiteSpace(PackageCacheDirectoryPath))
+                PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath,
+                    "Cache",
+                    "Packages");
+
+            (Appearance ??= new AppearanceOptions()).DefaultMissingValues();
+            (Editor ??= new EditorOptions()).DefaultMissingValues();
+            (Results ??= new ResultsOptions()).DefaultMissingValues();
+            (OmniSharp ??= new OmniSharpOptions()).DefaultMissingValues();
+
+            // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         }
 
         /// <summary>

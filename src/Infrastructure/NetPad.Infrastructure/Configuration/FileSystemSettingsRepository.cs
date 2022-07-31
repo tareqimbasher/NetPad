@@ -45,6 +45,8 @@ namespace NetPad.Configuration
                 await SaveSettingsAsync(settings);
             }
 
+            settings.DefaultMissingValues();
+
             return settings;
         }
 

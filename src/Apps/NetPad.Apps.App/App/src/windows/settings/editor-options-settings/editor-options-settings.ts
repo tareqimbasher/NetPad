@@ -7,30 +7,28 @@ import {Settings} from "@domain";
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
     @observable public useCustomEditorBackgroundColor: boolean;
-    public currentSettings: Readonly<Settings>;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
     private logger: ILogger;
 
-    constructor(currentSettings: Settings, @ILogger logger: ILogger) {
+    constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(EditorOptionsSettings));
-        this.currentSettings = currentSettings;
     }
 
     public binding() {
-        this.useCustomEditorBackgroundColor = !!this.settings.editorBackgroundColor;
+        this.useCustomEditorBackgroundColor = !!this.settings.editor.backgroundColor;
     }
 
     public attached() {
         const el = document.getElementById("options-editor");
         this.editor = monaco.editor.create(el, {
-            value: JSON.stringify(this.settings.editorOptions.monacoOptions, null, 4),
+            value: JSON.stringify(this.settings.editor.monacoOptions, null, 4),
             language: 'json',
             mouseWheelZoom: true,
             automaticLayout: true
         });
 
-        this.updateEditorOptions(this.settings.editorOptions.monacoOptions);
+        this.updateEditorOptions(this.settings.editor.monacoOptions);
 
         this.editor.onDidChangeModelContent(ev => {
             const json = this.editor.getValue();
@@ -43,7 +41,7 @@ export class EditorOptionsSettings {
                 return;
             }
 
-            this.settings.editorOptions.monacoOptions = options;
+            this.settings.editor.monacoOptions = options;
         });
     }
 
@@ -52,21 +50,21 @@ export class EditorOptionsSettings {
     }
 
     public useCustomEditorBackgroundColorChanged(newValue: boolean) {
-        if (!newValue) this.settings.editorBackgroundColor = null;
+        if (!newValue) this.settings.editor.backgroundColor = null;
     }
 
-    @watch<EditorOptionsSettings>(vm => vm.settings.editorBackgroundColor)
-    @watch<EditorOptionsSettings>(vm => vm.settings.editorOptions.monacoOptions)
+    @watch<EditorOptionsSettings>(vm => vm.settings.editor.backgroundColor)
+    @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
     private updateEditorOptions(editorOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
-        let theme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+        let theme = this.settings.appearance.theme === "Light" ? "vs" : "vs-dark";
 
-        if (this.settings.editorBackgroundColor) {
+        if (this.settings.editor.backgroundColor) {
             monaco.editor.defineTheme("custom-theme", {
                 base: theme as monaco.editor.BuiltinTheme,
                 inherit: true,
                 rules: [],
                 colors: {
-                    "editor.background": this.settings.editorBackgroundColor,
+                    "editor.background": this.settings.editor.backgroundColor,
                 },
             });
             theme = "custom-theme";
@@ -76,7 +74,7 @@ export class EditorOptionsSettings {
             theme: theme
         };
 
-        Object.assign(options, this.settings.editorOptions.monacoOptions || {})
+        Object.assign(options, this.settings.editor.monacoOptions || {})
         this.editor.updateOptions(options);
 
         if (editorOptions)

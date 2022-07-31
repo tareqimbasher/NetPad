@@ -69,21 +69,21 @@ export class Editor extends ViewModelBase {
         this.monacoEditor.layout();
     }
 
-    @watch<Editor>(vm => vm.settings.theme)
-    @watch<Editor>(vm => vm.settings.editorBackgroundColor)
-    @watch<Editor>(vm => vm.settings.editorOptions.monacoOptions)
+    @watch<Editor>(vm => vm.settings.appearance.theme)
+    @watch<Editor>(vm => vm.settings.editor.backgroundColor)
+    @watch<Editor>(vm => vm.settings.editor.monacoOptions)
     private updateEditorSettings() {
-        let theme = this.settings.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
+        let theme = this.settings.appearance.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
 
-        if (this.settings.editorBackgroundColor) {
-            const base: monaco.editor.BuiltinTheme = this.settings.theme === "Light" ? "vs" : "vs-dark";
+        if (this.settings.editor.backgroundColor) {
+            const base: monaco.editor.BuiltinTheme = this.settings.appearance.theme === "Light" ? "vs" : "vs-dark";
 
             EditorSetup.defineTheme("custom-theme", {
                 base: base,
                 inherit: true,
                 rules: [],
                 colors: {
-                    "editor.background": this.settings.editorBackgroundColor,
+                    "editor.background": this.settings.editor.backgroundColor,
                 },
             });
             theme = "custom-theme";
@@ -93,7 +93,7 @@ export class Editor extends ViewModelBase {
             theme: theme
         };
 
-        Object.assign(options, this.settings.editorOptions.monacoOptions || {})
+        Object.assign(options, this.settings.editor.monacoOptions || {})
         this.monacoEditor.updateOptions(options);
     }
 }

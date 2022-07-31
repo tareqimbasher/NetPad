@@ -31,13 +31,12 @@ public class UpdateSettingsCommand : Command
             var incoming = request.Settings;
 
             _settings
-                .SetTheme(incoming.Theme)
                 .SetScriptsDirectoryPath(incoming.ScriptsDirectoryPath)
                 .SetPackageCacheDirectoryPath(incoming.PackageCacheDirectoryPath)
-                .SetEditorBackgroundColor(incoming.EditorBackgroundColor)
-                .SetEditorOptions(incoming.EditorOptions)
-                .SetResultsOptions(incoming.ResultsOptions)
-                ;
+                .SetAppearanceOptions(incoming.Appearance)
+                .SetEditorOptions(incoming.Editor)
+                .SetResultsOptions(incoming.Results)
+                .SetOmniSharpOptions(incoming.OmniSharp);
 
             await _settingsRepository.SaveSettingsAsync(_settings);
 

@@ -18,7 +18,7 @@ export class ResultsView extends ViewModelBase {
                 @ILogger logger: ILogger
     ) {
         super(logger);
-        this.resultsViewSettings = new ResultsPaneViewSettings(this.settings.resultsOptions.textWrap);
+        this.resultsViewSettings = new ResultsPaneViewSettings(this.settings.results.textWrap);
     }
 
     public attached() {

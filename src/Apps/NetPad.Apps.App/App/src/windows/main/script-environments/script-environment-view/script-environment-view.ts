@@ -94,7 +94,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
         try {
             await this.sendCodeToServer();
-            if (this.settings.resultsOptions.openOnRun)
+            if (this.settings.results.openOnRun)
                 this.openResultsView();
             await this.scriptService.run(this.script.id);
         } catch (ex) {

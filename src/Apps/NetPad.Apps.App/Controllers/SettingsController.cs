@@ -5,7 +5,6 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Configuration;
 using NetPad.CQs;
-using NetPad.Events;
 using NetPad.UiInterop;
 
 namespace NetPad.Controllers
@@ -30,9 +29,7 @@ namespace NetPad.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(
-            [FromBody] Settings settings,
-            [FromServices] IIpcService ipcService)
+        public async Task<IActionResult> Update([FromBody] Settings settings)
         {
             await _mediator.Send(new UpdateSettingsCommand(settings));
 

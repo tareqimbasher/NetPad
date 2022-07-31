@@ -19,7 +19,7 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
 
     public async Task<OmniSharpServerLocation?> GetServerLocationAsync()
     {
-        if (_settings.EditorOptions.CodeCompletion.Provider is not OmniSharpCodeCompletionProviderOptions omniSharpCodeCompletionProviderOptions)
+        if (_settings.Editor.CodeCompletion.Provider is not OmniSharpCodeCompletionProviderOptions omniSharpCodeCompletionProviderOptions)
         {
             throw new InvalidOperationException($"Code completion provider must be of type {nameof(OmniSharpCodeCompletionProviderOptions)}");
         }
