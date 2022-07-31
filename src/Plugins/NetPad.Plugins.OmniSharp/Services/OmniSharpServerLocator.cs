@@ -19,14 +19,9 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
 
     public async Task<OmniSharpServerLocation?> GetServerLocationAsync()
     {
-        if (_settings.Editor.CodeCompletion.Provider is not OmniSharpCodeCompletionProviderOptions omniSharpCodeCompletionProviderOptions)
+        if (_settings.OmniSharp.ExecutablePath != null)
         {
-            throw new InvalidOperationException($"Code completion provider must be of type {nameof(OmniSharpCodeCompletionProviderOptions)}");
-        }
-
-        if (omniSharpCodeCompletionProviderOptions.ExecutablePath != null && !string.IsNullOrWhiteSpace(omniSharpCodeCompletionProviderOptions.ExecutablePath))
-        {
-            return new OmniSharpServerLocation(omniSharpCodeCompletionProviderOptions.ExecutablePath);
+            return new OmniSharpServerLocation(_settings.OmniSharp.ExecutablePath);
         }
 
         var platform = PlatformUtils.GetOSPlatform();
