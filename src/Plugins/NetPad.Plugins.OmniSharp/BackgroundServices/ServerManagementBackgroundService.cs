@@ -1,6 +1,5 @@
 using NetPad.Configuration;
 using NetPad.Events;
-using NetPad.Plugins.OmniSharp.Services;
 using ISession = NetPad.Sessions.ISession;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
@@ -33,7 +32,7 @@ public class ServerManagementBackgroundService : BackgroundService
         {
             var activatedEnvironmentScriptId = ev.ScriptId;
 
-            if (activatedEnvironmentScriptId == null || !_settings.Editor.CodeCompletion.Enabled)
+            if (activatedEnvironmentScriptId == null)
             {
                 return Task.CompletedTask;
             }
