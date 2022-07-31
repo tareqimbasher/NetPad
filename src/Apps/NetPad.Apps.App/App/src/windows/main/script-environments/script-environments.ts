@@ -1,6 +1,15 @@
 import {ILogger} from "aurelia";
 import dragula from "dragula";
-import {IAppService, IEventBus, IScriptService, ISession, IShortcutManager, RunScriptEvent, Script} from "@domain";
+import {
+    IAppService,
+    IEventBus,
+    IScriptService,
+    ISession,
+    IShortcutManager,
+    RunScriptEvent,
+    Script,
+    Settings
+} from "@domain";
 import {ContextMenuOptions, ViewModelBase} from "@application";
 
 export class ScriptEnvironments extends ViewModelBase {
@@ -13,6 +22,7 @@ export class ScriptEnvironments extends ViewModelBase {
         @IAppService private readonly appService: IAppService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IEventBus private readonly eventBus: IEventBus,
+        private readonly settings: Settings,
         @ILogger logger: ILogger) {
         super(logger);
     }

@@ -13,7 +13,9 @@
 
                     <span class="script-name">${env.script.name}</span>
 
-                    <span class="script-status" switch.bind="env.status">
+                    <span class="script-status"
+                          if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
+                          switch.bind="env.status">
                         <span case="Running" class="spinner-border script-running-indicator"></span>
                         <i case="Ready" if.bind="env.runDurationMilliseconds"
                            class="script-status-success-icon icon-xs"

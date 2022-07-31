@@ -33,7 +33,7 @@ public class ServerManagementBackgroundService : BackgroundService
         {
             var activatedEnvironmentScriptId = ev.ScriptId;
 
-            if (activatedEnvironmentScriptId == null || !_settings.EditorOptions.CodeCompletion.Enabled)
+            if (activatedEnvironmentScriptId == null || !_settings.Editor.CodeCompletion.Enabled)
             {
                 return Task.CompletedTask;
             }

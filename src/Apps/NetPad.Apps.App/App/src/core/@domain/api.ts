@@ -1918,13 +1918,13 @@ export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 export class Settings implements ISettings {
     version!: string;
-    theme!: Theme;
     scriptsDirectoryPath!: string;
     autoSaveScriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
-    editorBackgroundColor?: string | undefined;
-    editorOptions!: EditorOptions;
-    resultsOptions!: ResultsOptions;
+    appearance!: AppearanceOptions;
+    editor!: EditorOptions;
+    results!: ResultsOptions;
+    omniSharp!: OmniSharpOptions;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -1934,21 +1934,23 @@ export class Settings implements ISettings {
             }
         }
         if (!data) {
-            this.editorOptions = new EditorOptions();
-            this.resultsOptions = new ResultsOptions();
+            this.appearance = new AppearanceOptions();
+            this.editor = new EditorOptions();
+            this.results = new ResultsOptions();
+            this.omniSharp = new OmniSharpOptions();
         }
     }
 
     init(_data?: any) {
         if (_data) {
             this.version = _data["version"];
-            this.theme = _data["theme"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
             this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
-            this.editorBackgroundColor = _data["editorBackgroundColor"];
-            this.editorOptions = _data["editorOptions"] ? EditorOptions.fromJS(_data["editorOptions"]) : new EditorOptions();
-            this.resultsOptions = _data["resultsOptions"] ? ResultsOptions.fromJS(_data["resultsOptions"]) : new ResultsOptions();
+            this.appearance = _data["appearance"] ? AppearanceOptions.fromJS(_data["appearance"]) : new AppearanceOptions();
+            this.editor = _data["editor"] ? EditorOptions.fromJS(_data["editor"]) : new EditorOptions();
+            this.results = _data["results"] ? ResultsOptions.fromJS(_data["results"]) : new ResultsOptions();
+            this.omniSharp = _data["omniSharp"] ? OmniSharpOptions.fromJS(_data["omniSharp"]) : new OmniSharpOptions();
         }
     }
 
@@ -1962,13 +1964,13 @@ export class Settings implements ISettings {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["version"] = this.version;
-        data["theme"] = this.theme;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
-        data["editorBackgroundColor"] = this.editorBackgroundColor;
-        data["editorOptions"] = this.editorOptions ? this.editorOptions.toJSON() : <any>undefined;
-        data["resultsOptions"] = this.resultsOptions ? this.resultsOptions.toJSON() : <any>undefined;
+        data["appearance"] = this.appearance ? this.appearance.toJSON() : <any>undefined;
+        data["editor"] = this.editor ? this.editor.toJSON() : <any>undefined;
+        data["results"] = this.results ? this.results.toJSON() : <any>undefined;
+        data["omniSharp"] = this.omniSharp ? this.omniSharp.toJSON() : <any>undefined;
         return data;
     }
 
@@ -1982,18 +1984,74 @@ export class Settings implements ISettings {
 
 export interface ISettings {
     version: string;
-    theme: Theme;
     scriptsDirectoryPath: string;
     autoSaveScriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;
-    editorBackgroundColor?: string | undefined;
-    editorOptions: EditorOptions;
-    resultsOptions: ResultsOptions;
+    appearance: AppearanceOptions;
+    editor: EditorOptions;
+    results: ResultsOptions;
+    omniSharp: OmniSharpOptions;
 }
 
-export type Theme = "Light" | "Dark";
+export class AppearanceOptions implements IAppearanceOptions {
+    theme!: Theme;
+    showScriptRunStatusIndicatorInTab!: boolean;
+    showScriptRunStatusIndicatorInScriptsList!: boolean;
+    showScriptRunningIndicatorInScriptsList!: boolean;
+
+    constructor(data?: IAppearanceOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.theme = _data["theme"];
+            this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
+            this.showScriptRunStatusIndicatorInScriptsList = _data["showScriptRunStatusIndicatorInScriptsList"];
+            this.showScriptRunningIndicatorInScriptsList = _data["showScriptRunningIndicatorInScriptsList"];
+        }
+    }
+
+    static fromJS(data: any): AppearanceOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppearanceOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["theme"] = this.theme;
+        data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
+        data["showScriptRunStatusIndicatorInScriptsList"] = this.showScriptRunStatusIndicatorInScriptsList;
+        data["showScriptRunningIndicatorInScriptsList"] = this.showScriptRunningIndicatorInScriptsList;
+        return data;
+    }
+
+    clone(): AppearanceOptions {
+        const json = this.toJSON();
+        let result = new AppearanceOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppearanceOptions {
+    theme: Theme;
+    showScriptRunStatusIndicatorInTab: boolean;
+    showScriptRunStatusIndicatorInScriptsList: boolean;
+    showScriptRunningIndicatorInScriptsList: boolean;
+}
+
+export type Theme = "Dark" | "Light";
 
 export class EditorOptions implements IEditorOptions {
+    backgroundColor?: string | undefined;
     codeCompletion!: CodeCompletionOptions;
     monacoOptions!: any;
 
@@ -2011,6 +2069,7 @@ export class EditorOptions implements IEditorOptions {
 
     init(_data?: any) {
         if (_data) {
+            this.backgroundColor = _data["backgroundColor"];
             this.codeCompletion = _data["codeCompletion"] ? CodeCompletionOptions.fromJS(_data["codeCompletion"]) : new CodeCompletionOptions();
             this.monacoOptions = _data["monacoOptions"];
         }
@@ -2025,6 +2084,7 @@ export class EditorOptions implements IEditorOptions {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["backgroundColor"] = this.backgroundColor;
         data["codeCompletion"] = this.codeCompletion ? this.codeCompletion.toJSON() : <any>undefined;
         data["monacoOptions"] = this.monacoOptions;
         return data;
@@ -2039,6 +2099,7 @@ export class EditorOptions implements IEditorOptions {
 }
 
 export interface IEditorOptions {
+    backgroundColor?: string | undefined;
     codeCompletion: CodeCompletionOptions;
     monacoOptions: any;
 }
@@ -2223,6 +2284,163 @@ export class ResultsOptions implements IResultsOptions {
 export interface IResultsOptions {
     openOnRun: boolean;
     textWrap: boolean;
+}
+
+export class OmniSharpOptions implements IOmniSharpOptions {
+    enabled!: boolean;
+    executablePath?: string | undefined;
+    enableAnalyzersSupport!: boolean;
+    enableImportCompletion!: boolean;
+    enableSemanticHighlighting!: boolean;
+    enableCodeLensReferences!: boolean;
+    inlayHints!: OmniSharpInlayHintsOptions;
+
+    constructor(data?: IOmniSharpOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.inlayHints = new OmniSharpInlayHintsOptions();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enabled = _data["enabled"];
+            this.executablePath = _data["executablePath"];
+            this.enableAnalyzersSupport = _data["enableAnalyzersSupport"];
+            this.enableImportCompletion = _data["enableImportCompletion"];
+            this.enableSemanticHighlighting = _data["enableSemanticHighlighting"];
+            this.enableCodeLensReferences = _data["enableCodeLensReferences"];
+            this.inlayHints = _data["inlayHints"] ? OmniSharpInlayHintsOptions.fromJS(_data["inlayHints"]) : new OmniSharpInlayHintsOptions();
+        }
+    }
+
+    static fromJS(data: any): OmniSharpOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enabled"] = this.enabled;
+        data["executablePath"] = this.executablePath;
+        data["enableAnalyzersSupport"] = this.enableAnalyzersSupport;
+        data["enableImportCompletion"] = this.enableImportCompletion;
+        data["enableSemanticHighlighting"] = this.enableSemanticHighlighting;
+        data["enableCodeLensReferences"] = this.enableCodeLensReferences;
+        data["inlayHints"] = this.inlayHints ? this.inlayHints.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): OmniSharpOptions {
+        const json = this.toJSON();
+        let result = new OmniSharpOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpOptions {
+    enabled: boolean;
+    executablePath?: string | undefined;
+    enableAnalyzersSupport: boolean;
+    enableImportCompletion: boolean;
+    enableSemanticHighlighting: boolean;
+    enableCodeLensReferences: boolean;
+    inlayHints: OmniSharpInlayHintsOptions;
+}
+
+export class OmniSharpInlayHintsOptions implements IOmniSharpInlayHintsOptions {
+    enableParameters!: boolean;
+    enableIndexerParameters!: boolean;
+    enableLiteralParameters!: boolean;
+    enableObjectCreationParameters!: boolean;
+    enableOtherParameters!: boolean;
+    suppressForParametersThatDifferOnlyBySuffix!: boolean;
+    suppressForParametersThatMatchMethodIntent!: boolean;
+    suppressForParametersThatMatchArgumentName!: boolean;
+    enableTypes!: boolean;
+    enableImplicitVariableTypes!: boolean;
+    enableLambdaParameterTypes!: boolean;
+    enableImplicitObjectCreation!: boolean;
+
+    constructor(data?: IOmniSharpInlayHintsOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enableParameters = _data["enableParameters"];
+            this.enableIndexerParameters = _data["enableIndexerParameters"];
+            this.enableLiteralParameters = _data["enableLiteralParameters"];
+            this.enableObjectCreationParameters = _data["enableObjectCreationParameters"];
+            this.enableOtherParameters = _data["enableOtherParameters"];
+            this.suppressForParametersThatDifferOnlyBySuffix = _data["suppressForParametersThatDifferOnlyBySuffix"];
+            this.suppressForParametersThatMatchMethodIntent = _data["suppressForParametersThatMatchMethodIntent"];
+            this.suppressForParametersThatMatchArgumentName = _data["suppressForParametersThatMatchArgumentName"];
+            this.enableTypes = _data["enableTypes"];
+            this.enableImplicitVariableTypes = _data["enableImplicitVariableTypes"];
+            this.enableLambdaParameterTypes = _data["enableLambdaParameterTypes"];
+            this.enableImplicitObjectCreation = _data["enableImplicitObjectCreation"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpInlayHintsOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpInlayHintsOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enableParameters"] = this.enableParameters;
+        data["enableIndexerParameters"] = this.enableIndexerParameters;
+        data["enableLiteralParameters"] = this.enableLiteralParameters;
+        data["enableObjectCreationParameters"] = this.enableObjectCreationParameters;
+        data["enableOtherParameters"] = this.enableOtherParameters;
+        data["suppressForParametersThatDifferOnlyBySuffix"] = this.suppressForParametersThatDifferOnlyBySuffix;
+        data["suppressForParametersThatMatchMethodIntent"] = this.suppressForParametersThatMatchMethodIntent;
+        data["suppressForParametersThatMatchArgumentName"] = this.suppressForParametersThatMatchArgumentName;
+        data["enableTypes"] = this.enableTypes;
+        data["enableImplicitVariableTypes"] = this.enableImplicitVariableTypes;
+        data["enableLambdaParameterTypes"] = this.enableLambdaParameterTypes;
+        data["enableImplicitObjectCreation"] = this.enableImplicitObjectCreation;
+        return data;
+    }
+
+    clone(): OmniSharpInlayHintsOptions {
+        const json = this.toJSON();
+        let result = new OmniSharpInlayHintsOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpInlayHintsOptions {
+    enableParameters: boolean;
+    enableIndexerParameters: boolean;
+    enableLiteralParameters: boolean;
+    enableObjectCreationParameters: boolean;
+    enableOtherParameters: boolean;
+    suppressForParametersThatDifferOnlyBySuffix: boolean;
+    suppressForParametersThatMatchMethodIntent: boolean;
+    suppressForParametersThatMatchArgumentName: boolean;
+    enableTypes: boolean;
+    enableImplicitVariableTypes: boolean;
+    enableLambdaParameterTypes: boolean;
+    enableImplicitObjectCreation: boolean;
 }
 
 export class Types implements ITypes {

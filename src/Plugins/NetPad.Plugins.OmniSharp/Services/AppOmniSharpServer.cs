@@ -18,6 +18,7 @@ public class AppOmniSharpServer
     private readonly ScriptEnvironment _environment;
     private readonly IOmniSharpServerFactory _omniSharpServerFactory;
     private readonly IOmniSharpServerLocator _omniSharpServerLocator;
+    private readonly Settings _settings;
     private readonly IEventBus _eventBus;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
@@ -38,6 +39,7 @@ public class AppOmniSharpServer
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
         _omniSharpServerLocator = omniSharpServerLocator;
+        _settings = settings;
         _eventBus = eventBus;
         _logger = logger;
         _subscriptionTokens = new();
@@ -225,24 +227,24 @@ public class AppOmniSharpServer
             "FileOptions:SystemExcludeSearchPatterns:3=**/CVS",
             "FileOptions:SystemExcludeSearchPatterns:4=**/.DS_Store",
             "FileOptions:SystemExcludeSearchPatterns:5=**/Thumbs.db",
-            "RoslynExtensionsOptions:EnableAnalyzersSupport=true",
+            $"RoslynExtensionsOptions:EnableAnalyzersSupport={_settings.OmniSharp.EnableAnalyzersSupport}",
             "RoslynExtensionsOptions:EnableEditorConfigSupport=false",
             "RoslynExtensionsOptions:EnableDecompilationSupport=true",
-            "RoslynExtensionsOptions:EnableImportCompletion=true",
-            // "RoslynExtensionsOptions:EnableAsyncCompletion=true",
+            $"RoslynExtensionsOptions:EnableImportCompletion={_settings.OmniSharp.EnableImportCompletion}",
+            "RoslynExtensionsOptions:EnableAsyncCompletion=false",
 
-            "RoslynExtensionsOptions:InlayHintsOptions:EnableForParameters=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForLiteralParameters=false",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForIndexerParameters=false",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForObjectCreationParameters=false",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForOtherParameters=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatDifferOnlyBySuffix=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchMethodIntent=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchArgumentName=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:EnableForTypes=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes=false",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes=true",
-            "RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation=true",
+            $"RoslynExtensionsOptions:InlayHintsOptions:EnableForParameters={_settings.OmniSharp.InlayHints.EnableParameters}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForLiteralParameters={_settings.OmniSharp.InlayHints.EnableLiteralParameters}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForIndexerParameters={_settings.OmniSharp.InlayHints.EnableIndexerParameters}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForObjectCreationParameters={_settings.OmniSharp.InlayHints.EnableObjectCreationParameters}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForOtherParameters={_settings.OmniSharp.InlayHints.EnableOtherParameters}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatDifferOnlyBySuffix={_settings.OmniSharp.InlayHints.SuppressForParametersThatDifferOnlyBySuffix}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchMethodIntent={_settings.OmniSharp.InlayHints.SuppressForParametersThatMatchMethodIntent}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchArgumentName={_settings.OmniSharp.InlayHints.SuppressForParametersThatMatchArgumentName}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:EnableForTypes={_settings.OmniSharp.InlayHints.EnableTypes}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes={_settings.OmniSharp.InlayHints.EnableImplicitVariableTypes}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes={_settings.OmniSharp.InlayHints.EnableLambdaParameterTypes}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={_settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}",
         }.JoinToString(" ");
 
         var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);

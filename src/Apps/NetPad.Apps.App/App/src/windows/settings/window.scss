@@ -1,9 +1,12 @@
 @import "~styles/themes";
 
 .section {
-    margin-bottom: 10px;
     padding: 0 15px 15px 10px;
-    @include theme(border-bottom, borderColor, 1px solid);
+
+    &:not(:last-child) {
+        @include theme(border-bottom, borderColor, 1px solid);
+        margin-bottom: 10px;
+    }
 
     > .header {
         font-size: 0.85rem;
@@ -11,7 +14,21 @@
         margin-bottom: 10px;
     }
 
-    > .body {
+    .body {
         padding-left: 10px;
+
+        &:not(:last-child) {
+            margin-bottom: 15px;
+        }
     }
+
+    .sub-header {
+        font-size: 0.80rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+}
+
+#buttons-bar {
+    @include theme(border-top, borderColor, 1px solid);
 }

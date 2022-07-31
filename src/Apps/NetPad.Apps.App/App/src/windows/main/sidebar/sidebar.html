@@ -31,8 +31,19 @@
                                 <span class="script-name">${script.name}</span>
                             </div>
                             <div class="script-metadata">
-                                <span class="script-status spinner-border"
-                                      if.bind="script.environment.status === 'Running'"></span>
+                                <span class="script-status" switch.bind="script.environment.status">
+                                    <span case="Running"
+                                          if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
+                                          class="spinner-border script-running-indicator"></span>
+                                    <i case="Ready"
+                                       class="script-status-success-icon icon-xs"
+                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds"
+                                       title="Script ran successfully"></i>
+                                    <i case="Error"
+                                       class="script-status-error-icon icon-xs"
+                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInTab"
+                                       title="Error occurred"></i>
+                                </span>
                                 <span class="script-dirty-flag ms-1"
                                       if.bind="script.environment.script.isDirty"
                                       title="Modified (unsaved changes)">M</span>

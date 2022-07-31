@@ -37,16 +37,17 @@ sidebar {
                 }
 
                 .script-metadata {
+                    display: flex;
+                    align-items: center;
                     text-align: right;
                     white-space: nowrap;
                     padding-left: 0.25rem;
                 }
 
                 .script-status {
-                    &.spinner-border {
-                        height: 0.75rem;
-                        width: 0.75rem;
-                    }
+                    display: flex;
+                    align-items: center;
+                    margin-right: 0.20rem;
                 }
 
                 .script-dirty-flag {
@@ -81,6 +82,11 @@ sidebar {
 
             .tree-expand-node-icon, .tree-collapse-node-icon {
                 @extend .text-orange;
+            }
+
+            .script-running-indicator {
+                height: 0.65rem;
+                width: 0.65rem;
             }
         }
     }

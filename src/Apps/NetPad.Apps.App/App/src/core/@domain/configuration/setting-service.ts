@@ -16,7 +16,7 @@ export class SettingService extends SettingsApiClient implements ISettingService
 
     public async toggleTheme(): Promise<void> {
         const clone = this.settings.clone();
-        clone.theme = clone.theme === "Light" ? "Dark" : "Light";
+        clone.appearance.theme = clone.appearance.theme === "Light" ? "Dark" : "Light";
         await this.update(clone);
     }
 }
