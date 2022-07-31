@@ -1,5 +1,6 @@
 import {IContainer, Registration} from "aurelia";
 import * as monaco from "monaco-editor";
+import {Settings} from "@domain";
 import {
     ICodeActionProvider,
     ICodeLensProvider,
@@ -29,17 +30,14 @@ import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-prov
  * Encapsulates all OmniSharp functionality.
  */
 export function configure(container: IContainer) {
+    const settings = container.get(Settings);
+
     container.register(Registration.singleton(IOmniSharpService, OmniSharpService));
     container.register(Registration.singleton(IImplementationProvider, OmniSharpImplementationProvider));
     container.register(Registration.singleton(IHoverProvider, OmniSharpHoverProvider));
     container.register(Registration.singleton(ISignatureHelpProvider, OmniSharpSignatureHelpProvider));
     container.register(Registration.singleton(IReferenceProvider, OmniSharpReferenceProvider));
-    container.register(Registration.singleton(ICodeLensProvider, OmniSharpCodeLensProvider));
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
-
-    container.register(Registration.singleton(OmniSharpSemanticTokensProvider, OmniSharpSemanticTokensProvider));
-    container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
-    container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));
@@ -48,6 +46,16 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(OmniSharpCodeActionProvider, OmniSharpCodeActionProvider));
     container.register(Registration.cachedCallback(ICodeActionProvider, c => c.get(OmniSharpCodeActionProvider)));
     container.register(Registration.cachedCallback(ICommandProvider, c => c.get(OmniSharpCodeActionProvider)));
+
+    if (settings.omniSharp.enableCodeLensReferences) {
+        container.register(Registration.singleton(ICodeLensProvider, OmniSharpCodeLensProvider));
+    }
+
+    if (settings.omniSharp.enableSemanticHighlighting) {
+        container.register(Registration.singleton(OmniSharpSemanticTokensProvider, OmniSharpSemanticTokensProvider));
+        container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
+        container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
+    }
 
     const actions = new Actions(container);
 
