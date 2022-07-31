@@ -34,7 +34,7 @@ public class OmniSharpOptions : ISettingsOptions
 
     public OmniSharpOptions SetExecutablePath(string? executablePath)
     {
-        ExecutablePath = executablePath;
+        ExecutablePath = string.IsNullOrWhiteSpace(executablePath) ? null : executablePath;
         return this;
     }
 

@@ -9,7 +9,6 @@ button > .icon-base {
     vertical-align: middle;
 }
 
-// GENERIC ICONS
 .icon-2xs {
     @extend .fa-2xs;
 }
@@ -34,6 +33,7 @@ button > .icon-base {
     @extend .fa-2xl;
 }
 
+// GENERIC ICONS
 .close-icon {
     @extend %icon-base;
     @extend .fa-xmark;
@@ -57,6 +57,11 @@ button > .icon-base {
 .check-circle-icon {
     @extend %icon-base;
     @extend .fa-circle-check;
+}
+
+.warning-icon {
+    @extend %icon-base;
+    @extend .fa-warning;
 }
 
 .actions-icon {

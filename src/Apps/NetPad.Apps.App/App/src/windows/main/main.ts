@@ -40,8 +40,7 @@ export class Bootstrapper implements IWindowBootstrapper {
 
         try {
             this.registerPlugins(app.container);
-        }
-        catch (ex) {
+        } catch (ex) {
             this.logger.error(`Error occurred while registering plugins`, ex);
         }
     }
@@ -76,8 +75,7 @@ export class Bootstrapper implements IWindowBootstrapper {
                     plugin.configure(container);
                     this.logger.info(`Loaded plugin: ${pluginPath}`);
                 }
-            }
-            catch (ex) {
+            } catch (ex) {
                 this.logger.error(`Could not load plugin: ${pluginPath}`, ex);
             }
         }

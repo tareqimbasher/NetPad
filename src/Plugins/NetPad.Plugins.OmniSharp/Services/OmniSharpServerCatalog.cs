@@ -75,7 +75,7 @@ public class OmniSharpServerCatalog
 
             startTask.ContinueWith(async (task) =>
             {
-                bool started = task.Status == TaskStatus.RanToCompletion;
+                bool started = task.Status == TaskStatus.RanToCompletion && task.Result;
 
                 _logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
                     nameof(AppOmniSharpServer),
@@ -122,12 +122,12 @@ public class OmniSharpServerCatalog
         _logger.LogDebug("Finding OmniSharp server to stop for script {Script}", environment.Script);
 
         // Continuously try to find an OmniSharp server for the script for a few seconds.
-        // An OmniSharp server could still be starting and so we want to do multiple checks to ensure
-        // we find it if it was slow to start.
+        // A call to stop an OmniSharp server could be fired before the call to start it was fired
+        // so we want to do multiple checks to ensure we find it if it starts later.
         CatalogItem? item = null;
         int findCounter = 0;
 
-        while (++findCounter <= 10)
+        while (++findCounter <= 3)
         {
             if (_items.TryGetValue(environment.Script.Id, out item))
             {

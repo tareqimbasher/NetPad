@@ -22,7 +22,6 @@ using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Plugins;
-using NetPad.Plugins.OmniSharp;
 using NetPad.Resources;
 using NetPad.Runtimes;
 using NetPad.Scripts;
@@ -36,7 +35,7 @@ namespace NetPad
     {
         private readonly Assembly[] _pluginAssemblies =
         {
-            typeof(Plugin).Assembly
+            typeof(NetPad.Plugins.OmniSharp.Plugin).Assembly
         };
 
         public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
