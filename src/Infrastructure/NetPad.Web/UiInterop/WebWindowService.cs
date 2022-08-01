@@ -18,22 +18,25 @@ public class WebWindowService : IUiWindowService
         throw new PlatformNotSupportedException();
     }
 
-    public async Task OpenSettingsWindowAsync()
+    public async Task OpenSettingsWindowAsync(string? tab = null)
     {
         var command = new OpenWindowCommand("settings");
         command.Options.Height = 0.5;
         command.Options.Width = 0.5;
 
+        command.Metadata.Add("tab", tab);
+
         await _ipcService.SendAsync(command);
     }
 
-    public async Task OpenScriptConfigWindowAsync(Script script)
+    public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
     {
         var command = new OpenWindowCommand("script-config");
         command.Options.Height = 2 / 3.0;
         command.Options.Width = 4 / 5.0;
 
         command.Metadata.Add("script-id", script.Id);
+        command.Metadata.Add("tab", tab);
 
         await _ipcService.SendAsync(command);
     }

@@ -40,7 +40,7 @@ export class ScriptEnvironments extends ViewModelBase {
                 icon: "script-properties-icon",
                 text: "Properties",
                 shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
-                onSelected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget))
+                onSelected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget), null)
             },
             {
                 isDivider: true

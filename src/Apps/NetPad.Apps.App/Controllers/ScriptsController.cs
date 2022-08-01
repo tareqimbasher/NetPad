@@ -54,11 +54,11 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/open-config")]
-        public async Task OpenConfigWindow(Guid id, [FromServices] IUiWindowService uiWindowService)
+        public async Task OpenConfigWindow([FromServices] IUiWindowService uiWindowService, Guid id, [FromQuery] string? tab = null)
         {
             var environment = await GetScriptEnvironmentAsync(id);
             var script = environment.Script;
-            await uiWindowService.OpenScriptConfigWindowAsync(script);
+            await uiWindowService.OpenScriptConfigWindowAsync(script, tab);
         }
 
         [HttpPut("{id:guid}/namespaces")]

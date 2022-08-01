@@ -528,7 +528,7 @@ export interface IScriptsApiClient {
 
     updateCode(id: string, code: string): Promise<void>;
 
-    openConfigWindow(id: string): Promise<void>;
+    openConfigWindow(id: string, tab: string | null | undefined): Promise<void>;
 
     setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
 
@@ -726,11 +726,13 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    openConfigWindow(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/open-config";
+    openConfigWindow(id: string, tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/open-config?";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (tab !== undefined && tab !== null)
+            url_ += "tab=" + encodeURIComponent("" + tab) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -1165,7 +1167,7 @@ export interface ISettingsApiClient {
 
     update(settings: Settings): Promise<FileResponse | null>;
 
-    openSettingsWindow(): Promise<void>;
+    openSettingsWindow(tab: string | null | undefined): Promise<void>;
 
     showSettingsFile(): Promise<FileResponse | null>;
 }
@@ -1252,8 +1254,10 @@ export class SettingsApiClient implements ISettingsApiClient {
         return Promise.resolve<FileResponse | null>(<any>null);
     }
 
-    openSettingsWindow(signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/settings/open";
+    openSettingsWindow(tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/settings/open?";
+        if (tab !== undefined && tab !== null)
+            url_ += "tab=" + encodeURIComponent("" + tab) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -2052,7 +2056,6 @@ export type Theme = "Dark" | "Light";
 
 export class EditorOptions implements IEditorOptions {
     backgroundColor?: string | undefined;
-    codeCompletion!: CodeCompletionOptions;
     monacoOptions!: any;
 
     constructor(data?: IEditorOptions) {
@@ -2062,15 +2065,11 @@ export class EditorOptions implements IEditorOptions {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
-        if (!data) {
-            this.codeCompletion = new CodeCompletionOptions();
-        }
     }
 
     init(_data?: any) {
         if (_data) {
             this.backgroundColor = _data["backgroundColor"];
-            this.codeCompletion = _data["codeCompletion"] ? CodeCompletionOptions.fromJS(_data["codeCompletion"]) : new CodeCompletionOptions();
             this.monacoOptions = _data["monacoOptions"];
         }
     }
@@ -2085,7 +2084,6 @@ export class EditorOptions implements IEditorOptions {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["backgroundColor"] = this.backgroundColor;
-        data["codeCompletion"] = this.codeCompletion ? this.codeCompletion.toJSON() : <any>undefined;
         data["monacoOptions"] = this.monacoOptions;
         return data;
     }
@@ -2100,143 +2098,7 @@ export class EditorOptions implements IEditorOptions {
 
 export interface IEditorOptions {
     backgroundColor?: string | undefined;
-    codeCompletion: CodeCompletionOptions;
     monacoOptions: any;
-}
-
-export class CodeCompletionOptions implements ICodeCompletionOptions {
-    enabled!: boolean;
-    provider?: CodeCompletionProviderOptions | undefined;
-
-    constructor(data?: ICodeCompletionOptions) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.enabled = _data["enabled"];
-            this.provider = _data["provider"] ? CodeCompletionProviderOptions.fromJS(_data["provider"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): CodeCompletionOptions {
-        data = typeof data === 'object' ? data : {};
-        let result = new CodeCompletionOptions();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["enabled"] = this.enabled;
-        data["provider"] = this.provider ? this.provider.toJSON() : <any>undefined;
-        return data;
-    }
-
-    clone(): CodeCompletionOptions {
-        const json = this.toJSON();
-        let result = new CodeCompletionOptions();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ICodeCompletionOptions {
-    enabled: boolean;
-    provider?: CodeCompletionProviderOptions | undefined;
-}
-
-export abstract class CodeCompletionProviderOptions implements ICodeCompletionProviderOptions {
-    name?: string | undefined;
-
-    protected _discriminator: string;
-
-    constructor(data?: ICodeCompletionProviderOptions) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        this._discriminator = "CodeCompletionProviderOptions";
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.name = _data["name"];
-        }
-    }
-
-    static fromJS(data: any): CodeCompletionProviderOptions {
-        data = typeof data === 'object' ? data : {};
-        if (data["type"] === "OmniSharpCodeCompletionProviderOptions") {
-            let result = new OmniSharpCodeCompletionProviderOptions();
-            result.init(data);
-            return result;
-        }
-        throw new Error("The abstract class 'CodeCompletionProviderOptions' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["type"] = this._discriminator;
-        data["name"] = this.name;
-        return data;
-    }
-
-    clone(): CodeCompletionProviderOptions {
-        throw new Error("The abstract class 'CodeCompletionProviderOptions' cannot be instantiated.");
-    }
-}
-
-export interface ICodeCompletionProviderOptions {
-    name?: string | undefined;
-}
-
-export class OmniSharpCodeCompletionProviderOptions extends CodeCompletionProviderOptions implements IOmniSharpCodeCompletionProviderOptions {
-    executablePath?: string | undefined;
-
-    constructor(data?: IOmniSharpCodeCompletionProviderOptions) {
-        super(data);
-        this._discriminator = "OmniSharpCodeCompletionProviderOptions";
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.executablePath = _data["executablePath"];
-        }
-    }
-
-    static fromJS(data: any): OmniSharpCodeCompletionProviderOptions {
-        data = typeof data === 'object' ? data : {};
-        let result = new OmniSharpCodeCompletionProviderOptions();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["executablePath"] = this.executablePath;
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): OmniSharpCodeCompletionProviderOptions {
-        const json = this.toJSON();
-        let result = new OmniSharpCodeCompletionProviderOptions();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IOmniSharpCodeCompletionProviderOptions extends ICodeCompletionProviderOptions {
-    executablePath?: string | undefined;
 }
 
 export class ResultsOptions implements IResultsOptions {

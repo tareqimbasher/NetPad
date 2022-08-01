@@ -12,10 +12,18 @@ export class Window {
         {route: "omnisharp", text: "OmniSharp"},
     ];
 
-    constructor(currentSettings: Settings, @ISettingService readonly settingService: ISettingService) {
+    constructor(
+        private readonly startupOptions: URLSearchParams,
+        currentSettings: Settings,
+        @ISettingService readonly settingService: ISettingService) {
+
         document.title = "Settings";
 
-        this.selectedTab = this.tabs[0];
+        let tabIndex = this.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
+        if (tabIndex < 0)
+            tabIndex = 0;
+
+        this.selectedTab = this.tabs[tabIndex];
         this.currentSettings = currentSettings;
         this.settings = this.currentSettings.clone();
     }

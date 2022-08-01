@@ -45,13 +45,13 @@ export const BuiltinShortcuts = [
 
     new Shortcut("Script Properties")
         .withKey(KeyCode.F4)
-        .hasAction((ctx) => ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id))
+        .hasAction((ctx) => ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id, null))
         .configurable()
         .enabled(),
 
     new Shortcut("Settings")
         .withKey(KeyCode.F12)
-        .hasAction((ctx) => ctx.container.get(ISettingService).openSettingsWindow())
+        .hasAction((ctx) => ctx.container.get(ISettingService).openSettingsWindow(null))
         .configurable()
         .enabled(),
 

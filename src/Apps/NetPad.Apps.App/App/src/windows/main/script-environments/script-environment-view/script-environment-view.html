@@ -17,17 +17,17 @@
         <i class="script-properties-icon"></i>
     </button>
     <span class="ms-3">
-            <b>Kind:</b>
-            <select class="form-select form-select-sm script-kind-selector"
-                    value.bind="kind">
-                <!--FEATURE NOT READY YET-->
-                <!--<option value="Expression">C# Expression (Not supported yet)</option>-->
-                <option value="Program">C# Program</option>
-            </select>
-        </span>
+        <b>Kind:</b>
+        <select class="form-select form-select-sm script-kind-selector"
+                value.bind="kind">
+            <!--FEATURE NOT READY YET-->
+            <!--<option value="Expression">C# Expression (Not supported yet)</option>-->
+            <option value="Program">C# Program</option>
+        </select>
+    </span>
     <span class="me-3 float-end">
-            ${script.config.references.length} References
-        </span>
+        ${script.config.references.length} References
+    </span>
 </div>
 <div class="flex-grow-height-restricted">
     <div ref="textEditorContainer" class="text-editor-container d-flex">

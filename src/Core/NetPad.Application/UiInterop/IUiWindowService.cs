@@ -6,7 +6,7 @@ namespace NetPad.UiInterop
     public interface IUiWindowService
     {
         Task OpenMainWindowAsync();
-        Task OpenSettingsWindowAsync();
-        Task OpenScriptConfigWindowAsync(Script script);
+        Task OpenSettingsWindowAsync(string? tab = null);
+        Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
     }
 }

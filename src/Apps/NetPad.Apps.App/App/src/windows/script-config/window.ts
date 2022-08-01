@@ -10,7 +10,12 @@ export class Window {
         readonly configStore: ConfigStore,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService) {
-        this.configStore.selectedTab = this.configStore.tabs[0];
+
+        let tabIndex = this.configStore.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
+        if (tabIndex < 0)
+            tabIndex = 0;
+
+        this.configStore.selectedTab = this.configStore.tabs[tabIndex];
     }
 
     public async binding() {

@@ -30,6 +30,7 @@ namespace NetPad.Electron.UiInterop
                 Width = display.Bounds.Width * 2 / 3,
                 X = display.Bounds.X,
                 Y = display.Bounds.Y,
+                AutoHideMenuBar = true,
             });
 
             window.Center();
@@ -52,7 +53,7 @@ namespace NetPad.Electron.UiInterop
             };
         }
 
-        public async Task OpenSettingsWindowAsync()
+        public async Task OpenSettingsWindowAsync(string? tab = null)
         {
             const string windowName = "settings";
 
@@ -65,10 +66,10 @@ namespace NetPad.Electron.UiInterop
             var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = "Settings",
-                Height = display.Bounds.Height * 1 / 2,
+                Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 1 / 2,
                 AutoHideMenuBar = true,
-            });
+            }, ("tab", tab));
 
             window.SetParentWindow(ElectronUtil.MainWindow);
             var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
@@ -76,7 +77,7 @@ namespace NetPad.Electron.UiInterop
             window.Center();
         }
 
-        public async Task OpenScriptConfigWindowAsync(Script script)
+        public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
         {
             const string windowName = "script-config";
 
@@ -92,7 +93,7 @@ namespace NetPad.Electron.UiInterop
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 4 / 5,
                 AutoHideMenuBar = true,
-            }, ("script-id", script.Id));
+            }, ("script-id", script.Id), ("tab", tab));
 
             window.SetParentWindow(ElectronUtil.MainWindow);
             var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();

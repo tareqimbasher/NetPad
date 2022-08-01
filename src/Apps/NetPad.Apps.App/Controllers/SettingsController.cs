@@ -37,9 +37,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("open")]
-        public async Task OpenSettingsWindow([FromServices] IUiWindowService uiWindowService)
+        public async Task OpenSettingsWindow([FromServices] IUiWindowService uiWindowService, [FromQuery] string? tab = null)
         {
-            await uiWindowService.OpenSettingsWindowAsync();
+            await uiWindowService.OpenSettingsWindowAsync(tab);
         }
 
         [HttpPatch("show-settings-file")]
