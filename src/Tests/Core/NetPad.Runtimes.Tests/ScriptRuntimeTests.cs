@@ -50,7 +50,7 @@ namespace NetPad.Runtimes.Tests
 
             var runtime = await GetScriptRuntimeAsync(script);
 
-            var result = await runtime.RunScriptAsync();
+            var result = await runtime.RunScriptAsync(new RunOptions());
             Assert.False(result.IsRunAttemptSuccessful);
         }
 
@@ -66,7 +66,7 @@ namespace NetPad.Runtimes.Tests
             var runtime = await GetScriptRuntimeAsync(script);
             runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
 
-            await runtime.RunScriptAsync();
+            await runtime.RunScriptAsync(new RunOptions());
 
             Assert.Equal(expectedOutput, result);
         }
@@ -89,7 +89,7 @@ namespace NetPad.Runtimes.Tests
                 string? result = null;
                 runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
 
-                await runtime.RunScriptAsync();
+                await runtime.RunScriptAsync(new RunOptions());
 
                 scope.Dispose();
                 GCUtil.CollectAndWait();

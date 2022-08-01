@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetPad.IO;
+using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.Tests;
 using NetPad.Tests.Helpers;
@@ -43,7 +44,7 @@ namespace NetPad.Domain.Tests.Scripts
             var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
             environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
 
-            Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync());
+            Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync(new RunOptions()));
         }
 
         [Fact]
@@ -54,7 +55,7 @@ namespace NetPad.Domain.Tests.Scripts
 
             environment.Dispose();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => environment.RunAsync());
+            await Assert.ThrowsAsync<InvalidOperationException>(() => environment.RunAsync(new RunOptions()));
         }
     }
 }

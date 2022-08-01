@@ -50,7 +50,7 @@ namespace NetPad.Runtimes.Tests
             var runtime = await GetScriptRuntimeAsync(script);
             runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
 
-            await runtime.RunScriptAsync();
+            await runtime.RunScriptAsync(new RunOptions());
 
             _testOutputHelper.WriteLine(result);
 

@@ -194,7 +194,7 @@ namespace NetPad.Compilation.Tests.CSharp
             script.UpdateCode("DateTime.Now");
             var parser = new CSharpCodeParser();
 
-            Assert.Throws<NotImplementedException>(() => parser.GetUserCode(script));
+            Assert.Throws<NotImplementedException>(() => parser.GetUserCode(script.Code, script.Config.Kind));
         }
 
         private Script GetScript() => new Script("Test Script");
