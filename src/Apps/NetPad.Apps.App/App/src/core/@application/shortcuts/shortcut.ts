@@ -13,7 +13,7 @@ export class Shortcut {
     public key?: KeyCode;
     public keyExpression?: (keyCode: KeyCode) => boolean;
     public action?: (context: ShortcutActionExecutionContext) => void;
-    public eventType?: Constructable;
+    public event?: Constructable | (() => unknown);
     public isConfigurable = false;
     public isEnabled = false;
 
@@ -55,8 +55,11 @@ export class Shortcut {
         return this;
     }
 
-    public firesEvent<TEventType extends Constructable>(eventType: TEventType) {
-        this.eventType = eventType;
+    public firesEvent(eventGetter: () => unknown);
+    public firesEvent<TEventType extends Constructable>(eventType: TEventType);
+
+    public firesEvent<TEventType extends Constructable>(eventTypeOrGetter: TEventType | (() => unknown)) {
+        this.event = eventTypeOrGetter;
         return this;
     }
 

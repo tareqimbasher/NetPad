@@ -1,4 +1,4 @@
-import {DI, IContainer, ILogger} from "aurelia";
+import {Constructable, DI, IContainer, ILogger} from "aurelia";
 import {Shortcut} from "./shortcut";
 import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
 import {IEventBus} from "@domain";
@@ -36,7 +36,7 @@ export interface IShortcutManager {
 
 export const IShortcutManager = DI.createInterface<IShortcutManager>();
 
-export class ShortcutManager implements IShortcutManager{
+export class ShortcutManager implements IShortcutManager {
     private readonly registry: Shortcut[] = [];
     private readonly logger: ILogger;
 
@@ -94,8 +94,12 @@ export class ShortcutManager implements IShortcutManager{
             shortcut.action(context);
         }
 
-        if (shortcut.eventType) {
-            this.eventBus.publish(new shortcut.eventType());
+        if (shortcut.event) {
+            const event = shortcut.event.hasOwnProperty("prototype")
+                ? new (shortcut.event as Constructable)()
+                : (shortcut.event as () => unknown)();
+
+            this.eventBus.publish(event);
         }
     }
 }
