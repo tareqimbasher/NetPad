@@ -1,4 +1,4 @@
-import {Shortcut} from "@domain";
+import {Shortcut} from "@application";
 
 export class ContextMenuOptions {
     public selector: string;

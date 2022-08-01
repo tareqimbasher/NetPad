@@ -1,7 +1,12 @@
 import {bindable, ILogger} from "aurelia";
-import {ContextMenuOptions, IContextMenuItem, IContextMenuItemWithInternals, ViewModelBase} from "@application";
+import {
+    ContextMenuOptions,
+    IContextMenuItem,
+    IContextMenuItemWithInternals,
+    IShortcutManager,
+    ViewModelBase
+} from "@application";
 import {AppMutationObserver} from "@common";
-import {IShortcutManager} from "@domain";
 
 export class ContextMenu extends ViewModelBase {
     @bindable options: ContextMenuOptions;

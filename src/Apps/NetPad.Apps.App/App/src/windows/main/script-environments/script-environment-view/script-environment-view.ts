@@ -4,7 +4,6 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    IShortcutManager,
     RunScriptEvent,
     Script,
     ScriptEnvironment,
@@ -13,7 +12,7 @@ import {
 } from "@domain";
 import Split from "split.js";
 import {observable} from "@aurelia/runtime";
-import {Editor, ViewModelBase} from "@application";
+import {Editor, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironmentView extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;

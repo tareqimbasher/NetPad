@@ -1,16 +1,7 @@
 import {ILogger} from "aurelia";
 import dragula from "dragula";
-import {
-    IAppService,
-    IEventBus,
-    IScriptService,
-    ISession,
-    IShortcutManager,
-    RunScriptEvent,
-    Script,
-    Settings
-} from "@domain";
-import {ContextMenuOptions, ViewModelBase} from "@application";
+import {IAppService, IEventBus, IScriptService, ISession, RunScriptEvent, Script, Settings} from "@domain";
+import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironments extends ViewModelBase {
     public tabContextMenuOptions: ContextMenuOptions;

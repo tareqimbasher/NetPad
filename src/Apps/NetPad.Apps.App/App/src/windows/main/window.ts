@@ -1,12 +1,13 @@
 import Split from "split.js";
-import {BuiltinShortcuts, ISession, IShortcutManager, Settings, Shortcut} from "@domain";
+import {ISession, Settings} from "@domain";
 import {
+    BuiltinShortcuts,
     EditorSetup,
     IPaneManager,
+    IShortcutManager,
     PaneHost,
-    PaneHostOrientation
+    PaneHostOrientation,
 } from "@application";
-import {KeyCode} from "@common";
 import {ClipboardPane, NamespacesPane} from "./panes";
 
 export class Window {
@@ -55,17 +56,8 @@ export class Window {
     }
 
     private registerKeyboardShortcuts() {
-        for (const builtinShortcut of BuiltinShortcuts) {
-            this.shortcutManager.registerShortcut(builtinShortcut);
+        for (const shortcut of BuiltinShortcuts) {
+            this.shortcutManager.registerShortcut(shortcut);
         }
-
-        this.shortcutManager.registerShortcut(
-            new Shortcut("Namespaces Pane")
-                .withAltKey()
-                .withKey(KeyCode.KeyN)
-                .hasAction(() => this.paneManager.activateOrCollapse(NamespacesPane))
-                .configurable()
-                .enabled()
-        );
     }
 }
