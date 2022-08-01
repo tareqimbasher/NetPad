@@ -11,6 +11,7 @@ namespace NetPad.Electron.UiInterop
     {
         private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly HostInfo _hostInfo;
+        private static readonly Dictionary<string, BrowserWindow> _singleInstanceWindows = new();
 
         public ElectronWindowService(HostInfo hostInfo, IHostApplicationLifetime applicationLifetime)
         {
@@ -23,7 +24,7 @@ namespace NetPad.Electron.UiInterop
         public async Task OpenMainWindowAsync()
         {
             var display = await PrimaryDisplay();
-            var window = await CreateWindowAsync("main", new BrowserWindowOptions
+            var window = await CreateWindowAsync("main", false, new BrowserWindowOptions
             {
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 2 / 3,
@@ -53,8 +54,15 @@ namespace NetPad.Electron.UiInterop
 
         public async Task OpenSettingsWindowAsync()
         {
+            const string windowName = "settings";
+
+            if (FocusExistingWindowIfOpen(windowName))
+            {
+                return;
+            }
+
             var display = await PrimaryDisplay();
-            var window = await CreateWindowAsync("settings", new BrowserWindowOptions
+            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = "Settings",
                 Height = display.Bounds.Height * 1 / 2,
@@ -70,8 +78,15 @@ namespace NetPad.Electron.UiInterop
 
         public async Task OpenScriptConfigWindowAsync(Script script)
         {
+            const string windowName = "script-config";
+
+            if (FocusExistingWindowIfOpen(windowName))
+            {
+                return;
+            }
+
             var display = await PrimaryDisplay();
-            var window = await CreateWindowAsync("script-config", new BrowserWindowOptions
+            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = script.Name,
                 Height = display.Bounds.Height * 2 / 3,
@@ -87,6 +102,7 @@ namespace NetPad.Electron.UiInterop
 
         private async Task<BrowserWindow> CreateWindowAsync(
             string windowName,
+            bool singleInstance,
             BrowserWindowOptions options,
             params (string key, object? value)[] queryParams)
         {
@@ -101,7 +117,26 @@ namespace NetPad.Electron.UiInterop
             options.MinWidth = 100;
             options.Center = true;
 
-            return await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+            var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+
+            if (singleInstance)
+            {
+                _singleInstanceWindows.Add(windowName, window);
+                window.OnClosed += () => _singleInstanceWindows.Remove(windowName);
+            }
+
+            return window;
+        }
+
+        private bool FocusExistingWindowIfOpen(string windowName)
+        {
+            if (_singleInstanceWindows.TryGetValue(windowName, out var window))
+            {
+                window.Focus();
+                return true;
+            }
+
+            return false;
         }
     }
 }
