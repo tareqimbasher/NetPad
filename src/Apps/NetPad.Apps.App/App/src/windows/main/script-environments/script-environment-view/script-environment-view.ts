@@ -4,6 +4,7 @@ import {
     IEventBus,
     IScriptService,
     ISession,
+    RunOptions,
     RunScriptEvent,
     Script,
     ScriptEnvironment,
@@ -95,7 +96,17 @@ export class ScriptEnvironmentView extends ViewModelBase {
             await this.sendCodeToServer();
             if (this.settings.results.openOnRun)
                 this.openResultsView();
-            await this.scriptService.run(this.script.id);
+
+            const runOptions = new RunOptions();
+
+            // If user has code selected, only run selection
+            const editor = this.editor();
+            const selection = editor.monacoEditor.getSelection();
+            if (selection && !selection.isEmpty()) {
+                runOptions.code = editor.monacoEditor.getModel().getValueInRange(selection);
+            }
+
+            await this.scriptService.run(this.script.id, runOptions);
         } catch (ex) {
             this.logger.error("Error while running script", ex);
         }

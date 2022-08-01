@@ -55,7 +55,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         });
     }
 
-    public async Task<RunResult> RunScriptAsync()
+    public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {
         throw new NotImplementedException("Testing this runtime is not yet complete");
         var dir = "/home/tips/test/";

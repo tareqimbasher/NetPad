@@ -1,16 +1,19 @@
 using MediatR;
 using NetPad.Events;
+using NetPad.Runtimes;
 
 namespace NetPad.CQs;
 
 public class RunScriptCommand : Command
 {
-    public RunScriptCommand(Guid scriptId)
+    public RunScriptCommand(Guid scriptId, RunOptions runOptions)
     {
         ScriptId = scriptId;
+        RunOptions = runOptions;
     }
 
     public Guid ScriptId { get; }
+    public RunOptions RunOptions { get; }
 
     public class Handler : IRequestHandler<RunScriptCommand>
     {
@@ -27,7 +30,7 @@ public class RunScriptCommand : Command
         {
             var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(request.ScriptId, true));
 
-            await environment!.RunAsync();
+            await environment!.RunAsync(request.RunOptions);
 
             await _eventBus.PublishAsync(new ScriptRanEvent(environment));
 

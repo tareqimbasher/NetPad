@@ -8,7 +8,7 @@ export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
     @bindable public text: string;
     @bindable public viewModel: () => Editor;
-    private monacoEditor?: monaco.editor.IStandaloneCodeEditor;
+    public monacoEditor?: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
         readonly element: Element,

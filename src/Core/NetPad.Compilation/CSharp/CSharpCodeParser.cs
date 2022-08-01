@@ -19,12 +19,12 @@ namespace NetPad.Compilation.CSharp
             "NetPad.IO"
         };
 
-        public CodeParsingResult Parse(Script script, params string[] additionalNamespaces)
+        public CodeParsingResult Parse(Script script, string? code = null, params string[] additionalNamespaces)
         {
             var namespaces = GetNamespaces(script, additionalNamespaces);
             var usings = string.Join("\n", namespaces.Select(ns => $"using {ns};"));
 
-            var userCode = GetUserCode(script);
+            var userCode = GetUserCode(code ?? script.Code, script.Config.Kind);
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode);
 
@@ -64,12 +64,12 @@ namespace NetPad.Compilation.CSharp
                 .Distinct();
         }
 
-        public string GetUserCode(Script script)
+        public string GetUserCode(string code, ScriptKind kind)
         {
             string userCode;
-            string scriptCode = script.Code;
+            string scriptCode = code;
 
-            if (script.Config.Kind == ScriptKind.Expression)
+            if (kind == ScriptKind.Expression)
             {
                 throw new NotImplementedException("Expression code parsing is not implemented yet.");
             }

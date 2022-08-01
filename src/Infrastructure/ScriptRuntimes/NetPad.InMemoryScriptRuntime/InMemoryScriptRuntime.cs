@@ -57,11 +57,11 @@ namespace NetPad.Runtimes
             });
         }
 
-        public async Task<RunResult> RunScriptAsync()
+        public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
         {
             try
             {
-                var (success, assemblyBytes, referenceAssemblyPaths, parsingResult) = await CompileAndGetRefAssemblyPathsAsync();
+                var (success, assemblyBytes, referenceAssemblyPaths, parsingResult) = await CompileAndGetRefAssemblyPathsAsync(runOptions);
 
                 if (!success)
                     return RunResult.RunAttemptFailure();
@@ -99,9 +99,10 @@ namespace NetPad.Runtimes
             _outputListeners.Remove(outputWriter);
         }
 
-        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)> CompileAndGetRefAssemblyPathsAsync()
+        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
+            CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
         {
-            var parsingResult = _codeParser.Parse(_script);
+            var parsingResult = _codeParser.Parse(_script, runOptions.Code);
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
@@ -141,7 +142,6 @@ namespace NetPad.Runtimes
                         {
                             return e.ToString();
                         }
-
                     })
                     .JoinToString("\n") + "\n");
 
@@ -204,6 +204,7 @@ namespace NetPad.Runtimes
             {
                 throw new Exception($"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
             }
+
             setIOMethod.Invoke(null, new object?[] { outputWriter });
 
             MethodInfo? entryPoint = assembly.EntryPoint;

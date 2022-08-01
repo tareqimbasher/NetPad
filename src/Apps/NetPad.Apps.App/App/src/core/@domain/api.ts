@@ -524,7 +524,7 @@ export interface IScriptsApiClient {
 
     save(id: string): Promise<void>;
 
-    run(id: string): Promise<void>;
+    run(id: string, runOptions: RunOptions): Promise<void>;
 
     updateCode(id: string, code: string): Promise<void>;
 
@@ -654,17 +654,21 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    run(id: string, signal?: AbortSignal | undefined): Promise<void> {
+    run(id: string, runOptions: RunOptions, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(runOptions);
+
         let options_ = <RequestInit>{
+            body: content_,
             method: "PATCH",
             signal,
             headers: {
+                "Content-Type": "application/json",
             }
         };
 
@@ -1715,6 +1719,49 @@ export interface IScriptSummary {
     id: string;
     name: string;
     path: string;
+}
+
+export class RunOptions implements IRunOptions {
+    code?: string | undefined;
+
+    constructor(data?: IRunOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.code = _data["code"];
+        }
+    }
+
+    static fromJS(data: any): RunOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new RunOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["code"] = this.code;
+        return data;
+    }
+
+    clone(): RunOptions {
+        const json = this.toJSON();
+        let result = new RunOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRunOptions {
+    code?: string | undefined;
 }
 
 export type ScriptKind = "Expression" | "Program";

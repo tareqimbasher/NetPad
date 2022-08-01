@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
+using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -41,9 +42,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/run")]
-        public async Task Run(Guid id)
+        public async Task Run(Guid id, [FromBody] RunOptions runOptions)
         {
-            await _mediator.Send(new RunScriptCommand(id));
+            await _mediator.Send(new RunScriptCommand(id, runOptions));
         }
 
         [HttpPut("{id:guid}/code")]

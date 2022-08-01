@@ -6,7 +6,7 @@ namespace NetPad.Runtimes
 {
     public interface IScriptRuntime : IDisposable, IAsyncDisposable
     {
-        Task<RunResult> RunScriptAsync();
+        Task<RunResult> RunScriptAsync(RunOptions runOptions);
 
         void AddOutputListener(IOutputWriter outputWriter);
         void RemoveOutputListener(IOutputWriter outputWriter);

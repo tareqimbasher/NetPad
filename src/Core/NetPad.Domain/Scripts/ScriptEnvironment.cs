@@ -44,7 +44,7 @@ namespace NetPad.Scripts
 
         public double RunDurationMilliseconds => _runDurationMilliseconds;
 
-        public async Task RunAsync()
+        public async Task RunAsync(RunOptions runOptions)
         {
             EnsureNotDisposed();
 
@@ -58,7 +58,7 @@ namespace NetPad.Scripts
             try
             {
                 var runtime = await GetRuntimeAsync();
-                var runResult = await runtime.RunScriptAsync();
+                var runResult = await runtime.RunScriptAsync(runOptions);
 
                 await SetRunDurationAsync(runResult.DurationMs);
                 await SetStatusAsync(runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error);
