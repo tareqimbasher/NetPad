@@ -1,5 +1,8 @@
-import {IScriptService, ISettingService, RunScriptEvent, Shortcut} from "@domain";
+import {IScriptService, ISettingService, RunScriptEvent} from "@domain";
 import {KeyCode} from "@common";
+import {Shortcut} from "./shortcut";
+import {TogglePaneEvent} from "@application";
+import {NamespacesPane} from "../../../windows/main/panes";
 
 export const BuiltinShortcuts = [
     new Shortcut("New")
@@ -56,6 +59,13 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.Tab)
         .hasAction((ctx) => ctx.session.activateLastActive())
+        .configurable()
+        .enabled(),
+
+    new Shortcut("Namespaces Pane")
+        .withAltKey()
+        .withKey(KeyCode.KeyN)
+        .firesEvent(() => new TogglePaneEvent(NamespacesPane))
         .configurable()
         .enabled(),
 ];
