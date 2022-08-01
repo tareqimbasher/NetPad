@@ -1,5 +1,7 @@
 import {bindable} from "aurelia";
-import {Settings, BuiltinShortcuts, Shortcut} from "@domain";
+import {Settings} from "@domain";
+import {KeyCode} from "@common";
+import {BuiltinShortcuts, Shortcut} from "@application";
 
 export class KeyboardShortcutSettings {
     @bindable public settings: Settings;
@@ -8,6 +10,12 @@ export class KeyboardShortcutSettings {
     //public keyCombo?: string;
 
     constructor(currentSettings: Settings) {
+        // This is a monaco editor shortcut that we want to show here. It is not an app shortcut.
+        this.builtinShortcuts.push(new Shortcut("Command Palette")
+            .withKey(KeyCode.F1)
+            .configurable(false)
+            .enabled());
+
         this.builtinShortcuts.push(...BuiltinShortcuts);
         this.currentSettings = currentSettings;
     }
