@@ -1,5 +1,6 @@
 import {DI, IContainer} from "aurelia";
-import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation} from "@application";
+import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation, TogglePaneEvent} from "@application";
+import {IEventBus} from "@domain";
 
 export interface IPaneManager {
     get paneHosts(): ReadonlyArray<PaneHost>;
@@ -18,7 +19,8 @@ export const IPaneManager = DI.createInterface<IPaneManager>();
 export class PaneManager implements IPaneManager {
     private _paneHosts: PaneHost[] = [];
 
-    constructor(@IContainer readonly container: IContainer) {
+    constructor(@IContainer private readonly container: IContainer, @IEventBus private readonly eventBus: IEventBus) {
+        eventBus.subscribe(TogglePaneEvent, message => this.activateOrCollapse(message.paneType));
     }
 
     public get paneHosts(): ReadonlyArray<PaneHost> {
