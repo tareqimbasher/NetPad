@@ -1,9 +1,10 @@
-import {PaneHost, Shortcut} from "@application";
+import {PaneAction, PaneHost, Shortcut} from "@application";
 
 export abstract class Pane {
     protected _name: string;
     protected _host?: PaneHost;
     protected _shortcut?: Shortcut;
+    protected _actions: PaneAction[] = [];
 
     protected constructor(name: string, protected readonly icon?: string) {
         this._name = name;
@@ -19,6 +20,10 @@ export abstract class Pane {
 
     public get shortcut(): Shortcut | null | undefined {
         return this._shortcut;
+    }
+
+    public get actions(): PaneAction[] {
+        return this._actions;
     }
 
     public setHost(paneHost: PaneHost) {

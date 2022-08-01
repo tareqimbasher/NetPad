@@ -45,6 +45,10 @@ a.btn-link:hover {
     @include theme(border-color, borderColor);
 }
 
+.dropdown-item {
+    @include theme(color, textColor);
+}
+
 .list-group-item {
     @include theme(background-color, listBackground);
     @include theme(color, textColor);

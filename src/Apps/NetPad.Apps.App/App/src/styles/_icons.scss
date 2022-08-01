@@ -116,6 +116,11 @@ button > .icon-base {
     @extend .fa-up-right-and-down-left-from-center;
 }
 
+.actions-dropdown-icon {
+    @extend %icon-base;
+    @extend .fa-ellipsis-v;
+}
+
 // CONTEXTUAL ICONS
 .script-icon {
     @extend %icon-base;
