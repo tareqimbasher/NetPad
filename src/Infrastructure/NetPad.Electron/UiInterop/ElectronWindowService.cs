@@ -1,7 +1,5 @@
-using System.Runtime.InteropServices;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
-using Microsoft.Extensions.Hosting;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -9,13 +7,11 @@ namespace NetPad.Electron.UiInterop
 {
     public class ElectronWindowService : IUiWindowService
     {
-        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly HostInfo _hostInfo;
         private static readonly Dictionary<string, BrowserWindow> _singleInstanceWindows = new();
 
-        public ElectronWindowService(HostInfo hostInfo, IHostApplicationLifetime applicationLifetime)
+        public ElectronWindowService(HostInfo hostInfo)
         {
-            _applicationLifetime = applicationLifetime;
             _hostInfo = hostInfo;
         }
 
@@ -35,22 +31,6 @@ namespace NetPad.Electron.UiInterop
 
             window.Center();
             window.Maximize();
-
-            ElectronNET.API.Electron.App.WindowAllClosed += () =>
-            {
-                // On macOS it is common for applications and their menu bar
-                // to stay active until the user quits explicitly with Cmd + Q
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    ElectronNET.API.Electron.App.Quit();
-                }
-            };
-
-            ElectronNET.API.Electron.App.WillQuit += (args) =>
-            {
-                _applicationLifetime.StopApplication();
-                return Task.CompletedTask;
-            };
         }
 
         public async Task OpenSettingsWindowAsync(string? tab = null)
