@@ -12,6 +12,7 @@ export * from "./value-converters/yes-no-value-converter";
 
 export * from "./events/event-bus";
 export * from "./events/signalr-ipc-gateway";
+export * from "./events/toggle-pane-event";
 
 export * from "./background-services/settings-background-service";
 export * from "./background-services/web-window-background-service";
@@ -24,6 +25,11 @@ export * from "./panes/pane-host-orientation";
 export * from "./panes/pane-host-view-state";
 export * from "./panes/ipane-host-view-state-controller";
 export * from "./panes/pane";
+
+export * from "./shortcuts/shortcut";
+export * from "./shortcuts/shortcut-action-execution-context";
+export * from "./shortcuts/shortcut-manager";
+export * from "./shortcuts/builtin-shortcuts";
 
 export * from "./editor/interfaces";
 export * from "./editor/editor-util";

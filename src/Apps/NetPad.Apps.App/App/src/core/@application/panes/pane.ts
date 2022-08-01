@@ -1,5 +1,4 @@
-import {PaneHost} from "@application";
-import {Shortcut} from "@domain";
+import {PaneHost, Shortcut} from "@application";
 
 export abstract class Pane {
     protected _name: string;

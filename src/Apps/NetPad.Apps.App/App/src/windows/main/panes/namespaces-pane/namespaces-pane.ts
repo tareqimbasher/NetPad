@@ -1,5 +1,5 @@
-import {Pane} from "@application";
-import {IScriptService, ISession, IShortcutManager} from "@domain";
+import {IShortcutManager, Pane} from "@application";
+import {IScriptService, ISession} from "@domain";
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
 import {Util} from "@common";

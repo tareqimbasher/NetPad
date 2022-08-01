@@ -1,14 +1,16 @@
 import {Aurelia, IContainer, ILogger, Registration} from "aurelia";
-import {AppService, IAppService, IScriptService, IShortcutManager, ScriptService, ShortcutManager,} from "@domain";
+import {AppService, IAppService, IScriptService, ScriptService,} from "@domain";
 import {Window} from "./window";
 import {
     BuiltinCompletionProvider,
     Editor,
     ICompletionItemProvider,
     IPaneManager,
+    IShortcutManager,
     IWindowBootstrapper,
     PaneHost,
     PaneManager,
+    ShortcutManager,
     WebDialogBackgroundService,
     WebWindowBackgroundService
 } from "@application";
