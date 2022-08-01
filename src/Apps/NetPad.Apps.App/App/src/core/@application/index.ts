@@ -24,6 +24,7 @@ export * from "./panes/pane-host/pane-host";
 export * from "./panes/pane-host-orientation";
 export * from "./panes/pane-host-view-state";
 export * from "./panes/ipane-host-view-state-controller";
+export * from "./panes/pane-action"
 export * from "./panes/pane";
 
 export * from "./shortcuts/shortcut";

@@ -15,6 +15,19 @@
                 ${active.name}
             </div>
             <div class="justify-content-end ms-1">
+                <span class="me-3" if.bind="active.actions.length">
+                    <i class="actions-dropdown-icon action-icon"
+                       title="Actions"
+                       data-bs-toggle="dropdown"></i>
+                    <ul class="dropdown-menu">
+                        <li repeat.for="action of active.actions"
+                            title.bind="action.title"
+                            click.trigger="action.execute()">
+                            <button class="dropdown-item" innerHTML.bind="action.text"></button>
+                        </li>
+                    </ul>
+                </span>
+
                 <i class="action-icon pane-collapse-icon pane-collapser"
                    click.trigger="collapse()"
                    title="Hide"></i>
