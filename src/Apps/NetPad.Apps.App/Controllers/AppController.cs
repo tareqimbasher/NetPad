@@ -22,7 +22,7 @@ namespace NetPad.Controllers
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = Path.GetDirectoryName(scriptPath),
+                FileName = dirPath,
                 UseShellExecute = true
             });
             return Ok();
@@ -31,14 +31,19 @@ namespace NetPad.Controllers
         [HttpPatch("open-scripts-folder")]
         public IActionResult OpenScriptsFolder([FromQuery] string? path, [FromServices] Settings settings)
         {
+            string sanitized;
+
             if (string.IsNullOrWhiteSpace(path))
-                path = settings.ScriptsDirectoryPath;
+                sanitized = settings.ScriptsDirectoryPath;
             else
-                path = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('/', '\\'));
+                sanitized = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\'));
+
+            if (!Directory.Exists(sanitized))
+                return BadRequest($"Directory does not exist at: {path}");
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = path,
+                FileName = sanitized,
                 UseShellExecute = true
             });
             return Ok();
