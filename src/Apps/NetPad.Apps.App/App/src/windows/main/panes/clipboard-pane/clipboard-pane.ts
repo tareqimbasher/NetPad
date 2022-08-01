@@ -1,4 +1,4 @@
-import {Pane} from "@application";
+import {Pane, PaneAction} from "@application";
 
 export class ClipboardPane extends Pane {
     public history: Set<string>;
@@ -8,6 +8,11 @@ export class ClipboardPane extends Pane {
     constructor() {
         super("Clipboard", "clipboard-icon");
         this.history = new Set<string>();
+        this._actions.push(new PaneAction(
+            "<i class=\"delete-icon\"></i> Clear all",
+            "Remove all entries",
+            () => this.history.clear())
+        );
     }
 
     public binding() {
@@ -30,8 +35,7 @@ export class ClipboardPane extends Pane {
             if (!s || !s.trim()) return;
             this.history.add(s);
 
-            if (this.history.size > this.maxHistorySize)
-            {
+            if (this.history.size > this.maxHistorySize) {
                 Array.from(this.history)
                     .slice(0, this.history.size - this.maxHistorySize)
                     .forEach(e => this.history.delete(e));
