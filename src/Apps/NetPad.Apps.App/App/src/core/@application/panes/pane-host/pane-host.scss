@@ -3,18 +3,30 @@
 $ribbon-width: 23px;
 
 pane-host {
-    min-width: $ribbon-width;
+    &.right {
+        min-width: $ribbon-width;
+
+        .ribbon {
+            width: $ribbon-width;
+
+            .pane-tag {
+                writing-mode: vertical-lr;
+                padding: 0.5rem 0.1rem;
+                width: 100%;
+
+                &.active {
+                    border-right: 1px dodgerblue solid;
+                }
+            }
+        }
+    }
 
     .ribbon {
         @include theme(background, sidebarBackground);
-        width: $ribbon-width;
 
         .pane-tag {
             font-size: 0.75rem;
             user-select: none;
-            padding: 0.5rem 0.1rem;
-            writing-mode: vertical-lr;
-            width: 100%;
             display: flex;
             align-items: center;
 
@@ -24,7 +36,6 @@ pane-host {
 
             &.active {
                 @include theme(background-color, tabActiveColor);
-                border-right: 1px dodgerblue solid;
             }
         }
     }
