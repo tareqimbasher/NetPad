@@ -15,38 +15,41 @@
           class="text-red text-center flex-grow-1 d-flex flex-column align-items-center justify-content-center">
 </template>
 
-<template as-custom-element="packages" class="list-group flex-grow-height-restricted overflow-y-auto">
+<template as-custom-element="packages" class="flex-grow-height-restricted d-flex flex-column">
     <bindable property="packages"></bindable>
     <bindable property="selectedPackage"></bindable>
 
-    <div class="list-group-item list-group-item-action package ${selectedPackage === package ? 'active' : ''}"
-         repeat.for="package of packages"
-         click.trigger="selectedPackage = package">
-        <div class="package-container">
-            <div class="package-description">
-                <h6 class="d-flex align-items-center">
-                    <img class="me-3"
-                         src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
-                         style="height: 24px;"/>
-                    <b>${package.title} <small>(${package.version})</small></b>
-                </h6>
-                <p class="text-truncate-3-lines">${package.description}</p>
-                <small class="text-warning" show.bind="package.installReason === 'Dependency'">
-                    Installed as a dependency
-                </small>
-            </div>
-            <div class="package-actions">
-                <au-slot name="actions"></au-slot>
+    <div class="list-group flex-grow-height-restricted overflow-y-auto">
+        <div class="list-group-item list-group-item-action package ${selectedPackage === package ? 'active' : ''}"
+             repeat.for="package of packages"
+             click.trigger="selectedPackage = package">
+            <div class="package-container">
+                <div class="package-description">
+                    <h6 class="d-flex align-items-center">
+                        <img class="me-3"
+                             src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                             style="height: 24px;"/>
+                        <b>${package.title} <small>(${package.version})</small></b>
+                    </h6>
+                    <p class="text-truncate-3-lines">${package.description}</p>
+                    <small class="text-warning" show.bind="package.installReason === 'Dependency'">
+                        Installed as a dependency
+                    </small>
+                </div>
+                <div class="package-actions">
+                    <au-slot name="actions"></au-slot>
+                </div>
             </div>
         </div>
     </div>
+    <au-slot name="bottom"></au-slot>
 </template>
 
 <div class="d-flex flex-row flex-grow-height-restricted">
     <!-- CACHED PACKAGES -->
     <div id="cached-packages" class="d-flex flex-column column">
         <div class="column-header justify-content-between">
-            <h5>Local Package Cache</h5>
+            <h5>Local Package Cache (${cachedPackages.length})</h5>
             <div class="form-check" title="Show packages that were installed as dependencies">
                 <input id="show-deps-checkbox" class="form-check-input" type="checkbox"
                        checked.bind="showAllCachedDeps">
@@ -95,7 +98,12 @@
             <input class="form-control"
                    type="text"
                    placeholder="Search packages..."
-                   value.bind="term & debounce:400"/>
+                   value.bind="searchTerm & debounce:400"/>
+            <select class="form-select ms-2" style="max-width: 65px" value.bind="searchTake">
+                <option model.bind="10">10 results</option>
+                <option model.bind="20">20 results</option>
+                <option model.bind="50">50 results</option>
+            </select>
         </div>
 
         <div promise.bind="searchLoadingPromise" class="flex-grow-height-restricted d-flex flex-column">
@@ -142,6 +150,29 @@
                         <div class="progress-bar progress-bar-striped bg-warning progress-bar-animated"
                              role="progressbar"
                              style="width: 100%"></div>
+                    </div>
+                </div>
+                <div au-slot="bottom">
+                    <div class="d-flex justify-content-between search-bottom-bar">
+                        <button class="btn btn-sm btn-link"
+                                click.trigger="goToPreviousPage()"
+                                disabled.bind="searchCurrentPage === 1">
+                            Previous
+                        </button>
+                        <div class="form-check">
+                            <input id="searchPrereleases"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   checked.bind="searchPrereleases">
+                            <label class="form-check-label" for="searchPrereleases">
+                                Include Pre-Releases
+                            </label>
+                        </div>
+                        <button class="btn btn-sm btn-link"
+                                click.trigger="goToNextPage()"
+                                disabled.bind="searchResults.length < searchTake">
+                            Next
+                        </button>
                     </div>
                 </div>
             </packages>
