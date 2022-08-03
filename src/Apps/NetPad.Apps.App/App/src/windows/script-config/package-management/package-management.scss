@@ -55,4 +55,8 @@ package-management {
     .dropdown-item i {
         margin-right: 4px;
     }
+
+    .search-bottom-bar {
+        @include theme(border-top, borderColor, 1px solid);
+    }
 }

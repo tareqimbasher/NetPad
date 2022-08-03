@@ -158,6 +158,8 @@ public class NuGetPackageProvider : IPackageProvider
         var searchResource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
 
         var filter = new SearchFilter(includePrerelease);
+        // TODO filter results for packages that support current framework
+
         IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
             term,
             filter,

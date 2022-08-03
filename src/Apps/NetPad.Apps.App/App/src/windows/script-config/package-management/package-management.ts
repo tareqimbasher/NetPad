@@ -7,7 +7,11 @@ import {watch} from "@aurelia/runtime-html";
 import {ViewModelBase} from "@application";
 
 export class PackageManagement extends ViewModelBase {
-    @observable public term: string;
+    public searchTerm: string;
+    public searchTake = 10;
+    public searchPrereleases = false;
+    public searchCurrentPage = 1;
+
     public searchResults: PackageSearchResult[] = [];
     public cachedPackages: CachedPackageViewModel[] = [];
     public selectedPackage?: PackageMetadata;
@@ -40,9 +44,18 @@ export class PackageManagement extends ViewModelBase {
         this.searchPackages();
     }
 
-    public async termChanged(newValue: string, oldValue: string) {
-        if (newValue === oldValue) return;
-        await this.searchPackages(newValue);
+    public async goToPreviousPage() {
+        if (this.searchCurrentPage === 1)
+            return;
+
+        this.searchCurrentPage--;
+    }
+
+    public async goToNextPage() {
+        if (this.searchResults?.length < this.searchTake)
+            return;
+
+        this.searchCurrentPage++;
     }
 
     public async selectPackageVersionToInstall(pkg: PackageReference) {
@@ -120,12 +133,16 @@ export class PackageManagement extends ViewModelBase {
         });
     }
 
+    @watch<PackageManagement>(vm => vm.searchTerm)
+    @watch<PackageManagement>(vm => vm.searchPrereleases)
+    @watch<PackageManagement>(vm => vm.searchTake)
+    @watch<PackageManagement>(vm => vm.searchCurrentPage)
     private async searchPackages(term?: string) {
         this.searchLoadingPromise = this.packageService.search(
-            term ?? this.term,
-            0,
-            10,
-            false)
+            term ?? this.searchTerm,
+            (this.searchCurrentPage - 1) * this.searchTake,
+            this.searchTake,
+            this.searchPrereleases)
             .then(data => {
                 this.searchResults = data.map(r => new PackageSearchResult(r));
                 this.markReferencedPackages();
