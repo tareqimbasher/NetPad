@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Application;
 using NetPad.Configuration;
 
 namespace NetPad.Controllers
@@ -10,6 +11,12 @@ namespace NetPad.Controllers
     [Route("app")]
     public class AppController : Controller
     {
+        [HttpGet("identifier")]
+        public AppIdentifier GetIdentifier([FromServices] AppIdentifier appIdentifier)
+        {
+            return appIdentifier;
+        }
+
         [HttpPatch("open-folder-containing-script")]
         public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath)
         {

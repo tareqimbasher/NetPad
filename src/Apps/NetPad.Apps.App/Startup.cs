@@ -49,6 +49,7 @@ namespace NetPad
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<AppIdentifier>();
             services.AddSingleton<HostInfo>();
             services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
             services.AddSingleton<IEventBus, EventBus>();

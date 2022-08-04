@@ -12,6 +12,8 @@ import {IHttpClient} from "aurelia";
 
 export interface IAppApiClient {
 
+    getIdentifier(): Promise<AppIdentifier>;
+
     openFolderContainingScript(scriptPath: string | null | undefined): Promise<FileResponse | null>;
 
     openScriptsFolder(path: string | null | undefined): Promise<FileResponse | null>;
@@ -27,6 +29,41 @@ export class AppApiClient implements IAppApiClient {
     constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier> {
+        let url_ = this.baseUrl + "/app/identifier";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetIdentifier(_response);
+        });
+    }
+
+    protected processGetIdentifier(response: Response): Promise<AppIdentifier> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AppIdentifier.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AppIdentifier>(<any>null);
     }
 
     openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
@@ -1374,6 +1411,53 @@ export class TypesApiClient implements ITypesApiClient {
         }
         return Promise.resolve<Types>(<any>null);
     }
+}
+
+export class AppIdentifier implements IAppIdentifier {
+    name!: string;
+    version!: string;
+
+    constructor(data?: IAppIdentifier) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.version = _data["version"];
+        }
+    }
+
+    static fromJS(data: any): AppIdentifier {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppIdentifier();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["version"] = this.version;
+        return data;
+    }
+
+    clone(): AppIdentifier {
+        const json = this.toJSON();
+        let result = new AppIdentifier();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppIdentifier {
+    name: string;
+    version: string;
 }
 
 export abstract class Reference implements IReference {
