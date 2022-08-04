@@ -1,6 +1,9 @@
 import {PLATFORM} from "aurelia";
 
 export class Util {
+    /**
+     * Generates a new GUID.
+     */
     public static newGuid(): string {
         return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
             const r = (Math.random() * 16) | 0,
@@ -10,7 +13,7 @@ export class Util {
     }
 
     /**
-     * Gets the difference of 2 dates in number of days
+     * Gets the difference of 2 dates in number of days.
      * @param a
      * @param b
      */
@@ -25,7 +28,7 @@ export class Util {
 
     /**
      * Converts a string to title case.
-     * @param str string
+     * @param str string.
      */
     public static toTitleCase(str: string) {
         return str.replace(/\w\S*/g, function (txt) {
@@ -56,10 +59,10 @@ export class Util {
         let start = 0,
             end = str.length;
 
-        while(start < end && str[start] === character)
+        while (start < end && str[start] === character)
             ++start;
 
-        while(end > start && str[end - 1] === character)
+        while (end > start && str[end - 1] === character)
             --end;
 
         return (start > 0 || end < str.length) ? str.substring(start, end) : str;
@@ -77,10 +80,10 @@ export class Util {
         let start = 0,
             end = str.length;
 
-        while(start < end && characters.indexOf(str[start]) >= 0)
+        while (start < end && characters.indexOf(str[start]) >= 0)
             ++start;
 
-        while(end > start && characters.indexOf(str[end - 1]) >= 0)
+        while (end > start && characters.indexOf(str[end - 1]) >= 0)
             --end;
 
         return (start > 0 || end < str.length) ? str.substring(start, end) : str;
@@ -98,7 +101,7 @@ export class Util {
         let start = 0;
         const end = str.length;
 
-        while(start < end && str[start] === character)
+        while (start < end && str[start] === character)
             ++start;
 
         return (start > 0 && start < str.length) ? str.substring(start, end) : str;
@@ -116,10 +119,29 @@ export class Util {
         const start = 0;
         let end = str.length;
 
-        while(end > start && str[end - 1] === character)
+        while (end > start && str[end - 1] === character)
             --end;
 
         return (end < str.length) ? str.substring(start, end) : str;
+    }
+
+    /**
+     * Trims a word from the start and the end of a string.
+     * @param str The string to trim.
+     * @param word The word to remove.
+     */
+    public static trimWord(str: string, word: string) {
+        const len = word.length;
+        let start = 0,
+            end = str.length;
+
+        while (start < end && this.hasSubstringAt(str, word, start))
+            start += word.length;
+
+        while (end > start && this.hasSubstringAt(str, word, end - len))
+            end -= word.length
+
+        return (start > 0 || end < str.length) ? str.substring(start, end) : str;
     }
 
     /**
@@ -177,7 +199,7 @@ export class Util {
      * @param waitMs The number of milliseconds to debounce.
      * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
      */
-    public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean) : (...args:unknown[]) => void {
+    public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
         let timeout: number;
         let isImmediateCall = false;
 
@@ -204,4 +226,16 @@ export class Util {
      * @param ms The delay in milliseconds.
      */
     public delay = (ms: number) => new Promise((resolve) => PLATFORM.setTimeout(resolve, ms));
+
+    private static hasSubstringAt(str, substr, pos) {
+        const len = substr.length;
+        let idx = 0;
+
+        for (const max = str.length; idx < len; ++idx) {
+            if ((pos + idx) >= max || str[pos + idx] != substr[idx])
+                break;
+        }
+
+        return idx === len;
+    }
 }
