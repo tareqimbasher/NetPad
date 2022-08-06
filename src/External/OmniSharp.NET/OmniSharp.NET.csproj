@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2" />
+        <PackageReference Include="System.Text.Json" Version="6.0.5" />
     </ItemGroup>
 
 </Project>
