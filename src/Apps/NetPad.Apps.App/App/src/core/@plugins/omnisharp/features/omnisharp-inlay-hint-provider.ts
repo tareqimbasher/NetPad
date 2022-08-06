@@ -1,19 +1,11 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {
-    InlayHint,
-    InlayHint2,
-    InlayHintData,
-    InlayHintRequest,
-    InlayHintResolveRequest,
-    Location,
-    Point,
-    Range
-} from "../api";
+import * as api from "../api";
+import {Converter} from "../utils";
 
 export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider {
-    private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: InlayHint }>;
+    private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: api.InlayHint }>;
     private _onDidChangeInlayHints: Emitter<void>;
 
     public displayName: string;
@@ -33,19 +25,10 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
     public async provideInlayHints(model: editor.ITextModel, range: MonacoRange, token: CancellationToken): Promise<languages.InlayHintList> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getInlayHints(scriptId, new InlayHintRequest({
-            location: new Location({
+        const response = await this.omnisharpService.getInlayHints(scriptId, new api.InlayHintRequest({
+            location: new api.Location({
                 fileName: "",
-                range: new Range({
-                    start: new Point({
-                        line: range.startLineNumber,
-                        column: range.startColumn
-                    }),
-                    end: new Point({
-                        line: range.endLineNumber,
-                        column: range.endColumn,
-                    })
-                })
+                range: Converter.monacoRangeToApiRange(range)
             })
         }));
 
@@ -58,7 +41,7 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
             };
         }
 
-        const inlayHintsMap = new Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: InlayHint }>();
+        const inlayHintsMap = new Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: api.InlayHint }>();
 
         const hints = response.inlayHints.map(inlayHint => {
             const mappedHint = this.toMonacoInlayHint(inlayHint);
@@ -86,15 +69,12 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
 
         const scriptId = EditorUtil.getScriptId(entry.model);
 
-        const response = await this.omnisharpService.resolveInlayHint(scriptId, new InlayHintResolveRequest({
-            hint: new InlayHint2({
+        const response = await this.omnisharpService.resolveInlayHint(scriptId, new api.InlayHintResolveRequest({
+            hint: new api.InlayHint2({
                 tooltip: omnisharpHint.tooltip,
-                position: new Point({
-                    line: hint.position.lineNumber,
-                    column: hint.position.column
-                }),
+                position: Converter.monacoIPositionToApiPoint(hint.position),
                 label: hint.label as string,
-                data: new InlayHintData({
+                data: new api.InlayHintData({
                     item1: omnisharpHint.data.item1,
                     item2: omnisharpHint.data.item2
                 })
@@ -111,7 +91,7 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
         return hint;
     }
 
-    private toMonacoInlayHint(inlayHint: InlayHint): languages.InlayHint {
+    private toMonacoInlayHint(inlayHint: api.InlayHint): languages.InlayHint {
         return {
             label: inlayHint.label?.trim(),
             tooltip: {
@@ -121,10 +101,7 @@ export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider 
                 isTrusted: true
             },
             kind: languages.InlayHintKind.Type,
-            position: {
-                lineNumber: inlayHint.position.line,
-                column: inlayHint.position.column + 1
-            }
+            position: Converter.apiPointToMonacoIPosition(inlayHint.position)
         };
     }
 }

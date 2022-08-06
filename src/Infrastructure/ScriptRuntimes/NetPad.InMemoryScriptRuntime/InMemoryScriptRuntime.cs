@@ -106,7 +106,7 @@ namespace NetPad.Runtimes
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
-            var fullProgram = parsingResult.FullProgram
+            var fullProgram = parsingResult.GetFullProgram()
                 .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
                 .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
 
@@ -120,29 +120,6 @@ namespace NetPad.Runtimes
             {
                 await _outputWriter.WriteAsync(compilationResult.Diagnostics
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Select(e =>
-                    {
-                        // TODO fix REAAAAALLY janky way of correcting line numbers
-                        try
-                        {
-                            var message = e.ToString();
-                            if (!message.StartsWith("("))
-                                return message;
-
-                            var parts = message.Split(')');
-
-                            var part1 = parts[0].TrimStart('(')
-                                .Split(',')
-                                .Select(x => int.Parse(x.Trim()))
-                                .ToArray();
-
-                            return $"({part1[0] - parsingResult.ParsedCodeInformation.UserCodeStartLine},{part1[1]})" + string.Join(")", parts.Skip(1));
-                        }
-                        catch
-                        {
-                            return e.ToString();
-                        }
-                    })
                     .JoinToString("\n") + "\n");
 
                 return (false, Array.Empty<byte>(), Array.Empty<string>(), parsingResult);

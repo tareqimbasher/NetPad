@@ -1,7 +1,6 @@
 global using NetPad.Plugins.OmniSharp.Services;
 global using OmniSharpRange = OmniSharp.Models.V2.Range;
 global using OmniSharpPoint = OmniSharp.Models.V2.Point;
-global using OmniSharpLocation = OmniSharp.Models.V2.Location;
 global using OmniSharpQuickFix = OmniSharp.Models.QuickFix;
 global using OmniSharpLinePositionSpanTextChange = OmniSharp.Models.LinePositionSpanTextChange;
 global using OmniSharpFileModificationType = OmniSharp.Models.FileModificationType;
@@ -32,4 +31,3 @@ global using OmniSharpInlayHintResolveRequest = OmniSharp.Models.v1.InlayHints.I
 global using OmniSharpGetCodeActionsRequest = OmniSharp.Models.V2.CodeActions.GetCodeActionsRequest;
 global using OmniSharpGetCodeActionsResponse = OmniSharp.Models.V2.CodeActions.GetCodeActionsResponse;
 global using OmniSharpRunCodeActionRequest = OmniSharp.Models.V2.CodeActions.RunCodeActionRequest;
-global using OmniSharpRunCodeActionResponse = OmniSharp.Models.V2.CodeActions.RunCodeActionResponse;

@@ -20,24 +20,10 @@ public class FindImplementationsQuery : OmniSharpScriptQuery<OmniSharpFindImplem
         public async Task<OmniSharpQuickFixResponse?> Handle(FindImplementationsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
-            int userCodeStartsOnLine = _server.Project.UserCodeStartsOnLine;
 
-            omniSharpRequest.FileName = _server.Project.ProgramFilePath;
-            omniSharpRequest.Line = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Line);
+            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            var response = await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest);
-
-            if (response?.QuickFixes == null)
-            {
-                return response;
-            }
-
-            foreach (var quickFix in response.QuickFixes)
-            {
-                LineCorrecter.AdjustForResponse(userCodeStartsOnLine, quickFix);
-            }
-
-            return response;
+            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest);
         }
     }
 }

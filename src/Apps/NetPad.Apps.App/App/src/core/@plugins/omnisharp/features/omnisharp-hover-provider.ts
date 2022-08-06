@@ -1,7 +1,7 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {QuickInfoRequest} from "../api";
+import * as api from "../api";
 
 export class OmniSharpHoverProvider implements languages.HoverProvider {
     constructor(@IOmniSharpService private omnisharpService: IOmniSharpService) {
@@ -10,7 +10,7 @@ export class OmniSharpHoverProvider implements languages.HoverProvider {
     public async provideHover(model: editor.ITextModel, position: Position, token: CancellationToken): Promise<languages.Hover> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getQuickInfo(scriptId, new QuickInfoRequest({
+        const response = await this.omnisharpService.getQuickInfo(scriptId, new api.QuickInfoRequest({
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false

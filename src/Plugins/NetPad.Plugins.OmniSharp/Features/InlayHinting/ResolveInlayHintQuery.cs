@@ -20,20 +20,8 @@ public class ResolveInlayHintQuery : OmniSharpScriptQuery<InlayHintResolveReques
         public async Task<OmniSharpInlayHint?> Handle(ResolveInlayHintQuery request, CancellationToken cancellationToken)
         {
             var input = request.Input;
-            int userCodeStartsOnLine = _server.Project.UserCodeStartsOnLine;
 
-            input.Hint.Position = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, input.Hint.Position);
-
-            var response = await _server.OmniSharpServer.SendAsync<OmniSharpInlayHint>(input.ToOmniSharpInlayHintResolveRequest());
-
-            if (response == null)
-            {
-                return response;
-            }
-
-            response.Position = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, response.Position);
-
-            return response;
+            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHint>(input.ToOmniSharpInlayHintResolveRequest());
         }
     }
 }

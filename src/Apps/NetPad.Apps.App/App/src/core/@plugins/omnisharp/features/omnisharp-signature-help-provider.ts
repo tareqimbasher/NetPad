@@ -1,7 +1,7 @@
 import {CancellationToken, editor, IMarkdownString, languages, Position} from "monaco-editor";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {SignatureHelpParameter, SignatureHelpRequest} from "../api";
+import * as api from "../api";
 
 export class OmniSharpSignatureHelpProvider implements languages.SignatureHelpProvider {
     public signatureHelpTriggerCharacters = ["(", ","];
@@ -14,9 +14,9 @@ export class OmniSharpSignatureHelpProvider implements languages.SignatureHelpPr
         const scriptId = EditorUtil.getScriptId(model);
 
 
-        const response = await this.omnisharpService.getSignatureHelp(scriptId, new SignatureHelpRequest({
+        const response = await this.omnisharpService.getSignatureHelp(scriptId, new api.SignatureHelpRequest({
             line: position.lineNumber,
-            column: position.column - 1,
+            column: position.column,
             applyChangesTogether: false
         }));
 
@@ -57,7 +57,7 @@ export class OmniSharpSignatureHelpProvider implements languages.SignatureHelpPr
         return result;
     }
 
-    private getParameterDocumentation(parameter: SignatureHelpParameter): string | IMarkdownString {
+    private getParameterDocumentation(parameter: api.SignatureHelpParameter): string | IMarkdownString {
         const summary = parameter.documentation;
         if (summary.length > 0) {
             const paramText = `**${parameter.name}**: ${summary}`;

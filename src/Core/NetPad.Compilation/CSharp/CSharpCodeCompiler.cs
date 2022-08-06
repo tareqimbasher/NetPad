@@ -70,7 +70,7 @@ namespace NetPad.Compilation.CSharp
         {
             // TODO investigate using SourceKind.Script
             return CSharpParseOptions.Default
-                .WithLanguageVersion(LanguageVersion.CSharp9)
+                .WithLanguageVersion(LanguageVersion.CSharp10)
                 .WithKind(SourceCodeKind.Regular);
         }
     }

@@ -162,7 +162,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             foreach (var @namespace in scriptNamespaces)
             {
-                Assert.Contains($"using {@namespace};", result.FullProgram);
+                Assert.Contains(@namespace, result.Namespaces);
             }
         }
 
@@ -173,7 +173,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.FullProgram);
+            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram);
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.FullProgram);
+            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram);
         }
 
         [Fact]

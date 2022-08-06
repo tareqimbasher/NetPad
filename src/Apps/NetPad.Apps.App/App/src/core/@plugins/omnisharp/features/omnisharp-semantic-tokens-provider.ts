@@ -3,7 +3,8 @@ import {Util} from "@common";
 import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {Point, Range as ApiRange, SemanticHighlightRequest, SemanticHighlightResponse} from "../api";
+import * as api from "../api";
+import {Converter} from "../utils";
 
 export class OmniSharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
@@ -48,12 +49,9 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
     private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, cancellationToken: CancellationToken) {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const request = new SemanticHighlightRequest();
+        const request = new api.SemanticHighlightRequest();
         if (range) {
-            request.range = new ApiRange({
-                start: new Point({line: range.startLineNumber, column: range.startColumn}),
-                end: new Point({line: range.endLineNumber, column: range.endColumn})
-            });
+            request.range = Converter.monacoRangeToApiRange(range);
         }
 
         if (cancellationToken.isCancellationRequested) {
@@ -62,7 +60,7 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
 
         const versionBeforeRequest = model.getVersionId();
 
-        let response: SemanticHighlightResponse;
+        let response: api.SemanticHighlightResponse;
         let tries = 0;
 
         // Sometimes OmniSharp will return no semantic highlights immediately after it is started.
@@ -99,13 +97,17 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
         return this.processResponse(response, model);
     }
 
-    private processResponse(response: SemanticHighlightResponse, model: editor.ITextModel) {
+    private processResponse(response: api.SemanticHighlightResponse, model: editor.ITextModel) {
         const data: number[] = [];
 
         let prevLine = 0;
         let prevChar = 0;
 
         const createDeltaEncodedTokenData = (lineNumber: number, colPosition: number, length: number, tokenTypeIndex: number, modifierIndex: number) => {
+            // Convert to 0-indexed
+            lineNumber--;
+            colPosition--;
+
             const arr = [
                 // Line number (0-indexed, and offset from the previous line)
                 lineNumber - prevLine,
@@ -138,14 +140,14 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
                 tokenModifiers += 2 ** DefaultTokenModifier.readonly;
             }
 
-            const spanRange = new Range(span.startLine, span.startColumn, span.endLine, span.endColumn);
+            const spanRange = Converter.apiSemanticHighlightSpanToMonacoRange(span);
             const isMultiLineRange = spanRange.startLineNumber !== spanRange.endLineNumber;
 
             for (let iLine = spanRange.startLineNumber; iLine <= spanRange.endLineNumber; iLine++) {
                 // If we are on the "range.StartLineNumber", use the start column, otherwise we are in a range that
                 // spans multiple lines, and the start column should be the first char since its a continuation
                 // of the previous line
-                const startColumn = iLine === spanRange.startLineNumber ? spanRange.startColumn : 0;
+                const startColumn = iLine === spanRange.startLineNumber ? spanRange.startColumn : 1;
 
                 let length = 0;
 
@@ -154,11 +156,11 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
                 } else {
                     // First line
                     if (iLine === spanRange.startLineNumber) {
-                        length = model.getLineLength(iLine + 1) - spanRange.startColumn;
+                        length = model.getLineLength(iLine) - spanRange.startColumn;
                     }
                     // Line in the middle (not first or last line)
                     else if (iLine > spanRange.startLineNumber && iLine < spanRange.endLineNumber) {
-                        length = model.getLineLength(iLine + 1);
+                        length = model.getLineLength(iLine);
                     }
                     // Last line
                     else {
@@ -175,14 +177,14 @@ export class OmniSharpSemanticTokensProvider implements languages.DocumentSemant
 
                 data.push(...arr);
 
-                // console.warn(
+                // console.debug(
                 //     spanRange,
                 //     span.type,
                 //     tokenType,
                 //     tokenTypes[tokenType],
-                //     model.getValueInRange(new Range(iLine + 1, startColumn + 1, iLine + 1, startColumn + length + 1)),
+                //     model.getValueInRange(new Range(iLine, startColumn, iLine, startColumn + length)),
                 //     length);
-                // console.info(arr);
+                // console.debug(arr);
             }
         }
 

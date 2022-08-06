@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using NetPad.Scripts;
 
@@ -8,7 +7,6 @@ namespace NetPad.Compilation.CSharp
 {
     public class CSharpCodeParser : ICodeParser
     {
-        public const string UserCodeMarker = "// USER CODE STARTS BELOW THIS LINE";
         public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
         public const string BootstrapperSetIOMethodName = "SetIO";
 
@@ -22,46 +20,32 @@ namespace NetPad.Compilation.CSharp
         public CodeParsingResult Parse(Script script, string? code = null, params string[] additionalNamespaces)
         {
             var namespaces = GetNamespaces(script, additionalNamespaces);
-            var usings = string.Join("\n", namespaces.Select(ns => $"using {ns};"));
 
             var userCode = GetUserCode(code ?? script.Code, script.Config.Kind);
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode);
 
-            var fullProgramTemplate = GetFullProgramTemplate();
-            var fullProgram = string.Format(
-                fullProgramTemplate,
-                usings,
-                userProgram,
+            var bootstrapperProgramTemplate = GetBootstrapperProgramTemplate();
+            var bootstrapperProgram = string.Format(
+                bootstrapperProgramTemplate,
                 BootstrapperClassName,
                 BootstrapperSetIOMethodName);
 
-            int userCodeStartLine = 0;
-            using var reader = new StringReader(fullProgram);
-            string? line = "";
-            int lineNumber = 0;
-            while ((line = reader.ReadLine()) != null)
-            {
-                lineNumber++;
-                if (line.Contains(UserCodeMarker))
-                {
-                    userCodeStartLine = lineNumber;
-                    break;
-                }
-            }
-
-            return new CodeParsingResult(fullProgram, userProgram,
-                new ParsedCodeInformation(userCodeStartLine, namespaces.ToHashSet(), BootstrapperClassName, BootstrapperSetIOMethodName));
+            return new CodeParsingResult(
+                namespaces,
+                userProgram,
+                bootstrapperProgram,
+                new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
         }
 
-        public IEnumerable<string> GetNamespaces(Script script, params string[] additionalNamespaces)
+        public HashSet<string> GetNamespaces(Script script, params string[] additionalNamespaces)
         {
             additionalNamespaces ??= Array.Empty<string>();
 
             return NamespacesNeededByBaseProgram
                 .Union(script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
                 .Union(additionalNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
-                .Distinct();
+                .ToHashSet();
         }
 
         public string GetUserCode(string code, ScriptKind kind)
@@ -81,27 +65,19 @@ namespace NetPad.Compilation.CSharp
             return userCode;
         }
 
-        public string GetFullProgramTemplate()
+        public string GetBootstrapperProgramTemplate()
         {
-            return @"{0}
-
-
-
-{1}
-
-
-
-class {2}
+            return @"class {0}
 {{
     private static IOutputWriter OutputWriter {{ get; set; }}
 
     // Entry point used when running script in external process
     static async Task Main(string[] args)
     {{
-        {3}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
+        {1}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
     }}
 
-    private static void {3}(IOutputWriter outputWriter)
+    private static void {1}(IOutputWriter outputWriter)
     {{
         OutputWriter = outputWriter;
     }}
@@ -127,7 +103,7 @@ static class Exts
     /// <returns>The object being dumped.</returns>
     public static T? Dump<T>(this T? o, string? title = null)
     {{
-        {2}.OutputWriteLine(o, title);
+        {0}.OutputWriteLine(o, title);
         return o;
     }}
 }}
@@ -136,7 +112,7 @@ static class Exts
 
         public string GetUserProgramTemplate()
         {
-            return $"{UserCodeMarker}\n{{0}}";
+            return $"{{0}}";
         }
     }
 }

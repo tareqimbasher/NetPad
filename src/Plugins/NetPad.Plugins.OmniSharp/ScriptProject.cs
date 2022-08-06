@@ -27,14 +27,15 @@ public class ScriptProject
 
         ProjectDirectoryPath = Path.Combine(Path.GetTempPath(), "NetPad", script.Id.ToString());
         ProjectFilePath = Path.Combine(ProjectDirectoryPath, "script.csproj");
-        ProgramFilePath = Path.Combine(ProjectDirectoryPath, "Program.cs");
+        BootstrapperProgramFilePath = Path.Combine(ProjectDirectoryPath, "Bootstrapper_Program.cs");
+        UserProgramFilePath = Path.Combine(ProjectDirectoryPath, "User_Program.cs");
     }
 
     public Script Script { get; }
     public string ProjectDirectoryPath { get; }
     public string ProjectFilePath { get; }
-    public string ProgramFilePath { get; }
-    public int UserCodeStartsOnLine { get; private set; }
+    public string BootstrapperProgramFilePath { get; }
+    public string UserProgramFilePath { get; }
 
     public async Task InitializeAsync()
     {
@@ -101,14 +102,18 @@ public class ScriptProject
         return Task.CompletedTask;
     }
 
-    public async Task<string> UpdateProgramCodeAsync()
+    public async Task<(string bootstrapperProgramCode, string userProgramCode)> UpdateProgramCodeAsync()
     {
         var parsingResult = _codeParser.Parse(Script);
 
-        await File.WriteAllTextAsync(ProgramFilePath, parsingResult.FullProgram);
+        var namespaces = string.Join("\n", parsingResult.Namespaces.Select(ns => $"global using {ns};"));
+        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram}";
+        var userProgramCode = parsingResult.UserProgram;
 
-        UserCodeStartsOnLine = parsingResult.ParsedCodeInformation.UserCodeStartLine;
-        return parsingResult.FullProgram;
+        await File.WriteAllTextAsync(BootstrapperProgramFilePath, bootstrapperProgramCode);
+        await File.WriteAllTextAsync(UserProgramFilePath, userProgramCode);
+
+        return (bootstrapperProgramCode, userProgramCode);
     }
 
     public async Task AddAssemblyReferenceAsync(string assemblyPath)
