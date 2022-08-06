@@ -7,6 +7,7 @@ using OmniSharp;
 using OmniSharp.FileWatching;
 using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
+using OmniSharp.Stdio;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
@@ -19,11 +20,12 @@ public class AppOmniSharpServer
     private readonly IOmniSharpServerFactory _omniSharpServerFactory;
     private readonly IOmniSharpServerLocator _omniSharpServerLocator;
     private readonly Settings _settings;
+    private readonly ICodeParser _codeParser;
     private readonly IEventBus _eventBus;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
 
-    private IOmniSharpServer? _omniSharpServer;
+    private IOmniSharpStdioServer? _omniSharpServer;
     private readonly ScriptProject _project;
 
     public AppOmniSharpServer(
@@ -34,17 +36,19 @@ public class AppOmniSharpServer
         ICodeParser codeParser,
         IEventBus eventBus,
         ILogger<AppOmniSharpServer> logger,
+        // ReSharper disable once ContextualLoggerProblem
         ILogger<ScriptProject> scriptProjectLogger)
     {
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
         _omniSharpServerLocator = omniSharpServerLocator;
         _settings = settings;
+        _codeParser = codeParser;
         _eventBus = eventBus;
         _logger = logger;
         _subscriptionTokens = new();
 
-        _project = new ScriptProject(environment.Script, settings, codeParser, scriptProjectLogger);
+        _project = new ScriptProject(environment.Script, settings, scriptProjectLogger);
     }
 
     public ScriptProject Project => _project;
@@ -76,8 +80,8 @@ public class AppOmniSharpServer
                 return;
             }
 
-            var (_, userProgramCode) = await _project.UpdateProgramCodeAsync();
-            await UpdateOmniSharpCodeBufferAsync(_project.UserProgramFilePath, userProgramCode);
+            var parsingResult = _codeParser.Parse(_environment.Script);
+            await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
         });
 
         _subscriptionTokens.Add(codeChangeToken);
@@ -89,8 +93,8 @@ public class AppOmniSharpServer
                 return;
             }
 
-            var (bootstrapperProgramCode, _) = await _project.UpdateProgramCodeAsync();
-            await UpdateOmniSharpCodeBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
+            var parsingResult = _codeParser.Parse(_environment.Script);
+            await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         });
 
         _subscriptionTokens.Add(namespacesChangeToken);
@@ -257,6 +261,19 @@ public class AppOmniSharpServer
         await omniSharpServer.StartAsync();
 
         _omniSharpServer = omniSharpServer;
+
+        // It takes some time for OmniSharp to register its updated buffer after it starts
+        if (!string.IsNullOrWhiteSpace(_environment.Script.Code))
+        {
+            Task.Run(async () =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    await UpdateOmniSharpCodeBufferAsync();
+                    await Task.Delay(500);
+                }
+            });
+        }
     }
 
     private async Task StopOmniSharpServerAsync()
@@ -289,12 +306,31 @@ public class AppOmniSharpServer
         return true;
     }
 
-    private async Task UpdateOmniSharpCodeBufferAsync(string filePath, string buffer)
+    public async Task UpdateOmniSharpCodeBufferAsync()
+    {
+        var parsingResult = _codeParser.Parse(_environment.Script);
+        await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
+        await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+    }
+
+    private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
         await OmniSharpServer.SendAsync(new UpdateBufferRequest
         {
-            FileName = filePath,
-            Buffer = buffer
+            FileName = _project.UserProgramFilePath,
+            Buffer = parsingResult.UserProgram
+        });
+    }
+
+    private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
+    {
+        var namespaces = string.Join("\n", parsingResult.Namespaces.Select(ns => $"global using {ns};"));
+        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram}";
+
+        await OmniSharpServer.SendAsync(new UpdateBufferRequest
+        {
+            FileName = _project.BootstrapperProgramFilePath,
+            Buffer = bootstrapperProgramCode
         });
     }
 }
