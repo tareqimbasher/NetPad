@@ -20,7 +20,6 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
         public async Task<OmniSharpInlayHintResponse?> Handle(GetInlayHintsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
-            int userCodeStartsOnLine = _server.Project.UserCodeStartsOnLine;
 
             if (omniSharpRequest.Location == null)
             {
@@ -29,27 +28,15 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
 
             omniSharpRequest.Location = new()
             {
-                FileName = _server.Project.ProgramFilePath,
+                FileName = _server.Project.UserProgramFilePath,
                 Range = new()
                 {
-                    Start = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Location.Range.Start),
-                    End = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Location.Range.End)
+                    Start = omniSharpRequest.Location.Range.Start,
+                    End = omniSharpRequest.Location.Range.End
                 }
             };
 
-            var response = await _server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest);
-
-            if (response == null)
-            {
-                return response;
-            }
-
-            foreach (var inlayHint in response.InlayHints)
-            {
-                inlayHint.Position = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, inlayHint.Position);
-            }
-
-            return response;
+            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest);
         }
     }
 }

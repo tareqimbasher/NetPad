@@ -22,7 +22,7 @@ public class CodeFormatQuery : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, 
             return await _server.OmniSharpServer.SendAsync<OmniSharpCodeFormatResponse>(new OmniSharpCodeFormatRequest()
             {
                 Buffer = request.Input.Buffer,
-                FileName = _server.Project.ProgramFilePath
+                FileName = _server.Project.UserProgramFilePath
             });
         }
     }

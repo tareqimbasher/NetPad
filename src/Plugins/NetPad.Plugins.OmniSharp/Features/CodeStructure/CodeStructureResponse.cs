@@ -2,8 +2,7 @@ namespace NetPad.Plugins.OmniSharp.Features.CodeStructure;
 
 /// <summary>
 /// Used to be able to deserialize CodeElement type from OmniSharp Server return
-/// The original CodeElement from OmniSharp.Models also uses some readonly properties
-/// that we need to manipulate (ie. Ranges)
+/// The original CodeElement from OmniSharp.Models fails to deserialize using STJ
 /// </summary>
 public class CodeStructureResponse
 {

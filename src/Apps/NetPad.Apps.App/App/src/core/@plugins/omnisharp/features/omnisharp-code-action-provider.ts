@@ -2,16 +2,8 @@ import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {TextChangeUtil} from "../utils";
-import {
-    GetCodeActionsRequest,
-    LinePositionSpanTextChange,
-    ModifiedFileResponse,
-    OmniSharpCodeAction,
-    Point,
-    Range as OmniSharpRange,
-    RunCodeActionRequest
-} from "../api";
+import {Converter, TextChangeUtil} from "../utils";
+import * as api from "../api";
 
 export class OmniSharpCodeActionProvider implements languages.CodeActionProvider, ICommandProvider {
     private readonly commandId = "omnisharp.runCodeAction";
@@ -34,7 +26,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         return [{
             id: this.commandId,
             handler: (accessor: unknown, ...args: unknown[]) => {
-                return this.runCodeAction(args[0] as string, args[1] as editor.ITextModel, args[2] as RunCodeActionRequest);
+                return this.runCodeAction(args[0] as string, args[1] as editor.ITextModel, args[2] as api.RunCodeActionRequest);
             }
         }];
     }
@@ -42,20 +34,11 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
     public async provideCodeActions(model: editor.ITextModel, range: Range, context: languages.CodeActionContext, token: CancellationToken): Promise<languages.CodeActionList> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const request = new GetCodeActionsRequest({
+        const request = new api.GetCodeActionsRequest({
             line: range.startLineNumber,
             column: range.startColumn,
             applyChangesTogether: false,
-            selection: !range ? null : new OmniSharpRange({
-                start: new Point({
-                    line: range.startLineNumber,
-                    column: range.startColumn
-                }),
-                end: new Point({
-                    line: range.endLineNumber,
-                    column: range.endColumn
-                })
-            })
+            selection: !range ? null : Converter.monacoRangeToApiRange(range)
         });
 
         const response = await this.omnisharpService.getCodeActions(scriptId, request);
@@ -72,7 +55,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         const codeActions: languages.CodeAction[] = [];
 
         for (const codeAction of this.filterCodeActions(response.codeActions)) {
-            const runRequest = new RunCodeActionRequest({
+            const runRequest = new api.RunCodeActionRequest({
                 identifier: codeAction.identifier,
                 line: request.line,
                 column: request.column,
@@ -101,7 +84,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         }
     }
 
-    private async runCodeAction(scriptId: string, model: editor.ITextModel, runRequest: RunCodeActionRequest) {
+    private async runCodeAction(scriptId: string, model: editor.ITextModel, runRequest: api.RunCodeActionRequest) {
 
         const versionBeforeRequest = model.getVersionId();
 
@@ -111,11 +94,11 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
             return true;
         }
 
-        const modifications: LinePositionSpanTextChange[] = [];
+        const modifications: api.LinePositionSpanTextChange[] = [];
 
         for (const change of response.changes) {
             if (change.modificationType === "Modified") {
-                modifications.push(...(change as ModifiedFileResponse).changes);
+                modifications.push(...(change as api.ModifiedFileResponse).changes);
             } else if (change.modificationType === "Renamed") {
                 console.warn("Not handling Rename modification types")
             } else if (change.modificationType === "Opened") {
@@ -128,7 +111,7 @@ export class OmniSharpCodeActionProvider implements languages.CodeActionProvider
         }
     }
 
-    private filterCodeActions(actions: OmniSharpCodeAction[]): OmniSharpCodeAction[] {
+    private filterCodeActions(actions: api.OmniSharpCodeAction[]): api.OmniSharpCodeAction[] {
         return actions.filter(a => {
             if (!a.identifier)
                 return true;

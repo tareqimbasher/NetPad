@@ -4,6 +4,7 @@ using NetPad.Common;
 
 namespace NetPad.Plugins.OmniSharp.Features.Common.FileOperation;
 
+// Only used for NSwag
 [Newtonsoft.Json.JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter), "discriminator")]
 
 [JsonConverter(typeof(JsonInheritanceConverter<FileOperationResponse>))]

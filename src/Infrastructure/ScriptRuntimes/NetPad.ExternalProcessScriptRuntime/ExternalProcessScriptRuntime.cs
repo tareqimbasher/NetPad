@@ -116,7 +116,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
         //
-        var fullProgram = parsingResult.FullProgram
+        var fullProgram = parsingResult.GetFullProgram()
             .Replace("Console.WriteLine", "Program.OutputWriteLine")
             .Replace("Console.Write", "Program.OutputWrite");
 

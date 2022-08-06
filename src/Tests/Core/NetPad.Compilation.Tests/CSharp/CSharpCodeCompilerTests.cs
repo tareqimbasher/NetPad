@@ -83,7 +83,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             CSharpParseOptions parseOptions = compiler.GetParseOptions();
 
-            Assert.Equal(LanguageVersion.CSharp9, parseOptions.LanguageVersion);
+            Assert.Equal(LanguageVersion.CSharp10, parseOptions.LanguageVersion);
         }
 
         [Fact]
@@ -107,13 +107,13 @@ namespace NetPad.Compilation.Tests.CSharp
         }
 
         [Fact]
-        public void Can_Not_Compile_CSharp10_Features()
+        public void Can_Compile_CSharp10_Features()
         {
             var code = GetProgram("var point = (1, 2); int x = 0; (x, int y) = point;");
 
             var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
 
-            Assert.False(result.Success);
+            Assert.True(result.Success);
         }
 
         private string GetProgram(string code, params string[] additionalNamespaces)

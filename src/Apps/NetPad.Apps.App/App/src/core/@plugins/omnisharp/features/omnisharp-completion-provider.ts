@@ -3,16 +3,11 @@ import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
-import {
-    CompletionItem as OmnisharpCompletionItem,
-    CompletionRequest,
-    CompletionTriggerKind,
-    LinePositionSpanTextChange
-} from "../api";
+import * as api from "../api";
 
 export class OmniSharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
-    private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>;
+    private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
 
     constructor(
@@ -25,7 +20,7 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
         return [{
             id: this.insertAdditionalTextEditsCommandId,
             handler: (accessor: unknown, ...args: unknown[]) => {
-                return this.insertAdditionalTextEdits(args[0] as editor.ITextModel, args[1] as LinePositionSpanTextChange[]);
+                return this.insertAdditionalTextEdits(args[0] as editor.ITextModel, args[1] as api.LinePositionSpanTextChange[]);
             }
         }];
     }
@@ -41,12 +36,12 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
 
         const results = await this.getCompletionItems(model, range, ctx, token);
 
-        const lastCompletions = new Map<languages.CompletionItem, { model: editor.ITextModel, omnisharpCompletionItem: OmnisharpCompletionItem }>();
+        const lastCompletions = new Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>();
 
         for (let i = 0; i < results.monacoCompletions.length; i++) {
             lastCompletions.set(results.monacoCompletions[i], {
                 model: model,
-                omnisharpCompletionItem: results.omniSharpCompletions[i]
+                apiCompletionItem: results.apiCompletions[i]
             });
         }
 
@@ -70,7 +65,7 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
 
             const scriptId = EditorUtil.getScriptId(completion.model);
 
-            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.omnisharpCompletionItem);
+            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem);
 
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
@@ -79,10 +74,10 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
     }
 
     private async getCompletionItems(model: editor.ITextModel, range: IRange, ctx: languages.CompletionContext, token: CancellationToken): Promise<CompletionResults> {
-        const request = new CompletionRequest();
-        request.line = range.startLineNumber - 1;
-        request.column = range.endColumn - 1;
-        request.completionTrigger = (ctx.triggerKind + 1) as unknown as CompletionTriggerKind;
+        const request = new api.CompletionRequest();
+        request.line = range.startLineNumber;
+        request.column = range.endColumn;
+        request.completionTrigger = (ctx.triggerKind + 1) as unknown as api.CompletionTriggerKind;
         request.triggerCharacter = ctx.triggerCharacter;
 
         if (token.isCancellationRequested) {
@@ -105,21 +100,21 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
         }
 
         return {
-            omniSharpCompletions: omnisharpCompletions.items,
+            apiCompletions: omnisharpCompletions.items,
             monacoCompletions: monacoCompletions
         };
     }
 
-    private convertToMonacoCompletionItem(model: editor.ITextModel, range: IRange, omnisharpCompletion: OmnisharpCompletionItem): languages.CompletionItem {
-        const kind = languages.CompletionItemKind[omnisharpCompletion.kind];
+    private convertToMonacoCompletionItem(model: editor.ITextModel, range: IRange, apiCompletion: api.CompletionItem): languages.CompletionItem {
+        const kind = languages.CompletionItemKind[apiCompletion.kind];
 
-        const newText = omnisharpCompletion.textEdit?.newText ?? omnisharpCompletion.label;
+        const newText = apiCompletion.textEdit?.newText ?? apiCompletion.label;
 
-        const insertText = omnisharpCompletion.insertTextFormat === "Snippet"
+        const insertText = apiCompletion.insertTextFormat === "Snippet"
             ? newText // TODO might need to convert to a monaco compatible snippet
             : newText;
 
-        let sortText = omnisharpCompletion.sortText;
+        let sortText = apiCompletion.sortText;
         if (kind === languages.CompletionItemKind.Property)
             sortText = "a" + sortText;
         else if (kind === languages.CompletionItemKind.Method)
@@ -129,42 +124,42 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
 
         // We don't want space to be a commit character for the suggestion, its annoying when one is typing
         // a variable name 'list' and hits space that the suggestion will be selected
-        const commitCharacters = omnisharpCompletion.commitCharacters?.filter(c => c != " ");
+        const commitCharacters = apiCompletion.commitCharacters?.filter(c => c != " ");
 
-        const docs = omnisharpCompletion.documentation ? {
-            value: omnisharpCompletion.documentation,
+        const docs = apiCompletion.documentation ? {
+            value: apiCompletion.documentation,
             isTrusted: false,
             supportHtml: true,
             supportThemeIcons: true
         } : undefined;
 
-        const tags = omnisharpCompletion.tags && omnisharpCompletion.tags[0] === "Deprecated" ? 1 : [];
+        const tags = apiCompletion.tags && apiCompletion.tags[0] === "Deprecated" ? 1 : [];
 
         let command: languages.Command = undefined;
 
-        if (omnisharpCompletion.hasAfterInsertStep) {
+        if (apiCompletion.hasAfterInsertStep) {
             command = {
                 id: "csharp.completion.afterInsert",
                 title: "",
-                arguments: [omnisharpCompletion]
+                arguments: [apiCompletion]
             };
         }
-        else if (omnisharpCompletion.additionalTextEdits?.length > 0) {
+        else if (apiCompletion.additionalTextEdits?.length > 0) {
             command = {
                 id: this.insertAdditionalTextEditsCommandId,
                 title: "Insert additional text",
-                arguments: [model, omnisharpCompletion.additionalTextEdits]
+                arguments: [model, apiCompletion.additionalTextEdits]
             };
         }
 
         return <languages.CompletionItem>{
-            label: omnisharpCompletion.label,
-            detail: omnisharpCompletion.detail,
+            label: apiCompletion.label,
+            detail: apiCompletion.detail,
             kind: kind,
             documentation: docs,
             commitCharacters: commitCharacters,
-            preselect: omnisharpCompletion.preselect,
-            filterText: omnisharpCompletion.filterText,
+            preselect: apiCompletion.preselect,
+            filterText: apiCompletion.filterText,
             insertText: insertText,
             range: range,
             tags: tags,
@@ -174,12 +169,12 @@ export class OmniSharpCompletionProvider implements languages.CompletionItemProv
         };
     }
 
-    private async insertAdditionalTextEdits(model: editor.ITextModel, additionalTextEdits: LinePositionSpanTextChange[]) {
+    private async insertAdditionalTextEdits(model: editor.ITextModel, additionalTextEdits: api.LinePositionSpanTextChange[]) {
         await TextChangeUtil.applyTextChanges(model, additionalTextEdits, this.session, this.scriptService);
     }
 }
 
 class CompletionResults {
-    public omniSharpCompletions: OmnisharpCompletionItem[] = [];
+    public apiCompletions: api.CompletionItem[] = [];
     public monacoCompletions: languages.CompletionItem[] = [];
 }

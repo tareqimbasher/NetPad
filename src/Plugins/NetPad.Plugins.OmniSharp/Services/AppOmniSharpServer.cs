@@ -76,8 +76,8 @@ public class AppOmniSharpServer
                 return;
             }
 
-            var fullProgram = await _project.UpdateProgramCodeAsync();
-            await UpdateOmniSharpCodeBufferAsync(fullProgram);
+            var (_, userProgramCode) = await _project.UpdateProgramCodeAsync();
+            await UpdateOmniSharpCodeBufferAsync(_project.UserProgramFilePath, userProgramCode);
         });
 
         _subscriptionTokens.Add(codeChangeToken);
@@ -89,8 +89,8 @@ public class AppOmniSharpServer
                 return;
             }
 
-            var fullProgram = await _project.UpdateProgramCodeAsync();
-            await UpdateOmniSharpCodeBufferAsync(fullProgram);
+            var (bootstrapperProgramCode, _) = await _project.UpdateProgramCodeAsync();
+            await UpdateOmniSharpCodeBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
         });
 
         _subscriptionTokens.Add(namespacesChangeToken);
@@ -219,7 +219,7 @@ public class AppOmniSharpServer
             $"--hostPID {Environment.ProcessId}",
             "--encoding utf-8",
             "--loglevel Information",
-            // "-z",
+            //"-z",
 
             "FileOptions:SystemExcludeSearchPatterns:0=**/.git",
             "FileOptions:SystemExcludeSearchPatterns:1=**/.svn",
@@ -289,12 +289,12 @@ public class AppOmniSharpServer
         return true;
     }
 
-    private async Task UpdateOmniSharpCodeBufferAsync(string fullProgram)
+    private async Task UpdateOmniSharpCodeBufferAsync(string filePath, string buffer)
     {
         await OmniSharpServer.SendAsync(new UpdateBufferRequest
         {
-            FileName = _project.ProgramFilePath,
-            Buffer = fullProgram
+            FileName = filePath,
+            Buffer = buffer
         });
     }
 }

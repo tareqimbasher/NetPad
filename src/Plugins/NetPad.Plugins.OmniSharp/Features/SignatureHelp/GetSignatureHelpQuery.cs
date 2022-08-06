@@ -20,10 +20,8 @@ public class GetSignatureHelpQuery : OmniSharpScriptQuery<OmniSharpSignatureHelp
         public async Task<OmniSharpSignatureHelpResponse?> Handle(GetSignatureHelpQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
-            int userCodeStartsOnLine = _server.Project.UserCodeStartsOnLine;
 
-            omniSharpRequest.FileName = _server.Project.ProgramFilePath;
-            omniSharpRequest.Line = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Line);
+            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
             return await _server.OmniSharpServer.SendAsync<OmniSharpSignatureHelpResponse>(omniSharpRequest);
         }

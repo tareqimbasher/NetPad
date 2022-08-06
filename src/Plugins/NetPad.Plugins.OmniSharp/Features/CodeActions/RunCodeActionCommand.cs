@@ -1,8 +1,8 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using MediatR;
 using NetPad.Plugins.OmniSharp.Features.Common.FileOperation;
-using Newtonsoft.Json.Linq;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeActions;
@@ -28,59 +28,28 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
         public async Task<RunCodeActionResponse?> Handle(RunCodeActionCommand request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
-            int userCodeStartsOnLine = _server.Project.UserCodeStartsOnLine;
 
-            omniSharpRequest.FileName = _server.Project.ProgramFilePath;
-            omniSharpRequest.Line = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Line);
+            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            if (omniSharpRequest.Selection != null)
-            {
-                omniSharpRequest.Selection = new()
-                {
-                    Start = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Selection.Start),
-                    End = LineCorrecter.AdjustForOmniSharp(userCodeStartsOnLine, omniSharpRequest.Selection.End)
-                };
-            }
+            var responseJson = await _server.OmniSharpServer.SendAsync<JsonNode>(omniSharpRequest);
 
-            var responseJToken = await _server.OmniSharpServer.SendAsync<JToken>(omniSharpRequest);
-
-            RunCodeActionResponse? response = DeserializeOmniSharpResponse(responseJToken);
-
-            if (response?.Changes == null)
-            {
-                return response;
-            }
-
-            foreach (var change in response.Changes)
-            {
-                if (change is not ModifiedFileResponse modifiedFileResponse) continue;
-                foreach (var modifiedFileChange in modifiedFileResponse.Changes)
-                {
-                    modifiedFileChange.StartLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.StartLine) - 1; // Special case
-                    modifiedFileChange.EndLine = LineCorrecter.AdjustForResponse(userCodeStartsOnLine, modifiedFileChange.EndLine) - 1; // Special case
-                }
-            }
+            RunCodeActionResponse? response = DeserializeOmniSharpResponse(responseJson);
 
             return response;
         }
 
-        private static RunCodeActionResponse? DeserializeOmniSharpResponse(JToken? responseJToken)
+        private static RunCodeActionResponse? DeserializeOmniSharpResponse(JsonNode? responseJson)
         {
-            if (responseJToken?.HasValues != true || responseJToken.Type == JTokenType.Null)
-            {
-                return null;
-            }
+            var changesArr = responseJson?["Changes"];
 
-            var changesArr = responseJToken["Changes"];
-
-            if (changesArr == null || changesArr.Type == JTokenType.Null)
+            if (changesArr is not JsonArray)
             {
                 return null;
             }
 
             return new RunCodeActionResponse()
             {
-                Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(changesArr.ToString(),
+                Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(changesArr.ToJsonString(),
                     new JsonSerializerOptions
                     {
                         Converters = { _fileOperationResponseCollectionJsonConverter }

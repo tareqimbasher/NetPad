@@ -1,5 +1,6 @@
 namespace NetPad.Plugins.OmniSharp.Features;
 
+[Obsolete("Was used when user code was part of a document that included other code. Since user code is now in its own document, this will be removed soon.")]
 public static class LineCorrecter
 {
     public static int AdjustForOmniSharp(int userCodeStartsOnLine, int lineNumber)

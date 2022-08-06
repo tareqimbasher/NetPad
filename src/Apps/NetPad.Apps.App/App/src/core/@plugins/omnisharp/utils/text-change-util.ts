@@ -3,6 +3,7 @@ import {Util} from "@common";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil} from "@application";
 import {LinePositionSpanTextChange} from "../api";
+import {Converter} from "./converter";
 
 export class TextChangeUtil {
     public static async applyTextChanges(
@@ -16,10 +17,11 @@ export class TextChangeUtil {
         const edits: editor.IIdentifiedSingleEditOperation[] = [];
 
         for (const textChange of textChanges) {
-            const isOutOfEditorRange = (textChange.startLine < 1 && textChange.endLine < 1)
+            const isOutOfEditorTextChange = (textChange.startLine < 1 && textChange.endLine < 1)
                 || (textChange.startLine > editorLineCount)
+                || textChange.newText.startsWith("using ");
 
-            if (isOutOfEditorRange) {
+            if (isOutOfEditorTextChange) {
                 await this.processOutOfEditorRangeTextChange(scriptId, textChange, session, scriptService);
                 continue;
             }
@@ -35,12 +37,7 @@ export class TextChangeUtil {
 
             edits.push({
                 text: textChange.newText,
-                range: {
-                    startLineNumber: textChange.startLine,
-                    startColumn: textChange.startColumn,
-                    endLineNumber: textChange.endLine,
-                    endColumn: textChange.endColumn
-                },
+                range: Converter.apiLinePositionSpanTextChangeToMonacoRange(textChange),
                 forceMoveMarkers: false
             });
         }
@@ -50,7 +47,6 @@ export class TextChangeUtil {
             model.pushEditOperations([], edits, () => []);
             model.pushStackElement();
         }
-
     }
 
     private static async processOutOfEditorRangeTextChange(

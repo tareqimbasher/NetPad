@@ -1,7 +1,8 @@
 import {CancellationToken, editor, languages, Position, Range} from "monaco-editor";
 import {EditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {FindUsagesRequest} from "../api";
+import * as api from "../api";
+import {Converter} from "../utils";
 
 export class OmniSharpReferenceProvider implements languages.ReferenceProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
@@ -21,7 +22,7 @@ export class OmniSharpReferenceProvider implements languages.ReferenceProvider {
 
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await omnisharpService.findUsages(scriptId, new FindUsagesRequest({
+        const response = await omnisharpService.findUsages(scriptId, new api.FindUsagesRequest({
             onlyThisFile: true,
             excludeDefinition: true,
             line: lineNumber,
@@ -36,7 +37,7 @@ export class OmniSharpReferenceProvider implements languages.ReferenceProvider {
         return response.quickFixes.map(qf => {
             return {
                 uri: model.uri,
-                range: new Range(qf.line, qf.column + 1, qf.endLine, qf.endColumn)
+                range: Converter.apiQuickFixToMonacoRange(qf)
             }
         });
     }
