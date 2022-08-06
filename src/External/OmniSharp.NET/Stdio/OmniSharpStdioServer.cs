@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Events;
 using OmniSharp.Mef;
 using OmniSharp.Stdio.IO;
 using OmniSharp.Utilities;
@@ -20,7 +22,13 @@ namespace OmniSharp.Stdio
         private readonly RequestResponseQueue _requestResponseQueue;
         private ProcessIOHandler? _processIo;
         private bool _isStopped = true;
+        private readonly ConcurrentDictionary<string, List<Action<JsonNode>>> _eventHandlers;
         private readonly SemaphoreSlim _semaphoreSlim;
+
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            IncludeFields = true // To serialize Tuples
+        };
 
         public OmniSharpStdioServer(
             OmniSharpStdioServerConfiguration configuration,
@@ -31,6 +39,7 @@ namespace OmniSharp.Stdio
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
             _semaphoreSlim = new SemaphoreSlim(1);
+            _eventHandlers = new ConcurrentDictionary<string, List<Action<JsonNode>>>();
         }
 
         public override async Task StartAsync()
@@ -90,10 +99,7 @@ namespace OmniSharp.Stdio
 
                 var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
 
-                string requestJson = JsonSerializer.Serialize(requestPacket, new JsonSerializerOptions
-                {
-                    IncludeFields = true // To serialize Tuples
-                });
+                string requestJson = JsonSerializer.Serialize(requestPacket, _jsonSerializerOptions);
 
                 await _processIo.StandardInput.WriteLineAsync(requestJson).ConfigureAwait(false);
 
@@ -103,7 +109,7 @@ namespace OmniSharp.Stdio
 
                 if (success && typeof(TResponse) != typeof(NoResponse))
                 {
-                    return responseJToken.Body<TResponse>();
+                    return responseJToken.Body<TResponse>(_jsonSerializerOptions);
                 }
 
                 return null;
@@ -112,6 +118,24 @@ namespace OmniSharp.Stdio
             {
                 _semaphoreSlim.Release();
             }
+        }
+
+        public SubscriptionToken SubscribeToEvent(string eventType, Action<JsonNode> handler)
+        {
+            var handlers = _eventHandlers.GetOrAdd(eventType.ToLowerInvariant(), new List<Action<JsonNode>>());
+
+            lock (handlers)
+            {
+                handlers.Add(handler);
+            }
+
+            return new SubscriptionToken(() =>
+            {
+                lock (handlers)
+                {
+                    handlers.Remove(handler);
+                }
+            });
         }
 
         public override void Dispose()
@@ -142,7 +166,7 @@ namespace OmniSharp.Stdio
             if (string.IsNullOrEmpty(error)) return Task.CompletedTask;
 
             error = StringUtils.RemoveBOMString(error);
-            Logger.LogError($"OmniSharpServer Error: {error}");
+            Logger.LogError("OmniSharpServer Error Output: {Output}", error);
 
             return Task.CompletedTask;
         }
@@ -150,7 +174,7 @@ namespace OmniSharp.Stdio
 
         private async Task HandleOmniSharpDataOutput(string output)
         {
-            if (string.IsNullOrEmpty(output)) return;
+            if (string.IsNullOrWhiteSpace(output)) return;
 
             output = StringUtils.RemoveBOMString(output);
 
@@ -184,13 +208,13 @@ namespace OmniSharp.Stdio
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error while handling omnisharp output. {ex}");
+                Logger.LogError(ex, "Error while handling omnisharp output");
             }
         }
 
         private Task HandleResponsePacketReceived(JsonNode response)
         {
-            Logger.LogDebug($"OmniSharpServer Response: {response}");
+            Logger.LogDebug("OmniSharpServer Response Output: {Output}", response.ToString());
 
             var responseJObject = new ResponseJsonObject(response);
 
@@ -201,12 +225,24 @@ namespace OmniSharp.Stdio
 
         private Task HandleEventPacketReceived(JsonNode eventPacket)
         {
-            var @event = (string?)eventPacket["Event"];
+            var @event = ((string?)eventPacket["Event"])?.ToLowerInvariant();
 
-            if (@event == "log")
-                Logger.LogDebug($"OmniSharpServer Event Log: {eventPacket}");
-            else if (@event == "Error")
-                Logger.LogDebug($"OmniSharpServer Error Log: {eventPacket}");
+            Logger.LogDebug("OmniSharpServer Log Output. Event type: {EventType}. Output: {Output}", @event, eventPacket.ToString());
+
+            if (@event is not null && _eventHandlers.TryGetValue(@event, out var handlers))
+            {
+                foreach (var handler in handlers.ToArray())
+                {
+                    try
+                    {
+                        handler(eventPacket);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error executing handler for event type: {EventType}", @event);
+                    }
+                }
+            }
 
             return Task.CompletedTask;
         }
