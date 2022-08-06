@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 
 namespace OmniSharp.Stdio.IO
 {
@@ -12,18 +11,18 @@ namespace OmniSharp.Stdio.IO
         {
             _promises = new Dictionary<int, RequestResponsePacketPromise>();
         }
-        
-        public Task<ResponseJObject> Enqueue(RequestPacket requestPacket)
+
+        public Task<ResponseJsonObject> Enqueue(RequestPacket requestPacket)
         {
             var promise = new RequestResponsePacketPromise(requestPacket);
             _promises.Add(requestPacket.Seq, promise);
             return promise.Task;
         }
 
-        public void HandleResponse(ResponseJObject response)
+        public void HandleResponse(ResponseJsonObject response)
         {
             int requestSequence = response.RequestSequence();
-            
+
             if (!_promises.TryGetValue(requestSequence, out var promise)) return;
             _promises.Remove(requestSequence);
             promise.SetResponse(response);

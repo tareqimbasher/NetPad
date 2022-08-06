@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OmniSharp.Mef;
 using OmniSharp.Stdio.IO;
 using OmniSharp.Utilities;
@@ -90,7 +90,10 @@ namespace OmniSharp.Stdio
 
                 var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
 
-                string requestJson = JsonConvert.SerializeObject(requestPacket);
+                string requestJson = JsonSerializer.Serialize(requestPacket, new JsonSerializerOptions
+                {
+                    IncludeFields = true // To serialize Tuples
+                });
 
                 await _processIo.StandardInput.WriteLineAsync(requestJson).ConfigureAwait(false);
 
@@ -98,7 +101,7 @@ namespace OmniSharp.Stdio
 
                 bool success = responseJToken.Success();
 
-                if (typeof(TResponse) != typeof(NoResponse))
+                if (success && typeof(TResponse) != typeof(NoResponse))
                 {
                     return responseJToken.Body<TResponse>();
                 }
@@ -156,8 +159,13 @@ namespace OmniSharp.Stdio
                 return;
             }
 
-            var outputPacket = JObject.Parse(output);
-            var packetType = (string?)outputPacket["Type"];
+            var outputPacket = JsonNode.Parse(output);
+            if (outputPacket == null)
+            {
+                return;
+            }
+
+            var packetType = outputPacket["Type"]?.ToString();
 
             if (packetType == null)
             {
@@ -180,18 +188,18 @@ namespace OmniSharp.Stdio
             }
         }
 
-        private Task HandleResponsePacketReceived(JObject response)
+        private Task HandleResponsePacketReceived(JsonNode response)
         {
             Logger.LogDebug($"OmniSharpServer Response: {response}");
 
-            var responseJObject = new ResponseJObject(response);
+            var responseJObject = new ResponseJsonObject(response);
 
             _requestResponseQueue.HandleResponse(responseJObject);
 
             return Task.CompletedTask;
         }
 
-        private Task HandleEventPacketReceived(JObject eventPacket)
+        private Task HandleEventPacketReceived(JsonNode eventPacket)
         {
             var @event = (string?)eventPacket["Event"];
 
