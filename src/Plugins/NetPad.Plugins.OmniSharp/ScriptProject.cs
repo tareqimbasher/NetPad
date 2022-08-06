@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
-using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.IO;
 using NetPad.Scripts;
@@ -11,17 +10,14 @@ namespace NetPad.Plugins.OmniSharp;
 public class ScriptProject
 {
     private readonly Settings _settings;
-    private readonly ICodeParser _codeParser;
     private readonly ILogger<ScriptProject> _logger;
 
     public ScriptProject(
         Script script,
         Settings settings,
-        ICodeParser codeParser,
         ILogger<ScriptProject> logger)
     {
         _settings = settings;
-        _codeParser = codeParser;
         _logger = logger;
         Script = script;
 
@@ -70,8 +66,6 @@ public class ScriptProject
             await File.WriteAllTextAsync(ProjectFilePath, projXml);
         }
 
-        await UpdateProgramCodeAsync();
-
         foreach (var reference in Script.Config.References)
         {
             if (reference is PackageReference pkgRef)
@@ -100,20 +94,6 @@ public class ScriptProject
         }
 
         return Task.CompletedTask;
-    }
-
-    public async Task<(string bootstrapperProgramCode, string userProgramCode)> UpdateProgramCodeAsync()
-    {
-        var parsingResult = _codeParser.Parse(Script);
-
-        var namespaces = string.Join("\n", parsingResult.Namespaces.Select(ns => $"global using {ns};"));
-        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram}";
-        var userProgramCode = parsingResult.UserProgram;
-
-        await File.WriteAllTextAsync(BootstrapperProgramFilePath, bootstrapperProgramCode);
-        await File.WriteAllTextAsync(UserProgramFilePath, userProgramCode);
-
-        return (bootstrapperProgramCode, userProgramCode);
     }
 
     public async Task AddAssemblyReferenceAsync(string assemblyPath)
