@@ -1,10 +1,10 @@
 import {CancellationToken, editor, languages, Position, Range} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {EditorUtil, IReferenceProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 
-export class OmniSharpReferenceProvider implements languages.ReferenceProvider {
+export class OmniSharpReferenceProvider implements IReferenceProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
     }
 

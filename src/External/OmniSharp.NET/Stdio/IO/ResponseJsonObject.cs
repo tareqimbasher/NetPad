@@ -23,9 +23,9 @@ namespace OmniSharp.Stdio.IO
             return (bool)(_response["Success"] ?? throw new Exception("Response did not have a value for 'Success'"));
         }
 
-        public TBody? Body<TBody>(JsonSerializerOptions serializerOptions)
+        public TBody? Body<TBody>(JsonSerializerOptions serializerOptions) where TBody : class
         {
-            return (_response["Body"] ?? throw new Exception("Response did not have a value for 'Body'")).Deserialize<TBody>(serializerOptions);
+            return _response["Body"]?.Deserialize<TBody>(serializerOptions);
         }
     }
 }

@@ -1,9 +1,9 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {EditorUtil, IHoverProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 
-export class OmniSharpHoverProvider implements languages.HoverProvider {
+export class OmniSharpHoverProvider implements IHoverProvider {
     constructor(@IOmniSharpService private omnisharpService: IOmniSharpService) {
     }
 

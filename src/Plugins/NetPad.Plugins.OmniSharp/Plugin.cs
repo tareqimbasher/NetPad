@@ -25,6 +25,7 @@ public class Plugin : IPlugin
         services.AddScoped<AppOmniSharpServer>(sp => sp.GetRequiredService<AppOmniSharpServerAccessor>().AppOmniSharpServer);
 
         services.AddHostedService<ServerManagementBackgroundService>();
+        services.AddHostedService<DiagnosticsEventsBackgroundService>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(OmniSharpMediatorPipeline<,>));
     }

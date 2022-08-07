@@ -1,7 +1,8 @@
 import * as monaco from "monaco-editor";
 import {IRange, languages} from "monaco-editor";
+import {ICompletionItemProvider} from "./interfaces";
 
-export class BuiltinCompletionProvider implements languages.CompletionItemProvider {
+export class BuiltinCompletionProvider implements ICompletionItemProvider {
     public triggerCharacters = undefined;
 
     public provideCompletionItems(model, position, ctx, token) {

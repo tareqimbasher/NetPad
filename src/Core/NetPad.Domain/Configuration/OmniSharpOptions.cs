@@ -24,6 +24,7 @@ public class OmniSharpOptions : ISettingsOptions
     [JsonInclude] public bool EnableImportCompletion { get; private set; }
     [JsonInclude] public bool EnableSemanticHighlighting { get; private set; }
     [JsonInclude] public bool EnableCodeLensReferences { get; private set; }
+    [JsonInclude] public OmniSharpDiagnosticsOptions Diagnostics { get; private set; }
     [JsonInclude] public OmniSharpInlayHintsOptions InlayHints { get; private set; }
 
     public OmniSharpOptions SetEnabled(bool enabled)
@@ -62,6 +63,20 @@ public class OmniSharpOptions : ISettingsOptions
         return this;
     }
 
+    public OmniSharpOptions SetDiagnosticsOptions(OmniSharpDiagnosticsOptions options)
+    {
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        Diagnostics
+            .SetEnabled(options.Enabled)
+            .SetEnableInfo(options.EnableInfo)
+            .SetEnableWarnings(options.EnableWarnings)
+            .SetEnableHints(options.EnableHints);
+
+        return this;
+    }
+
     public OmniSharpOptions SetInlayHintsOptions(OmniSharpInlayHintsOptions options)
     {
         if (options == null)
@@ -86,7 +101,53 @@ public class OmniSharpOptions : ISettingsOptions
 
     public void DefaultMissingValues()
     {
+        (Diagnostics ??= new OmniSharpDiagnosticsOptions()).DefaultMissingValues();
         (InlayHints ??= new OmniSharpInlayHintsOptions()).DefaultMissingValues();
+    }
+}
+
+public class OmniSharpDiagnosticsOptions : ISettingsOptions
+{
+    public OmniSharpDiagnosticsOptions()
+    {
+        Enabled = true;
+        EnableInfo = true;
+        EnableWarnings = true;
+        EnableHints = true;
+        DefaultMissingValues();
+    }
+
+    [JsonInclude] public bool Enabled { get; private set; }
+    [JsonInclude] public bool EnableInfo { get; private set; }
+    [JsonInclude] public bool EnableWarnings { get; private set; }
+    [JsonInclude] public bool EnableHints { get; private set; }
+
+    public OmniSharpDiagnosticsOptions SetEnabled(bool enabled)
+    {
+        Enabled = enabled;
+        return this;
+    }
+
+    public OmniSharpDiagnosticsOptions SetEnableInfo(bool enableInfo)
+    {
+        EnableInfo = enableInfo;
+        return this;
+    }
+
+    public OmniSharpDiagnosticsOptions SetEnableWarnings(bool enableWarnings)
+    {
+        EnableWarnings = enableWarnings;
+        return this;
+    }
+
+    public OmniSharpDiagnosticsOptions SetEnableHints(bool enableHints)
+    {
+        EnableHints = enableHints;
+        return this;
+    }
+
+    public void DefaultMissingValues()
+    {
     }
 }
 

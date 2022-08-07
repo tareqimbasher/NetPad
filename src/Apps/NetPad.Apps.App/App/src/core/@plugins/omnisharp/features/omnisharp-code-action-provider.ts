@@ -1,11 +1,11 @@
 import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil, ICommandProvider} from "@application";
+import {EditorUtil, ICodeActionProvider, ICommandProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 
-export class OmniSharpCodeActionProvider implements languages.CodeActionProvider, ICommandProvider {
+export class OmniSharpCodeActionProvider implements ICodeActionProvider, ICommandProvider {
     private readonly commandId = "omnisharp.runCodeAction";
     private readonly excludedCodeActionIdentifiers: (string | ((str: string) => boolean))[] = [
         "Convert_to_Program_Main_style_program",

@@ -55,7 +55,7 @@
         "aurelia": "^2.0.0-alpha.36",
         "bootstrap": "^5.2.0",
         "dragula": "^3.7.3",
-        "monaco-editor": "^0.33.0",
+        "monaco-editor": "^0.34.0",
         "path-browserify": "^1.0.1",
         "sanitize-html": "^2.7.1",
         "split.js": "^1.6.5",

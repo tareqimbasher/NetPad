@@ -1,10 +1,10 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {EditorUtil, IInlayHintsProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 
-export class OmniSharpInlayHintProvider implements languages.InlayHintsProvider {
+export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
     private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: api.InlayHint }>;
     private _onDidChangeInlayHints: Emitter<void>;
 

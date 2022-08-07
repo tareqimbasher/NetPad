@@ -2,7 +2,6 @@ import * as monaco from "monaco-editor";
 import {all} from "aurelia";
 import {
     ICommandProvider,
-
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
@@ -12,22 +11,25 @@ import {
     IReferenceProvider,
     ICodeLensProvider,
     IInlayHintsProvider,
-    ICodeActionProvider
-} from "./interfaces";
+    ICodeActionProvider,
+    IDiagnosticsProvider
+} from "./providers/interfaces";
+import {Util} from "@common";
 
 export class EditorSetup {
     constructor(
         @all(ICommandProvider) private readonly commandProviders: ICommandProvider[],
-        @all(ICompletionItemProvider) private readonly completionItemProviders: monaco.languages.CompletionItemProvider[],
-        @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: monaco.languages.DocumentSemanticTokensProvider[],
-        @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: monaco.languages.DocumentRangeSemanticTokensProvider[],
-        @all(IImplementationProvider) private readonly implementationProviders: monaco.languages.ImplementationProvider[],
-        @all(IHoverProvider) private readonly hoverProviders: monaco.languages.HoverProvider[],
-        @all(ISignatureHelpProvider) private readonly signatureHelpProviders: monaco.languages.SignatureHelpProvider[],
-        @all(IReferenceProvider) private readonly referenceProviders: monaco.languages.ReferenceProvider[],
-        @all(ICodeLensProvider) private readonly codeLensProviders: monaco.languages.CodeLensProvider[],
-        @all(IInlayHintsProvider) private readonly inlayHintsProviders: monaco.languages.InlayHintsProvider[],
-        @all(ICodeActionProvider) private readonly codeActionProviders: monaco.languages.CodeActionProvider[],
+        @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
+        @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: IDocumentSemanticTokensProvider[],
+        @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: IDocumentRangeSemanticTokensProvider[],
+        @all(IImplementationProvider) private readonly implementationProviders: IImplementationProvider[],
+        @all(IHoverProvider) private readonly hoverProviders: IHoverProvider[],
+        @all(ISignatureHelpProvider) private readonly signatureHelpProviders: ISignatureHelpProvider[],
+        @all(IReferenceProvider) private readonly referenceProviders: IReferenceProvider[],
+        @all(ICodeLensProvider) private readonly codeLensProviders: ICodeLensProvider[],
+        @all(IInlayHintsProvider) private readonly inlayHintsProviders: IInlayHintsProvider[],
+        @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
+        @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
     ) {
     }
 
@@ -43,6 +45,7 @@ export class EditorSetup {
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
+        this.registerDiagnosticsProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -132,6 +135,17 @@ export class EditorSetup {
         for (const codeActionProvider of this.codeActionProviders) {
             monaco.languages.registerCodeActionProvider("csharp", codeActionProvider);
         }
+    }
+
+    private registerDiagnosticsProviders() {
+        monaco.editor.onDidCreateModel(model => {
+            for (const diagnosticsProvider of this.diagnosticsProviders) {
+                const ownerId = Util.newGuid();
+                diagnosticsProvider.provideDiagnostics(model, markers => {
+                    monaco.editor.setModelMarkers(model, ownerId, markers);
+                });
+            }
+        });
     }
 
     private static lightThemeTokenThemeRules: monaco.editor.ITokenThemeRule[] = [

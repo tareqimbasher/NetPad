@@ -2286,6 +2286,7 @@ export class OmniSharpOptions implements IOmniSharpOptions {
     enableImportCompletion!: boolean;
     enableSemanticHighlighting!: boolean;
     enableCodeLensReferences!: boolean;
+    diagnostics!: OmniSharpDiagnosticsOptions;
     inlayHints!: OmniSharpInlayHintsOptions;
 
     constructor(data?: IOmniSharpOptions) {
@@ -2296,6 +2297,7 @@ export class OmniSharpOptions implements IOmniSharpOptions {
             }
         }
         if (!data) {
+            this.diagnostics = new OmniSharpDiagnosticsOptions();
             this.inlayHints = new OmniSharpInlayHintsOptions();
         }
     }
@@ -2308,6 +2310,7 @@ export class OmniSharpOptions implements IOmniSharpOptions {
             this.enableImportCompletion = _data["enableImportCompletion"];
             this.enableSemanticHighlighting = _data["enableSemanticHighlighting"];
             this.enableCodeLensReferences = _data["enableCodeLensReferences"];
+            this.diagnostics = _data["diagnostics"] ? OmniSharpDiagnosticsOptions.fromJS(_data["diagnostics"]) : new OmniSharpDiagnosticsOptions();
             this.inlayHints = _data["inlayHints"] ? OmniSharpInlayHintsOptions.fromJS(_data["inlayHints"]) : new OmniSharpInlayHintsOptions();
         }
     }
@@ -2327,6 +2330,7 @@ export class OmniSharpOptions implements IOmniSharpOptions {
         data["enableImportCompletion"] = this.enableImportCompletion;
         data["enableSemanticHighlighting"] = this.enableSemanticHighlighting;
         data["enableCodeLensReferences"] = this.enableCodeLensReferences;
+        data["diagnostics"] = this.diagnostics ? this.diagnostics.toJSON() : <any>undefined;
         data["inlayHints"] = this.inlayHints ? this.inlayHints.toJSON() : <any>undefined;
         return data;
     }
@@ -2346,7 +2350,63 @@ export interface IOmniSharpOptions {
     enableImportCompletion: boolean;
     enableSemanticHighlighting: boolean;
     enableCodeLensReferences: boolean;
+    diagnostics: OmniSharpDiagnosticsOptions;
     inlayHints: OmniSharpInlayHintsOptions;
+}
+
+export class OmniSharpDiagnosticsOptions implements IOmniSharpDiagnosticsOptions {
+    enabled!: boolean;
+    enableInfo!: boolean;
+    enableWarnings!: boolean;
+    enableHints!: boolean;
+
+    constructor(data?: IOmniSharpDiagnosticsOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enabled = _data["enabled"];
+            this.enableInfo = _data["enableInfo"];
+            this.enableWarnings = _data["enableWarnings"];
+            this.enableHints = _data["enableHints"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpDiagnosticsOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpDiagnosticsOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enabled"] = this.enabled;
+        data["enableInfo"] = this.enableInfo;
+        data["enableWarnings"] = this.enableWarnings;
+        data["enableHints"] = this.enableHints;
+        return data;
+    }
+
+    clone(): OmniSharpDiagnosticsOptions {
+        const json = this.toJSON();
+        let result = new OmniSharpDiagnosticsOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpDiagnosticsOptions {
+    enabled: boolean;
+    enableInfo: boolean;
+    enableWarnings: boolean;
+    enableHints: boolean;
 }
 
 export class OmniSharpInlayHintsOptions implements IOmniSharpInlayHintsOptions {

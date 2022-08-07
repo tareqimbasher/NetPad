@@ -6,6 +6,7 @@ using NetPad.Plugins.OmniSharp.Features.CodeChecking;
 using NetPad.Plugins.OmniSharp.Features.CodeFormatting;
 using NetPad.Plugins.OmniSharp.Features.CodeStructure;
 using NetPad.Plugins.OmniSharp.Features.Completion;
+using NetPad.Plugins.OmniSharp.Features.Diagnostics;
 using NetPad.Plugins.OmniSharp.Features.FindImplementations;
 using NetPad.Plugins.OmniSharp.Features.FindUsages;
 using NetPad.Plugins.OmniSharp.Features.InlayHinting;
@@ -89,10 +90,6 @@ public class OmniSharpController : Controller
     public async Task<CodeStructureResponse?> GetCodeStructure(Guid scriptId) =>
         await _mediator.Send(new GetCodeStructureQuery(scriptId));
 
-    [HttpPost("code-check")]
-    public async Task<OmniSharpQuickFixResponse?> CodeCheck(Guid scriptId, [FromBody] OmniSharpCodeCheckRequest request) =>
-        await _mediator.Send(new CheckCodeQuery(scriptId, request));
-
     [HttpPost("inlay-hints")]
     public async Task<ActionResult<OmniSharpInlayHintResponse?>> GetInlayHints(Guid scriptId, [FromBody] OmniSharpInlayHintRequest request)
     {
@@ -117,4 +114,11 @@ public class OmniSharpController : Controller
     [HttpPost("code-actions/run")]
     public async Task<ActionResult<RunCodeActionResponse?>> RunCodeAction(Guid scriptId, [FromBody] OmniSharpRunCodeActionRequest request) =>
         await _mediator.Send(new RunCodeActionCommand(scriptId, request));
+
+    [HttpPost("code-check")]
+    public async Task<OmniSharpQuickFixResponse?> CodeCheck(Guid scriptId, [FromBody] OmniSharpCodeCheckRequest request) =>
+        await _mediator.Send(new CheckCodeQuery(scriptId, request));
+
+    [HttpPatch("diagnostics/start")]
+    public async Task StartDiagnostics(Guid scriptId) => await _mediator.Send(new StartDiagnosticsCommand(scriptId));
 }

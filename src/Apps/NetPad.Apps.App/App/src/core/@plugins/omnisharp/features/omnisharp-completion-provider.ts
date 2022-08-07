@@ -1,11 +1,11 @@
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil, ICommandProvider} from "@application";
+import {EditorUtil, ICommandProvider, ICompletionItemProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import * as api from "../api";
 
-export class OmniSharpCompletionProvider implements languages.CompletionItemProvider, ICommandProvider {
+export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";

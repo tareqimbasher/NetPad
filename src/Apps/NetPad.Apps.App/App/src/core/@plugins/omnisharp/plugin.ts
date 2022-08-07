@@ -12,7 +12,8 @@ import {
     IImplementationProvider,
     IInlayHintsProvider,
     IReferenceProvider,
-    ISignatureHelpProvider
+    ISignatureHelpProvider,
+    IDiagnosticsProvider
 } from "@application";
 import {Actions} from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
@@ -25,6 +26,7 @@ import {OmniSharpReferenceProvider} from "./features/omnisharp-reference-provide
 import {OmniSharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
 import {OmniSharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
 import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
+import {OmnisharpDiagnosticsProvider} from "./features/omnisharp-diagnostics-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -55,6 +57,10 @@ export function configure(container: IContainer) {
         container.register(Registration.singleton(OmniSharpSemanticTokensProvider, OmniSharpSemanticTokensProvider));
         container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
         container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
+    }
+
+    if (settings.omniSharp.diagnostics.enabled) {
+        container.register(Registration.singleton(IDiagnosticsProvider, OmnisharpDiagnosticsProvider));
     }
 
     const actions = new Actions(container);
