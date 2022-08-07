@@ -36,7 +36,8 @@ contributions are welcome!
   * Format document
   * Go-to implementation
   * Find references
-  * Action suggestions (_experimental_)
+  * Action suggestions
+  * Diagnostics
 
 ## Roadmap :construction:
 * Add database connections
@@ -47,7 +48,6 @@ contributions are welcome!
   * Go-to definition
   * Go-to symbol
   * Rename symbol
-  * Diagnostics
   * ...and more
 * Workspaces/Sessions
 * More results console features:
