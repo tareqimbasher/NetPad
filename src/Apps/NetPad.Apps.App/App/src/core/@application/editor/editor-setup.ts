@@ -2,7 +2,6 @@ import * as monaco from "monaco-editor";
 import {all} from "aurelia";
 import {
     ICommandProvider,
-
     ICompletionItemProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
@@ -12,8 +11,10 @@ import {
     IReferenceProvider,
     ICodeLensProvider,
     IInlayHintsProvider,
-    ICodeActionProvider
+    ICodeActionProvider,
+    IDiagnosticsProvider
 } from "./interfaces";
+import {Util} from "@common";
 
 export class EditorSetup {
     constructor(
@@ -28,6 +29,7 @@ export class EditorSetup {
         @all(ICodeLensProvider) private readonly codeLensProviders: monaco.languages.CodeLensProvider[],
         @all(IInlayHintsProvider) private readonly inlayHintsProviders: monaco.languages.InlayHintsProvider[],
         @all(ICodeActionProvider) private readonly codeActionProviders: monaco.languages.CodeActionProvider[],
+        @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
     ) {
     }
 
@@ -43,6 +45,7 @@ export class EditorSetup {
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
+        this.registerDiagnosticsProviders();
     }
 
     public static defineTheme(themeName: string, themeData: monaco.editor.IStandaloneThemeData) {
@@ -132,6 +135,17 @@ export class EditorSetup {
         for (const codeActionProvider of this.codeActionProviders) {
             monaco.languages.registerCodeActionProvider("csharp", codeActionProvider);
         }
+    }
+
+    private registerDiagnosticsProviders() {
+        monaco.editor.onDidCreateModel(model => {
+            for (const diagnosticsProvider of this.diagnosticsProviders) {
+                const ownerId = Util.newGuid();
+                diagnosticsProvider.provideDiagnostics(model, markers => {
+                    monaco.editor.setModelMarkers(model, ownerId, markers);
+                });
+            }
+        });
     }
 
     private static lightThemeTokenThemeRules: monaco.editor.ITokenThemeRule[] = [

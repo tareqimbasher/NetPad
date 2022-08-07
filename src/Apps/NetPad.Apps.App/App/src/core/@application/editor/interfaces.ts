@@ -1,11 +1,18 @@
 import {DI} from "aurelia";
-import {languages} from "monaco-editor";
+import {languages, editor} from "monaco-editor";
 
 export interface ICommandProvider {
     provideCommands(): {id: string, handler: (accessor: unknown, ...args: unknown[]) => void}[];
 }
 
 export const ICommandProvider = DI.createInterface<ICommandProvider>();
+
+export interface IDiagnosticsProvider {
+    provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
+}
+
+export const IDiagnosticsProvider = DI.createInterface<IDiagnosticsProvider>();
+
 
 export const ICompletionItemProvider = DI.createInterface<languages.CompletionItemProvider>();
 export const IDocumentSemanticTokensProvider = DI.createInterface<languages.DocumentSemanticTokensProvider>();

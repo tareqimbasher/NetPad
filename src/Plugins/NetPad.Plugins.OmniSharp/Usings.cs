@@ -1,4 +1,5 @@
 global using NetPad.Plugins.OmniSharp.Services;
+global using OmniSharpModels = OmniSharp.Models;
 global using OmniSharpRange = OmniSharp.Models.V2.Range;
 global using OmniSharpPoint = OmniSharp.Models.V2.Point;
 global using OmniSharpQuickFix = OmniSharp.Models.QuickFix;
@@ -31,3 +32,6 @@ global using OmniSharpInlayHintResolveRequest = OmniSharp.Models.v1.InlayHints.I
 global using OmniSharpGetCodeActionsRequest = OmniSharp.Models.V2.CodeActions.GetCodeActionsRequest;
 global using OmniSharpGetCodeActionsResponse = OmniSharp.Models.V2.CodeActions.GetCodeActionsResponse;
 global using OmniSharpRunCodeActionRequest = OmniSharp.Models.V2.CodeActions.RunCodeActionRequest;
+global using OmniSharpBackgroundDiagnostic = OmniSharp.Models.Events.BackgroundDiagnosticStatusMessage;
+global using OmniSharpDiagnosticRequest = OmniSharp.Models.Diagnostics.DiagnosticsRequest;
+global using OmniSharpDiagnosticMessage = OmniSharp.Models.Diagnostics.DiagnosticMessage;

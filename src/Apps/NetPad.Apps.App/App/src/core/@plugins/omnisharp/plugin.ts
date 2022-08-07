@@ -12,7 +12,8 @@ import {
     IImplementationProvider,
     IInlayHintsProvider,
     IReferenceProvider,
-    ISignatureHelpProvider
+    ISignatureHelpProvider,
+    IDiagnosticsProvider
 } from "@application";
 import {Actions} from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";
@@ -25,6 +26,7 @@ import {OmniSharpReferenceProvider} from "./features/omnisharp-reference-provide
 import {OmniSharpCodeLensProvider} from "./features/omnisharp-code-lens-provider";
 import {OmniSharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
 import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
+import {OmnisharpDiagnosticsProvider} from "./features/omnisharp-diagnostics-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -38,6 +40,7 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(ISignatureHelpProvider, OmniSharpSignatureHelpProvider));
     container.register(Registration.singleton(IReferenceProvider, OmniSharpReferenceProvider));
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
+    container.register(Registration.singleton(IDiagnosticsProvider, OmnisharpDiagnosticsProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));

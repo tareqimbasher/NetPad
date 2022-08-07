@@ -1,34 +1,32 @@
-using NetPad.Configuration;
 using NetPad.Events;
 using ISession = NetPad.Sessions.ISession;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
-public class ServerManagementBackgroundService : BackgroundService
+public class ServerManagementBackgroundService : IHostedService
 {
     private readonly OmniSharpServerCatalog _serverCatalog;
     private readonly ISession _session;
-    private readonly Settings _settings;
     private readonly IEventBus _eventBus;
     private readonly ILogger<ServerManagementBackgroundService> _logger;
+    private readonly List<IDisposable> _disposables;
 
     public ServerManagementBackgroundService(
         OmniSharpServerCatalog serverCatalog,
         ISession session,
-        Settings settings,
         IEventBus eventBus,
         ILogger<ServerManagementBackgroundService> logger)
     {
         _serverCatalog = serverCatalog;
         _session = session;
-        _settings = settings;
         _eventBus = eventBus;
         _logger = logger;
+        _disposables = new List<IDisposable>();
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        _eventBus.Subscribe<ActiveEnvironmentChangedEvent>(ev =>
+        var activeEnvChangedSubscription = _eventBus.Subscribe<ActiveEnvironmentChangedEvent>(ev =>
         {
             var activatedEnvironmentScriptId = ev.ScriptId;
 
@@ -61,7 +59,10 @@ public class ServerManagementBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
+        _disposables.Add(activeEnvChangedSubscription);
+
+
+        var envRemovedSubscription = _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -74,6 +75,17 @@ public class ServerManagementBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
+        _disposables.Add(envRemovedSubscription);
+
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        foreach (var disposable in _disposables)
+        {
+            disposable.Dispose();
+        }
 
         return Task.CompletedTask;
     }

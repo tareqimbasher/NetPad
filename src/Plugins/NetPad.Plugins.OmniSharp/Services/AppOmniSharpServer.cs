@@ -1,6 +1,7 @@
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Events;
+using NetPad.Plugins.OmniSharp.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
 using OmniSharp;
@@ -51,9 +52,11 @@ public class AppOmniSharpServer
         _project = new ScriptProject(environment.Script, settings, scriptProjectLogger);
     }
 
+    public Guid ScriptId => _environment.Script.Id;
+
     public ScriptProject Project => _project;
 
-    public IOmniSharpServer OmniSharpServer => _omniSharpServer
+    public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer
                                                ?? throw new InvalidOperationException(
                                                    $"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
 
@@ -80,8 +83,13 @@ public class AppOmniSharpServer
                 return;
             }
 
-            var parsingResult = _codeParser.Parse(_environment.Script);
-            await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+            await UpdateOmniSharpCodeBufferAsync();
+
+            // Technically we should be doing this, instead of the previous line however when
+            // we do, code in bootstrapper program like the .Dump() extension method is not recognized
+            // TODO need to find a point where we can determine OmniSharp has fully started and is ready to update buffer and for it to register
+            // var parsingResult = _codeParser.Parse(_environment.Script);
+            // await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
         });
 
         _subscriptionTokens.Add(codeChangeToken);
@@ -179,6 +187,8 @@ public class AppOmniSharpServer
 
         await StartOmniSharpServerAsync(executablePath!);
 
+        await _eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
+
         return true;
     }
 
@@ -193,6 +203,8 @@ public class AppOmniSharpServer
         }
 
         await StopOmniSharpServerAsync();
+
+        await _eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
         await _project.DeleteAsync();
     }
@@ -212,6 +224,8 @@ public class AppOmniSharpServer
 
         progress?.Invoke("Starting OmniSharp server...");
         await StartOmniSharpServerAsync(executablePath!);
+
+        await _eventBus.PublishAsync(new OmniSharpServerRestartedEvent(this));
 
         return true;
     }
@@ -267,7 +281,7 @@ public class AppOmniSharpServer
         {
             Task.Run(async () =>
             {
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     await UpdateOmniSharpCodeBufferAsync();
                     await Task.Delay(500);

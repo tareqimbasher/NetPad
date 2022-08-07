@@ -34,8 +34,6 @@ export interface IOmniSharpApiClient {
 
     getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
 
-    codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
-
     getInlayHints(scriptId: string, request: InlayHintRequest): Promise<InlayHintResponse>;
 
     resolveInlayHint(scriptId: string, request: InlayHintResolveRequest): Promise<InlayHint>;
@@ -43,6 +41,10 @@ export interface IOmniSharpApiClient {
     getCodeActions(scriptId: string, request: GetCodeActionsRequest): Promise<GetCodeActionsResponse>;
 
     runCodeAction(scriptId: string, request: RunCodeActionRequest): Promise<RunCodeActionResponse>;
+
+    codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
+
+    startDiagnostics(scriptId: string): Promise<void>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -510,48 +512,6 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
         return Promise.resolve<CodeStructureResponse>(<any>null);
     }
 
-    codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse> {
-        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-check";
-        if (scriptId === undefined || scriptId === null)
-            throw new Error("The parameter 'scriptId' must be defined.");
-        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(request);
-
-        let options_ = <RequestInit>{
-            body: content_,
-            method: "POST",
-            signal,
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processCodeCheck(_response);
-        });
-    }
-
-    protected processCodeCheck(response: Response): Promise<QuickFixResponse> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = QuickFixResponse.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<QuickFixResponse>(<any>null);
-    }
-
     getInlayHints(scriptId: string, request: InlayHintRequest, signal?: AbortSignal | undefined): Promise<InlayHintResponse> {
         let url_ = this.baseUrl + "/omnisharp/{scriptId}/inlay-hints";
         if (scriptId === undefined || scriptId === null)
@@ -718,6 +678,133 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
             });
         }
         return Promise.resolve<RunCodeActionResponse>(<any>null);
+    }
+
+    codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/code-check";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCodeCheck(_response);
+        });
+    }
+
+    protected processCodeCheck(response: Response): Promise<QuickFixResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = QuickFixResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<QuickFixResponse>(<any>null);
+    }
+
+    startDiagnostics(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/diagnostics/start";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processStartDiagnostics(_response);
+        });
+    }
+
+    protected processStartDiagnostics(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+}
+
+export interface ITypesApiClient {
+
+    additionalTypes(): Promise<Types>;
+}
+
+export class TypesApiClient implements ITypesApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    additionalTypes(signal?: AbortSignal | undefined): Promise<Types> {
+        let url_ = this.baseUrl + "/omnisharp/types";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processAdditionalTypes(_response);
+        });
+    }
+
+    protected processAdditionalTypes(response: Response): Promise<Types> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Types.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Types>(<any>null);
     }
 }
 
@@ -2499,40 +2586,6 @@ export interface ICodeElement {
     properties: { [key: string]: any; };
 }
 
-export class CodeCheckRequest extends Request implements ICodeCheckRequest {
-
-    constructor(data?: ICodeCheckRequest) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-    }
-
-    static fromJS(data: any): CodeCheckRequest {
-        data = typeof data === 'object' ? data : {};
-        let result = new CodeCheckRequest();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): CodeCheckRequest {
-        const json = this.toJSON();
-        let result = new CodeCheckRequest();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ICodeCheckRequest extends IRequest {
-}
-
 export class InlayHintResponse implements IInlayHintResponse {
     inlayHints!: InlayHint[];
 
@@ -3419,6 +3472,295 @@ export interface IRunCodeActionRequest extends IRequest {
     wantsTextChanges: boolean;
     applyTextChanges: boolean;
     wantsAllCodeActionOperations: boolean;
+}
+
+export class CodeCheckRequest extends Request implements ICodeCheckRequest {
+
+    constructor(data?: ICodeCheckRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): CodeCheckRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeCheckRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CodeCheckRequest {
+        const json = this.toJSON();
+        let result = new CodeCheckRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeCheckRequest extends IRequest {
+}
+
+export class Types implements ITypes {
+    diagnosticsEvent?: DiagnosticsEvent | undefined;
+
+    constructor(data?: ITypes) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.diagnosticsEvent = _data["diagnosticsEvent"] ? DiagnosticsEvent.fromJS(_data["diagnosticsEvent"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Types {
+        data = typeof data === 'object' ? data : {};
+        let result = new Types();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["diagnosticsEvent"] = this.diagnosticsEvent ? this.diagnosticsEvent.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): Types {
+        const json = this.toJSON();
+        let result = new Types();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITypes {
+    diagnosticsEvent?: DiagnosticsEvent | undefined;
+}
+
+export class DiagnosticsEvent implements IDiagnosticsEvent {
+    scriptId!: string;
+    diagnostics!: DiagnosticMessage;
+
+    constructor(data?: IDiagnosticsEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.diagnostics = new DiagnosticMessage();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.diagnostics = _data["diagnostics"] ? DiagnosticMessage.fromJS(_data["diagnostics"]) : new DiagnosticMessage();
+        }
+    }
+
+    static fromJS(data: any): DiagnosticsEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DiagnosticsEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["diagnostics"] = this.diagnostics ? this.diagnostics.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DiagnosticsEvent {
+        const json = this.toJSON();
+        let result = new DiagnosticsEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDiagnosticsEvent {
+    scriptId: string;
+    diagnostics: DiagnosticMessage;
+}
+
+export class DiagnosticMessage implements IDiagnosticMessage {
+    results?: DiagnosticResult[] | undefined;
+
+    constructor(data?: IDiagnosticMessage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["results"])) {
+                this.results = [] as any;
+                for (let item of _data["results"])
+                    this.results!.push(DiagnosticResult.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DiagnosticMessage {
+        data = typeof data === 'object' ? data : {};
+        let result = new DiagnosticMessage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.results)) {
+            data["results"] = [];
+            for (let item of this.results)
+                data["results"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DiagnosticMessage {
+        const json = this.toJSON();
+        let result = new DiagnosticMessage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDiagnosticMessage {
+    results?: DiagnosticResult[] | undefined;
+}
+
+export class DiagnosticResult implements IDiagnosticResult {
+    fileName?: string | undefined;
+    quickFixes?: DiagnosticLocation[] | undefined;
+
+    constructor(data?: IDiagnosticResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            if (Array.isArray(_data["quickFixes"])) {
+                this.quickFixes = [] as any;
+                for (let item of _data["quickFixes"])
+                    this.quickFixes!.push(DiagnosticLocation.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DiagnosticResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new DiagnosticResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        if (Array.isArray(this.quickFixes)) {
+            data["quickFixes"] = [];
+            for (let item of this.quickFixes)
+                data["quickFixes"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DiagnosticResult {
+        const json = this.toJSON();
+        let result = new DiagnosticResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDiagnosticResult {
+    fileName?: string | undefined;
+    quickFixes?: DiagnosticLocation[] | undefined;
+}
+
+export class DiagnosticLocation extends QuickFix implements IDiagnosticLocation {
+    logLevel?: string | undefined;
+    id?: string | undefined;
+    tags?: string[] | undefined;
+
+    constructor(data?: IDiagnosticLocation) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.logLevel = _data["logLevel"];
+            this.id = _data["id"];
+            if (Array.isArray(_data["tags"])) {
+                this.tags = [] as any;
+                for (let item of _data["tags"])
+                    this.tags!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): DiagnosticLocation {
+        data = typeof data === 'object' ? data : {};
+        let result = new DiagnosticLocation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["logLevel"] = this.logLevel;
+        data["id"] = this.id;
+        if (Array.isArray(this.tags)) {
+            data["tags"] = [];
+            for (let item of this.tags)
+                data["tags"].push(item);
+        }
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): DiagnosticLocation {
+        const json = this.toJSON();
+        let result = new DiagnosticLocation();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDiagnosticLocation extends IQuickFix {
+    logLevel?: string | undefined;
+    id?: string | undefined;
+    tags?: string[] | undefined;
 }
 
 export class ApiException extends Error {
