@@ -22,7 +22,7 @@ namespace OmniSharp.Stdio
         private readonly RequestResponseQueue _requestResponseQueue;
         private ProcessIOHandler? _processIo;
         private bool _isStopped = true;
-        private readonly ConcurrentDictionary<string, List<Action<JsonNode>>> _eventHandlers;
+        private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
         private readonly SemaphoreSlim _semaphoreSlim;
 
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -39,7 +39,7 @@ namespace OmniSharp.Stdio
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
             _semaphoreSlim = new SemaphoreSlim(1);
-            _eventHandlers = new ConcurrentDictionary<string, List<Action<JsonNode>>>();
+            _eventHandlers = new ConcurrentDictionary<string, List<Func<JsonNode, Task>>>();
         }
 
         public override async Task StartAsync()
@@ -120,9 +120,9 @@ namespace OmniSharp.Stdio
             }
         }
 
-        public SubscriptionToken SubscribeToEvent(string eventType, Action<JsonNode> handler)
+        public SubscriptionToken SubscribeToEvent(string eventType, Func<JsonNode, Task> handler)
         {
-            var handlers = _eventHandlers.GetOrAdd(eventType.ToLowerInvariant(), new List<Action<JsonNode>>());
+            var handlers = _eventHandlers.GetOrAdd(eventType.ToLowerInvariant(), new List<Func<JsonNode, Task>>());
 
             lock (handlers)
             {
@@ -235,7 +235,7 @@ namespace OmniSharp.Stdio
                 {
                     try
                     {
-                        handler(eventPacket);
+                        _ = handler(eventPacket);
                     }
                     catch (Exception ex)
                     {
