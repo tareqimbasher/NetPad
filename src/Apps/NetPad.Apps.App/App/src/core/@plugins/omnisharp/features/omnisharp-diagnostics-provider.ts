@@ -1,17 +1,19 @@
 import {CancellationTokenSource, editor, MarkerSeverity, MarkerTag} from "monaco-editor";
-import {IEventBus} from "@domain";
+import {IEventBus, Settings} from "@domain";
 import {EditorUtil, IDiagnosticsProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 
 export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
     private readonly unnecessaryMarkerTag = MarkerTag[MarkerTag.Unnecessary].toLowerCase();
-    private readonly suppressHiddenDiagnostics = false;
     private readonly excluded = new Set<string>([
         "IDE0008" // Use explicit type instead of "var"
     ]);
 
-    constructor(@IOmniSharpService private omnisharpService: IOmniSharpService, @IEventBus private readonly eventBus: IEventBus) {
+    constructor(
+        @IOmniSharpService private omnisharpService: IOmniSharpService,
+        @IEventBus private readonly eventBus: IEventBus,
+        private readonly settings: Settings) {
     }
 
     public async provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void) {
@@ -42,7 +44,7 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
                 const display = this.getDisplay(quickFix, this.getDiagnosticSeverity(quickFix));
 
                 if (display.severity === "hidden") {
-                    return undefined;
+                    continue;
                 }
 
                 const marker: editor.IMarkerData = {
@@ -90,17 +92,14 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
 
     private getDiagnosticSeverity(quickFix: api.DiagnosticLocation): MarkerSeverity | "hidden" {
         switch (quickFix.logLevel.toLowerCase()) {
-            case 'error':
+            case "error":
                 return MarkerSeverity.Error;
-            case 'warning':
-                return MarkerSeverity.Warning;
-            case 'info':
-                return MarkerSeverity.Info;
-            case 'hidden':
-                if (this.suppressHiddenDiagnostics) {
-                    return "hidden";
-                }
-                return MarkerSeverity.Hint;
+            case "warning":
+                return this.settings.omniSharp.diagnostics.enableWarnings ? MarkerSeverity.Warning : "hidden";
+            case "info":
+                return this.settings.omniSharp.diagnostics.enableInfo ? MarkerSeverity.Info : "hidden";
+            case "hidden":
+                return this.settings.omniSharp.diagnostics.enableHints ? MarkerSeverity.Hint : "hidden";
             default:
                 return "hidden";
         }

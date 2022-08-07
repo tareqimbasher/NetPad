@@ -97,6 +97,7 @@ namespace NetPad.Configuration
                 .SetEnableImportCompletion(options.EnableImportCompletion)
                 .SetEnableSemanticHighlighting(options.EnableSemanticHighlighting)
                 .SetEnableCodeLensReferences(options.EnableCodeLensReferences)
+                .SetDiagnosticsOptions(options.Diagnostics)
                 .SetInlayHintsOptions(options.InlayHints);
 
             return this;

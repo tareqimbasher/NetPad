@@ -32,6 +32,30 @@ export class OmniSharpSettings {
                 nameof(this.settings.omniSharp.enableCodeLensReferences)
             ),
             new OmniSharpOption(
+                "Diagnostics > Enabled",
+                "Display diagnostics in editor. Restart application for changes to take effect.",
+                this.settings.omniSharp.diagnostics,
+                nameof(this.settings.omniSharp.diagnostics.enabled)
+            ),
+            new OmniSharpOption(
+                "Diagnostics > Information: Enabled",
+                "Display information diagnostics in editor. Restart application or make an edit for changes to take effect.",
+                this.settings.omniSharp.diagnostics,
+                nameof(this.settings.omniSharp.diagnostics.enableInfo)
+            ),
+            new OmniSharpOption(
+                "Diagnostics > Warning: Enabled",
+                "Display warning diagnostics in editor. Restart application or make an edit for changes to take effect.",
+                this.settings.omniSharp.diagnostics,
+                nameof(this.settings.omniSharp.diagnostics.enableWarnings)
+            ),
+            new OmniSharpOption(
+                "Diagnostics > Hints: Enabled",
+                "Display hint diagnostics (such as 'unreachable code') in editor. Restart application or make an edit for changes to take effect.",
+                this.settings.omniSharp.diagnostics,
+                nameof(this.settings.omniSharp.diagnostics.enableHints)
+            ),
+            new OmniSharpOption(
                 "Inlay Hints > Parameters: Enabled",
                 "Display inline parameter name hints",
                 this.settings.omniSharp.inlayHints,

@@ -40,7 +40,6 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(ISignatureHelpProvider, OmniSharpSignatureHelpProvider));
     container.register(Registration.singleton(IReferenceProvider, OmniSharpReferenceProvider));
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
-    container.register(Registration.singleton(IDiagnosticsProvider, OmnisharpDiagnosticsProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));
@@ -58,6 +57,10 @@ export function configure(container: IContainer) {
         container.register(Registration.singleton(OmniSharpSemanticTokensProvider, OmniSharpSemanticTokensProvider));
         container.register(Registration.cachedCallback(IDocumentSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
         container.register(Registration.cachedCallback(IDocumentRangeSemanticTokensProvider, c => c.get(OmniSharpSemanticTokensProvider)));
+    }
+
+    if (settings.omniSharp.diagnostics.enabled) {
+        container.register(Registration.singleton(IDiagnosticsProvider, OmnisharpDiagnosticsProvider));
     }
 
     const actions = new Actions(container);
