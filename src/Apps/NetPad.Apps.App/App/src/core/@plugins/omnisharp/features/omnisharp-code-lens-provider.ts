@@ -1,11 +1,11 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {EditorUtil, ICodeLensProvider} from "@application";
 import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 
-export class OmniSharpCodeLensProvider implements languages.CodeLensProvider {
+export class OmniSharpCodeLensProvider implements ICodeLensProvider {
     private methodNamesToExclude = [
         "Equals",
         "Finalize",

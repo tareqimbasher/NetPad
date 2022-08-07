@@ -13,22 +13,22 @@ import {
     IInlayHintsProvider,
     ICodeActionProvider,
     IDiagnosticsProvider
-} from "./interfaces";
+} from "./providers/interfaces";
 import {Util} from "@common";
 
 export class EditorSetup {
     constructor(
         @all(ICommandProvider) private readonly commandProviders: ICommandProvider[],
-        @all(ICompletionItemProvider) private readonly completionItemProviders: monaco.languages.CompletionItemProvider[],
-        @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: monaco.languages.DocumentSemanticTokensProvider[],
-        @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: monaco.languages.DocumentRangeSemanticTokensProvider[],
-        @all(IImplementationProvider) private readonly implementationProviders: monaco.languages.ImplementationProvider[],
-        @all(IHoverProvider) private readonly hoverProviders: monaco.languages.HoverProvider[],
-        @all(ISignatureHelpProvider) private readonly signatureHelpProviders: monaco.languages.SignatureHelpProvider[],
-        @all(IReferenceProvider) private readonly referenceProviders: monaco.languages.ReferenceProvider[],
-        @all(ICodeLensProvider) private readonly codeLensProviders: monaco.languages.CodeLensProvider[],
-        @all(IInlayHintsProvider) private readonly inlayHintsProviders: monaco.languages.InlayHintsProvider[],
-        @all(ICodeActionProvider) private readonly codeActionProviders: monaco.languages.CodeActionProvider[],
+        @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
+        @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: IDocumentSemanticTokensProvider[],
+        @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: IDocumentRangeSemanticTokensProvider[],
+        @all(IImplementationProvider) private readonly implementationProviders: IImplementationProvider[],
+        @all(IHoverProvider) private readonly hoverProviders: IHoverProvider[],
+        @all(ISignatureHelpProvider) private readonly signatureHelpProviders: ISignatureHelpProvider[],
+        @all(IReferenceProvider) private readonly referenceProviders: IReferenceProvider[],
+        @all(ICodeLensProvider) private readonly codeLensProviders: ICodeLensProvider[],
+        @all(IInlayHintsProvider) private readonly inlayHintsProviders: IInlayHintsProvider[],
+        @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
         @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
     ) {
     }

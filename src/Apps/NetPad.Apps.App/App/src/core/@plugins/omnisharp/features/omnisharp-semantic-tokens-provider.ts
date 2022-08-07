@@ -1,12 +1,12 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
 import {Util} from "@common";
 import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
-import {EditorUtil} from "@application";
+import {EditorUtil, IDocumentRangeSemanticTokensProvider, IDocumentSemanticTokensProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 
-export class OmniSharpSemanticTokensProvider implements languages.DocumentSemanticTokensProvider, languages.DocumentRangeSemanticTokensProvider {
+export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensProvider, IDocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
     private _onDidChange: Emitter<void>;
 

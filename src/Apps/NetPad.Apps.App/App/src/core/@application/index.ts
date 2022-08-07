@@ -32,7 +32,7 @@ export * from "./shortcuts/shortcut-action-execution-context";
 export * from "./shortcuts/shortcut-manager";
 export * from "./shortcuts/builtin-shortcuts";
 
-export * from "./editor/interfaces";
+export * from "./editor/providers/interfaces";
 export * from "./editor/editor-util";
 export * from "./editor/editor";
 export * from "./editor/providers/builtin-completion-provider";
