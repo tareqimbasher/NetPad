@@ -19,7 +19,7 @@ export class TextChangeUtil {
         for (const textChange of textChanges) {
             const isOutOfEditorTextChange = (textChange.startLine < 1 && textChange.endLine < 1)
                 || (textChange.startLine > editorLineCount)
-                || textChange.newText.startsWith("using ");
+                || this.isAddUsingChange(textChange);
 
             if (isOutOfEditorTextChange) {
                 await this.processOutOfEditorRangeTextChange(scriptId, textChange, session, scriptService);
@@ -55,23 +55,38 @@ export class TextChangeUtil {
         session: ISession,
         scriptService: IScriptService) {
 
-        const newLines = textChange.newText.split("\n")
+        const newNamespaces = this.getNamespacesFromUsings(textChange);
+
+        if (newNamespaces.length) {
+            const environment = await session.environments.find(e => e.script.id === scriptId);
+            if (!environment) return;
+
+            const namespaces = new Set<string>([...environment.script.config.namespaces]);
+            for (const newNamespace of newNamespaces)
+                namespaces.add(newNamespace);
+
+            await scriptService.setScriptNamespaces(scriptId, [...namespaces]);
+        }
+    }
+
+    private static isAddUsingChange(textChange: LinePositionSpanTextChange) {
+        const newText = textChange.newText;
+
+        return (
+            // For when we get the normal/expected text format, ex: "using System.Text.Json;\n\n"
+            (newText.startsWith("using ") && textChange.startLine === 1)
+
+            // For when OmniSharp server gives an unusual format, ex: "System.Text.Json;\n\nusing "
+            || (newText.endsWith(";\n\nusing ") && textChange.startLine === 1 && textChange.endLine === 1)
+        );
+    }
+
+    private static getNamespacesFromUsings(textChange: LinePositionSpanTextChange): string[] {
+        return textChange.newText.split("\n")
+            .filter(l => l && l.trim())
+            .map(l => Util.trimWord(l, "using "))
+            .map(l => Util.trimEnd(l, ";"))
             .map(l => l.trim())
             .filter(l => l);
-
-        if (newLines.filter(l => l.startsWith("using ")).length == newLines.length) {
-            const environment = await session.environments.find(e => e.script.id === scriptId);
-            if (environment) {
-                const namespaces = new Set<string>([...environment.script.config.namespaces]);
-
-                for (const newLine of newLines) {
-                    let namespace = newLine.slice("using ".length - 1);
-                    namespace = Util.trimEnd(namespace, ";").trim();
-                    namespaces.add(namespace);
-                }
-
-                await scriptService.setScriptNamespaces(scriptId, [...namespaces]);
-            }
-        }
     }
 }
