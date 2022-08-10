@@ -33,7 +33,14 @@ export class Actions {
                 return;
             }
 
-            editor.setValue(response.buffer);
+            model.pushEditOperations([], [
+                {
+                    text: response.buffer,
+                    range: model.getFullModelRange(),
+                    forceMoveMarkers: false
+                }
+            ], () => []);
+            model.pushStackElement();
             editor.setPosition(cursorPos);
         }
     }
