@@ -7,9 +7,10 @@ editor {
     }
 
     span[class*=' dyn-rule'], span[class^='dyn-rule'] {
-        margin-right: 2px;
         color: gray;
-        padding-top: 0;
-        padding-bottom: 0;
+        font-size: 80%;
+        margin-right: 2px;
+        padding: 0 2px;
+        border-radius: 4px;
     }
 }
