@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -33,9 +34,13 @@ namespace NetPad.Controllers
             public EnvironmentPropertyChangedEvent? EnvironmentPropertyChanged { get; set; }
             public ActiveEnvironmentChangedEvent? ActiveEnvironmentChanged { get; set; }
             public ScriptDirectoryChangedEvent? ScriptDirectoryChanged { get; set; }
+            public DataConnectionSavedEvent? DataConnectionSavedEvent { get; set; }
+            public DataConnectionDeletedEvent? DataConnectionDeletedEvent { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
             public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
             public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }
+            public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
+            public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
         }
     }
 }

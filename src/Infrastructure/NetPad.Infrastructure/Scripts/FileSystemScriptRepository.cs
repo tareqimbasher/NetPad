@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.Exceptions;
 
 namespace NetPad.Scripts
@@ -11,10 +12,12 @@ namespace NetPad.Scripts
     public class FileSystemScriptRepository : IScriptRepository
     {
         private readonly Settings _settings;
+        private readonly IDataConnectionRepository _dataConnectionRepository;
 
-        public FileSystemScriptRepository(Settings settings)
+        public FileSystemScriptRepository(Settings settings, IDataConnectionRepository dataConnectionRepository)
         {
             _settings = settings;
+            _dataConnectionRepository = dataConnectionRepository;
             Directory.CreateDirectory(GetRepositoryDirPath());
         }
 
@@ -61,35 +64,31 @@ namespace NetPad.Scripts
             if (!fileInfo.Exists)
                 throw new ScriptNotFoundException(path);
 
-            var script = new Script(Guid.NewGuid(), Path.GetFileNameWithoutExtension(fileInfo.Name));
+            var data = await File.ReadAllTextAsync(path).ConfigureAwait(false);
+
+            var name = Script.GetNameFromPath(path);
+            var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository);
             script.SetPath(path);
-            script.Deserialize(await File.ReadAllTextAsync(path).ConfigureAwait(false));
 
             return script;
         }
 
         public async Task<Script?> GetAsync(Guid scriptId)
         {
-            var scriptFiles = Directory.EnumerateFiles(
-                GetRepositoryDirPath(),
-                $"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
+            var scriptFiles = new DirectoryInfo(GetRepositoryDirPath()).EnumerateFiles(
+                    $"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
                 // Basic protection against malicious calls
-                .Where(f => f.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase));
+                .Where(f => f.Name.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase));
 
             foreach (var scriptFile in scriptFiles)
             {
-                var firstLine = File.ReadLines(scriptFile).FirstOrDefault();
+                var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
                 if (firstLine == null || !Guid.TryParse(firstLine, out var scriptIdFromFile) || scriptId != scriptIdFromFile)
                 {
                     continue;
                 }
 
-                var script = Script.From(
-                    Path.GetFileNameWithoutExtension(scriptFile),
-                    await File.ReadAllTextAsync(scriptFile).ConfigureAwait(false),
-                    scriptFile);
-
-                return script;
+                return await GetAsync(scriptFile.FullName);
             }
 
             return null;
@@ -104,7 +103,7 @@ namespace NetPad.Scripts
             if (!script.Path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
-            await File.WriteAllTextAsync(script.Path, script.Serialize()).ConfigureAwait(false);
+            await File.WriteAllTextAsync(script.Path, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
 
             script.IsDirty = false;
             return script;

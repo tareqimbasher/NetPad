@@ -18,6 +18,7 @@ using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.CQs;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
@@ -62,6 +63,7 @@ namespace NetPad
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
+            services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
 
             // Script execution
             services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
@@ -72,6 +74,11 @@ namespace NetPad
             //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
+
+            // Data connections
+            services.AddSingleton<IDataConnectionSourceCodeCache, DatabaseConnectionSourceCodeCache>();
+            services.AddSingleton<IDataConnectionAssemblyCache, DataConnectionAssemblyCache>();
+            services.AddTransient<IDatabaseConnectionInfoProvider, DatabaseConnectionInfoProvider>();
 
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();

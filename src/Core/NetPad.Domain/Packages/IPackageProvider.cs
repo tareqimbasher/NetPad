@@ -19,7 +19,8 @@ namespace NetPad.Packages
         /// <summary>
         /// Gets a listing cached (installed) packages that were explicitly installed.
         /// </summary>
-        /// <param name="loadMetadata"></param>
+        /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
+        /// still be loaded from installed package.</param>
         /// <returns></returns>
         Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false);
 
@@ -62,12 +63,15 @@ namespace NetPad.Packages
         /// <param name="skip">Skip, used for paging.</param>
         /// <param name="take">Take, used for paging.</param>
         /// <param name="includePrerelease">Whether to include pre-release package version in search results.</param>
+        /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
+        /// still be loaded from the search operation.</param>
         /// <param name="cancellationToken">Cancellation cancellationToken.</param>
         Task<PackageMetadata[]> SearchPackagesAsync(
             string? term,
             int skip,
             int take,
             bool includePrerelease,
+            bool loadMetadata = false,
             CancellationToken? cancellationToken = null);
 
         /// <summary>

@@ -17,11 +17,11 @@ namespace NetPad.Compilation.CSharp
             "NetPad.IO"
         };
 
-        public CodeParsingResult Parse(Script script, string? code = null, params string[] additionalNamespaces)
+        public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
         {
-            var namespaces = GetNamespaces(script, additionalNamespaces);
+            var namespaces = GetNamespaces(script, options?.AdditionalCode.GetAllNamespaces());
 
-            var userCode = GetUserCode(code ?? script.Code, script.Config.Kind);
+            var userCode = GetUserCode(options?.IncludedCode ?? script.Code, script.Config.Kind);
             var userProgramTemplate = GetUserProgramTemplate();
             var userProgram = string.Format(userProgramTemplate, userCode);
 
@@ -31,14 +31,17 @@ namespace NetPad.Compilation.CSharp
                 BootstrapperClassName,
                 BootstrapperSetIOMethodName);
 
+            string? additionalCodeProgram = options?.AdditionalCode.GetAllCode();
+
             return new CodeParsingResult(
                 namespaces,
                 userProgram,
                 bootstrapperProgram,
+                additionalCodeProgram,
                 new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
         }
 
-        public HashSet<string> GetNamespaces(Script script, params string[] additionalNamespaces)
+        public HashSet<string> GetNamespaces(Script script, IEnumerable<string>? additionalNamespaces = null)
         {
             additionalNamespaces ??= Array.Empty<string>();
 

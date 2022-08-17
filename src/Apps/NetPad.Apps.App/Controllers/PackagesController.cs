@@ -64,7 +64,8 @@ namespace NetPad.Controllers
                 term,
                 skip ?? 0,
                 take ?? 30,
-                includePrerelease ?? false
+                includePrerelease ?? false,
+                true
             );
 
             return Ok(packages);

@@ -40,4 +40,15 @@ public class WebWindowService : IUiWindowService
 
         await _ipcService.SendAsync(command);
     }
+
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+    {
+        var command = new OpenWindowCommand("data-connection");
+        command.Options.Height = 2 / 3.0;
+        command.Options.Width = 4 / 5.0;
+
+        command.Metadata.Add("data-connection-id", dataConnectionId);
+
+        await _ipcService.SendAsync(command);
+    }
 }

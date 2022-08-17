@@ -74,7 +74,7 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await _project.InitializeAsync();
+        await _project.CreateAsync();
 
         var codeChangeToken = _eventBus.Subscribe<ScriptCodeUpdatedEvent>(async ev =>
         {

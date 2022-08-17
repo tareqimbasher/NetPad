@@ -121,10 +121,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             .Replace("Console.Write", "Program.OutputWrite");
 
         var compilationResult = _codeCompiler.Compile(
-            new CompilationInput(fullProgram, referenceAssemblyPaths)
-            {
-                OutputAssemblyNameTag = _script.Name
-            });
+            new CompilationInput(fullProgram, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
 
         if (!compilationResult.Success)
         {

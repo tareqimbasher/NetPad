@@ -4,12 +4,13 @@ namespace NetPad.Application;
 
 public class AppIdentifier
 {
+    public const string AppName = "NetPad";
+
     public AppIdentifier()
     {
-        Name = "NetPad";
         Version = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version ?? new();
     }
 
-    public string Name { get; }
+    public string Name => AppName;
     public Version Version { get; }
 }

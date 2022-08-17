@@ -13,7 +13,7 @@ namespace NetPad.Compilation.CSharp
         public CompilationResult Compile(CompilationInput input)
         {
             // TODO write a unit test to test assembly name
-            string assemblyName = "NetPadScript";
+            string assemblyName = "NetPad_CompiledAssembly";
 
             if (input.OutputAssemblyNameTag != null)
                 assemblyName += $"_{input.OutputAssemblyNameTag}";
@@ -49,13 +49,7 @@ namespace NetPad.Compilation.CSharp
                 .Where(al => !string.IsNullOrWhiteSpace(al))
                 .Select(location => MetadataReference.CreateFromFile(location));
 
-            // Use OutputKind.ConsoleApplication vs OutputKind.DynamicallyLinkedLibrary so the generated assembly
-            // is able to be executed as an executable (ie. dotnet ./assembly.dll). Using OutputKind.DynamicallyLinkedLibrary
-            // generates an assembly that does not have an entry point, resulting in failure to execute standalone assembly
-            // in external processes outside of NetPad
-            var outputKind = OutputKind.ConsoleApplication;
-
-            var compilationOptions = new CSharpCompilationOptions(outputKind)
+            var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithOptimizationLevel(OptimizationLevel.Debug)
                 .WithOverflowChecks(true);

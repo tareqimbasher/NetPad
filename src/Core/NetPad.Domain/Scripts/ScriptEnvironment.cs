@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
@@ -14,11 +15,11 @@ namespace NetPad.Scripts
     public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         private readonly IEventBus _eventBus;
+        private readonly IDataConnectionSourceCodeCache _dataConnectionSourceCodeCache;
         private readonly ILogger<ScriptEnvironment> _logger;
         private IServiceScope? _serviceScope;
         private IInputReader _inputReader;
         private IOutputWriter _outputWriter;
-
         private ScriptStatus _status;
         private double _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
@@ -29,6 +30,7 @@ namespace NetPad.Scripts
             Script = script;
             _serviceScope = serviceScope;
             _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
+            _dataConnectionSourceCodeCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionSourceCodeCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
             _outputWriter = ActionOutputWriter.Null;
@@ -57,6 +59,15 @@ namespace NetPad.Scripts
 
             try
             {
+                if (Script.DataConnection != null)
+                {
+                    var connectionCode = await _dataConnectionSourceCodeCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
+                    if (connectionCode.Any())
+                    {
+                        runOptions.AdditionalCode.AddRange(connectionCode);
+                    }
+                }
+
                 var runtime = await GetRuntimeAsync();
                 var runResult = await runtime.RunScriptAsync(runOptions);
 

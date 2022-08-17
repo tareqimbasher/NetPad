@@ -140,6 +140,7 @@ namespace OmniSharp.Stdio
 
         public override void Dispose()
         {
+            _eventHandlers.Clear();
             _semaphoreSlim.Dispose();
             base.Dispose();
         }

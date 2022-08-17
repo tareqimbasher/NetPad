@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
-using NetPad.Runtimes;
+using NetPad.Data;
+using NetPad.Dtos;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -42,9 +43,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/run")]
-        public async Task Run(Guid id, [FromBody] RunOptions runOptions)
+        public async Task Run(Guid id, [FromBody] RunOptionsDto dto)
         {
-            await _mediator.Send(new RunScriptCommand(id, runOptions));
+            await _mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
         }
 
         [HttpPut("{id:guid}/code")]
@@ -87,6 +88,21 @@ namespace NetPad.Controllers
         {
             var environment = await GetScriptEnvironmentAsync(id);
             environment.Script.Config.SetKind(scriptKind);
+            return NoContent();
+        }
+
+        [HttpPut("{id:guid}/data-connection/{dataConnectionId:guid}")]
+        public async Task<IActionResult> SetDataConnection(Guid id, Guid? dataConnectionId, [FromServices] IDataConnectionRepository dataConnectionRepository)
+        {
+            var environment = await GetScriptEnvironmentAsync(id);
+
+            DataConnection? dataConnection = null;
+            if (dataConnectionId != null)
+            {
+                dataConnection = await dataConnectionRepository.GetAsync(dataConnectionId.Value);
+            }
+
+            await _mediator.Send(new SetScriptDataConnectionCommand(environment.Script, dataConnection));
             return NoContent();
         }
 

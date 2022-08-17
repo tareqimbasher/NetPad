@@ -81,6 +81,32 @@ namespace NetPad.Electron.UiInterop
             window.Center();
         }
 
+        public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+        {
+            const string windowName = "data-connection";
+
+            if (FocusExistingWindowIfOpen(windowName))
+            {
+                return;
+            }
+
+            var display = await PrimaryDisplay();
+            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
+            {
+                Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
+                Height = display.Bounds.Height * 4 / 10,
+                Width = 550,
+                AutoHideMenuBar = true,
+                MinWidth = 550,
+                MinHeight = 550
+            }, ("data-connection-id", dataConnectionId));
+
+            window.SetParentWindow(ElectronUtil.MainWindow);
+            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+            window.Center();
+        }
+
         private async Task<BrowserWindow> CreateWindowAsync(
             string windowName,
             bool singleInstance,
@@ -94,8 +120,8 @@ namespace NetPad.Electron.UiInterop
                 url += "&" + string.Join("&", queryParams.Select(p => $"{p.key}={p.value}"));
             }
 
-            options.MinHeight = 100;
-            options.MinWidth = 100;
+            if (options.MinHeight == 0) options.MinHeight = 100;
+            if (options.MinWidth == 0) options.MinWidth = 100;
             options.Center = true;
 
             var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);

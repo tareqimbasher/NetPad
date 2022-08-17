@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -21,9 +22,8 @@ namespace NetPad.Common
 
         public static string Serialize(object? value, bool indented = false)
         {
-            return indented
-                ? System.Text.Json.JsonSerializer.Serialize(value, Configure(new JsonSerializerOptions { WriteIndented = true }))
-                : System.Text.Json.JsonSerializer.Serialize(value, DefaultOptions);
+            var options = indented ? Configure(new JsonSerializerOptions { WriteIndented = true }) : DefaultOptions;
+            return System.Text.Json.JsonSerializer.Serialize(value, options);
         }
 
         public static T? Deserialize<T>(string json)

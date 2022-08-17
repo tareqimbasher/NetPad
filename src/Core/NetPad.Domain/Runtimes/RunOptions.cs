@@ -1,15 +1,19 @@
+using NetPad.Compilation;
+
 namespace NetPad.Runtimes;
 
 public class RunOptions
 {
     public RunOptions()
     {
+        AdditionalCode = new SourceCodeCollection();
     }
 
-    public RunOptions(string? code)
+    public RunOptions(string? specificCodeToRun) : this()
     {
-        Code = code;
+        SpecificCodeToRun = specificCodeToRun;
     }
 
-    public string? Code { get; set; }
+    public string? SpecificCodeToRun { get; set; }
+    public SourceCodeCollection AdditionalCode { get; }
 }

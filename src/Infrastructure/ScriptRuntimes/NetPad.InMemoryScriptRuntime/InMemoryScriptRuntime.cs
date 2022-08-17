@@ -102,7 +102,11 @@ namespace NetPad.Runtimes
         private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
             CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
         {
-            var parsingResult = _codeParser.Parse(_script, runOptions.Code);
+            var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
+            {
+                IncludedCode = runOptions.SpecificCodeToRun,
+                AdditionalCode = runOptions.AdditionalCode
+            });
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
 
@@ -111,10 +115,7 @@ namespace NetPad.Runtimes
                 .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
 
             var compilationResult = _codeCompiler.Compile(
-                new CompilationInput(fullProgram, referenceAssemblyPaths)
-                {
-                    OutputAssemblyNameTag = _script.Name
-                });
+                new CompilationInput(fullProgram, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
 
             if (!compilationResult.Success)
             {

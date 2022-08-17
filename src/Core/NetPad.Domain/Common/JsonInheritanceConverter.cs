@@ -274,6 +274,7 @@ namespace NetPad.Common
             {
                 var knownTypeAttributes = type.GetTypeInfo().GetCustomAttributes(false)
                     .Where(a => a.GetType().Name == "KnownTypeAttribute");
+
                 foreach (dynamic attribute in knownTypeAttributes)
                 {
                     if (attribute.Type != null && attribute.Type.Name == discriminator)
@@ -282,7 +283,11 @@ namespace NetPad.Common
                     }
                     else if (attribute.MethodName != null)
                     {
-                        var method = type.GetRuntimeMethod((string)attribute.MethodName, new Type[0]);
+                        MethodInfo? method = type.GetMethod(
+                            attribute.MethodName,
+                            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy,
+                            Type.EmptyTypes);
+
                         if (method != null)
                         {
                             var types = (IEnumerable<Type>?)method.Invoke(null, new object[0]);

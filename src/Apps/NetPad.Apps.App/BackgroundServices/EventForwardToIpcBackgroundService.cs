@@ -40,6 +40,8 @@ public class EventForwardToIpcBackgroundService : BackgroundService
         SubscribeAndForwardToIpc<EnvironmentsRemovedEvent>();
         SubscribeAndForwardToIpc<SettingsUpdatedEvent>();
         SubscribeAndForwardToIpc<AppStatusMessagePublishedEvent>();
+        SubscribeAndForwardToIpc<DataConnectionSavedEvent>();
+        SubscribeAndForwardToIpc<DataConnectionDeletedEvent>();
     }
 
     private void ForwardEnvironmentLevelEvents()
