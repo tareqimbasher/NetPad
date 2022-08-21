@@ -43,13 +43,22 @@ export class ScriptEnvironments extends ViewModelBase {
                 onSelected: async (clickTarget) => await this.scriptService.openConfigWindow(this.getScriptId(clickTarget), null)
             },
             {
+                isDivider: true
+            },
+            {
+                icon: "open-folder-icon",
+                text: "Open Containing Folder",
+                onSelected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
+                show: (clickTarget) => !!this.getScript(clickTarget).path
+            },
+            {
                 icon: "",
                 text: "Close Other Tabs",
                 shortcut: this.shortcutManager.getShortcutByName("Close Other Tabs"),
                 onSelected: async (clickTarget) => {
-                    const environments = await this.session.getEnvironments();
-                    for (const env of environments) {
-                        if (env.script.id !== this.getScriptId(clickTarget)) {
+                    const scriptId = this.getScriptId(clickTarget);
+                    for (const env of this.session.environments) {
+                        if (env.script.id !== scriptId) {
                             await this.session.close(env.script.id);
                         }
                     }
@@ -59,21 +68,11 @@ export class ScriptEnvironments extends ViewModelBase {
                 icon: "",
                 text: "Close All Tabs",
                 shortcut: this.shortcutManager.getShortcutByName("Close All Tabs"),
-                onSelected: async () =>{
-                    const environments = await this.session.getEnvironments();
-                    for (const env of environments) {
+                onSelected: async () => {
+                    for (const env of this.session.environments) {
                         await this.session.close(env.script.id);
                     }
                 }
-            },
-            {
-                isDivider: true
-            },
-            {
-                icon: "open-folder-icon",
-                text: "Open Containing Folder",
-                onSelected: async (clickTarget) => await this.appService.openFolderContainingScript(this.getScript(clickTarget).path),
-                show: (clickTarget) => !!this.getScript(clickTarget).path
             },
             {
                 icon: "close-icon",
