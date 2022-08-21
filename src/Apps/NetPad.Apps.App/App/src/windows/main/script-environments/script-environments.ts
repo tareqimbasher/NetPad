@@ -52,6 +52,29 @@ export class ScriptEnvironments extends ViewModelBase {
                 show: (clickTarget) => !!this.getScript(clickTarget).path
             },
             {
+                icon: "",
+                text: "Close Other Tabs",
+                shortcut: this.shortcutManager.getShortcutByName("Close Other Tabs"),
+                onSelected: async (clickTarget) => {
+                    const scriptId = this.getScriptId(clickTarget);
+                    for (const env of this.session.environments) {
+                        if (env.script.id !== scriptId) {
+                            await this.session.close(env.script.id);
+                        }
+                    }
+                }
+            },
+            {
+                icon: "",
+                text: "Close All Tabs",
+                shortcut: this.shortcutManager.getShortcutByName("Close All Tabs"),
+                onSelected: async () => {
+                    for (const env of this.session.environments) {
+                        await this.session.close(env.script.id);
+                    }
+                }
+            },
+            {
                 icon: "close-icon",
                 text: "Close",
                 shortcut: this.shortcutManager.getShortcutByName("Close"),
