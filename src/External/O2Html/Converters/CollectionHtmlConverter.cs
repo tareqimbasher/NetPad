@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Linq;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -8,7 +7,7 @@ namespace O2Html.Converters;
 
 public class CollectionHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
@@ -16,24 +15,35 @@ public class CollectionHtmlConverter : HtmlConverter
         if (serializationScope.CheckAddAddIsAlreadySerialized(obj))
         {
             var referenceLoopHandling = htmlSerializer.SerializerSettings.ReferenceLoopHandling;
+
             if (referenceLoopHandling == ReferenceLoopHandling.IgnoreAndSerializeCyclicReference)
-                return new CyclicReference(obj).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference);
-            else if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
+                return new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference);
+
+            if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
                 return new Element("div");
-            else if (referenceLoopHandling == ReferenceLoopHandling.Error)
-                throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {obj.GetType().FullName}");
+
+            if (referenceLoopHandling == ReferenceLoopHandling.Error)
+                throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
         }
 
-        var enumerable = GetEnumerable(obj!);
+        var collection = ToEnumerable(obj);
 
-        var collection = enumerable.Cast<object?>().ToArray();
+        Type elementType = htmlSerializer.GetElementType(type) ?? typeof(object);
 
-        var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);;
+        var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);
 
-        var oType = collection.FirstOrDefault(x => x != null)?.GetType();
-        if (oType != null && oType.IsObjectType())
+        int collectionLength = 0;
+
+        foreach (var item in collection)
         {
-            var properties = oType.GetReadableProperties().OrderBy(p => p.Name).ToArray();
+            collectionLength++;
+            var tr = table.Body.AddAndGetElement("tr");
+            htmlSerializer.SerializeWithinTableRow(tr, item, elementType, serializationScope);
+        }
+
+        if (htmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
+        {
+            var properties = htmlSerializer.GetReadableProperties(elementType);
             foreach (var property in properties)
             {
                 table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(withNamespace: true, forHtml: true))
@@ -45,23 +55,17 @@ public class CollectionHtmlConverter : HtmlConverter
                 .AddAndGetElement("th")
                 .WithAddClass("table-item-count")
                 .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
-                .AddText($"({collection.Length} items)");
+                .AddText($"({collectionLength} items)");
         }
         else
         {
-            table.AddAndGetHeading($"{enumerable.GetType().GetReadableName(withNamespace: false, forHtml: true)} ({collection.Length} items)");
-        }
-
-        foreach (var item in collection)
-        {
-            var tr = table.Body.AddAndGetElement("tr");
-            htmlSerializer.SerializeWithinTableRow(tr, item, serializationScope);
+            table.AddAndGetHeading($"{type.GetReadableName(withNamespace: false, forHtml: true)} ({collectionLength} items)");
         }
 
         return table;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         var td = tr.AddAndGetElement("td");
 
@@ -71,16 +75,16 @@ public class CollectionHtmlConverter : HtmlConverter
             return;
         }
 
-        var enumerable = GetEnumerable(obj!);
-        td.AddChild(WriteHtml(enumerable, serializationScope, htmlSerializer));
+        var enumerable = ToEnumerable(obj);
+        td.AddChild(WriteHtml(enumerable, type, serializationScope, htmlSerializer));
     }
 
-    public override bool CanConvert(Type type)
+    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
     {
-        return type.IsCollectionType();
+        return htmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
     }
 
-    private IEnumerable GetEnumerable(object obj)
+    private IEnumerable ToEnumerable<T>(T obj)
     {
         return obj as IEnumerable ??
                throw new InvalidCastException($"Cannot cast {nameof(obj)} to {nameof(IEnumerable)}");

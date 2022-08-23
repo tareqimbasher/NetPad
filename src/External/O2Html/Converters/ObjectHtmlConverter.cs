@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
@@ -8,7 +7,7 @@ namespace O2Html.Converters;
 
 public class ObjectHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
@@ -16,28 +15,29 @@ public class ObjectHtmlConverter : HtmlConverter
         if (serializationScope.CheckAddAddIsAlreadySerialized(obj))
         {
             var referenceLoopHandling = htmlSerializer.SerializerSettings.ReferenceLoopHandling;
-            if (referenceLoopHandling == ReferenceLoopHandling.IgnoreAndSerializeCyclicReference)
-                return new CyclicReference(obj).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference);
-            else if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
-                return new Element("div");
-            else if (referenceLoopHandling == ReferenceLoopHandling.Error)
-                throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {obj.GetType().FullName}");
-        }
 
-        var oType = obj.GetType();
+            if (referenceLoopHandling == ReferenceLoopHandling.IgnoreAndSerializeCyclicReference)
+                return new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference);
+
+            if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
+                return new Element("div");
+
+            if (referenceLoopHandling == ReferenceLoopHandling.Error)
+                throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
+        }
 
         var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);
 
         table.Head.AddAndGetElement("tr")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
-            .AddText(oType.GetReadableName(withNamespace: true, forHtml: true));
+            .AddText(type.GetReadableName(withNamespace: true, forHtml: true));
 
-        var properties = oType.GetReadableProperties().OrderBy(p => p.Name);
+        var properties = htmlSerializer.GetReadableProperties(type);
 
-        foreach (var property in properties.OrderBy(p => p.Name))
+        foreach (var property in properties)
         {
             var name = property.Name;
-            object? value = GetPropertyValue(property, obj);
+            object? value = GetPropertyValue(property, ref obj!);
 
             var tr = table.Body.AddAndGetElement("tr");
             tr.AddAndGetElement("td")
@@ -47,13 +47,13 @@ public class ObjectHtmlConverter : HtmlConverter
                 .AddText($"{name}: ");
 
             var valueTd = tr.AddAndGetElement("td");
-            valueTd.AddChild(htmlSerializer.Serialize(value, serializationScope));
+            valueTd.AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
         }
 
         return table;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
         {
@@ -61,22 +61,22 @@ public class ObjectHtmlConverter : HtmlConverter
             return;
         }
 
-        var properties = obj.GetReadableProperties().OrderBy(p => p.Name);
+        var properties = htmlSerializer.GetReadableProperties(type);
 
-        foreach (var property in properties.Where(p => p.CanRead))
+        foreach (var property in properties)
         {
             var td = tr.AddAndGetElement("td");
-            object? value = GetPropertyValue(property, obj);
-            td.AddChild(htmlSerializer.Serialize(value, serializationScope));
+            object? value = GetPropertyValue(property, ref obj!);
+            td.AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
         }
     }
 
-    public override bool CanConvert(Type type)
+    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
     {
-        return type.IsObjectType();
+        return htmlSerializer.GetTypeCategory(type) == TypeCategory.SingleObject;
     }
 
-    private object? GetPropertyValue(PropertyInfo property, object? obj)
+    private object? GetPropertyValue<T>(PropertyInfo property, ref T? obj)
     {
         try
         {
@@ -84,7 +84,7 @@ public class ObjectHtmlConverter : HtmlConverter
         }
         catch (Exception)
         {
-            return "";
+            return string.Empty;
         }
     }
 }
