@@ -18,11 +18,11 @@ script-environments .script-tabs {
     }
 
     .script-tab {
-        height: 1.6rem;
+        height: 1.8rem;
         display: flex;
         align-items: center;
         white-space: nowrap;
-        font-size: 0.75rem;
+        font-size: 0.925rem;
         font-weight: bold;
         cursor: default;
         @include theme(background-color, tabColor);
@@ -33,13 +33,13 @@ script-environments .script-tabs {
 
         .script-tab-content {
             display: flex;
-            padding-left: 0.5rem;
-            padding-right: 0.3rem;
+            padding-left: 0.7rem;
+            padding-right: 0.4rem;
             user-select: none;
         }
 
         .script-status {
-            margin-left: 0.35rem;
+            margin-left: 0.45rem;
             display: flex;
             align-items: center;
         }

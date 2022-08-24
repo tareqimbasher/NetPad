@@ -26,8 +26,6 @@ export class ContextMenu extends ViewModelBase {
         if (!this.options || !this.options.selector)
             return;
 
-        this.trackContextClickTargets();
-
         const mouseClickHandler = ev => this.handleClickEvent(ev);
         document.addEventListener("mousedown", mouseClickHandler);
         this.disposables.push(() => document.removeEventListener("mousedown", mouseClickHandler));
@@ -35,6 +33,8 @@ export class ContextMenu extends ViewModelBase {
         const windowBlurHandler = () => this.hideContextMenu();
         window.addEventListener("blur", windowBlurHandler);
         this.disposables.push(() => window.removeEventListener("blur", windowBlurHandler));
+
+        this.trackContextClickTargets();
     }
 
     private handleClickEvent(event: MouseEvent) {

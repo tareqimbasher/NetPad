@@ -3,8 +3,7 @@ import {
     ActiveEnvironmentChangedEvent,
     IEventBus,
     IScriptService,
-    ISession,
-    RunOptions,
+    ISession, RunOptionsDto,
     RunScriptEvent,
     Script,
     ScriptEnvironment,
@@ -97,13 +96,13 @@ export class ScriptEnvironmentView extends ViewModelBase {
             if (this.settings.results.openOnRun)
                 this.openResultsView();
 
-            const runOptions = new RunOptions();
+            const runOptions = new RunOptionsDto();
 
             // If user has code selected, only run selection
             const editor = this.editor();
             const selection = editor.monacoEditor.getSelection();
             if (selection && !selection.isEmpty()) {
-                runOptions.code = editor.monacoEditor.getModel().getValueInRange(selection);
+                runOptions.specificCodeToRun = editor.monacoEditor.getModel().getValueInRange(selection);
             }
 
             await this.scriptService.run(this.script.id, runOptions);

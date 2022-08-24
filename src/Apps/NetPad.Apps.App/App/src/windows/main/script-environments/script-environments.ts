@@ -20,7 +20,12 @@ export class ScriptEnvironments extends ViewModelBase {
 
     public async binding() {
         if (this.session.environments.length === 0) {
-            await this.scriptService.create();
+            try {
+                await this.scriptService.create();
+            }
+            catch (ex) {
+                this.logger.error("Could not create new script", ex);
+            }
         }
 
         this.tabContextMenuOptions = new ContextMenuOptions(".script-tab:not(.new-script-tab)", [

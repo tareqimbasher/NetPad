@@ -4,22 +4,34 @@
 sidebar {
     @include theme(background-color, sidebarBackground);
 
+    .list-group-item {
+        border-right: none;
+        border-left: none;
+        border-width: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-right: 0;
+        user-select: none;
+        @include theme(background-color, sidebarBackground);
+
+        &.script-folder, &.script {
+            padding: 4px 8px;
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
+        }
+    }
+
+    .tree-expand-node-icon, .tree-collapse-node-icon {
+        @extend .text-orange;
+    }
+
     #script-list > script-folder {
         overflow: auto;
 
         .list-group-item {
-            border-right: none;
-            border-left: none;
-            border-width: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            padding-right: 0;
-            user-select: none;
-            @include theme(background-color, sidebarBackground);
-
             &.script-folder {
-                padding: 4px 8px;
-
                 &:hover {
                     .script-folder-open-icon {
                         visibility: visible;
@@ -28,7 +40,6 @@ sidebar {
             }
 
             &.script {
-                padding: 4px 8px;
                 display: flex;
                 flex-direction: row;
 
@@ -78,10 +89,6 @@ sidebar {
             .script-folder-open-icon {
                 @extend .text-blue;
                 visibility: hidden;
-            }
-
-            .tree-expand-node-icon, .tree-collapse-node-icon {
-                @extend .text-orange;
             }
 
             .script-running-indicator {

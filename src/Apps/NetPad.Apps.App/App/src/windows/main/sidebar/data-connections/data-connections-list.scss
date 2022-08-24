@@ -1,0 +1,32 @@
+@import "~styles/themes";
+
+data-connections-list {
+
+    .data-connection-structure-tree {
+        > .list-group {
+            padding: 0;
+        }
+
+        .list-group-item .display-text {
+            padding-left: 0.5rem;
+        }
+    }
+
+    .db-table, .db-column {
+        padding-left: 1.35rem;
+
+        img {
+            max-height: 1rem;
+            margin-right: 0.4rem;
+        }
+    }
+
+    .db-column-type {
+        font-size: 0.85rem;
+        margin-left: 0.25rem;
+    }
+
+    .data-connection:hover, .display-text:hover {
+        @include theme(background-color, hoverColor);
+    }
+}

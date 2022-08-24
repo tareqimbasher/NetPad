@@ -21,7 +21,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(IAssemblyService, AssemblyService),
             Registration.singleton(IPackageService, PackageService),
-        )
+        );
     }
 }
 

@@ -9,7 +9,7 @@
     }
 
     > .header {
-        font-size: 0.85rem;
+        font-size: 1.05rem;
         font-weight: bold;
         margin-bottom: 10px;
     }
@@ -23,12 +23,9 @@
     }
 
     .sub-header {
-        font-size: 0.80rem;
+        font-size: 1rem;
         font-weight: bold;
         margin-bottom: 5px;
     }
 }
 
-#buttons-bar {
-    @include theme(border-top, borderColor, 1px solid);
-}

@@ -5,7 +5,7 @@
     <import from="./keyboard-shortcut-settings/keyboard-shortcut-settings"></import>
     <import from="./omnisharp-settings/omnisharp-settings"></import>
 
-    <div class="window d-flex flex-column">
+    <div class="window">
         <div class="flex-grow-height-restricted d-flex flex-column">
             <ul class="tabs nav nav-tabs mb-3">
                 <li class="nav-item ${tab === selectedTab ? 'active' : ''}" repeat.for="tab of tabs">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <div id="buttons-bar" class="d-flex p-3">
+        <div class="bottom-buttons-bar">
             <div class="me-auto">
                 <button class="btn btn-secondary"
                         click.trigger="settingService.showSettingsFile()"

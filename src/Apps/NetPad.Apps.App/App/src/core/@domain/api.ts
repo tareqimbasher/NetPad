@@ -232,6 +232,345 @@ export class AssembliesApiClient implements IAssembliesApiClient {
     }
 }
 
+export interface IDataConnectionsApiClient {
+
+    openDataConnectionWindow(dataConnectionId: string | null | undefined): Promise<void>;
+
+    getAll(): Promise<DataConnection[]>;
+
+    save(dataConnection: DataConnection): Promise<void>;
+
+    getAllNames(): Promise<string[]>;
+
+    delete(id: string): Promise<void>;
+
+    test(dataConnection: DataConnection): Promise<DataConnectionTestResult>;
+
+    getDatabases(dataConnection: DataConnection): Promise<string[]>;
+
+    getDatabaseStructure(id: string): Promise<DatabaseStructure>;
+}
+
+export class DataConnectionsApiClient implements IDataConnectionsApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/open?";
+        if (dataConnectionId !== undefined && dataConnectionId !== null)
+            url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpenDataConnectionWindow(_response);
+        });
+    }
+
+    protected processOpenDataConnectionWindow(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]> {
+        let url_ = this.baseUrl + "/data-connections";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAll(_response);
+        });
+    }
+
+    protected processGetAll(response: Response): Promise<DataConnection[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(DataConnection.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnection[]>(<any>null);
+    }
+
+    save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSave(_response);
+        });
+    }
+
+    protected processSave(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    getAllNames(signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/data-connections/names";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAllNames(_response);
+        });
+    }
+
+    protected processGetAllNames(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
+    }
+
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processDelete(_response);
+        });
+    }
+
+    protected processDelete(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult> {
+        let url_ = this.baseUrl + "/data-connections/test";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processTest(_response);
+        });
+    }
+
+    protected processTest(response: Response): Promise<DataConnectionTestResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DataConnectionTestResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnectionTestResult>(<any>null);
+    }
+
+    getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/data-connections/databases";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDatabases(_response);
+        });
+    }
+
+    protected processGetDatabases(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
+    }
+
+    getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure> {
+        let url_ = this.baseUrl + "/data-connections/{id}/database-structure";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDatabaseStructure(_response);
+        });
+    }
+
+    protected processGetDatabaseStructure(response: Response): Promise<DatabaseStructure> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DatabaseStructure.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DatabaseStructure>(<any>null);
+    }
+}
+
 export interface IPackagesApiClient {
 
     getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
@@ -561,7 +900,7 @@ export interface IScriptsApiClient {
 
     save(id: string): Promise<void>;
 
-    run(id: string, runOptions: RunOptions): Promise<void>;
+    run(id: string, dto: RunOptionsDto): Promise<void>;
 
     updateCode(id: string, code: string): Promise<void>;
 
@@ -572,6 +911,8 @@ export interface IScriptsApiClient {
     setReferences(id: string, newReferences: Reference[]): Promise<FileResponse | null>;
 
     setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
+
+    setDataConnection(id: string, dataConnectionId: string | null): Promise<FileResponse | null>;
 }
 
 export class ScriptsApiClient implements IScriptsApiClient {
@@ -691,14 +1032,14 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    run(id: string, runOptions: RunOptions, signal?: AbortSignal | undefined): Promise<void> {
+    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(runOptions);
+        const content_ = JSON.stringify(dto);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -908,6 +1249,45 @@ export class ScriptsApiClient implements IScriptsApiClient {
     }
 
     protected processSetScriptKind(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    setDataConnection(id: string, dataConnectionId: string | null, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/data-connection/{dataConnectionId}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (dataConnectionId === undefined || dataConnectionId === null)
+            throw new Error("The parameter 'dataConnectionId' must be defined.");
+        url_ = url_.replace("{dataConnectionId}", encodeURIComponent("" + dataConnectionId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PUT",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetDataConnection(_response);
+        });
+    }
+
+    protected processSetDataConnection(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -1598,6 +1978,357 @@ export interface IPackageReference extends IReference {
     version: string;
 }
 
+export abstract class DataConnection implements IDataConnection {
+    id!: string;
+    name!: string;
+    type!: DataConnectionType;
+
+    protected _discriminator: string;
+
+    constructor(data?: IDataConnection) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        this._discriminator = "DataConnection";
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.type = _data["type"];
+        }
+    }
+
+    static fromJS(data: any): DataConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "DatabaseConnection") {
+            throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["type"] = this.type;
+        return data;
+    }
+
+    clone(): DataConnection {
+        throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
+    }
+}
+
+export interface IDataConnection {
+    id: string;
+    name: string;
+    type: DataConnectionType;
+}
+
+export type DataConnectionType = "MSSQLServer" | "PostgreSQL";
+
+export class DataConnectionTestResult implements IDataConnectionTestResult {
+    success!: boolean;
+    message?: string | undefined;
+
+    constructor(data?: IDataConnectionTestResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionTestResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionTestResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["message"] = this.message;
+        return data;
+    }
+
+    clone(): DataConnectionTestResult {
+        const json = this.toJSON();
+        let result = new DataConnectionTestResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionTestResult {
+    success: boolean;
+    message?: string | undefined;
+}
+
+export class DatabaseStructure implements IDatabaseStructure {
+    databaseName!: string;
+    schemas!: DatabaseSchema[];
+
+    constructor(data?: IDatabaseStructure) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.schemas = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.databaseName = _data["databaseName"];
+            if (Array.isArray(_data["schemas"])) {
+                this.schemas = [] as any;
+                for (let item of _data["schemas"])
+                    this.schemas!.push(DatabaseSchema.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseStructure {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseStructure();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["databaseName"] = this.databaseName;
+        if (Array.isArray(this.schemas)) {
+            data["schemas"] = [];
+            for (let item of this.schemas)
+                data["schemas"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseStructure {
+        const json = this.toJSON();
+        let result = new DatabaseStructure();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseStructure {
+    databaseName: string;
+    schemas: DatabaseSchema[];
+}
+
+export class DatabaseSchema implements IDatabaseSchema {
+    name?: string | undefined;
+    tables!: DatabaseTable[];
+
+    constructor(data?: IDatabaseSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.tables = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            if (Array.isArray(_data["tables"])) {
+                this.tables = [] as any;
+                for (let item of _data["tables"])
+                    this.tables!.push(DatabaseTable.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        if (Array.isArray(this.tables)) {
+            data["tables"] = [];
+            for (let item of this.tables)
+                data["tables"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseSchema {
+        const json = this.toJSON();
+        let result = new DatabaseSchema();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseSchema {
+    name?: string | undefined;
+    tables: DatabaseTable[];
+}
+
+export class DatabaseTable implements IDatabaseTable {
+    name!: string;
+    columns!: DatabaseTableColumn[];
+
+    constructor(data?: IDatabaseTable) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.columns = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(DatabaseTableColumn.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseTable {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTable();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseTable {
+        const json = this.toJSON();
+        let result = new DatabaseTable();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTable {
+    name: string;
+    columns: DatabaseTableColumn[];
+}
+
+export class DatabaseTableColumn implements IDatabaseTableColumn {
+    name!: string;
+    type!: string;
+    clrType!: string;
+    isPrimaryKey!: boolean;
+    order?: number | undefined;
+
+    constructor(data?: IDatabaseTableColumn) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.type = _data["type"];
+            this.clrType = _data["clrType"];
+            this.isPrimaryKey = _data["isPrimaryKey"];
+            this.order = _data["order"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseTableColumn {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTableColumn();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["clrType"] = this.clrType;
+        data["isPrimaryKey"] = this.isPrimaryKey;
+        data["order"] = this.order;
+        return data;
+    }
+
+    clone(): DatabaseTableColumn {
+        const json = this.toJSON();
+        let result = new DatabaseTableColumn();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTableColumn {
+    name: string;
+    type: string;
+    clrType: string;
+    isPrimaryKey: boolean;
+    order?: number | undefined;
+}
+
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
     version?: string | undefined;
@@ -1805,10 +2536,11 @@ export interface IScriptSummary {
     path: string;
 }
 
-export class RunOptions implements IRunOptions {
-    code?: string | undefined;
+export class RunOptionsDto implements IRunOptionsDto {
+    specificCodeToRun?: string | undefined;
+    additionalCode?: SourceCodeDto[] | undefined;
 
-    constructor(data?: IRunOptions) {
+    constructor(data?: IRunOptionsDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1819,32 +2551,101 @@ export class RunOptions implements IRunOptions {
 
     init(_data?: any) {
         if (_data) {
-            this.code = _data["code"];
+            this.specificCodeToRun = _data["specificCodeToRun"];
+            if (Array.isArray(_data["additionalCode"])) {
+                this.additionalCode = [] as any;
+                for (let item of _data["additionalCode"])
+                    this.additionalCode!.push(SourceCodeDto.fromJS(item));
+            }
         }
     }
 
-    static fromJS(data: any): RunOptions {
+    static fromJS(data: any): RunOptionsDto {
         data = typeof data === 'object' ? data : {};
-        let result = new RunOptions();
+        let result = new RunOptionsDto();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["code"] = this.code;
+        data["specificCodeToRun"] = this.specificCodeToRun;
+        if (Array.isArray(this.additionalCode)) {
+            data["additionalCode"] = [];
+            for (let item of this.additionalCode)
+                data["additionalCode"].push(item.toJSON());
+        }
         return data;
     }
 
-    clone(): RunOptions {
+    clone(): RunOptionsDto {
         const json = this.toJSON();
-        let result = new RunOptions();
+        let result = new RunOptionsDto();
         result.init(json);
         return result;
     }
 }
 
-export interface IRunOptions {
+export interface IRunOptionsDto {
+    specificCodeToRun?: string | undefined;
+    additionalCode?: SourceCodeDto[] | undefined;
+}
+
+export class SourceCodeDto implements ISourceCodeDto {
+    namespaces!: string[];
+    code?: string | undefined;
+
+    constructor(data?: ISourceCodeDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.namespaces = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["namespaces"])) {
+                this.namespaces = [] as any;
+                for (let item of _data["namespaces"])
+                    this.namespaces!.push(item);
+            }
+            this.code = _data["code"];
+        }
+    }
+
+    static fromJS(data: any): SourceCodeDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SourceCodeDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.namespaces)) {
+            data["namespaces"] = [];
+            for (let item of this.namespaces)
+                data["namespaces"].push(item);
+        }
+        data["code"] = this.code;
+        return data;
+    }
+
+    clone(): SourceCodeDto {
+        const json = this.toJSON();
+        let result = new SourceCodeDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISourceCodeDto {
+    namespaces: string[];
     code?: string | undefined;
 }
 
@@ -1909,6 +2710,7 @@ export class Script implements IScript {
     name!: string;
     path?: string | undefined;
     config!: ScriptConfig;
+    dataConnection?: DataConnection | undefined;
     code!: string;
     isDirty!: boolean;
     directoryPath?: string | undefined;
@@ -1932,6 +2734,7 @@ export class Script implements IScript {
             this.name = _data["name"];
             this.path = _data["path"];
             this.config = _data["config"] ? ScriptConfig.fromJS(_data["config"]) : new ScriptConfig();
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
             this.code = _data["code"];
             this.isDirty = _data["isDirty"];
             this.directoryPath = _data["directoryPath"];
@@ -1952,6 +2755,7 @@ export class Script implements IScript {
         data["name"] = this.name;
         data["path"] = this.path;
         data["config"] = this.config ? this.config.toJSON() : <any>undefined;
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
         data["code"] = this.code;
         data["isDirty"] = this.isDirty;
         data["directoryPath"] = this.directoryPath;
@@ -1972,6 +2776,7 @@ export interface IScript {
     name: string;
     path?: string | undefined;
     config: ScriptConfig;
+    dataConnection?: DataConnection | undefined;
     code: string;
     isDirty: boolean;
     directoryPath?: string | undefined;
@@ -2509,9 +3314,13 @@ export class Types implements ITypes {
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
+    dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -2536,9 +3345,13 @@ export class Types implements ITypes {
             this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
             this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChangedEvent.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChangedEvent.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
+            this.dataConnectionSavedEvent = _data["dataConnectionSavedEvent"] ? DataConnectionSavedEvent.fromJS(_data["dataConnectionSavedEvent"]) : <any>undefined;
+            this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
+            this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
+            this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
         }
     }
 
@@ -2563,9 +3376,13 @@ export class Types implements ITypes {
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
         data["activeEnvironmentChanged"] = this.activeEnvironmentChanged ? this.activeEnvironmentChanged.toJSON() : <any>undefined;
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
+        data["dataConnectionSavedEvent"] = this.dataConnectionSavedEvent ? this.dataConnectionSavedEvent.toJSON() : <any>undefined;
+        data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
+        data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
+        data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
         return data;
     }
 
@@ -2590,9 +3407,13 @@ export interface ITypes {
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
+    dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
@@ -3164,6 +3985,92 @@ export interface IScriptDirectoryChangedEvent {
     scripts: ScriptSummary[];
 }
 
+export class DataConnectionSavedEvent implements IDataConnectionSavedEvent {
+    dataConnection!: DataConnection;
+
+    constructor(data?: IDataConnectionSavedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DataConnectionSavedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionSavedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DataConnectionSavedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionSavedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionSavedEvent {
+    dataConnection: DataConnection;
+}
+
+export class DataConnectionDeletedEvent implements IDataConnectionDeletedEvent {
+    dataConnection!: DataConnection;
+
+    constructor(data?: IDataConnectionDeletedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DataConnectionDeletedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionDeletedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DataConnectionDeletedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionDeletedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionDeletedEvent {
+    dataConnection: DataConnection;
+}
+
 export abstract class CommandBase implements ICommandBase {
     id!: string;
 
@@ -3478,6 +4385,237 @@ export class RequestNewScriptNameCommand extends CommandOfString implements IReq
 
 export interface IRequestNewScriptNameCommand extends ICommandOfString {
     currentScriptName: string;
+}
+
+export abstract class DatabaseConnection extends DataConnection implements IDatabaseConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    databaseName?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData!: boolean;
+
+    constructor(data?: IDatabaseConnection) {
+        super(data);
+        this._discriminator = "DatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.host = _data["host"];
+            this.port = _data["port"];
+            this.databaseName = _data["databaseName"];
+            this.userId = _data["userId"];
+            this.password = _data["password"];
+            this.containsProductionData = _data["containsProductionData"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["host"] = this.host;
+        data["port"] = this.port;
+        data["databaseName"] = this.databaseName;
+        data["userId"] = this.userId;
+        data["password"] = this.password;
+        data["containsProductionData"] = this.containsProductionData;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): DatabaseConnection {
+        throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IDatabaseConnection extends IDataConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    databaseName?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData: boolean;
+}
+
+export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnection implements IEntityFrameworkDatabaseConnection {
+    entityFrameworkProviderName!: string;
+
+    constructor(data?: IEntityFrameworkDatabaseConnection) {
+        super(data);
+        this._discriminator = "EntityFrameworkDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.entityFrameworkProviderName = _data["entityFrameworkProviderName"];
+        }
+    }
+
+    static fromJS(data: any): EntityFrameworkDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["entityFrameworkProviderName"] = this.entityFrameworkProviderName;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): EntityFrameworkDatabaseConnection {
+        throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IEntityFrameworkDatabaseConnection extends IDatabaseConnection {
+    entityFrameworkProviderName: string;
+}
+
+export abstract class EntityFrameworkRelationalDatabaseConnection extends EntityFrameworkDatabaseConnection implements IEntityFrameworkRelationalDatabaseConnection {
+
+    constructor(data?: IEntityFrameworkRelationalDatabaseConnection) {
+        super(data);
+        this._discriminator = "EntityFrameworkRelationalDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): EntityFrameworkRelationalDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): EntityFrameworkRelationalDatabaseConnection {
+        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IEntityFrameworkRelationalDatabaseConnection extends IEntityFrameworkDatabaseConnection {
+}
+
+export class MsSqlServerDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMsSqlServerDatabaseConnection {
+
+    constructor(data?: IMsSqlServerDatabaseConnection) {
+        super(data);
+        this._discriminator = "MsSqlServerDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): MsSqlServerDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new MsSqlServerDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): MsSqlServerDatabaseConnection {
+        const json = this.toJSON();
+        let result = new MsSqlServerDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMsSqlServerDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IPostgreSqlDatabaseConnection {
+
+    constructor(data?: IPostgreSqlDatabaseConnection) {
+        super(data);
+        this._discriminator = "PostgreSqlDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): PostgreSqlDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new PostgreSqlDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PostgreSqlDatabaseConnection {
+        const json = this.toJSON();
+        let result = new PostgreSqlDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
 export interface FileResponse {

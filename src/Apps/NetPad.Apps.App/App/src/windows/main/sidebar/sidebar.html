@@ -1,13 +1,15 @@
+<require from="./data-connections/data-connections-list"></require>
+
 <template as-custom-element="script-folder">
     <bindable property="folder"></bindable>
     <bindable property="vm"></bindable>
 
     <div class="list-group">
         <div class="list-group-item script-folder text-truncate d-flex justify-content-between">
-                <span click.trigger="folder.expanded = !folder.expanded">
-                    <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
-                    <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 fa-fw"></i> ${folder.name}
-                </span>
+            <span click.trigger="folder.expanded = !folder.expanded">
+                <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
+                <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 fa-fw"></i> ${folder.name}
+            </span>
             <i class="action-icon script-folder-open-icon"
                title="Open in File Manager"
                click.trigger="vm.openScriptsFolder(folder)"></i>
@@ -56,21 +58,7 @@
     </div>
 </template>
 
-<div id="connection-list" class="flex-grow-height-restricted d-flex flex-column pt-2">
-    <h6>
-        <b class="ps-3">Connections</b>
-        <i class="action-icon add-database-connection-icon float-end pe-2"
-           title="Add Connection"
-           click.trigger="addConnection()"></i>
-        <hr class="m-0 mt-2" style="height: 2px"/>
-    </h6>
-
-    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
-        <p class="text-muted">
-            No connections
-        </p>
-    </div>
-</div>
+<data-connections-list id="connection-list" class="pt-2 flex-grow-height-restricted d-flex flex-column"></data-connections-list>
 
 <div id="script-list" class="pt-2 flex-grow-height-restricted d-flex flex-column">
     <h6>

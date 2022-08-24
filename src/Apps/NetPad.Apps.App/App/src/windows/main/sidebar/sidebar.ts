@@ -1,38 +1,50 @@
 import {watch} from "@aurelia/runtime-html";
 import {
     IAppService,
+    IDataConnectionService,
     IEventBus,
     IScriptService,
     ISession,
-    ScriptDirectoryChangedEvent, ScriptEnvironment,
+    ScriptDirectoryChangedEvent,
+    ScriptEnvironment,
     ScriptSummary,
     Settings
 } from "@domain";
 import Split from "split.js";
 import {Util} from "@common";
+import {ViewModelBase} from "@application";
+import {ILogger} from "aurelia";
 
-export class Sidebar {
+export class Sidebar extends ViewModelBase {
     private readonly rootScriptFolder: SidebarScriptFolder;
     private scriptsMap: Map<string, SidebarScript>;
 
-    constructor(@ISession readonly session: ISession,
-                @IScriptService readonly scriptService: IScriptService,
-                @IAppService readonly appService: IAppService,
-                @IEventBus readonly eventBus: IEventBus,
-                readonly settings: Settings) {
+    constructor(@ISession private readonly  session: ISession,
+                @IScriptService private readonly  scriptService: IScriptService,
+                @IAppService private readonly  appService: IAppService,
+                @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
+                @IEventBus private readonly  eventBus: IEventBus,
+                private readonly  settings: Settings,
+                @ILogger logger: ILogger) {
 
+        super(logger);
         this.scriptsMap = new Map<string, SidebarScript>();
         this.rootScriptFolder = new SidebarScriptFolder("/", "/", null);
         this.rootScriptFolder.expanded = true;
     }
 
     public async attached() {
-        this.loadScripts(await this.scriptService.getScripts());
+        try {
+            this.loadScripts(await this.scriptService.getScripts());
+        }
+        catch (ex) {
+            this.logger.error("Error loading scripts", ex);
+        }
 
         Split(["#connection-list", "#script-list"], {
             gutterSize: 6,
             direction: 'vertical',
-            sizes: [35, 65],
+            sizes: [50, 50],
             minSize: [100, 100],
         });
 
@@ -53,10 +65,6 @@ export class Sidebar {
     public collapseAllFolders(folder: SidebarScriptFolder) {
         folder.expanded = false;
         folder.folders.forEach(f => this.collapseAllFolders(f));
-    }
-
-    public async addConnection() {
-        alert("Adding connections is not implemented yet.");
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
