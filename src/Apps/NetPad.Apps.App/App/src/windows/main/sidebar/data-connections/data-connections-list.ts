@@ -17,6 +17,11 @@ export class DataConnectionsList extends ViewModelBase {
     public binding() {
         this.tabContextMenuOptions = new ContextMenuOptions(".list-group-item.data-connection", [
             {
+                icon: "refresh-icon",
+                text: "Refresh",
+                onSelected: async (clickTarget) => this.refresh(this.getDataConnectionId(clickTarget))
+            },
+            {
                 icon: "delete-icon",
                 text: "Delete",
                 onSelected: async (clickTarget) => this.delete(this.getDataConnectionId(clickTarget))
@@ -39,6 +44,10 @@ export class DataConnectionsList extends ViewModelBase {
         if (confirm(`Are you sure you want to delete "${connection.name}"?`)) {
             await this.dataConnectionService.delete(connectionId);
         }
+    }
+
+    public async refresh(connectionId: string) {
+        alert("Not implemented yet");
     }
 
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections)

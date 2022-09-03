@@ -40,6 +40,9 @@ public class DataConnectionsController : Controller
     [HttpPut]
     public async Task Save(DataConnection dataConnection) => await _mediator.Send(new SaveDataConnectionCommand(dataConnection));
 
+    [HttpPatch("{id:guid}/refresh")]
+    public async Task Refresh(Guid id) => await _mediator.Send(new RefreshDataConnectionCommand(id));
+
     [HttpDelete("{id:guid}")]
     public async Task Delete(Guid id) => await _mediator.Send(new DeleteDataConnectionCommand(id));
 

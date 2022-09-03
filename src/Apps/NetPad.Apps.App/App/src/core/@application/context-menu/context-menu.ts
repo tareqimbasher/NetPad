@@ -1,4 +1,4 @@
-import {bindable, ILogger} from "aurelia";
+import {bindable, ILogger, PLATFORM} from "aurelia";
 import {
     ContextMenuOptions,
     IContextMenuItem,
@@ -34,7 +34,7 @@ export class ContextMenu extends ViewModelBase {
         window.addEventListener("blur", windowBlurHandler);
         this.disposables.push(() => window.removeEventListener("blur", windowBlurHandler));
 
-        this.trackContextClickTargets();
+        PLATFORM.taskQueue.queueTask(() => this.trackContextClickTargets());
     }
 
     private handleClickEvent(event: MouseEvent) {
@@ -102,6 +102,11 @@ export class ContextMenu extends ViewModelBase {
 
     private trackContextClickTargets() {
         this.contextClickTargets = Array.from(document.querySelectorAll(this.options.selector));
+        console.warn("TIPS now", this.contextClickTargets);
+
+        setTimeout(() => {
+            console.warn("TIPS timeout", Array.from(document.querySelectorAll(this.options.selector)));
+        }, 0);
 
         const mutationHandler = (mutations: MutationRecord[], observer: MutationObserver) => {
             for (const mutation of mutations) {

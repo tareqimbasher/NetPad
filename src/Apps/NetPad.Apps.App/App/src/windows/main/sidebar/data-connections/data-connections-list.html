@@ -17,11 +17,11 @@
 <div else class="flex-grow-height-restricted d-flex">
     <div class="list-group overflow-y-auto" style="width: 100%">
         <div class="list-group-item d-flex flex-column"
-             repeat.for="connection of dataConnections"
-             data-connection-id="${connection.id}">
+             repeat.for="connection of dataConnections">
 
             <div class="list-group">
-                <div class="list-group-item d-flex align-items-center justify-content-between data-connection">
+                <div class="list-group-item d-flex align-items-center justify-content-between data-connection"
+                     data-connection-id="${connection.id}">
                     <div class="d-flex align-items-center text-truncate">
                         <i class="${connection.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"
                            click.trigger="connection.toggleExpand()"></i>
@@ -57,8 +57,12 @@
                                             <div class="display-text d-flex align-items-center">
                                                 <img src="/img/column.png"/>
                                                 ${column.name}
-                                                <i class="fa fa-solid fa-key icon-xs text-yellow ms-2"
+                                                <i class="primary-key-icon icon-xs text-yellow ms-2"
+                                                   title="Primary key"
                                                    if.bind="column.isPrimaryKey"></i>
+                                                <i class="foreign-key-icon icon-xs text-blue ms-2"
+                                                   title="Foreign key"
+                                                   if.bind="column.isForeignKey"></i>
                                                 <span class="db-column-type text-muted">(${column.clrType})</span>
                                             </div>
                                         </div>

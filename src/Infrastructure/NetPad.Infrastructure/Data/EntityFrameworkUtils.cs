@@ -33,7 +33,8 @@ internal static class EntityFrameworkUtils
                     property.Name,
                     columnType,
                     property.ClrType.GetReadableName(),
-                    property.IsPrimaryKey());
+                    property.IsPrimaryKey(),
+                    property.IsForeignKey());
                 column.SetOrder(property.GetColumnOrder());
             }
         }

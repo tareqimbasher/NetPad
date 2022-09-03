@@ -242,6 +242,8 @@ export interface IDataConnectionsApiClient {
 
     getAllNames(): Promise<string[]>;
 
+    refresh(id: string): Promise<void>;
+
     delete(id: string): Promise<void>;
 
     test(dataConnection: DataConnection): Promise<DataConnectionTestResult>;
@@ -411,6 +413,40 @@ export class DataConnectionsApiClient implements IDataConnectionsApiClient {
             });
         }
         return Promise.resolve<string[]>(<any>null);
+    }
+
+    refresh(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/{id}/refresh";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRefresh(_response);
+        });
+    }
+
+    protected processRefresh(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
     }
 
     delete(id: string, signal?: AbortSignal | undefined): Promise<void> {
@@ -2274,6 +2310,7 @@ export class DatabaseTableColumn implements IDatabaseTableColumn {
     type!: string;
     clrType!: string;
     isPrimaryKey!: boolean;
+    isForeignKey!: boolean;
     order?: number | undefined;
 
     constructor(data?: IDatabaseTableColumn) {
@@ -2291,6 +2328,7 @@ export class DatabaseTableColumn implements IDatabaseTableColumn {
             this.type = _data["type"];
             this.clrType = _data["clrType"];
             this.isPrimaryKey = _data["isPrimaryKey"];
+            this.isForeignKey = _data["isForeignKey"];
             this.order = _data["order"];
         }
     }
@@ -2308,6 +2346,7 @@ export class DatabaseTableColumn implements IDatabaseTableColumn {
         data["type"] = this.type;
         data["clrType"] = this.clrType;
         data["isPrimaryKey"] = this.isPrimaryKey;
+        data["isForeignKey"] = this.isForeignKey;
         data["order"] = this.order;
         return data;
     }
@@ -2325,6 +2364,7 @@ export interface IDatabaseTableColumn {
     type: string;
     clrType: string;
     isPrimaryKey: boolean;
+    isForeignKey: boolean;
     order?: number | undefined;
 }
 

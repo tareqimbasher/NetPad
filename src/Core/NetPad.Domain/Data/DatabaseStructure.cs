@@ -71,12 +71,12 @@ public class DatabaseTable
     public string Name { get; }
     public IReadOnlyList<DatabaseTableColumn> Columns => _columns;
 
-    public DatabaseTableColumn AddColumn(string name, string type, string clrType, bool isPrimaryKey)
+    public DatabaseTableColumn AddColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
     {
         if (_columns.Any(t => t.Name == name))
             throw new InvalidOperationException($"A column named '{name}' already exists in table '{Name}'");
 
-        var column = new DatabaseTableColumn(name, type, clrType, isPrimaryKey);
+        var column = new DatabaseTableColumn(name, type, clrType, isPrimaryKey, isForeignKey);
         _columns.Add(column);
         return column;
     }
@@ -84,18 +84,20 @@ public class DatabaseTable
 
 public class DatabaseTableColumn
 {
-    public DatabaseTableColumn(string name, string type, string clrType, bool isPrimaryKey)
+    public DatabaseTableColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
     {
         Name = name;
         Type = type;
         ClrType = clrType;
         IsPrimaryKey = isPrimaryKey;
+        IsForeignKey = isForeignKey;
     }
 
     public string Name { get; }
     public string Type { get; }
     public string ClrType { get; }
     public bool IsPrimaryKey { get; }
+    public bool IsForeignKey { get; }
     public int? Order { get; private set; }
 
     public void SetOrder(int? order)

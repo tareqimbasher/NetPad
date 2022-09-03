@@ -49,6 +49,11 @@ button > .icon-base {
     @extend .fa-trash;
 }
 
+.refresh-icon {
+    @extend %icon-base;
+    @extend .fa-rotate-right;
+}
+
 .backspace-icon {
     @extend %icon-base;
     @extend .fa-delete-left;
@@ -233,4 +238,14 @@ button > .icon-base {
 .script-folder-open-icon {
     @extend %icon-base;
     @extend .fa-arrow-up-right-from-square;
+}
+
+.primary-key-icon {
+    @extend %icon-base;
+    @extend .fa-key;
+}
+
+.foreign-key-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-right-arrow-left;
 }

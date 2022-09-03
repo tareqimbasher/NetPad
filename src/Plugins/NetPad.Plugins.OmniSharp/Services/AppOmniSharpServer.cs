@@ -258,14 +258,15 @@ public class AppOmniSharpServer
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 
-        Subscribe<DataConnectionResourcesUpdatedEvent>(async ev =>
+        Subscribe<DataConnectionResourcesUpdatedEvent>(ev =>
         {
-            if (_environment.Script.DataConnection == null || ev.DataConnection.Id != _environment.Script.DataConnection.Id) return;
+            if (_environment.Script.DataConnection == null || ev.DataConnection.Id != _environment.Script.DataConnection.Id) return Task.CompletedTask;
 
-            if (ev.UpdatedComponent == DataConnectionResourcesUpdatedEvent.UpdatedComponentType.SourceCode)
-            {
-                await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(ev.Resources.SourceCode);
-            }
+            var dataConnection = ev.DataConnection;
+
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+
+            return Task.CompletedTask;
         });
 
         Subscribe<ScriptDataConnectionChangedEvent>(ev =>
@@ -274,18 +275,7 @@ public class AppOmniSharpServer
 
             var dataConnection = ev.DataConnection;
 
-            Task.Run(async () =>
-            {
-                await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, _dataConnectionResourcesCache);
-                await NotifyOmniSharpServerProjectFileChangedAsync();
-
-                var sourceCode = dataConnection == null
-                    ? null
-                    : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
-                await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
-                await UpdateOmniSharpCodeBufferAsync();
-                await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
-            });
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
 
             return Task.CompletedTask;
         });
@@ -329,6 +319,22 @@ public class AppOmniSharpServer
             FileName = _project.BootstrapperProgramFilePath,
             Buffer = bootstrapperProgramCode
         });
+    }
+
+    private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
+    {
+        await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, _dataConnectionResourcesCache);
+        await NotifyOmniSharpServerProjectFileChangedAsync();
+
+        var sourceCode = dataConnection == null
+            ? null
+            : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
+        await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
+
+        // To trigger re-calc of diagnostics information
+        await UpdateOmniSharpCodeBufferAsync();
+
+        await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<SourceCodeCollection>? sourceCodeTask)
