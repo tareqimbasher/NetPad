@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
 using NetPad.Scripts;
@@ -81,7 +82,7 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await _project.CreateAsync();
+        await _project.CreateAsync(ProjectOutputType.Executable);
 
         InitializeEventHandlers();
 
@@ -380,8 +381,6 @@ public class AppOmniSharpServer
                 FileName = filePath,
                 Buffer = buffer ?? string.Empty
             });
-
-            await File.WriteAllTextAsync(filePath, buffer ?? string.Empty);
         }
         finally
         {

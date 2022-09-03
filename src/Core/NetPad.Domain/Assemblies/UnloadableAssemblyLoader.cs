@@ -13,7 +13,7 @@ namespace NetPad.Assemblies
     {
         private readonly ILogger<UnloadableAssemblyLoader> _logger;
         private bool _unloaded;
-        private readonly Dictionary<string, ReferencedAssembly> _referenceAssemblies;
+        private Dictionary<string, ReferencedAssembly> _referenceAssemblies;
 
         public UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> logger) : base(isCollectible: true)
         {
@@ -23,16 +23,13 @@ namespace NetPad.Assemblies
 
         public UnloadableAssemblyLoader(IEnumerable<string> referenceAssemblyPaths, ILogger<UnloadableAssemblyLoader> logger) : this(logger)
         {
-            _referenceAssemblies = referenceAssemblyPaths
-                .Select(p => new ReferencedAssembly(p, true))
-                .Distinct()
-                .ToDictionary(k => k.AssemblyName, v => v);
+            WithReferenceAssemblyPaths(referenceAssemblyPaths);
         }
 
         protected override Assembly? Load(AssemblyName assemblyName)
         {
-            if (_referenceAssemblies.TryGetValue(assemblyName.FullName, out var assembly))
-                return LoadFrom(assembly.Bytes);
+            if (_referenceAssemblies.TryGetValue(assemblyName.FullName, out var referencedAssembly))
+                return LoadFrom(referencedAssembly.Bytes);
 
             foreach (var referenceAssembly in _referenceAssemblies.Values)
             {
@@ -40,7 +37,9 @@ namespace NetPad.Assemblies
                     return LoadFrom(r!.Bytes);
             }
 
-            return base.Load(assemblyName);
+            var assembly = base.Load(assemblyName);
+
+            return assembly;
         }
 
         public Assembly LoadFrom(byte[] assemblyBytes)
@@ -68,7 +67,25 @@ namespace NetPad.Assemblies
             }
         }
 
-        public void UnloadLoadedAssemblies()
+        public IAssemblyLoader WithReferenceAssemblyPaths(IEnumerable<string> referenceAssemblyPaths)
+        {
+            _referenceAssemblies = referenceAssemblyPaths
+                .Select(p => new ReferencedAssembly(p, true))
+                .Distinct()
+                .ToDictionary(k => k.AssemblyName, v => v);
+
+            return this;
+        }
+
+        public void Dispose()
+        {
+            _logger.LogTrace($"{nameof(Dispose)} start");
+            UnloadLoadedAssemblies();
+            GCUtil.CollectAndWait();
+            _logger.LogTrace($"{nameof(Dispose)} end ");
+        }
+
+        private void UnloadLoadedAssemblies()
         {
             _logger.LogTrace($"{nameof(UnloadLoadedAssemblies)} start");
 
@@ -91,14 +108,6 @@ namespace NetPad.Assemblies
                 _unloaded = true;
                 _logger.LogTrace($"{nameof(UnloadLoadedAssemblies)} end");
             }
-        }
-
-        public void Dispose()
-        {
-            _logger.LogTrace($"{nameof(Dispose)} start");
-            UnloadLoadedAssemblies();
-            GCUtil.CollectAndWait();
-            _logger.LogTrace($"{nameof(Dispose)} end ");
         }
 
 

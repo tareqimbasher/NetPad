@@ -47,7 +47,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 return resources.SourceCode;
             }
 
-            resources ??= _cache.GetOrAdd(dataConnection.Id, new DataConnectionResources(dataConnection));
+            resources ??= CreateResources(dataConnection);
 
             resources.SourceCode = Task.Run<SourceCodeCollection>(async () =>
             {
@@ -86,7 +86,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 return resources.Assembly;
             }
 
-            resources ??= _cache.GetOrAdd(dataConnection.Id, new DataConnectionResources(dataConnection));
+            resources ??= CreateResources(dataConnection);
 
             resources.Assembly = Task.Run<byte[]?>(async () =>
             {
@@ -126,7 +126,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 return resources.RequiredReferences;
             }
 
-            resources ??= _cache.GetOrAdd(dataConnection.Id, new DataConnectionResources(dataConnection));
+            resources ??= CreateResources(dataConnection);
 
             resources.RequiredReferences = Task.Run<IEnumerable<Reference>>(async () =>
             {
@@ -148,5 +148,10 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             return resources.RequiredReferences;
         }
+    }
+
+    private DataConnectionResources CreateResources(DataConnection dataConnection)
+    {
+        return _cache.GetOrAdd(dataConnection.Id, static (key, dc) => new DataConnectionResources(dc), dataConnection);
     }
 }

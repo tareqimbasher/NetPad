@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -65,17 +64,23 @@ public class DotNetCSharpProject
     /// <summary>
     /// Creates the project on disk.
     /// </summary>
+    /// <param name="outputType">The output type of the project.</param>
     /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
-    public virtual async Task CreateAsync(bool deleteExisting = false)
+    public virtual async Task CreateAsync(ProjectOutputType outputType, bool deleteExisting = false)
     {
-        await DeleteAsync();
+        if (deleteExisting)
+        {
+            await DeleteAsync();
+        }
 
         Directory.CreateDirectory(ProjectDirectoryPath);
+
+        string dotnetOutputType = outputType == ProjectOutputType.Executable ? "Exe" : "Library";
 
         string xml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
+        <OutputType>{dotnetOutputType}</OutputType>
         <TargetFramework>{BadGlobals.TargetFramework}</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>

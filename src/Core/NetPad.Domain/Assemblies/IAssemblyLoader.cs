@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace NetPad.Assemblies
@@ -6,6 +7,6 @@ namespace NetPad.Assemblies
     public interface IAssemblyLoader : IDisposable
     {
         Assembly LoadFrom(byte[] assemblyBytes);
-        void UnloadLoadedAssemblies();
+        IAssemblyLoader WithReferenceAssemblyPaths(IEnumerable<string> referenceAssemblyPaths);
     }
 }
