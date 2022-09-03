@@ -48,7 +48,7 @@ export class Session extends SessionApiClient implements ISession {
     }
 
     public async initialize(): Promise<void> {
-        const environments = await this.getEnvironments();
+        const environments = await super.getEnvironments();
         this.environments.push(...environments);
 
         const activeScriptId = await this.getActive();
@@ -59,6 +59,21 @@ export class Session extends SessionApiClient implements ISession {
 
     public getScriptName(scriptId: string): string | null {
         return this.environments.find(e => e.script.id === scriptId)?.script.name;
+    }
+
+    public override async getEnvironment(scriptId: string): Promise<ScriptEnvironment> {
+        let env = this.environments.find(e => e.script.id === scriptId);
+        if (!env) {
+            // if not found in cached env's get it form API and cache it
+            env = await super.getEnvironment(scriptId);
+            this.environments.push(env);
+        }
+
+        return env;
+    }
+
+    public override async getEnvironments(): Promise<ScriptEnvironment[]> {
+        return this.environments;
     }
 
     private subscribeToEvents() {
