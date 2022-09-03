@@ -43,13 +43,13 @@ public static class HtmlElementExtensions
         return child;
     }
 
-    public static TElement WithText<TElement>(this TElement element, string text) where TElement : Element
+    public static TElement WithText<TElement>(this TElement element, string? text) where TElement : Element
     {
         element.AddText(text);
         return element;
     }
 
-    public static TextNode AddAndGetText(this Element element, string text)
+    public static TextNode AddAndGetText(this Element element, string? text)
     {
         var child = new TextNode(text);
         element.AddChild(child);

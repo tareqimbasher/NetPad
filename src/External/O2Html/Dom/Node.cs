@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace O2Html.Dom;
 
 public abstract class Node
@@ -11,6 +13,7 @@ public abstract class Node
     public Element? Parent { get; internal set; }
 
     public abstract string ToHtml(Formatting? formatting = null);
+    public abstract void ToHtml(List<byte> output, Formatting? formatting = null);
 
     public void Delete()
     {

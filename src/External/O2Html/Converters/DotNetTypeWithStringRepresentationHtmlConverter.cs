@@ -6,28 +6,27 @@ namespace O2Html.Converters;
 
 public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
 
         var str = obj.ToString()?
-            .Replace(" ", "&nbsp;")
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;")
-            .Replace("\n", "<br/>")
-        ;
+            .ReplaceIfExists(" ", "&nbsp;")
+            .ReplaceIfExists("<", "&lt;")
+            .ReplaceIfExists(">", "&gt;")
+            .ReplaceIfExists("\n", "<br/>");
 
-        return new Element("span").WithText(str ?? string.Empty);
+        return new Element("span").WithText(str);
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td").AddChild(WriteHtml(obj, serializationScope, htmlSerializer));
+        tr.AddAndGetElement("td").AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 
-    public override bool CanConvert(Type type)
+    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
     {
-        return type.IsDotNetTypeWithStringRepresentation();
+        return htmlSerializer.GetTypeCategory(type) == TypeCategory.DotNetTypeWithStringRepresentation;
     }
 }

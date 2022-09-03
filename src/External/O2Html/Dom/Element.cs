@@ -12,10 +12,13 @@ public class Element : Node
     {
         IsSelfClosing = tagName.EndsWith(">");
 
-        TagName = tagName
-            .Replace("<", "")
-            .Replace(">", "")
-            .Replace("/", "");
+        tagName = tagName
+            .ReplaceIfExists("<", "")
+            .ReplaceIfExists(">", "")
+            .ReplaceIfExists("/", "");
+
+        TagName = tagName;
+
         Attributes = new List<ElementAttribute>();
     }
 
@@ -52,7 +55,7 @@ public class Element : Node
         AddChild(element);
     }
 
-    public void AddText(string text)
+    public void AddText(string? text)
     {
         var textNode = new TextNode(text);
         AddChild(textNode);
@@ -73,7 +76,7 @@ public class Element : Node
         var attribute = GetAttribute(name);
         if (attribute != null) return attribute;
 
-        attribute = new ElementAttribute(this, name, null);
+        attribute = new ElementAttribute(this, name);
         Attributes.Add(attribute);
 
         return attribute;
@@ -97,39 +100,93 @@ public class Element : Node
         _children.Clear();
     }
 
-    public string? InnerHtml(Formatting? formatting = null)
+    public string InnerHtml(Formatting? formatting = null)
     {
-        if (IsSelfClosing)
-            return null;
+        var output = new List<byte>();
 
-        return string.Join(formatting == Formatting.NewLines ? "\n" : string.Empty, Children.Select(c => c.ToHtml(formatting)));
+        InnerHtml(output);
+
+        return Encoding.UTF8.GetString(output.ToArray());
+    }
+
+    public List<byte> InnerHtml(List<byte> output, Formatting? formatting = null)
+    {
+        if (IsSelfClosing && Children.Any())
+            return output;
+
+        bool addBreaker = formatting == Formatting.NewLines;
+
+        for (var iChild = 0; iChild < Children.Count; iChild++)
+        {
+            var child = Children[iChild];
+            if (addBreaker && iChild > 0) output.Add(HtmlConstants.NewLine);
+            child.ToHtml(output, formatting);
+        }
+
+        return output;
     }
 
     public override string ToHtml(Formatting? formatting = null)
     {
-        string breaker = formatting == Formatting.NewLines ? "\n" : string.Empty;
+        var output = new List<byte>();
+        ToHtml(output, formatting);
+        return Encoding.UTF8.GetString(output.ToArray());
+    }
 
-        var sb = new StringBuilder()
-            .Append('<')
-            .Append(TagName)
-            .Append(Attributes.Any() ? " " : "")
-            .Append(string.Join(" ", Attributes.Select(a => a.ToString())))
-            .Append(IsSelfClosing ? "/>" : ">");
+    public override void ToHtml(List<byte> output, Formatting? formatting = null)
+    {
+        bool addBreaker = formatting == Formatting.NewLines;
 
-        if (!IsSelfClosing)
+        byte[] tagNameBytes = Encoding.UTF8.GetBytes(TagName);
+
+        output.Add(HtmlConstants.OpeningAngleBracket);
+        output.AddRange(tagNameBytes);
+
+        if (Attributes.Any())
         {
-            if (Children.Any())
-            {
-                sb.Append(breaker)
-                    .Append(InnerHtml(formatting))
-                    .Append(breaker);
-            }
+            output.Add(HtmlConstants.Space);
 
-            sb.Append($"</{TagName}>");
+            for (var iAttr = 0; iAttr < Attributes.Count; iAttr++)
+            {
+                var attribute = Attributes[iAttr];
+                if (iAttr > 0) output.Add(HtmlConstants.Space);
+                output.AddRange(Encoding.UTF8.GetBytes(attribute.ToString()));
+            }
         }
 
-        return sb.ToString();
+        if (IsSelfClosing)
+        {
+            output.Add(HtmlConstants.ForwardSlash);
+            output.Add(HtmlConstants.ClosingAngleBracket);
+        }
+        else
+        {
+            output.Add(HtmlConstants.ClosingAngleBracket);
+
+            if (Children.Any())
+            {
+                if (addBreaker) output.Add(HtmlConstants.NewLine);
+                InnerHtml(output, formatting);
+                if (addBreaker) output.Add(HtmlConstants.NewLine);
+            }
+
+            output.Add(HtmlConstants.OpeningAngleBracket);
+            output.Add(HtmlConstants.ForwardSlash);
+            output.AddRange(tagNameBytes);
+            output.Add(HtmlConstants.ClosingAngleBracket);
+        }
     }
 
     public override string ToString() => ToHtml();
+}
+
+public static class HtmlConstants
+{
+    public const byte OpeningAngleBracket = 0x3C;
+    public const byte ClosingAngleBracket = 0x3E;
+    public const byte ForwardSlash = 0x2F;
+    public const byte Space = 0x20;
+    public const byte NewLine = 0x0A;
+
+    //IBufferWriter<>
 }

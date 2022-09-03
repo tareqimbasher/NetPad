@@ -7,6 +7,7 @@ public static class HtmlConvert
     public static Element Serialize<T>(T? obj, HtmlSerializerSettings? htmlSerializerSettings = null)
     {
         var serializer = HtmlSerializer.Create(htmlSerializerSettings);
-        return serializer.Serialize(obj);
+        var type = obj?.GetType() ?? typeof(T);
+        return serializer.Serialize(obj, type);
     }
 }

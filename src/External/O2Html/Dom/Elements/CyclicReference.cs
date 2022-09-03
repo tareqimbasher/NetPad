@@ -1,12 +1,11 @@
+using System;
+
 namespace O2Html.Dom.Elements;
 
 public class CyclicReference : Element
 {
-    public CyclicReference(object? obj = null) : base("div")
+    public CyclicReference(Type type) : base("div")
     {
-        if (obj != null)
-        {
-            AddText($"Cyclic reference ({obj.GetType().GetReadableName(withNamespace: true, forHtml: true)})");
-        }
+        AddText($"Cyclic reference ({type.GetReadableName(withNamespace: true, forHtml: true)})");
     }
 }

@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace O2Html;
 
@@ -13,42 +11,12 @@ internal static class InternalExtensions
         return collection.Contains(item);
     }
 
-    public static bool IsDotNetTypeWithStringRepresentation(this Type type)
+    public static string ReplaceIfExists(this string source, string strToReplace, string replaceWith)
     {
-        return type.IsPrimitive ||
-               type.IsEnum ||
-               typeof(Exception).IsAssignableFrom(type) ||
-               type.In(
-                   typeof(string),
-                   typeof(decimal),
-                   typeof(DateTime),
-#if NET6_0_OR_GREATER
-        typeof(DateOnly),
-#endif
-                   typeof(TimeSpan),
-                   typeof(DateTimeOffset)
-               );
-    }
+        if (source.Contains(strToReplace))
+            return source.Replace(strToReplace, replaceWith);
 
-
-    public static bool IsObjectType(this Type type)
-    {
-        return !type.IsDotNetTypeWithStringRepresentation() && !type.IsCollectionType();
-    }
-
-    public static bool IsCollectionType(this Type type)
-    {
-        return type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(type);
-    }
-
-    public static IEnumerable<PropertyInfo> GetReadableProperties(this Type type)
-    {
-        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead);
-    }
-
-    public static IEnumerable<PropertyInfo> GetReadableProperties(this object obj)
-    {
-        return obj.GetType().GetReadableProperties();
+        return source;
     }
 
     public static string GetReadableName(this Type type, bool withNamespace = false, bool forHtml = false)
@@ -76,8 +44,70 @@ internal static class InternalExtensions
         }
 
         if (forHtml)
-            name = name.Replace("<", "&lt;").Replace(">", "&gt;");
+        {
+            name = name
+                .ReplaceIfExists("<", "&lt;")
+                .ReplaceIfExists(">", "&gt;");
+        }
 
         return name;
+    }
+
+    internal static Type? GetCollectionElementType(this Type collectionType)
+    {
+        Type? elementType;
+
+        if (collectionType.IsArray)
+        {
+            elementType = collectionType.GetElementType();
+        }
+        else
+        {
+            Type? iEnumerable = FindIEnumerable(collectionType);
+
+            if (iEnumerable == null)
+            {
+                return typeof(object);
+            }
+
+            elementType = iEnumerable.GetGenericArguments()[0];
+        }
+
+        return elementType;
+    }
+
+    private static Type? FindIEnumerable(Type collectionType)
+    {
+        if (collectionType == typeof(string))
+        {
+            return null;
+        }
+
+        if (collectionType.IsGenericType)
+        {
+            foreach (Type arg in collectionType.GetGenericArguments())
+            {
+                Type iEnumerable = typeof(IEnumerable<>).MakeGenericType(arg);
+                if (iEnumerable.IsAssignableFrom(collectionType))
+                {
+                    return iEnumerable;
+                }
+            }
+        }
+
+        Type[] interfaces = collectionType.GetInterfaces();
+
+        foreach (Type iFace in interfaces)
+        {
+            Type? iEnumerable = FindIEnumerable(iFace);
+            if (iEnumerable != null) return iEnumerable;
+        }
+
+        if (collectionType.BaseType != null && collectionType.BaseType != typeof(object))
+        {
+            return FindIEnumerable(collectionType.BaseType);
+        }
+
+        return null;
     }
 }
