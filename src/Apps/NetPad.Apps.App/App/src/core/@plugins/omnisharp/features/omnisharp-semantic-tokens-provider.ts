@@ -28,6 +28,10 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
                 this._onDidChange.fire();
             }
         });
+
+        this.eventBus.subscribeToServer(api.OmniSharpAsyncBufferUpdateCompletedEvent, message => {
+            setTimeout(() => this._onDidChange.fire(), 1000);
+        });
     }
 
     public getLegend(): languages.SemanticTokensLegend {
@@ -47,6 +51,8 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
     }
 
     private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, cancellationToken: CancellationToken) {
+        console.debug(`TIPS semantic highlights called`);
+
         const scriptId = EditorUtil.getScriptId(model);
 
         const request = new api.SemanticHighlightRequest();

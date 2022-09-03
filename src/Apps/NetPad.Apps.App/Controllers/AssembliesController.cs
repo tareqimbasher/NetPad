@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
+using NetPad.DotNet;
 using NetPad.Packages;
 using NetPad.Scripts;
 

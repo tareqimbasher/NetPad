@@ -14,6 +14,7 @@ namespace NetPad.Scripts
         private string _name;
         private string _code;
         private string? _path;
+        private DataConnection? _dataConnection;
         private bool _isDirty;
 
         public Script(Guid id, string name, ScriptConfig config, string code)
@@ -66,7 +67,11 @@ namespace NetPad.Scripts
 
         public ScriptConfig Config { get; }
 
-        public DataConnection? DataConnection { get; private set; }
+        public DataConnection? DataConnection
+        {
+            get => _dataConnection;
+            private set => this.RaiseAndSetIfChanged(ref _dataConnection, value);
+        }
 
         public string Code
         {

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NetPad.IO;
 using NetPad.Runtimes;
+using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Tests;
 using NetPad.Tests.Helpers;

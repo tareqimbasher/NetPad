@@ -1,6 +1,6 @@
 using NetPad.Exceptions;
 
-namespace NetPad.Scripts
+namespace NetPad.DotNet
 {
     public class PackageReference : Reference
     {

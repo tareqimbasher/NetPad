@@ -22,6 +22,9 @@ internal static class InternalExtensions
                    typeof(string),
                    typeof(decimal),
                    typeof(DateTime),
+#if NET6_0_OR_GREATER
+        typeof(DateOnly),
+#endif
                    typeof(TimeSpan),
                    typeof(DateTimeOffset)
                );

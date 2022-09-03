@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {ISession, Settings} from "@domain";
+import {DataConnectionStore, ISession, Settings} from "@domain";
 import {
     BuiltinShortcuts,
     EditorSetup,
@@ -18,6 +18,7 @@ export class Window {
         @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
+        private readonly dataConnectionStore: DataConnectionStore,
         private readonly editorSetup: EditorSetup) {
     }
 
@@ -27,6 +28,7 @@ export class Window {
         this.editorSetup.setup();
 
         await this.session.initialize();
+        await this.dataConnectionStore.initialize();
     }
 
     public attached() {

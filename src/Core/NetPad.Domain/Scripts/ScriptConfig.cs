@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using NetPad.Common;
+using NetPad.DotNet;
 
 namespace NetPad.Scripts
 {

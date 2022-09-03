@@ -1,7 +1,8 @@
 using System.Linq;
+using NetPad.Scripts;
 using NetPad.Sessions;
 
-namespace NetPad.Scripts;
+namespace NetPad.DotNet;
 
 public class DefaultScriptNameGenerator : IScriptNameGenerator
 {

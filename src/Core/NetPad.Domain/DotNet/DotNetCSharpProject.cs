@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NetPad.Common;
 
 namespace NetPad.DotNet;
 
@@ -13,6 +17,9 @@ namespace NetPad.DotNet;
 /// </summary>
 public class DotNetCSharpProject
 {
+    private readonly HashSet<Reference> _references;
+    private readonly SemaphoreSlim _projectFileLock;
+
     /// <summary>
     /// Creates an instance of <see cref="DotNetCSharpProject"/>.
     /// </summary>
@@ -22,6 +29,9 @@ public class DotNetCSharpProject
     /// Only needed when adding or removing package references.</param>
     public DotNetCSharpProject(string projectDirectoryPath, string projectFileName = "project.csproj", string? packageCacheDirectoryPath = null)
     {
+        _references = new HashSet<Reference>();
+        _projectFileLock = new SemaphoreSlim(1, 1);
+
         ProjectDirectoryPath = projectDirectoryPath;
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
 
@@ -47,6 +57,12 @@ public class DotNetCSharpProject
     public string? PackageCacheDirectoryPath { get; }
 
     /// <summary>
+    /// The references that are added to this project.
+    /// </summary>
+    public IReadOnlySet<Reference> References => _references;
+
+
+    /// <summary>
     /// Creates the project on disk.
     /// </summary>
     /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
@@ -56,11 +72,11 @@ public class DotNetCSharpProject
 
         Directory.CreateDirectory(ProjectDirectoryPath);
 
-        string xml = @"<Project Sdk=""Microsoft.NET.Sdk"">
+        string xml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>{BadGlobals.TargetFramework}</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -85,148 +101,261 @@ public class DotNetCSharpProject
     }
 
 
+    public Task AddReferenceAsync(Reference reference)
+    {
+        if (reference is AssemblyReference assemblyReference)
+        {
+            return AddAssemblyReferenceAsync(assemblyReference);
+        }
+        else if (reference is PackageReference packageReference)
+        {
+            return AddPackageAsync(packageReference);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unhandled reference type.");
+        }
+    }
+
+    public Task RemoveReferenceAsync(Reference reference)
+    {
+        if (reference is AssemblyReference assemblyReference)
+        {
+            return RemoveAssemblyReferenceAsync(assemblyReference);
+        }
+        else if (reference is PackageReference packageReference)
+        {
+            return RemovePackageAsync(packageReference);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unhandled reference type.");
+        }
+    }
+
+    public async Task AddReferencesAsync(IEnumerable<Reference> references)
+    {
+        foreach (var reference in references)
+        {
+            await AddReferenceAsync(reference);
+        }
+    }
+
+    public async Task RemoveReferencesAsync(IEnumerable<Reference> references)
+    {
+        foreach (var reference in references)
+        {
+            await RemoveReferenceAsync(reference);
+        }
+    }
+
     /// <summary>
     /// Adds an assembly reference to the project.
     /// </summary>
-    /// <param name="assemblyPath">The path to the assembly.</param>
+    /// <param name="reference">The assembly reference to add.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public async Task AddAssemblyReferenceAsync(string assemblyPath)
+    public virtual async Task AddAssemblyReferenceAsync(AssemblyReference reference)
     {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
-
-        var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-        if (root == null)
-        {
-            throw new FormatException("Project XML file is not formatted correctly.");
-        }
-
-        // Check if it is already added
-        if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
+        if (_references.Contains(reference))
         {
             return;
         }
 
-        var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
+        await _projectFileLock.WaitAsync();
 
-        if (referenceGroup == null)
+        try
         {
-            referenceGroup = new XElement("ItemGroup");
-            root.Add(referenceGroup);
+            string assemblyPath = reference.AssemblyPath;
+
+            var xmlDoc = XDocument.Load(ProjectFilePath);
+
+            var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+            if (root == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly.");
+            }
+
+            // Check if it is already added
+            if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
+            {
+                return;
+            }
+
+            var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
+
+            if (referenceGroup == null)
+            {
+                referenceGroup = new XElement("ItemGroup");
+                root.Add(referenceGroup);
+            }
+
+            var referenceElement = new XElement("Reference");
+
+            referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
+
+            var hintPathElement = new XElement("HintPath");
+            hintPathElement.SetValue(assemblyPath);
+            referenceElement.Add(hintPathElement);
+
+            referenceGroup.Add(referenceElement);
+
+            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+
+            _references.Add(reference);
         }
-
-        var referenceElement = new XElement("Reference");
-
-        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
-
-        var hintPathElement = new XElement("HintPath");
-        hintPathElement.SetValue(assemblyPath);
-        referenceElement.Add(hintPathElement);
-
-        referenceGroup.Add(referenceElement);
-
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        finally
+        {
+            _projectFileLock.Release();
+        }
     }
 
     /// <summary>
     /// Removes an assembly reference from the project.
     /// </summary>
-    /// <param name="assemblyPath">The path to the assembly.</param>
+    /// <param name="reference">The assembly reference to remove.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public async Task RemoveAssemblyReferenceAsync(string assemblyPath)
+    public virtual async Task RemoveAssemblyReferenceAsync(AssemblyReference reference)
     {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
-
-        var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-        if (root == null)
-        {
-            throw new FormatException("Project XML file is not formatted correctly.");
-        }
-
-        var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
-
-        if (referenceElementToRemove == null)
+        if (!_references.Contains(reference))
         {
             return;
         }
 
-        referenceElementToRemove.Remove();
+        await _projectFileLock.WaitAsync();
 
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        try
+        {
+            var assemblyPath = reference.AssemblyPath;
+
+            var xmlDoc = XDocument.Load(ProjectFilePath);
+
+            var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+            if (root == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly.");
+            }
+
+            var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
+
+            if (referenceElementToRemove == null)
+            {
+                return;
+            }
+
+            referenceElementToRemove.Remove();
+
+            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+
+            _references.Remove(reference);
+        }
+        finally
+        {
+            _projectFileLock.Release();
+        }
     }
 
     /// <summary>
     /// Adds a package reference to the project and installs it.
     /// </summary>
-    /// <param name="packageId">The package ID.</param>
-    /// <param name="packageVersion">The package version. If null is passed, the latest version will be installed.</param>
+    /// <param name="reference">The package to add.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    public async Task AddPackageAsync(string packageId, string? packageVersion)
+    public virtual async Task AddPackageAsync(PackageReference reference)
     {
-        if (PackageCacheDirectoryPath == null)
-            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
-
-        if (!Directory.Exists(PackageCacheDirectoryPath))
-            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
-
-        var versionArg = packageVersion == null ? null : $"--version {packageVersion} ";
-
-        var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"add {ProjectFilePath} package {packageId} " +
-            $"{versionArg}" +
-            $"--package-directory {PackageCacheDirectoryPath}")
+        if (_references.Contains(reference))
         {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
+            return;
+        }
 
-        if (process != null)
+        await _projectFileLock.WaitAsync();
+
+        try
         {
-            await process.WaitForExitAsync();
+            if (PackageCacheDirectoryPath == null)
+                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
+
+            if (!Directory.Exists(PackageCacheDirectoryPath))
+                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
+
+            var packageId = reference.PackageId;
+            var packageVersion = reference.Version;
+
+            var process = Process.Start(new ProcessStartInfo("dotnet",
+                $"add \"{ProjectFilePath}\" package {packageId} " +
+                $"--version {packageVersion} " +
+                $"--package-directory \"{PackageCacheDirectoryPath}\"")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = ProjectDirectoryPath,
+                CreateNoWindow = true
+            });
+
+            if (process != null)
+            {
+                await process.WaitForExitAsync();
+            }
+        }
+        finally
+        {
+            _projectFileLock.Release();
         }
     }
 
     /// <summary>
     /// Removes a package reference from the project and uninstalls it.
     /// </summary>
-    /// <param name="packageId">The package ID.</param>
+    /// <param name="reference">The package to remove.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    public async Task RemovePackageAsync(string packageId)
+    public virtual async Task RemovePackageAsync(PackageReference reference)
     {
-        if (PackageCacheDirectoryPath == null)
-            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
-
-        if (!Directory.Exists(PackageCacheDirectoryPath))
-            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
-
-        var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"remove {ProjectFilePath} package {packageId} " +
-            $"--package-directory {PackageCacheDirectoryPath}")
+        if (!_references.Contains(reference))
         {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            await process.WaitForExitAsync();
+            return;
         }
 
-        // This is needed so that 'project.assets.json' file is updated properly
-        process = Process.Start(new ProcessStartInfo("dotnet",
-            $"restore {ProjectFilePath}")
-        {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
+        await _projectFileLock.WaitAsync();
 
-        if (process != null)
+        try
         {
-            await process.WaitForExitAsync();
+            if (PackageCacheDirectoryPath == null)
+                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
+
+            if (!Directory.Exists(PackageCacheDirectoryPath))
+                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
+
+            var packageId = reference.PackageId;
+
+            var process = Process.Start(new ProcessStartInfo("dotnet",
+                $"remove \"{ProjectFilePath}\" package {packageId}")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = ProjectDirectoryPath,
+                CreateNoWindow = true
+            });
+
+            if (process != null)
+            {
+                await process.WaitForExitAsync();
+            }
+
+            // This is needed so that 'project.assets.json' file is updated properly
+            process = Process.Start(new ProcessStartInfo("dotnet",
+                $"restore {ProjectFilePath}")
+            {
+                UseShellExecute = false,
+                WorkingDirectory = ProjectDirectoryPath,
+                CreateNoWindow = true
+            });
+
+            if (process != null)
+            {
+                await process.WaitForExitAsync();
+            }
+        }
+        finally
+        {
+            _projectFileLock.Release();
         }
     }
 

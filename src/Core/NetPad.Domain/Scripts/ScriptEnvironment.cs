@@ -15,8 +15,8 @@ namespace NetPad.Scripts
     public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         private readonly IEventBus _eventBus;
-        private readonly IDataConnectionSourceCodeCache _dataConnectionSourceCodeCache;
         private readonly ILogger<ScriptEnvironment> _logger;
+        private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
         private IServiceScope? _serviceScope;
         private IInputReader _inputReader;
         private IOutputWriter _outputWriter;
@@ -30,7 +30,7 @@ namespace NetPad.Scripts
             Script = script;
             _serviceScope = serviceScope;
             _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
-            _dataConnectionSourceCodeCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionSourceCodeCache>();
+            _dataConnectionResourcesCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
             _outputWriter = ActionOutputWriter.Null;
@@ -61,10 +61,16 @@ namespace NetPad.Scripts
             {
                 if (Script.DataConnection != null)
                 {
-                    var connectionCode = await _dataConnectionSourceCodeCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
+                    var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
                     if (connectionCode.Any())
                     {
                         runOptions.AdditionalCode.AddRange(connectionCode);
+                    }
+
+                    var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(Script.DataConnection);
+                    if (requiredReferences.Any())
+                    {
+                        runOptions.AdditionalReferences.AddRange(requiredReferences);
                     }
                 }
 

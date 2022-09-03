@@ -36,7 +36,7 @@ public class NuGetPackageProvider : IPackageProvider
         _settings = settings;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
-        _nuGetFramework = NuGetFramework.ParseFolder("net6.0");
+        _nuGetFramework = NuGetFramework.ParseFolder(BadGlobals.TargetFramework);
 
         // hostDependencyContext = DependencyContext.Load(hostAssembly);
         // FrameworkName = hostDependencyContext.Target.Framework;
@@ -162,7 +162,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         // TODO filter results for packages that support current framework
         // This does not seem to have any effect
-        //filter.SupportedFrameworks = new[] { "net6.0" };
+        //filter.SupportedFrameworks = new[] { BadGlobals.TargetFramework };
 
         IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
             term,

@@ -25,6 +25,7 @@ using NetPad.Packages;
 using NetPad.Plugins;
 using NetPad.Resources;
 using NetPad.Runtimes;
+using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.Sessions;
@@ -76,8 +77,8 @@ namespace NetPad
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
 
             // Data connections
-            services.AddSingleton<IDataConnectionSourceCodeCache, DatabaseConnectionSourceCodeCache>();
-            services.AddSingleton<IDataConnectionAssemblyCache, DataConnectionAssemblyCache>();
+            services.AddSingleton<IDataConnectionResourcesGenerator, DataConnectionResourcesGenerator>();
+            services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
             services.AddTransient<IDatabaseConnectionInfoProvider, DatabaseConnectionInfoProvider>();
 
             // Package management

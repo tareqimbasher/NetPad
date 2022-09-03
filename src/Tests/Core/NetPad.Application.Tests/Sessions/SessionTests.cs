@@ -1,8 +1,9 @@
-using NetPad.Scripts;
+using NetPad.DotNet;
 using NetPad.Tests;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NetPad.Scripts;
 using NetPad.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;

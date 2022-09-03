@@ -9,12 +9,12 @@ namespace NetPad.Data;
 
 public class DatabaseConnectionInfoProvider : IDatabaseConnectionInfoProvider
 {
-    private readonly IDataConnectionAssemblyCache _dataConnectionAssemblyCache;
+    private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IAssemblyLoader _assemblyLoader;
 
-    public DatabaseConnectionInfoProvider(IDataConnectionAssemblyCache dataConnectionAssemblyCache, IAssemblyLoader assemblyLoader)
+    public DatabaseConnectionInfoProvider(IDataConnectionResourcesCache dataConnectionResourcesCache, IAssemblyLoader assemblyLoader)
     {
-        _dataConnectionAssemblyCache = dataConnectionAssemblyCache;
+        _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _assemblyLoader = assemblyLoader;
     }
 
@@ -25,7 +25,7 @@ public class DatabaseConnectionInfoProvider : IDatabaseConnectionInfoProvider
             throw new InvalidOperationException("Cannot get structure except on Entity Framework database connections.");
         }
 
-        var assemblyBytes = await _dataConnectionAssemblyCache.GetAssemblyAsync(dbConnection);
+        var assemblyBytes = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection);
         if (assemblyBytes == null)
         {
             return new DatabaseStructure(dbConnection.DatabaseName ?? string.Empty);

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using NetPad.Exceptions;
 
-namespace NetPad.Scripts
+namespace NetPad.DotNet
 {
     public class AssemblyReference : Reference
     {

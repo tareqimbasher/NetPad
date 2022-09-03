@@ -48,6 +48,7 @@ namespace NetPad.Compilation.CSharp
             return NamespacesNeededByBaseProgram
                 .Union(script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
                 .Union(additionalNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
+                .Select(ns => ns.Trim())
                 .ToHashSet();
         }
 

@@ -3509,7 +3509,8 @@ export interface ICodeCheckRequest extends IRequest {
 }
 
 export class Types implements ITypes {
-    diagnosticsEvent?: DiagnosticsEvent | undefined;
+    omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
+    omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -3522,7 +3523,8 @@ export class Types implements ITypes {
 
     init(_data?: any) {
         if (_data) {
-            this.diagnosticsEvent = _data["diagnosticsEvent"] ? DiagnosticsEvent.fromJS(_data["diagnosticsEvent"]) : <any>undefined;
+            this.omniSharpDiagnosticsEvent = _data["omniSharpDiagnosticsEvent"] ? OmniSharpDiagnosticsEvent.fromJS(_data["omniSharpDiagnosticsEvent"]) : <any>undefined;
+            this.omniSharpAsyncBufferUpdateCompletedEvent = _data["omniSharpAsyncBufferUpdateCompletedEvent"] ? OmniSharpAsyncBufferUpdateCompletedEvent.fromJS(_data["omniSharpAsyncBufferUpdateCompletedEvent"]) : <any>undefined;
         }
     }
 
@@ -3535,7 +3537,8 @@ export class Types implements ITypes {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["diagnosticsEvent"] = this.diagnosticsEvent ? this.diagnosticsEvent.toJSON() : <any>undefined;
+        data["omniSharpDiagnosticsEvent"] = this.omniSharpDiagnosticsEvent ? this.omniSharpDiagnosticsEvent.toJSON() : <any>undefined;
+        data["omniSharpAsyncBufferUpdateCompletedEvent"] = this.omniSharpAsyncBufferUpdateCompletedEvent ? this.omniSharpAsyncBufferUpdateCompletedEvent.toJSON() : <any>undefined;
         return data;
     }
 
@@ -3548,14 +3551,15 @@ export class Types implements ITypes {
 }
 
 export interface ITypes {
-    diagnosticsEvent?: DiagnosticsEvent | undefined;
+    omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
+    omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
 }
 
-export class DiagnosticsEvent implements IDiagnosticsEvent {
+export class OmniSharpDiagnosticsEvent implements IOmniSharpDiagnosticsEvent {
     scriptId!: string;
     diagnostics!: DiagnosticMessage;
 
-    constructor(data?: IDiagnosticsEvent) {
+    constructor(data?: IOmniSharpDiagnosticsEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3574,9 +3578,9 @@ export class DiagnosticsEvent implements IDiagnosticsEvent {
         }
     }
 
-    static fromJS(data: any): DiagnosticsEvent {
+    static fromJS(data: any): OmniSharpDiagnosticsEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new DiagnosticsEvent();
+        let result = new OmniSharpDiagnosticsEvent();
         result.init(data);
         return result;
     }
@@ -3588,15 +3592,15 @@ export class DiagnosticsEvent implements IDiagnosticsEvent {
         return data;
     }
 
-    clone(): DiagnosticsEvent {
+    clone(): OmniSharpDiagnosticsEvent {
         const json = this.toJSON();
-        let result = new DiagnosticsEvent();
+        let result = new OmniSharpDiagnosticsEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IDiagnosticsEvent {
+export interface IOmniSharpDiagnosticsEvent {
     scriptId: string;
     diagnostics: DiagnosticMessage;
 }
@@ -3761,6 +3765,49 @@ export interface IDiagnosticLocation extends IQuickFix {
     logLevel?: string | undefined;
     id?: string | undefined;
     tags?: string[] | undefined;
+}
+
+export class OmniSharpAsyncBufferUpdateCompletedEvent implements IOmniSharpAsyncBufferUpdateCompletedEvent {
+    scriptId!: string;
+
+    constructor(data?: IOmniSharpAsyncBufferUpdateCompletedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpAsyncBufferUpdateCompletedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpAsyncBufferUpdateCompletedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        return data;
+    }
+
+    clone(): OmniSharpAsyncBufferUpdateCompletedEvent {
+        const json = this.toJSON();
+        let result = new OmniSharpAsyncBufferUpdateCompletedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpAsyncBufferUpdateCompletedEvent {
+    scriptId: string;
 }
 
 export class ApiException extends Error {

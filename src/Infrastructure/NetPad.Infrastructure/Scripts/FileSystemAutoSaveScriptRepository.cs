@@ -6,8 +6,9 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.Scripts;
 
-namespace NetPad.Scripts;
+namespace NetPad.DotNet;
 
 public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 {

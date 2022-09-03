@@ -1,9 +1,12 @@
 import {bindable, ILogger} from "aurelia";
 import {
     ActiveEnvironmentChangedEvent,
+    DataConnection,
+    DataConnectionStore,
     IEventBus,
     IScriptService,
-    ISession, RunOptionsDto,
+    ISession,
+    RunOptionsDto,
     RunScriptEvent,
     Script,
     ScriptEnvironment,
@@ -16,6 +19,7 @@ import {Editor, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironmentView extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
+
     @observable public editorText: string;
     public running = false;
 
@@ -26,11 +30,12 @@ export class ScriptEnvironmentView extends ViewModelBase {
     private activatedAtLeastOnce = false;
 
     constructor(
-        readonly settings: Settings,
-        @IScriptService readonly scriptService: IScriptService,
-        @ISession readonly session: ISession,
-        @IShortcutManager readonly shortcutManager: IShortcutManager,
-        @IEventBus readonly eventBus: IEventBus,
+        private readonly settings: Settings,
+        @IScriptService private readonly scriptService: IScriptService,
+        @ISession private readonly session: ISession,
+        private readonly dataConnectionStore: DataConnectionStore,
+        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -44,7 +49,28 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     public set kind(value) {
-        this.scriptService.setScriptKind(this.script.id, value);
+        this.scriptService.setScriptKind(this.script.id, value)
+            .catch(err => {
+                this.logger.error("Failed to set script kind", err);
+            });
+    }
+
+    public get dataConnection(): DataConnection | null {
+        if (!this.script.dataConnection)
+            return null;
+
+        // We want to return the connection object from the connection store, not the connection
+        // defined in the script.dataConnection property because they both reference 2 different
+        // object instances, even though they are "the same connection"
+        return this.dataConnectionStore.connections.find(c => c.id == this.script.dataConnection.id);
+    }
+
+    public set dataConnection(value: DataConnection | null) {
+        console.warn("Calling set data connection with", this.script.id, value);
+        this.scriptService.setDataConnection(this.script.id, value?.id)
+            .catch(err => {
+                this.logger.error("Failed to set script data connection", err);
+            });
     }
 
     public get isActive(): boolean {

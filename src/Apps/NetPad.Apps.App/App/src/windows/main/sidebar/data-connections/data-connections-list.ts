@@ -1,13 +1,6 @@
-import {
-    ApiException,
-    DatabaseStructure,
-    DataConnection,
-    DataConnectionDeletedEvent,
-    DataConnectionSavedEvent,
-    IDataConnectionService,
-    IEventBus
-} from "@domain";
 import {ILogger} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
+import {ApiException, DatabaseStructure, DataConnection, DataConnectionStore, IDataConnectionService} from "@domain";
 import {ContextMenuOptions, ViewModelBase} from "@application";
 
 export class DataConnectionsList extends ViewModelBase {
@@ -16,7 +9,7 @@ export class DataConnectionsList extends ViewModelBase {
 
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
-        @IEventBus private readonly eventBus: IEventBus,
+        private readonly dataConnectionStore: DataConnectionStore,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -32,29 +25,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async attached() {
-        try {
-            this.dataConnections = (await this.dataConnectionService.getAll())
-                .map(c => new SidebarDataConnection(c, this.dataConnectionService));
-        } catch (ex) {
-            this.logger.error("Error loading data connections", ex);
-        }
-
-        this.eventBus.subscribeToServer(DataConnectionSavedEvent, msg => {
-            const ix = this.dataConnections.findIndex(c => c.id === msg.dataConnection.id);
-            const connection = DataConnection.fromJS(msg.dataConnection);
-
-            if (ix >= 0) {
-                this.dataConnections[ix].init(connection);
-            } else {
-                this.dataConnections.push(new SidebarDataConnection(connection, this.dataConnectionService));
-            }
-        });
-
-        this.eventBus.subscribeToServer(DataConnectionDeletedEvent, msg => {
-            const ix = this.dataConnections.findIndex(c => c.id === msg.dataConnection.id);
-            if (ix >= 0)
-                this.dataConnections.splice(ix, 1);
-        });
+        this.constructSideBarDataConnections();
     }
 
     public async addConnection() {
@@ -68,6 +39,12 @@ export class DataConnectionsList extends ViewModelBase {
         if (confirm(`Are you sure you want to delete "${connection.name}"?`)) {
             await this.dataConnectionService.delete(connectionId);
         }
+    }
+
+    @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections)
+    private constructSideBarDataConnections() {
+        this.dataConnections = this.dataConnectionStore.connections
+            .map(c => new SidebarDataConnection(c, this.dataConnectionService));
     }
 
     private getDataConnectionId(element: Element) {

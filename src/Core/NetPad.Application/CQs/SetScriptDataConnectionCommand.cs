@@ -1,5 +1,6 @@
 using MediatR;
 using NetPad.Data;
+using NetPad.Events;
 using NetPad.Scripts;
 
 namespace NetPad.CQs;
@@ -18,11 +19,23 @@ public class SetScriptDataConnectionCommand : Command
 
     public class Handler : IRequestHandler<SetScriptDataConnectionCommand, Unit>
     {
-        public Task<Unit> Handle(SetScriptDataConnectionCommand request, CancellationToken cancellationToken)
+        private readonly IEventBus _eventBus;
+
+        public Handler(IEventBus eventBus)
         {
-            request.Script.SetDataConnection(request.Connection);
-            
-            return Task.FromResult(Unit.Value);
+            _eventBus = eventBus;
+        }
+
+        public async Task<Unit> Handle(SetScriptDataConnectionCommand request, CancellationToken cancellationToken)
+        {
+            var script = request.Script;
+            var connection = request.Connection;
+
+            script.SetDataConnection(connection);
+
+            await _eventBus.PublishAsync(new ScriptDataConnectionChangedEvent(script, connection));
+
+            return Unit.Value;
         }
     }
 }

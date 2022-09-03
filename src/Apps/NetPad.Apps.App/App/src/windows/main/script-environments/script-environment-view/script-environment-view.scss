@@ -4,8 +4,12 @@ script-environment-view {
     padding-top: 0.5rem;
 
     .script-kind-selector {
-        max-width: 150px;
-        display: inline-block;
+        min-width: 150px;
+    }
+
+    .data-connection-selector {
+        min-width: 200px;
+        max-width: 350px;
     }
 
     .results-container {

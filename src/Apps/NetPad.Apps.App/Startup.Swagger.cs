@@ -90,6 +90,13 @@ public partial class Startup
             lines.Insert(0, "// @ts-nocheck");
             lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
 
+            int ixApiExceptionCode = lines.FindIndex(l => l.Contains("static isApiException(obj: any): obj is ApiException {"));
+            if (ixApiExceptionCode > 0)
+            {
+                // Insert our code before marker
+                // lines.Insert(ixApiExceptionCode, "");
+            }
+
             File.WriteAllText(generatedCodeFilePath, string.Join(Environment.NewLine, lines));
         };
     }

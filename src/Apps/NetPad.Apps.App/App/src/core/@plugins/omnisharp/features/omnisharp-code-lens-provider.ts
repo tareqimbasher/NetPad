@@ -1,4 +1,4 @@
-import {CancellationToken, editor, languages, Position} from "monaco-editor";
+import {CancellationToken, editor, Emitter, IEvent, languages, Position} from "monaco-editor";
 import {EditorUtil, ICodeLensProvider} from "@application";
 import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
 import {IOmniSharpService} from "../omnisharp-service";
@@ -14,8 +14,13 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
         "Dispose",
         "GetEnumerator",
     ];
+    private _onDidChange: Emitter<this>;
+
+    public onDidChange: IEvent<this>;
 
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+        this._onDidChange = new Emitter<this>();
+        this.onDidChange = this._onDidChange.event;
     }
 
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {

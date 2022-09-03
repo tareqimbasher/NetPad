@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
+using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;

@@ -1,6 +1,7 @@
 using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -57,6 +58,7 @@ public class OmniSharpServerCatalog
             environment,
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
+            serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>(),
             serviceScope.ServiceProvider.GetRequiredService<Settings>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),

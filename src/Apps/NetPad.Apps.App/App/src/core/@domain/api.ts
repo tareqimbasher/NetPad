@@ -912,7 +912,7 @@ export interface IScriptsApiClient {
 
     setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
 
-    setDataConnection(id: string, dataConnectionId: string | null): Promise<FileResponse | null>;
+    setDataConnection(id: string, dataConnectionId: string | null | undefined): Promise<FileResponse | null>;
 }
 
 export class ScriptsApiClient implements IScriptsApiClient {
@@ -1264,14 +1264,13 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<FileResponse | null>(<any>null);
     }
 
-    setDataConnection(id: string, dataConnectionId: string | null, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
-        let url_ = this.baseUrl + "/scripts/{id}/data-connection/{dataConnectionId}";
+    setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/data-connection?";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (dataConnectionId === undefined || dataConnectionId === null)
-            throw new Error("The parameter 'dataConnectionId' must be defined.");
-        url_ = url_.replace("{dataConnectionId}", encodeURIComponent("" + dataConnectionId));
+        if (dataConnectionId !== undefined && dataConnectionId !== null)
+            url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{

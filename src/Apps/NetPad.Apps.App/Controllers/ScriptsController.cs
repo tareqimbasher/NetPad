@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Dtos;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -91,8 +92,9 @@ namespace NetPad.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id:guid}/data-connection/{dataConnectionId:guid}")]
-        public async Task<IActionResult> SetDataConnection(Guid id, Guid? dataConnectionId, [FromServices] IDataConnectionRepository dataConnectionRepository)
+        [HttpPut]
+        [Route("{id:guid}/data-connection")]
+        public async Task<IActionResult> SetDataConnection(Guid id, [FromQuery] Guid? dataConnectionId, [FromServices] IDataConnectionRepository dataConnectionRepository)
         {
             var environment = await GetScriptEnvironmentAsync(id);
 

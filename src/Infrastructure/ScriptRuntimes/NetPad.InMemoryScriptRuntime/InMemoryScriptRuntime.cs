@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Assemblies;
 using NetPad.Compilation;
+using NetPad.DotNet;
 using NetPad.Exceptions;
 using NetPad.IO;
 using NetPad.Packages;
@@ -108,7 +109,9 @@ namespace NetPad.Runtimes
                 AdditionalCode = runOptions.AdditionalCode
             });
 
-            var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
+            var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync(
+                _script.Config.References.Union(runOptions.AdditionalReferences)
+            );
 
             var fullProgram = parsingResult.GetFullProgram()
                 .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
@@ -129,11 +132,11 @@ namespace NetPad.Runtimes
             return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths, parsingResult);
         }
 
-        private async Task<string[]> GetReferenceAssemblyPathsAsync()
+        private async Task<string[]> GetReferenceAssemblyPathsAsync(IEnumerable<Reference> references)
         {
             var assemblyPaths = new List<string>();
 
-            foreach (var reference in _script!.Config.References)
+            foreach (var reference in references.Distinct())
             {
                 if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
                 {
@@ -146,6 +149,9 @@ namespace NetPad.Runtimes
                     );
                 }
             }
+
+            // return assemblyPaths
+            //     .Distinct()
 
             return assemblyPaths.ToArray();
         }

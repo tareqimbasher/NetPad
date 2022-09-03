@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.DotNet;
+using NetPad.Packages;
 
 namespace NetPad.Data.Scaffolding;
 
 public class EntityFrameworkDatabaseScaffolder
 {
     private readonly EntityFrameworkDatabaseConnection _connection;
+    private readonly IPackageProvider _packageProvider;
     private readonly ILogger<EntityFrameworkDatabaseScaffolder> _logger;
     private readonly DotNetCSharpProject _project;
     private readonly string _dbModelOutputDirPath;
@@ -22,10 +24,12 @@ public class EntityFrameworkDatabaseScaffolder
 
     public EntityFrameworkDatabaseScaffolder(
         EntityFrameworkDatabaseConnection connection,
+        IPackageProvider packageProvider,
         Settings settings,
         ILogger<EntityFrameworkDatabaseScaffolder> logger)
     {
         _connection = connection;
+        _packageProvider = packageProvider;
         _logger = logger;
         _project = new DotNetCSharpProject(
             Path.Combine(Path.GetTempPath(), AppIdentifier.AppName, "TypedContexts", connection.Id.ToString()),
@@ -47,8 +51,19 @@ class Program
     }
 }");
 
-        await _project.AddPackageAsync(_connection.EntityFrameworkProviderName, null);
-        await _project.AddPackageAsync("Microsoft.EntityFrameworkCore.Design", null);
+        await _project.AddPackageAsync(new PackageReference(
+            _connection.EntityFrameworkProviderName,
+            _connection.EntityFrameworkProviderName,
+            await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
+            ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
+        ));
+
+        await _project.AddPackageAsync(new PackageReference(
+            "Microsoft.EntityFrameworkCore.Design",
+            "Microsoft.EntityFrameworkCore.Design",
+            await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
+            ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
+        ));
 
         Directory.CreateDirectory(_dbModelOutputDirPath);
 
