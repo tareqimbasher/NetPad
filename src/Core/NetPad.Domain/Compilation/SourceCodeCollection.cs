@@ -33,7 +33,7 @@ public class SourceCodeCollection<TSourceCode> : List<TSourceCode> where TSource
         return codeBuilder.ToString();
     }
 
-    public string ToParsedSourceCode(bool useGlobalUsings = false)
+    public string GetText(bool useGlobalUsings = false)
     {
         var codeBuilder = new StringBuilder();
 

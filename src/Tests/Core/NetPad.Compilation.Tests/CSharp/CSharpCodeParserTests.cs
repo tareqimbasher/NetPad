@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using NetPad.Compilation.CSharp;
 using NetPad.Scripts;
-using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,18 +17,7 @@ namespace NetPad.Compilation.Tests.CSharp
         }
 
         [Fact]
-        public void GetNamespaces_Adds_Namespaces_Needed_By_BaseProgram()
-        {
-            var script = GetScript();
-            var parser = new CSharpCodeParser();
-
-            var namespaces = parser.GetNamespaces(script);
-
-            Assert.Equal(namespaces, CSharpCodeParser.NamespacesNeededByBaseProgram);
-        }
-
-        [Fact]
-        public void GetNamespaces_Returns_Script_Namespaces()
+        public void ParsedResult_Contains_Script_Namespaces()
         {
             var scriptNamespaces = new[]
             {
@@ -40,31 +28,31 @@ namespace NetPad.Compilation.Tests.CSharp
             script.Config.SetNamespaces(scriptNamespaces);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
+            var parsingResult = parser.Parse(script);
 
-            Assert.Equal(scriptNamespaces, namespaces);
+            Assert.Equal(scriptNamespaces, parsingResult.UserProgram.Namespaces);
         }
 
         [Fact]
-        public void GetNamespaces_Returns_Additional_Passed_Namespaces()
+        public void ParsedResult_Contains_Additional_Passed_Namespaces()
         {
             var additionalNamespaces = new[]
             {
                 "AdditionalNamespace1",
                 "AdditionalNamespace2"
             };
+            var parseOptions = new CodeParsingOptions();
+            parseOptions.AdditionalCode.Add(new SourceCode(additionalNamespaces));
             var script = GetScript();
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
+            var parsingResult = parser.Parse(script, parseOptions);
 
-            Assert.Equal(additionalNamespaces, namespaces);
+            Assert.Equal(additionalNamespaces, parsingResult.AdditionalCodeProgram?.GetAllNamespaces());
         }
 
         [Fact]
-        public void GetNamespaces_Returns_Script_And_Additional_Passed_Namespaces()
+        public void ParsedResult_Contains_Script_And_Additional_Passed_Namespaces()
         {
             var scriptNamespaces = new[]
             {
@@ -78,43 +66,16 @@ namespace NetPad.Compilation.Tests.CSharp
                 "AdditionalNamespace2"
             };
             var script = GetScript();
+            var parseOptions = new CodeParsingOptions();
+            parseOptions.AdditionalCode.Add(new SourceCode(additionalNamespaces));
             script.Config.SetNamespaces(scriptNamespaces);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
+            var parsingResult = parser.Parse(script, parseOptions);
 
-            Assert.Equal(scriptNamespaces.Union(additionalNamespaces), namespaces);
-        }
-
-        [Fact]
-        public void GetNamespaces_Returns_Distinct_Namespaces()
-        {
-            var additionalNamespaces = new[]
-            {
-                "AdditionalNamespace1",
-                "AdditionalNamespace1"
-            };
-            var script = GetScript();
-            var parser = new CSharpCodeParser();
-
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
-
-            Assert.Equal(new[] { "AdditionalNamespace1" }, namespaces);
-        }
-
-        [Fact]
-        public void GetNamespaces_Guards_Against_Null_Additional_Namespaces_Param()
-        {
-            string[]? additionalNamespaces = null;
-            var script = GetScript();
-            var parser = new CSharpCodeParser();
-
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces!)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
-
-            Assert.Empty(namespaces);
+            Assert.Equal(
+                scriptNamespaces.Union(additionalNamespaces),
+                parsingResult.UserProgram.Namespaces.Union(parseOptions.AdditionalCode!.GetAllNamespaces()));
         }
 
         [Fact]
@@ -132,38 +93,18 @@ namespace NetPad.Compilation.Tests.CSharp
                 ""
             };
             var script = GetScript();
+            var parseOptions = new CodeParsingOptions();
+            parseOptions.AdditionalCode.Add(new SourceCode(additionalNamespaces));
             script.Config.SetNamespaces(scriptNamespaces!);
             var parser = new CSharpCodeParser();
 
-            var namespaces = parser.GetNamespaces(script, additionalNamespaces)
-                .Except(CSharpCodeParser.NamespacesNeededByBaseProgram);
+            var parsingResult = parser.Parse(script, parseOptions);
 
             Assert.Equal(new[]
             {
                 "ScriptNamespace1",
                 "AdditionalNamespace1"
-            }, namespaces);
-        }
-
-        [Fact]
-        public void Parsed_Code_Includes_Namespaces()
-        {
-            var scriptNamespaces = new[]
-            {
-                "ScriptNamespace1",
-                "ScriptNamespace2"
-            };
-
-            var script = GetScript();
-            script.Config.SetNamespaces(scriptNamespaces);
-            var parser = new CSharpCodeParser();
-
-            var result = parser.Parse(script);
-
-            foreach (var @namespace in scriptNamespaces)
-            {
-                Assert.Contains(@namespace, result.Namespaces);
-            }
+            }, parsingResult.UserProgram.Namespaces.Union(parseOptions.AdditionalCode!.GetAllNamespaces()));
         }
 
         [Fact]
@@ -173,7 +114,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram);
+            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram.Code!);
         }
 
         [Fact]
@@ -183,7 +124,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram);
+            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram.Code!);
         }
 
         [Fact]
@@ -194,7 +135,7 @@ namespace NetPad.Compilation.Tests.CSharp
             script.UpdateCode("DateTime.Now");
             var parser = new CSharpCodeParser();
 
-            Assert.Throws<NotImplementedException>(() => parser.GetUserCode(script.Code, script.Config.Kind));
+            Assert.Throws<NotImplementedException>(() => parser.GetUserProgram(script.Code, script.Config.Kind));
         }
 
         private Script GetScript() => new Script("Test Script");

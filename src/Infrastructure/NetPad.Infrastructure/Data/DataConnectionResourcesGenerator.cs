@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data.Scaffolding;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Packages;
-using NetPad.Scripts;
+using NetPad.Utilities;
 
 namespace NetPad.Data;
 
@@ -37,6 +37,11 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
         _loggerFactory = loggerFactory;
     }
 
+    /// <summary>
+    ///
+    /// </summary>
+    public string Type { get; set; }
+
     public async Task<SourceCodeCollection> GenerateSourceCodeAsync(DataConnection dataConnection)
     {
         if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
@@ -59,7 +64,48 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
         var model = await scaffolder.GetScaffoldedModelAsync();
 
-        return new SourceCodeCollection(model.SourceFiles);
+        var code = new SourceCodeCollection(model.SourceFiles);
+
+        var utilCode = new StringBuilder();
+
+        utilCode.AppendLine("public partial class Program")
+            .AppendLine()
+            .AppendLine("{")
+            .AppendLine(@"
+/// <summary>
+/// An instantiated database context that you can use to access the database.
+/// </summary>
+public static DatabaseContext DataContext { get; } = new DatabaseContext();");
+
+        var dbContext = model.SourceFiles.Single(f => f.IsDbContext);
+
+        var dbSetProperties = dbContext.Code!.Split(Environment.NewLine)
+            .Where(l => l.Contains("public virtual DbSet<"))
+            .Select(l =>
+            {
+                // Extracts 'DbSet<Book> Books' from 'public virtual DbSet<Book> Books { get; set; } = null!;'
+                var typeAndName = l.SubstringBetween("virtual ", " {");
+                var parts = typeAndName.Split(" ");
+
+                return new
+                {
+                    Type = parts[0],
+                    Name = parts[1]
+                };
+            })
+            .Select(dbSet => $@"
+/// <summary>
+/// The {dbSet.Name} table (DbSet).
+/// </summary>
+private static {dbSet.Type} {dbSet.Name} => DataContext.{dbSet.Name};");
+
+        utilCode.AppendJoin(Environment.NewLine, dbSetProperties)
+            .AppendLine()
+            .AppendLine("}");
+
+        code.Add(new SourceCode(utilCode.ToString()));
+
+        return code;
     }
 
     public async Task<byte[]?> GenerateAssemblyAsync(DataConnection dataConnection, SourceCodeCollection sourceCode)
@@ -79,7 +125,7 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
         if (!result.Success)
         {
             throw new Exception("Could not compile data connection assembly. " +
-                                $"Compilation failed with the following diagnostics: {string.Join("\n", result.Diagnostics)}");
+                                $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics)}");
         }
 
         return result.AssemblyBytes;
@@ -125,11 +171,13 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
         references.AddRange(providerAssemblies);
 
-        var code = sourceCode.ToParsedSourceCode();
+        var code = sourceCode.GetText();
 
         return _codeCompiler.Compile(new CompilationInput(
                 code,
                 references.ToHashSet())
-            .WithOutputKind(OutputKind.DynamicallyLinkedLibrary));
+            .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
+            .WithOutputAssemblyNameTag($"data-connection_{efConnection.Id}")
+        );
     }
 }

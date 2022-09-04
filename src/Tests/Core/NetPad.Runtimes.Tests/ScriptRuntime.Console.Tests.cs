@@ -52,8 +52,6 @@ namespace NetPad.Runtimes.Tests
 
             await runtime.RunScriptAsync(new RunOptions());
 
-            _testOutputHelper.WriteLine(result);
-
             Assert.Equal(expectedOutput, result);
         }
 

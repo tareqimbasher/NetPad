@@ -37,5 +37,20 @@ namespace NetPad.Utilities
                 str[(ix + 1)..]
             };
         }
+
+        public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurence = false)
+        {
+            int from = str.IndexOf(startDelimiter, StringComparison.Ordinal) + startDelimiter.Length;
+            int to = !useLastEndDelimiterOccurence
+                ? str.IndexOf(endDelimiter, StringComparison.Ordinal)
+                : str.LastIndexOf(endDelimiter, StringComparison.Ordinal);
+
+            if (from < 0 || to < 0)
+            {
+                return str;
+            }
+
+            return str.Substring(from, to - from);
+        }
     }
 }

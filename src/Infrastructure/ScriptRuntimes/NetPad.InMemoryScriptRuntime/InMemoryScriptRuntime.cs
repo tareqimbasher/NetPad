@@ -26,6 +26,13 @@ namespace NetPad.Runtimes
         private readonly HashSet<IOutputWriter> _outputListeners;
         private IServiceScope? _serviceScope;
 
+        private static readonly string[] _namespacesNeededByBaseProgram =
+        {
+            "System",
+            "System.Threading.Tasks",
+            "NetPad.IO"
+        };
+
         public InMemoryScriptRuntime(
             Script script,
             IServiceScope serviceScope,
@@ -80,6 +87,8 @@ namespace NetPad.Runtimes
                     GCUtil.CollectAndWait();
                 }
 
+                _logger.LogDebug("alcWeakRef.IsAlive after GC collect?: " + alcWeakRef.IsAlive);
+
                 return !completionSuccess ? RunResult.ScriptCompletionFailure(elapsedMs) : RunResult.Success(elapsedMs);
             }
             catch (Exception ex)
@@ -103,10 +112,13 @@ namespace NetPad.Runtimes
         private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
             CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
         {
+            var additionalCode = new SourceCodeCollection(runOptions.AdditionalCode);
+            additionalCode.Add(new SourceCode(_namespacesNeededByBaseProgram));
+
             var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
             {
                 IncludedCode = runOptions.SpecificCodeToRun,
-                AdditionalCode = runOptions.AdditionalCode
+                AdditionalCode = additionalCode
             });
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync(
@@ -149,9 +161,6 @@ namespace NetPad.Runtimes
                     );
                 }
             }
-
-            // return assemblyPaths
-            //     .Distinct()
 
             return assemblyPaths.ToArray();
         }

@@ -305,14 +305,17 @@ public class AppOmniSharpServer
         await OmniSharpServer.SendAsync(new UpdateBufferRequest
         {
             FileName = _project.UserProgramFilePath,
-            Buffer = parsingResult.UserProgram
+            Buffer = parsingResult.UserProgram.Code
         });
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
     {
-        var namespaces = string.Join("\n", parsingResult.Namespaces.Select(ns => $"global using {ns};"));
-        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram}";
+        var namespaces = parsingResult.CombineSourceCode().GetAllNamespaces()
+            .Select(ns => $"global using {ns}")
+            .JoinToString(Environment.NewLine);
+
+        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram.Code}";
 
         await OmniSharpServer.SendAsync(new UpdateBufferRequest
         {

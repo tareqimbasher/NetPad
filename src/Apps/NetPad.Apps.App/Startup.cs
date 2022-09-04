@@ -96,7 +96,7 @@ namespace NetPad
             services.AddHostedService<ScriptDirectoryBackgroundService>();
             if (WebHostEnvironment.IsDevelopment())
             {
-                //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+                services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
             }
 
             // Should be the last hosted service so it runs last on app start

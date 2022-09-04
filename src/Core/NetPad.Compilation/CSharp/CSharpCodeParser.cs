@@ -10,20 +10,9 @@ namespace NetPad.Compilation.CSharp
         public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
         public const string BootstrapperSetIOMethodName = "SetIO";
 
-        public static readonly string[] NamespacesNeededByBaseProgram =
-        {
-            "System",
-            "System.Threading.Tasks",
-            "NetPad.IO"
-        };
-
         public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
         {
-            var namespaces = GetNamespaces(script, options?.AdditionalCode.GetAllNamespaces());
-
-            var userCode = GetUserCode(options?.IncludedCode ?? script.Code, script.Config.Kind);
-            var userProgramTemplate = GetUserProgramTemplate();
-            var userProgram = string.Format(userProgramTemplate, userCode);
+            var userProgram = GetUserProgram(options?.IncludedCode ?? script.Code, script.Config.Kind);
 
             var bootstrapperProgramTemplate = GetBootstrapperProgramTemplate();
             var bootstrapperProgram = string.Format(
@@ -34,25 +23,13 @@ namespace NetPad.Compilation.CSharp
             string? additionalCodeProgram = options?.AdditionalCode.GetAllCode();
 
             return new CodeParsingResult(
-                namespaces,
-                userProgram,
-                bootstrapperProgram,
-                additionalCodeProgram,
+                new SourceCode(userProgram, script.Config.Namespaces),
+                new SourceCode(bootstrapperProgram),
+                options?.AdditionalCode,
                 new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
         }
 
-        public HashSet<string> GetNamespaces(Script script, IEnumerable<string>? additionalNamespaces = null)
-        {
-            additionalNamespaces ??= Array.Empty<string>();
-
-            return NamespacesNeededByBaseProgram
-                .Union(script.Config.Namespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
-                .Union(additionalNamespaces.Where(ns => !string.IsNullOrWhiteSpace(ns)))
-                .Select(ns => ns.Trim())
-                .ToHashSet();
-        }
-
-        public string GetUserCode(string code, ScriptKind kind)
+        public string GetUserProgram(string code, ScriptKind kind)
         {
             string userCode;
             string scriptCode = code;
@@ -112,11 +89,6 @@ static class Exts
     }}
 }}
 ";
-        }
-
-        public string GetUserProgramTemplate()
-        {
-            return $"{{0}}";
         }
     }
 }
