@@ -41,13 +41,13 @@
                         <div class="list-group-item db-schema"
                              repeat.for="schema of connection.structure.schemas">
                             <span class="display-text" if.bind="connection.structure.schemas.length > 1">
-                                ${schema.name}
+                                ${schema.name || 'Default'}
                             </span>
                             <div class="list-group">
                                 <div class="list-group-item db-table"
                                      repeat.for="table of schema.tables">
                                     <div class="display-text d-flex align-items-center">
-                                        <img src="/img/table.png"/>
+                                        <img src="/img/table.png" alt="table"/>
                                         ${table.name}
                                     </div>
                                     <div class="list-group">
@@ -55,7 +55,7 @@
                                              repeat.for="column of table.columns"
                                              title="DB Type: ${column.type}">
                                             <div class="display-text d-flex align-items-center">
-                                                <img src="/img/column.png"/>
+                                                <img src="/img/column.png" alt="column"/>
                                                 ${column.name}
                                                 <i class="primary-key-icon icon-xs text-yellow ms-2"
                                                    title="Primary key"
