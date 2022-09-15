@@ -12,39 +12,39 @@ import {IHttpClient} from "aurelia";
 
 export interface IOmniSharpApiClient {
 
-    restartServer(scriptId: string): Promise<boolean>;
+    restartServer(scriptId: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
-    getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
+    getCompletion(scriptId: string, request: CompletionRequest, signal?: AbortSignal | undefined): Promise<CompletionResponse>;
 
-    getCompletionResolution(scriptId: string, completionItem: CompletionItem2): Promise<CompletionResolveResponse>;
+    getCompletionResolution(scriptId: string, completionItem: CompletionItem2, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse>;
 
-    getCompletionAfterInsert(scriptId: string, completionItem: CompletionItem2): Promise<CompletionAfterInsertResponse>;
+    getCompletionAfterInsert(scriptId: string, completionItem: CompletionItem2, signal?: AbortSignal | undefined): Promise<CompletionAfterInsertResponse>;
 
-    formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
+    formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse>;
 
-    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest): Promise<SemanticHighlightResponse>;
+    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest, signal?: AbortSignal | undefined): Promise<SemanticHighlightResponse>;
 
-    findImplementations(scriptId: string, request: FindImplementationsRequest): Promise<QuickFixResponse>;
+    findImplementations(scriptId: string, request: FindImplementationsRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    getQuickInfo(scriptId: string, request: QuickInfoRequest): Promise<QuickInfoResponse>;
+    getQuickInfo(scriptId: string, request: QuickInfoRequest, signal?: AbortSignal | undefined): Promise<QuickInfoResponse>;
 
-    getSignatureHelp(scriptId: string, request: SignatureHelpRequest): Promise<SignatureHelpResponse>;
+    getSignatureHelp(scriptId: string, request: SignatureHelpRequest, signal?: AbortSignal | undefined): Promise<SignatureHelpResponse>;
 
-    findUsages(scriptId: string, request: FindUsagesRequest): Promise<QuickFixResponse>;
+    findUsages(scriptId: string, request: FindUsagesRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
+    getCodeStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<CodeStructureResponse>;
 
-    getInlayHints(scriptId: string, request: InlayHintRequest): Promise<InlayHintResponse>;
+    getInlayHints(scriptId: string, request: InlayHintRequest, signal?: AbortSignal | undefined): Promise<InlayHintResponse>;
 
-    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest): Promise<InlayHint>;
+    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest, signal?: AbortSignal | undefined): Promise<InlayHint>;
 
-    getCodeActions(scriptId: string, request: GetCodeActionsRequest): Promise<GetCodeActionsResponse>;
+    getCodeActions(scriptId: string, request: GetCodeActionsRequest, signal?: AbortSignal | undefined): Promise<GetCodeActionsResponse>;
 
-    runCodeAction(scriptId: string, request: RunCodeActionRequest): Promise<RunCodeActionResponse>;
+    runCodeAction(scriptId: string, request: RunCodeActionRequest, signal?: AbortSignal | undefined): Promise<RunCodeActionResponse>;
 
-    codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
+    codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    startDiagnostics(scriptId: string): Promise<void>;
+    startDiagnostics(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -759,7 +759,7 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
 
 export interface ITypesApiClient {
 
-    additionalTypes(): Promise<Types>;
+    additionalTypes(signal?: AbortSignal | undefined): Promise<Types>;
 }
 
 export class TypesApiClient implements ITypesApiClient {

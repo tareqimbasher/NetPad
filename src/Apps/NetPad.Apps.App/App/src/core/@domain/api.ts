@@ -12,13 +12,13 @@ import {IHttpClient} from "aurelia";
 
 export interface IAppApiClient {
 
-    getIdentifier(): Promise<AppIdentifier>;
+    getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
-    openFolderContainingScript(scriptPath: string | null | undefined): Promise<FileResponse | null>;
+    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openScriptsFolder(path: string | null | undefined): Promise<FileResponse | null>;
+    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openPackageCacheFolder(): Promise<FileResponse | null>;
+    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class AppApiClient implements IAppApiClient {
@@ -172,7 +172,7 @@ export class AppApiClient implements IAppApiClient {
 
 export interface IAssembliesApiClient {
 
-    getNamespaces(reference: Reference): Promise<string[]>;
+    getNamespaces(reference: Reference, signal?: AbortSignal | undefined): Promise<string[]>;
 }
 
 export class AssembliesApiClient implements IAssembliesApiClient {
@@ -234,23 +234,23 @@ export class AssembliesApiClient implements IAssembliesApiClient {
 
 export interface IDataConnectionsApiClient {
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined): Promise<void>;
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    getAll(): Promise<DataConnection[]>;
+    getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]>;
 
-    save(dataConnection: DataConnection): Promise<void>;
+    save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void>;
 
-    getAllNames(): Promise<string[]>;
+    getAllNames(signal?: AbortSignal | undefined): Promise<string[]>;
 
-    refresh(id: string): Promise<void>;
+    refresh(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    delete(id: string): Promise<void>;
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    test(dataConnection: DataConnection): Promise<DataConnectionTestResult>;
+    test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
 
-    getDatabases(dataConnection: DataConnection): Promise<string[]>;
+    getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]>;
 
-    getDatabaseStructure(id: string): Promise<DatabaseStructure>;
+    getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure>;
 }
 
 export class DataConnectionsApiClient implements IDataConnectionsApiClient {
@@ -609,19 +609,19 @@ export class DataConnectionsApiClient implements IDataConnectionsApiClient {
 
 export interface IPackagesApiClient {
 
-    getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
+    getCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]>;
 
-    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
+    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]>;
 
-    purgePackageCache(): Promise<FileResponse | null>;
+    purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    getPackageVersions(packageId: string | null | undefined): Promise<string[]>;
+    getPackageVersions(packageId: string | null | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
-    install(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class PackagesApiClient implements IPackagesApiClient {
@@ -930,25 +930,25 @@ export class PackagesApiClient implements IPackagesApiClient {
 
 export interface IScriptsApiClient {
 
-    getScripts(): Promise<ScriptSummary[]>;
+    getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
 
-    create(): Promise<void>;
+    create(signal?: AbortSignal | undefined): Promise<void>;
 
-    save(id: string): Promise<void>;
+    save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    run(id: string, dto: RunOptionsDto): Promise<void>;
+    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void>;
 
-    updateCode(id: string, code: string): Promise<void>;
+    updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    openConfigWindow(id: string, tab: string | null | undefined): Promise<void>;
+    openConfigWindow(id: string, tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
+    setScriptNamespaces(id: string, namespaces: string[], signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setReferences(id: string, newReferences: Reference[]): Promise<FileResponse | null>;
+    setReferences(id: string, newReferences: Reference[], signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
+    setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setDataConnection(id: string, dataConnectionId: string | null | undefined): Promise<FileResponse | null>;
+    setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class ScriptsApiClient implements IScriptsApiClient {
@@ -1341,19 +1341,19 @@ export class ScriptsApiClient implements IScriptsApiClient {
 
 export interface ISessionApiClient {
 
-    getEnvironment(scriptId: string): Promise<ScriptEnvironment>;
+    getEnvironment(scriptId: string, signal?: AbortSignal | undefined): Promise<ScriptEnvironment>;
 
-    getEnvironments(): Promise<ScriptEnvironment[]>;
+    getEnvironments(signal?: AbortSignal | undefined): Promise<ScriptEnvironment[]>;
 
-    openByPath(scriptPath: string): Promise<void>;
+    openByPath(scriptPath: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    close(scriptId: string): Promise<void>;
+    close(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    getActive(): Promise<string | null>;
+    getActive(signal?: AbortSignal | undefined): Promise<string | null>;
 
-    activate(scriptId: string): Promise<void>;
+    activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    activateLastActive(): Promise<void>;
+    activateLastActive(signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class SessionApiClient implements ISessionApiClient {
@@ -1619,13 +1619,13 @@ export class SessionApiClient implements ISessionApiClient {
 
 export interface ISettingsApiClient {
 
-    get(): Promise<Settings>;
+    get(signal?: AbortSignal | undefined): Promise<Settings>;
 
-    update(settings: Settings): Promise<FileResponse | null>;
+    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openSettingsWindow(tab: string | null | undefined): Promise<void>;
+    openSettingsWindow(tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    showSettingsFile(): Promise<FileResponse | null>;
+    showSettingsFile(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class SettingsApiClient implements ISettingsApiClient {
@@ -1779,7 +1779,7 @@ export class SettingsApiClient implements ISettingsApiClient {
 
 export interface ITypesApiClient {
 
-    additionalTypes(): Promise<Types>;
+    additionalTypes(signal?: AbortSignal | undefined): Promise<Types>;
 }
 
 export class TypesApiClient implements ITypesApiClient {

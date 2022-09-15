@@ -29,6 +29,7 @@ using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.Sessions;
+using NetPad.Swagger;
 using NetPad.UiInterop;
 
 namespace NetPad
@@ -145,7 +146,7 @@ namespace NetPad
             // Swagger
             if (WebHostEnvironment.IsDevelopment())
             {
-                AddSwagger(services, pluginRegistrations);
+                SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
             }
 
             // Allow ApplicationConfigurator to add/modify any service registrations it needs
