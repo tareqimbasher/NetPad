@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Events;
@@ -20,10 +19,10 @@ namespace OmniSharp.Stdio
     {
         private readonly IOmniSharpServerProcessAccessor<ProcessIOHandler> _omniSharpServerProcessAccessor;
         private readonly RequestResponseQueue _requestResponseQueue;
+        private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
+        private readonly object _stdioStandardInputLock = new object();
         private ProcessIOHandler? _processIo;
         private bool _isStopped = true;
-        private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
-        private readonly SemaphoreSlim _semaphoreSlim;
 
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
@@ -38,7 +37,6 @@ namespace OmniSharp.Stdio
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
-            _semaphoreSlim = new SemaphoreSlim(1);
             _eventHandlers = new ConcurrentDictionary<string, List<Func<JsonNode, Task>>>();
         }
 
@@ -91,33 +89,27 @@ namespace OmniSharp.Stdio
             if (_isStopped)
                 throw new InvalidOperationException("Server is stopped.");
 
-            await _semaphoreSlim.WaitAsync();
+            var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
 
-            try
+            var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
+
+            string requestJson = JsonSerializer.Serialize(requestPacket, _jsonSerializerOptions);
+
+            lock (_stdioStandardInputLock)
             {
-                var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
-
-                var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
-
-                string requestJson = JsonSerializer.Serialize(requestPacket, _jsonSerializerOptions);
-
-                await _processIo.StandardInput.WriteLineAsync(requestJson).ConfigureAwait(false);
-
-                var responseJToken = await responsePromise.ConfigureAwait(false);
-
-                bool success = responseJToken.Success();
-
-                if (success && typeof(TResponse) != typeof(NoResponse))
-                {
-                    return responseJToken.Body<TResponse>(_jsonSerializerOptions);
-                }
-
-                return null;
+                _processIo.StandardInput.WriteLine(requestJson);
             }
-            finally
+
+            var responseJToken = await responsePromise.ConfigureAwait(false);
+
+            bool success = responseJToken.Success();
+
+            if (success && typeof(TResponse) != typeof(NoResponse))
             {
-                _semaphoreSlim.Release();
+                return responseJToken.Body<TResponse>(_jsonSerializerOptions);
             }
+
+            return null;
         }
 
         public SubscriptionToken SubscribeToEvent(string eventType, Func<JsonNode, Task> handler)
@@ -141,7 +133,6 @@ namespace OmniSharp.Stdio
         public override void Dispose()
         {
             _eventHandlers.Clear();
-            _semaphoreSlim.Dispose();
             base.Dispose();
         }
 

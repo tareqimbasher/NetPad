@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Utilities;
@@ -30,7 +31,10 @@ namespace OmniSharp
         public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class;
         public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class;
 
-        protected int NextSequence() => ++_sequence;
+        protected int NextSequence()
+        {
+            return Interlocked.Increment(ref _sequence);
+        }
 
         public virtual void Dispose()
         {
