@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -45,9 +47,7 @@ namespace NetPad.Compilation.CSharp
 
             assemblyLocations.Add(typeof(IOutputWriter).Assembly.Location);
 
-            var references = assemblyLocations
-                .Where(al => !string.IsNullOrWhiteSpace(al))
-                .Select(location => MetadataReference.CreateFromFile(location));
+            var references = BuildMetadataReferences(assemblyLocations);
 
             var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
@@ -58,6 +58,37 @@ namespace NetPad.Compilation.CSharp
                 new[] { parsedSyntaxTree },
                 references: references,
                 options: compilationOptions);
+        }
+
+        private PortableExecutableReference[] BuildMetadataReferences(HashSet<string> assemblyLocations)
+        {
+            var references = assemblyLocations
+                .Where(al => !string.IsNullOrWhiteSpace(al))
+                .Select(location => new
+                {
+                    MetadataReference = MetadataReference.CreateFromFile(location),
+                    AssemblyName = AssemblyName.GetAssemblyName(location)
+                })
+                .ToList();
+
+            var duplicateReferences = references.GroupBy(r => r.AssemblyName.Name)
+                .Where(grp => grp.Key != null && grp.Count() > 1);
+
+            foreach (var duplicateReferenceGroup in duplicateReferences)
+            {
+                // Take the lowest version. If multiple of the same version, just take one.
+                var duplicatesToRemove = duplicateReferenceGroup
+                    .OrderBy(x => x.AssemblyName.Version)
+                    .Skip(1)
+                    .ToArray();
+
+                foreach (var duplicate in duplicatesToRemove)
+                {
+                    references.Remove(duplicate);
+                }
+            }
+
+            return references.Select(r => r.MetadataReference).ToArray();
         }
 
         public CSharpParseOptions GetParseOptions()
