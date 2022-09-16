@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using NetPad.Scripts;
 
 namespace NetPad.Compilation.CSharp
@@ -9,6 +7,12 @@ namespace NetPad.Compilation.CSharp
     {
         public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
         public const string BootstrapperSetIOMethodName = "SetIO";
+
+        private static readonly string[] _namespacesNeededByBaseProgram =
+        {
+            "System",
+            "NetPad.IO"
+        };
 
         public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
         {
@@ -19,12 +23,16 @@ namespace NetPad.Compilation.CSharp
                 bootstrapperProgramTemplate,
                 BootstrapperClassName,
                 BootstrapperSetIOMethodName);
+            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram);
 
-            string? additionalCodeProgram = options?.AdditionalCode.GetAllCode();
+            foreach (var ns in _namespacesNeededByBaseProgram)
+            {
+                bootstrapperProgramSourceCode.Namespaces.Add(ns);
+            }
 
             return new CodeParsingResult(
                 new SourceCode(userProgram, script.Config.Namespaces),
-                new SourceCode(bootstrapperProgram),
+                bootstrapperProgramSourceCode,
                 options?.AdditionalCode,
                 new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
         }
@@ -53,7 +61,7 @@ namespace NetPad.Compilation.CSharp
     private static IOutputWriter OutputWriter {{ get; set; }}
 
     // Entry point used when running script in external process
-    static async Task Main(string[] args)
+    static async System.Threading.Tasks.Task Main(string[] args)
     {{
         {1}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
     }}

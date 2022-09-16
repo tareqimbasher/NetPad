@@ -26,13 +26,6 @@ namespace NetPad.Runtimes
         private readonly HashSet<IOutputWriter> _outputListeners;
         private IServiceScope? _serviceScope;
 
-        private static readonly string[] _namespacesNeededByBaseProgram =
-        {
-            "System",
-            "System.Threading.Tasks",
-            "NetPad.IO"
-        };
-
         public InMemoryScriptRuntime(
             Script script,
             IServiceScope serviceScope,
@@ -112,13 +105,10 @@ namespace NetPad.Runtimes
         private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
             CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
         {
-            var additionalCode = new SourceCodeCollection(runOptions.AdditionalCode);
-            additionalCode.Add(new SourceCode(_namespacesNeededByBaseProgram));
-
             var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
             {
                 IncludedCode = runOptions.SpecificCodeToRun,
-                AdditionalCode = additionalCode
+                AdditionalCode = runOptions.AdditionalCode
             });
 
             var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync(
