@@ -39,10 +39,13 @@ public class EntityFrameworkDatabaseScaffolder
         _dbModelOutputDirPath = Path.Combine(_project.ProjectDirectoryPath, "DbModel");
     }
 
-    public async Task<bool> ScaffoldAsync()
+    public async Task<ScaffoldedDatabaseModel> ScaffoldAsync()
     {
         await _project.CreateAsync(true);
-        await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"namespace DbScaffolding;
+
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"namespace DbScaffolding;
 
 class Program
 {
@@ -51,52 +54,64 @@ class Program
     }
 }");
 
-        await _project.AddPackageAsync(new PackageReference(
-            _connection.EntityFrameworkProviderName,
-            _connection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
-            ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
-        ));
+            await _project.AddPackageAsync(new PackageReference(
+                _connection.EntityFrameworkProviderName,
+                _connection.EntityFrameworkProviderName,
+                await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
+                ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
+            ));
 
-        await _project.AddPackageAsync(new PackageReference(
-            "Microsoft.EntityFrameworkCore.Design",
-            "Microsoft.EntityFrameworkCore.Design",
-            await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
-            ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
-        ));
+            await _project.AddPackageAsync(new PackageReference(
+                "Microsoft.EntityFrameworkCore.Design",
+                "Microsoft.EntityFrameworkCore.Design",
+                await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
+                ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
+            ));
 
-        Directory.CreateDirectory(_dbModelOutputDirPath);
+            Directory.CreateDirectory(_dbModelOutputDirPath);
 
-        var args = string.Join(" ", new[]
-        {
-            "ef dbcontext scaffold",
-            _connection.GetConnectionString(),
-            _connection.EntityFrameworkProviderName,
-            $"--context {DbContextName}",
-            $"--namespace \"\"", // Instructs tool to not wrap code in any namespace
-            "--force",
-            $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
-        });
+            var args = string.Join(" ", new[]
+            {
+                "ef dbcontext scaffold",
+                _connection.GetConnectionString(),
+                _connection.EntityFrameworkProviderName,
+                $"--context {DbContextName}",
+                $"--namespace \"\"", // Instructs tool to not wrap code in any namespace
+                "--force",
+                $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
+            });
 
-        _logger.LogDebug("Calling dotnet with args: '{Args}'", args);
+            _logger.LogDebug("Calling dotnet with args: '{Args}'", args);
 
-        var process = Process.Start(new ProcessStartInfo("dotnet", args)
-        {
-            UseShellExecute = false,
-            WorkingDirectory = _project.ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
+            var process = Process.Start(new ProcessStartInfo("dotnet", args)
+            {
+                UseShellExecute = false,
+                WorkingDirectory = _project.ProjectDirectoryPath,
+                CreateNoWindow = true
+            });
 
-        if (process != null)
-        {
+            if (process == null)
+            {
+                throw new Exception("Could not start scaffolding process");
+            }
+
             await process.WaitForExitAsync();
-            _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", process?.ExitCode);
-        }
+            _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", process.ExitCode);
 
-        return process is { ExitCode: 0 };
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Scaffolding process process failed with exit code: {process.ExitCode}");
+            }
+
+            return await GetScaffoldedModelAsync();
+        }
+        finally
+        {
+            await _project.DeleteAsync();
+        }
     }
 
-    public async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync()
+    private async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync()
     {
         var projectDir = new DirectoryInfo(_dbModelOutputDirPath);
         if (!projectDir.Exists)

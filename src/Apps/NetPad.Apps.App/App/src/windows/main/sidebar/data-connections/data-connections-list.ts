@@ -47,7 +47,10 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async refresh(connectionId: string) {
-        alert("Not implemented yet");
+        const dataConnection = this.dataConnections.find(dc => dc.id === connectionId);
+        if (dataConnection) {
+            await dataConnection.refresh();
+        }
     }
 
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections)
@@ -75,26 +78,36 @@ class SidebarDataConnection extends DataConnection {
         this.expanded = !this.expanded;
 
         if (this.expanded && !this.structure && !this.loadingStructure) {
-            this.loadingStructure = true;
-            this.error = null;
-
-            this.dataConnectionService.getDatabaseStructure(this.id)
-                .then(structure => {
-                    this.structure = structure;
-                })
-                .catch((err: ApiException) => {
-                    if (err.response) {
-                        const serverResponse = JSON.parse(err.response);
-                        if (serverResponse?.message) {
-                            this.error = serverResponse.message;
-                        }
-                    }
-
-                    if (!this.error) {
-                        this.error = err.message;
-                    }
-                })
-                .finally(() => this.loadingStructure = false);
+            this.getDatabaseStructure();
         }
+    }
+
+    public async refresh() {
+        this.loadingStructure = true;
+        await this.dataConnectionService.refresh(this.id);
+        this.getDatabaseStructure();
+    }
+
+    public getDatabaseStructure() {
+        this.loadingStructure = true;
+        this.error = null;
+
+        this.dataConnectionService.getDatabaseStructure(this.id)
+            .then(structure => {
+                this.structure = structure;
+            })
+            .catch((err: ApiException) => {
+                if (err.response) {
+                    const serverResponse = JSON.parse(err.response);
+                    if (serverResponse?.message) {
+                        this.error = serverResponse.message;
+                    }
+                }
+
+                if (!this.error) {
+                    this.error = err.message;
+                }
+            })
+            .finally(() => this.loadingStructure = false);
     }
 }

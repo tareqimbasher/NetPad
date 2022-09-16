@@ -55,14 +55,7 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
             _settings,
             _loggerFactory.CreateLogger<EntityFrameworkDatabaseScaffolder>());
 
-        var success = await scaffolder.ScaffoldAsync();
-
-        if (!success)
-        {
-            throw new Exception("Database connection could not be scaffolded.");
-        }
-
-        var model = await scaffolder.GetScaffoldedModelAsync();
+        var model = await scaffolder.ScaffoldAsync();
 
         var code = new SourceCodeCollection(model.SourceFiles);
 

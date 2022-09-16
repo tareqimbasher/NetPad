@@ -16,17 +16,26 @@ public class RefreshDataConnectionCommand : Command
     public class Handler : IRequestHandler<RefreshDataConnectionCommand, Unit>
     {
         private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
+        private readonly IDataConnectionRepository _dataConnectionRepository;
         private readonly IEventBus _eventBus;
 
-        public Handler(IDataConnectionResourcesCache dataConnectionResourcesCache, IEventBus eventBus)
+        public Handler(IDataConnectionResourcesCache dataConnectionResourcesCache, IDataConnectionRepository dataConnectionRepository, IEventBus eventBus)
         {
             _dataConnectionResourcesCache = dataConnectionResourcesCache;
+            _dataConnectionRepository = dataConnectionRepository;
             _eventBus = eventBus;
         }
 
         public async Task<Unit> Handle(RefreshDataConnectionCommand request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId);
+
+            var connection = await _dataConnectionRepository.GetAsync(request.ConnectionId);
+
+            if (connection != null)
+            {
+                await _dataConnectionResourcesCache.GetAssemblyAsync(connection);
+            }
 
             return Unit.Value;
         }

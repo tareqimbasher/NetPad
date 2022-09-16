@@ -22,9 +22,14 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         _eventBus = eventBus;
     }
 
-    public bool HasCachedResources(DataConnection dataConnection)
+    public bool HasCachedResources(Guid dataConnectionId)
     {
-        return _cache.ContainsKey(dataConnection.Id);
+        return _cache.ContainsKey(dataConnectionId);
+    }
+
+    public void RemoveCachedResources(Guid dataConnectionId)
+    {
+        _cache.Remove(dataConnectionId, out _);
     }
 
     public Task<SourceCodeCollection> GetSourceGeneratedCodeAsync(DataConnection dataConnection)

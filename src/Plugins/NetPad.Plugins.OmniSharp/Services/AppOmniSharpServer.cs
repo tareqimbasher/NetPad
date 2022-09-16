@@ -185,7 +185,7 @@ public class AppOmniSharpServer
         await UpdateOmniSharpCodeBufferAsync();
 
         bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
-                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection);
+                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
 
         if (shouldUpdateDataConnectionCodeBuffer)
             await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
