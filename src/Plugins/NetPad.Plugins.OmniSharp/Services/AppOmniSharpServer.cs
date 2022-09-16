@@ -1,7 +1,7 @@
+using System.Collections.Concurrent;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
-using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
 using NetPad.Scripts;
@@ -29,6 +29,7 @@ public class AppOmniSharpServer
     private readonly IEventBus _eventBus;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
 
     private readonly ScriptProject _project;
     private IOmniSharpStdioServer? _omniSharpServer;
@@ -103,6 +104,12 @@ public class AppOmniSharpServer
 
         await StopOmniSharpServerAsync();
 
+        var semaphores = _bufferUpdateSemaphores.Values.ToArray();
+        foreach (var semaphore in semaphores)
+        {
+            semaphore.Dispose();
+        }
+
         await _eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
         await _project.DeleteAsync();
@@ -175,18 +182,13 @@ public class AppOmniSharpServer
 
         _omniSharpServer = omniSharpServer;
 
-        // It takes some time for OmniSharp to register its updated buffer after it starts
-        if (!string.IsNullOrWhiteSpace(_environment.Script.Code))
-        {
-            Task.Run(async () =>
-            {
-                for (int i = 0; i < 10; i++)
-                {
-                    await UpdateOmniSharpCodeBufferAsync();
-                    await Task.Delay(500);
-                }
-            });
-        }
+        await UpdateOmniSharpCodeBufferAsync();
+
+        bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
+                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection);
+
+        if (shouldUpdateDataConnectionCodeBuffer)
+            await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
     }
 
     private async Task StopOmniSharpServerAsync()
@@ -283,10 +285,15 @@ public class AppOmniSharpServer
 
     private void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
-        var token = _eventBus.Subscribe<TEvent>(async (ev) =>
+        var token = _eventBus.Subscribe<TEvent>((ev) =>
         {
-            if (_omniSharpServer == null) return;
-            await handler(ev);
+            if (_omniSharpServer != null)
+            {
+                // We don't want to await OmniSharp event handlers
+                handler(ev);
+            }
+
+            return Task.CompletedTask;
         });
         _subscriptionTokens.Add(token);
     }
@@ -302,26 +309,18 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
-        await OmniSharpServer.SendAsync(new UpdateBufferRequest
-        {
-            FileName = _project.UserProgramFilePath,
-            Buffer = parsingResult.UserProgram.Code
-        });
+        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code);
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
     {
         var namespaces = parsingResult.CombineSourceCode().GetAllNamespaces()
-            .Select(ns => $"global using {ns}")
+            .Select(ns => $"global using {ns};")
             .JoinToString(Environment.NewLine);
 
         var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram.Code}";
 
-        await OmniSharpServer.SendAsync(new UpdateBufferRequest
-        {
-            FileName = _project.BootstrapperProgramFilePath,
-            Buffer = bootstrapperProgramCode
-        });
+        await UpdateBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
@@ -333,9 +332,6 @@ public class AppOmniSharpServer
             ? null
             : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
-
-        // To trigger re-calc of diagnostics information
-        await UpdateOmniSharpCodeBufferAsync();
 
         await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
@@ -356,11 +352,7 @@ public class AppOmniSharpServer
             dataConnectionProgramCode = $"{namespaces}\n\n{sourceCode.GetAllCode()}";
         }
 
-        await OmniSharpServer.SendAsync(new UpdateBufferRequest
-        {
-            FileName = _project.DataConnectionProgramFilePath,
-            Buffer = dataConnectionProgramCode ?? string.Empty
-        });
+        await UpdateBufferAsync(_project.DataConnectionProgramFilePath, dataConnectionProgramCode);
     }
 
     private async Task NotifyOmniSharpServerProjectFileChangedAsync()
@@ -373,5 +365,27 @@ public class AppOmniSharpServer
                 ChangeType = FileChangeType.Change
             }
         });
+    }
+
+    private async Task UpdateBufferAsync(string filePath, string? buffer)
+    {
+        var semaphore = _bufferUpdateSemaphores.GetOrAdd(filePath, key => new SemaphoreSlim(1, 1));
+
+        await semaphore.WaitAsync();
+
+        try
+        {
+            await OmniSharpServer.SendAsync(new UpdateBufferRequest
+            {
+                FileName = filePath,
+                Buffer = buffer ?? string.Empty
+            });
+
+            await File.WriteAllTextAsync(filePath, buffer ?? string.Empty);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 }

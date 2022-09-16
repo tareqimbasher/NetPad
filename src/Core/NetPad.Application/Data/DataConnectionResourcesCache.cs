@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using NetPad.Compilation;
 using NetPad.DotNet;
 using NetPad.Events;
-using NetPad.Scripts;
 
 namespace NetPad.Data;
 
@@ -23,6 +20,11 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         _cache = new ConcurrentDictionary<Guid, DataConnectionResources>();
         _dataConnectionResourcesGenerator = dataConnectionResourcesGenerator;
         _eventBus = eventBus;
+    }
+
+    public bool HasCachedResources(DataConnection dataConnection)
+    {
+        return _cache.ContainsKey(dataConnection.Id);
     }
 
     public Task<SourceCodeCollection> GetSourceGeneratedCodeAsync(DataConnection dataConnection)

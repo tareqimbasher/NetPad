@@ -9,6 +9,11 @@ namespace NetPad.Tests.Services;
 
 public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
 {
+    public bool HasCachedResources(DataConnection dataConnection)
+    {
+        return false;
+    }
+
     public Task<byte[]?> GetAssemblyAsync(DataConnection dataConnection)
     {
         return Task.FromResult<byte[]?>(null);
