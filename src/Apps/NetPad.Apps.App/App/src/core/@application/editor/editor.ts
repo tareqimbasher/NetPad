@@ -7,7 +7,6 @@ import {ViewModelBase, EditorUtil, EditorSetup} from "@application";
 export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
     @bindable public text: string;
-    @bindable public viewModel: () => Editor;
     public monacoEditor?: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
@@ -20,8 +19,6 @@ export class Editor extends ViewModelBase {
     }
 
     public async attached(): Promise<void> {
-        this.viewModel = () => this;
-
         PLATFORM.taskQueue.queueTask(() => {
             this.initializeEditor();
         }, { delay: 100 });

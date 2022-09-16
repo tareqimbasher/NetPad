@@ -26,7 +26,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
     private split: Split.Instance;
     private textEditorContainer: HTMLElement;
     private resultsContainer: HTMLElement;
-    private editor: () => Editor;
+    private editor: Editor;
     private activatedAtLeastOnce = false;
 
     constructor(
@@ -97,7 +97,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
                 this.activatedAtLeastOnce = true;
             }
 
-            this.editor().focus();
+            this.editor.focus();
         });
         this.disposables.push(() => activeEnvChangedToken.dispose());
 
@@ -125,10 +125,9 @@ export class ScriptEnvironmentView extends ViewModelBase {
             const runOptions = new RunOptionsDto();
 
             // If user has code selected, only run selection
-            const editor = this.editor();
-            const selection = editor.monacoEditor.getSelection();
+            const selection = this.editor.monacoEditor.getSelection();
             if (selection && !selection.isEmpty()) {
-                runOptions.specificCodeToRun = editor.monacoEditor.getModel().getValueInRange(selection);
+                runOptions.specificCodeToRun = this.editor.monacoEditor.getModel().getValueInRange(selection);
             }
 
             await this.scriptService.run(this.script.id, runOptions);
