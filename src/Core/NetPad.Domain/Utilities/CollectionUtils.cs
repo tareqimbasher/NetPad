@@ -21,5 +21,13 @@ namespace NetPad.Utilities
                 })
             );
         }
+
+        public static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> items) where T : class
+        {
+            foreach (var item in items)
+            {
+                hashSet.Add(item);
+            }
+        }
     }
 }

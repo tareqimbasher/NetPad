@@ -111,9 +111,9 @@ namespace NetPad.Runtimes
                 AdditionalCode = runOptions.AdditionalCode
             });
 
-            var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync(
-                _script.Config.References.Union(runOptions.AdditionalReferences)
-            );
+            var referenceAssemblyPaths = await _script.Config.References
+                .Union(runOptions.AdditionalReferences)
+                .GetAssemblyPathsAsync(_packageProvider);
 
             var fullProgram = parsingResult.GetFullProgram()
                 .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
@@ -131,28 +131,7 @@ namespace NetPad.Runtimes
                 return (false, Array.Empty<byte>(), Array.Empty<string>(), parsingResult);
             }
 
-            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths, parsingResult);
-        }
-
-        private async Task<string[]> GetReferenceAssemblyPathsAsync(IEnumerable<Reference> references)
-        {
-            var assemblyPaths = new List<string>();
-
-            foreach (var reference in references.Distinct())
-            {
-                if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
-                {
-                    assemblyPaths.Add(aRef.AssemblyPath);
-                }
-                else if (reference is PackageReference pRef)
-                {
-                    assemblyPaths.AddRange(
-                        await _packageProvider.GetPackageAndDependanciesAssembliesAsync(pRef.PackageId, pRef.Version)
-                    );
-                }
-            }
-
-            return assemblyPaths.ToArray();
+            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray(), parsingResult);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Configuration;
@@ -41,16 +43,16 @@ public class EntityFrameworkDatabaseScaffolder
 
     public async Task<ScaffoldedDatabaseModel> ScaffoldAsync()
     {
-        await _project.CreateAsync(true);
+        await _project.CreateAsync(ProjectOutputType.Library, true);
 
         try
         {
-            await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"namespace DbScaffolding;
-
+            await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"
 class Program
 {
     static void Main()
     {
+        // MainMethodBodyPlaceholder
     }
 }");
 
@@ -137,48 +139,33 @@ class Program
 
     private async Task<ScaffoldedSourceFile> ParseScaffoldedSourceFileAsync(FileInfo file)
     {
-        var sourceFile = new ScaffoldedSourceFile();
+        var scaffoldedCode = await File.ReadAllTextAsync(file.FullName);
 
-        var lines = await File.ReadAllLinesAsync(file.FullName);
-        var codeBuilder = new StringBuilder();
-        bool classEncountered = false;
+        var syntaxTreeRoot = CSharpSyntaxTree.ParseText(scaffoldedCode).GetRoot();
+        var nodes = syntaxTreeRoot.DescendantNodes().ToArray();
 
-        for (var iLine = 0; iLine < lines.Length; iLine++)
+        var namespaces = new HashSet<string>();
+
+        foreach (var usingDirective in nodes.OfType<UsingDirectiveSyntax>())
         {
-            var line = lines[iLine];
+            var ns = scaffoldedCode.Substring(usingDirective.Span.Start, usingDirective.Span.Length)
+                .Split(' ')[1]
+                .TrimEnd(';');
 
-            // Handle usings
-            if (!classEncountered && line.StartsWith("using ") && line.EndsWith(";"))
-            {
-                sourceFile.Namespaces.Add(line[("using ".Length - 1)..].TrimEnd(';'));
-                continue;
-            }
-
-            // Handle namespaces
-            if (!classEncountered && line.StartsWith("namespace "))
-            {
-                codeBuilder.AppendLine(line).AppendLine("{");
-                iLine++; // Skip the next line which we already know is the '{' and we already appended
-            }
-
-            if (!classEncountered)
-            {
-                classEncountered = line.Contains(" class ");
-
-                // We've found the line where the class is declared
-                if (classEncountered)
-                {
-                    sourceFile.IsDbContext = line.Contains(": DbContext");
-                }
-
-                // Skip any code before the class starts
-                if (!classEncountered) continue;
-            }
-
-            codeBuilder.AppendLine(line);
+            namespaces.Add(ns);
         }
 
-        sourceFile.Code = codeBuilder.ToString();
+        var classDeclaration = nodes.OfType<ClassDeclarationSyntax>().Single();
+        var classCode = scaffoldedCode.Substring(classDeclaration.Span.Start, classDeclaration.Span.Length);
+        var className = classDeclaration.Identifier.ValueText;
+
+        var sourceFile = new ScaffoldedSourceFile(className)
+        {
+            Namespaces = namespaces,
+            Code = classCode,
+            IsDbContext = classCode.Contains(" : DbContext")
+        };
+
         return sourceFile;
     }
 }

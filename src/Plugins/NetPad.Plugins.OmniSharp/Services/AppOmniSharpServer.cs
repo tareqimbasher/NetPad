@@ -183,13 +183,29 @@ public class AppOmniSharpServer
 
         _omniSharpServer = omniSharpServer;
 
-        await UpdateOmniSharpCodeBufferAsync();
+        // It takes some time for OmniSharp to register its updated buffer after it starts
+        if (!string.IsNullOrWhiteSpace(_environment.Script.Code))
+        {
+            Task.Run(async () =>
+            {
+                int maxIterations = 3;
+                for (int i = 1; i <= maxIterations; i++)
+                {
+                    await UpdateOmniSharpCodeBufferAsync();
 
-        bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
-                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
+                    if (i == maxIterations)
+                    {
+                        bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
+                                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
 
-        if (shouldUpdateDataConnectionCodeBuffer)
-            await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
+                        if (shouldUpdateDataConnectionCodeBuffer)
+                            await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
+                    }
+
+                    await Task.Delay(500);
+                }
+            });
+        }
     }
 
     private async Task StopOmniSharpServerAsync()
@@ -333,6 +349,9 @@ public class AppOmniSharpServer
             ? null
             : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
+
+        // Needed to trigger diagnostics and semantic highlighting for script file
+        await UpdateOmniSharpCodeBufferAsync();
 
         await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }

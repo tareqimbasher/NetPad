@@ -114,9 +114,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
     {
         var parsingResult = _codeParser.Parse(_script);
 
-        var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
+        var referenceAssemblyPaths = await _script!.Config.References.GetAssemblyPathsAsync(_packageProvider);
 
-        //
         var fullProgram = parsingResult.GetFullProgram()
             .Replace("Console.WriteLine", "Program.OutputWriteLine")
             .Replace("Console.Write", "Program.OutputWrite");
@@ -133,28 +132,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             return (false, Array.Empty<byte>(), Array.Empty<string>());
         }
 
-        return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths);
-    }
-
-    private async Task<string[]> GetReferenceAssemblyPathsAsync()
-    {
-        var assemblyPaths = new List<string>();
-
-        foreach (var reference in _script!.Config.References)
-        {
-            if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
-            {
-                assemblyPaths.Add(aRef.AssemblyPath);
-            }
-            else if (reference is PackageReference pRef)
-            {
-                assemblyPaths.AddRange(
-                    await _packageProvider.GetPackageAndDependanciesAssembliesAsync(pRef.PackageId, pRef.Version)
-                );
-            }
-        }
-
-        return assemblyPaths.ToArray();
+        return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray());
     }
 
     public void AddOutputListener(IOutputWriter outputWriter)

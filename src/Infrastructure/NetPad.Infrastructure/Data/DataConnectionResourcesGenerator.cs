@@ -9,7 +9,6 @@ using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data.Scaffolding;
 using NetPad.DotNet;
-using NetPad.Events;
 using NetPad.Packages;
 using NetPad.Utilities;
 
@@ -21,26 +20,18 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
     private readonly ILoggerFactory _loggerFactory;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
-    private readonly IEventBus _eventBus;
 
     public DataConnectionResourcesGenerator(
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
-        IEventBus eventBus,
         Settings settings,
         ILoggerFactory loggerFactory)
     {
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
-        _eventBus = eventBus;
         _settings = settings;
         _loggerFactory = loggerFactory;
     }
-
-    /// <summary>
-    ///
-    /// </summary>
-    public string Type { get; set; }
 
     public async Task<SourceCodeCollection> GenerateSourceCodeAsync(DataConnection dataConnection)
     {
@@ -59,46 +50,81 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
         var code = new SourceCodeCollection(model.SourceFiles);
 
+        code.Add(GenerateUtilityCode(model));
+
+        return code;
+    }
+
+    private SourceCode GenerateUtilityCode(ScaffoldedDatabaseModel model)
+    {
+        // We want to add utility code to a partial Program class that can be used to augment the Program class in scripts.
+        // The goal is to accomplish the following items, mainly for convenience while writing scripts:
+        // 1. Make the Program class inherit the generated DbContext
+        //    Why? - This allows users to override methods on the base DbContext, ex: the OnConfiguring(DbContextOptionsBuilder optionsBuilder) method.
+        //
+        // 2. Add a a property for the generated DbContext
+        //    Why? - This allows users to access the DbContext instance being used in the script
+        //
+        // 3. Add properties for all the generated DbSet's
+        //    Why? - This makes it easy for users to just type in the name of the table/DbSet (ex: "Authors") in their query
+        //           instead of having to do something like "DbContext.Authors"
+
         var utilCode = new StringBuilder();
 
-        utilCode.AppendLine("public partial class Program")
-            .AppendLine()
-            .AppendLine("{")
-            .AppendLine(@"
-/// <summary>
-/// An instantiated database context that you can use to access the database.
-/// </summary>
-public static DatabaseContext DataContext { get; } = new DatabaseContext();");
-
+        // 1. Make the Program class inherit the generated DbContext
         var dbContext = model.SourceFiles.Single(f => f.IsDbContext);
+        utilCode.AppendLine($"public partial class Program : {dbContext.ClassName}")
+            .AppendLine("{");
 
-        var dbSetProperties = dbContext.Code!.Split(Environment.NewLine)
-            .Where(l => l.Contains("public virtual DbSet<"))
-            .Select(l =>
-            {
-                // Extracts 'DbSet<Book> Books' from 'public virtual DbSet<Book> Books { get; set; } = null!;'
-                var typeAndName = l.SubstringBetween("virtual ", " {");
-                var parts = typeAndName.Split(" ");
+        // 2. Add the DbContext property
+        utilCode
+            .AppendLine("\tprivate static Program? _program;")
+            .AppendLine(@"
+    /// <summary>
+    /// The DbContext instance used to access the database.
+    /// </summary>
+    public static Program DataContext => _program ??= new Program();");
 
-                return new
-                {
-                    Type = parts[0],
-                    Name = parts[1]
-                };
-            })
-            .Select(dbSet => $@"
-/// <summary>
-/// The {dbSet.Name} table (DbSet).
-/// </summary>
-private static {dbSet.Type} {dbSet.Name} => DataContext.{dbSet.Name};");
 
-        utilCode.AppendJoin(Environment.NewLine, dbSetProperties)
+        var dbContextCodeLines = dbContext.Code!.Split(Environment.NewLine).ToList();
+
+        // 3. Add properties for all the generated DbSet's
+        var programProperties = new List<string>();
+
+        for (var iLine = 0; iLine < dbContextCodeLines.Count; iLine++)
+        {
+            var line = dbContextCodeLines[iLine];
+
+            // We only need DbSet property lines
+            if (!line.Contains("public virtual DbSet<")) continue;
+
+            // Extracts 'DbSet<Book> Books' from 'public virtual DbSet<Book> Books { get; set; } = null!;'
+            var typeAndName = line.SubstringBetween("virtual ", " {");
+            var parts = typeAndName.Split(" ");
+
+            var entityType = parts[0].SubstringBetween("<", ">");
+            var propertyName = parts[1];
+            var dbContextPropertyName = $"{propertyName}DbSet";
+
+            programProperties.Add($@"
+    /// <summary>
+    /// The {propertyName} table (DbSet).
+    /// </summary>
+    private static System.Linq.IQueryable<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
+
+            // Rename property on DbContext
+            dbContextCodeLines[iLine] = line.Replace(propertyName, dbContextPropertyName);
+        }
+
+        // Replace the DbContext code since we modified it above when renaming properties
+        dbContext.Code = dbContextCodeLines.JoinToString(Environment.NewLine);
+
+        utilCode.AppendJoin(Environment.NewLine, programProperties)
             .AppendLine()
             .AppendLine("}");
 
-        code.Add(new SourceCode(utilCode.ToString()));
-
-        return code;
+        // Add a new code file for this utility class
+        return new SourceCode(utilCode.ToString());
     }
 
     public async Task<byte[]?> GenerateAssemblyAsync(DataConnection dataConnection, SourceCodeCollection sourceCode)
@@ -136,7 +162,6 @@ private static {dbSet.Type} {dbSet.Name} => DataContext.{dbSet.Name};");
         //     "Entity Framework Core",
         //     EntityFrameworkPackageUtil.GetEntityFrameworkCoreVersion()));
 
-
         references.Add(new PackageReference(
             efConnection.EntityFrameworkProviderName,
             efConnection.EntityFrameworkProviderName,
@@ -149,26 +174,16 @@ private static {dbSet.Type} {dbSet.Name} => DataContext.{dbSet.Name};");
 
     private async Task<CompilationResult> CompileNewAssemblyAsync(EntityFrameworkDatabaseConnection efConnection, SourceCodeCollection sourceCode)
     {
-        var references = new List<string>();
+        var references = new HashSet<string>();
 
-        var latestVersion = await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, efConnection.EntityFrameworkProviderName);
-
-        if (latestVersion == null)
-        {
-            throw new Exception($"Could not find a package version to install for Entity Framework provider: {efConnection.EntityFrameworkProviderName}.");
-        }
-
-        var providerAssemblies = await _packageProvider.GetPackageAndDependanciesAssembliesAsync(
-            efConnection.EntityFrameworkProviderName,
-            latestVersion);
-
-        references.AddRange(providerAssemblies);
+        var requiredReferences = await GetRequiredReferencesAsync(efConnection);
+        references.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
 
         var code = sourceCode.GetText();
 
         return _codeCompiler.Compile(new CompilationInput(
                 code,
-                references.ToHashSet())
+                references)
             .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
             .WithOutputAssemblyNameTag($"data-connection_{efConnection.Id}")
         );
