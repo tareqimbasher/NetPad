@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Events;
@@ -54,31 +55,34 @@ namespace OmniSharp.Stdio
             _isStopped = true;
         }
 
-        public override Task SendAsync(object request) => SendAsync<NoResponse>(request);
+        public override Task SendAsync(object request, CancellationToken? cancellationToken = default) => SendAsync<NoResponse>(request, cancellationToken);
 
-        public override Task<TResponse?> SendAsync<TResponse>(object request) where TResponse : class
+        public override Task<TResponse?> SendAsync<TResponse>(object request, CancellationToken? cancellationToken = default) where TResponse : class
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
             var endpointAttribute = GetOmniSharpEndpointAttribute(request);
 
-            return SendAsync<TResponse>(endpointAttribute.EndpointName, request);
+            return SendAsync<TResponse>(endpointAttribute.EndpointName, request, cancellationToken);
         }
 
-        public override Task SendAsync<TRequest>(IEnumerable<TRequest> requests) => SendAsync<TRequest, NoResponse>(requests);
+        public override Task SendAsync<TRequest>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default) =>
+            SendAsync<TRequest, NoResponse>(requests, cancellationToken);
 
-        public override Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class
+        public override Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default)
+            where TResponse : class
         {
             if (!requests.Any())
                 throw new ArgumentException($"{nameof(requests)} is empty.");
 
             var endpointAttribute = GetOmniSharpEndpointAttribute(requests);
 
-            return SendAsync<TResponse>(endpointAttribute.EndpointName, requests);
+            return SendAsync<TResponse>(endpointAttribute.EndpointName, requests, cancellationToken);
         }
 
-        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class
+        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request, CancellationToken? cancellationToken = default)
+            where TResponse : class
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -91,25 +95,48 @@ namespace OmniSharp.Stdio
 
             var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
 
-            var responsePromise = _requestResponseQueue.Enqueue(requestPacket);
-
-            string requestJson = JsonSerializer.Serialize(requestPacket, _jsonSerializerOptions);
-
-            lock (_stdioStandardInputLock)
+            if (cancellationToken?.IsCancellationRequested == true)
             {
-                _processIo.StandardInput.WriteLine(requestJson);
+                return null;
             }
 
-            var responseJToken = await responsePromise.ConfigureAwait(false);
+            var responsePromise = _requestResponseQueue.Enqueue(requestPacket, cancellationToken ?? CancellationToken.None);
 
-            bool success = responseJToken.Success();
-
-            if (success && typeof(TResponse) != typeof(NoResponse))
+            try
             {
-                return responseJToken.Body<TResponse>(_jsonSerializerOptions);
-            }
+                string requestJson = JsonSerializer.Serialize(requestPacket, _jsonSerializerOptions);
 
-            return null;
+                lock (_stdioStandardInputLock)
+                {
+                    _processIo.StandardInput.WriteLine(requestJson);
+                }
+
+                var responseJToken = await responsePromise.ConfigureAwait(false);
+
+                if (responseJToken == null)
+                {
+                    return null;
+                }
+
+                bool success = responseJToken.Success();
+
+                if (success && typeof(TResponse) != typeof(NoResponse))
+                {
+                    return responseJToken.Body<TResponse>(_jsonSerializerOptions);
+                }
+
+                return null;
+            }
+            catch (TaskCanceledException)
+            {
+                // Request was cancelled
+                return null;
+            }
+            catch
+            {
+                _requestResponseQueue.WaitingForResponseFailed(requestPacket);
+                throw;
+            }
         }
 
         public SubscriptionToken SubscribeToEvent(string eventType, Func<JsonNode, Task> handler)

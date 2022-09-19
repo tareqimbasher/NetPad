@@ -25,11 +25,11 @@ namespace OmniSharp
 
         public abstract Task StopAsync();
 
-        public abstract Task SendAsync(object request);
-        public abstract Task<TResponse?> SendAsync<TResponse>(object request) where TResponse : class;
-        public abstract Task SendAsync<TRequest>(IEnumerable<TRequest> requests);
-        public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class;
-        public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class;
+        public abstract Task SendAsync(object request, CancellationToken? cancellationToken = default);
+        public abstract Task<TResponse?> SendAsync<TResponse>(object request, CancellationToken? cancellationToken = default) where TResponse : class;
+        public abstract Task SendAsync<TRequest>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default);
+        public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default) where TResponse : class;
+        public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request, CancellationToken? cancellationToken = default) where TResponse : class;
 
         protected int NextSequence()
         {
