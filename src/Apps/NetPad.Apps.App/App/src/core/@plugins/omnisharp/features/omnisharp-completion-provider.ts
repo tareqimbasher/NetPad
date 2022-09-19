@@ -4,16 +4,20 @@ import {EditorUtil, ICommandProvider, ICompletionItemProvider} from "@applicatio
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import * as api from "../api";
+import {ILogger} from "aurelia";
 
 export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
+    private readonly logger: ILogger;
 
     constructor(
         @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
         @ISession private readonly session: ISession,
-        @IScriptService private readonly scriptService: IScriptService) {
+        @IScriptService private readonly scriptService: IScriptService,
+        @ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(OmniSharpCompletionProvider));
     }
 
     public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {
@@ -73,7 +77,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
-            console.error(ex);
+            this.logger.error("Error resolving CompletionItem", item, ex);
         }
     }
 

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NetPad.CQs;
 using NetPad.Common;
 using NetPad.UiInterop;
@@ -6,6 +7,13 @@ namespace NetPad.Electron.UiInterop
 {
     public class ElectronIpcService : IIpcService
     {
+        private readonly ILogger<ElectronIpcService> _logger;
+
+        public ElectronIpcService(ILogger<ElectronIpcService> logger)
+        {
+            _logger = logger;
+        }
+
         public async Task SendAsync<TMessage>(TMessage message) where TMessage : class
         {
             await SendAsync(typeof(TMessage).Name, message);
@@ -22,7 +30,7 @@ namespace NetPad.Electron.UiInterop
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger.LogError(ex, "Error sending message on channel: {Channel}", channel);
             }
             return Task.CompletedTask;
         }

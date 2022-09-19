@@ -66,7 +66,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     public set dataConnection(value: DataConnection | null) {
-        console.warn("Calling set data connection with", this.script.id, value);
         this.scriptService.setDataConnection(this.script.id, value?.id)
             .catch(err => {
                 this.logger.error("Failed to set script data connection", err);
