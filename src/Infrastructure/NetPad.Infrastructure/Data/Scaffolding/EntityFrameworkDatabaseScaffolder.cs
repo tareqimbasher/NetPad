@@ -11,6 +11,7 @@ using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Packages;
+using NetPad.Utilities;
 
 namespace NetPad.Data.Scaffolding;
 
@@ -158,14 +159,68 @@ class Program
         var classDeclaration = nodes.OfType<ClassDeclarationSyntax>().Single();
         var classCode = scaffoldedCode.Substring(classDeclaration.Span.Start, classDeclaration.Span.Length);
         var className = classDeclaration.Identifier.ValueText;
+        var isDbContext = classCode.Contains(" : DbContext");
+
+        if (isDbContext)
+        {
+            classCode = PatchDbContextCode(classCode);
+        }
 
         var sourceFile = new ScaffoldedSourceFile(className)
         {
             Namespaces = namespaces,
             Code = classCode,
-            IsDbContext = classCode.Contains(" : DbContext")
+            IsDbContext = isDbContext
         };
 
         return sourceFile;
+    }
+
+    private static string PatchDbContextCode(string code)
+    {
+        // The issue is that EF Core doesn't generate the "entity.ToTable()" statement for
+        // some tables/entities in the OnModelCreating() method. As a result, changing the name
+        // that EF Core gives the DbSet property will cause an error since it seemingly relies on
+        // that name to get the table name, unless a "entity.ToTable()" statement maps the DbSet to the
+        // proper table name. Here we explicitly add the "entity.ToTable()" statement when it doesn't
+        // already exist.
+        var lines = code.Split(Environment.NewLine).ToList();
+        var entityNameToDbSetName = new Dictionary<string, string>();
+
+        for (int iLine = 0; iLine < lines.Count; iLine++)
+        {
+            var line = lines[iLine];
+
+            string entityName;
+            string dbSetName;
+
+            if (line.Contains("public virtual DbSet<"))
+            {
+                // This is a DbSet property. Get the name of the DbSet property
+                entityName = line.SubstringBetween("<", ">").Trim();
+                dbSetName = line.SubstringBetween("> ", " {").Trim();
+
+                entityNameToDbSetName.Add(entityName, dbSetName);
+
+                continue;
+            }
+
+            if (!line.Contains("modelBuilder.Entity<")) continue;
+            // We are configuring an entity's model
+
+            var iLineWithToTableStatement = iLine + 2;
+            var lineWithToTableStatement = lines[iLineWithToTableStatement];
+
+            if (lineWithToTableStatement.Contains("entity.ToTable(")) continue;
+            // No explicit "ToTable()" mapping exists, add it
+
+            entityName = line.SubstringBetween("<", ">").Trim();
+            dbSetName = entityNameToDbSetName[entityName];
+
+            lines.Insert(iLineWithToTableStatement, $"entity.ToTable(\"{dbSetName}\");");
+            iLine += 2;
+        }
+
+        return lines.JoinToString(Environment.NewLine);
     }
 }
