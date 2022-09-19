@@ -18,7 +18,7 @@ export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.signatures) {
             return null;

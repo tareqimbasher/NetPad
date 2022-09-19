@@ -24,7 +24,7 @@ public class GetCompletionAfterInsertQuery : OmniSharpScriptQuery<CompletionItem
             return await _server.OmniSharpServer.SendAsync<OmniSharpCompletionAfterInsertResponse>(new OmniSharpCompletionAfterInsertRequest
             {
                 Item = omniSharpRequest.ToOmniSharpCompletionItem()
-            });
+            }, cancellationToken);
         }
     }
 }

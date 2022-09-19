@@ -41,7 +41,7 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
             selection: !range ? null : Converter.monacoRangeToApiRange(range)
         });
 
-        const response = await this.omnisharpService.getCodeActions(scriptId, request);
+        const response = await this.omnisharpService.getCodeActions(scriptId, request, new AbortController().signalFrom(token));
 
         if (!response || !response.codeActions) {
             return {

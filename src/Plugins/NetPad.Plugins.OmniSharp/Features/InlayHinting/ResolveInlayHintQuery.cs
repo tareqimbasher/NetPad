@@ -21,7 +21,7 @@ public class ResolveInlayHintQuery : OmniSharpScriptQuery<InlayHintResolveReques
         {
             var input = request.Input;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHint>(input.ToOmniSharpInlayHintResolveRequest());
+            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHint>(input.ToOmniSharpInlayHintResolveRequest(), cancellationToken);
         }
     }
 }

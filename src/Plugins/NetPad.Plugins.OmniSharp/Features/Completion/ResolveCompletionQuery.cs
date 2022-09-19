@@ -22,7 +22,7 @@ public class ResolveCompletionQuery : OmniSharpScriptQuery<CompletionItem, OmniS
             return await _server.OmniSharpServer.SendAsync<OmniSharpCompletionResolveResponse>(new OmniSharpCompletionResolveRequest
             {
                 Item = request.Input.ToOmniSharpCompletionItem()
-            });
+            }, cancellationToken);
         }
     }
 }

@@ -65,7 +65,11 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             const scriptId = EditorUtil.getScriptId(completion.model);
 
-            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem);
+            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, new AbortController().signalFrom(token));
+
+            if (!resolution) {
+                return item;
+            }
 
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
@@ -86,7 +90,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const scriptId = EditorUtil.getScriptId(model);
 
-        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request);
+        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, new AbortController().signalFrom(token));
 
         if (token.isCancellationRequested || !omnisharpCompletions || !omnisharpCompletions.items) {
             return new CompletionResults();

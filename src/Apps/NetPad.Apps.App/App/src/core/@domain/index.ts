@@ -1,4 +1,5 @@
 export * from "./api";
+export * from "./extensions";
 
 export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";

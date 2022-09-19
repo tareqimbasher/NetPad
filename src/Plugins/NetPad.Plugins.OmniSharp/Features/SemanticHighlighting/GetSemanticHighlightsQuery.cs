@@ -23,7 +23,7 @@ public class GetSemanticHighlightsQuery : OmniSharpScriptQuery<OmniSharpSemantic
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpSemanticHighlightResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpSemanticHighlightResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

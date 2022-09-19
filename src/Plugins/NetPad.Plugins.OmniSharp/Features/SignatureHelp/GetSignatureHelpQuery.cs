@@ -23,7 +23,7 @@ public class GetSignatureHelpQuery : OmniSharpScriptQuery<OmniSharpSignatureHelp
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpSignatureHelpResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpSignatureHelpResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

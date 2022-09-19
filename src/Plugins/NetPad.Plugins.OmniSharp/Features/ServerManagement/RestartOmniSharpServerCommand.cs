@@ -28,6 +28,11 @@ public class RestartOmniSharpServerCommand : OmniSharpScriptCommand<bool>
 
             bool success;
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
             try
             {
                 success = await _server.RestartAsync((progress) => { _appStatusMessagePublisher.PublishAsync(scriptId, progress, persistant: true); });

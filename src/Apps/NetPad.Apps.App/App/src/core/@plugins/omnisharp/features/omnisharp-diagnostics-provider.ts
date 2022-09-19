@@ -17,14 +17,11 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
     }
 
     public async provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void) {
-        console.debug(`TIPS provideDiagnostics called`);
-
         const scriptId = EditorUtil.getScriptId(model);
 
         let cancellationTokenSource = new CancellationTokenSource();
 
         this.eventBus.subscribeToServer(api.OmniSharpDiagnosticsEvent, ev => {
-            console.debug(`TIPS DiagnosticsEvent received`);
 
             cancellationTokenSource.dispose(true);
             cancellationTokenSource = new CancellationTokenSource();

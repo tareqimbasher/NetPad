@@ -14,7 +14,7 @@ export class OmniSharpHoverProvider implements IHoverProvider {
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.markdown) {
             return null;

@@ -26,7 +26,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getCodeStructure(scriptId);
+        const response = await this.omnisharpService.getCodeStructure(scriptId, new AbortController().signalFrom(token));
 
         if (!response || !response.elements) {
             return {
@@ -68,7 +68,8 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
             model,
             this.omnisharpService,
             codeLens.range.startLineNumber,
-            codeLens.range.startColumn);
+            codeLens.range.startColumn,
+            token);
 
         if (!references) {
             return null;

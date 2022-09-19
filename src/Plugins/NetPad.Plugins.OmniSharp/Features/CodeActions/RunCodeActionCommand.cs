@@ -31,7 +31,12 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            var responseJson = await _server.OmniSharpServer.SendAsync<JsonNode>(omniSharpRequest);
+            var responseJson = await _server.OmniSharpServer.SendAsync<JsonNode>(omniSharpRequest, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
 
             RunCodeActionResponse? response = DeserializeOmniSharpResponse(responseJson);
 

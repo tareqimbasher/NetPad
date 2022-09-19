@@ -30,7 +30,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                 fileName: "",
                 range: Converter.monacoRangeToApiRange(range)
             })
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.inlayHints) {
             return {
@@ -79,7 +79,11 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                     item2: omnisharpHint.data.item2
                 })
             })
-        }));
+        }), new AbortController().signalFrom(token));
+
+        if (!response) {
+            return hint;
+        }
 
         hint.tooltip = {
             value: response.tooltip,

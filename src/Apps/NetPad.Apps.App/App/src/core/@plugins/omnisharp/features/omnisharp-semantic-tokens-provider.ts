@@ -51,7 +51,6 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
     }
 
     private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, cancellationToken: CancellationToken) {
-        console.debug(`TIPS semantic highlights called`);
 
         const scriptId = EditorUtil.getScriptId(model);
 
@@ -77,7 +76,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
                 await Util.delay(1000);
             }
 
-            response = await this.omnisharpService.getSemanticHighlights(scriptId, request);
+            response = await this.omnisharpService.getSemanticHighlights(scriptId, request, new AbortController().signalFrom(cancellationToken));
         }
         while (
             (!response || !response.spans || !response.spans.length)
