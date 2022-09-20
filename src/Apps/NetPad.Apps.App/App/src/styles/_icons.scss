@@ -33,6 +33,10 @@ button > .icon-base {
     @extend .fa-2xl;
 }
 
+.icon-fw {
+    @extend .fa-fw;
+}
+
 // GENERIC ICONS
 .close-icon {
     @extend %icon-base;
@@ -52,6 +56,11 @@ button > .icon-base {
 .refresh-icon {
     @extend %icon-base;
     @extend .fa-rotate-right;
+}
+
+.configure-icon {
+    @extend %icon-base;
+    @extend .fa-sliders;
 }
 
 .backspace-icon {
@@ -240,12 +249,22 @@ button > .icon-base {
     @extend .fa-arrow-up-right-from-square;
 }
 
-.primary-key-icon {
+.db-primary-key-icon {
     @extend %icon-base;
     @extend .fa-key;
 }
 
-.foreign-key-icon {
+.db-foreign-key-icon {
     @extend %icon-base;
     @extend .fa-arrow-right-arrow-left;
+}
+
+.db-navigation-icon {
+    @extend %icon-base;
+    @extend .fa-arrows-left-right;
+}
+
+.db-index-icon {
+    @extend %icon-base;
+    @extend .fa-info;
 }

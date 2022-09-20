@@ -26,11 +26,19 @@ public static class TypeUtils
             string typeNamespace = type.Namespace ?? string.Empty;
 
             if (typeNamespace.Length > 1 && name.StartsWith(typeNamespace))
-                name = name.Substring(typeNamespace.Length + 1); // +1 to trim the '.' after the namespace
+                name = name[(typeNamespace.Length + 1)..]; // +1 to trim the '.' after the namespace
         }
 
         if (forHtml)
+        {
             name = name.Replace("<", "&lt;").Replace(">", "&gt;");
+        }
+
+        if (type.FullName?.StartsWith("System.Nullable`") == true)
+        {
+            int iStart = withNamespace ? "System.Nullable<".Length : "Nullable<".Length;
+            name = name[iStart..^1] + "?";
+        }
 
         return name;
     }

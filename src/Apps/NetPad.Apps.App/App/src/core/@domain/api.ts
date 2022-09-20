@@ -2250,6 +2250,8 @@ export interface IDatabaseSchema {
 export class DatabaseTable implements IDatabaseTable {
     name!: string;
     columns!: DatabaseTableColumn[];
+    indexes!: DatabaseIndex[];
+    navigations!: DatabaseTableNavigation[];
 
     constructor(data?: IDatabaseTable) {
         if (data) {
@@ -2260,6 +2262,8 @@ export class DatabaseTable implements IDatabaseTable {
         }
         if (!data) {
             this.columns = [];
+            this.indexes = [];
+            this.navigations = [];
         }
     }
 
@@ -2270,6 +2274,16 @@ export class DatabaseTable implements IDatabaseTable {
                 this.columns = [] as any;
                 for (let item of _data["columns"])
                     this.columns!.push(DatabaseTableColumn.fromJS(item));
+            }
+            if (Array.isArray(_data["indexes"])) {
+                this.indexes = [] as any;
+                for (let item of _data["indexes"])
+                    this.indexes!.push(DatabaseIndex.fromJS(item));
+            }
+            if (Array.isArray(_data["navigations"])) {
+                this.navigations = [] as any;
+                for (let item of _data["navigations"])
+                    this.navigations!.push(DatabaseTableNavigation.fromJS(item));
             }
         }
     }
@@ -2289,6 +2303,16 @@ export class DatabaseTable implements IDatabaseTable {
             for (let item of this.columns)
                 data["columns"].push(item.toJSON());
         }
+        if (Array.isArray(this.indexes)) {
+            data["indexes"] = [];
+            for (let item of this.indexes)
+                data["indexes"].push(item.toJSON());
+        }
+        if (Array.isArray(this.navigations)) {
+            data["navigations"] = [];
+            for (let item of this.navigations)
+                data["navigations"].push(item.toJSON());
+        }
         return data;
     }
 
@@ -2303,6 +2327,8 @@ export class DatabaseTable implements IDatabaseTable {
 export interface IDatabaseTable {
     name: string;
     columns: DatabaseTableColumn[];
+    indexes: DatabaseIndex[];
+    navigations: DatabaseTableNavigation[];
 }
 
 export class DatabaseTableColumn implements IDatabaseTableColumn {
@@ -2366,6 +2392,127 @@ export interface IDatabaseTableColumn {
     isPrimaryKey: boolean;
     isForeignKey: boolean;
     order?: number | undefined;
+}
+
+export class DatabaseIndex implements IDatabaseIndex {
+    name!: string;
+    type?: string | undefined;
+    isUnique!: boolean;
+    isClustered!: boolean;
+    columns!: string[];
+
+    constructor(data?: IDatabaseIndex) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.columns = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.type = _data["type"];
+            this.isUnique = _data["isUnique"];
+            this.isClustered = _data["isClustered"];
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseIndex {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseIndex();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["isUnique"] = this.isUnique;
+        data["isClustered"] = this.isClustered;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item);
+        }
+        return data;
+    }
+
+    clone(): DatabaseIndex {
+        const json = this.toJSON();
+        let result = new DatabaseIndex();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseIndex {
+    name: string;
+    type?: string | undefined;
+    isUnique: boolean;
+    isClustered: boolean;
+    columns: string[];
+}
+
+export class DatabaseTableNavigation implements IDatabaseTableNavigation {
+    name!: string;
+    target!: string;
+    clrType?: string | undefined;
+
+    constructor(data?: IDatabaseTableNavigation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.target = _data["target"];
+            this.clrType = _data["clrType"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseTableNavigation {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTableNavigation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["target"] = this.target;
+        data["clrType"] = this.clrType;
+        return data;
+    }
+
+    clone(): DatabaseTableNavigation {
+        const json = this.toJSON();
+        let result = new DatabaseTableNavigation();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTableNavigation {
+    name: string;
+    target: string;
+    clrType?: string | undefined;
 }
 
 export class PackageMetadata implements IPackageMetadata {

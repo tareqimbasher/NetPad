@@ -23,47 +23,79 @@
                 <div class="list-group-item d-flex align-items-center justify-content-between data-connection"
                      data-connection-id="${connection.id}">
                     <div class="d-flex align-items-center text-truncate">
-                        <i class="${connection.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"
+                        <i class="${connection.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                            click.trigger="connection.toggleExpand()"></i>
                         <data-connection-name connection.bind="connection"></data-connection-name>
                     </div>
                     <span class="badge bg-secondary rounded-pill ms-2" if.bind="connection.loadingStructure">
                         Loading...
                     </span>
-                    <span class="badge bg-danger rounded-pill ms-2 text-truncate" if.bind="connection.error" title.bind="connection.error">
+                    <span class="badge bg-danger rounded-pill ms-2 text-truncate" if.bind="connection.error"
+                          title.bind="connection.error">
                         ${connection.error}
                     </span>
                 </div>
 
-                <div class="list-group-item data-connection-structure-tree ${connection.structure.schemas.length == 1 ? 'single-schema' : ''}" show.bind="connection.expanded">
+                <div
+                    class="list-group-item data-connection-structure-tree ${connection.structure.schemas.length == 1 ? 'single-schema' : ''}"
+                    show.bind="connection.expanded">
                     <div class="list-group"
                          if.bind="connection.structure">
                         <div class="list-group-item db-schema"
-                             repeat.for="schema of connection.structure.schemas">
-                            <span class="display-text" if.bind="connection.structure.schemas.length > 1">
-                                ${schema.name || 'Default'}
-                            </span>
-                            <div class="list-group">
+                             repeat.for="schema of connection.structure.schemas"
+                             title="Schema">
+                            <div class="display-text" if.bind="connection.structure.schemas.length > 1">
+                                <i class="${schema.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                                   click.trigger="schema.expanded = !schema.expanded"></i>
+                                <span if.bind="schema.name">${schema.name}</span>
+                                <span else class="text-muted">default</span>
+                            </div>
+                            <div class="list-group" if.bind="schema.expanded">
                                 <div class="list-group-item db-table"
-                                     repeat.for="table of schema.tables">
-                                    <div class="display-text d-flex align-items-center">
-                                        <img src="/img/table.png" alt="table"/>
-                                        ${table.name}
+                                     repeat.for="table of schema.tables"
+                                     title="Table">
+                                    <div class="display-text">
+                                        <i class="${table.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                                           click.trigger="table.expanded = !table.expanded"></i>
+                                        <div class="row-icon"><img src="/img/table.png" alt="table"/></div>
+                                        <b>${table.name}</b>
                                     </div>
-                                    <div class="list-group">
+                                    <div class="list-group" if.bind="table.expanded">
                                         <div class="list-group-item db-column"
                                              repeat.for="column of table.columns"
-                                             title="DB Type: ${column.type}">
-                                            <div class="display-text d-flex align-items-center">
-                                                <img src="/img/column.png" alt="column"/>
+                                             title="Column Type: ${column.type}">
+                                            <div class="display-text">
+                                                <div class="row-icon"><img src="/img/column.png" alt="column"/></div>
                                                 ${column.name}
-                                                <i class="primary-key-icon icon-xs text-yellow ms-2"
+                                                <i class="db-primary-key-icon icon-xs text-yellow ms-2"
                                                    title="Primary key"
                                                    if.bind="column.isPrimaryKey"></i>
-                                                <i class="foreign-key-icon icon-xs text-blue ms-2"
+                                                <i class="db-foreign-key-icon icon-xs text-blue ms-2"
                                                    title="Foreign key"
                                                    if.bind="column.isForeignKey"></i>
-                                                <span class="db-column-type text-muted">(${column.clrType})</span>
+                                                <span class="extra-info text-muted">(${column.clrType})</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item db-navigation"
+                                             if.bind="table.navigations.length"
+                                             repeat.for="nav of table.navigations"
+                                             title="Navigation property (${nav.clrType})">
+                                            <div class="display-text">
+                                                <div class="row-icon">
+                                                    <i class="db-navigation-icon icon-xs text-green"></i>
+                                                </div>
+                                                ${nav.name}
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item db-index"
+                                             if.bind="table.indexes.length"
+                                             repeat.for="index of table.indexes"
+                                             title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}\nClustered: ${index.isClustered}">
+                                            <div class="display-text">
+                                                <div class="row-icon"><i class="db-index-icon icon-xs"></i></div>
+                                                ${index.name}
+                                                <span class="extra-info text-muted"
+                                                      if.bind="index.type">(${index.type})</span>
                                             </div>
                                         </div>
                                     </div>

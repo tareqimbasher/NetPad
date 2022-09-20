@@ -8,7 +8,7 @@
         <div class="list-group-item script-folder text-truncate d-flex justify-content-between">
             <span click.trigger="folder.expanded = !folder.expanded">
                 <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
-                <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 fa-fw"></i> ${folder.name}
+                <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 icon-fw"></i> ${folder.name}
             </span>
             <i class="action-icon script-folder-open-icon"
                title="Open in File Manager"
@@ -29,7 +29,7 @@
                             <div class="script-content text-truncate"
                                  title.bind="script.path">
                                 <i class="tree-expand-node-icon" style="visibility: hidden"></i>
-                                <i class="script-icon fa-fw"></i>
+                                <i class="script-icon icon-fw"></i>
                                 <span class="script-name">${script.name}</span>
                             </div>
                             <div class="script-metadata">
