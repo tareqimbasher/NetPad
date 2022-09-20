@@ -12,6 +12,7 @@ import {
     BuiltinCompletionProvider,
     DataConnectionName,
     Editor,
+    Env,
     ICompletionItemProvider,
     IPaneManager,
     IShortcutManager,
@@ -22,7 +23,7 @@ import {
     WebDialogBackgroundService,
     WebWindowBackgroundService
 } from "@application";
-import {IBackgroundService, System} from "@common";
+import {IBackgroundService} from "@common";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -43,7 +44,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             DataConnectionName
         );
 
-        if (!System.isRunningInElectron()) {
+        if (!Env.isRunningInElectron()) {
             app.register(
                 Registration.transient(IBackgroundService, WebDialogBackgroundService),
                 Registration.transient(IBackgroundService, WebWindowBackgroundService)

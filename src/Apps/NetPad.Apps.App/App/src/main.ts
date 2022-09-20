@@ -14,6 +14,7 @@ import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, Se
 import {
     ContextMenu,
     DateTimeValueConverter,
+    Env,
     EventBus,
     ExternalLinkCustomAttribute,
     IWindowBootstrapperConstructor,
@@ -26,7 +27,7 @@ import {
     TextToHtmlValueConverter,
     YesNoValueConverter
 } from "@application";
-import {AppMutationObserver, IBackgroundService, System} from "@common";
+import {AppMutationObserver, IBackgroundService} from "@common";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -43,7 +44,7 @@ const app = Aurelia.register(
     Registration.transient(IBackgroundService, SettingsBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
-        level: LogLevel.debug,
+        level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
         sinks: [ConsoleSink],
     }),
 
@@ -85,7 +86,7 @@ app.container.get(Settings).init(settings.toJSON());
 
 // Determine which window we need to bootstrap and use
 let winOpt = startupOptions.get("win");
-if (!winOpt && !System.isRunningInElectron())
+if (!winOpt && !Env.isRunningInElectron())
     winOpt = "main";
 
 let bootstrapperCtor: IWindowBootstrapperConstructor;

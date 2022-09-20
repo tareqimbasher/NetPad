@@ -1,5 +1,5 @@
 import {bindable} from "aurelia";
-import {System} from "@common";
+import {Env} from "@application/env";
 
 export class PlatformsCustomAttribute {
     @bindable supportedPlatforms?: string;
@@ -10,7 +10,7 @@ export class PlatformsCustomAttribute {
     public bound() {
         if (!this.supportedPlatforms) return;
 
-        const runningInElectron = System.isRunningInElectron();
+        const runningInElectron = Env.isRunningInElectron();
 
         if (runningInElectron && this.supportedPlatforms.indexOf("Electron") < 0)
             this.element.remove();

@@ -29,6 +29,11 @@ const postcssLoader = {
 
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
+
+    if (!process.env.NODE_ENV) {
+        process.env.NODE_ENV = production ? "production" : "development";
+    }
+
     return {
         //target: 'web',
         target: 'electron-renderer',
