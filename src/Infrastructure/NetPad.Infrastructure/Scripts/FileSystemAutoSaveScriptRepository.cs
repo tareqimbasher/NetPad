@@ -61,6 +61,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
             throw new Exception($"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
         }
 
+        script.IsDirty = true;
+
         return script;
     }
 
