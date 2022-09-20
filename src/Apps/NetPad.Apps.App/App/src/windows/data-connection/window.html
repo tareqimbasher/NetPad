@@ -7,7 +7,7 @@
                 </div>
                 <div class="col-6">
                     <div class="dropdown connection-type-selector">
-                        <button class="btn btn-secondary dropdown-toggle"
+                        <button class="btn btn-secondary btn-basic dropdown-toggle"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 innerHTML.bind="connectionType ? connectionType.label : 'Select...'">
@@ -24,109 +24,113 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-3">
-                    <label class="col-form-label">Name:</label>
-                </div>
-                <div class="col-6">
-                    <input ref="nameField" type="text" class="form-control" value.bind="connection.name"/>
-                    <div class="invalid-feedback">
-                        Name already exists. Please choose a unique name.
+            <form>
+                <fieldset disabled.bind="!connectionType">
+                    <div class="row">
+                        <div class="col-3">
+                            <label class="col-form-label">Name:</label>
+                        </div>
+                        <div class="col-6">
+                            <input ref="nameField" type="text" class="form-control" value.bind="connection.name"/>
+                            <div class="invalid-feedback">
+                                Name already exists. Please choose a unique name.
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label class="col-form-label">Host:</label>
-                </div>
-                <div class="col-6">
-                    <input type="text" class="form-control" value.bind="connection.host"/>
-                </div>
-                <div class="col-1">
-                    <label class="col-form-label">Port:</label>
-                </div>
-                <div class="col-2" style="max-width: 7rem">
-                    <input type="number" class="form-control" value.bind="connection.port"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label class="col-form-label">Authentication:</label>
-                </div>
-                <div class="col-4">
-                    <select class="form-select" value.bind="authType">
-                        <option value="userAndPassword">User & Password</option>
-                        <option value="none">No auth</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row" if.bind="authType === 'userAndPassword'">
-                <div class="col-3">
-                    <label class="col-form-label">User:</label>
-                </div>
-                <div class="col-6">
-                    <input type="text" class="form-control" value.bind="connection.userId"/>
-                </div>
-            </div>
-            <div class="row" if.bind="authType === 'userAndPassword'">
-                <div class="col-3">
-                    <label class="col-form-label">Password:</label>
-                </div>
-                <div class="col-6">
-                    <input type="password"
-                           class="form-control"
-                           value.bind="connection.password"
-                           placeholder="<hidden>"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label class="col-form-label">Database:</label>
-                </div>
-                <div class="col-6">
-                    <input class="form-control"
-                           list="datalistOptions"
-                           value.bind="connection.databaseName"
-                           placeholder="Type to search, or click to select..."
-                           focus.trigger="loadDatabases()">
-                    <datalist id="datalistOptions">
-                        <option repeat.for="dbName of databasesOnServer">${dbName}</option>
-                    </datalist>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                    <label class="col-form-label">Production Data?</label>
-                </div>
-                <div class="col-5">
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               checked.bind="connection.containsProductionData">
+                    <div class="row">
+                        <div class="col-3">
+                            <label class="col-form-label">Host:</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control" value.bind="connection.host"/>
+                        </div>
+                        <div class="col-1">
+                            <label class="col-form-label">Port:</label>
+                        </div>
+                        <div class="col-2" style="max-width: 7rem">
+                            <input type="number" class="form-control" value.bind="connection.port"/>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-3">
-                </div>
-                <div class="col-7">
-                    <button class="btn btn-primary"
-                            click.trigger="testConnection()"
-                            disabled.bind="testingConnectionStatus === 'testing'">
-                        Test Connection
-                    </button>
+                    <div class="row">
+                        <div class="col-3">
+                            <label class="col-form-label">Authentication:</label>
+                        </div>
+                        <div class="col-4">
+                            <select class="form-select" value.bind="authType">
+                                <option value="userAndPassword">User & Password</option>
+                                <option value="none">No auth</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" if.bind="authType === 'userAndPassword'">
+                        <div class="col-3">
+                            <label class="col-form-label">User:</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="text" class="form-control" value.bind="connection.userId"/>
+                        </div>
+                    </div>
+                    <div class="row" if.bind="authType === 'userAndPassword'">
+                        <div class="col-3">
+                            <label class="col-form-label">Password:</label>
+                        </div>
+                        <div class="col-6">
+                            <input type="password"
+                                   class="form-control"
+                                   value.bind="connection.password"
+                                   placeholder="<hidden>"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <label class="col-form-label">Database:</label>
+                        </div>
+                        <div class="col-6">
+                            <input class="form-control"
+                                   list="datalistOptions"
+                                   value.bind="connection.databaseName"
+                                   placeholder="Type to search, or click to select..."
+                                   focus.trigger="loadDatabases()">
+                            <datalist id="datalistOptions">
+                                <option repeat.for="dbName of databasesOnServer">${dbName}</option>
+                            </datalist>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                            <label class="col-form-label">Production Data?</label>
+                        </div>
+                        <div class="col-5">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       checked.bind="connection.containsProductionData">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3">
+                        </div>
+                        <div class="col-7">
+                            <button class="btn btn-primary"
+                                    click.trigger="testConnection()"
+                                    disabled.bind="testingConnectionStatus === 'testing' || !isConnectionValid">
+                                Test Connection
+                            </button>
 
-                    <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus" switch.bind="testingConnectionStatus">
-                        <span case="testing" class="spinner-border spinner-border-sm" title="Please wait..."></span>
-                        <i case="success" class="check-circle-icon text-green" title="Success"></i>
-                        <i case="fail" class="warning-icon text-yellow" title="Connection failed"></i>
-                    </div>
+                            <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus" switch.bind="testingConnectionStatus">
+                                <span case="testing" class="spinner-border spinner-border-sm" title="Please wait..."></span>
+                                <i case="success" class="check-circle-icon text-green" title="Success"></i>
+                                <i case="fail" class="warning-icon text-yellow" title="Connection failed"></i>
+                            </div>
 
-                    <p class="text-red mt-3" show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
-                        ${testingConnectionFailureMessage}
-                    </p>
-                </div>
-            </div>
+                            <p class="text-red mt-3" show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
+                                ${testingConnectionFailureMessage}
+                            </p>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
         </div>
 
         <div class="bottom-buttons-bar">

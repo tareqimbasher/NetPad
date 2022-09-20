@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Common;
 using NetPad.CQs;
 using NetPad.Data;
 using NetPad.UiInterop;
@@ -29,6 +30,26 @@ public class DataConnectionsController : Controller
 
     [HttpGet]
     public async Task<IEnumerable<DataConnection>> GetAll() => await _mediator.Send(new GetDataConnectionsQuery());
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<DataConnection?>> Get(Guid id)
+    {
+        var connection = await _mediator.Send(new GetDataConnectionQuery(id));
+
+        if (connection == null) return connection;
+
+        // TODO find out why this happens and fix
+        // Manually serializing the result because JsonConverter on DataConnection
+        // isn't triggered when serializing a single object. It works on collections though.
+        var json = JsonSerializer.Serialize(connection, typeof(DataConnection));
+
+        return new ContentResult()
+        {
+            StatusCode = 200,
+            Content = json,
+            ContentType = "application/json"
+        };
+    }
 
     [HttpGet("names")]
     public async Task<IEnumerable<string>> GetAllNames()

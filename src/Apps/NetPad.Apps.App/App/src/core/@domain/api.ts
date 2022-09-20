@@ -240,11 +240,13 @@ export interface IDataConnectionsApiClient {
 
     save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void>;
 
+    get(id: string, signal?: AbortSignal | undefined): Promise<DataConnection>;
+
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
     getAllNames(signal?: AbortSignal | undefined): Promise<string[]>;
 
     refresh(id: string, signal?: AbortSignal | undefined): Promise<void>;
-
-    delete(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
     test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
 
@@ -373,6 +375,78 @@ export class DataConnectionsApiClient implements IDataConnectionsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
+    get(id: string, signal?: AbortSignal | undefined): Promise<DataConnection> {
+        let url_ = this.baseUrl + "/data-connections/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGet(_response);
+        });
+    }
+
+    protected processGet(response: Response): Promise<DataConnection> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DataConnection.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnection>(<any>null);
+    }
+
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processDelete(_response);
+        });
+    }
+
+    protected processDelete(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
     getAllNames(signal?: AbortSignal | undefined): Promise<string[]> {
         let url_ = this.baseUrl + "/data-connections/names";
         url_ = url_.replace(/[?&]$/, "");
@@ -435,40 +509,6 @@ export class DataConnectionsApiClient implements IDataConnectionsApiClient {
     }
 
     protected processRefresh(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(<any>null);
-    }
-
-    delete(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/data-connections/{id}";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ = <RequestInit>{
-            method: "DELETE",
-            signal,
-            headers: {
-            }
-        };
-
-        return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processDelete(_response);
-        });
-    }
-
-    protected processDelete(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3502,6 +3542,8 @@ export class Types implements ITypes {
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
+    dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -3533,6 +3575,8 @@ export class Types implements ITypes {
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChangedEvent.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
             this.dataConnectionSavedEvent = _data["dataConnectionSavedEvent"] ? DataConnectionSavedEvent.fromJS(_data["dataConnectionSavedEvent"]) : <any>undefined;
             this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdatingEvent = _data["dataConnectionResourcesUpdatingEvent"] ? DataConnectionResourcesUpdatingEvent.fromJS(_data["dataConnectionResourcesUpdatingEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdatedEvent = _data["dataConnectionResourcesUpdatedEvent"] ? DataConnectionResourcesUpdatedEvent.fromJS(_data["dataConnectionResourcesUpdatedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
@@ -3564,6 +3608,8 @@ export class Types implements ITypes {
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
         data["dataConnectionSavedEvent"] = this.dataConnectionSavedEvent ? this.dataConnectionSavedEvent.toJSON() : <any>undefined;
         data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdatingEvent"] = this.dataConnectionResourcesUpdatingEvent ? this.dataConnectionResourcesUpdatingEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdatedEvent"] = this.dataConnectionResourcesUpdatedEvent ? this.dataConnectionResourcesUpdatedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
@@ -3595,6 +3641,8 @@ export interface ITypes {
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
+    dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -4255,6 +4303,102 @@ export class DataConnectionDeletedEvent implements IDataConnectionDeletedEvent {
 
 export interface IDataConnectionDeletedEvent {
     dataConnection: DataConnection;
+}
+
+export class DataConnectionResourcesUpdatingEvent implements IDataConnectionResourcesUpdatingEvent {
+    dataConnection!: DataConnection;
+    updatingComponent!: DataConnectionResourceComponent;
+
+    constructor(data?: IDataConnectionResourcesUpdatingEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.updatingComponent = _data["updatingComponent"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdatingEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdatingEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["updatingComponent"] = this.updatingComponent;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdatingEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdatingEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdatingEvent {
+    dataConnection: DataConnection;
+    updatingComponent: DataConnectionResourceComponent;
+}
+
+export type DataConnectionResourceComponent = "SourceCode" | "Assembly" | "RequiredReferences";
+
+export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResourcesUpdatedEvent {
+    dataConnection!: DataConnection;
+    updatedComponent!: DataConnectionResourceComponent;
+
+    constructor(data?: IDataConnectionResourcesUpdatedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.updatedComponent = _data["updatedComponent"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdatedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdatedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["updatedComponent"] = this.updatedComponent;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdatedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdatedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdatedEvent {
+    dataConnection: DataConnection;
+    updatedComponent: DataConnectionResourceComponent;
 }
 
 export abstract class CommandBase implements ICommandBase {

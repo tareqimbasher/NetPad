@@ -28,14 +28,16 @@ public class RefreshDataConnectionCommand : Command
 
         public async Task<Unit> Handle(RefreshDataConnectionCommand request, CancellationToken cancellationToken)
         {
-            _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId);
-
             var connection = await _dataConnectionRepository.GetAsync(request.ConnectionId);
 
-            if (connection != null)
+            if (connection == null)
             {
-                await _dataConnectionResourcesCache.GetAssemblyAsync(connection);
+                return Unit.Value;
             }
+
+            _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId);
+
+            await _dataConnectionResourcesCache.GetAssemblyAsync(connection);
 
             return Unit.Value;
         }

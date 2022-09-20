@@ -1,15 +1,26 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {ApiException, DatabaseStructure, DataConnection, DataConnectionStore, IDataConnectionService} from "@domain";
+import {
+    ApiException,
+    DatabaseStructure,
+    DataConnection,
+    DataConnectionResourceComponent,
+    DataConnectionResourcesUpdatedEvent,
+    DataConnectionResourcesUpdatingEvent,
+    DataConnectionStore,
+    IDataConnectionService,
+    IEventBus
+} from "@domain";
 import {ContextMenuOptions, ViewModelBase} from "@application";
 
 export class DataConnectionsList extends ViewModelBase {
-    public dataConnections: SidebarDataConnection[] = [];
+    public dataConnectionViewModels: DataConnectionViewModel[] = [];
     public tabContextMenuOptions: ContextMenuOptions;
 
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         private readonly dataConnectionStore: DataConnectionStore,
+        @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -25,8 +36,30 @@ export class DataConnectionsList extends ViewModelBase {
                 icon: "delete-icon",
                 text: "Delete",
                 onSelected: async (clickTarget) => this.delete(this.getDataConnectionId(clickTarget))
+            },
+            {
+                isDivider: true
+            },
+            {
+                icon: "configure-icon",
+                text: "Properties",
+                onSelected: async (clickTarget) => this.editConnection(this.getDataConnectionId(clickTarget))
             }
         ]);
+
+        this.eventBus.subscribeToServer(DataConnectionResourcesUpdatingEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
+            if (vm) {
+                vm.resourceLoading.add(msg.updatingComponent);
+            }
+        });
+
+        this.eventBus.subscribeToServer(DataConnectionResourcesUpdatedEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
+            if (vm) {
+                vm.resourceLoading.delete(msg.updatedComponent);
+            }
+        });
     }
 
     public async attached() {
@@ -37,17 +70,21 @@ export class DataConnectionsList extends ViewModelBase {
         await this.dataConnectionService.openDataConnectionWindow(null);
     }
 
+    public async editConnection(connectionId: string) {
+        await this.dataConnectionService.openDataConnectionWindow(connectionId);
+    }
+
     public async delete(connectionId: string) {
-        const connection = this.dataConnections.find(c => c.id === connectionId);
+        const connection = this.dataConnectionViewModels.find(v => v.connection.id === connectionId);
         if (!connection) return;
 
-        if (confirm(`Are you sure you want to delete "${connection.name}"?`)) {
+        if (confirm(`Are you sure you want to delete "${connection.connection.name}"?`)) {
             await this.dataConnectionService.delete(connectionId);
         }
     }
 
     public async refresh(connectionId: string) {
-        const dataConnection = this.dataConnections.find(dc => dc.id === connectionId);
+        const dataConnection = this.dataConnectionViewModels.find(v => v.connection.id === connectionId);
         if (dataConnection) {
             await dataConnection.refresh();
         }
@@ -55,8 +92,8 @@ export class DataConnectionsList extends ViewModelBase {
 
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections)
     private constructSideBarDataConnections() {
-        this.dataConnections = this.dataConnectionStore.connections
-            .map(c => new SidebarDataConnection(c, this.dataConnectionService));
+        this.dataConnectionViewModels = this.dataConnectionStore.connections
+            .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
     }
 
     private getDataConnectionId(element: Element) {
@@ -64,35 +101,45 @@ export class DataConnectionsList extends ViewModelBase {
     }
 }
 
-class SidebarDataConnection extends DataConnection {
+class DataConnectionViewModel {
     public expanded = false;
     public structure?: DatabaseStructure;
     public error?: string;
-    public loadingStructure = false;
+    public loadingStructure = false
+    public resourceLoading = new Set<DataConnectionResourceComponent>();
 
-    constructor(connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
-        super(connection);
+    constructor(public connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
+    }
+
+    public get loadingMessage(): string | null {
+        if (this.resourceLoading.size > 0) {
+            const onlyLoadingAssembly = this.resourceLoading.size == 1 && Array.from(this.resourceLoading)[0] === "Assembly";
+            return onlyLoadingAssembly ? "Loading" : "Scaffolding";
+        }
+
+        return this.loadingStructure ? "Loading" : null
     }
 
     public toggleExpand() {
         this.expanded = !this.expanded;
 
-        if (this.expanded && !this.structure && !this.loadingStructure) {
+        if (this.expanded && !this.structure) {
             this.getDatabaseStructure();
         }
     }
 
     public async refresh() {
-        this.loadingStructure = true;
-        await this.dataConnectionService.refresh(this.id);
+        await this.dataConnectionService.refresh(this.connection.id);
         this.getDatabaseStructure();
     }
 
     public getDatabaseStructure() {
+        if (this.loadingStructure) return;
+
         this.loadingStructure = true;
         this.error = null;
 
-        this.dataConnectionService.getDatabaseStructure(this.id)
+        this.dataConnectionService.getDatabaseStructure(this.connection.id)
             .then(structure => {
                 this.structure = structure;
             })

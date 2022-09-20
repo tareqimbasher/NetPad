@@ -1,7 +1,7 @@
 @import "~styles/themes";
 
 .connection-details {
-    > .row {
+    > .row, fieldset > .row {
         margin-bottom: 1rem;
     }
 }

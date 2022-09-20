@@ -1,17 +1,18 @@
 import {
     DatabaseConnection,
+    DataConnection,
     DataConnectionType,
     IDataConnectionService,
+    MsSqlServerDatabaseConnection,
     PostgreSqlDatabaseConnection,
-    Settings,
-    MsSqlServerDatabaseConnection
+    Settings
 } from "@domain";
 import {Util} from "@common";
-import {ILogger} from "aurelia";
+import {Constructable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 
 export class Window {
-    public connection?: DatabaseConnection;
+    public connection?: DataConnection;
     public connectionType?: ConnectionType;
     public connectionTypes: ConnectionType[] = [
         {
@@ -39,13 +40,22 @@ export class Window {
         @ILogger logger: ILogger
     ) {
         this.logger = logger.scopeTo(nameof(Window));
-        const dataConnectionId = this.startupOptions.get("data-connection-id");
-        const createNew = !dataConnectionId;
 
+        const createNew = !this.startupOptions.get("data-connection-id");
         document.title = createNew ? "New Connection" : "Edit Connection";
     }
 
     public async binding() {
+        const dataConnectionId = this.startupOptions.get("data-connection-id");
+        if (dataConnectionId) {
+            const connection = await this.dataConnectionService.get(dataConnectionId);
+            this.connectionType = this.connectionTypes.find(c => c.type == connection.type);
+            if (connection instanceof DatabaseConnection && (!!connection.userId || !!connection.password)) {
+                this.authType = "userAndPassword";
+            }
+            this.connection = connection;
+        }
+
         const existingNames = await this.dataConnectionService.getAllNames();
 
         // Remove the name of the connection being edited
@@ -60,15 +70,20 @@ export class Window {
     }
 
     public get isConnectionValid() {
-        return !!this.connectionType
+        const genericChecks = !!this.connectionType
             && !!this.connection
-            && this.isNameValid
-            && !!this.connection.host
-            && !!this.connection.databaseName
-            && (this.authType !== "userAndPassword" || (!!this.connection.userId && !!this.connection.password));
+            && this.isNameValid();
+
+        if (genericChecks && this.connection instanceof DatabaseConnection) {
+            return !!this.connection.host
+                && !!this.connection.databaseName
+                && (this.authType !== "userAndPassword" || (!!this.connection.userId && !!this.connection.password));
+        }
+
+        return genericChecks;
     }
 
-    public get isNameValid() {
+    public isNameValid() {
         if (!this.connection?.name) {
             return true;
         }
@@ -81,41 +96,33 @@ export class Window {
             return;
         }
 
+        if (this.connection?.type === connectionType.type) {
+            return;
+        }
+
         this.connectionType = connectionType;
 
+        let concereteType: Constructable;
+
         if (connectionType.type === "MSSQLServer") {
-            this.connection = new MsSqlServerDatabaseConnection({
-                id: Util.newGuid(),
-                type: "MSSQLServer",
-                name: "New Microsoft SQL Server Connection",
-                entityFrameworkProviderName: "",
-                containsProductionData: false,
-
-                // Test
-                host: "localhost",
-                databaseName: "NetPad",
-            });
+            concereteType = MsSqlServerDatabaseConnection;
         } else if (connectionType.type === "PostgreSQL") {
-            // test
-            this.authType = "userAndPassword";
-
-            this.connection = new PostgreSqlDatabaseConnection({
-                id: Util.newGuid(),
-                type: "PostgreSQL",
-                name: "New PostgreSQL Connection",
-                entityFrameworkProviderName: "",
-                containsProductionData: false,
-                port: "5432",
-
-                // Test
-                host: "localhost",
-                databaseName: "netpad",
-                userId: "postgres",
-                password: "password"
-            });
+            concereteType = PostgreSqlDatabaseConnection;
         } else {
             this.connection = null;
+            return;
         }
+
+        const newConnection = new concereteType() as DatabaseConnection;
+
+        if (this.connection) {
+            newConnection.init(this.connection);
+        } else {
+            newConnection.id = Util.newGuid();
+        }
+
+        newConnection.type = connectionType.type;
+        this.connection = newConnection;
     }
 
     public async testConnection() {
@@ -124,25 +131,27 @@ export class Window {
             return;
         }
 
-        if (!this.connection.host) {
-            alert("The Host is required.");
-            return;
-        }
-
-        if (!this.connection.databaseName) {
-            alert("The Database is required.");
-            return;
-        }
-
-        if (this.authType === "userAndPassword") {
-            if (!this.connection.userId) {
-                alert("The User is required.");
+        if (this.connection instanceof DatabaseConnection) {
+            if (!this.connection.host) {
+                alert("The Host is required.");
                 return;
             }
 
-            if (!this.connection.password) {
-                alert("The Password is required.");
+            if (!this.connection.databaseName) {
+                alert("The Database is required.");
                 return;
+            }
+
+            if (this.authType === "userAndPassword") {
+                if (!this.connection.userId) {
+                    alert("The User is required.");
+                    return;
+                }
+
+                if (!this.connection.password) {
+                    alert("The Password is required.");
+                    return;
+                }
             }
         }
 
@@ -181,17 +190,20 @@ export class Window {
     private connectionNameChanged() {
         this.nameField.parentElement.classList.add("was-validated");
 
-        if (!this.isNameValid) {
+        if (!this.isNameValid()) {
             this.nameField.classList.replace("is-valid", "is-invalid");
             this.nameField.setCustomValidity("Unique name");
-        }
-        else {
+        } else {
             this.nameField.classList.replace("is-invalid", "is-valid");
             this.nameField.setCustomValidity("");
         }
     }
 
     private async loadDatabases() {
+        if (!(this.connection instanceof DatabaseConnection)) {
+            return;
+        }
+
         const canLoad = !!this.connectionType
             && !!this.connection
             && !!this.connection.host

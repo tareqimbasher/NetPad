@@ -36,6 +36,8 @@ namespace NetPad.Controllers
             public ScriptDirectoryChangedEvent? ScriptDirectoryChanged { get; set; }
             public DataConnectionSavedEvent? DataConnectionSavedEvent { get; set; }
             public DataConnectionDeletedEvent? DataConnectionDeletedEvent { get; set; }
+            public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
+            public DataConnectionResourcesUpdatedEvent? DataConnectionResourcesUpdatedEvent { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
             public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
             public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }

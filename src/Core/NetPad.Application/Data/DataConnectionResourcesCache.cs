@@ -49,6 +49,8 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             resources ??= CreateResources(dataConnection);
 
+            _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.SourceCode));
+
             resources.SourceCode = Task.Run<SourceCodeCollection>(async () =>
             {
                 return await _dataConnectionResourcesGenerator.GenerateSourceCodeAsync(dataConnection);
@@ -58,7 +60,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourcesUpdatedEvent.UpdatedComponentType.SourceCode));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourceComponent.SourceCode));
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
@@ -88,6 +90,8 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             resources ??= CreateResources(dataConnection);
 
+            _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.Assembly));
+
             resources.Assembly = Task.Run<byte[]?>(async () =>
             {
                 var sourceCode = await GetSourceGeneratedCodeAsync(dataConnection);
@@ -98,7 +102,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourcesUpdatedEvent.UpdatedComponentType.Assembly));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourceComponent.Assembly));
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
@@ -128,6 +132,8 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             resources ??= CreateResources(dataConnection);
 
+            _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences));
+
             resources.RequiredReferences = Task.Run<IEnumerable<Reference>>(async () =>
             {
                 return await _dataConnectionResourcesGenerator.GetRequiredReferencesAsync(dataConnection);
@@ -137,7 +143,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourcesUpdatedEvent.UpdatedComponentType.RequiredReferences));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourceComponent.RequiredReferences));
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {

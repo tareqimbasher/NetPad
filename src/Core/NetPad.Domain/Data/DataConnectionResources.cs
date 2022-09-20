@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.Compilation;
 using NetPad.DotNet;
-using NetPad.Scripts;
 
 namespace NetPad.Data;
 
@@ -17,4 +16,11 @@ public class DataConnectionResources
     public Task<SourceCodeCollection>? SourceCode { get; set; }
     public Task<byte[]?>? Assembly { get; set; }
     public Task<IEnumerable<Reference>>? RequiredReferences { get; set; }
+}
+
+public enum DataConnectionResourceComponent
+{
+    SourceCode,
+    Assembly,
+    RequiredReferences
 }
