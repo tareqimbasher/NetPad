@@ -15,6 +15,8 @@ public class ScaffoldedDatabaseModel
 
     public SourceCodeCollection<ScaffoldedSourceFile> SourceFiles => _sourceFiles;
 
+    public ScaffoldedSourceFile DbContextFile => _sourceFiles.Single(f => f.IsDbContext);
+
     public void AddFile(ScaffoldedSourceFile file)
     {
         if (file.IsDbContext && _sourceFiles.Any(f => f.IsDbContext))

@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Configuration;
+using NetPad.Data.Scaffolding.Transforms;
 using NetPad.DotNet;
 using NetPad.Packages;
-using NetPad.Utilities;
 
 namespace NetPad.Data.Scaffolding;
 
@@ -48,7 +48,23 @@ public class EntityFrameworkDatabaseScaffolder
 
         try
         {
-            await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"
+            await RunEfCoreToolsAsync();
+
+            var model = await GetScaffoldedModelAsync();
+
+            DoTransforms(model);
+
+            return model;
+        }
+        finally
+        {
+            //await _project.DeleteAsync();
+        }
+    }
+
+    private async Task RunEfCoreToolsAsync()
+    {
+        await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"
 class Program
 {
     static void Main()
@@ -57,60 +73,53 @@ class Program
     }
 }");
 
-            await _project.AddPackageAsync(new PackageReference(
-                _connection.EntityFrameworkProviderName,
-                _connection.EntityFrameworkProviderName,
-                await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
-                ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
-            ));
+        await _project.AddPackageAsync(new PackageReference(
+            _connection.EntityFrameworkProviderName,
+            _connection.EntityFrameworkProviderName,
+            await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
+            ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
+        ));
 
-            await _project.AddPackageAsync(new PackageReference(
-                "Microsoft.EntityFrameworkCore.Design",
-                "Microsoft.EntityFrameworkCore.Design",
-                await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
-                ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
-            ));
+        await _project.AddPackageAsync(new PackageReference(
+            "Microsoft.EntityFrameworkCore.Design",
+            "Microsoft.EntityFrameworkCore.Design",
+            await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
+            ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
+        ));
 
-            Directory.CreateDirectory(_dbModelOutputDirPath);
+        Directory.CreateDirectory(_dbModelOutputDirPath);
 
-            var args = string.Join(" ", new[]
-            {
-                "ef dbcontext scaffold",
-                _connection.GetConnectionString(),
-                _connection.EntityFrameworkProviderName,
-                $"--context {DbContextName}",
-                $"--namespace \"\"", // Instructs tool to not wrap code in any namespace
-                "--force",
-                $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
-            });
-
-            _logger.LogDebug("Calling dotnet with args: '{Args}'", args);
-
-            var process = Process.Start(new ProcessStartInfo("dotnet", args)
-            {
-                UseShellExecute = false,
-                WorkingDirectory = _project.ProjectDirectoryPath,
-                CreateNoWindow = true
-            });
-
-            if (process == null)
-            {
-                throw new Exception("Could not start scaffolding process");
-            }
-
-            await process.WaitForExitAsync();
-            _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", process.ExitCode);
-
-            if (process.ExitCode != 0)
-            {
-                throw new Exception($"Scaffolding process process failed with exit code: {process.ExitCode}");
-            }
-
-            return await GetScaffoldedModelAsync();
-        }
-        finally
+        var args = string.Join(" ", new[]
         {
-            await _project.DeleteAsync();
+            "ef dbcontext scaffold",
+            $"\"{_connection.GetConnectionString()}\"",
+            _connection.EntityFrameworkProviderName,
+            $"--context {DbContextName}",
+            $"--namespace \"\"", // Instructs tool to not wrap code in any namespace
+            "--force",
+            $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
+        });
+
+        _logger.LogDebug("Calling dotnet with args: '{Args}'", args);
+
+        var process = Process.Start(new ProcessStartInfo("dotnet", args)
+        {
+            UseShellExecute = false,
+            WorkingDirectory = _project.ProjectDirectoryPath,
+            CreateNoWindow = true
+        });
+
+        if (process == null)
+        {
+            throw new Exception("Could not start scaffolding process");
+        }
+
+        await process.WaitForExitAsync();
+        _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", process.ExitCode);
+
+        if (process.ExitCode != 0)
+        {
+            throw new Exception($"Scaffolding process process failed with exit code: {process.ExitCode}");
         }
     }
 
@@ -161,11 +170,6 @@ class Program
         var className = classDeclaration.Identifier.ValueText;
         var isDbContext = classCode.Contains(" : DbContext");
 
-        if (isDbContext)
-        {
-            classCode = PatchDbContextCode(classCode);
-        }
-
         var sourceFile = new ScaffoldedSourceFile(className)
         {
             Namespaces = namespaces,
@@ -176,51 +180,13 @@ class Program
         return sourceFile;
     }
 
-    private static string PatchDbContextCode(string code)
+    private void DoTransforms(ScaffoldedDatabaseModel model)
     {
-        // The issue is that EF Core doesn't generate the "entity.ToTable()" statement for
-        // some tables/entities in the OnModelCreating() method. As a result, changing the name
-        // that EF Core gives the DbSet property will cause an error since it seemingly relies on
-        // that name to get the table name, unless a "entity.ToTable()" statement maps the DbSet to the
-        // proper table name. Here we explicitly add the "entity.ToTable()" statement when it doesn't
-        // already exist.
-        var lines = code.Split(Environment.NewLine).ToList();
-        var entityNameToDbSetName = new Dictionary<string, string>();
+        new AnyDatabaseProviderTransform().Transform(model);
 
-        for (int iLine = 0; iLine < lines.Count; iLine++)
+        if (_connection is PostgreSqlDatabaseConnection)
         {
-            var line = lines[iLine];
-
-            string entityName;
-            string dbSetName;
-
-            if (line.Contains("public virtual DbSet<"))
-            {
-                // This is a DbSet property. Get the name of the DbSet property
-                entityName = line.SubstringBetween("<", ">").Trim();
-                dbSetName = line.SubstringBetween("> ", " {").Trim();
-
-                entityNameToDbSetName.Add(entityName, dbSetName);
-
-                continue;
-            }
-
-            if (!line.Contains("modelBuilder.Entity<")) continue;
-            // We are configuring an entity's model
-
-            var iLineWithToTableStatement = iLine + 2;
-            var lineWithToTableStatement = lines[iLineWithToTableStatement];
-
-            if (lineWithToTableStatement.Contains("entity.ToTable(")) continue;
-            // No explicit "ToTable()" mapping exists, add it
-
-            entityName = line.SubstringBetween("<", ">").Trim();
-            dbSetName = entityNameToDbSetName[entityName];
-
-            lines.Insert(iLineWithToTableStatement, $"entity.ToTable(\"{dbSetName}\");");
-            iLine += 2;
+            new PostgresSqlTransform().Transform(model);
         }
-
-        return lines.JoinToString(Environment.NewLine);
     }
 }
