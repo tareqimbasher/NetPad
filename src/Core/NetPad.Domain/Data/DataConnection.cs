@@ -32,6 +32,11 @@ public abstract class DataConnection
     /// <returns></returns>
     public abstract Task<DataConnectionTestResult> TestConnectionAsync();
 
+    public override string ToString()
+    {
+        return $"[{Id}] {Name}";
+    }
+
     #region KnownTypes
 
     static Type[] GetKnownTypes()

@@ -5,7 +5,8 @@ namespace NetPad.Events;
 
 public class DataConnectionResourcesUpdatedEvent : IEvent
 {
-    public DataConnectionResourcesUpdatedEvent(DataConnection dataConnection, DataConnectionResources resources, DataConnectionResourceComponent updatedComponent)
+    public DataConnectionResourcesUpdatedEvent(DataConnection dataConnection, DataConnectionResources resources,
+        DataConnectionResourceComponent updatedComponent)
     {
         DataConnection = dataConnection;
         Resources = resources;
@@ -14,8 +15,7 @@ public class DataConnectionResourcesUpdatedEvent : IEvent
 
     public DataConnection DataConnection { get; }
 
-    [JsonIgnore]
-    public DataConnectionResources Resources { get; }
+    [JsonIgnore] public DataConnectionResources Resources { get; }
 
     public DataConnectionResourceComponent UpdatedComponent { get; }
 }

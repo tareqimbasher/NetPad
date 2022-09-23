@@ -1,6 +1,6 @@
 using NetPad.Compilation;
 
-namespace NetPad.Data.Scaffolding;
+namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 public class ScaffoldedSourceFile : SourceCode
 {

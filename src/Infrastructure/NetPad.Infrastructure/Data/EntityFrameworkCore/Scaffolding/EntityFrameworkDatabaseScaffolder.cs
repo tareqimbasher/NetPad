@@ -9,11 +9,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Configuration;
-using NetPad.Data.Scaffolding.Transforms;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.DotNet;
+using NetPad.IO;
 using NetPad.Packages;
+using NetPad.Utilities;
 
-namespace NetPad.Data.Scaffolding;
+namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 public class EntityFrameworkDatabaseScaffolder
 {
@@ -76,14 +79,14 @@ class Program
         await _project.AddPackageAsync(new PackageReference(
             _connection.EntityFrameworkProviderName,
             _connection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
+            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
             ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
         ));
 
         await _project.AddPackageAsync(new PackageReference(
             "Microsoft.EntityFrameworkCore.Design",
             "Microsoft.EntityFrameworkCore.Design",
-            await EntityFrameworkPackageUtil.GetEntityFrameworkDesignVersionAsync(_packageProvider)
+            await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_packageProvider)
             ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
         ));
 
@@ -91,7 +94,7 @@ class Program
 
         var args = string.Join(" ", new[]
         {
-            "ef dbcontext scaffold",
+            "dbcontext scaffold",
             $"\"{_connection.GetConnectionString()}\"",
             _connection.EntityFrameworkProviderName,
             $"--context {DbContextName}",
@@ -100,13 +103,17 @@ class Program
             $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
         });
 
-        _logger.LogDebug("Calling dotnet with args: '{Args}'", args);
+        var dotnetEfToolExe = DotNetInfo.LocateDotNetEfToolExecutableOrThrow();
 
-        var process = Process.Start(new ProcessStartInfo("dotnet", args)
+        _logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
+
+        var process = Process.Start(new ProcessStartInfo(dotnetEfToolExe, args)
         {
             UseShellExecute = false,
             WorkingDirectory = _project.ProjectDirectoryPath,
-            CreateNoWindow = true
+            CreateNoWindow = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         });
 
         if (process == null)
@@ -114,12 +121,31 @@ class Program
             throw new Exception("Could not start scaffolding process");
         }
 
+        using var processIO = new ProcessIOHandler(process);
+
+        var toolOutput = new List<string>();
+        processIO.OnOutputReceivedHandlers.Add(output =>
+        {
+            toolOutput.Add(output);
+            return Task.CompletedTask;
+        });
+
+        processIO.OnErrorReceivedHandlers.Add(error =>
+        {
+            toolOutput.Add(error);
+            return Task.CompletedTask;
+        });
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
         await process.WaitForExitAsync();
+
         _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", process.ExitCode);
 
         if (process.ExitCode != 0)
         {
-            throw new Exception($"Scaffolding process process failed with exit code: {process.ExitCode}");
+            throw new Exception($"Scaffolding process failed with exit code: {process.ExitCode}. Errors: {toolOutput.JoinToString("\n")}");
         }
     }
 

@@ -36,6 +36,10 @@ data-connections-list {
         }
     }
 
+    .data-connection-error {
+        max-width: 50%;
+    }
+
     .data-connection:hover, .display-text:hover {
         @include theme(background-color, hoverColor);
     }

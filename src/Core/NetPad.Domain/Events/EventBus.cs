@@ -294,26 +294,14 @@ public sealed class EventBus : IEventBus
     }
 
     /// <summary>
-    /// Unsubscribe from a particular Event type.
-    ///
-    /// Does not throw an exception if the subscription is not found.
-    /// </summary>
-    /// <typeparam name="TEvent">Type of Event</typeparam>
-    /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
-    public void Unsubscribe<TEvent>(EventSubscriptionToken subscriptionToken) where TEvent : class, IEvent
-    {
-        RemoveSubscriptionInternal<TEvent>(subscriptionToken);
-    }
-
-    /// <summary>
-    /// Unsubscribe from a particular Event type.
+    /// Unsubscribe.
     ///
     /// Does not throw an exception if the subscription is not found.
     /// </summary>
     /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
     public void Unsubscribe(EventSubscriptionToken subscriptionToken)
     {
-        RemoveSubscriptionInternal<IEvent>(subscriptionToken);
+        RemoveSubscriptionInternal(subscriptionToken);
     }
 
     /// <summary>
@@ -359,8 +347,7 @@ public sealed class EventBus : IEventBus
         }
     }
 
-    private void RemoveSubscriptionInternal<TEvent>(EventSubscriptionToken subscriptionToken)
-        where TEvent : class, IEvent
+    private void RemoveSubscriptionInternal(EventSubscriptionToken subscriptionToken)
     {
         if (subscriptionToken == null)
             throw new ArgumentNullException(nameof(subscriptionToken));
@@ -446,9 +433,7 @@ public sealed class EventSubscriptionToken : IDisposable
 
             if (hub != null)
             {
-                var unsubscribeMethod = typeof(IEventBus).GetMethod("Unsubscribe", new Type[] { typeof(EventSubscriptionToken) })!;
-                unsubscribeMethod = unsubscribeMethod.MakeGenericMethod(_eventType);
-                unsubscribeMethod.Invoke(hub, new object[] { this });
+                hub.Unsubscribe(this);
             }
         }
 

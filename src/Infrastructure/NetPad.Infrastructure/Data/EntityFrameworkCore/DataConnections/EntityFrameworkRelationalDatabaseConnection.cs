@@ -1,6 +1,6 @@
 using System;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public abstract class EntityFrameworkRelationalDatabaseConnection : EntityFrameworkDatabaseConnection
 {

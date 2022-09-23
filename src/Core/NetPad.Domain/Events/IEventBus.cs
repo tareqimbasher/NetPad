@@ -107,16 +107,7 @@ public interface IEventBus
     EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences, IEventProxy proxy) where TEvent : class, IEvent;
 
     /// <summary>
-    /// Unsubscribe from a particular Event type.
-    ///
-    /// Does not throw an exception if the subscription is not found.
-    /// </summary>
-    /// <typeparam name="TEvent">Type of Event</typeparam>
-    /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
-    void Unsubscribe<TEvent>(EventSubscriptionToken subscriptionToken) where TEvent : class, IEvent;
-
-    /// <summary>
-    /// Unsubscribe from a particular Event type.
+    /// Unsubscribe.
     ///
     /// Does not throw an exception if the subscription is not found.
     /// </summary>

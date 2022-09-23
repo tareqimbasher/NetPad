@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
-public class PostgreSqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
+public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
     public PostgreSqlDatabaseConnection(Guid id, string name, DataConnectionType type)
         : base(id, name, type, "Npgsql.EntityFrameworkCore.PostgreSQL")

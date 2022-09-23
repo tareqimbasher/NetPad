@@ -3544,6 +3544,7 @@ export class Types implements ITypes {
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
     dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
+    dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -3577,6 +3578,7 @@ export class Types implements ITypes {
             this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdatingEvent = _data["dataConnectionResourcesUpdatingEvent"] ? DataConnectionResourcesUpdatingEvent.fromJS(_data["dataConnectionResourcesUpdatingEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdatedEvent = _data["dataConnectionResourcesUpdatedEvent"] ? DataConnectionResourcesUpdatedEvent.fromJS(_data["dataConnectionResourcesUpdatedEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdateFailedEvent = _data["dataConnectionResourcesUpdateFailedEvent"] ? DataConnectionResourcesUpdateFailedEvent.fromJS(_data["dataConnectionResourcesUpdateFailedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
@@ -3610,6 +3612,7 @@ export class Types implements ITypes {
         data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdatingEvent"] = this.dataConnectionResourcesUpdatingEvent ? this.dataConnectionResourcesUpdatingEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdatedEvent"] = this.dataConnectionResourcesUpdatedEvent ? this.dataConnectionResourcesUpdatedEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdateFailedEvent"] = this.dataConnectionResourcesUpdateFailedEvent ? this.dataConnectionResourcesUpdateFailedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
@@ -3643,6 +3646,7 @@ export interface ITypes {
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
     dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
+    dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
@@ -4399,6 +4403,57 @@ export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResou
 export interface IDataConnectionResourcesUpdatedEvent {
     dataConnection: DataConnection;
     updatedComponent: DataConnectionResourceComponent;
+}
+
+export class DataConnectionResourcesUpdateFailedEvent implements IDataConnectionResourcesUpdateFailedEvent {
+    dataConnection!: DataConnection;
+    failedComponent!: DataConnectionResourceComponent;
+    error?: string | undefined;
+
+    constructor(data?: IDataConnectionResourcesUpdateFailedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.failedComponent = _data["failedComponent"];
+            this.error = _data["error"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdateFailedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdateFailedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["failedComponent"] = this.failedComponent;
+        data["error"] = this.error;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdateFailedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdateFailedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdateFailedEvent {
+    dataConnection: DataConnection;
+    failedComponent: DataConnectionResourceComponent;
+    error?: string | undefined;
 }
 
 export abstract class CommandBase implements ICommandBase {

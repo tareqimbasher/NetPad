@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using NetPad.Common;
 using NetPad.Packages;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore;
 
-public static class EntityFrameworkPackageUtil
+public static class EntityFrameworkPackageUtils
 {
     private static readonly ConcurrentDictionary<string, string?> _versionCache = new();
 

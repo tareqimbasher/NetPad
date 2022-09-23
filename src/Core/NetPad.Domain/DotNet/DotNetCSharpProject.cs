@@ -286,7 +286,7 @@ public class DotNetCSharpProject
             var packageId = reference.PackageId;
             var packageVersion = reference.Version;
 
-            var process = Process.Start(new ProcessStartInfo("dotnet",
+            var process = Process.Start(new ProcessStartInfo(DotNetInfo.LocateDotNetExecutableOrThrow(),
                 $"add \"{ProjectFilePath}\" package {packageId} " +
                 $"--version {packageVersion} " +
                 $"--package-directory \"{PackageCacheDirectoryPath}\"")
@@ -331,7 +331,9 @@ public class DotNetCSharpProject
 
             var packageId = reference.PackageId;
 
-            var process = Process.Start(new ProcessStartInfo("dotnet",
+            var dotnetExe = DotNetInfo.LocateDotNetExecutableOrThrow();
+
+            var process = Process.Start(new ProcessStartInfo(dotnetExe,
                 $"remove \"{ProjectFilePath}\" package {packageId}")
             {
                 UseShellExecute = false,
@@ -345,7 +347,7 @@ public class DotNetCSharpProject
             }
 
             // This is needed so that 'project.assets.json' file is updated properly
-            process = Process.Start(new ProcessStartInfo("dotnet",
+            process = Process.Start(new ProcessStartInfo(dotnetExe,
                 $"restore {ProjectFilePath}")
             {
                 UseShellExecute = false,

@@ -1,4 +1,4 @@
-namespace NetPad.Data.Scaffolding.Transforms;
+namespace NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 
 public class PostgresSqlTransform : IScaffoldedModelTransform
 {

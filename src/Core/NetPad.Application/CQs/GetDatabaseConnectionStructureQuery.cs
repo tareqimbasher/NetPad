@@ -14,16 +14,18 @@ public class GetDatabaseConnectionStructureQuery : Query<DatabaseStructure>
 
     public class Handler : IRequestHandler<GetDatabaseConnectionStructureQuery, DatabaseStructure>
     {
-        private readonly IDatabaseConnectionInfoProvider _databaseConnectionInfoProvider;
+        private readonly IDatabaseConnectionMetadataProviderFactory _databaseConnectionMetadataProviderFactory;
 
-        public Handler(IDatabaseConnectionInfoProvider databaseConnectionInfoProvider)
+        public Handler(IDatabaseConnectionMetadataProviderFactory databaseConnectionMetadataProviderFactory)
         {
-            _databaseConnectionInfoProvider = databaseConnectionInfoProvider;
+            _databaseConnectionMetadataProviderFactory = databaseConnectionMetadataProviderFactory;
         }
 
         public async Task<DatabaseStructure> Handle(GetDatabaseConnectionStructureQuery request, CancellationToken cancellationToken)
         {
-            return await _databaseConnectionInfoProvider.GetDatabaseStructureAsync(request.DatabaseConnection);
+            var metadataProvider = _databaseConnectionMetadataProviderFactory.Create(request.DatabaseConnection);
+
+            return await metadataProvider.GetDatabaseStructureAsync(request.DatabaseConnection);
         }
     }
 }

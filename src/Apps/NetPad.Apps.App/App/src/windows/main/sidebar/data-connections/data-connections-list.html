@@ -30,8 +30,8 @@
                     <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
                         ${connectionViewModel.loadingMessage}...
                     </span>
-                    <span class="badge bg-danger rounded-pill ms-2 text-truncate"
-                          if.bind="connectionViewModel.error"
+                    <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
+                          if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
                           title.bind="connectionViewModel.error">
                         ${connectionViewModel.error}
                     </span>

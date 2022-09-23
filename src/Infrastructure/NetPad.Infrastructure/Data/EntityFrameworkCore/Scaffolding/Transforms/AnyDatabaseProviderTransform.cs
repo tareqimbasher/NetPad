@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NetPad.Utilities;
 
-namespace NetPad.Data.Scaffolding.Transforms;
+namespace NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 
 public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 {

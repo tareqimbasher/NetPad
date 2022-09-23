@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Common;
 using NetPad.CQs;
 using NetPad.Data;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.UiInterop;
 
 namespace NetPad.Controllers;

@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Utilities;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore;
 
 internal static class EntityFrameworkUtils
 {
@@ -66,5 +68,17 @@ internal static class EntityFrameworkUtils
         }
 
         return structure;
+    }
+
+    public static bool IsEntityFrameworkDataConnection(this DataConnection dataConnection, [MaybeNullWhen(false)] out EntityFrameworkDatabaseConnection entityFrameworkDatabaseConnection)
+    {
+        if (dataConnection is EntityFrameworkDatabaseConnection ef)
+        {
+            entityFrameworkDatabaseConnection = ef;
+            return true;
+        }
+
+        entityFrameworkDatabaseConnection = null;
+        return false;
     }
 }

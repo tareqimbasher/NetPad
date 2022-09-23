@@ -6,6 +6,7 @@ import {
     DataConnection,
     DataConnectionResourceComponent,
     DataConnectionResourcesUpdatedEvent,
+    DataConnectionResourcesUpdateFailedEvent,
     DataConnectionResourcesUpdatingEvent,
     DataConnectionStore,
     IDataConnectionService,
@@ -50,14 +51,21 @@ export class DataConnectionsList extends ViewModelBase {
         this.eventBus.subscribeToServer(DataConnectionResourcesUpdatingEvent, msg => {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
-                vm.resourceLoading.add(msg.updatingComponent);
+                vm.resourceBeingLoaded(msg.updatingComponent);
             }
         });
 
         this.eventBus.subscribeToServer(DataConnectionResourcesUpdatedEvent, msg => {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
-                vm.resourceLoading.delete(msg.updatedComponent);
+                vm.resourceCompletedLoading(msg.updatedComponent);
+            }
+        });
+
+        this.eventBus.subscribeToServer(DataConnectionResourcesUpdateFailedEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
+            if (vm) {
+                vm.resourceFailedLoading(msg.failedComponent, msg.error);
             }
         });
     }
@@ -156,5 +164,19 @@ class DataConnectionViewModel {
                 }
             })
             .finally(() => this.loadingStructure = false);
+    }
+
+    public resourceBeingLoaded(component: DataConnectionResourceComponent) {
+        this.resourceLoading.add(component);
+    }
+
+    public resourceCompletedLoading(component: DataConnectionResourceComponent) {
+        this.resourceLoading.delete(component);
+        this.error = null;
+    }
+
+    public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | null) {
+        this.resourceLoading.delete(component);
+        this.error = error || "Error";
     }
 }

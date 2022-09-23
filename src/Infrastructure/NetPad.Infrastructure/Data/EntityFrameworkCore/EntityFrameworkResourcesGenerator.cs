@@ -7,21 +7,22 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Configuration;
-using NetPad.Data.Scaffolding;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.DotNet;
 using NetPad.Packages;
 using NetPad.Utilities;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore;
 
-public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerator
+public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerator
 {
     private readonly Settings _settings;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
 
-    public DataConnectionResourcesGenerator(
+    public EntityFrameworkResourcesGenerator(
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         Settings settings,
@@ -35,7 +36,7 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
     public async Task<SourceCodeCollection> GenerateSourceCodeAsync(DataConnection dataConnection)
     {
-        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
+        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
             return new SourceCodeCollection();
         }
@@ -57,7 +58,7 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
     public async Task<byte[]?> GenerateAssemblyAsync(DataConnection dataConnection, SourceCodeCollection sourceCode)
     {
-        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
+        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
             return null;
         }
@@ -80,7 +81,7 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
 
     public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
     {
-        if (dataConnection is not EntityFrameworkDatabaseConnection efConnection)
+        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
             return Array.Empty<Reference>();
 
         var references = new List<Reference>();
@@ -91,10 +92,10 @@ public class DataConnectionResourcesGenerator : IDataConnectionResourcesGenerato
         //     EntityFrameworkPackageUtil.GetEntityFrameworkCoreVersion()));
 
         references.Add(new PackageReference(
-            efConnection.EntityFrameworkProviderName,
-            efConnection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtil.GetEntityFrameworkProviderVersionAsync(_packageProvider, efConnection.EntityFrameworkProviderName)
-                ?? throw new Exception($"Could not find a version for entity framework provider: '{efConnection.EntityFrameworkProviderName}'")
+            efDbConnection.EntityFrameworkProviderName,
+            efDbConnection.EntityFrameworkProviderName,
+            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_packageProvider, efDbConnection.EntityFrameworkProviderName)
+                ?? throw new Exception($"Could not find a version for entity framework provider: '{efDbConnection.EntityFrameworkProviderName}'")
         ));
 
         return references.ToArray();

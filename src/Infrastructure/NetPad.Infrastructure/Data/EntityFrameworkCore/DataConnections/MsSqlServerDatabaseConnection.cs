@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
-public class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
+public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
     public MsSqlServerDatabaseConnection(Guid id, string name)
         : base(id, name, DataConnectionType.MSSQLServer, "Microsoft.EntityFrameworkCore.SqlServer")

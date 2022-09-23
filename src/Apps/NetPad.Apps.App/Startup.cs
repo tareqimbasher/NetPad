@@ -19,6 +19,7 @@ using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.CQs;
 using NetPad.Data;
+using NetPad.Data.EntityFrameworkCore;
 using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
@@ -28,13 +29,14 @@ using NetPad.Runtimes;
 using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Services;
+using NetPad.Services.Data;
 using NetPad.Sessions;
 using NetPad.Swagger;
 using NetPad.UiInterop;
 
 namespace NetPad
 {
-    public partial class Startup
+    public class Startup
     {
         private readonly Assembly[] _pluginAssemblies =
         {
@@ -78,9 +80,13 @@ namespace NetPad
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
 
             // Data connections
-            services.AddSingleton<IDataConnectionResourcesGenerator, DataConnectionResourcesGenerator>();
+            services.AddTransient<IDataConnectionResourcesGeneratorFactory, DataConnectionResourcesGeneratorFactory>();
+            services.AddTransient<EntityFrameworkResourcesGenerator>();
+
+            services.AddTransient<IDatabaseConnectionMetadataProviderFactory, DatabaseConnectionMetadataProviderFactory>();
+            services.AddTransient<EntityFrameworkDatabaseConnectionMetadataProvider>();
+
             services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
-            services.AddTransient<IDatabaseConnectionInfoProvider, DatabaseConnectionInfoProvider>();
 
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
@@ -188,11 +194,20 @@ namespace NetPad
             // Set host url
             var hostInfo = services.GetRequiredService<HostInfo>();
             hostInfo.SetWorkingDirectory(env.ContentRootPath);
-            hostInfo.SetHostUrl(
-                app.ServerFeatures
+
+            var url = app.ServerFeatures
+                .Get<IServerAddressesFeature>()!
+                .Addresses
+                .FirstOrDefault(a => a.StartsWith("http:"));
+
+            if (url == null)
+            {
+                url = app.ServerFeatures
                     .Get<IServerAddressesFeature>()!
                     .Addresses
-                    .First(a => a.StartsWith("http:")));
+                    .First(a => a.StartsWith("https:"));
+            }
+            hostInfo.SetHostUrl(url);
 
             // Add middlewares
             app.UseMiddleware<ExceptionHandlerMiddleware>();

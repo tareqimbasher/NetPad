@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public abstract class EntityFrameworkDatabaseConnection : DatabaseConnection
 {

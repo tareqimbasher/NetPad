@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
 using NetPad.Data;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -38,6 +39,7 @@ namespace NetPad.Controllers
             public DataConnectionDeletedEvent? DataConnectionDeletedEvent { get; set; }
             public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
             public DataConnectionResourcesUpdatedEvent? DataConnectionResourcesUpdatedEvent { get; set; }
+            public DataConnectionResourcesUpdateFailedEvent? DataConnectionResourcesUpdateFailedEvent { get; set; }
             public OpenWindowCommand? OpenWindowCommand { get; set; }
             public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
             public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }

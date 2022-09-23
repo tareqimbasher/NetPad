@@ -8,17 +8,17 @@ namespace NetPad.Data;
 public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 {
     private readonly ConcurrentDictionary<Guid, DataConnectionResources> _cache;
-    private readonly IDataConnectionResourcesGenerator _dataConnectionResourcesGenerator;
+    private readonly IDataConnectionResourcesGeneratorFactory _dataConnectionResourcesGeneratorFactory;
     private readonly IEventBus _eventBus;
 
     private readonly object _sourceCodeTaskLock = new object();
     private readonly object _assemblyTaskLock = new object();
     private readonly object _requiredReferencesLock = new object();
 
-    public DataConnectionResourcesCache(IDataConnectionResourcesGenerator dataConnectionResourcesGenerator, IEventBus eventBus)
+    public DataConnectionResourcesCache(IDataConnectionResourcesGeneratorFactory dataConnectionResourcesGeneratorFactory, IEventBus eventBus)
     {
         _cache = new ConcurrentDictionary<Guid, DataConnectionResources>();
-        _dataConnectionResourcesGenerator = dataConnectionResourcesGenerator;
+        _dataConnectionResourcesGeneratorFactory = dataConnectionResourcesGeneratorFactory;
         _eventBus = eventBus;
     }
 
@@ -53,7 +53,8 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             resources.SourceCode = Task.Run<SourceCodeCollection>(async () =>
             {
-                return await _dataConnectionResourcesGenerator.GenerateSourceCodeAsync(dataConnection);
+                var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
+                return await generator.GenerateSourceCodeAsync(dataConnection);
             });
 
             resources.SourceCode.ContinueWith(task =>
@@ -66,6 +67,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.SourceCode = null;
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.SourceCode, task.Exception));
                 }
             });
 
@@ -95,7 +97,9 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
             resources.Assembly = Task.Run<byte[]?>(async () =>
             {
                 var sourceCode = await GetSourceGeneratedCodeAsync(dataConnection);
-                return await _dataConnectionResourcesGenerator.GenerateAssemblyAsync(dataConnection, sourceCode);
+
+                var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
+                return await generator.GenerateAssemblyAsync(dataConnection, sourceCode);
             });
 
             resources.Assembly.ContinueWith(task =>
@@ -108,6 +112,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.Assembly = null;
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.Assembly, task.Exception));
                 }
             });
 
@@ -136,7 +141,8 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             resources.RequiredReferences = Task.Run<IEnumerable<Reference>>(async () =>
             {
-                return await _dataConnectionResourcesGenerator.GetRequiredReferencesAsync(dataConnection);
+                var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
+                return await generator.GetRequiredReferencesAsync(dataConnection);
             });
 
             resources.RequiredReferences.ContinueWith(task =>
@@ -149,6 +155,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.RequiredReferences = null;
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences, task.Exception));
                 }
             });
 

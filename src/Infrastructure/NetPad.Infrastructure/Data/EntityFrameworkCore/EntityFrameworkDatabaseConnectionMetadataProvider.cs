@@ -4,15 +4,16 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Assemblies;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
 
-namespace NetPad.Data;
+namespace NetPad.Data.EntityFrameworkCore;
 
-public class DatabaseConnectionInfoProvider : IDatabaseConnectionInfoProvider
+public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnectionMetadataProvider
 {
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IAssemblyLoader _assemblyLoader;
 
-    public DatabaseConnectionInfoProvider(IDataConnectionResourcesCache dataConnectionResourcesCache, IAssemblyLoader assemblyLoader)
+    public EntityFrameworkDatabaseConnectionMetadataProvider(IDataConnectionResourcesCache dataConnectionResourcesCache, IAssemblyLoader assemblyLoader)
     {
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _assemblyLoader = assemblyLoader;
