@@ -1,6 +1,10 @@
 @import "~styles/themes";
 
 data-connections-list {
+    padding-top: 0.25rem;
+    display: flex;
+    flex-direction: column;
+
     .data-connection-structure-tree {
         > .list-group {
             padding: 0;
