@@ -52,6 +52,7 @@ namespace OmniSharp.Stdio
         public override async Task StopAsync()
         {
             await _omniSharpServerProcessAccessor.StopProcessAsync();
+            _processIo?.Dispose();
             _isStopped = true;
         }
 

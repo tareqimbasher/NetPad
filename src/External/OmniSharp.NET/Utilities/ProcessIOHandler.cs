@@ -19,7 +19,7 @@ namespace OmniSharp.Utilities
             Process.ErrorDataReceived += ErrorReceived;
         }
 
-        public Process Process { get; }
+        public Process Process { get; private set; }
 
         public StreamWriter StandardInput => Process.StandardInput;
         public List<Func<string, Task>> OnOutputReceivedHandlers { get; }
@@ -53,6 +53,7 @@ namespace OmniSharp.Utilities
             Process.ErrorDataReceived -= ErrorReceived;
             OnOutputReceivedHandlers.Clear();
             OnErrorReceivedHandlers.Clear();
+            Process = null!;
         }
     }
 }
