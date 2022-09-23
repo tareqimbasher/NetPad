@@ -27,6 +27,7 @@ internal static class InternalExtensions
         {
             name = name.Split('`')[0];
             name += "<";
+
             foreach (var tArg in type.GenericTypeArguments)
             {
                 name += GetReadableName(tArg, withNamespace, forHtml) + ", ";
@@ -48,6 +49,12 @@ internal static class InternalExtensions
             name = name
                 .ReplaceIfExists("<", "&lt;")
                 .ReplaceIfExists(">", "&gt;");
+        }
+
+        if (type.FullName?.StartsWith("System.Nullable`") == true)
+        {
+            int iStart = withNamespace ? "System.Nullable<".Length : "Nullable<".Length;
+            name = name.Substring(iStart, name.Length - iStart) + "?";
         }
 
         return name;
