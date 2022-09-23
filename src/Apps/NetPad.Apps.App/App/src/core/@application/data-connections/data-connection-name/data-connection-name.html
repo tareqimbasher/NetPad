@@ -1,4 +1,6 @@
-<div class="d-flex align-items-center">
-    <img src.bind="iconUrl" style="max-height: 1.2rem; margin-right: 0.35rem;"/>
-    ${connection.name}
-</div>
+<template title="${connection.name}">
+    <div class="d-flex align-items-center">
+        <img src.bind="iconUrl" style="max-height: 1.2rem; margin-right: 0.35rem;"/>
+        ${connection.name}
+    </div>
+</template>

@@ -105,6 +105,17 @@ results-view {
                 }
             }
 
+            td {
+                max-width: 100rem;
+
+                > span {
+                    width: max-content;
+                    max-width: 100%;
+                    display: block;
+                    word-break: break-all;
+                }
+            }
+
             tbody {
                 border-top-width: 0;
             }
