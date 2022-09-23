@@ -18,6 +18,7 @@
         "lint": "npm run lint:js && npm run lint:html && npm run lint:css",
         "pretest": "npm run lint",
         "start": "webpack serve",
+        "start-web": "webpack serve --env target=web",
         "build": "rimraf dist && webpack --env production",
         "analyze": "rimraf dist && webpack --env production --analyze",
         "test": "jest"

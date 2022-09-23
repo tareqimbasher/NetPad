@@ -29,14 +29,15 @@ const postcssLoader = {
 
 module.exports = function (env, {analyze}) {
     const production = env.production || process.env.NODE_ENV === 'production';
+    const environment = production ? "production" : "development";
+    const target = env.target || "electron";
 
-    if (!process.env.NODE_ENV) {
-        process.env.NODE_ENV = production ? "production" : "development";
-    }
+    console.log("Run info:");
+    console.log(`   Environment: ${environment}`);
+    console.log(`   Target: ${target}`);
 
     return {
-        //target: 'web',
-        target: 'electron-renderer',
+        target: target === "web" ? "web" : "electron-renderer",
         mode: production ? 'production' : 'development',
         devtool: production ? undefined : 'eval-cheap-source-map',
         optimization: {
@@ -106,7 +107,7 @@ module.exports = function (env, {analyze}) {
         plugins: [
             new HtmlWebpackPlugin({template: 'index.html', favicon: '../wwwroot/favicon.ico'}),
             new Dotenv({
-                path: `./.env${production ? '' : '.' + process.env.NODE_ENV}`,
+                path: `./.env${production ? '' : '.' + environment}`,
             }),
             new MonacoWebpackPlugin({
                 languages: [
