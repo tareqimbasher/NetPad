@@ -5,7 +5,7 @@ export class PaneHost {
     public readonly id: string;
     public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
     protected _viewState: PaneHostViewState = PaneHostViewState.Collapsed;
-    protected _active?: Pane;
+    protected _active: Pane | undefined;
 
     private readonly panes: Set<Pane>;
 
@@ -61,7 +61,7 @@ export class PaneHost {
         if (this.viewState === PaneHostViewState.Collapsed) return;
         this.viewStateController.collapse(this);
         this.viewState = PaneHostViewState.Collapsed;
-        this._active = null;
+        this._active = undefined;
     }
 
     public hasPane(pane: Pane): boolean {

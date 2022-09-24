@@ -37,7 +37,7 @@ export class ResultsView extends ViewModelBase {
         super.detaching();
     }
 
-    private appendResults(results: string | null) {
+    private appendResults(results: string | null | undefined) {
         if (!results) return;
 
         const template = document.createElement("template");
@@ -46,10 +46,9 @@ export class ResultsView extends ViewModelBase {
         this.resultsEl.appendChild(template.content);
     }
 
-    private clearResults()
-    {
+    private clearResults() {
         this.resultControls.dispose();
-        while (this.resultsEl.firstChild)
+        while (this.resultsEl.firstChild && this.resultsEl.lastChild)
             this.resultsEl.removeChild(this.resultsEl.lastChild);
     }
 
@@ -74,10 +73,17 @@ class ResultControls implements IDisposable {
             if (!collapseTarget)
                 collapseTarget = table.querySelector(":scope > thead > tr > th");
 
+            if (!collapseTarget) continue;
+
             collapseTarget.classList.add("collapse-actionable");
             const clickHandler = () => this.toggle(table);
             collapseTarget.addEventListener("click", clickHandler);
-            this.disposables.push(() => collapseTarget.removeEventListener("click", clickHandler));
+
+            this.disposables.push(() => {
+                if (collapseTarget) {
+                    collapseTarget.removeEventListener("click", clickHandler);
+                }
+            });
 
             const caret = document.createElement("i");
             collapseTarget.prepend(caret);

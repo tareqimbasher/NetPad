@@ -55,17 +55,17 @@ export class ScriptEnvironmentView extends ViewModelBase {
             });
     }
 
-    public get dataConnection(): DataConnection | null {
+    public get dataConnection(): DataConnection | undefined {
         if (!this.script.dataConnection)
-            return null;
+            return undefined;
 
         // We want to return the connection object from the connection store, not the connection
         // defined in the script.dataConnection property because they both reference 2 different
         // object instances, even though they are "the same connection"
-        return this.dataConnectionStore.connections.find(c => c.id == this.script.dataConnection.id);
+        return this.dataConnectionStore.connections.find(c => c.id == this.script.dataConnection?.id);
     }
 
-    public set dataConnection(value: DataConnection | null) {
+    public set dataConnection(value: DataConnection | undefined) {
         this.scriptService.setDataConnection(this.script.id, value?.id)
             .catch(err => {
                 this.logger.error("Failed to set script data connection", err);
@@ -124,9 +124,9 @@ export class ScriptEnvironmentView extends ViewModelBase {
             const runOptions = new RunOptionsDto();
 
             // If user has code selected, only run selection
-            const selection = this.editor.monacoEditor.getSelection();
+            const selection = this.editor.monacoEditor?.getSelection();
             if (selection && !selection.isEmpty()) {
-                runOptions.specificCodeToRun = this.editor.monacoEditor.getModel().getValueInRange(selection);
+                runOptions.specificCodeToRun = this.editor.monacoEditor?.getModel()?.getValueInRange(selection);
             }
 
             await this.scriptService.run(this.script.id, runOptions);

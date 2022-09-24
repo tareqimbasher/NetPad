@@ -71,7 +71,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, new AbortController().signalFrom(token));
 
-            if (!resolution) {
+            if (!resolution || !resolution.item) {
                 return item;
             }
 
@@ -143,7 +143,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const tags = apiCompletion.tags && apiCompletion.tags[0] === "Deprecated" ? 1 : [];
 
-        let command: languages.Command = undefined;
+        let command: languages.Command | undefined = undefined;
 
         if (apiCompletion.hasAfterInsertStep) {
             command = {
@@ -152,7 +152,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
                 arguments: [apiCompletion]
             };
         }
-        else if (apiCompletion.additionalTextEdits?.length > 0) {
+        else if (apiCompletion.additionalTextEdits && apiCompletion.additionalTextEdits.length > 0) {
             command = {
                 id: this.insertAdditionalTextEditsCommandId,
                 title: "Insert additional text",
@@ -172,7 +172,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
             range: range,
             tags: tags,
             sortText: sortText,
-            additionalTextEdits: null,
+            additionalTextEdits: undefined,
             command: command
         };
     }

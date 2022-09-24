@@ -97,7 +97,7 @@ export class ShortcutManager implements IShortcutManager {
         if (shortcut.event) {
             const event = Object.hasOwnProperty.bind(shortcut.event)("prototype")
                 ? new (shortcut.event as Constructable)()
-                : (shortcut.event as () => unknown)();
+                : (shortcut.event as () => Record<string, unknown>)();
 
             this.eventBus.publish(event);
         }

@@ -31,7 +31,7 @@ export class NamespaceManagement {
             namespaces.add(namespace.trim());
         }
 
-        this.error = null;
+        this.error = undefined;
         this.lastSet = new Date();
 
         this.configStore.updateNamespaces([...namespaces]);
@@ -39,10 +39,10 @@ export class NamespaceManagement {
 
     @watch<NamespaceManagement>(vm => vm.configStore.namespaces.length)
     public configStoreChanged() {
-        const secondsSinceLastLocalUpdate = (new Date().getTime() - this.lastSet?.getTime()) / 1000;
+        const secondsSinceLastLocalUpdate = !this.lastSet ? null : (new Date().getTime() - this.lastSet?.getTime()) / 1000;
 
         // This is so that the local value does not update while the user is typing
-        if (!this.lastSet || secondsSinceLastLocalUpdate >= 1) {
+        if (!secondsSinceLastLocalUpdate || secondsSinceLastLocalUpdate >= 1) {
             this.updateLocal(this.configStore.namespaces);
         }
     }

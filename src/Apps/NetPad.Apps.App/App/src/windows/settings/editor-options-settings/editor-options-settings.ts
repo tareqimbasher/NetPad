@@ -20,7 +20,13 @@ export class EditorOptionsSettings {
     }
 
     public attached() {
-        const el = document.getElementById("options-editor");
+        const id = "options-editor";
+        const el = document.getElementById(id);
+        if (!el) {
+            this.logger.error(`Could not find element with ID '${id}'. Cannot initialize editor.`);
+            return;
+        }
+
         this.editor = monaco.editor.create(el, {
             value: JSON.stringify(this.settings.editor.monacoOptions, null, 4),
             language: 'json',
@@ -50,7 +56,7 @@ export class EditorOptionsSettings {
     }
 
     public useCustomEditorBackgroundColorChanged(newValue: boolean) {
-        if (!newValue) this.settings.editor.backgroundColor = null;
+        if (!newValue) this.settings.editor.backgroundColor = undefined;
     }
 
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.backgroundColor)

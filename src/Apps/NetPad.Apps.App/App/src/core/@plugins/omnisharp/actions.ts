@@ -18,6 +18,8 @@ export class Actions {
         contextMenuOrder: 2,
         run: async (editor) => {
             const model = editor.getModel();
+            if (!model) return;
+
             const cursorPos = editor.getPosition();
             const editorValue = model.getValue();
 
@@ -35,13 +37,14 @@ export class Actions {
 
             model.pushEditOperations([], [
                 {
-                    text: response.buffer,
+                    text: response.buffer || null,
                     range: model.getFullModelRange(),
                     forceMoveMarkers: false
                 }
             ], () => []);
             model.pushStackElement();
-            editor.setPosition(cursorPos);
+
+            if (cursorPos) editor.setPosition(cursorPos);
         }
     }
 
@@ -49,7 +52,10 @@ export class Actions {
         id: "netpad-omnisharp-restart-server",
         label: "Developer: Restart OmniSharp Server",
         run: async (editor) => {
-            const scriptId = EditorUtil.getScriptId(editor.getModel());
+            const model = editor.getModel();
+            if (!model) return;
+
+            const scriptId = EditorUtil.getScriptId(model);
 
             const omnisharpService = this.container.get(IOmniSharpService);
             await omnisharpService.restartServer(scriptId);

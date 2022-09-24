@@ -72,7 +72,7 @@ export class ScriptsList extends ViewModelBase {
 
         const root = this.rootScriptFolder.clone();
 
-        const scriptsDirPath = Util.trimEnd(
+        const scriptsDirPath: string = Util.trimEnd(
             this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
 
         for (const script of scripts) {

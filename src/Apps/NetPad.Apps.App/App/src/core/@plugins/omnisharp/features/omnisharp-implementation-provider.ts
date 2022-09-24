@@ -20,7 +20,7 @@ export class OmniSharpImplementationProvider implements IImplementationProvider 
         }), new AbortController().signalFrom(token));
 
         if (!response || !response.quickFixes) {
-            return null;
+            return [];
         }
 
         return response.quickFixes.map(qf => {

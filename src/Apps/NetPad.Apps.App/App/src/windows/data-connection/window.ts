@@ -109,7 +109,7 @@ export class Window {
         } else if (connectionType.type === "PostgreSQL") {
             concereteType = PostgreSqlDatabaseConnection;
         } else {
-            this.connection = null;
+            this.connection = undefined;
             return;
         }
 
@@ -126,7 +126,7 @@ export class Window {
     }
 
     public async testConnection() {
-        if (!this.connectionType) {
+        if (!this.connectionType ||  !this.connection) {
             alert("Configure the connection first.");
             return;
         }
@@ -169,7 +169,7 @@ export class Window {
     }
 
     public async save() {
-        if (!this.isConnectionValid) {
+        if (!this.isConnectionValid || !this.connection) {
             return;
         }
 
@@ -188,7 +188,7 @@ export class Window {
 
     @watch<Window>(vm => vm.connection?.name)
     private connectionNameChanged() {
-        this.nameField.parentElement.classList.add("was-validated");
+        this.nameField.parentElement?.classList.add("was-validated");
 
         if (!this.isNameValid()) {
             this.nameField.classList.replace("is-valid", "is-invalid");
@@ -210,7 +210,7 @@ export class Window {
             && (this.authType !== "userAndPassword" || (!!this.connection.userId && !!this.connection.password));
 
         if (!canLoad) {
-            this.databasesOnServer = null;
+            this.databasesOnServer = undefined;
             return;
         }
 

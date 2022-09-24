@@ -102,7 +102,14 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
         return this.processResponse(response, model);
     }
 
-    private processResponse(response: api.SemanticHighlightResponse, model: editor.ITextModel) {
+    private processResponse(response: api.SemanticHighlightResponse, model: editor.ITextModel): languages.ProviderResult<languages.SemanticTokens> {
+        if (!response.spans) {
+            return {
+                data: new Uint32Array(),
+                resultId: undefined
+            };
+        }
+
         const data: number[] = [];
 
         let prevLine = 0;
@@ -136,7 +143,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
                 continue;
             }
 
-            let tokenModifiers = span.modifiers.reduce((modifiers, modifier) => modifiers + tokenModifierMap[SemanticHighlightModifier[modifier]], 0);
+            let tokenModifiers = span.modifiers?.reduce((modifiers, modifier) => modifiers + tokenModifierMap[SemanticHighlightModifier[modifier]], 0) || 0;
 
             // We could add a separate classification for constants but they are
             // supported as a readonly variable. Until we start getting more complete
@@ -195,7 +202,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
 
         return {
             data: new Uint32Array(data),
-            resultId: null
+            resultId: undefined
         };
     }
 }
@@ -413,7 +420,7 @@ tokenModifiers[DefaultTokenModifier.modification] = 'modification';
 tokenModifiers[DefaultTokenModifier.async] = 'async';
 tokenModifiers[DefaultTokenModifier.readonly] = 'readonly';
 
-const tokenTypeMap: number[] = [];
+const tokenTypeMap: (number | undefined)[] = [];
 tokenTypeMap[SemanticHighlightClassification.Comment] = DefaultTokenType.comment;
 tokenTypeMap[SemanticHighlightClassification.ExcludedCode] = CustomTokenType.excludedCode;
 tokenTypeMap[SemanticHighlightClassification.Identifier] = DefaultTokenType.variable;

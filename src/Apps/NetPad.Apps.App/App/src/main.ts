@@ -100,6 +100,8 @@ else if (winOpt === "script-config")
     bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
 else if (winOpt === "data-connection")
     bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
+else
+    throw new Error(`Unrecognized window: ${winOpt}`);
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));

@@ -46,7 +46,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
 
             const range = element.ranges["name"];
 
-            if (range && range.start.line >= 0) {
+            if (range && range.start && range.start.line >= 0) {
                 const codeLensItem: languages.CodeLens = {
                     range: Converter.apiRangeToMonacoRange(range)
                 };
@@ -72,7 +72,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
             token);
 
         if (!references) {
-            return null;
+            return codeLens;
         }
 
         const count = references.length;

@@ -38,7 +38,7 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
             line: range.startLineNumber,
             column: range.startColumn,
             applyChangesTogether: false,
-            selection: !range ? null : Converter.monacoRangeToApiRange(range)
+            selection: !range ? undefined : Converter.monacoRangeToApiRange(range)
         });
 
         const response = await this.omnisharpService.getCodeActions(scriptId, request, new AbortController().signalFrom(token));
@@ -66,11 +66,13 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
                 wantsAllCodeActionOperations: false
             });
 
+            const codeActionName = codeAction.name || "(no name)";
+
             codeActions.push({
-                title: codeAction.name,
+                title: codeActionName,
                 command: {
                     id: this.commandId,
-                    title: codeAction.name,
+                    title: codeActionName,
                     arguments: [scriptId, model, runRequest]
                 }
             });

@@ -18,8 +18,8 @@ export class PackageManagement extends ViewModelBase {
     public showAllCachedDeps: boolean;
 
     public showVersionPickerModal: boolean;
-    public versionsToPickFrom: string[];
-    public selectedVersion?: string;
+    public versionsToPickFrom: string[] | undefined;
+    public selectedVersion?: string | undefined;
 
     public searchLoadingPromise?: Promise<void>;
     public cacheLoadingPromise?: Promise<void>;
@@ -59,8 +59,8 @@ export class PackageManagement extends ViewModelBase {
     }
 
     public async selectPackageVersionToInstall(pkg: PackageReference) {
-        this.versionsToPickFrom = null;
-        this.selectedVersion = null;
+        this.versionsToPickFrom = undefined;
+        this.selectedVersion = undefined;
         this.showVersionPickerModal = true;
 
         this.versionsToPickFrom = await this.packageService.getPackageVersions(pkg.packageId);
@@ -70,8 +70,8 @@ export class PackageManagement extends ViewModelBase {
     }
 
     public async referencePackage(pkg: PackageSearchResult | CachedPackageViewModel, version?: string) {
-        this.selectedVersion = null;
-        this.versionsToPickFrom = null;
+        this.selectedVersion = undefined;
+        this.versionsToPickFrom = undefined;
         this.showVersionPickerModal = false;
 
         if (pkg.referenced)
@@ -79,6 +79,8 @@ export class PackageManagement extends ViewModelBase {
 
         if (!version)
             version = pkg.version;
+
+        if (!version) throw new Error(`Version is null or undefined. Could not reference package.`);
 
         if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
             await this.installPackage(pkg, version);

@@ -135,7 +135,8 @@ class OmniSharpOption {
     constructor(
         public label: string,
         public description: string | null,
-        public obj: unknown,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        public obj: any,
         public prop: string) {
     }
 

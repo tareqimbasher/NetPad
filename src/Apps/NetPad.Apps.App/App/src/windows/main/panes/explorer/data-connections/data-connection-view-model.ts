@@ -11,7 +11,7 @@ export class DataConnectionViewModel {
 
     public expanded = false;
     public structure?: DatabaseStructure;
-    public error?: string;
+    public error: string | undefined | null;
     public loadingStructure = false
 
     constructor(public connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
@@ -73,7 +73,7 @@ export class DataConnectionViewModel {
         this.error = null;
     }
 
-    public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | null) {
+    public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | undefined) {
         this.resourceLoading.delete(component);
         this.error = error || "Error";
     }

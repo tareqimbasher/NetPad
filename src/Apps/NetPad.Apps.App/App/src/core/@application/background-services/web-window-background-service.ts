@@ -35,6 +35,10 @@ export class WebWindowBackgroundService implements IBackgroundService {
         const width = options.width > 1 ? options.width : screen.width * options.width;
 
         const mainWin = window;
+        if (!mainWin.top) {
+            return;
+        }
+
         const x = mainWin.top.outerWidth / 2 + mainWin.top.screenX - ( width / 2);
         const y = mainWin.top.outerHeight / 2 + mainWin.top.screenY - ( height / 2);
 

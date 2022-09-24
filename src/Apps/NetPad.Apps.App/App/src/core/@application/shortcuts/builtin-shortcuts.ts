@@ -15,14 +15,18 @@ export const BuiltinShortcuts = [
     new Shortcut("Close")
         .withCtrlKey()
         .withKey(KeyCode.KeyW)
-        .hasAction((ctx) => ctx.session.close(ctx.session.active.script.id))
+        .hasAction((ctx) => {
+            if (ctx.session.active) ctx.session.close(ctx.session.active.script.id);
+        })
         .configurable()
         .enabled(),
 
     new Shortcut("Save")
         .withCtrlKey()
         .withKey(KeyCode.KeyS)
-        .hasAction((ctx) => ctx.container.get(IScriptService).save(ctx.session.active.script.id))
+        .hasAction((ctx) => {
+            if (ctx.session.active) ctx.container.get(IScriptService).save(ctx.session.active.script.id);
+        })
         .enabled(),
 
     new Shortcut("Save All")
@@ -45,7 +49,11 @@ export const BuiltinShortcuts = [
 
     new Shortcut("Script Properties")
         .withKey(KeyCode.F4)
-        .hasAction((ctx) => ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id, null))
+        .hasAction((ctx) => {
+            if (ctx.session.active) {
+                ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id, null);
+            }
+        })
         .configurable()
         .enabled(),
 

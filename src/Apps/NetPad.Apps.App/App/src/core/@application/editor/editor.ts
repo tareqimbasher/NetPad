@@ -21,12 +21,12 @@ export class Editor extends ViewModelBase {
     public async attached(): Promise<void> {
         PLATFORM.taskQueue.queueTask(() => {
             this.initializeEditor();
-        }, { delay: 100 });
+        }, {delay: 100});
     }
 
     public override detaching() {
-        this.monacoEditor.getModel().dispose();
-        this.monacoEditor.dispose();
+        this.monacoEditor?.getModel()?.dispose();
+        this.monacoEditor?.dispose();
         super.detaching();
     }
 
@@ -47,10 +47,16 @@ export class Editor extends ViewModelBase {
         this.updateEditorSettings();
         this.focus();
 
-        this.monacoEditor.onDidChangeModelContent(ev => this.text = this.monacoEditor.getValue());
+        this.monacoEditor.onDidChangeModelContent(ev => {
+            if (this.monacoEditor)
+                this.text = this.monacoEditor.getValue();
+        });
+
+        const mainContent = document.getElementById("main-content");
+        if (!mainContent) this.logger.error("Could not find element with ID 'main-content'");
 
         const ob = new ResizeObserver(entries => this.updateEditorLayout());
-        ob.observe(document.getElementById("main-content"));
+        if (mainContent) ob.observe(mainContent);
         ob.observe(this.element);
         this.disposables.push(() => ob.disconnect());
     }
@@ -64,14 +70,15 @@ export class Editor extends ViewModelBase {
     }
 
     private updateEditorLayout() {
-        console.log("updating layout");
-        this.monacoEditor.layout();
+        this.monacoEditor?.layout();
     }
 
     @watch<Editor>(vm => vm.settings.appearance.theme)
     @watch<Editor>(vm => vm.settings.editor.backgroundColor)
     @watch<Editor>(vm => vm.settings.editor.monacoOptions)
     private updateEditorSettings() {
+        if (!this.monacoEditor) return;
+
         let theme = this.settings.appearance.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
 
         if (this.settings.editor.backgroundColor) {

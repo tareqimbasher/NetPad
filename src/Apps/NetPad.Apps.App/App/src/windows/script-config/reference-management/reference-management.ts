@@ -44,7 +44,7 @@ export class ReferenceManagement {
             else
                 this.selectedReference = this.references[ix];
         } else {
-            this.selectedReference = null;
+            this.selectedReference = undefined;
         }
     }
 
@@ -64,7 +64,7 @@ export class ReferenceManagement {
 
         // Clear file input element so if user selects X.dll, removes it, then re-selects it
         // the change is observed
-        this.browseInput.value = null;
+        this.browseInput.value = "";
     }
 }
 

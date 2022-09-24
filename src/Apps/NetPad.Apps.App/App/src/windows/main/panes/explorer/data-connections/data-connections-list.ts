@@ -102,6 +102,10 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     private getDataConnectionId(element: Element) {
-        return element.getAttribute("data-connection-id");
+        const id = element.getAttribute("data-connection-id");
+
+        if (!id) throw new Error("Could not get data connection ID from element.");
+
+        return id;
     }
 }

@@ -14,7 +14,8 @@ export class NamespacesPane extends Pane {
         @IShortcutManager private readonly shortcutManager: IShortcutManager
     ) {
         super("Namespaces", "namespaces-icon");
-        this.hasShortcut(shortcutManager.getShortcutByName("Namespaces Pane"));
+        const shortcut = shortcutManager.getShortcutByName("Namespaces Pane");
+        if (shortcut) this.hasShortcut(shortcut);
     }
 
     public override get name() {
@@ -45,17 +46,18 @@ export class NamespacesPane extends Pane {
 
     @watch<NamespacesPane>(vm => vm.session.active)
     public activeScriptEnvironmentChanged() {
-        this.namespaces = this.session.active.script.config.namespaces.join("\n") + "\n";
-        this.lastSet = null;
+        this.namespaces = this.session.active?.script.config.namespaces.join("\n") + "\n";
+        this.lastSet = undefined;
     }
 
-    @watch<NamespacesPane>(vm => vm.session.active.script.config.namespaces)
+    @watch<NamespacesPane>(vm => vm.session.active?.script.config.namespaces)
     public activeScriptEnvironmentNamespacesChanged() {
-        const secondsSinceLastLocalUpdate = (new Date().getTime() - this.lastSet?.getTime()) / 1000;
+        const secondsSinceLastLocalUpdate = !this.lastSet ? null : (new Date().getTime() - this.lastSet?.getTime()) / 1000;
 
         // This is so that the local value does not update while the user is typing
-        if (!this.lastSet || secondsSinceLastLocalUpdate >= 2) {
-            this.updateLocal(this.session.active.script.config.namespaces);
+        if (!secondsSinceLastLocalUpdate || secondsSinceLastLocalUpdate >= 2) {
+            if (this.session.active)
+                this.updateLocal(this.session.active.script.config.namespaces);
         }
     }
 

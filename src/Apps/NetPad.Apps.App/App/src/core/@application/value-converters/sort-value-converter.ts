@@ -20,7 +20,8 @@ export class SortValueConverter {
 
         if (!comparison) comparison = "ordinal";
 
-        const self = this as unknown;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const self = this as any;
         const directionFactor = direction === "asc" ? 1 : -1,
             comparer = self[comparison + "Comparison"];
 
@@ -33,7 +34,8 @@ export class SortValueConverter {
         return array.sort((a, b) => comparer(a[propertyName], b[propertyName]) * directionFactor);
     }
 
-    private ordinalIgnoreCaseComparison(a: unknown, b: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private ordinalIgnoreCaseComparison(a: any, b: any) {
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
         if (a === null || a === undefined) return -1;
         if (b === null || b === undefined) return 1;
@@ -44,7 +46,8 @@ export class SortValueConverter {
         return 0;
     }
 
-    private ordinalComparison(a: unknown, b: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private ordinalComparison(a: any, b: any) {
         if ((a === null || a === undefined) && (b === null || b === undefined)) return 0;
         if (a === null || a === undefined) return -1;
         if (b === null || b === undefined) return 1;

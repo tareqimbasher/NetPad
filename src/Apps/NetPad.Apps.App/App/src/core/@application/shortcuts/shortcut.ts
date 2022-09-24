@@ -153,7 +153,7 @@ export class Shortcut {
     }
 
     public get keyComboString(): string {
-        const combo = [];
+        const combo: string[] = [];
         if (this.metaKey) combo.push("Meta");
         if (this.altKey) combo.push("Alt");
         if (this.ctrlKey) combo.push("Ctrl");
@@ -165,14 +165,6 @@ export class Shortcut {
     }
 
     public toString(): string {
-        const combo = [];
-        if (this.metaKey) combo.push("Meta");
-        if (this.altKey) combo.push("Alt");
-        if (this.ctrlKey) combo.push("Ctrl");
-        if (this.shiftKey) combo.push("Shift");
-        if (this.key) combo.push(this.key.replace("Key", ""));
-        if (this.keyExpression) combo.push("Custom Expression");
-
         return `${this.name} (${this.keyComboString})`;
     }
 }
