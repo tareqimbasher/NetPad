@@ -96,13 +96,11 @@ button > .icon-base {
 .folder-icon {
     @extend %icon-base;
     @extend .fa-folder;
-    @extend %text-yellow;
 }
 
 .folder-open-icon {
     @extend %icon-base;
     @extend .fa-folder-open;
-    @extend .text-yellow;
 }
 
 .caret-down-icon {
@@ -136,6 +134,11 @@ button > .icon-base {
 }
 
 // CONTEXTUAL ICONS
+.explorer-icon {
+    @extend %icon-base;
+    @extend .fa-folder;
+}
+
 .script-icon {
     @extend %icon-base;
     @extend .fa-code;

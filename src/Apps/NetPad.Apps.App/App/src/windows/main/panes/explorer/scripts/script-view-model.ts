@@ -1,6 +1,6 @@
 import {ScriptEnvironment, ScriptSummary} from "@domain";
 
-export class SidebarScript extends ScriptSummary {
+export class ScriptViewModel extends ScriptSummary {
     constructor(summary: ScriptSummary) {
         super(summary);
     }

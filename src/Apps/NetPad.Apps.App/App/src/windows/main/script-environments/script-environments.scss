@@ -1,93 +1,98 @@
 @import "~styles/common";
 @import "~styles/themes";
 
-script-environments .script-tabs {
-    flex-wrap: nowrap;
-    display: flex;
-    align-items: center;
-    @include theme(border-bottom, borderColor, 1px solid);
+script-environments {
+    min-width: 0;
+    overflow: hidden;
 
-    .drag-drop-container {
-        @extend %hide-scrollbar;
+    .script-tabs {
         flex-wrap: nowrap;
-        flex-shrink: 1;
         display: flex;
         align-items: center;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
+        @include theme(border-bottom, borderColor, 1px solid);
 
-    .script-tab {
-        height: 1.8rem;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        font-size: 0.925rem;
-        font-weight: bold;
-        cursor: default;
-        @include theme(background-color, tabColor);
-
-        &:not(:last-child) {
-            margin-right: 1px;
-        }
-
-        .script-tab-content {
-            display: flex;
-            padding-left: 0.7rem;
-            padding-right: 0.4rem;
-            user-select: none;
-        }
-
-        .script-status {
-            margin-left: 0.45rem;
+        .drag-drop-container {
+            @extend %hide-scrollbar;
+            flex-wrap: nowrap;
+            flex-shrink: 1;
             display: flex;
             align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
         }
 
-        .script-tab-addon {
+        .script-tab {
+            height: 1.8rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            height: 18px;
-            width: 15px;
-            margin-right: 3px;
+            white-space: nowrap;
+            font-size: 0.925rem;
+            font-weight: bold;
+            cursor: default;
+            @include theme(background-color, tabColor);
 
-            .script-dirty-flag {
-                display: none;
+            &:not(:last-child) {
+                margin-right: 1px;
             }
 
-            &.is-dirty:not(:hover) {
-                .script-tab-close-button {
+            .script-tab-content {
+                display: flex;
+                padding-left: 0.7rem;
+                padding-right: 0.4rem;
+                user-select: none;
+            }
+
+            .script-status {
+                margin-left: 0.45rem;
+                display: flex;
+                align-items: center;
+            }
+
+            .script-tab-addon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 18px;
+                width: 15px;
+                margin-right: 3px;
+
+                .script-dirty-flag {
                     display: none;
                 }
 
-                .script-dirty-flag {
-                    display: block;
+                &.is-dirty:not(:hover) {
+                    .script-tab-close-button {
+                        display: none;
+                    }
+
+                    .script-dirty-flag {
+                        display: block;
+                    }
                 }
             }
-        }
 
-        .script-running-indicator {
-            height: 0.65rem;
-            width: 0.65rem;
-        }
-
-        &:hover {
-            @include theme(background-color, tabActiveColor);
-        }
-
-        &.active {
-            @include theme(background-color, tabActiveColor);
-
-            .script-name {
-                color: dodgerblue;
+            .script-running-indicator {
+                height: 0.65rem;
+                width: 0.65rem;
             }
-        }
 
-        &.new-script-tab {
-            margin-left: 1px;
-            padding-left: 0.4rem;
-            padding-right: 0.4rem;
+            &:hover {
+                @include theme(background-color, tabActiveColor);
+            }
+
+            &.active {
+                @include theme(background-color, tabActiveColor);
+
+                .script-name {
+                    color: dodgerblue;
+                }
+            }
+
+            &.new-script-tab {
+                margin-left: 1px;
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
         }
     }
 }

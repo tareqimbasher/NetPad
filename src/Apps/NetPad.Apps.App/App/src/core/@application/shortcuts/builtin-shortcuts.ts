@@ -2,7 +2,7 @@ import {IScriptService, ISettingService, RunScriptEvent} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {TogglePaneEvent} from "@application";
-import {NamespacesPane} from "../../../windows/main/panes";
+import {Explorer, NamespacesPane} from "../../../windows/main/panes";
 
 export const BuiltinShortcuts = [
     new Shortcut("New")
@@ -59,6 +59,13 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.Tab)
         .hasAction((ctx) => ctx.session.activateLastActive())
+        .configurable()
+        .enabled(),
+
+    new Shortcut("Explorer")
+        .withAltKey()
+        .withKey(KeyCode.KeyE)
+        .firesEvent(() => new TogglePaneEvent(Explorer))
         .configurable()
         .enabled(),
 

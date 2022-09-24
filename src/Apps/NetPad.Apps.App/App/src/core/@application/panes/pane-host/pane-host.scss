@@ -1,28 +1,33 @@
 @import "~styles/themes";
 
-$ribbon-width: 23px;
+$ribbon-width: 20px;
 
 pane-host {
-    &.right {
-        min-width: $ribbon-width;
+    min-width: $ribbon-width;
 
-        .ribbon {
-            width: $ribbon-width;
+    .ribbon {
+        width: $ribbon-width;
+    }
 
-            .pane-tag {
-                writing-mode: vertical-lr;
-                padding: 0.5rem 0.1rem;
-                width: 100%;
+    .pane-tag {
+        line-height: $ribbon-width;
+        width: $ribbon-width;
+        writing-mode: vertical-lr;
+        padding: 0.5rem 0.1rem;
+    }
 
-                &.active {
-                    border-right: 1px dodgerblue solid;
-                }
+    &.left {
+        .pane-tag {
+            transform: rotate(180deg);
+
+            .pane-icon {
+                transform: rotate(180deg);
             }
         }
     }
 
     .ribbon {
-        @include theme(background, sidebarBackground);
+        @include theme(background, paneRibbonBackground);
 
         .pane-tag {
             font-size: 0.90rem;
@@ -31,7 +36,7 @@ pane-host {
             align-items: center;
 
             &:hover {
-                @include theme(background-color, tabActiveColor);
+                @include theme(background-color, hoverColor);
             }
 
             &.active {

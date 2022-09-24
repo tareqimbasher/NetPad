@@ -50,6 +50,7 @@ export class Editor extends ViewModelBase {
         this.monacoEditor.onDidChangeModelContent(ev => this.text = this.monacoEditor.getValue());
 
         const ob = new ResizeObserver(entries => this.updateEditorLayout());
+        ob.observe(document.getElementById("main-content"));
         ob.observe(this.element);
         this.disposables.push(() => ob.disconnect());
     }
@@ -63,6 +64,7 @@ export class Editor extends ViewModelBase {
     }
 
     private updateEditorLayout() {
+        console.log("updating layout");
         this.monacoEditor.layout();
     }
 

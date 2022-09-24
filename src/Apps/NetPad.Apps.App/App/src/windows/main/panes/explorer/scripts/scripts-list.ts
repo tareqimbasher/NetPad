@@ -13,12 +13,12 @@ import {
 import {Util} from "@common";
 import {ViewModelBase} from "@application";
 import {ILogger} from "aurelia";
-import {SidebarScriptFolder} from "./sidebar-script-folder";
-import {SidebarScript} from "./sidebar-script";
+import {ScriptFolderViewModel} from "./script-folder-view-model";
+import {ScriptViewModel} from "./script-view-model";
 
 export class ScriptsList extends ViewModelBase {
-    private readonly rootScriptFolder: SidebarScriptFolder;
-    private scriptsMap: Map<string, SidebarScript>;
+    private readonly rootScriptFolder: ScriptFolderViewModel;
+    private scriptsMap: Map<string, ScriptViewModel>;
 
     constructor(@ISession private readonly  session: ISession,
                 @IScriptService private readonly  scriptService: IScriptService,
@@ -29,8 +29,8 @@ export class ScriptsList extends ViewModelBase {
                 @ILogger logger: ILogger) {
 
         super(logger);
-        this.scriptsMap = new Map<string, SidebarScript>();
-        this.rootScriptFolder = new SidebarScriptFolder("/", "/", null);
+        this.scriptsMap = new Map<string, ScriptViewModel>();
+        this.rootScriptFolder = new ScriptFolderViewModel("/", "/", null);
         this.rootScriptFolder.expanded = true;
     }
 
@@ -47,22 +47,22 @@ export class ScriptsList extends ViewModelBase {
         });
     }
 
-    public async openScriptsFolder(folder: SidebarScriptFolder) {
+    public async openScriptsFolder(folder: ScriptFolderViewModel) {
         await this.appService.openScriptsFolder(folder.path);
     }
 
-    public expandAllFolders(folder: SidebarScriptFolder) {
+    public expandAllFolders(folder: ScriptFolderViewModel) {
         folder.expanded = true;
         folder.folders.forEach(f => this.expandAllFolders(f));
     }
 
-    public collapseAllFolders(folder: SidebarScriptFolder) {
+    public collapseAllFolders(folder: ScriptFolderViewModel) {
         folder.expanded = false;
         folder.folders.forEach(f => this.collapseAllFolders(f));
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
-        const scripts = summaries.map(s => new SidebarScript(s));
+        const scripts = summaries.map(s => new ScriptViewModel(s));
 
         const expandedFolders = new Set<string>();
         this.recurseFolders(this.rootScriptFolder, folder => {
@@ -100,17 +100,17 @@ export class ScriptsList extends ViewModelBase {
         this.rootScriptFolder.scripts = root.scripts;
         this.rootScriptFolder.folders = root.folders;
 
-        this.scriptsMap = new Map<string, SidebarScript>(scripts.map(s => [s.id, s]));
+        this.scriptsMap = new Map<string, ScriptViewModel>(scripts.map(s => [s.id, s]));
         this.hydrateScriptMarkers();
     }
 
-    private getFolder(parent: SidebarScriptFolder, folderPathParts: string[]): SidebarScriptFolder {
+    private getFolder(parent: ScriptFolderViewModel, folderPathParts: string[]): ScriptFolderViewModel {
         let result = parent;
 
         for (const folderName of folderPathParts) {
             let folder = result.folders.find(f => f.name === folderName);
             if (!folder) {
-                folder = new SidebarScriptFolder(folderName, folderPathParts.join("/"), parent);
+                folder = new ScriptFolderViewModel(folderName, folderPathParts.join("/"), parent);
                 result.folders.push(folder);
             }
             result = folder;
@@ -119,7 +119,7 @@ export class ScriptsList extends ViewModelBase {
         return result;
     }
 
-    private recurseFolders(folder: SidebarScriptFolder, func: (f: SidebarScriptFolder) => void) {
+    private recurseFolders(folder: ScriptFolderViewModel, func: (f: ScriptFolderViewModel) => void) {
         func(folder);
 
         for (const subFolder of folder.folders) {
