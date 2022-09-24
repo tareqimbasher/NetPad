@@ -106,8 +106,10 @@ public class NuGetPackageProvider : IPackageProvider
     {
         var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
 
-        // Call install to make sure package and all its dependencies are installed if they aren't already
-        await InstallPackageAsync(packageId, packageVersion);
+        if (!IsInstalled(packageIdentity))
+        {
+            await InstallPackageAsync(packageId, packageVersion);
+        }
 
         using var sourceCacheContext = new SourceCacheContext();
         var logger = new NuGetNullLogger();
@@ -376,6 +378,8 @@ public class NuGetPackageProvider : IPackageProvider
 
         return packagesToInstall;
     }
+
+    private bool IsInstalled(PackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
 
     private async Task InstallPackagesAsync(
         PackageIdentity explicitPackageToInstallIdentity,
