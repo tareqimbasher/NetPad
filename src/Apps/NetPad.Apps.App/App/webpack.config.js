@@ -91,6 +91,12 @@ module.exports = function (env, {analyze}) {
                             loader: 'ts-loader',
                             options: {
                                 getCustomTransformers: () => ({before: [tsNameof]}),
+                                compilerOptions: {
+                                    // For some reason ts-loader emits the following error while tsc does not
+                                    // TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+                                    // Set this to false here
+                                    strictNullChecks: false
+                                }
                             },
                         },
                         '@aurelia/webpack-loader'
