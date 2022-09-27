@@ -78,7 +78,7 @@ backend occurs via REST API calls and Electron's IPC protocol.
 
 ### Requirements
 
-* Node v18+ (npm v8+)
+* Node v16+ (npm v8+)
 * .NET SDK 6.x
 * EF Core tools 6.x
 
