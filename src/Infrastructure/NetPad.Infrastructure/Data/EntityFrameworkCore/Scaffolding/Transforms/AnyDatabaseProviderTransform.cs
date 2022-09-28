@@ -58,6 +58,6 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
             iLine += 2;
         }
 
-        dbContextFile.Code = lines.JoinToString(Environment.NewLine);
+        dbContextFile.SetCode(lines.JoinToString(Environment.NewLine));
     }
 }

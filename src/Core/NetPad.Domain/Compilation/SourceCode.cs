@@ -7,6 +7,8 @@ namespace NetPad.Compilation;
 
 public class SourceCode
 {
+    private readonly HashSet<string> _namespaces;
+
     public SourceCode() : this(code: null, namespaces: null)
     {
     }
@@ -22,14 +24,27 @@ public class SourceCode
     public SourceCode(string? code, IEnumerable<string>? namespaces = null)
     {
         Code = code;
-        Namespaces = namespaces?
+        _namespaces = namespaces?
             .Where(ns => !string.IsNullOrWhiteSpace(ns))
             .Select(ns => ns.Trim())
             .ToHashSet() ?? new HashSet<string>();
     }
 
-    public HashSet<string> Namespaces { get; set; }
-    public string? Code { get; set; }
+    public IReadOnlySet<string> Namespaces => _namespaces;
+    public string? Code { get; private set; }
+    public bool Changed { get; private set; }
+
+    public void AddNamespace(string @namespace)
+    {
+        _namespaces.Add(@namespace);
+        Changed = true;
+    }
+
+    public void SetCode(string code)
+    {
+        Code = code;
+        Changed = true;
+    }
 
     public string GetText(bool useGlobalUsings = false)
     {

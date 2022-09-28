@@ -20,11 +20,7 @@ public class RunOptionsDto
             SpecificCodeToRun = SpecificCodeToRun
         };
 
-        runOptions.AdditionalCode.AddRange(AdditionalCode.Select(c => new SourceCode()
-        {
-            Code = c.Code,
-            Namespaces = c.Namespaces
-        }));
+        runOptions.AdditionalCode.AddRange(AdditionalCode.Select(c => new SourceCode(c.Code, c.Namespaces)));
 
         return runOptions;
     }

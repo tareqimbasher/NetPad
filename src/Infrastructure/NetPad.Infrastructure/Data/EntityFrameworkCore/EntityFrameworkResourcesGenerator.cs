@@ -180,7 +180,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         }
 
         // Replace the DbContext code since we modified it above when renaming properties
-        dbContext.Code = dbContextCodeLines.JoinToString(Environment.NewLine);
+        dbContext.SetCode(dbContextCodeLines.JoinToString(Environment.NewLine));
 
         utilCode.AppendJoin(Environment.NewLine, programProperties)
             .AppendLine()

@@ -23,12 +23,8 @@ namespace NetPad.Compilation.CSharp
                 bootstrapperProgramTemplate,
                 BootstrapperClassName,
                 BootstrapperSetIOMethodName);
-            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram);
 
-            foreach (var ns in _namespacesNeededByBaseProgram)
-            {
-                bootstrapperProgramSourceCode.Namespaces.Add(ns);
-            }
+            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _namespacesNeededByBaseProgram);
 
             return new CodeParsingResult(
                 new SourceCode(userProgram, script.Config.Namespaces),

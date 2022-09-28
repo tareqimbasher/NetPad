@@ -196,10 +196,8 @@ class Program
         var className = classDeclaration.Identifier.ValueText;
         var isDbContext = classCode.Contains(" : DbContext");
 
-        var sourceFile = new ScaffoldedSourceFile(className)
+        var sourceFile = new ScaffoldedSourceFile(file.FullName, className, classCode, namespaces)
         {
-            Namespaces = namespaces,
-            Code = classCode,
             IsDbContext = isDbContext
         };
 
