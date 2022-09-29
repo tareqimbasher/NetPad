@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace NetPad.Utilities;
 
@@ -41,5 +42,22 @@ public static class TypeUtils
         }
 
         return name;
+    }
+
+    public static bool IsOfGenericType(this Type typeToCheck, Type genericType)
+    {
+        Type? type = typeToCheck;
+
+        while (type != null)
+        {
+            if (type.IsGenericType &&
+                type.GetGenericTypeDefinition() == genericType)
+            {
+                return true;
+            }
+            type = type.BaseType;
+        }
+
+        return false;
     }
 }

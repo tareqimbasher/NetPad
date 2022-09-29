@@ -52,7 +52,9 @@ public class SourceCode
 
         string usingPrefix = useGlobalUsings ? "global " : "";
 
-        builder.AppendJoin(Environment.NewLine, Namespaces.Select(ns => $"{usingPrefix}using {ns};"));
+        builder
+            .AppendJoin(Environment.NewLine, Namespaces.Select(ns => $"{usingPrefix}using {ns};"))
+            .AppendLine();
 
         if (Code != null)
         {

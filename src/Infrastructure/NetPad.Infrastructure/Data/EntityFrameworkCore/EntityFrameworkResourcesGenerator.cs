@@ -73,7 +73,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         if (!result.Success)
         {
             throw new Exception("Could not compile data connection assembly. " +
-                                $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics)}");
+                                $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
         }
 
         return result.AssemblyBytes;
@@ -136,8 +136,16 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         // 1. Make the Program class inherit the generated DbContext
         var dbContext = model.DbContextFile;
-        utilCode.AppendLine($"public partial class Program : {dbContext.ClassName}")
-            .AppendLine("{");
+        utilCode.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
+            .AppendLine("{")
+            .AppendLine(@"
+    public Program()
+    {
+    }
+
+    public Program(DbContextOptions<Program> options) : base(options)
+    {
+    }");
 
         // 2. Add the DbContext property
         utilCode

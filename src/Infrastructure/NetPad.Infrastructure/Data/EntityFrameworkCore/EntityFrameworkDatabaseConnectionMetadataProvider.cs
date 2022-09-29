@@ -34,7 +34,7 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
 
         var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
 
-        var dbContextType = assembly.GetExportedTypes().FirstOrDefault(x => typeof(DbContext).IsAssignableFrom(x));
+        var dbContextType = assembly.GetExportedTypes().FirstOrDefault(x => typeof(DbContext).IsAssignableFrom(x) && x.BaseType != typeof(DbContext));
         if (dbContextType == null)
         {
             throw new Exception("Could not find a type in data connection assembly of type DbContext.");

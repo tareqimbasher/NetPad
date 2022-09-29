@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -12,6 +13,14 @@ internal static class EntityFrameworkUtils
 {
     public static DatabaseStructure GetDatabaseStructure(this DbContext dbContext)
     {
+        var dbSets = dbContext.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Static)
+            .Where(p => p.PropertyType.IsOfGenericType(typeof(IQueryable<>)))
+            .Select(p => new
+            {
+                p.Name,
+                ElementType = p.PropertyType.GenericTypeArguments.First()
+            }).ToDictionary(k => k.ElementType, v => v.Name);
+
         var structure = new DatabaseStructure(dbContext.Database.GetDbConnection().Database);
 
         var model = dbContext.GetService<IDesignTimeModel>().Model;
@@ -22,7 +31,9 @@ internal static class EntityFrameworkUtils
         {
             var schema = structure.GetOrAddSchema(entityType.GetSchema() ?? entityType.GetDefaultSchema() ?? defaultSchema);
 
-            var table = schema.GetOrAddTable(entityType.GetTableName() ?? entityType.Name);
+            var tableName = entityType.GetTableName() ?? entityType.Name;
+            dbSets.TryGetValue(entityType.ClrType, out string? dbSetName);
+            var table = schema.GetOrAddTable(tableName, dbSetName ?? tableName);
 
             foreach (var index in entityType.GetIndexes())
             {

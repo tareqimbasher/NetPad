@@ -105,6 +105,45 @@ public class DotNetCSharpProject
         return Task.CompletedTask;
     }
 
+    public async Task SetProjectPropertyAsync(string propertyName, string? value)
+    {
+        await _projectFileLock.WaitAsync();
+
+        try
+        {
+            var xmlDoc = XDocument.Load(ProjectFilePath);
+
+            var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+            if (root == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly.");
+            }
+
+            var projectProperties = root.Elements("PropertyGroup").FirstOrDefault();
+
+            if (projectProperties == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly.");
+            }
+
+            var property = projectProperties.Elements(propertyName).FirstOrDefault();
+            if (property == null)
+            {
+                property = new XElement(propertyName);
+                projectProperties.Add(property);
+            }
+
+            property.SetValue(value ?? string.Empty);
+
+            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        }
+        finally
+        {
+            _projectFileLock.Release();
+        }
+    }
+
 
     public Task AddReferenceAsync(Reference reference)
     {

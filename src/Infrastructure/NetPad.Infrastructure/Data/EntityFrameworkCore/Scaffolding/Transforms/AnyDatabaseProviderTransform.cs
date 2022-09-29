@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
@@ -9,10 +10,22 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 {
     public void Transform(ScaffoldedDatabaseModel model)
     {
-        PatchDbContextCode(model.DbContextFile);
+        MakeDbContextGeneric(model.DbContextFile);
+        EnsureTableMappingsForAllEntities(model.DbContextFile);
     }
 
-    private static void PatchDbContextCode(ScaffoldedSourceFile dbContextFile)
+    private void MakeDbContextGeneric(ScaffoldedSourceFile dbContextFile)
+    {
+        if (dbContextFile.Code == null) return;
+
+        var sb = new StringBuilder(dbContextFile.Code);
+        sb.Replace($"partial class {dbContextFile.ClassName} : DbContext", $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
+        sb.Replace($"DbContextOptions<{dbContextFile.ClassName}>", "DbContextOptions<TContext>");
+
+        dbContextFile.SetCode(sb.ToString());
+    }
+
+    private static void EnsureTableMappingsForAllEntities(ScaffoldedSourceFile dbContextFile)
     {
         // The issue is that EF Core doesn't generate the "entity.ToTable()" statement for
         // some tables/entities in the OnModelCreating() method. As a result, changing the name

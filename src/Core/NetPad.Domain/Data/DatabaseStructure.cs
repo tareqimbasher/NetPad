@@ -44,7 +44,7 @@ public class DatabaseSchema
     public string? Name { get; }
     public IReadOnlyList<DatabaseTable> Tables => _tables;
 
-    public DatabaseTable GetOrAddTable(string name)
+    public DatabaseTable GetOrAddTable(string name, string displayName)
     {
         var table = _tables.FirstOrDefault(t => t.Name == name);
         if (table != null)
@@ -52,7 +52,7 @@ public class DatabaseSchema
             return table;
         }
 
-        table = new DatabaseTable(name);
+        table = new DatabaseTable(name, displayName);
         _tables.Add(table);
         return table;
     }
@@ -64,15 +64,17 @@ public class DatabaseTable
     private readonly List<DatabaseIndex> _indexes;
     private readonly List<DatabaseTableNavigation> _navigations;
 
-    public DatabaseTable(string name)
+    public DatabaseTable(string name, string displayName)
     {
         _columns = new List<DatabaseTableColumn>();
         _indexes = new List<DatabaseIndex>();
         _navigations = new List<DatabaseTableNavigation>();
         Name = name;
+        DisplayName = displayName;
     }
 
     public string Name { get; }
+    public string DisplayName { get; }
     public IReadOnlyList<DatabaseTableColumn> Columns => _columns;
     public IReadOnlyList<DatabaseIndex> Indexes => _indexes;
     public IReadOnlyList<DatabaseTableNavigation> Navigations => _navigations;
