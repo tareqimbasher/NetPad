@@ -1,4 +1,4 @@
-import {IScriptService, ISettingService, RunScriptEvent} from "@domain";
+import {CreateScriptDto, IScriptService, ISettingService, RunScriptEvent} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {TogglePaneEvent} from "@application";
@@ -8,7 +8,7 @@ export const BuiltinShortcuts = [
     new Shortcut("New")
         .withCtrlKey()
         .withKey(KeyCode.KeyN)
-        .hasAction((ctx) => ctx.container.get(IScriptService).create())
+        .hasAction((ctx) => ctx.container.get(IScriptService).create(new CreateScriptDto()))
         .configurable()
         .enabled(),
 

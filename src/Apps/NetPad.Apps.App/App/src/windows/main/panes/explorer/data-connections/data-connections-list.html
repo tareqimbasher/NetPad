@@ -1,7 +1,7 @@
 <h6>
     <div class="d-flex justify-content-between">
         <b class="ps-3 text-truncate">Connections</b>
-        <i class="action-icon add-database-connection-icon pe-2"
+        <i class="action-icon add-data-connection-icon pe-2"
            title="Add Connection"
            click.trigger="addConnection()"></i>
     </div>
@@ -17,11 +17,11 @@
 <div else class="flex-grow-height-restricted d-flex">
     <div class="list-group overflow-y-auto" style="width: 100%">
         <div class="list-group-item d-flex flex-column"
-             repeat.for="connectionViewModel of dataConnectionViewModels">
+             repeat.for="connectionViewModel of dataConnectionViewModels"
+             data-connection-id="${connectionViewModel.connection.id}">
 
             <div class="list-group">
-                <div class="list-group-item d-flex align-items-center justify-content-between data-connection"
-                     data-connection-id="${connectionViewModel.connection.id}">
+                <div class="list-group-item d-flex align-items-center justify-content-between data-connection">
                     <div class="d-flex align-items-center text-truncate">
                         <i class="${connectionViewModel.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                            click.trigger="connectionViewModel.toggleExpand()"></i>
@@ -54,12 +54,12 @@
                             <div class="list-group" if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
                                 <div class="list-group-item db-table"
                                      repeat.for="table of schema.tables"
-                                     title="Table">
+                                     title="Table name: ${table.name}">
                                     <div class="display-text">
                                         <i class="${table.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                                            click.trigger="table.expanded = !table.expanded"></i>
                                         <div class="row-icon"><img src="/img/table.png" alt="table"/></div>
-                                        <b>${table.name}</b>
+                                        <b>${table.displayName}</b>
                                     </div>
                                     <div class="list-group" if.bind="table.expanded">
                                         <div class="list-group-item db-column"
@@ -111,4 +111,5 @@
     </div>
 </div>
 
-<context-menu options.bind="tabContextMenuOptions"></context-menu>
+<context-menu options.bind="dataConnectionContextOptions"></context-menu>
+<context-menu options.bind="tableContextOptions"></context-menu>

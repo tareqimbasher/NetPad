@@ -1,6 +1,15 @@
 import {ILogger} from "aurelia";
 import dragula from "dragula";
-import {IAppService, IEventBus, IScriptService, ISession, RunScriptEvent, Script, Settings} from "@domain";
+import {
+    CreateScriptDto,
+    IAppService,
+    IEventBus,
+    IScriptService,
+    ISession,
+    RunScriptEvent,
+    Script,
+    Settings
+} from "@domain";
 import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironments extends ViewModelBase {
@@ -21,7 +30,7 @@ export class ScriptEnvironments extends ViewModelBase {
     public async binding() {
         if (this.session.environments.length === 0) {
             try {
-                await this.scriptService.create();
+                await this.scriptService.create(new CreateScriptDto());
             } catch (ex) {
                 this.logger.error("Could not create new script", ex);
             }

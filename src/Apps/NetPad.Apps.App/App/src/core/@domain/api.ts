@@ -972,7 +972,7 @@ export interface IScriptsApiClient {
 
     getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
 
-    create(signal?: AbortSignal | undefined): Promise<void>;
+    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void>;
 
     save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1043,14 +1043,18 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<ScriptSummary[]>(<any>null);
     }
 
-    create(signal?: AbortSignal | undefined): Promise<void> {
+    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/create";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(dto);
+
         let options_ = <RequestInit>{
+            body: content_,
             method: "PATCH",
             signal,
             headers: {
+                "Content-Type": "application/json",
             }
         };
 
@@ -2289,6 +2293,7 @@ export interface IDatabaseSchema {
 
 export class DatabaseTable implements IDatabaseTable {
     name!: string;
+    displayName!: string;
     columns!: DatabaseTableColumn[];
     indexes!: DatabaseIndex[];
     navigations!: DatabaseTableNavigation[];
@@ -2310,6 +2315,7 @@ export class DatabaseTable implements IDatabaseTable {
     init(_data?: any) {
         if (_data) {
             this.name = _data["name"];
+            this.displayName = _data["displayName"];
             if (Array.isArray(_data["columns"])) {
                 this.columns = [] as any;
                 for (let item of _data["columns"])
@@ -2338,6 +2344,7 @@ export class DatabaseTable implements IDatabaseTable {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
+        data["displayName"] = this.displayName;
         if (Array.isArray(this.columns)) {
             data["columns"] = [];
             for (let item of this.columns)
@@ -2366,6 +2373,7 @@ export class DatabaseTable implements IDatabaseTable {
 
 export interface IDatabaseTable {
     name: string;
+    displayName: string;
     columns: DatabaseTableColumn[];
     indexes: DatabaseIndex[];
     navigations: DatabaseTableNavigation[];
@@ -2760,6 +2768,57 @@ export interface IScriptSummary {
     id: string;
     name: string;
     path: string;
+}
+
+export class CreateScriptDto implements ICreateScriptDto {
+    code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately!: boolean;
+
+    constructor(data?: ICreateScriptDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.code = _data["code"];
+            this.dataConnectionId = _data["dataConnectionId"];
+            this.runImmediately = _data["runImmediately"];
+        }
+    }
+
+    static fromJS(data: any): CreateScriptDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateScriptDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["code"] = this.code;
+        data["dataConnectionId"] = this.dataConnectionId;
+        data["runImmediately"] = this.runImmediately;
+        return data;
+    }
+
+    clone(): CreateScriptDto {
+        const json = this.toJSON();
+        let result = new CreateScriptDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateScriptDto {
+    code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately: boolean;
 }
 
 export class RunOptionsDto implements IRunOptionsDto {

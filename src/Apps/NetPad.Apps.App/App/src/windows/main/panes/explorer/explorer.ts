@@ -11,7 +11,7 @@ export class Explorer extends Pane {
     public async attached() {
         Split(["#connection-list", "#script-list"], {
             gutterSize: 6,
-            direction: 'vertical',
+            direction: "vertical",
             sizes: [50, 50],
             minSize: [100, 100],
         });

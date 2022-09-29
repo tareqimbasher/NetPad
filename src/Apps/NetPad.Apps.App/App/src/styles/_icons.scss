@@ -242,7 +242,7 @@ button > .icon-base {
     @extend .fa-align-left;
 }
 
-.add-database-connection-icon {
+.add-data-connection-icon {
     @extend %icon-base;
     @extend .fa-cloud-arrow-up;
 }
@@ -271,3 +271,19 @@ button > .icon-base {
     @extend %icon-base;
     @extend .fa-info;
 }
+
+.use-data-connection-current-script-icon {
+    @extend %icon-base;
+    @extend .fa-circle-right;
+}
+
+.use-data-connection-new-script-icon {
+    @extend %icon-base;
+    @extend .fa-circle-plus;
+}
+
+.data-connection-query-action {
+    @extend %icon-base;
+    @extend .fa-bolt;
+}
+

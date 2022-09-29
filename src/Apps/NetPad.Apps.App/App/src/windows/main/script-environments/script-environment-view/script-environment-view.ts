@@ -1,4 +1,5 @@
 import {bindable, ILogger} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import {
     ActiveEnvironmentChangedEvent,
     DataConnection,
@@ -10,7 +11,7 @@ import {
     RunScriptEvent,
     Script,
     ScriptEnvironment,
-    ScriptKind,
+    ScriptKind, ScriptStatus,
     Settings
 } from "@domain";
 import Split from "split.js";
@@ -118,8 +119,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
         try {
             await this.sendCodeToServer();
-            if (this.settings.results.openOnRun)
-                this.openResultsView();
 
             const runOptions = new RunOptionsDto();
 
@@ -141,7 +140,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     private openResultsView() {
         if (this.isResultsViewOpen()) return;
-        this.split.setSizes([50, 50]);
+        this.split.setSizes([40, 60]);
     }
 
     private collapseResultsView = () => {
@@ -150,5 +149,12 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     private isResultsViewOpen(): boolean {
         return this.resultsContainer.clientHeight > 10;
+    }
+
+    @watch<ScriptEnvironmentView>(vm => vm.environment.status)
+    private environmentStatusChanged(newStatus: ScriptStatus) {
+        if (this.settings.results.openOnRun && newStatus === "Running" && !this.isResultsViewOpen()) {
+            this.openResultsView();
+        }
     }
 }
