@@ -61,7 +61,7 @@ public class EntityFrameworkDatabaseScaffolder
         }
         finally
         {
-            //await _project.DeleteAsync();
+            await _project.DeleteAsync();
         }
     }
 
@@ -98,7 +98,7 @@ class Program
             $"\"{_connection.GetConnectionString()}\"",
             _connection.EntityFrameworkProviderName,
             $"--context {DbContextName}",
-            $"--namespace \"\"", // Instructs tool to not wrap code in any namespace
+            "--namespace \"\"", // Instructs tool to not wrap code in any namespace
             "--force",
             $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
         });
@@ -111,7 +111,7 @@ class Program
         {
             UseShellExecute = false,
             WorkingDirectory = _project.ProjectDirectoryPath,
-            CreateNoWindow = false,
+            CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true
         });

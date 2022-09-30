@@ -1,10 +1,10 @@
 import {IDisposable} from "aurelia";
 
 export class SubscriptionToken implements IDisposable {
-    constructor(private readonly action: () => void) {
+    constructor(private readonly disposeAction: () => void) {
     }
 
     public dispose(): void {
-        this.action();
+        this.disposeAction();
     }
 }

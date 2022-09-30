@@ -7,7 +7,8 @@ import * as api from "../api";
 export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
     private readonly unnecessaryMarkerTag = MarkerTag[MarkerTag.Unnecessary].toLowerCase();
     private readonly excluded = new Set<string>([
-        "IDE0008" // Use explicit type instead of "var"
+        "IDE0008",          // Use explicit type instead of "var",
+        "CA1050",           // Declare types in namespaces
     ]);
 
     constructor(

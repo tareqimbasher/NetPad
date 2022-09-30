@@ -25,7 +25,7 @@ namespace NetPad.IO
             Process.ErrorDataReceived += ErrorReceived;
         }
 
-        public Process Process { get; private set; }
+        public Process Process { get; }
 
         public List<Func<string, Task>> OnOutputReceivedHandlers { get; }
         public List<Func<string, Task>> OnErrorReceivedHandlers { get; }
@@ -58,7 +58,6 @@ namespace NetPad.IO
             Process.ErrorDataReceived -= ErrorReceived;
             OnOutputReceivedHandlers.Clear();
             OnErrorReceivedHandlers.Clear();
-            Process = null!;
         }
     }
 }

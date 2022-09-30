@@ -82,7 +82,7 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await _project.CreateAsync(ProjectOutputType.Executable);
+        await _project.CreateAsync(ProjectOutputType.Executable, true);
 
         InitializeEventHandlers();
 
@@ -404,8 +404,6 @@ public class AppOmniSharpServer
                 FileName = filePath,
                 Buffer = buffer
             });
-
-            await File.WriteAllTextAsync(filePath, buffer);
         }
         finally
         {
