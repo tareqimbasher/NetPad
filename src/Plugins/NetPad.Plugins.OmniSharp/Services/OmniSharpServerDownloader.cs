@@ -54,13 +54,14 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
             var downloadUrl = GetDownloadUrl(platform);
 
-            var downloadDir = GetDownloadDirectory();
-
-            if (downloadDir.Exists)
+            var downloadRootDir = GetDownloadRootDirectory();
+            if (downloadRootDir.Exists)
             {
-                downloadDir.Delete(true);
-                downloadDir.Create();
+                downloadRootDir.Delete(true);
+                downloadRootDir.Create();
             }
+
+            var downloadDir = GetDownloadDirectory();
 
             var start = DateTime.Now;
 
@@ -76,7 +77,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
             if (downloadedLocation == null)
             {
-                downloadDir.Delete();
+                downloadDir.Delete(true);
                 throw new Exception($"Could not find executable in download dir '{downloadDir.FullName}'");
             }
 
@@ -116,7 +117,16 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         return new OmniSharpServerLocation(executableFile.FullName);
     }
 
-    private DirectoryInfo GetDownloadDirectory() => new DirectoryInfo(Path.Combine(Settings.AppDataFolderPath, "OmniSharp"));
+    private DirectoryInfo GetDownloadRootDirectory() => new(Path.Combine(Settings.AppDataFolderPath, "OmniSharp"));
+    private DirectoryInfo GetDownloadDirectory() => new(Path.Combine(GetDownloadRootDirectory().FullName, GetRequiredVersion()));
+
+    private string GetRequiredVersion()
+    {
+        string settingPath = "OmniSharp:Version";
+
+        return _configuration.GetValue<string>(settingPath)
+               ?? throw new Exception($"No configuration value for OmniSharp version at setting path: '{settingPath}'");
+    }
 
     private string GetDownloadUrl(OSPlatform platform)
     {
