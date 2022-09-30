@@ -82,11 +82,10 @@ namespace NetPad
             // Data connections
             services.AddTransient<IDataConnectionResourcesGeneratorFactory, DataConnectionResourcesGeneratorFactory>();
             services.AddTransient<EntityFrameworkResourcesGenerator>();
-
             services.AddTransient<IDatabaseConnectionMetadataProviderFactory, DatabaseConnectionMetadataProviderFactory>();
             services.AddTransient<EntityFrameworkDatabaseConnectionMetadataProvider>();
-
             services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
+            services.AddSingleton(sp => new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
 
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();

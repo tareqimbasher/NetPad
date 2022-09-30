@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
@@ -62,9 +63,15 @@ namespace NetPad.Scripts
                 if (Script.DataConnection != null)
                 {
                     var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
-                    if (connectionCode.Any())
+                    if (connectionCode.ApplicationCode.Any())
                     {
-                        runOptions.AdditionalCode.AddRange(connectionCode);
+                        runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
+                    }
+
+                    var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(Script.DataConnection);
+                    if (connectionAssembly != null)
+                    {
+                        runOptions.AdditionalReferences.Add(new AssemblyImageReference(connectionAssembly));
                     }
 
                     var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(Script.DataConnection);

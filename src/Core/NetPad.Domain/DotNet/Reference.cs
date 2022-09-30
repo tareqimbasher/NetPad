@@ -10,7 +10,8 @@ namespace NetPad.DotNet;
 [Newtonsoft.Json.JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter), "discriminator")]
 
 [JsonConverter(typeof(JsonInheritanceConverter<Reference>))]
-[KnownType(typeof(AssemblyReference))]
+[KnownType(typeof(AssemblyFileReference))]
+[KnownType(typeof(AssemblyImageReference))]
 [KnownType(typeof(PackageReference))]
 public abstract class Reference
 {
@@ -48,9 +49,13 @@ public abstract class Reference
         {
             return thisPkg.PackageId == otherPkg.PackageId && thisPkg.Version == otherPkg.Version;
         }
-        else if (this is AssemblyReference thisAsmRef && obj is AssemblyReference otherAsmRef)
+        else if (this is AssemblyFileReference thisAsmRef && obj is AssemblyFileReference otherAsmRef)
         {
             return thisAsmRef.AssemblyPath == otherAsmRef.AssemblyPath;
+        }
+        else if (this is AssemblyImageReference thisAsmImgRef && obj is AssemblyImageReference otherAsmImgRef)
+        {
+            return thisAsmImgRef.AssemblyImage.AssemblyName.FullName == otherAsmImgRef.AssemblyImage.AssemblyName.FullName;
         }
 
         throw new Exception("Unhandled Reference type");
@@ -63,9 +68,13 @@ public abstract class Reference
         {
             return $"{pkg.PackageId}{pkg.Version}".GetHashCode();
         }
-        else if (this is AssemblyReference asmRef)
+        else if (this is AssemblyFileReference assemblyFileReference)
         {
-            return asmRef.AssemblyPath.GetHashCode();
+            return assemblyFileReference.AssemblyPath.GetHashCode();
+        }
+        else if (this is AssemblyImageReference assemblyImageReference)
+        {
+            return assemblyImageReference.AssemblyImage.GetHashCode();
         }
 
         throw new Exception("Unhandled Reference type");
@@ -98,9 +107,13 @@ public abstract class Reference
         {
             return $"{Title}: {pkg.PackageId} v{pkg.Version}";
         }
-        else if (this is AssemblyReference asmRef)
+        else if (this is AssemblyFileReference assemblyFileReference)
         {
-            return $"{Title}: {asmRef.AssemblyPath}";
+            return $"{Title}: {assemblyFileReference.AssemblyPath}";
+        }
+        else if (this is AssemblyImageReference assemblyImageReference)
+        {
+            return assemblyImageReference.AssemblyImage.AssemblyName.FullName;
         }
 
         return $"{Title}: [{GetType().Name}]";

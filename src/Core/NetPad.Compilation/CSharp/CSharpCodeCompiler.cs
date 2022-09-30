@@ -42,12 +42,12 @@ namespace NetPad.Compilation.CSharp
             // Build references
             var assemblyLocations = SystemAssemblies.GetAssemblyLocations();
 
-            foreach (var assemblyReferenceLocation in input.AssemblyReferenceLocations)
+            foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
                 assemblyLocations.Add(assemblyReferenceLocation);
 
             assemblyLocations.Add(typeof(IOutputWriter).Assembly.Location);
 
-            var references = BuildMetadataReferences(assemblyLocations);
+            var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 
             var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
@@ -60,9 +60,11 @@ namespace NetPad.Compilation.CSharp
                 options: compilationOptions);
         }
 
-        private PortableExecutableReference[] BuildMetadataReferences(HashSet<string> assemblyLocations)
+        private PortableExecutableReference[] BuildMetadataReferences(IEnumerable<byte[]> assemblyImages, HashSet<string> assemblyLocations)
         {
-            var references = assemblyLocations
+            var references = assemblyImages.Select(i => MetadataReference.CreateFromImage(i)).ToList();
+
+            var locationReferences = assemblyLocations
                 .Where(al => !string.IsNullOrWhiteSpace(al))
                 .Select(location => new
                 {
@@ -71,7 +73,7 @@ namespace NetPad.Compilation.CSharp
                 })
                 .ToList();
 
-            var duplicateReferences = references.GroupBy(r => r.AssemblyName.Name)
+            var duplicateReferences = locationReferences.GroupBy(r => r.AssemblyName.Name)
                 .Where(grp => grp.Key != null && grp.Count() > 1);
 
             foreach (var duplicateReferenceGroup in duplicateReferences)
@@ -84,11 +86,13 @@ namespace NetPad.Compilation.CSharp
 
                 foreach (var duplicate in duplicatesToRemove)
                 {
-                    references.Remove(duplicate);
+                    locationReferences.Remove(duplicate);
                 }
             }
 
-            return references.Select(r => r.MetadataReference).ToArray();
+            references.AddRange(locationReferences.Select(r => r.MetadataReference));
+
+            return references.ToArray();
         }
 
         public CSharpParseOptions GetParseOptions()

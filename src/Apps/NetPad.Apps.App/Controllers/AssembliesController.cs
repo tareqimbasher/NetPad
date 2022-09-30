@@ -25,12 +25,12 @@ namespace NetPad.Controllers
         [HttpPatch("namespaces")]
         public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
         {
-            if (reference is AssemblyReference assemblyReference)
+            if (reference is AssemblyFileReference assemblyFileReference)
             {
-                if (assemblyReference.AssemblyPath == null)
+                if (assemblyFileReference.AssemblyPath == null)
                     throw new Exception("Assembly path is null.");
 
-                return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyReference.AssemblyPath)));
+                return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyFileReference.AssemblyPath)));
             }
             else if (reference is PackageReference packageReference)
             {
@@ -52,7 +52,7 @@ namespace NetPad.Controllers
             }
             else
             {
-                throw new Exception($"Unknown reference type: {reference.GetType().Name}");
+                throw new Exception($"Unhandled reference type: {reference.GetType().Name}");
             }
         }
     }

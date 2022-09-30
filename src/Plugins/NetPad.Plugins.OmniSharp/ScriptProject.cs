@@ -17,7 +17,7 @@ public class ScriptProject : DotNetCSharpProject
         Settings settings,
         ILogger<ScriptProject> logger)
         : base(
-            Path.Combine(Path.GetTempPath(), "NetPad", script.Id.ToString()),
+            Path.Combine(Path.GetTempPath(), "NetPad", "OmniSharp", script.Id.ToString()),
             "script.csproj",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet")
         )
@@ -42,86 +42,11 @@ public class ScriptProject : DotNetCSharpProject
         await base.CreateAsync(outputType, deleteExisting);
 
         var domainAssembly = typeof(IOutputWriter).Assembly;
-        await AddAssemblyReferenceAsync(new AssemblyReference(domainAssembly.Location));
-
-        foreach (var reference in Script.Config.References)
-        {
-            if (reference is PackageReference packageReference)
-            {
-                await AddPackageAsync(packageReference);
-            }
-            else if (reference is AssemblyReference assemblyReference)
-            {
-                await AddAssemblyReferenceAsync(assemblyReference);
-            }
-        }
+        await AddAssemblyFileReferenceAsync(new AssemblyFileReference(domainAssembly.Location));
+        await AddReferencesAsync(Script.Config.References);
     }
 
-    public override Task AddAssemblyReferenceAsync(AssemblyReference reference)
-    {
-        try
-        {
-            return base.AddAssemblyReferenceAsync(reference);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to add assembly reference to project. " +
-                                 "Assembly path: {AssemblyPath}", reference.AssemblyPath);
-
-            return Task.FromException(ex);
-        }
-    }
-
-    public override Task RemoveAssemblyReferenceAsync(AssemblyReference reference)
-    {
-        try
-        {
-            return base.RemoveAssemblyReferenceAsync(reference);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to remove assembly reference from project. " +
-                                 "Assembly path: {AssemblyPath}", reference.AssemblyPath);
-
-            return Task.FromException(ex);
-        }
-    }
-
-    public override Task AddPackageAsync(PackageReference reference)
-    {
-        try
-        {
-            return base.AddPackageAsync(reference);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to add package to project. " +
-                                 "Package ID: {PackageId}. Package version: {PackageVersion}",
-                reference.PackageId,
-                reference.Version);
-
-            return Task.FromException(ex);
-        }
-    }
-
-    public override Task RemovePackageAsync(PackageReference reference)
-    {
-        try
-        {
-            return base.RemovePackageAsync(reference);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to remove package from project. " +
-                                 "Package ID: {PackageId}. Package version: {PackageVersion}",
-                reference.PackageId,
-                reference.Version);
-
-            return Task.FromException(ex);
-        }
-    }
-
-    public async Task UpdateReferencesFromDataConnectionAsync(DataConnection? dataConnection, IDataConnectionResourcesCache dataConnectionResourcesCache)
+    public async Task UpdateReferencesFromDataConnectionAsync(DataConnection? dataConnection, IEnumerable<Reference> dataConnectionReferences)
     {
         if (dataConnection == null && !_existingDataConnectionReferences.Any())
         {
@@ -141,8 +66,6 @@ public class ScriptProject : DotNetCSharpProject
 
                 return;
             }
-
-            var dataConnectionReferences = await dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection);
 
             if (dataConnectionReferences.All(_existingDataConnectionReferences.Contains) &&
                 _existingDataConnectionReferences.All(dataConnectionReferences.Contains))
@@ -164,6 +87,10 @@ public class ScriptProject : DotNetCSharpProject
                 await AddDataConnectionReferenceAsync(reference);
             }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating project references from data connection");
+        }
         finally
         {
             _dataConnectionReferencesLock.Release();
@@ -179,7 +106,7 @@ public class ScriptProject : DotNetCSharpProject
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to remove data connection reference: {Reference}", reference.ToString());
+            _logger.LogError(ex, "Failed to add data connection reference: {Reference}", reference.ToString());
         }
     }
 

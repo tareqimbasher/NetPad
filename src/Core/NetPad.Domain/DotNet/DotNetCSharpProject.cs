@@ -147,34 +147,42 @@ public class DotNetCSharpProject
 
     public Task AddReferenceAsync(Reference reference)
     {
-        if (reference is AssemblyReference assemblyReference)
+        if (reference is AssemblyFileReference assemblyFileReference)
         {
-            return AddAssemblyReferenceAsync(assemblyReference);
+            return AddAssemblyFileReferenceAsync(assemblyFileReference);
         }
-        else if (reference is PackageReference packageReference)
+
+        if (reference is AssemblyImageReference assemblyImageReference)
+        {
+            return AddAssemblyImageReferenceAsync(assemblyImageReference);
+        }
+
+        if (reference is PackageReference packageReference)
         {
             return AddPackageAsync(packageReference);
         }
-        else
-        {
-            throw new InvalidOperationException($"Unhandled reference type.");
-        }
+
+        throw new InvalidOperationException("Unhandled reference type.");
     }
 
     public Task RemoveReferenceAsync(Reference reference)
     {
-        if (reference is AssemblyReference assemblyReference)
+        if (reference is AssemblyFileReference assemblyFileReference)
         {
-            return RemoveAssemblyReferenceAsync(assemblyReference);
+            return RemoveAssemblyFileReferenceAsync(assemblyFileReference);
         }
-        else if (reference is PackageReference packageReference)
+
+        if (reference is AssemblyImageReference assemblyImageReference)
+        {
+            return RemoveAssemblyImageReferenceAsync(assemblyImageReference);
+        }
+
+        if (reference is PackageReference packageReference)
         {
             return RemovePackageAsync(packageReference);
         }
-        else
-        {
-            throw new InvalidOperationException($"Unhandled reference type.");
-        }
+
+        throw new InvalidOperationException("Unhandled reference type.");
     }
 
     public async Task AddReferencesAsync(IEnumerable<Reference> references)
@@ -194,11 +202,11 @@ public class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Adds an assembly reference to the project.
+    /// Adds an assembly file reference to the project.
     /// </summary>
     /// <param name="reference">The assembly reference to add.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task AddAssemblyReferenceAsync(AssemblyReference reference)
+    public virtual async Task AddAssemblyFileReferenceAsync(AssemblyFileReference reference)
     {
         if (_references.Contains(reference))
         {
@@ -211,40 +219,7 @@ public class DotNetCSharpProject
         {
             string assemblyPath = reference.AssemblyPath;
 
-            var xmlDoc = XDocument.Load(ProjectFilePath);
-
-            var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-            if (root == null)
-            {
-                throw new FormatException("Project XML file is not formatted correctly.");
-            }
-
-            // Check if it is already added
-            if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
-            {
-                return;
-            }
-
-            var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
-
-            if (referenceGroup == null)
-            {
-                referenceGroup = new XElement("ItemGroup");
-                root.Add(referenceGroup);
-            }
-
-            var referenceElement = new XElement("Reference");
-
-            referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
-
-            var hintPathElement = new XElement("HintPath");
-            hintPathElement.SetValue(assemblyPath);
-            referenceElement.Add(hintPathElement);
-
-            referenceGroup.Add(referenceElement);
-
-            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+            await AddAssemblyToProjectAsync(assemblyPath);
 
             _references.Add(reference);
         }
@@ -255,11 +230,11 @@ public class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Removes an assembly reference from the project.
+    /// Removes an assembly file reference from the project.
     /// </summary>
     /// <param name="reference">The assembly reference to remove.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task RemoveAssemblyReferenceAsync(AssemblyReference reference)
+    public virtual async Task RemoveAssemblyFileReferenceAsync(AssemblyFileReference reference)
     {
         if (!_references.Contains(reference))
         {
@@ -272,25 +247,72 @@ public class DotNetCSharpProject
         {
             var assemblyPath = reference.AssemblyPath;
 
-            var xmlDoc = XDocument.Load(ProjectFilePath);
+            await RemoveAssemblyFromProjectAsync(assemblyPath);
 
-            var root = xmlDoc.Elements("Project").FirstOrDefault();
+            _references.Remove(reference);
+        }
+        finally
+        {
+            _projectFileLock.Release();
+        }
+    }
 
-            if (root == null)
-            {
-                throw new FormatException("Project XML file is not formatted correctly.");
-            }
+    /// <summary>
+    /// Adds an assembly image reference to the project.
+    /// </summary>
+    /// <param name="reference">The assembly reference to add.</param>
+    /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
+    public virtual async Task AddAssemblyImageReferenceAsync(AssemblyImageReference reference)
+    {
+        if (_references.Contains(reference))
+        {
+            return;
+        }
 
-            var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
+        await _projectFileLock.WaitAsync();
 
-            if (referenceElementToRemove == null)
-            {
-                return;
-            }
+        try
+        {
+            var assemblyImage = reference.AssemblyImage;
 
-            referenceElementToRemove.Remove();
+            var assemblyPath = Path.Combine(ProjectDirectoryPath, assemblyImage.ConstructAssemblyFileName());
 
-            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+            await File.WriteAllBytesAsync(assemblyPath, assemblyImage.Image);
+
+            await AddAssemblyToProjectAsync(assemblyPath);
+
+            _references.Add(reference);
+        }
+        finally
+        {
+            _projectFileLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Removes an assembly image reference to the project.
+    /// </summary>
+    /// <param name="reference">The assembly reference to remove.</param>
+    /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
+    public virtual async Task RemoveAssemblyImageReferenceAsync(AssemblyImageReference reference)
+    {
+        if (!_references.Contains(reference))
+        {
+            return;
+        }
+
+        await _projectFileLock.WaitAsync();
+
+        try
+        {
+            var assemblyImage = reference.AssemblyImage;
+
+            var assemblyPath = Path.Combine(ProjectDirectoryPath, assemblyImage.ConstructAssemblyFileName());
+
+            if (File.Exists(assemblyPath))
+                File.Delete(assemblyPath);
+
+            await RemoveAssemblyFromProjectAsync(assemblyPath);
 
             _references.Remove(reference);
         }
@@ -403,6 +425,67 @@ public class DotNetCSharpProject
         {
             _projectFileLock.Release();
         }
+    }
+
+    private async Task AddAssemblyToProjectAsync(string assemblyPath)
+    {
+        var xmlDoc = XDocument.Load(ProjectFilePath);
+
+        var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+        if (root == null)
+        {
+            throw new FormatException("Project XML file is not formatted correctly.");
+        }
+
+        // Check if it is already added
+        if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
+        {
+            return;
+        }
+
+        var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
+
+        if (referenceGroup == null)
+        {
+            referenceGroup = new XElement("ItemGroup");
+            root.Add(referenceGroup);
+        }
+
+        var referenceElement = new XElement("Reference");
+
+        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
+
+        var hintPathElement = new XElement("HintPath");
+        hintPathElement.SetValue(assemblyPath);
+        referenceElement.Add(hintPathElement);
+
+        referenceGroup.Add(referenceElement);
+
+        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+    }
+
+    private async Task RemoveAssemblyFromProjectAsync(string assemblyPath)
+    {
+        var xmlDoc = XDocument.Load(ProjectFilePath);
+
+        var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+        if (root == null)
+        {
+            throw new FormatException("Project XML file is not formatted correctly.");
+        }
+
+        var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
+
+        if (referenceElementToRemove == null)
+        {
+            return;
+        }
+
+        referenceElementToRemove.Remove();
+
+        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
     }
 
     private XElement? FindAssemblyReferenceElement(string assemblyPath, XDocument xmlDoc)

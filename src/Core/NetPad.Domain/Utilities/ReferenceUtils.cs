@@ -14,9 +14,9 @@ public static class ReferenceUtils
 
         foreach (var reference in references.Distinct())
         {
-            if (reference is AssemblyReference assemblyReference && assemblyReference.AssemblyPath != null)
+            if (reference is AssemblyFileReference assemblyFileReference && assemblyFileReference.AssemblyPath != null)
             {
-                assemblyPaths.Add(assemblyReference.AssemblyPath);
+                assemblyPaths.Add(assemblyFileReference.AssemblyPath);
             }
             else if (reference is PackageReference packageReference)
             {

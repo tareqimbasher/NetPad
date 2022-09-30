@@ -13,11 +13,11 @@ internal static class EntityFrameworkUtils
 {
     public static DatabaseStructure GetDatabaseStructure(this DbContext dbContext)
     {
-        var dbSets = dbContext.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Static)
-            .Where(p => p.PropertyType.IsOfGenericType(typeof(IQueryable<>)))
+        var dbSets = dbContext.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.PropertyType.IsOfGenericType(typeof(DbSet<>)))
             .Select(p => new
             {
-                p.Name,
+                Name = p.Name.TrimEnd('_'),
                 ElementType = p.PropertyType.GenericTypeArguments.First()
             }).ToDictionary(k => k.ElementType, v => v.Name);
 

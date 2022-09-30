@@ -35,20 +35,7 @@ public static class EntityFrameworkPackageUtils
 
     public static async Task<string?> GetEntityFrameworkDesignVersionAsync(IPackageProvider packageProvider)
     {
-        const string packageName = "Microsoft.EntityFrameworkCore.Design";
-
-        if (_versionCache.TryGetValue(packageName, out var version))
-            return version;
-
-        var versions = await packageProvider.GetPackageVersionsAsync(packageName);
-
-        var latestVersion = versions
-            .Select(v => Version.TryParse(v, out var parsed) ? parsed : null)
-            .Where(v => v?.Major == BadGlobals.DotNetVersion)
-            .MaxBy(v => v!.ToString())?
-            .ToString();
-
-        _versionCache.TryAdd(packageName, latestVersion);
-        return latestVersion;
+        // So it depends on the same EF Core version the app is using
+        return BadGlobals.EntityFrameworkLibVersion;
     }
 }

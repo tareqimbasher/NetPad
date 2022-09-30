@@ -20,7 +20,7 @@ export class DataConnectionViewModel {
     public get loadingMessage(): string | null {
         if (this.resourceLoading.size > 0) {
             const onlyLoadingAssembly = this.resourceLoading.size == 1 && Array.from(this.resourceLoading)[0] === "Assembly";
-            return onlyLoadingAssembly ? "Loading" : "Scaffolding";
+            return onlyLoadingAssembly ? "Compiling" : "Scaffolding";
         }
 
         return this.loadingStructure ? "Loading" : null

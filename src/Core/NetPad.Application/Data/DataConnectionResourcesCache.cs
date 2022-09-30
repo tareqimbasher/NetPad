@@ -32,7 +32,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         _cache.Remove(dataConnectionId, out _);
     }
 
-    public Task<SourceCodeCollection> GetSourceGeneratedCodeAsync(DataConnection dataConnection)
+    public Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection)
     {
         if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.SourceCode != null)
         {
@@ -51,7 +51,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.SourceCode));
 
-            resources.SourceCode = Task.Run<SourceCodeCollection>(async () =>
+            resources.SourceCode = Task.Run<DataConnectionSourceCode>(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
                 return await generator.GenerateSourceCodeAsync(dataConnection);
@@ -75,7 +75,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         }
     }
 
-    public Task<byte[]?> GetAssemblyAsync(DataConnection dataConnection)
+    public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection)
     {
         if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.Assembly != null)
         {
@@ -94,12 +94,10 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.Assembly));
 
-            resources.Assembly = Task.Run<byte[]?>(async () =>
+            resources.Assembly = Task.Run(async () =>
             {
-                var sourceCode = await GetSourceGeneratedCodeAsync(dataConnection);
-
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GenerateAssemblyAsync(dataConnection, sourceCode);
+                return await generator.GenerateAssemblyAsync(dataConnection);
             });
 
             resources.Assembly.ContinueWith(task =>

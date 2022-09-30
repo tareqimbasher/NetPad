@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NetPad.Compilation;
 using NetPad.DotNet;
-using NetPad.Scripts;
 
 namespace NetPad.Runtimes;
 

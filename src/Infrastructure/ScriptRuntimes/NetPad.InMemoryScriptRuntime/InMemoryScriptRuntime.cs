@@ -62,7 +62,7 @@ namespace NetPad.Runtimes
         {
             try
             {
-                var (success, assemblyBytes, referenceAssemblyPaths, parsingResult) = await CompileAndGetRefAssemblyPathsAsync(runOptions);
+                var (success, assemblyBytes, referenceAssemblyImages, referenceAssemblyPaths, parsingResult) = await CompileAndGetReferencesAsync(runOptions);
 
                 if (!success)
                     return RunResult.RunAttemptFailure();
@@ -70,6 +70,7 @@ namespace NetPad.Runtimes
                 var (alcWeakRef, completionSuccess, elapsedMs) = await ExecuteInMemoryAndUnloadAsync(
                     _serviceScope!,
                     assemblyBytes,
+                    referenceAssemblyImages,
                     referenceAssemblyPaths,
                     parsingResult.ParsedCodeInformation,
                     _outputWriter
@@ -102,14 +103,25 @@ namespace NetPad.Runtimes
             _outputListeners.Remove(outputWriter);
         }
 
-        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
-            CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
+        private async Task<(
+            bool success,
+            byte[] assemblyBytes,
+            AssemblyImage[] referenceAssemblyImages,
+            string[] referenceAssemblyPaths,
+            CodeParsingResult parsingResult)> CompileAndGetReferencesAsync(RunOptions runOptions)
         {
             var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
             {
                 IncludedCode = runOptions.SpecificCodeToRun,
                 AdditionalCode = runOptions.AdditionalCode
             });
+
+            var referenceAssemblyImages = new List<AssemblyImage>();
+            foreach (var additionalReference in runOptions.AdditionalReferences)
+            {
+                if (additionalReference is AssemblyImageReference assemblyImageReference)
+                    referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
+            }
 
             var referenceAssemblyPaths = await _script.Config.References
                 .Union(runOptions.AdditionalReferences)
@@ -119,8 +131,11 @@ namespace NetPad.Runtimes
                 .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
                 .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
 
-            var compilationResult = _codeCompiler.Compile(
-                new CompilationInput(fullProgram, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
+            var compilationResult = _codeCompiler.Compile(new CompilationInput(
+                    fullProgram,
+                    referenceAssemblyImages.Select(a => a.Image),
+                    referenceAssemblyPaths)
+                .WithOutputAssemblyNameTag(_script.Name));
 
             if (!compilationResult.Success)
             {
@@ -128,23 +143,23 @@ namespace NetPad.Runtimes
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
                     .JoinToString("\n") + "\n");
 
-                return (false, Array.Empty<byte>(), Array.Empty<string>(), parsingResult);
+                return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>(), parsingResult);
             }
 
-            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray(), parsingResult);
+            return (true, compilationResult.AssemblyBytes, referenceAssemblyImages.ToArray(), referenceAssemblyPaths.ToArray(), parsingResult);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteInMemoryAndUnloadAsync(
-            IServiceScope serviceScope,
+        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteInMemoryAndUnloadAsync(IServiceScope serviceScope,
             byte[] targetAssembly,
+            AssemblyImage[] assemblyReferenceImages,
             string[] referenceAssemblyPaths,
             ParsedCodeInformation parsedCodeInformation,
-            IOutputWriter outputWriter
-        )
+            IOutputWriter outputWriter)
         {
             using var scope = serviceScope.ServiceProvider.CreateScope();
             using var assemblyLoader = new UnloadableAssemblyLoader(
+                assemblyReferenceImages,
                 referenceAssemblyPaths,
                 scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
             );

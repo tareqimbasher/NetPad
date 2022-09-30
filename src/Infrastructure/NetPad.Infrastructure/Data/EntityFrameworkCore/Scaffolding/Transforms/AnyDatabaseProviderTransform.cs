@@ -10,17 +10,34 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 {
     public void Transform(ScaffoldedDatabaseModel model)
     {
-        MakeDbContextGeneric(model.DbContextFile);
+        AddAndUseGenericDbContext(model.DbContextFile);
         EnsureTableMappingsForAllEntities(model.DbContextFile);
     }
 
-    private void MakeDbContextGeneric(ScaffoldedSourceFile dbContextFile)
+    private void AddAndUseGenericDbContext(ScaffoldedSourceFile dbContextFile)
     {
         if (dbContextFile.Code == null) return;
 
         var sb = new StringBuilder(dbContextFile.Code);
+
+        // Convert he existing DbContext to a generic class
         sb.Replace($"partial class {dbContextFile.ClassName} : DbContext", $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
         sb.Replace($"DbContextOptions<{dbContextFile.ClassName}>", "DbContextOptions<TContext>");
+
+        // Add a non-generic DbContext that inherits from the new generic DbContext
+        sb.AppendLine($@"
+public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbContextFile.ClassName}>
+{{
+    public {dbContextFile.ClassName}()
+    {{
+    }}
+
+    public {dbContextFile.ClassName}(DbContextOptions<{dbContextFile.ClassName}> options)
+        : base(options)
+    {{
+    }}
+}}
+");
 
         dbContextFile.SetCode(sb.ToString());
     }

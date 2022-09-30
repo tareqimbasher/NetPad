@@ -4,9 +4,9 @@ using NetPad.Exceptions;
 
 namespace NetPad.DotNet
 {
-    public class AssemblyReference : Reference
+    public class AssemblyFileReference : Reference
     {
-        public AssemblyReference(string assemblyPath)
+        public AssemblyFileReference(string assemblyPath)
             : base(!string.IsNullOrWhiteSpace(assemblyPath) ? Path.GetFileName(assemblyPath) : "(Unknown)")
         {
             AssemblyPath = assemblyPath ?? throw new ArgumentNullException(nameof(assemblyPath));

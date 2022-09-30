@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -19,26 +20,29 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 {
     private readonly Settings _settings;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly Lazy<IDataConnectionResourcesCache> _dataConnectionResourcesCache;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
 
     public EntityFrameworkResourcesGenerator(
+        Lazy<IDataConnectionResourcesCache> dataConnectionResourcesCache,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         Settings settings,
         ILoggerFactory loggerFactory)
     {
+        _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _settings = settings;
         _loggerFactory = loggerFactory;
     }
 
-    public async Task<SourceCodeCollection> GenerateSourceCodeAsync(DataConnection dataConnection)
+    public async Task<DataConnectionSourceCode> GenerateSourceCodeAsync(DataConnection dataConnection)
     {
         if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
-            return new SourceCodeCollection();
+            return new DataConnectionSourceCode();
         }
 
         var scaffolder = new EntityFrameworkDatabaseScaffolder(
@@ -49,26 +53,30 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         var model = await scaffolder.ScaffoldAsync();
 
-        var code = new SourceCodeCollection(model.SourceFiles);
+        var applicationCode = GenerateApplicationCode(model);
 
-        code.Add(GenerateUtilityCode(model));
-
-        return code;
+        return new DataConnectionSourceCode()
+        {
+            DataAccessCode = new SourceCodeCollection(model.SourceFiles),
+            ApplicationCode = applicationCode
+        };
     }
 
-    public async Task<byte[]?> GenerateAssemblyAsync(DataConnection dataConnection, SourceCodeCollection sourceCode)
+    public async Task<AssemblyImage?> GenerateAssemblyAsync(DataConnection dataConnection)
     {
         if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
             return null;
         }
 
-        if (!sourceCode.Any())
+        var sourceCode = await _dataConnectionResourcesCache.Value.GetSourceGeneratedCodeAsync(dataConnection);
+
+        if (!sourceCode.DataAccessCode.Any())
         {
             return null;
         }
 
-        var result = await CompileNewAssemblyAsync(efDbConnection, sourceCode);
+        var result = await CompileNewAssemblyAsync(efDbConnection, sourceCode.DataAccessCode);
 
         if (!result.Success)
         {
@@ -76,7 +84,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
                                 $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
         }
 
-        return result.AssemblyBytes;
+        return new AssemblyImage(new AssemblyName(result.AssemblyName), result.AssemblyBytes);
     }
 
     public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
@@ -95,7 +103,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
             efDbConnection.EntityFrameworkProviderName,
             efDbConnection.EntityFrameworkProviderName,
             await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_packageProvider, efDbConnection.EntityFrameworkProviderName)
-                ?? throw new Exception($"Could not find a version for entity framework provider: '{efDbConnection.EntityFrameworkProviderName}'")
+            ?? throw new Exception($"Could not find a version for entity framework provider: '{efDbConnection.EntityFrameworkProviderName}'")
         ));
 
         return references.ToArray();
@@ -103,22 +111,23 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
     private async Task<CompilationResult> CompileNewAssemblyAsync(EntityFrameworkDatabaseConnection efConnection, SourceCodeCollection sourceCode)
     {
-        var references = new HashSet<string>();
+        var locationReferences = new HashSet<string>();
 
         var requiredReferences = await GetRequiredReferencesAsync(efConnection);
-        references.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
+        locationReferences.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
 
         var code = sourceCode.GetText();
 
         return _codeCompiler.Compile(new CompilationInput(
                 code,
-                references)
+                null,
+                locationReferences)
             .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
             .WithOutputAssemblyNameTag($"data-connection_{efConnection.Id}")
         );
     }
 
-    private SourceCode GenerateUtilityCode(ScaffoldedDatabaseModel model)
+    private SourceCodeCollection GenerateApplicationCode(ScaffoldedDatabaseModel model)
     {
         // We want to add utility code to a partial Program class that can be used to augment the Program class in scripts.
         // The goal is to accomplish the following items, mainly for convenience while writing scripts:
@@ -132,11 +141,11 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         //    Why? - This makes it easy for users to just type in the name of the table/DbSet (ex: "Authors") in their query
         //           instead of having to do something like "DbContext.Authors"
 
-        var utilCode = new StringBuilder();
+        var code = new StringBuilder();
 
         // 1. Make the Program class inherit the generated DbContext
         var dbContext = model.DbContextFile;
-        utilCode.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
+        code.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
             .AppendLine("{")
             .AppendLine(@"
     public Program()
@@ -148,7 +157,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
     }");
 
         // 2. Add the DbContext property
-        utilCode
+        code
             .AppendLine("\tprivate static Program? _program;")
             .AppendLine(@"
     /// <summary>
@@ -175,13 +184,13 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
             var entityType = parts[0].SubstringBetween("<", ">");
             var propertyName = parts[1];
-            var dbContextPropertyName = $"{propertyName}DbSet";
+            var dbContextPropertyName = $"{propertyName}_";
 
             programProperties.Add($@"
     /// <summary>
     /// The {propertyName} table (DbSet).
     /// </summary>
-    private static System.Linq.IQueryable<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
+    public static System.Linq.IQueryable<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
 
             // Rename property on DbContext
             dbContextCodeLines[iLine] = line.Replace(propertyName, dbContextPropertyName);
@@ -190,11 +199,13 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         // Replace the DbContext code since we modified it above when renaming properties
         dbContext.SetCode(dbContextCodeLines.JoinToString(Environment.NewLine));
 
-        utilCode.AppendJoin(Environment.NewLine, programProperties)
+        code.AppendJoin(Environment.NewLine, programProperties)
             .AppendLine()
             .AppendLine("}");
 
-        // Add a new code file for this utility class
-        return new SourceCode(utilCode.ToString());
+        var applicationCode = new SourceCode(code.ToString());
+        applicationCode.AddNamespace("Microsoft.EntityFrameworkCore");
+
+        return new SourceCodeCollection(new[] { applicationCode });
     }
 }

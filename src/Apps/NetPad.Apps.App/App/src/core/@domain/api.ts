@@ -1942,8 +1942,13 @@ export abstract class Reference implements IReference {
 
     static fromJS(data: any): Reference {
         data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "AssemblyReference") {
-            let result = new AssemblyReference();
+        if (data["discriminator"] === "AssemblyFileReference") {
+            let result = new AssemblyFileReference();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "AssemblyImageReference") {
+            let result = new AssemblyImageReference();
             result.init(data);
             return result;
         }
@@ -1971,12 +1976,12 @@ export interface IReference {
     title: string;
 }
 
-export class AssemblyReference extends Reference implements IAssemblyReference {
+export class AssemblyFileReference extends Reference implements IAssemblyFileReference {
     assemblyPath!: string;
 
-    constructor(data?: IAssemblyReference) {
+    constructor(data?: IAssemblyFileReference) {
         super(data);
-        this._discriminator = "AssemblyReference";
+        this._discriminator = "AssemblyFileReference";
     }
 
     init(_data?: any) {
@@ -1986,9 +1991,9 @@ export class AssemblyReference extends Reference implements IAssemblyReference {
         }
     }
 
-    static fromJS(data: any): AssemblyReference {
+    static fromJS(data: any): AssemblyFileReference {
         data = typeof data === 'object' ? data : {};
-        let result = new AssemblyReference();
+        let result = new AssemblyFileReference();
         result.init(data);
         return result;
     }
@@ -2000,16 +2005,254 @@ export class AssemblyReference extends Reference implements IAssemblyReference {
         return data;
     }
 
-    clone(): AssemblyReference {
+    clone(): AssemblyFileReference {
         const json = this.toJSON();
-        let result = new AssemblyReference();
+        let result = new AssemblyFileReference();
         result.init(json);
         return result;
     }
 }
 
-export interface IAssemblyReference extends IReference {
+export interface IAssemblyFileReference extends IReference {
     assemblyPath: string;
+}
+
+export class AssemblyImageReference extends Reference implements IAssemblyImageReference {
+    assemblyImage!: AssemblyImage;
+
+    constructor(data?: IAssemblyImageReference) {
+        super(data);
+        if (!data) {
+            this.assemblyImage = new AssemblyImage();
+        }
+        this._discriminator = "AssemblyImageReference";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.assemblyImage = _data["assemblyImage"] ? AssemblyImage.fromJS(_data["assemblyImage"]) : new AssemblyImage();
+        }
+    }
+
+    static fromJS(data: any): AssemblyImageReference {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyImageReference();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["assemblyImage"] = this.assemblyImage ? this.assemblyImage.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AssemblyImageReference {
+        const json = this.toJSON();
+        let result = new AssemblyImageReference();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyImageReference extends IReference {
+    assemblyImage: AssemblyImage;
+}
+
+export class AssemblyImage implements IAssemblyImage {
+    assemblyName!: AssemblyName;
+    image!: string;
+
+    constructor(data?: IAssemblyImage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.assemblyName = new AssemblyName();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.assemblyName = _data["assemblyName"] ? AssemblyName.fromJS(_data["assemblyName"]) : new AssemblyName();
+            this.image = _data["image"];
+        }
+    }
+
+    static fromJS(data: any): AssemblyImage {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyImage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["assemblyName"] = this.assemblyName ? this.assemblyName.toJSON() : <any>undefined;
+        data["image"] = this.image;
+        return data;
+    }
+
+    clone(): AssemblyImage {
+        const json = this.toJSON();
+        let result = new AssemblyImage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyImage {
+    assemblyName: AssemblyName;
+    image: string;
+}
+
+export class AssemblyName implements IAssemblyName {
+    name?: string | undefined;
+    version?: string | undefined;
+    cultureInfo?: string | undefined;
+    cultureName?: string | undefined;
+    codeBase?: string | undefined;
+    escapedCodeBase?: string | undefined;
+    processorArchitecture!: ProcessorArchitecture;
+    contentType!: AssemblyContentType;
+    flags!: AssemblyNameFlags;
+    hashAlgorithm!: AssemblyHashAlgorithm;
+    versionCompatibility!: AssemblyVersionCompatibility;
+    keyPair?: StrongNameKeyPair | undefined;
+    fullName!: string;
+
+    constructor(data?: IAssemblyName) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.version = _data["version"];
+            this.cultureInfo = _data["cultureInfo"];
+            this.cultureName = _data["cultureName"];
+            this.codeBase = _data["codeBase"];
+            this.escapedCodeBase = _data["escapedCodeBase"];
+            this.processorArchitecture = _data["processorArchitecture"];
+            this.contentType = _data["contentType"];
+            this.flags = _data["flags"];
+            this.hashAlgorithm = _data["hashAlgorithm"];
+            this.versionCompatibility = _data["versionCompatibility"];
+            this.keyPair = _data["keyPair"] ? StrongNameKeyPair.fromJS(_data["keyPair"]) : <any>undefined;
+            this.fullName = _data["fullName"];
+        }
+    }
+
+    static fromJS(data: any): AssemblyName {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyName();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["version"] = this.version;
+        data["cultureInfo"] = this.cultureInfo;
+        data["cultureName"] = this.cultureName;
+        data["codeBase"] = this.codeBase;
+        data["escapedCodeBase"] = this.escapedCodeBase;
+        data["processorArchitecture"] = this.processorArchitecture;
+        data["contentType"] = this.contentType;
+        data["flags"] = this.flags;
+        data["hashAlgorithm"] = this.hashAlgorithm;
+        data["versionCompatibility"] = this.versionCompatibility;
+        data["keyPair"] = this.keyPair ? this.keyPair.toJSON() : <any>undefined;
+        data["fullName"] = this.fullName;
+        return data;
+    }
+
+    clone(): AssemblyName {
+        const json = this.toJSON();
+        let result = new AssemblyName();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyName {
+    name?: string | undefined;
+    version?: string | undefined;
+    cultureInfo?: string | undefined;
+    cultureName?: string | undefined;
+    codeBase?: string | undefined;
+    escapedCodeBase?: string | undefined;
+    processorArchitecture: ProcessorArchitecture;
+    contentType: AssemblyContentType;
+    flags: AssemblyNameFlags;
+    hashAlgorithm: AssemblyHashAlgorithm;
+    versionCompatibility: AssemblyVersionCompatibility;
+    keyPair?: StrongNameKeyPair | undefined;
+    fullName: string;
+}
+
+export type ProcessorArchitecture = "None" | "MSIL" | "X86" | "IA64" | "Amd64" | "Arm";
+
+export type AssemblyContentType = "Default" | "WindowsRuntime";
+
+export type AssemblyNameFlags = "None" | "PublicKey" | "Retargetable" | "EnableJITcompileOptimizer" | "EnableJITcompileTracking";
+
+export type AssemblyHashAlgorithm = "None" | "MD5" | "SHA1" | "SHA256" | "SHA384" | "SHA512";
+
+export type AssemblyVersionCompatibility = "SameMachine" | "SameProcess" | "SameDomain";
+
+export class StrongNameKeyPair implements IStrongNameKeyPair {
+    publicKey!: string;
+
+    constructor(data?: IStrongNameKeyPair) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.publicKey = _data["publicKey"];
+        }
+    }
+
+    static fromJS(data: any): StrongNameKeyPair {
+        data = typeof data === 'object' ? data : {};
+        let result = new StrongNameKeyPair();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["publicKey"] = this.publicKey;
+        return data;
+    }
+
+    clone(): StrongNameKeyPair {
+        const json = this.toJSON();
+        let result = new StrongNameKeyPair();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IStrongNameKeyPair {
+    publicKey: string;
 }
 
 export class PackageReference extends Reference implements IPackageReference {

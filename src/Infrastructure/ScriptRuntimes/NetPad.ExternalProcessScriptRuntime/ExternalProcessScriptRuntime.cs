@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
-using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
@@ -93,16 +92,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             File.Copy(referenceAssemblyPath, Path.Combine(dir, Path.GetFileName(referenceAssemblyPath)), true);
         }
 
-        _processHandler = new IO.ProcessHandler("dotnet", assemblyFullPath);
+        _processHandler = new ProcessHandler("dotnet", assemblyFullPath);
         _processHandler.Init();
-        _processHandler.ProcessIO!.OnOutputReceivedHandlers.Add(async (t) =>
-        {
-            await _outputWriter.WriteAsync(t);
-        });
-        _processHandler.ProcessIO!.OnErrorReceivedHandlers.Add(async (t) =>
-        {
-            await _outputWriter.WriteAsync(t);
-        });
+        _processHandler.ProcessIO!.OnOutputReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
+        _processHandler.ProcessIO!.OnErrorReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
 
         var start = DateTime.Now;
 
@@ -121,7 +114,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             .Replace("Console.Write", "Program.OutputWrite");
 
         var compilationResult = _codeCompiler.Compile(
-            new CompilationInput(fullProgram, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
+            new CompilationInput(fullProgram, null, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
 
         if (!compilationResult.Success)
         {

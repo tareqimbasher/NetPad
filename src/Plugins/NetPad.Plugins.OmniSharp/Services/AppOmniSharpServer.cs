@@ -188,22 +188,14 @@ public class AppOmniSharpServer
         {
             Task.Run(async () =>
             {
-                int maxIterations = 3;
-                for (int i = 1; i <= maxIterations; i++)
-                {
+                await Task.Delay(3000);
+
+                bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
+                                                            || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
+                if (shouldUpdateDataConnectionCodeBuffer)
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
+                else
                     await UpdateOmniSharpCodeBufferAsync();
-
-                    if (i == maxIterations)
-                    {
-                        bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
-                                                                    || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
-
-                        if (shouldUpdateDataConnectionCodeBuffer)
-                            await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
-                    }
-
-                    await Task.Delay(500);
-                }
             });
         }
     }
@@ -342,7 +334,18 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
     {
-        await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, _dataConnectionResourcesCache);
+        List<Reference> references = new List<Reference>();
+
+        if (dataConnection != null)
+        {
+            references.AddRange(await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection));
+
+            var assembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection);
+            if (assembly != null)
+                references.Add(new AssemblyImageReference(assembly));
+        }
+
+        await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
 
         var sourceCode = dataConnection == null
@@ -351,14 +354,15 @@ public class AppOmniSharpServer
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
 
         // Needed to trigger diagnostics and semantic highlighting for script file
+        await Task.Delay(1000);
         await UpdateOmniSharpCodeBufferAsync();
 
         await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
 
-    private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<SourceCodeCollection>? sourceCodeTask)
+    private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<DataConnectionSourceCode>? sourceCodeTask)
     {
-        SourceCodeCollection? sourceCode = null;
+        DataConnectionSourceCode? sourceCode = null;
         if (sourceCodeTask != null)
         {
             sourceCode = await sourceCodeTask;
@@ -368,8 +372,8 @@ public class AppOmniSharpServer
 
         if (sourceCode != null)
         {
-            var namespaces = string.Join("\n", sourceCode.GetAllNamespaces().Select(ns => $"global using {ns};"));
-            dataConnectionProgramCode = $"{namespaces}\n\n{sourceCode.GetAllCode()}";
+            var namespaces = string.Join("\n", sourceCode.ApplicationCode.GetAllNamespaces().Select(ns => $"global using {ns};"));
+            dataConnectionProgramCode = $"{namespaces}\n\n{sourceCode.ApplicationCode.GetAllCode()}";
         }
 
         await UpdateBufferAsync(_project.DataConnectionProgramFilePath, dataConnectionProgramCode);
@@ -390,15 +394,16 @@ public class AppOmniSharpServer
     private async Task UpdateBufferAsync(string filePath, string? buffer)
     {
         var semaphore = _bufferUpdateSemaphores.GetOrAdd(filePath, key => new SemaphoreSlim(1, 1));
-
         await semaphore.WaitAsync();
 
         try
         {
+            buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
+
             await OmniSharpServer.SendAsync(new UpdateBufferRequest
             {
                 FileName = filePath,
-                Buffer = buffer ?? string.Empty
+                Buffer = buffer
             });
         }
         finally

@@ -26,13 +26,13 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
             throw new InvalidOperationException("Cannot get structure except on Entity Framework database connections.");
         }
 
-        var assemblyBytes = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection);
-        if (assemblyBytes == null)
+        var assemblyImage = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection);
+        if (assemblyImage == null)
         {
             return new DatabaseStructure(dbConnection.DatabaseName ?? string.Empty);
         }
 
-        var assembly = _assemblyLoader.LoadFrom(assemblyBytes);
+        var assembly = _assemblyLoader.LoadFrom(assemblyImage.Image);
 
         var dbContextType = assembly.GetExportedTypes().FirstOrDefault(x => typeof(DbContext).IsAssignableFrom(x) && x.BaseType != typeof(DbContext));
         if (dbContextType == null)

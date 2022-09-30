@@ -18,14 +18,14 @@ public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
     {
     }
 
-    public Task<byte[]?> GetAssemblyAsync(DataConnection dataConnection)
+    public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection)
     {
-        return Task.FromResult<byte[]?>(null);
+        return Task.FromResult<AssemblyImage?>(null);
     }
 
-    public Task<SourceCodeCollection> GetSourceGeneratedCodeAsync(DataConnection dataConnection)
+    public Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection)
     {
-        return Task.FromResult(new SourceCodeCollection());
+        return Task.FromResult(new DataConnectionSourceCode());
     }
 
     public Task<IEnumerable<Reference>> GetRequiredReferencesAsync(DataConnection dataConnection)
