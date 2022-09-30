@@ -8,7 +8,8 @@ import {
     DataConnectionStore,
     IDataConnectionService,
     IEventBus,
-    IScriptService
+    IScriptService,
+    ISession
 } from "@domain";
 import {ContextMenuOptions, ViewModelBase} from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
@@ -20,6 +21,7 @@ export class DataConnectionsList extends ViewModelBase {
 
     constructor(
         private readonly element: HTMLElement,
+        @ISession private readonly session: ISession,
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @IScriptService private readonly scriptService: IScriptService,
         private readonly dataConnectionStore: DataConnectionStore,
@@ -31,14 +33,24 @@ export class DataConnectionsList extends ViewModelBase {
     public binding() {
         this.dataConnectionContextOptions = new ContextMenuOptions(".list-group-item.data-connection", [
             {
-                icon: "use-data-connection-new-script-icon",
-                text: "Use in New Script",
-                onSelected: async (target) => this.refresh(this.getElementOrParentDataConnectionId(target))
-            },
-            {
                 icon: "use-data-connection-current-script-icon",
                 text: "Use in Current Script",
-                onSelected: async (target) => this.refresh(this.getElementOrParentDataConnectionId(target))
+                onSelected: async (target) => {
+                    const active = this.session.active;
+                    if (!active) return;
+
+                    await this.scriptService.setDataConnection(active.script.id, this.getElementOrParentDataConnectionId(target));
+                }
+            },
+            {
+                icon: "use-data-connection-new-script-icon",
+                text: "Use in New Script",
+                onSelected: async (target) => {
+                    await this.scriptService.create(new CreateScriptDto({
+                        runImmediately: true,
+                        dataConnectionId: this.getElementOrParentDataConnectionId(target)
+                    }));
+                }
             },
             {
                 isDivider: true
