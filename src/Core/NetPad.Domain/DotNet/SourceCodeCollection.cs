@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NetPad.Compilation;
+namespace NetPad.DotNet;
 
 public class SourceCodeCollection<TSourceCode> : List<TSourceCode> where TSourceCode : SourceCode
 {
@@ -15,9 +15,9 @@ public class SourceCodeCollection<TSourceCode> : List<TSourceCode> where TSource
     {
     }
 
-    public HashSet<string> GetAllNamespaces()
+    public HashSet<Using> GetAllUsings()
     {
-        return this.SelectMany(s => s.Namespaces).ToHashSet();
+        return this.SelectMany(s => s.Usings).ToHashSet();
     }
 
     public string GetAllCode()
@@ -26,21 +26,19 @@ public class SourceCodeCollection<TSourceCode> : List<TSourceCode> where TSource
 
         foreach (var sourceCode in this)
         {
-            codeBuilder.AppendLine(sourceCode.Code);
+            codeBuilder.AppendLine(sourceCode.Code.ToCodeString());
             codeBuilder.AppendLine();
         }
 
         return codeBuilder.ToString();
     }
 
-    public string GetText(bool useGlobalUsings = false)
+    public string ToCodeString(bool useGlobalUsingNotation = false)
     {
         var codeBuilder = new StringBuilder();
 
-        string usingPrefix = useGlobalUsings ? "global " : "";
-
-        var usings = GetAllNamespaces()
-            .Select(ns => $"{usingPrefix}using {ns};");
+        var usings = GetAllUsings()
+            .Select(u => u.ToCodeString(useGlobalUsingNotation));
 
         codeBuilder.AppendJoin(Environment.NewLine, usings);
         codeBuilder.AppendLine();

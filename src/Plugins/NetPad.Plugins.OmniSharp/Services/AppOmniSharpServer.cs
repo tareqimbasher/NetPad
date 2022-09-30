@@ -318,16 +318,16 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
-        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code);
+        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code.Value);
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
     {
-        var namespaces = parsingResult.CombineSourceCode().GetAllNamespaces()
-            .Select(ns => $"global using {ns};")
+        var usings = parsingResult.CombineSourceCode().GetAllUsings()
+            .Select(u => u.ToCodeString(true))
             .JoinToString(Environment.NewLine);
 
-        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram.Code}";
+        var bootstrapperProgramCode = $"{usings}\n\n{parsingResult.BootstrapperProgram.Code.ToCodeString()}";
 
         await UpdateBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
     }
@@ -372,8 +372,7 @@ public class AppOmniSharpServer
 
         if (sourceCode != null)
         {
-            var namespaces = string.Join("\n", sourceCode.ApplicationCode.GetAllNamespaces().Select(ns => $"global using {ns};"));
-            dataConnectionProgramCode = $"{namespaces}\n\n{sourceCode.ApplicationCode.GetAllCode()}";
+            dataConnectionProgramCode = sourceCode.ApplicationCode.ToCodeString(true);
         }
 
         await UpdateBufferAsync(_project.DataConnectionProgramFilePath, dataConnectionProgramCode);
@@ -405,6 +404,8 @@ public class AppOmniSharpServer
                 FileName = filePath,
                 Buffer = buffer
             });
+
+            await File.WriteAllTextAsync(filePath, buffer);
         }
         finally
         {

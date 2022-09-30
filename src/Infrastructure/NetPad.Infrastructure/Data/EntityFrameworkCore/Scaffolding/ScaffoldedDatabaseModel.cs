@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using NetPad.Compilation;
+using NetPad.DotNet;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 

@@ -16,9 +16,9 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 
     private void AddAndUseGenericDbContext(ScaffoldedSourceFile dbContextFile)
     {
-        if (dbContextFile.Code == null) return;
+        if (dbContextFile.Code.Value == null) return;
 
-        var sb = new StringBuilder(dbContextFile.Code);
+        var sb = new StringBuilder(dbContextFile.Code.Value);
 
         // Convert he existing DbContext to a generic class
         sb.Replace($"partial class {dbContextFile.ClassName} : DbContext", $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
@@ -39,7 +39,7 @@ public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbCo
 }}
 ");
 
-        dbContextFile.SetCode(sb.ToString());
+        dbContextFile.Code.Update(sb.ToString());
     }
 
     private static void EnsureTableMappingsForAllEntities(ScaffoldedSourceFile dbContextFile)
@@ -50,8 +50,8 @@ public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbCo
         // that name to get the table name, unless a "entity.ToTable()" statement maps the DbSet to the
         // proper table name. Here we explicitly add the "entity.ToTable()" statement when it doesn't
         // already exist.
-        if (dbContextFile.Code == null) return;
-        var lines = dbContextFile.Code.Split(Environment.NewLine).ToList();
+        if (dbContextFile.Code.Value == null) return;
+        var lines = dbContextFile.Code.Value.Split(Environment.NewLine).ToList();
         var entityNameToDbSetName = new Dictionary<string, string>();
 
         for (int iLine = 0; iLine < lines.Count; iLine++)
@@ -88,6 +88,6 @@ public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbCo
             iLine += 2;
         }
 
-        dbContextFile.SetCode(lines.JoinToString(Environment.NewLine));
+        dbContextFile.Code.Update(lines.JoinToString(Environment.NewLine));
     }
 }

@@ -1,3 +1,5 @@
+using NetPad.DotNet;
+
 namespace NetPad.Compilation
 {
     public class CodeParsingResult
@@ -37,7 +39,7 @@ namespace NetPad.Compilation
 
         public string GetFullProgram()
         {
-            return CombineSourceCode().GetText();
+            return CombineSourceCode().ToCodeString();
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NetPad.Compilation;
+using NetPad.DotNet;
 using NetPad.Runtimes;
 
 namespace NetPad.Dtos;
@@ -20,14 +20,14 @@ public class RunOptionsDto
             SpecificCodeToRun = SpecificCodeToRun
         };
 
-        runOptions.AdditionalCode.AddRange(AdditionalCode.Select(c => new SourceCode(c.Code, c.Namespaces)));
+        runOptions.AdditionalCode.AddRange(AdditionalCode.Select(c => new SourceCode(c.Code, c.Usings)));
 
         return runOptions;
     }
 
     public class SourceCodeDto
     {
-        public HashSet<string> Namespaces { get; set; }
+        public HashSet<string> Usings { get; set; }
         public string? Code { get; set; }
     }
 }

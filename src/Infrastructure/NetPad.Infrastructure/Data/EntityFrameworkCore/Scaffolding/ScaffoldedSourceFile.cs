@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using NetPad.Compilation;
+using NetPad.DotNet;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 public class ScaffoldedSourceFile : SourceCode
 {
-    public ScaffoldedSourceFile(string path, string className, string code, IEnumerable<string> namespaces)
-        : base(code, namespaces)
+    public ScaffoldedSourceFile(string path, string className, string code, IEnumerable<string> usings)
+        : base(code, usings)
     {
         Path = path;
         ClassName = className;

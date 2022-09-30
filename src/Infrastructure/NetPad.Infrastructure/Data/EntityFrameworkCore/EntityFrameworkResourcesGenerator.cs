@@ -116,7 +116,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         var requiredReferences = await GetRequiredReferencesAsync(efConnection);
         locationReferences.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
 
-        var code = sourceCode.GetText();
+        var code = sourceCode.ToCodeString();
 
         return _codeCompiler.Compile(new CompilationInput(
                 code,
@@ -166,7 +166,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
     public static Program DataContext => _program ??= new Program();");
 
 
-        var dbContextCodeLines = dbContext.Code!.Split(Environment.NewLine).ToList();
+        var dbContextCodeLines = dbContext.Code.Value!.Split(Environment.NewLine).ToList();
 
         // 3. Add properties for all the generated DbSet's
         var programProperties = new List<string>();
@@ -197,14 +197,14 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         }
 
         // Replace the DbContext code since we modified it above when renaming properties
-        dbContext.SetCode(dbContextCodeLines.JoinToString(Environment.NewLine));
+        dbContext.Code.Update(dbContextCodeLines.JoinToString(Environment.NewLine));
 
         code.AppendJoin(Environment.NewLine, programProperties)
             .AppendLine()
             .AppendLine("}");
 
         var applicationCode = new SourceCode(code.ToString());
-        applicationCode.AddNamespace("Microsoft.EntityFrameworkCore");
+        applicationCode.AddUsing("Microsoft.EntityFrameworkCore");
 
         return new SourceCodeCollection(new[] { applicationCode });
     }

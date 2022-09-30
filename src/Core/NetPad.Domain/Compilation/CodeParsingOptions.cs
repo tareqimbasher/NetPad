@@ -1,3 +1,5 @@
+using NetPad.DotNet;
+
 namespace NetPad.Compilation;
 
 public class CodeParsingOptions

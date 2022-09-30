@@ -3120,7 +3120,7 @@ export interface IRunOptionsDto {
 }
 
 export class SourceCodeDto implements ISourceCodeDto {
-    namespaces!: string[];
+    usings!: string[];
     code?: string | undefined;
 
     constructor(data?: ISourceCodeDto) {
@@ -3131,16 +3131,16 @@ export class SourceCodeDto implements ISourceCodeDto {
             }
         }
         if (!data) {
-            this.namespaces = [];
+            this.usings = [];
         }
     }
 
     init(_data?: any) {
         if (_data) {
-            if (Array.isArray(_data["namespaces"])) {
-                this.namespaces = [] as any;
-                for (let item of _data["namespaces"])
-                    this.namespaces!.push(item);
+            if (Array.isArray(_data["usings"])) {
+                this.usings = [] as any;
+                for (let item of _data["usings"])
+                    this.usings!.push(item);
             }
             this.code = _data["code"];
         }
@@ -3155,10 +3155,10 @@ export class SourceCodeDto implements ISourceCodeDto {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.namespaces)) {
-            data["namespaces"] = [];
-            for (let item of this.namespaces)
-                data["namespaces"].push(item);
+        if (Array.isArray(this.usings)) {
+            data["usings"] = [];
+            for (let item of this.usings)
+                data["usings"].push(item);
         }
         data["code"] = this.code;
         return data;
@@ -3173,7 +3173,7 @@ export class SourceCodeDto implements ISourceCodeDto {
 }
 
 export interface ISourceCodeDto {
-    namespaces: string[];
+    usings: string[];
     code?: string | undefined;
 }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using NetPad.Compilation.CSharp;
+using NetPad.DotNet;
 using NetPad.Scripts;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,7 +31,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(script);
 
-            Assert.Equal(scriptNamespaces, parsingResult.UserProgram.Namespaces);
+            Assert.Equal(scriptNamespaces, parsingResult.UserProgram.Usings.Select(u => u.Value));
         }
 
         [Fact]
@@ -48,7 +49,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(script, parseOptions);
 
-            Assert.Equal(additionalNamespaces, parsingResult.AdditionalCodeProgram?.GetAllNamespaces());
+            Assert.Equal(additionalNamespaces, parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value));
         }
 
         [Fact]
@@ -75,7 +76,8 @@ namespace NetPad.Compilation.Tests.CSharp
 
             Assert.Equal(
                 scriptNamespaces.Union(additionalNamespaces),
-                parsingResult.UserProgram.Namespaces.Union(parseOptions.AdditionalCode!.GetAllNamespaces()));
+                parsingResult.UserProgram.Usings.Select(u => u.Value)
+                    .Union(parseOptions.AdditionalCode!.GetAllUsings().Select(u => u.Value)));
         }
 
         [Fact]
@@ -104,7 +106,8 @@ namespace NetPad.Compilation.Tests.CSharp
             {
                 "ScriptNamespace1",
                 "AdditionalNamespace1"
-            }, parsingResult.UserProgram.Namespaces.Union(parseOptions.AdditionalCode!.GetAllNamespaces()));
+            }, parsingResult.UserProgram.Usings.Select(u => u.Value)
+                .Union(parseOptions.AdditionalCode!.GetAllUsings().Select(u => u.Value)));
         }
 
         [Fact]
@@ -114,7 +117,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram.Code!);
+            Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram.Code.Value!);
         }
 
         [Fact]
@@ -124,7 +127,7 @@ namespace NetPad.Compilation.Tests.CSharp
 
             var parsingResult = parser.Parse(GetScript());
 
-            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram.Code!);
+            Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram.Code.Value!);
         }
 
         [Fact]

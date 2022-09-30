@@ -1,4 +1,5 @@
 using System;
+using NetPad.DotNet;
 using NetPad.Scripts;
 
 namespace NetPad.Compilation.CSharp
@@ -8,7 +9,7 @@ namespace NetPad.Compilation.CSharp
         public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
         public const string BootstrapperSetIOMethodName = "SetIO";
 
-        private static readonly string[] _namespacesNeededByBaseProgram =
+        private static readonly string[] _usingsNeededByBaseProgram =
         {
             "System",
             "NetPad.IO"
@@ -24,7 +25,7 @@ namespace NetPad.Compilation.CSharp
                 BootstrapperClassName,
                 BootstrapperSetIOMethodName);
 
-            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _namespacesNeededByBaseProgram);
+            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _usingsNeededByBaseProgram);
 
             return new CodeParsingResult(
                 new SourceCode(userProgram, script.Config.Namespaces),
