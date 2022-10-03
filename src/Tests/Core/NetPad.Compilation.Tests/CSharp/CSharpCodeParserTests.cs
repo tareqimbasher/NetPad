@@ -81,36 +81,6 @@ namespace NetPad.Compilation.Tests.CSharp
         }
 
         [Fact]
-        public void GetNamespaces_Filters_Out_Null_Or_Whitespace_Namespaces()
-        {
-            var scriptNamespaces = new[]
-            {
-                "ScriptNamespace1",
-                null
-            };
-
-            var additionalNamespaces = new[]
-            {
-                "AdditionalNamespace1",
-                ""
-            };
-            var script = GetScript();
-            var parseOptions = new CodeParsingOptions();
-            parseOptions.AdditionalCode.Add(new SourceCode(additionalNamespaces));
-            script.Config.SetNamespaces(scriptNamespaces!);
-            var parser = new CSharpCodeParser();
-
-            var parsingResult = parser.Parse(script, parseOptions);
-
-            Assert.Equal(new[]
-            {
-                "ScriptNamespace1",
-                "AdditionalNamespace1"
-            }, parsingResult.UserProgram.Usings.Select(u => u.Value)
-                .Union(parseOptions.AdditionalCode!.GetAllUsings().Select(u => u.Value)));
-        }
-
-        [Fact]
         public void BaseProgramTemplate_Has_Correct_Class_Declaration()
         {
             var parser = new CSharpCodeParser();
