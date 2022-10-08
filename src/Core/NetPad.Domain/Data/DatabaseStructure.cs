@@ -79,12 +79,15 @@ public class DatabaseTable
     public IReadOnlyList<DatabaseIndex> Indexes => _indexes;
     public IReadOnlyList<DatabaseTableNavigation> Navigations => _navigations;
 
-    public DatabaseTableColumn AddColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
+    public DatabaseTableColumn GetOrAddColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
     {
-        if (_columns.Any(t => t.Name == name))
-            throw new InvalidOperationException($"A column named '{name}' already exists in table '{Name}'");
+        var column = _columns.FirstOrDefault(t => t.Name == name);
+        if (column != null)
+        {
+            return column;
+        }
 
-        var column = new DatabaseTableColumn(name, type, clrType, isPrimaryKey, isForeignKey);
+        column = new DatabaseTableColumn(name, type, clrType, isPrimaryKey, isForeignKey);
         _columns.Add(column);
         return column;
     }

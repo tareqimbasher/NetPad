@@ -67,7 +67,7 @@ internal static class EntityFrameworkUtils
                     columnType += " (nullable)";
                 }
 
-                var column = table.AddColumn(
+                var column = table.GetOrAddColumn(
                     property.Name,
                     columnType,
                     property.ClrType.GetReadableName(),
