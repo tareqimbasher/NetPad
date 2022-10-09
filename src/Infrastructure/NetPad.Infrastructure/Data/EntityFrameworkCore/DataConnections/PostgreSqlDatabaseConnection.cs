@@ -7,8 +7,8 @@ namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
-    public PostgreSqlDatabaseConnection(Guid id, string name, DataConnectionType type)
-        : base(id, name, type, "Npgsql.EntityFrameworkCore.PostgreSQL")
+    public PostgreSqlDatabaseConnection(Guid id, string name)
+        : base(id, name, DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL")
     {
     }
 

@@ -24,7 +24,7 @@ public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDat
 
         if (UserId != null || Password != null)
         {
-            connectionString += $";UserId={UserId};Password={Password}";
+            connectionString += $";User Id={UserId};Password={Password}";
         }
 
         return connectionString;
