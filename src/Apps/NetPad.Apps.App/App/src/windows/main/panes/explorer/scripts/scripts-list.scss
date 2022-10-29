@@ -10,6 +10,14 @@ scripts-list {
         overflow: auto;
 
         .list-group-item {
+            &.script-folder, &.script {
+                padding: 1px 8px;
+
+                &:hover {
+                    @include theme(background-color, hoverColor);
+                }
+            }
+
             &.script-folder {
                 &:hover {
                     .script-folder-open-icon {

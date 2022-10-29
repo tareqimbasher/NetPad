@@ -338,11 +338,7 @@ public class DotNetCSharpProject
 
         try
         {
-            if (PackageCacheDirectoryPath == null)
-                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
-
-            if (!Directory.Exists(PackageCacheDirectoryPath))
-                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
+            EnsurePackageCacheDirectoryExists();
 
             var packageId = reference.PackageId;
             var packageVersion = reference.Version;
@@ -384,11 +380,7 @@ public class DotNetCSharpProject
 
         try
         {
-            if (PackageCacheDirectoryPath == null)
-                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
-
-            if (!Directory.Exists(PackageCacheDirectoryPath))
-                throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} '{PackageCacheDirectoryPath}' does not exist.");
+            EnsurePackageCacheDirectoryExists();
 
             var packageId = reference.PackageId;
 
@@ -507,5 +499,15 @@ public class DotNetCSharpProject
         }
 
         return null;
+    }
+
+    private void EnsurePackageCacheDirectoryExists()
+    {
+        if (PackageCacheDirectoryPath == null)
+        {
+            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
+        }
+
+        if (!Directory.Exists(PackageCacheDirectoryPath)) Directory.CreateDirectory(PackageCacheDirectoryPath);
     }
 }

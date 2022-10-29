@@ -14,14 +14,6 @@ explorer {
         padding-right: 0;
         user-select: none;
         @include theme(background-color, backgroundColor);
-
-        &.script-folder, &.script {
-            padding: 4px 8px;
-
-            &:hover {
-                @include theme(background-color, hoverColor);
-            }
-        }
     }
 
     .tree-expand-node-icon, .tree-collapse-node-icon {

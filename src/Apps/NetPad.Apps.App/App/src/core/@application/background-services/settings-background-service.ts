@@ -2,6 +2,9 @@ import {IBackgroundService} from "@common";
 import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
 import {IDisposable} from "aurelia";
 
+/**
+ * Used to sync the Settings singleton from changes upstream.
+ */
 export class SettingsBackgroundService implements IBackgroundService {
     private settingsUpdatedEventToken: IDisposable;
 
