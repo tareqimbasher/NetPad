@@ -22,27 +22,31 @@ namespace NetPad.Configuration
 
         public async Task<Settings> GetSettingsAsync()
         {
-            if (!File.Exists(_settingsFilePath))
-                return new Settings();
-
             Settings settings;
 
-            var json = await File.ReadAllTextAsync(_settingsFilePath).ConfigureAwait(false);
-
-            // Validate settings file has a valid version
-            var jsonRoot = JsonDocument.Parse(json).RootElement;
-            if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLower(), out var versionProp)
-                || !Version.TryParse(versionProp.GetString(), out _))
+            if (!File.Exists(_settingsFilePath))
             {
                 settings = new Settings();
-                await SaveSettingsAsync(settings);
             }
-
-            settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not deserialize settings file.");
-
-            if (settings.Upgrade())
+            else
             {
-                await SaveSettingsAsync(settings);
+                var json = await File.ReadAllTextAsync(_settingsFilePath).ConfigureAwait(false);
+
+                // Validate settings file has a valid version
+                var jsonRoot = JsonDocument.Parse(json).RootElement;
+                if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLower(), out var versionProp)
+                    || !Version.TryParse(versionProp.GetString(), out _))
+                {
+                    settings = new Settings();
+                    await SaveSettingsAsync(settings);
+                }
+
+                settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not deserialize settings file.");
+
+                if (settings.Upgrade())
+                {
+                    await SaveSettingsAsync(settings);
+                }
             }
 
             settings.DefaultMissingValues();

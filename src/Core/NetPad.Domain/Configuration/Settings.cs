@@ -37,13 +37,15 @@ namespace NetPad.Configuration
 
         public Settings SetScriptsDirectoryPath(string scriptsDirectoryPath)
         {
-            ScriptsDirectoryPath = scriptsDirectoryPath ?? throw new ArgumentNullException(nameof(scriptsDirectoryPath));
+            ScriptsDirectoryPath =
+                scriptsDirectoryPath ?? throw new ArgumentNullException(nameof(scriptsDirectoryPath));
             return this;
         }
 
         public Settings SetPackageCacheDirectoryPath(string packageCacheDirectoryPath)
         {
-            PackageCacheDirectoryPath = packageCacheDirectoryPath ?? throw new ArgumentNullException(nameof(packageCacheDirectoryPath));
+            PackageCacheDirectoryPath = packageCacheDirectoryPath ??
+                                        throw new ArgumentNullException(nameof(packageCacheDirectoryPath));
             return this;
         }
 
@@ -109,7 +111,7 @@ namespace NetPad.Configuration
             // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 
             if (Version == null)
-                Version.Parse(LatestSettingsVersion);
+                Version = Version.Parse(LatestSettingsVersion);
 
             if (string.IsNullOrWhiteSpace(ScriptsDirectoryPath))
                 ScriptsDirectoryPath = Path.Combine(
