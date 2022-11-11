@@ -43,13 +43,17 @@ namespace NetPad.Electron.UiInterop
             }
 
             var display = await PrimaryDisplay();
+
+            var queryParams = new List<(string, object?)>();
+            if (tab != null) queryParams.Add(("tab", tab));
+
             var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = "Settings",
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 1 / 2,
                 AutoHideMenuBar = true,
-            }, ("tab", tab));
+            }, queryParams.ToArray());
 
             window.SetParentWindow(ElectronUtil.MainWindow);
             var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
@@ -67,13 +71,18 @@ namespace NetPad.Electron.UiInterop
             }
 
             var display = await PrimaryDisplay();
+
+            var queryParams = new List<(string, object?)>();
+            queryParams.Add(("script-id", script.Id));
+            if (tab != null) queryParams.Add(("tab", tab));
+
             var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = script.Name,
                 Height = display.Bounds.Height * 2 / 3,
                 Width = display.Bounds.Width * 4 / 5,
                 AutoHideMenuBar = true,
-            }, ("script-id", script.Id), ("tab", tab));
+            }, queryParams.ToArray());
 
             window.SetParentWindow(ElectronUtil.MainWindow);
             var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
@@ -91,6 +100,10 @@ namespace NetPad.Electron.UiInterop
             }
 
             var display = await PrimaryDisplay();
+
+            var queryParams = new List<(string, object?)>();
+            if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
+
             var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
             {
                 Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
@@ -99,7 +112,7 @@ namespace NetPad.Electron.UiInterop
                 AutoHideMenuBar = true,
                 MinWidth = 550,
                 MinHeight = 550
-            }, ("data-connection-id", dataConnectionId));
+            }, queryParams.ToArray());
 
             window.SetParentWindow(ElectronUtil.MainWindow);
             var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();

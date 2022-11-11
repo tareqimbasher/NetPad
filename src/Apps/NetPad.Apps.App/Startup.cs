@@ -194,18 +194,21 @@ namespace NetPad
             var hostInfo = services.GetRequiredService<HostInfo>();
             hostInfo.SetWorkingDirectory(env.ContentRootPath);
 
-            var url = app.ServerFeatures
-                .Get<IServerAddressesFeature>()!
-                .Addresses
-                .FirstOrDefault(a => a.StartsWith("http:"));
+            var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+
+            if (serverAddresses == null || !serverAddresses.Any())
+            {
+                throw new Exception("No server urls specified. Specify the url with the '--urls' parameter");
+            }
+
+            var url = serverAddresses.FirstOrDefault(a => a.StartsWith("https:")) ??
+                      serverAddresses.FirstOrDefault(a => a.StartsWith("http:"));
 
             if (url == null)
             {
-                url = app.ServerFeatures
-                    .Get<IServerAddressesFeature>()!
-                    .Addresses
-                    .First(a => a.StartsWith("https:"));
+                throw new Exception("No server urls specified that start with 'http' or 'https'");
             }
+
             hostInfo.SetHostUrl(url);
 
             // Add middlewares

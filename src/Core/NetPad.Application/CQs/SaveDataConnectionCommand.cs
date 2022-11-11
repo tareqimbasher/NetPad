@@ -29,6 +29,11 @@ public class SaveDataConnectionCommand : Command
 
         public async Task<Unit> Handle(SaveDataConnectionCommand request, CancellationToken cancellationToken)
         {
+            if (request.Connection.Id == default)
+            {
+                throw new InvalidOperationException("Data connection cannot have a null or empty ID");
+            }
+
             var updated = request.Connection;
             var existing = await _dataConnectionRepository.GetAsync(request.Connection.Id);
 
