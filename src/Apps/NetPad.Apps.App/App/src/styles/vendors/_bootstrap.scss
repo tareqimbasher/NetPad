@@ -109,11 +109,18 @@ textarea.form-control {
     }
 }
 
-.dropdown-menu {
-    @include theme(background-color, formControlBackground);
-    @include theme(color, textColor);
+.dropdown {
+    > .btn {
+        @include theme(color, textColor);
+    }
 
-    .dropdown-item:hover {
-        @include theme(background-color, hoverColor);
+    .dropdown-menu {
+        @include theme(background-color, formControlBackground);
+        @include theme(color, textColor);
+
+        .dropdown-item:hover {
+            @include theme(background-color, hoverColor);
+        }
     }
 }
+

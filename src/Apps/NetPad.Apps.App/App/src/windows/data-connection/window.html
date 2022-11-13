@@ -95,6 +95,11 @@
                                 <option repeat.for="dbName of databasesOnServer">${dbName}</option>
                             </datalist>
                         </div>
+                        <div class="col-1 d-flex align-items-center">
+                            <span if.bind="loadingDatabases"
+                                  class="spinner-border spinner-border-sm text-yellow"
+                                  title="Loading databases..."></span>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-3">

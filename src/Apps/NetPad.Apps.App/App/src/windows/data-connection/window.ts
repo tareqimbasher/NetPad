@@ -28,6 +28,7 @@ export class Window {
     public authType: "none" | "userAndPassword" = "userAndPassword";
     public testingConnectionStatus?: undefined | "testing" | "success" | "fail";
     public testingConnectionFailureMessage?: string;
+    public loadingDatabases: boolean = false;
     public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
     private nameField: HTMLInputElement;
@@ -117,16 +118,16 @@ export class Window {
 
         if (this.connection) {
             newConnection.init(this.connection);
-        } else {
-            newConnection.id = Util.newGuid();
         }
+
+        newConnection.id = this.connection?.id || Util.newGuid();
 
         newConnection.type = connectionType.type;
         this.connection = newConnection;
     }
 
     public async testConnection() {
-        if (!this.connectionType ||  !this.connection) {
+        if (!this.connectionType || !this.connection) {
             alert("Configure the connection first.");
             return;
         }
@@ -200,7 +201,7 @@ export class Window {
     }
 
     private async loadDatabases() {
-        if (!(this.connection instanceof DatabaseConnection)) {
+        if (this.loadingDatabases || !(this.connection instanceof DatabaseConnection)) {
             return;
         }
 
@@ -214,8 +215,16 @@ export class Window {
             return;
         }
 
-        if (!this.databasesOnServer || !this.databasesOnServer.length)
-            this.databasesOnServer = await this.dataConnectionService.getDatabases(this.connection);
+        if (!this.databasesOnServer || !this.databasesOnServer.length) {
+            this.loadingDatabases = true;
+
+            try {
+                this.databasesOnServer = await this.dataConnectionService.getDatabases(this.connection);
+            }
+            finally {
+                this.loadingDatabases = false;
+            }
+        }
     }
 }
 
