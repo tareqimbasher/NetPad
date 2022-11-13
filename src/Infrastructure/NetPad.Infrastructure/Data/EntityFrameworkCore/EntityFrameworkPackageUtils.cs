@@ -18,19 +18,7 @@ public static class EntityFrameworkPackageUtils
 
     public static async Task<string?> GetEntityFrameworkProviderVersionAsync(IPackageProvider packageProvider, string providerName)
     {
-        if (_versionCache.TryGetValue(providerName, out var version))
-            return version;
-
-        var versions = await packageProvider.GetPackageVersionsAsync(providerName);
-
-        var latestVersion = versions
-            .Select(v => Version.TryParse(v, out var parsed) ? parsed : null)
-            .Where(v => v?.Major == BadGlobals.DotNetVersion)
-            .MaxBy(v => v!.ToString())?
-            .ToString();
-
-        _versionCache.TryAdd(providerName, latestVersion);
-        return latestVersion;
+        return BadGlobals.EntityFrameworkProviderLibVersion;
     }
 
     public static async Task<string?> GetEntityFrameworkDesignVersionAsync(IPackageProvider packageProvider)
