@@ -19,6 +19,8 @@ export interface IAppApiClient {
     openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class AppApiClient implements IAppApiClient {
@@ -167,6 +169,44 @@ export class AppApiClient implements IAppApiClient {
             });
         }
         return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/app/log/{source}";
+        if (source === undefined || source === null)
+            throw new Error("The parameter 'source' must be defined.");
+        url_ = url_.replace("{source}", encodeURIComponent("" + source));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(logs);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSendRemoteLog(_response);
+        });
+    }
+
+    protected processSendRemoteLog(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
     }
 }
 
@@ -1918,6 +1958,77 @@ export interface IAppIdentifier {
     name: string;
     version: string;
 }
+
+export type LogSource = "WebApp" | "ElectronApp";
+
+export class RemoteLogMessage implements IRemoteLogMessage {
+    logger?: string | undefined;
+    logLevel!: LogLevel;
+    message?: string | undefined;
+    optionalParams?: string[] | undefined;
+    date!: Date;
+
+    constructor(data?: IRemoteLogMessage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.logger = _data["logger"];
+            this.logLevel = _data["logLevel"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["optionalParams"])) {
+                this.optionalParams = [] as any;
+                for (let item of _data["optionalParams"])
+                    this.optionalParams!.push(item);
+            }
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): RemoteLogMessage {
+        data = typeof data === 'object' ? data : {};
+        let result = new RemoteLogMessage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["logger"] = this.logger;
+        data["logLevel"] = this.logLevel;
+        data["message"] = this.message;
+        if (Array.isArray(this.optionalParams)) {
+            data["optionalParams"] = [];
+            for (let item of this.optionalParams)
+                data["optionalParams"].push(item);
+        }
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): RemoteLogMessage {
+        const json = this.toJSON();
+        let result = new RemoteLogMessage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRemoteLogMessage {
+    logger?: string | undefined;
+    logLevel: LogLevel;
+    message?: string | undefined;
+    optionalParams?: string[] | undefined;
+    date: Date;
+}
+
+export type LogLevel = "Trace" | "Debug" | "Information" | "Warning" | "Error" | "Critical" | "None";
 
 export abstract class Reference implements IReference {
     title!: string;

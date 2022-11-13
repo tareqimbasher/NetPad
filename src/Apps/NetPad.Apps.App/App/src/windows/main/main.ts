@@ -1,8 +1,6 @@
 import {Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
-    AppService,
     DataConnectionService,
-    IAppService,
     IDataConnectionService,
     IScriptService,
     ScriptService,
@@ -36,7 +34,6 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IPaneManager, PaneManager),
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IScriptService, ScriptService),
-            Registration.singleton(IAppService, AppService),
             Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             PaneHost,

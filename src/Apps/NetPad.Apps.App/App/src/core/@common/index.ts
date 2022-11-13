@@ -1,3 +1,5 @@
+export * from "./data/buffered-queue";
+
 export * from "./background-services/ibackground-service";
 
 export * from "./events/subscription-token";

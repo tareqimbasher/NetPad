@@ -1,5 +1,6 @@
 export * from "./env";
 export * from "./view-model-base";
+export * from "./logging/remote-log-sink";
 
 export * from "./attributes/external-link-attribute";
 export * from "./attributes/platforms-attribute";

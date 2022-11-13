@@ -10,7 +10,17 @@ import Aurelia, {
 } from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
-import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService} from "@domain";
+import {
+    AppService,
+    IAppService,
+    IEventBus,
+    IIpcGateway,
+    ISession,
+    ISettingService,
+    Session,
+    Settings,
+    SettingService
+} from "@domain";
 import {
     ContextMenu,
     DateTimeValueConverter,
@@ -19,6 +29,7 @@ import {
     ExternalLinkCustomAttribute,
     IWindowBootstrapperConstructor,
     PlatformsCustomAttribute,
+    RemoteLogSink,
     SanitizeHtmlValueConverter,
     SettingsBackgroundService,
     SignalRIpcGateway,
@@ -36,6 +47,7 @@ const app = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(Settings, new Settings()),
+    Registration.singleton(IAppService, AppService),
     Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
@@ -45,7 +57,7 @@ const app = Aurelia.register(
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
         level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
-        sinks: [ConsoleSink],
+        sinks: Env.RemoteLoggingEnabled ? [ConsoleSink, RemoteLogSink] : [ConsoleSink],
     }),
 
     // Custom Attributes
