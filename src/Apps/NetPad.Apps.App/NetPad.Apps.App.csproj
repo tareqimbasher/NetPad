@@ -44,6 +44,11 @@
         <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
         <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     </Target>
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Unix' AND '$(Configuration)'=='Debug'">
+        <!-- Copy Microsoft.Data.SqlClient.dll for unix builds so that EF can make calls to MS SQL databases -->
+        <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
+        <Exec Command="mkdir $(OutDir)/Microsoft.Data.SqlClient; cp $(OutDir)runtimes/unix/lib/netcoreapp3.1/Microsoft.Data.SqlClient.dll $(OutDir)/Microsoft.Data.SqlClient/Microsoft.Data.SqlClient.dll" />
+    </Target>
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
         <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
@@ -61,11 +66,6 @@
         </ItemGroup>
     </Target>
     <ItemGroup>
-        <Content Update="electron.manifest.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-    <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
         <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
         <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
@@ -82,5 +82,8 @@
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Remove="App\dist\**" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="wwwroot\loading-screen" />
     </ItemGroup>
 </Project>

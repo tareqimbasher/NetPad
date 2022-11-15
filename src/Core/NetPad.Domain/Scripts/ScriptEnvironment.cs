@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,6 +11,7 @@ using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
+using NetPad.Utilities;
 
 namespace NetPad.Scripts
 {
@@ -31,7 +34,8 @@ namespace NetPad.Scripts
             Script = script;
             _serviceScope = serviceScope;
             _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
-            _dataConnectionResourcesCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
+            _dataConnectionResourcesCache =
+                _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
             _output = IScriptOutput.Null;
@@ -61,19 +65,40 @@ namespace NetPad.Scripts
             {
                 if (Script.DataConnection != null)
                 {
-                    var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
+                    var connectionCode =
+                        await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
                     if (connectionCode.ApplicationCode.Any())
                     {
                         runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
                     }
 
-                    var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(Script.DataConnection);
+                    if (Script.DataConnection.Type == DataConnectionType.MSSQLServer && !PlatformUtils.IsWindowsPlatform())
+                    {
+                        // Special case for unix systems. When targeting a MS SQL server database, we must load the
+                        // unix-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
+                        // a specific dir (in app .csproj file). See:
+                        // https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212
+                        var appExePath = Assembly.GetEntryAssembly()?.Location;
+                        if (appExePath != null && File.Exists(appExePath))
+                        {
+                            var sqlClientAssemblyPath = Path.Combine(Path.GetDirectoryName(appExePath)!,
+                                "Microsoft.Data.SqlClient", "Microsoft.Data.SqlClient.dll");
+                            if (File.Exists(sqlClientAssemblyPath))
+                            {
+                                runOptions.AdditionalReferences.Add(new AssemblyFileReference(sqlClientAssemblyPath));
+                            }
+                        }
+                    }
+
+                    var connectionAssembly =
+                        await _dataConnectionResourcesCache.GetAssemblyAsync(Script.DataConnection);
                     if (connectionAssembly != null)
                     {
                         runOptions.AdditionalReferences.Add(new AssemblyImageReference(connectionAssembly));
                     }
 
-                    var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(Script.DataConnection);
+                    var requiredReferences =
+                        await _dataConnectionResourcesCache.GetRequiredReferencesAsync(Script.DataConnection);
                     if (requiredReferences.Any())
                     {
                         runOptions.AdditionalReferences.AddRange(requiredReferences);
@@ -118,12 +143,14 @@ namespace NetPad.Scripts
 
             Script.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName,
+                    args.NewValue));
             });
 
             Script.Config.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(
+                    new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
             });
         }
 
@@ -136,7 +163,8 @@ namespace NetPad.Scripts
         private async Task SetRunDurationAsync(double runDurationMs)
         {
             _runDurationMilliseconds = runDurationMs;
-            await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
+            await _eventBus.PublishAsync(
+                new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
         }
 
         private async Task<IScriptRuntime> GetRuntimeAsync()
