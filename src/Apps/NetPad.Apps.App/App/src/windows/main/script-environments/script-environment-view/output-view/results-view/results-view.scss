@@ -6,15 +6,6 @@ results-view {
     flex-grow: 1;
     min-height: 0;
 
-    .toolbar {
-        padding: 0.1rem 0;
-        @include theme(background-color, resultsToolbarBackground);
-
-        .actions-right > * {
-            margin-right: 0.3rem;
-        }
-    }
-
     .results {
         padding: 0.25rem;
         font-family: monospace;

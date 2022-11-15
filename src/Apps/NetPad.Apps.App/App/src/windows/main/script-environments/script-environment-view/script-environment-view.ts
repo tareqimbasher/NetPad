@@ -26,7 +26,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     private split: Split.Instance;
     private textEditorContainer: HTMLElement;
-    private resultsContainer: HTMLElement;
+    private outputContainer: HTMLElement;
     private editor: Editor;
     private activatedAtLeastOnce = false;
 
@@ -101,7 +101,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
         });
         this.disposables.push(() => activeEnvChangedToken.dispose());
 
-        this.split = Split([this.textEditorContainer, this.resultsContainer], {
+        this.split = Split([this.textEditorContainer, this.outputContainer], {
             gutterSize: 6,
             direction: 'vertical',
             sizes: [100, 0],
@@ -148,7 +148,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     private isResultsViewOpen(): boolean {
-        return this.resultsContainer.clientHeight > 10;
+        return this.outputContainer.clientHeight > 10;
     }
 
     @watch<ScriptEnvironmentView>(vm => vm.environment.status)

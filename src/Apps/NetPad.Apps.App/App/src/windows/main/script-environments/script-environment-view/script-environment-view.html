@@ -1,4 +1,4 @@
-<import from="./results-view/results-view"></import>
+<import from="./output-view/output-view"></import>
 
 <div class="header ps-2 pe-2 mb-3 d-flex align-items-center">
     <div class="d-flex">
@@ -54,8 +54,8 @@
                 text.two-way="editorText"
                 view-model.ref="editor"></editor>
     </div>
-    <div ref="resultsContainer" class="results-container overflow-hidden">
-        <results-view environment.bind="environment"
-                      on-close-requested.bind="collapseResultsView"></results-view>
+    <div ref="outputContainer" class="output-container overflow-hidden">
+        <output-view environment.bind="environment"
+                     on-close-requested.bind="collapseResultsView"></output-view>
     </div>
 </div>

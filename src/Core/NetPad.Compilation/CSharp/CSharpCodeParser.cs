@@ -1,5 +1,6 @@
 using System;
 using NetPad.DotNet;
+using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Compilation.CSharp
@@ -53,34 +54,34 @@ namespace NetPad.Compilation.CSharp
 
         public string GetBootstrapperProgramTemplate()
         {
-            return @"class {0}
-{{
-    private static IOutputWriter OutputWriter {{ get; set; }}
+            return $@"class {{0}}
+{{{{
+    internal static {nameof(IScriptOutput)} Output {{{{ get; set; }}}}
 
     // Entry point used when running script in external process
     static async System.Threading.Tasks.Task Main(string[] args)
-    {{
-        {1}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
-    }}
+    {{{{
+        // {{1}}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
+    }}}}
 
-    private static void {1}(IOutputWriter outputWriter)
-    {{
-        OutputWriter = outputWriter;
-    }}
+    private static void {{1}}({nameof(IScriptOutput)} output)
+    {{{{
+        Output = output;
+    }}}}
 
-    public static void OutputWrite(object? o = null, string? title = null)
-    {{
-        OutputWriter.WriteAsync(o, title);
-    }}
+    internal static void OutputWrite(object? o = null, string? title = null)
+    {{{{
+        Output.{nameof(IScriptOutput.PrimaryChannel)}.WriteAsync(o, title);
+    }}}}
 
-    public static void OutputWriteLine(object? o = null, string? title = null)
-    {{
-        OutputWriter.WriteAsync(o, title);
-    }}
-}}
+    internal static void OutputWriteLine(object? o = null, string? title = null)
+    {{{{
+        Output.{nameof(IScriptOutput.PrimaryChannel)}.WriteAsync(o, title);
+    }}}}
+}}}}
 
 static class Exts
-{{
+{{{{
     /// <summary>
     /// Dumps this object to the results view.
     /// </summary>
@@ -88,11 +89,16 @@ static class Exts
     /// <param name=""title"">An optional title for the result.</param>
     /// <returns>The object being dumped.</returns>
     public static T? Dump<T>(this T? o, string? title = null)
-    {{
-        {0}.OutputWriteLine(o, title);
+    {{{{
+        {{0}}.OutputWriteLine(o, title);
         return o;
-    }}
-}}
+    }}}}
+
+    internal static void DumpToSqlOutput<T>(this T? o, string? title = null)
+    {{{{
+        {{0}}.Output.{nameof(IScriptOutput.SqlChannel)}?.WriteAsync(o, title);
+    }}}}
+}}}}
 ";
         }
     }

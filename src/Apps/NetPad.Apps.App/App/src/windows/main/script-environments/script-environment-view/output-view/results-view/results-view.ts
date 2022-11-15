@@ -7,9 +7,9 @@ import {ViewModelBase} from "@application";
 export class ResultsView extends ViewModelBase {
     public resultsViewSettings: ResultsPaneViewSettings;
     @bindable public environment: ScriptEnvironment;
-    @bindable public onCloseRequested: () => void;
+    @bindable public active: boolean;
 
-    private resultsEl: HTMLElement;
+    private outputElement: HTMLElement;
     private resultControls: ResultControls;
 
     constructor(private readonly settings: Settings,
@@ -22,7 +22,7 @@ export class ResultsView extends ViewModelBase {
     }
 
     public attached() {
-        this.resultControls = new ResultControls(this.resultsEl);
+        this.resultControls = new ResultControls(this.outputElement);
 
         const token = this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
             if (msg.scriptId === this.environment.script.id) {
@@ -43,13 +43,13 @@ export class ResultsView extends ViewModelBase {
         const template = document.createElement("template");
         template.innerHTML = results;
         this.resultControls.bind(template.content);
-        this.resultsEl.appendChild(template.content);
+        this.outputElement.appendChild(template.content);
     }
 
     private clearResults() {
         this.resultControls.dispose();
-        while (this.resultsEl.firstChild && this.resultsEl.lastChild)
-            this.resultsEl.removeChild(this.resultsEl.lastChild);
+        while (this.outputElement.firstChild && this.outputElement.lastChild)
+            this.outputElement.removeChild(this.outputElement.lastChild);
     }
 
     @watch<ResultsView>(vm => vm.environment.status)

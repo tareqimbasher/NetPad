@@ -34,7 +34,7 @@ namespace NetPad.Domain.Tests.Scripts
             var script = ScriptTestHelper.CreateScript();
             var environment = new ScriptEnvironment(script, ServiceProvider.CreateScope());
             var inputReader = new ActionInputReader(() => null);
-            var outputWriter = new ActionOutputWriter((o, title) => { });
+            var outputWriter = new ScriptOutput(new ActionOutputWriter((o, title) => { }));
 
             environment.SetIO(inputReader, outputWriter);
 

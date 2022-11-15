@@ -30,6 +30,7 @@ namespace NetPad.Controllers
             public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }
             public ScriptConfigPropertyChangedEvent? ScriptConfigPropertyChanged { get; set; }
             public ScriptOutputEmittedEvent? ScriptOutputEmitted { get; set; }
+            public ScriptSqlOutputEmittedEvent? ScriptSqlOutputEmittedEvent { get; set; }
             public EnvironmentsAddedEvent? EnvironmentsAdded { get; set; }
             public EnvironmentsRemovedEvent? EnvironmentsRemoved { get; set; }
             public EnvironmentPropertyChangedEvent? EnvironmentPropertyChanged { get; set; }

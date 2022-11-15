@@ -12,6 +12,7 @@ namespace NetPad.Services;
 
 public class IpcScriptOutputWriter : IOutputWriter
 {
+    private readonly ScriptEnvironment _environment;
     private readonly IIpcService _ipcService;
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
     {
@@ -20,11 +21,9 @@ public class IpcScriptOutputWriter : IOutputWriter
 
     public IpcScriptOutputWriter(ScriptEnvironment environment, IIpcService ipcService)
     {
-        Environment = environment;
+        _environment = environment;
         _ipcService = ipcService;
     }
-
-    public ScriptEnvironment Environment { get; }
 
     public async Task WriteAsync(object? output, string? title = null)
     {
@@ -54,6 +53,6 @@ public class IpcScriptOutputWriter : IOutputWriter
 
         group.AddChild(element);
 
-        await _ipcService.SendAsync(new ScriptOutputEmittedEvent(Environment.Script.Id, group.ToHtml()));
+            await _ipcService.SendAsync(new ScriptOutputEmittedEvent(_environment.Script.Id, group.ToHtml()));
     }
 }

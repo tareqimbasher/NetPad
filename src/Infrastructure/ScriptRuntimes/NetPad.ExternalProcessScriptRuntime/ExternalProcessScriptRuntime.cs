@@ -9,6 +9,7 @@ using NetPad.Utilities;
 
 namespace NetPad.Runtimes;
 
+// WARNING: THIS CLASS IS NOT READY FOR USE YET
 // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
 public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 {
@@ -103,6 +104,16 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         return runSuccess ? RunResult.Success((DateTime.Now - start).TotalMilliseconds) : RunResult.RunAttemptFailure();
     }
 
+    public void AddOutput(IScriptOutput output)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveOutput(IScriptOutput output)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths)> CompileAndGetRefAssemblyPathsAsync()
     {
         var parsingResult = _codeParser.Parse(_script);
@@ -126,16 +137,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         }
 
         return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray());
-    }
-
-    public void AddOutputListener(IOutputWriter outputWriter)
-    {
-        _outputListeners.Add(outputWriter);
-    }
-
-    public void RemoveOutputListener(IOutputWriter outputWriter)
-    {
-        _outputListeners.Remove(outputWriter);
     }
 
     public void Dispose()

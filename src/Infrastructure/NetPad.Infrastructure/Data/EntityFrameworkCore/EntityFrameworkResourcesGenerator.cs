@@ -154,7 +154,18 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
     public Program(DbContextOptions<Program> options) : base(options)
     {
-    }");
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.LogTo(output =>
+        {
+            if (output.Contains(""Executing DbCommand"")) output.DumpToSqlOutput(""EF Core Log"");
+        });
+
+        base.OnConfiguring(optionsBuilder);
+    }
+");
 
         // 2. Add the DbContext property
         code

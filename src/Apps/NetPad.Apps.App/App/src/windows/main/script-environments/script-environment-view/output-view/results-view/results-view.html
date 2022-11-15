@@ -1,0 +1,14 @@
+<div portal="#output-toolbar-actions-portal" if.bind="active">
+    <i class="action-icon tree-collapse-all-icon hover-text-white"
+       title="Collapse All"
+       click.trigger="resultControls.collapseAllTables()"></i>
+    <i class="action-icon tree-expand-all-icon"
+       title="Expand All"
+       click.trigger="resultControls.expandAllTables()"></i>
+    <i class="action-icon text-wrap-icon ${resultsViewSettings.textWrap ? 'text-blue' : ''}"
+       title="Text Wrap"
+       click.trigger="resultsViewSettings.textWrap = !resultsViewSettings.textWrap"></i>
+</div>
+
+<div ref="outputElement"
+     class="results pt-2 ${resultsViewSettings.textWrap ? 'text-wrap' : ''}"></div>

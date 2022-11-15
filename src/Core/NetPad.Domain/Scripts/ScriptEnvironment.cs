@@ -20,7 +20,7 @@ namespace NetPad.Scripts
         private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
         private IServiceScope? _serviceScope;
         private IInputReader _inputReader;
-        private IOutputWriter _outputWriter;
+        private IScriptOutput _output;
         private ScriptStatus _status;
         private double _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
@@ -34,8 +34,7 @@ namespace NetPad.Scripts
             _dataConnectionResourcesCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
-            _outputWriter = ActionOutputWriter.Null;
-
+            _output = IScriptOutput.Null;
             _status = ScriptStatus.Ready;
 
             Initialize();
@@ -92,7 +91,7 @@ namespace NetPad.Scripts
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await _outputWriter.WriteAsync(ex + "\n");
+                await _output.PrimaryChannel.WriteAsync(ex + "\n");
                 await SetStatusAsync(ScriptStatus.Error);
             }
             finally
@@ -101,14 +100,14 @@ namespace NetPad.Scripts
             }
         }
 
-        public void SetIO(IInputReader inputReader, IOutputWriter outputWriter)
+        public void SetIO(IInputReader inputReader, IScriptOutput output)
         {
             EnsureNotDisposed();
 
             RemoveScriptRuntimeListeners();
 
             _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-            _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
+            _output = output ?? throw new ArgumentNullException(nameof(output));
 
             AddScriptRuntimeListeners();
         }
@@ -157,12 +156,12 @@ namespace NetPad.Scripts
 
         private void AddScriptRuntimeListeners()
         {
-            _runtime?.AddOutputListener(_outputWriter);
+            _runtime?.AddOutput(_output);
         }
 
         private void RemoveScriptRuntimeListeners()
         {
-            _runtime?.RemoveOutputListener(_outputWriter);
+            _runtime?.RemoveOutput(_output);
         }
 
         private void EnsureNotDisposed()

@@ -12,7 +12,7 @@ script-environment-view {
         max-width: 350px;
     }
 
-    .results-container {
+    .output-container {
         display: flex;
         flex-direction: column;
         @include theme(background-color, resultsBackground);

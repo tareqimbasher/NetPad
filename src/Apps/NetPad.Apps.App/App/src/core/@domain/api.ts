@@ -3948,6 +3948,7 @@ export class Types implements ITypes {
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
@@ -3982,6 +3983,7 @@ export class Types implements ITypes {
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
             this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChangedEvent.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
             this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmittedEvent.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
+            this.scriptSqlOutputEmittedEvent = _data["scriptSqlOutputEmittedEvent"] ? ScriptSqlOutputEmittedEvent.fromJS(_data["scriptSqlOutputEmittedEvent"]) : <any>undefined;
             this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAddedEvent.fromJS(_data["environmentsAdded"]) : <any>undefined;
             this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemovedEvent.fromJS(_data["environmentsRemoved"]) : <any>undefined;
             this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
@@ -4016,6 +4018,7 @@ export class Types implements ITypes {
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
         data["scriptConfigPropertyChanged"] = this.scriptConfigPropertyChanged ? this.scriptConfigPropertyChanged.toJSON() : <any>undefined;
         data["scriptOutputEmitted"] = this.scriptOutputEmitted ? this.scriptOutputEmitted.toJSON() : <any>undefined;
+        data["scriptSqlOutputEmittedEvent"] = this.scriptSqlOutputEmittedEvent ? this.scriptSqlOutputEmittedEvent.toJSON() : <any>undefined;
         data["environmentsAdded"] = this.environmentsAdded ? this.environmentsAdded.toJSON() : <any>undefined;
         data["environmentsRemoved"] = this.environmentsRemoved ? this.environmentsRemoved.toJSON() : <any>undefined;
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
@@ -4050,6 +4053,7 @@ export interface ITypes {
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
@@ -4387,6 +4391,53 @@ export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
 }
 
 export interface IScriptOutputEmittedEvent {
+    scriptId: string;
+    output?: string | undefined;
+}
+
+export class ScriptSqlOutputEmittedEvent implements IScriptSqlOutputEmittedEvent {
+    scriptId!: string;
+    output?: string | undefined;
+
+    constructor(data?: IScriptSqlOutputEmittedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.output = _data["output"];
+        }
+    }
+
+    static fromJS(data: any): ScriptSqlOutputEmittedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptSqlOutputEmittedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["output"] = this.output;
+        return data;
+    }
+
+    clone(): ScriptSqlOutputEmittedEvent {
+        const json = this.toJSON();
+        let result = new ScriptSqlOutputEmittedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptSqlOutputEmittedEvent {
     scriptId: string;
     output?: string | undefined;
 }
