@@ -15,8 +15,12 @@ open-source, web-enabled, cross-platform alternative.
 
 ## Requirements
 
-* [.NET SDK 6.x](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)
+* [.NET SDK 6.x](https://dotnet.microsoft.com/en-us/download/dotnet/6.0): used
+  to build and run your scripts.
+    * The environment variable `DOTNET_ROOT` or `DOTNET_INSTALL_DIR` must be set
+      and point to the directory where .NET is installed.
+* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): (_
+  optional_) needed to create and use database connections.
 
 ## Contribution
 
@@ -80,9 +84,11 @@ backend occurs via REST API calls and Electron's IPC protocol.
 
 * Node v16+ (npm v8+)
 * .NET SDK 6.x
+* .NET SDK 5.x: if you plan on running the Electron app. The `electronize`
+  development tool, currently, needs this to run.
 * EF Core tools 6.x
 
-### Running the app
+### Building & Running the app from source
 
 NetPad can be run as a desktop app, via Electron, or as a web application
 accessed with a web browser.
@@ -124,7 +130,7 @@ electronize start /manifest electron.manifest.js /PublishSingleFile false
 
 > Only the first electronize start is slow. Later runs are much faster.
 
-#### NetPad as a Web app
+#### NetPad as a Web app (accessed from a browser)
 
 #### 1. Run the SPA
 
@@ -141,10 +147,10 @@ npm run start-web
 
 ```
 cd Apps/NetPad.Apps.App
-dotnet run
+dotnet watch run --environment Development
 ```
 
-and access the app via your web browser, ex: `http://localhost:5000`
+and access the app via your web browser, ex: `http://localhost:5010`
 
 ## Packaging :package:
 
