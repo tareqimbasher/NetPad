@@ -19,12 +19,17 @@ public static class DotNetInfo
 
     public static string? LocateDotNetRootDirectory()
     {
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
+                         ?? Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR")
+                         ?? (PlatformUtils.IsWindowsPlatform() ? @"C:\Program Files\dotnet" : "/usr/local/share/dotnet");
 
-        if (dotnetRoot == null || !Directory.Exists(dotnetRoot))
-            return null;
+        if (Directory.Exists(dotnetRoot)) return dotnetRoot;
 
-        return dotnetRoot;
+        var dotnetExePath = LocateDotNetExecutable();
+        if (dotnetExePath != null)
+            dotnetRoot = Path.GetDirectoryName(dotnetExePath);
+
+        return !Directory.Exists(dotnetRoot) ? null : dotnetRoot;
     }
 
     public static string LocateDotNetExecutableOrThrow()
