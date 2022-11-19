@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
@@ -12,7 +13,7 @@ public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalData
     {
     }
 
-    public override string GetConnectionString()
+    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = $"Host={Host}";
         if (Port != null)
@@ -24,21 +25,26 @@ public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalData
 
         if (UserId != null || Password != null)
         {
-            connectionString += $";UserId={UserId};Password={Password}";
+            connectionString += $";UserId={UserId}";
+        }
+
+        if (Password != null)
+        {
+            connectionString += $";Password={passwordProtector.Unprotect(Password)}";
         }
 
         return connectionString;
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder)
+    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
     {
-        builder.UseNpgsql(GetConnectionString());
+        builder.UseNpgsql(GetConnectionString(passwordProtector));
         return Task.CompletedTask;
     }
 
-    public override async Task<IEnumerable<string>> GetDatabasesAsync()
+    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var context = CreateDbContext();
+        await using var context = CreateDbContext(passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = "select datname from pg_database;";

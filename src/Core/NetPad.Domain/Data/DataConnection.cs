@@ -30,7 +30,7 @@ public abstract class DataConnection
     /// Tests if the connection is valid.
     /// </summary>
     /// <returns></returns>
-    public abstract Task<DataConnectionTestResult> TestConnectionAsync();
+    public abstract Task<DataConnectionTestResult> TestConnectionAsync(IDataConnectionPasswordProtector passwordProtector);
 
     public override string ToString()
     {

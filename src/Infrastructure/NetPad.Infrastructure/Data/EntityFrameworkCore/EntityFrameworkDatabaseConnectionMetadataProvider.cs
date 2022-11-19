@@ -12,11 +12,16 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
 {
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IAssemblyLoader _assemblyLoader;
+    private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
 
-    public EntityFrameworkDatabaseConnectionMetadataProvider(IDataConnectionResourcesCache dataConnectionResourcesCache, IAssemblyLoader assemblyLoader)
+    public EntityFrameworkDatabaseConnectionMetadataProvider(
+        IDataConnectionResourcesCache dataConnectionResourcesCache,
+        IAssemblyLoader assemblyLoader,
+        IDataConnectionPasswordProtector dataConnectionPasswordProtector)
     {
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _assemblyLoader = assemblyLoader;
+        _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
     }
 
     public async Task<DatabaseStructure> GetDatabaseStructureAsync(DatabaseConnection databaseConnection)
@@ -47,7 +52,7 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
             throw new Exception($"Could not create DbContextOptionsBuilder<> for DbContext of type {dbContextType.FullName}.");
         }
 
-        await dbConnection.ConfigureDbContextOptionsAsync(dbContextOptionsBuilder);
+        await dbConnection.ConfigureDbContextOptionsAsync(dbContextOptionsBuilder, _dataConnectionPasswordProtector);
 
         var ctor = dbContextType
             .GetConstructors(BindingFlags.Public | BindingFlags.Instance)

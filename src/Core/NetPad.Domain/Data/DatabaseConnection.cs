@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace NetPad.Data;
 
@@ -15,5 +16,5 @@ public abstract class DatabaseConnection : DataConnection
     public string? Password { get; set; }
     public bool ContainsProductionData { get; set; }
 
-    public abstract string GetConnectionString();
+    public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 }

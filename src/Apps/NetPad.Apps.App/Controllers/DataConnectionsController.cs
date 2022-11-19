@@ -69,17 +69,25 @@ public class DataConnectionsController : Controller
     public async Task Delete(Guid id) => await _mediator.Send(new DeleteDataConnectionCommand(id));
 
     [HttpPatch("test")]
-    public async Task<DataConnectionTestResult> Test([FromBody] DataConnection dataConnection) => await dataConnection.TestConnectionAsync();
+    public async Task<DataConnectionTestResult> Test(
+        [FromBody] DataConnection dataConnection,
+        [FromServices] IDataConnectionPasswordProtector passwordProtector) => await dataConnection.TestConnectionAsync(passwordProtector);
+
+    [HttpPatch("protect-password")]
+    public string? ProtectPassword([FromBody] string unprotectedPassword, [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
+        passwordProtector.Protect(unprotectedPassword);
 
     [HttpPatch("databases")]
-    public async Task<IEnumerable<string>> GetDatabases([FromBody] DataConnection dataConnection)
+    public async Task<IEnumerable<string>> GetDatabases(
+        [FromBody] DataConnection dataConnection,
+        [FromServices] IDataConnectionPasswordProtector passwordProtector)
     {
         if (dataConnection is not EntityFrameworkDatabaseConnection dbConnection)
         {
             throw new InvalidOperationException("Cannot get databases except on Entity Framework database connections.");
         }
 
-        return await dbConnection.GetDatabasesAsync();
+        return await dbConnection.GetDatabasesAsync(passwordProtector);
     }
 
     [HttpPatch("{id:guid}/database-structure")]

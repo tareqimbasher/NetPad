@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
@@ -47,6 +48,9 @@ namespace NetPad
         {
             Configuration = configuration;
             WebHostEnvironment = webHostEnvironment;
+            Console.WriteLine($"Environment: {webHostEnvironment.EnvironmentName}");
+            Console.WriteLine($"WebRootPath: {webHostEnvironment.WebRootPath}");
+            Console.WriteLine($"ContentRootPath: {webHostEnvironment.ContentRootPath}");
         }
 
         public IConfiguration Configuration { get; }
@@ -86,6 +90,8 @@ namespace NetPad
             services.AddTransient<EntityFrameworkDatabaseConnectionMetadataProvider>();
             services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
             services.AddSingleton(sp => new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
+            services.AddTransient<IDataConnectionPasswordProtector>(s =>
+                new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
 
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
@@ -153,6 +159,12 @@ namespace NetPad
             {
                 SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
             }
+
+            services.AddDataProtection(options =>
+            {
+                // A built-in string that identifies NetPad
+                options.ApplicationDiscriminator = "NETPAD_8C94D5EA-9510-4493-AA43-CADE372ED853";
+            });
 
             // Allow ApplicationConfigurator to add/modify any service registrations it needs
             Program.ApplicationConfigurator.ConfigureServices(services);

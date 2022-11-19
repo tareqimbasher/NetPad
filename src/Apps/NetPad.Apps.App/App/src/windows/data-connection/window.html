@@ -77,7 +77,8 @@
                         <div class="col-6">
                             <input type="password"
                                    class="form-control"
-                                   value.bind="connection.password"
+                                   value.bind="unprotectedPassword"
+                                   blur.trigger="unprotectedPasswordEntered()"
                                    placeholder="<hidden>"/>
                         </div>
                     </div>

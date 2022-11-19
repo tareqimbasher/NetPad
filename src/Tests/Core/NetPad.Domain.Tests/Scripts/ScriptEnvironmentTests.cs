@@ -29,24 +29,6 @@ namespace NetPad.Domain.Tests.Scripts
         }
 
         [Fact]
-        public void SetIO_SetsIOCorrectly()
-        {
-            var script = ScriptTestHelper.CreateScript();
-            var environment = new ScriptEnvironment(script, ServiceProvider.CreateScope());
-            var inputReader = new ActionInputReader(() => null);
-            var outputWriter = new ScriptOutput(new ActionOutputWriter((o, title) => { }));
-
-            environment.SetIO(inputReader, outputWriter);
-
-            object? getFieldValue(string name) => typeof(ScriptEnvironment)
-                .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)?
-                .GetValue(environment);
-
-            Assert.Equal(inputReader, getFieldValue("_inputReader"));
-            Assert.Equal(outputWriter, getFieldValue("_outputWriter"));
-        }
-
-        [Fact]
         public void RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
         {
             var script = ScriptTestHelper.CreateScript();

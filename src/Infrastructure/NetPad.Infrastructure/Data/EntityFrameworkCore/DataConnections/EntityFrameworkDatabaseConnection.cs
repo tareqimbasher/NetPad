@@ -15,13 +15,13 @@ public abstract class EntityFrameworkDatabaseConnection : DatabaseConnection
 
     public string EntityFrameworkProviderName { get; }
 
-    public abstract Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder);
+    public abstract Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector);
 
-    public abstract Task<IEnumerable<string>> GetDatabasesAsync();
+    public abstract Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
 
-    public override async Task<DataConnectionTestResult> TestConnectionAsync()
+    public override async Task<DataConnectionTestResult> TestConnectionAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var dbContext = CreateDbContext();
+        await using var dbContext = CreateDbContext(passwordProtector);
 
         try
         {
@@ -35,8 +35,8 @@ public abstract class EntityFrameworkDatabaseConnection : DatabaseConnection
         }
     }
 
-    public DatabaseContext CreateDbContext()
+    public DatabaseContext CreateDbContext(IDataConnectionPasswordProtector passwordProtector)
     {
-        return DatabaseContext.Create(options => ConfigureDbContextOptionsAsync(options));
+        return DatabaseContext.Create(options => ConfigureDbContextOptionsAsync(options, passwordProtector));
     }
 }

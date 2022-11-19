@@ -22,6 +22,7 @@ public class EntityFrameworkDatabaseScaffolder
 {
     private readonly EntityFrameworkDatabaseConnection _connection;
     private readonly IPackageProvider _packageProvider;
+    private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
     private readonly ILogger<EntityFrameworkDatabaseScaffolder> _logger;
     private readonly DotNetCSharpProject _project;
     private readonly string _dbModelOutputDirPath;
@@ -31,11 +32,13 @@ public class EntityFrameworkDatabaseScaffolder
     public EntityFrameworkDatabaseScaffolder(
         EntityFrameworkDatabaseConnection connection,
         IPackageProvider packageProvider,
+        IDataConnectionPasswordProtector dataConnectionPasswordProtector,
         Settings settings,
         ILogger<EntityFrameworkDatabaseScaffolder> logger)
     {
         _connection = connection;
         _packageProvider = packageProvider;
+        _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
         _logger = logger;
         _project = new DotNetCSharpProject(
             Path.Combine(Path.GetTempPath(), AppIdentifier.AppName, "TypedContexts", connection.Id.ToString()),
@@ -95,7 +98,7 @@ class Program
         var args = string.Join(" ", new[]
         {
             "dbcontext scaffold",
-            $"\"{_connection.GetConnectionString()}\"",
+            $"\"{_connection.GetConnectionString(_dataConnectionPasswordProtector)}\"",
             _connection.EntityFrameworkProviderName,
             $"--context {DbContextName}",
             "--namespace \"\"", // Instructs tool to not wrap code in any namespace
@@ -107,14 +110,22 @@ class Program
 
         _logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
 
-        var process = Process.Start(new ProcessStartInfo(dotnetEfToolExe, args)
+        var startInfo = new ProcessStartInfo(dotnetEfToolExe, args)
         {
             UseShellExecute = false,
             WorkingDirectory = _project.ProjectDirectoryPath,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
-            RedirectStandardError = true
-        });
+            RedirectStandardError = true,
+        };
+
+        // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
+        // it will fail as dotnet-ef depends on dotnet
+        var dotnetExeDir = Path.GetDirectoryName(DotNetInfo.LocateDotNetExecutableOrThrow());
+        var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
+        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
+
+        var process = Process.Start(startInfo);
 
         if (process == null)
         {

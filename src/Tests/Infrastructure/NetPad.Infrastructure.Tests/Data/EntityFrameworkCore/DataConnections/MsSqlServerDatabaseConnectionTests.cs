@@ -31,7 +31,7 @@ public class MsSqlServerDatabaseConnectionTests : CommonTests
         connection.UserId = userId;
         connection.Password = password;
 
-        Assert.Equal(expected, connection.GetConnectionString());
+        Assert.Equal(expected, connection.GetConnectionString(new NullDataConnectionPasswordProtector()));
     }
 
     public static IEnumerable<object?[]> ConnectionStringTestData => new[]

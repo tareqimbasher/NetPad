@@ -32,6 +32,7 @@ export class Window {
     public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
     private nameField: HTMLInputElement;
+    private unprotectedPassword?: string;
     private readonly logger: ILogger;
 
     constructor(
@@ -197,6 +198,15 @@ export class Window {
         } else {
             this.nameField.classList.replace("is-invalid", "is-valid");
             this.nameField.setCustomValidity("");
+        }
+    }
+
+    private async unprotectedPasswordEntered() {
+        const dbConnection = this.connection as DatabaseConnection;
+        if (!this.unprotectedPassword) dbConnection.password = this.unprotectedPassword;
+        else
+        {
+            dbConnection.password = await this.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;
         }
     }
 
