@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace NetPad.DotNet;
 
-public class AssemblyImage
+public record AssemblyImage
 {
     public AssemblyImage(AssemblyName assemblyName, byte[] image)
     {

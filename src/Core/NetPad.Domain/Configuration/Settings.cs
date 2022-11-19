@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using NetPad.IO;
 
 namespace NetPad.Configuration
 {
@@ -8,11 +9,17 @@ namespace NetPad.Configuration
     {
         public const string LatestSettingsVersion = "1.0";
 
-        public static readonly string AppDataFolderPath = Path.Combine(
+        /// <summary>
+        /// Path of NetPad's local data directory.
+        /// </summary>
+        public static readonly DirectoryPath AppDataFolderPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "NetPad");
 
-        public static readonly string LogFolderPath = Path.Combine(AppDataFolderPath, "Logs");
+        /// <summary>
+        /// Path of where the app stores logs.
+        /// </summary>
+        public static readonly DirectoryPath LogFolderPath = Path.Combine(AppDataFolderPath.Path, "Logs");
 
 
         public Settings()
@@ -121,12 +128,12 @@ namespace NetPad.Configuration
                     "Scripts");
 
             if (string.IsNullOrWhiteSpace(AutoSaveScriptsDirectoryPath))
-                AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath,
+                AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath.Path,
                     "AutoSave",
                     "Scripts");
 
             if (string.IsNullOrWhiteSpace(PackageCacheDirectoryPath))
-                PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath,
+                PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath.Path,
                     "Cache",
                     "Packages");
 

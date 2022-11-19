@@ -27,7 +27,7 @@ public class RunOptionsDto
 
     public class SourceCodeDto
     {
-        public HashSet<string> Usings { get; set; }
+        public HashSet<string>? Usings { get; set; }
         public string? Code { get; set; }
     }
 }

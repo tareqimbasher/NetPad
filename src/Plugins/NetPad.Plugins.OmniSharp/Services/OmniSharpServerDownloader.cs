@@ -117,7 +117,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         return new OmniSharpServerLocation(executableFile.FullName);
     }
 
-    private DirectoryInfo GetDownloadRootDirectory() => new(Path.Combine(Settings.AppDataFolderPath, "OmniSharp"));
+    private DirectoryInfo GetDownloadRootDirectory() => new(Path.Combine(Settings.AppDataFolderPath.Path, "OmniSharp"));
     private DirectoryInfo GetDownloadDirectory() => new(Path.Combine(GetDownloadRootDirectory().FullName, GetRequiredVersion()));
 
     private string GetRequiredVersion()

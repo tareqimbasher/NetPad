@@ -2,20 +2,21 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using NetPad.IO;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Configuration
 {
     public class FileSystemSettingsRepository : ISettingsRepository
     {
-        private readonly string _settingsFilePath;
+        private readonly FilePath _settingsFilePath;
 
         public FileSystemSettingsRepository()
         {
-            _settingsFilePath = Path.Combine(Settings.AppDataFolderPath, "settings.json");
+            _settingsFilePath = Path.Combine(Settings.AppDataFolderPath.Path, "settings.json");
         }
 
-        public Task<string> GetSettingsFileLocationAsync()
+        public Task<FilePath> GetSettingsFileLocationAsync()
         {
             return Task.FromResult(_settingsFilePath);
         }
@@ -24,13 +25,13 @@ namespace NetPad.Configuration
         {
             Settings settings;
 
-            if (!File.Exists(_settingsFilePath))
+            if (!_settingsFilePath.Exists())
             {
                 settings = new Settings();
             }
             else
             {
-                var json = await File.ReadAllTextAsync(_settingsFilePath).ConfigureAwait(false);
+                var json = await File.ReadAllTextAsync(_settingsFilePath.Path).ConfigureAwait(false);
 
                 // Validate settings file has a valid version
                 var jsonRoot = JsonDocument.Parse(json).RootElement;
@@ -57,7 +58,7 @@ namespace NetPad.Configuration
         public async Task SaveSettingsAsync(Settings settings)
         {
             var json = JsonSerializer.Serialize(settings, true);
-            await File.WriteAllTextAsync(_settingsFilePath, json).ConfigureAwait(false);
+            await File.WriteAllTextAsync(_settingsFilePath.Path, json).ConfigureAwait(false);
         }
     }
 }

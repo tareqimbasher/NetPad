@@ -4,18 +4,19 @@ using System.IO;
 using System.Threading.Tasks;
 using NetPad.Common;
 using NetPad.Configuration;
+using NetPad.IO;
 
 namespace NetPad.Data;
 
 public class FileSystemDataConnectionRepository : IDataConnectionRepository
 {
     private readonly Settings _settings;
-    private readonly string _connectionsFilePath;
+    private readonly FilePath _connectionsFilePath;
 
     public FileSystemDataConnectionRepository(Settings settings)
     {
         _settings = settings;
-        _connectionsFilePath = Path.Combine(Settings.AppDataFolderPath, "data-connections.json");
+        _connectionsFilePath = Path.Combine(Settings.AppDataFolderPath.Path, "data-connections.json");
     }
 
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
@@ -61,12 +62,12 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
 
     private async Task<Dictionary<Guid, DataConnection>> GetFromFileAsync()
     {
-        if (!File.Exists(_connectionsFilePath))
+        if (!_connectionsFilePath.Exists())
         {
             return new Dictionary<Guid, DataConnection>();
         }
 
-        var json = await File.ReadAllTextAsync(_connectionsFilePath);
+        var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
         return JsonSerializer.Deserialize<Dictionary<Guid, DataConnection>>(json)
                ?? new Dictionary<Guid, DataConnection>();
     }
@@ -74,6 +75,6 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
     private async Task SaveToFileAsync(Dictionary<Guid, DataConnection> connections)
     {
         var json = JsonSerializer.Serialize(connections, true);
-        await File.WriteAllTextAsync(_connectionsFilePath, json);
+        await File.WriteAllTextAsync(_connectionsFilePath.Path, json);
     }
 }
