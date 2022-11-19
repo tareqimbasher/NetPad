@@ -39,6 +39,7 @@ import {
     YesNoValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService} from "@common";
+import {WebApp} from "@application/apps/web-app";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -91,6 +92,10 @@ const app = Aurelia.register(
         }
     })
 );
+
+if (!Env.isRunningInElectron()) {
+    WebApp.configure(app);
+}
 
 // Load app settings
 const settings = await app.container.get(ISettingService).get();
