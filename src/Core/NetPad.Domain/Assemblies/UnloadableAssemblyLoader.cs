@@ -36,24 +36,33 @@ namespace NetPad.Assemblies
 
         protected override Assembly? Load(AssemblyName assemblyName)
         {
+            Assembly? assembly = null;
+
             if (_referenceAssemblyImages.TryGetValue(assemblyName.FullName, out var referenceAssemblyImage))
-                return LoadFrom(referenceAssemblyImage.Image);
+                assembly = LoadFrom(referenceAssemblyImage.Image);
 
             // Try to find it by name if it can't be found by full name. Assemblies generated in memory typically have FullName
             // strings that are missing things like Version, Culture and PublicKeyToken
-            if (assemblyName.Name != null && _referenceAssemblyImages.TryGetValue(assemblyName.Name, out referenceAssemblyImage))
-                return LoadFrom(referenceAssemblyImage.Image);
+            else if (assemblyName.Name != null && _referenceAssemblyImages.TryGetValue(assemblyName.Name, out referenceAssemblyImage))
+                assembly =  LoadFrom(referenceAssemblyImage.Image);
 
-            if (_referenceAssemblyFiles.TryGetValue(assemblyName.FullName, out var referenceAssemblyFile))
-                return LoadFrom(referenceAssemblyFile.Bytes);
+            else if (_referenceAssemblyFiles.TryGetValue(assemblyName.FullName, out var referenceAssemblyFile))
+                assembly = LoadFrom(referenceAssemblyFile.Bytes);
 
-            foreach (var assemblyFile in _referenceAssemblyFiles.Values)
+            else
             {
-                if (assemblyFile.AssembliesInSameDir?.TryGetValue(assemblyName.FullName, out var r) == true)
-                    return LoadFrom(r!.Bytes);
+                foreach (var assemblyFile in _referenceAssemblyFiles.Values)
+                {
+                    if (assemblyFile.AssembliesInSameDir?.TryGetValue(assemblyName.FullName, out var r) == true)
+                    {
+                        assembly = LoadFrom(r!.Bytes);
+                        break;
+                    }
+                }
             }
 
-            var assembly = base.Load(assemblyName);
+            if (assembly == null)
+                assembly = base.Load(assemblyName);
 
             return assembly;
         }

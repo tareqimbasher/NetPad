@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NetPad.DotNet;
 
 namespace NetPad.Compilation
 {
@@ -11,10 +12,10 @@ namespace NetPad.Compilation
 
         public static HashSet<string> GetAssemblyLocations()
         {
-            return _systemAssembliesLocations ??= GetAssemblyLocationsFromAppContext();
+            return _systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot();
         }
 
-        private static HashSet<string> GetAssemblyLocationsFromAppDomain()
+        private static HashSet<string> GetImplementationAssemblyLocationsFromAppDomain()
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly =>
@@ -25,7 +26,7 @@ namespace NetPad.Compilation
                 .ToHashSet();
         }
 
-        private static HashSet<string> GetAssemblyLocationsFromAppContext()
+        private static HashSet<string> GetImplementationAssemblyLocationsFromAppContext()
         {
             string? assemblyPaths = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
             if (string.IsNullOrWhiteSpace(assemblyPaths))
@@ -41,6 +42,21 @@ namespace NetPad.Compilation
                     var fileName = Path.GetFileName(path);
                     return includeList.Any(p => fileName.StartsWith(p));
                 })
+                .ToHashSet();
+        }
+
+        private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot()
+        {
+            var coreLibPath = typeof(object).Assembly.Location; // ex: /DOTNET_ROOT/shared/Microsoft.NETCore.App/6.0.7/System.Private.CoreLib.dll
+            var dotnetVer = Path.GetFileName(Path.GetDirectoryName(coreLibPath));      // ex: 6.0.7
+            if (dotnetVer == null)
+                throw new Exception("Could not determine dotnet version");
+
+            var dotnetRoot = DotNetInfo.LocateDotNetRootDirectoryOrThrow();
+            var referenceAssembliesDir = Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref", dotnetVer, "ref", $"net{dotnetVer[0]}.0");
+
+            return Directory.GetFiles(referenceAssembliesDir, "*.dll")
+                .Where(a => !a.Contains("VisualBasic"))
                 .ToHashSet();
         }
     }

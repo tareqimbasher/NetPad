@@ -12,6 +12,21 @@ public static class DotNetInfo
     private static string? _dotNetPath;
     private static string? _dotNetEfToolPath;
 
+    public static string LocateDotNetRootDirectoryOrThrow()
+    {
+        return LocateDotNetRootDirectory() ?? throw new Exception("Could not find the dotnet ROOT directory.");
+    }
+
+    public static string? LocateDotNetRootDirectory()
+    {
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
+
+        if (dotnetRoot == null || !Directory.Exists(dotnetRoot))
+            return null;
+
+        return dotnetRoot;
+    }
+
     public static string LocateDotNetExecutableOrThrow()
     {
         var path = LocateDotNetExecutable();
@@ -46,6 +61,8 @@ public static class DotNetInfo
             var process = Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = exeName,
                 Arguments = "--version"
             });
@@ -114,6 +131,8 @@ public static class DotNetInfo
             var process = Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = exeName,
                 Arguments = "--version"
             });

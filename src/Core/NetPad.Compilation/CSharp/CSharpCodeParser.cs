@@ -88,6 +88,7 @@ static class Exts
     /// <param name=""o"">The object being dumped.</param>
     /// <param name=""title"">An optional title for the result.</param>
     /// <returns>The object being dumped.</returns>
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull(""o"")]
     public static T? Dump<T>(this T? o, string? title = null)
     {{{{
         {{0}}.OutputWriteLine(o, title);
