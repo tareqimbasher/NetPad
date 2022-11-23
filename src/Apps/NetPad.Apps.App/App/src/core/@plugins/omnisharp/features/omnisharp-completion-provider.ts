@@ -100,7 +100,9 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
             return new CompletionResults();
         }
 
-        const monacoCompletions = omnisharpCompletions.items
+        const apiCompletions = omnisharpCompletions.items.filter(c => !(c.kind === "Property" && c.label.endsWith("_HIDDEN")));
+
+        const monacoCompletions = apiCompletions
             .map(omnisharpCompletion => this.convertToMonacoCompletionItem(model, range, omnisharpCompletion));
 
         if (token.isCancellationRequested) {
@@ -108,7 +110,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         }
 
         return {
-            apiCompletions: omnisharpCompletions.items,
+            apiCompletions: apiCompletions,
             monacoCompletions: monacoCompletions
         };
     }

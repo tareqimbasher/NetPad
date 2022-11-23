@@ -318,7 +318,7 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
-        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code.Value);
+        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code.Value + ";");
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)

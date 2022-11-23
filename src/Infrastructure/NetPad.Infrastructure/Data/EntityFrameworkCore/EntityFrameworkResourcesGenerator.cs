@@ -148,6 +148,8 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         var code = new StringBuilder();
 
         // 1. Make the Program class inherit the generated DbContext
+        // The program class here will merge with the Program class generated
+        // in our Script top-level program
         var dbContext = model.DbContextFile;
         code.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
             .AppendLine("{")
@@ -199,13 +201,13 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
             var entityType = parts[0].SubstringBetween("<", ">");
             var propertyName = parts[1];
-            var dbContextPropertyName = $"{propertyName}_";
+            var dbContextPropertyName = $"{propertyName}_HIDDEN";
 
             programProperties.Add($@"
     /// <summary>
     /// The {propertyName} table (DbSet).
     /// </summary>
-    public static System.Linq.IQueryable<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
+    public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
 
             // Rename property on DbContext
             dbContextCodeLines[iLine] = line.Replace(propertyName, dbContextPropertyName);

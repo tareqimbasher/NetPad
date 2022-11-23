@@ -17,7 +17,7 @@ internal static class EntityFrameworkUtils
             .Where(p => p.PropertyType.IsOfGenericType(typeof(DbSet<>)))
             .Select(p => new
             {
-                Name = p.Name.TrimEnd('_'),
+                Name = p.Name.EndsWith("_HIDDEN") ? p.Name[..^"_HIDDEN".Length] : p.Name,
                 ElementType = p.PropertyType.GenericTypeArguments.First()
             }).ToDictionary(k => k.ElementType, v => v.Name);
 
