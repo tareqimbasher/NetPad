@@ -194,7 +194,7 @@ export class DataConnectionsList extends ViewModelBase {
         }
     }
 
-    @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections)
+    @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections.length)
     private constructDataConnectionViewModels() {
         this.dataConnectionViewModels = this.dataConnectionStore.connections
             .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
