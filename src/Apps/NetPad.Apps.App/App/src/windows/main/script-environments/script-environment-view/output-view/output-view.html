@@ -12,19 +12,17 @@
             </div>
         </div>
         <div class="actions col text-end pe-1">
-            <div id="output-toolbar-actions-portal"></div>
+            <div id="output-toolbar-actions-portal-${environment.script.id}"></div>
             <i class="action-icon close-icon ms-2"
                title="Close Results"
-               click.trigger="onCloseRequested()"></i>
+               click.trigger="close()"></i>
         </div>
     </div>
 </div>
 
 <results-view show.bind="view === 'Results'"
               active.bind="view === 'Results'"
-              environment.bind="environment"
-              on-close-requested.bind="collapseResultsView"></results-view>
+              environment.bind="environment"></results-view>
 <sql-view show.bind="view === 'SQL'"
           active.bind="view === 'SQL'"
-          environment.bind="environment"
-          on-close-requested.bind="collapseResultsView"></sql-view>
+          environment.bind="environment"></sql-view>

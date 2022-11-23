@@ -1,4 +1,4 @@
-<div portal="#output-toolbar-actions-portal" if.bind="active">
+<div portal="#output-toolbar-actions-portal-${environment.script.id}" if.bind="active">
     <i class="action-icon tree-collapse-all-icon hover-text-white"
        title="Collapse All"
        click.trigger="resultControls.collapseAllTables()"></i>

@@ -1,4 +1,4 @@
-<div portal="#output-toolbar-actions-portal" if.bind="active">
+<div portal="#output-toolbar-actions-portal-${environment.script.id}" if.bind="active">
     <i class="action-icon text-wrap-icon ${textWrap ? 'text-blue' : ''}"
        title="Text Wrap"
        click.trigger="textWrap = !textWrap"></i>
