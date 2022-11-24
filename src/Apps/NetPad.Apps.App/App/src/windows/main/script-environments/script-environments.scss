@@ -37,6 +37,8 @@ script-environments {
 
             .script-tab-content {
                 display: flex;
+                align-items: center;
+                height: 100%;
                 padding-left: 0.7rem;
                 padding-right: 0.4rem;
                 user-select: none;
