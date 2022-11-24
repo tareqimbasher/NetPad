@@ -16,14 +16,14 @@ public static class EntityFrameworkPackageUtils
         return BadGlobals.EntityFrameworkLibVersion;
     }
 
-    public static async Task<string?> GetEntityFrameworkProviderVersionAsync(IPackageProvider packageProvider, string providerName)
+    public static Task<string?> GetEntityFrameworkProviderVersionAsync(IPackageProvider packageProvider, string providerName)
     {
-        return BadGlobals.EntityFrameworkProviderLibVersion;
+        return Task.FromResult<string?>(BadGlobals.EntityFrameworkProviderLibVersion);
     }
 
-    public static async Task<string?> GetEntityFrameworkDesignVersionAsync(IPackageProvider packageProvider)
+    public static Task<string?> GetEntityFrameworkDesignVersionAsync(IPackageProvider packageProvider)
     {
         // So it depends on the same EF Core version the app is using
-        return BadGlobals.EntityFrameworkLibVersion;
+        return Task.FromResult<string?>(BadGlobals.EntityFrameworkLibVersion);
     }
 }

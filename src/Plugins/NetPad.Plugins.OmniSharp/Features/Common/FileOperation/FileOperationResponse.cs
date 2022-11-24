@@ -31,8 +31,8 @@ public class ModifiedFileResponse : FileOperationResponse
     {
     }
 
-    public string Buffer { get; set; }
-    public IEnumerable<OmniSharpLinePositionSpanTextChange> Changes { get; set; }
+    public string Buffer { get; set; } = null!;
+    public IEnumerable<OmniSharpLinePositionSpanTextChange> Changes { get; set; } = null!;
 }
 
 public class OpenFileResponse : FileOperationResponse

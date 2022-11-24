@@ -186,7 +186,10 @@ public class AppOmniSharpServer
         // It takes some time for OmniSharp to register its updated buffer after it starts
         if (!string.IsNullOrWhiteSpace(_environment.Script.Code))
         {
+            // We don't want to await
+#pragma warning disable CS4014
             Task.Run(async () =>
+#pragma warning restore CS4014
             {
                 await Task.Delay(3000);
 

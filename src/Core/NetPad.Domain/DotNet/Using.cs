@@ -26,6 +26,8 @@ public class Using : SourceCodeElement<string>
         return base.Equals(obj);
     }
 
+    public override int GetHashCode() => base.GetHashCode();
+
     public static void Validate(string value)
     {
         if (string.IsNullOrWhiteSpace(value))

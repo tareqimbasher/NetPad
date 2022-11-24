@@ -75,7 +75,10 @@ public class OmniSharpServerCatalog
             await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...", persistant: true);
             var startTask = server.StartAsync();
 
+            // We don't want to await
+#pragma warning disable CS4014
             startTask.ContinueWith(async (task) =>
+#pragma warning restore CS4014
             {
                 bool started = task.Status == TaskStatus.RanToCompletion && task.Result;
 
