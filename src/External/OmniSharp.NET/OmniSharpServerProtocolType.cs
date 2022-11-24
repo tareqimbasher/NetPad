@@ -1,6 +1,6 @@
 namespace OmniSharp
 {
-    public enum OmniSharpServerProtocolType
+    internal enum OmniSharpServerProtocolType
     {
         NotSet = 0,
         Stdio = 1,

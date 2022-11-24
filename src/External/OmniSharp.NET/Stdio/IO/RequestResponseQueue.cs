@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace OmniSharp.Stdio.IO
 {
-    public class RequestResponseQueue
+    internal class RequestResponseQueue
     {
         private readonly ConcurrentDictionary<int, RequestResponsePacketPromise> _promises;
 

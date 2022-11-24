@@ -6,7 +6,7 @@ using OmniSharp.Utilities;
 
 namespace OmniSharp
 {
-    public abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
+    internal abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
         where TConfiguration : OmniSharpServerConfiguration
     {
         private int _sequence;

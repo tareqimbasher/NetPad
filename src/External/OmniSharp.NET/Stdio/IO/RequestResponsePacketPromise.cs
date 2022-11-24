@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 namespace OmniSharp.Stdio.IO
 {
-    public class RequestResponsePacketPromise
+    internal class RequestResponsePacketPromise
     {
         private readonly TaskCompletionSource<ResponseJsonObject> _taskCompletionSource;
 

@@ -16,13 +16,15 @@ using OmniSharp.Utilities;
 
 namespace OmniSharp.Stdio
 {
-    public class OmniSharpStdioServer : OmniSharpServer<OmniSharpStdioServerConfiguration>, IOmniSharpStdioServer
+    internal class OmniSharpStdioServer : OmniSharpServer<OmniSharpStdioServerConfiguration>, IOmniSharpStdioServer
     {
-        private readonly IOmniSharpServerProcessAccessor<ProcessIOHandler> _omniSharpServerProcessAccessor;
+        private readonly IOmniSharpServerProcessAccessor<ProcessIO> _omniSharpServerProcessAccessor;
         private readonly RequestResponseQueue _requestResponseQueue;
         private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
-        private readonly object _stdioStandardInputLock = new object();
-        private ProcessIOHandler? _processIo;
+        private readonly object _stdioStandardInputLock;
+        private ProcessIO? _processIo;
+        private readonly HashSet<Func<string, Task>> _onOutputReceivedHandlers;
+        private readonly HashSet<Func<string, Task>> _onErrorReceivedHandlers;
         private bool _isStopped = true;
 
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
@@ -32,20 +34,31 @@ namespace OmniSharp.Stdio
 
         public OmniSharpStdioServer(
             OmniSharpStdioServerConfiguration configuration,
-            IOmniSharpServerProcessAccessor<ProcessIOHandler> omniSharpServerProcessAccessor,
+            IOmniSharpServerProcessAccessor<ProcessIO> omniSharpServerProcessAccessor,
             ILoggerFactory loggerFactory) :
             base(configuration, loggerFactory)
         {
             _omniSharpServerProcessAccessor = omniSharpServerProcessAccessor;
             _requestResponseQueue = new RequestResponseQueue();
             _eventHandlers = new ConcurrentDictionary<string, List<Func<JsonNode, Task>>>();
+            _stdioStandardInputLock = new object();
+            _onOutputReceivedHandlers = new HashSet<Func<string, Task>>();
+            _onErrorReceivedHandlers = new HashSet<Func<string, Task>>();
         }
 
         public override async Task StartAsync()
         {
             _processIo = await _omniSharpServerProcessAccessor.GetEntryPointAsync();
+
             _processIo.OnOutputReceivedHandlers.Add(HandleOmniSharpDataOutput);
             _processIo.OnErrorReceivedHandlers.Add(HandleOmniSharpErrorOutput);
+
+            foreach (var handler in _onOutputReceivedHandlers)
+                _processIo.OnOutputReceivedHandlers.Add(handler);
+
+            foreach (var handler in _onErrorReceivedHandlers)
+                _processIo.OnErrorReceivedHandlers.Add(handler);
+
             _isStopped = false;
         }
 
@@ -56,9 +69,39 @@ namespace OmniSharp.Stdio
             _isStopped = true;
         }
 
-        public override Task SendAsync(object request, CancellationToken? cancellationToken = default) => SendAsync<NoResponse>(request, cancellationToken);
+        public void AddOnProcessOutputReceivedHandler(Func<string, Task> handler)
+        {
+            _onOutputReceivedHandlers.Add(handler);
 
-        public override Task<TResponse?> SendAsync<TResponse>(object request, CancellationToken? cancellationToken = default) where TResponse : class
+            _processIo?.OnOutputReceivedHandlers.Add(handler);
+        }
+
+        public void RemoveOnProcessOutputReceivedHandler(Func<string, Task> handler)
+        {
+            _onOutputReceivedHandlers.Remove(handler);
+
+            _processIo?.OnOutputReceivedHandlers.Remove(handler);
+        }
+
+        public void AddOnProcessErrorReceivedHandler(Func<string, Task> handler)
+        {
+            _onErrorReceivedHandlers.Add(handler);
+
+            _processIo?.OnErrorReceivedHandlers.Add(handler);
+        }
+
+        public void RemoveOnProcessErrorReceivedHandler(Func<string, Task> handler)
+        {
+            _onErrorReceivedHandlers.Remove(handler);
+
+            _processIo?.OnErrorReceivedHandlers.Remove(handler);
+        }
+
+        public override Task SendAsync(object request, CancellationToken? cancellationToken = default) =>
+            SendAsync<NoResponse>(request, cancellationToken);
+
+        public override Task<TResponse?> SendAsync<TResponse>(object request,
+            CancellationToken? cancellationToken = default) where TResponse : class
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -68,10 +111,12 @@ namespace OmniSharp.Stdio
             return SendAsync<TResponse>(endpointAttribute.EndpointName, request, cancellationToken);
         }
 
-        public override Task SendAsync<TRequest>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default) =>
+        public override Task SendAsync<TRequest>(IEnumerable<TRequest> requests,
+            CancellationToken? cancellationToken = default) =>
             SendAsync<TRequest, NoResponse>(requests, cancellationToken);
 
-        public override Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default)
+        public override Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests,
+            CancellationToken? cancellationToken = default)
             where TResponse : class
         {
             if (!requests.Any())
@@ -82,7 +127,8 @@ namespace OmniSharp.Stdio
             return SendAsync<TResponse>(endpointAttribute.EndpointName, requests, cancellationToken);
         }
 
-        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request, CancellationToken? cancellationToken = default)
+        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request,
+            CancellationToken? cancellationToken = default)
             where TResponse : class
         {
             if (request == null)
@@ -101,7 +147,8 @@ namespace OmniSharp.Stdio
                 return null;
             }
 
-            var responsePromise = _requestResponseQueue.Enqueue(requestPacket, cancellationToken ?? CancellationToken.None);
+            var responsePromise =
+                _requestResponseQueue.Enqueue(requestPacket, cancellationToken ?? CancellationToken.None);
 
             try
             {
@@ -172,10 +219,12 @@ namespace OmniSharp.Stdio
                 requestType = ((IEnumerable<object>)obj).ElementAt(0).GetType();
             }
 
-            if (requestType.GetCustomAttribute(typeof(OmniSharpEndpointAttribute), true) is not OmniSharpEndpointAttribute endpointAttribute)
+            if (requestType.GetCustomAttribute(typeof(OmniSharpEndpointAttribute), true) is not
+                OmniSharpEndpointAttribute endpointAttribute)
             {
-                throw new ArgumentException($"Request of type '{obj.GetType().FullName}' does not have a {nameof(OmniSharpEndpointAttribute)} " +
-                                            $"and is not an {nameof(IEnumerable)} that contains items that have the {nameof(OmniSharpEndpointAttribute)}.");
+                throw new ArgumentException(
+                    $"Request of type '{obj.GetType().FullName}' does not have a {nameof(OmniSharpEndpointAttribute)} " +
+                    $"and is not an {nameof(IEnumerable)} that contains items that have the {nameof(OmniSharpEndpointAttribute)}.");
             }
 
             return endpointAttribute;
@@ -190,7 +239,6 @@ namespace OmniSharp.Stdio
 
             return Task.CompletedTask;
         }
-
 
         private async Task HandleOmniSharpDataOutput(string output)
         {
@@ -224,7 +272,7 @@ namespace OmniSharp.Stdio
                 else if (packetType == "event")
                     await HandleEventPacketReceived(outputPacket);
                 else
-                    Logger.LogError($"Unknown packet type: ${packetType}");
+                    Logger.LogError("Unknown packet type: {PacketType}", packetType);
             }
             catch (Exception ex)
             {
@@ -247,7 +295,8 @@ namespace OmniSharp.Stdio
         {
             var @event = ((string?)eventPacket["Event"])?.ToLowerInvariant();
 
-            Logger.LogDebug("OmniSharpServer Log Output. Event type: {EventType}. Output: {Output}", @event, eventPacket.ToString());
+            Logger.LogDebug("OmniSharpServer Log Output. Event type: {EventType}. Output: {Output}", @event,
+                eventPacket.ToString());
 
             if (@event is not null && _eventHandlers.TryGetValue(@event, out var handlers))
             {

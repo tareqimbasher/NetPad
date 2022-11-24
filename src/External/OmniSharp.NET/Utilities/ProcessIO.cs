@@ -2,18 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace OmniSharp.Utilities
 {
-    public class ProcessIOHandler : IDisposable
+    internal class ProcessIO : IDisposable
     {
-        public ProcessIOHandler(Process process)
+        public ProcessIO(Process process)
         {
             Process = process;
 
-            OnOutputReceivedHandlers = new List<Func<string, Task>>();
-            OnErrorReceivedHandlers = new List<Func<string, Task>>();
+            OnOutputReceivedHandlers = new HashSet<Func<string, Task>>();
+            OnErrorReceivedHandlers = new HashSet<Func<string, Task>>();
 
             Process.OutputDataReceived += OutputReceived;
             Process.ErrorDataReceived += ErrorReceived;
@@ -22,8 +23,8 @@ namespace OmniSharp.Utilities
         public Process Process { get; }
 
         public StreamWriter StandardInput => Process.StandardInput;
-        public List<Func<string, Task>> OnOutputReceivedHandlers { get; }
-        public List<Func<string, Task>> OnErrorReceivedHandlers { get; }
+        public HashSet<Func<string, Task>> OnOutputReceivedHandlers { get; }
+        public HashSet<Func<string, Task>> OnErrorReceivedHandlers { get; }
 
         private void OutputReceived(object? sender, DataReceivedEventArgs ev)
         {
@@ -32,7 +33,10 @@ namespace OmniSharp.Utilities
 
             foreach (var handler in OnOutputReceivedHandlers.ToArray())
             {
-                AsyncHelpers.RunSync(() => handler(ev.Data));
+                Task.Run(async () =>
+                {
+                    await handler(ev.Data);
+                });
             }
         }
 
@@ -43,7 +47,10 @@ namespace OmniSharp.Utilities
 
             foreach (var handler in OnErrorReceivedHandlers.ToArray())
             {
-                AsyncHelpers.RunSync(() => handler(ev.Data));
+                Task.Run(async () =>
+                {
+                    await handler(ev.Data);
+                });
             }
         }
 

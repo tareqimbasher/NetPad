@@ -1,6 +1,6 @@
 namespace OmniSharp
 {
-    public abstract class OmniSharpServerConfiguration
+    internal abstract class OmniSharpServerConfiguration
     {
         protected OmniSharpServerConfiguration(OmniSharpServerProtocolType protocolType)
         {
