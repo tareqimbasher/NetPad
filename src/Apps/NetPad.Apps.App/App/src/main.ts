@@ -43,6 +43,16 @@ import {WebApp} from "@application/apps/web-app";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
+console.log("Running environment: " + Env.Environment);
+
+let loadingApp: Aurelia | undefined;
+
+if ((!startupOptions.get("win") || startupOptions.get("win") === "main") && !Env.isRunningInElectron()) {
+    loadingApp = new Aurelia();
+    const loadingScreen = require("./loading-screen/loading-screen");
+    loadingApp.app(loadingScreen.LoadingScreen).start();
+}
+
 // Register common dependencies
 const app = Aurelia.register(
     Registration.instance(String, window.location.origin),
@@ -109,7 +119,7 @@ if (!winOpt && !Env.isRunningInElectron())
 let bootstrapperCtor: IWindowBootstrapperConstructor;
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-if (winOpt === "main")
+if (!winOpt || winOpt === "main")
     bootstrapperCtor = require("./windows/main/main").Bootstrapper;
 else if (winOpt === "settings")
     bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
@@ -118,7 +128,7 @@ else if (winOpt === "script-config")
 else if (winOpt === "data-connection")
     bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
 else
-    throw new Error(`Unrecognized window: ${winOpt}`);
+    throw new Error(`Unrecognized window parameter: ${winOpt}`);
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
@@ -126,3 +136,15 @@ bootstrapper.registerServices(app);
 
 // Start the app
 app.app(bootstrapper.getEntry()).start();
+const start = app.app(bootstrapper.getEntry()).start() as Promise<void>;
+
+if (loadingApp) {
+    start.then(() => {
+        if (!loadingApp) {
+            console.warn("LoadingApp was expected to not be null or undefined.");
+        }
+
+        loadingApp?.stop(true);
+        document.body.classList.remove("loading-screen");
+    });
+}

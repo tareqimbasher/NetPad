@@ -1,0 +1,119 @@
+﻿body.loading-screen .vertical-centered-box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+//body.loading-screen .vertical-centered-box:after {
+//    content: '';
+//    display: inline-block;
+//    height: 100%;
+//    vertical-align: middle;
+//    margin-right: -0.25em;
+//}
+body.loading-screen .vertical-centered-box .loader {
+    font-family: "proxima-nova-soft", sans-serif;
+    box-sizing: border-box;
+    font-size: 0;
+}
+
+body.loading-screen {
+    background: #2c2d44;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-user-select: none;
+    overflow: hidden;
+
+    * {
+        transition: all 0.3s;
+    }
+
+    form {
+        input.form-control {
+            border-radius: 20px;
+            line-height: 1.5em;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+
+        button {
+            border-radius: 20px;
+        }
+    }
+
+    .loader-circle {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        margin-left: -60px;
+        margin-top: -60px;
+    }
+    .loader-line-mask {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 60px;
+        height: 120px;
+        margin-left: -60px;
+        margin-top: -60px;
+        overflow: hidden;
+        transform-origin: 60px 60px;
+        //noinspection CssInvalidFunction
+        -webkit-mask-image: -webkit-gradient(linear, top, #000000, rgba(0, 0, 0, 0));
+        animation: rotate 1.2s infinite linear;
+    }
+    .loader-line-mask .loader-line {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+    #particles-background,
+    #particles-foreground {
+        left: -51%;
+        top: -51%;
+        width: 202%;
+        height: 202%;
+        transform: scale3d(0.5, 0.5, 1);
+    }
+    #particles-background {
+        background: #2c2d44;
+        background-image: -moz-linear-gradient(45deg, #3f3251 2%, #002025 100%);
+        background-image: -webkit-linear-gradient(45deg, #3f3251 2%, #002025 100%);
+        background-image: linear-gradient(45deg, #3f3251 2%, #002025 100%);
+    }
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    @keyframes fade {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.25;
+        }
+    }
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+}
+
+
