@@ -44,10 +44,24 @@
         <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
         <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     </Target>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Unix' AND '$(Configuration)'=='Debug'">
+    <Target Name="PostBuildLinux" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Unix' AND '$(Configuration)'=='Debug'">
+        <Exec Command="echo 'Configuration: $(Configuration) PROJ DIR: $(ProjectDir) OUT DIR: $(OutDir) PUBLISH DIR: $(PublishDir)'" />
         <!-- Copy Microsoft.Data.SqlClient.dll for unix builds so that EF can make calls to MS SQL databases -->
         <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
-        <Exec Command="mkdir $(OutDir)/Microsoft.Data.SqlClient; cp $(OutDir)runtimes/unix/lib/netcoreapp3.1/Microsoft.Data.SqlClient.dll $(OutDir)/Microsoft.Data.SqlClient/Microsoft.Data.SqlClient.dll" />
+        <Exec Command="mkdir $(OutDir)Microsoft.Data.SqlClient; cp $(OutDir)runtimes/unix/lib/netcoreapp3.1/Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient/Microsoft.Data.SqlClient.dll" />
+    </Target>
+    <Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Windows_NT'">
+        <Exec Command="echo 'Configuration: $(Configuration) PROJ DIR: $(ProjectDir) OUT DIR: $(OutDir) PUBLISH DIR: $(PublishDir)'" />
+        <!-- Copy Microsoft.Data.SqlClient.dll for windows builds so that EF can make calls to MS SQL databases. This Target is not meant to run when publishing app -->
+        <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
+        <!-- The 'if exist' check here is so this command does not run when dotnet publish is called as $(OutDir)runtimes doesn't exist then -->
+        <Exec Command="if exist $(OutDir)runtimes echo f | xcopy /F /Y $(OutDir)runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.dll" />
+    </Target>
+    <Target Name="BeforePublishWin" AfterTargets="BeforePublish" Condition="'$(OS)'=='Windows_NT'">
+        <Exec Command="echo 'Configuration: $(Configuration) PROJ DIR: $(ProjectDir) OUT DIR: $(OutDir) PUBLISH DIR: $(PublishDir)'" />
+        <!-- Copy Microsoft.Data.SqlClient.dll for windows builds so that EF can make calls to MS SQL databases. This Target is meant to run when publishing app -->
+        <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
+        <Exec Command="echo f | xcopy /F /Y $(OutDir)..\runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll $(PublishDir)\Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.dll" />
     </Target>
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->

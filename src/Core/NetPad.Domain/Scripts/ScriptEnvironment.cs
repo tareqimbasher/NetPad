@@ -72,17 +72,20 @@ namespace NetPad.Scripts
                         runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
                     }
 
-                    if (Script.DataConnection.Type == DataConnectionType.MSSQLServer && !PlatformUtils.IsWindowsPlatform())
+                    if (Script.DataConnection.Type == DataConnectionType.MSSQLServer)
                     {
-                        // Special case for unix systems. When targeting a MS SQL server database, we must load the
-                        // unix-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
-                        // a specific dir (in app .csproj file). See:
+                        // Special case for MS SQL Server. When targeting a MS SQL server database, we must load the
+                        // os-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
+                        // a specific dir (in app .csproj file). This behavior is only needed when running a Debug build
+                        // See:
                         // https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212
                         var appExePath = Assembly.GetEntryAssembly()?.Location;
                         if (appExePath != null && File.Exists(appExePath))
                         {
-                            var sqlClientAssemblyPath = Path.Combine(Path.GetDirectoryName(appExePath)!,
-                                "Microsoft.Data.SqlClient", "Microsoft.Data.SqlClient.dll");
+                            var sqlClientAssemblyPath = Path.Combine(
+                                Path.GetDirectoryName(appExePath)!,
+                                "Microsoft.Data.SqlClient",
+                                "Microsoft.Data.SqlClient.dll");
                             if (File.Exists(sqlClientAssemblyPath))
                             {
                                 runOptions.AdditionalReferences.Add(new AssemblyFileReference(sqlClientAssemblyPath));

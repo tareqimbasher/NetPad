@@ -103,7 +103,7 @@ class Program
             $"--context {DbContextName}",
             "--namespace \"\"", // Instructs tool to not wrap code in any namespace
             "--force",
-            $"--output-dir {_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
+            $"--output-dir {(PlatformUtils.IsWindowsPlatform() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
         });
 
         var dotnetEfToolExe = DotNetInfo.LocateDotNetEfToolExecutableOrThrow();
