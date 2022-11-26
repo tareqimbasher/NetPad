@@ -176,6 +176,10 @@ export class Window {
         }
 
         try {
+            if (this.connection instanceof DatabaseConnection && this.connection.port?.trim() === "") {
+                this.connection.port = undefined;
+            }
+
             await this.dataConnectionService.save(this.connection);
             window.close();
         } catch (ex) {

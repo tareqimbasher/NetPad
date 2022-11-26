@@ -16,7 +16,7 @@ public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDat
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = $"Data Source={Host}";
-        if (Port != null)
+        if (!string.IsNullOrWhiteSpace(Port))
         {
             connectionString += $",{Port}";
         }

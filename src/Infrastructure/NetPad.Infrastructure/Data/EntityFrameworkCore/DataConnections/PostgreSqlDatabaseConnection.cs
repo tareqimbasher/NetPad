@@ -16,7 +16,7 @@ public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalData
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = $"Host={Host}";
-        if (Port != null)
+        if (!string.IsNullOrWhiteSpace(Port))
         {
             connectionString += $":{Port}";
         }
