@@ -62,9 +62,20 @@ const electronBuilderConfig = {
             }
         ]
     },
+    nsis: {
+        oneClick: false,
+        allowToChangeInstallationDirectory: true
+    },
     win: {
-        target: "portable",
-        icon: "../../../wwwroot/favicon.ico"
+        icon: "../../../wwwroot/favicon.ico",
+        target: [
+            {
+                target: "portable"
+            },
+            {
+                target: "nsis"
+            }
+        ]
     },
     mac: {
         category: "public.app-category.developer-tools",
