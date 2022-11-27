@@ -10,6 +10,7 @@ export class Window {
         {route: "results", text: "Results"},
         {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
         {route: "omnisharp", text: "OmniSharp"},
+        {route: "about", text: "About"},
     ];
 
     constructor(

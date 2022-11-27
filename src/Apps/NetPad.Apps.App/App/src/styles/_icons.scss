@@ -133,6 +133,11 @@ button > .icon-base {
     @extend .fa-ellipsis-v;
 }
 
+.open-external-icon {
+    @extend %icon-base;
+    @extend .fa-square-arrow-up-right;
+}
+
 // CONTEXTUAL ICONS
 .explorer-icon {
     @extend %icon-base;
@@ -274,7 +279,7 @@ button > .icon-base {
 
 .use-data-connection-current-script-icon {
     @extend %icon-base;
-    @extend .fa-arrow-right;
+    @extend .fa-circle-right;
 }
 
 .use-data-connection-new-script-icon {

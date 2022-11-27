@@ -4,6 +4,7 @@
     <import from="./results-options-settings/results-options-settings"></import>
     <import from="./keyboard-shortcut-settings/keyboard-shortcut-settings"></import>
     <import from="./omnisharp-settings/omnisharp-settings"></import>
+    <import from="./about/about"></import>
 
     <div class="window">
         <div class="flex-grow-height-restricted d-flex flex-column">
@@ -29,6 +30,9 @@
                 <omnisharp-settings case="omnisharp"
                                     class="tab-content"
                                     settings.bind="settings"></omnisharp-settings>
+                <about case="about"
+                       class="tab-content"
+                       settings.bind="settings"></about>
             </div>
         </div>
 
