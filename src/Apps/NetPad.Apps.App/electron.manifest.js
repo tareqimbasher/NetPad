@@ -59,6 +59,15 @@ const electronBuilderConfig = {
             },
             {
                 target: "pacman",
+            },
+            {
+                target: "AppImage",
+            },
+            {
+                target: "deb",
+            },
+            {
+                target: "rpm",
             }
         ]
     },
@@ -106,7 +115,6 @@ const electronNetConfig = {
     splashscreen: {
         imageFile: "./wwwroot/logo/square/256x256.png"
     },
-    environment: "Development",
     singleInstance: false,
     aspCoreBackendPort: 50900,
     electronPort: 50901,
