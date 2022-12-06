@@ -108,6 +108,9 @@ export class ScriptEnvironmentView extends ViewModelBase {
             minSize: [50, 0],
         });
         this.disposables.push(() => this.split.destroy());
+
+        if (this.environment.status === "Running")
+            this.openResultsView();
     }
 
     private async editorTextChanged(newText: string, oldText: string) {
