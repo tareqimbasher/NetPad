@@ -23,7 +23,7 @@ public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalData
 
         connectionString += $";Database={DatabaseName}";
 
-        if (UserId != null || Password != null)
+        if (UserId != null)
         {
             connectionString += $";UserId={UserId}";
         }
