@@ -22,7 +22,7 @@ public class GetCodeStructureQuery : OmniSharpScriptQuery<CodeStructureResponse?
             return await _server.OmniSharpServer.SendAsync<CodeStructureResponse>(new OmniSharpCodeStructureRequest
             {
                 FileName = _server.Project.UserProgramFilePath
-            });
+            }, cancellationToken);
         }
     }
 }

@@ -1,17 +1,30 @@
+// Bootstrap variable overrides
 $body-bg: #eee;
-$font-size-base: 0.8rem;
-$spacer: 0.5rem;
-$border-radius: 0;
-$border-radius: 0;
-$border-radius: 0;
-$nav-link-padding-y: 0.25rem;
-$border-radius: 0.15rem;
-$border-radius-sm: 0.1rem;
-$border-radius-lg: 0.2rem;
-$input-btn-focus-width: 0.1rem;
-$input-btn-padding-y: 0.16rem;
-$input-btn-padding-y-sm: 0.1rem;
-$form-select-indicator-color: silver;
+$font-size-base:                    1rem;
+
+$input-line-height:                 1;
+
+$input-padding-y:                   .275rem;
+$input-padding-x:                   .375rem;
+$input-padding-y-sm:                .2rem;
+$input-padding-x-sm:                .275rem;
+$input-padding-y-lg:                .375rem;
+$input-padding-x-lg:                .75rem;
+
+$input-btn-padding-y:               0.16rem;
+$input-btn-padding-y-sm:            0.1rem;
+
+$border-radius:                     0.15rem;
+$border-radius-sm:                  0.1rem;
+$border-radius-lg:                  0.2rem;
+$input-border-radius:               0rem;
+$input-border-radius-sm:            0rem;
+$input-border-radius-lg:            0rem;
+
+$spacer:                            0.5rem;
+$nav-link-padding-y:                0.25rem;
+$input-btn-focus-width:             0.1rem;
+$form-select-indicator-color:       silver;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
@@ -21,25 +34,20 @@ a.btn-link:hover {
     cursor: pointer;
 }
 
-.grid.gutterless {
-    > .row {
-        margin-right: 0;
-        margin-left: 0;
-
-        > * {
-            padding-right: 0;
-            padding-left: 0;
-        }
-    }
-}
-
 .form-control {
+    //@extend .form-control-sm;
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
 }
 
+textarea.form-control {
+    // We overrode input line height above to be 1 on inputs, we don't want that for textareas
+    line-height: $line-height-base;
+}
+
 .form-select {
+    //@extend .form-select-sm;
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
@@ -101,11 +109,18 @@ a.btn-link:hover {
     }
 }
 
-.dropdown-menu {
-    @include theme(background-color, formControlBackground);
-    @include theme(color, textColor);
+.dropdown {
+    > .btn {
+        @include theme(color, textColor);
+    }
 
-    .dropdown-item:hover {
-        @include theme(background-color, hoverColor);
+    .dropdown-menu {
+        @include theme(background-color, formControlBackground);
+        @include theme(color, textColor);
+
+        .dropdown-item:hover {
+            @include theme(background-color, hoverColor);
+        }
     }
 }
+

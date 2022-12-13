@@ -5,14 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Configuration;
+using NetPad.Data;
+using NetPad.Scripts;
 
-namespace NetPad.Scripts;
+namespace NetPad.DotNet;
 
 public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 {
     private readonly Settings _settings;
     private readonly IScriptRepository _scriptRepository;
     private readonly IScriptNameGenerator _scriptNameGenerator;
+    private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly ILogger<FileSystemAutoSaveScriptRepository> _logger;
     private static readonly object _indexLock = new();
 
@@ -20,11 +23,13 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         Settings settings,
         IScriptRepository scriptRepository,
         IScriptNameGenerator scriptNameGenerator,
+        IDataConnectionRepository dataConnectionRepository,
         ILogger<FileSystemAutoSaveScriptRepository> logger)
     {
         _settings = settings;
         _scriptRepository = scriptRepository;
         _scriptNameGenerator = scriptNameGenerator;
+        _dataConnectionRepository = dataConnectionRepository;
         _logger = logger;
         Directory.CreateDirectory(_settings.AutoSaveScriptsDirectoryPath);
     }
@@ -45,13 +50,18 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
             scriptName = _scriptNameGenerator.Generate();
         }
 
-        var script = Script.From(scriptName, await File.ReadAllTextAsync(autoSavedScriptPath), repoScript?.Path);
-        script.IsDirty = true;
+        var data = await File.ReadAllTextAsync(autoSavedScriptPath).ConfigureAwait(false);
+
+        var script = await ScriptSerializer.DeserializeAsync(scriptName, data, _dataConnectionRepository);
+        if (repoScript?.Path != null)
+            script.SetPath(repoScript.Path);
 
         if (script.Id != scriptId)
         {
-            throw new Exception($"Auto-saved script on disk named with ID: {script.Id} did not contain the same ID as its name indicates.");
+            throw new Exception($"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
         }
+
+        script.IsDirty = true;
 
         return script;
     }
@@ -90,7 +100,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     {
         var scriptFilePath = GetAutoSavedScriptPath(script.Id);
 
-        await File.WriteAllTextAsync(scriptFilePath, script.Serialize()).ConfigureAwait(false);
+        await File.WriteAllTextAsync(scriptFilePath, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
 
         SaveToIndex(script.Id, script.Name);
 

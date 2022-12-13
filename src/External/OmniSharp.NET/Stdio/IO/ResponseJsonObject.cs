@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 
 namespace OmniSharp.Stdio.IO
 {
-    public class ResponseJsonObject
+    internal class ResponseJsonObject
     {
         private readonly JsonNode _response;
 

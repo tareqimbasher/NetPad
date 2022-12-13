@@ -12,13 +12,15 @@ import {IHttpClient} from "aurelia";
 
 export interface IAppApiClient {
 
-    getIdentifier(): Promise<AppIdentifier>;
+    getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
-    openFolderContainingScript(scriptPath: string | null | undefined): Promise<FileResponse | null>;
+    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openScriptsFolder(path: string | null | undefined): Promise<FileResponse | null>;
+    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openPackageCacheFolder(): Promise<FileResponse | null>;
+    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class AppApiClient implements IAppApiClient {
@@ -168,11 +170,49 @@ export class AppApiClient implements IAppApiClient {
         }
         return Promise.resolve<FileResponse | null>(<any>null);
     }
+
+    sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/app/log/{source}";
+        if (source === undefined || source === null)
+            throw new Error("The parameter 'source' must be defined.");
+        url_ = url_.replace("{source}", encodeURIComponent("" + source));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(logs);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSendRemoteLog(_response);
+        });
+    }
+
+    protected processSendRemoteLog(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
 }
 
 export interface IAssembliesApiClient {
 
-    getNamespaces(reference: Reference): Promise<string[]>;
+    getNamespaces(reference: Reference, signal?: AbortSignal | undefined): Promise<string[]>;
 }
 
 export class AssembliesApiClient implements IAssembliesApiClient {
@@ -232,21 +272,478 @@ export class AssembliesApiClient implements IAssembliesApiClient {
     }
 }
 
+export interface IDataConnectionsApiClient {
+
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
+
+    getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]>;
+
+    save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void>;
+
+    get(id: string, signal?: AbortSignal | undefined): Promise<DataConnection>;
+
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    getAllNames(signal?: AbortSignal | undefined): Promise<string[]>;
+
+    refresh(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
+
+    protectPassword(unprotectedPassword: string, signal?: AbortSignal | undefined): Promise<string | null>;
+
+    getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]>;
+
+    getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure>;
+}
+
+export class DataConnectionsApiClient implements IDataConnectionsApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/open?";
+        if (dataConnectionId !== undefined && dataConnectionId !== null)
+            url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processOpenDataConnectionWindow(_response);
+        });
+    }
+
+    protected processOpenDataConnectionWindow(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]> {
+        let url_ = this.baseUrl + "/data-connections";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAll(_response);
+        });
+    }
+
+    protected processGetAll(response: Response): Promise<DataConnection[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(DataConnection.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnection[]>(<any>null);
+    }
+
+    save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSave(_response);
+        });
+    }
+
+    protected processSave(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    get(id: string, signal?: AbortSignal | undefined): Promise<DataConnection> {
+        let url_ = this.baseUrl + "/data-connections/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGet(_response);
+        });
+    }
+
+    protected processGet(response: Response): Promise<DataConnection> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DataConnection.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnection>(<any>null);
+    }
+
+    delete(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processDelete(_response);
+        });
+    }
+
+    protected processDelete(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    getAllNames(signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/data-connections/names";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetAllNames(_response);
+        });
+    }
+
+    protected processGetAllNames(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
+    }
+
+    refresh(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/{id}/refresh";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRefresh(_response);
+        });
+    }
+
+    protected processRefresh(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult> {
+        let url_ = this.baseUrl + "/data-connections/test";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processTest(_response);
+        });
+    }
+
+    protected processTest(response: Response): Promise<DataConnectionTestResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DataConnectionTestResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnectionTestResult>(<any>null);
+    }
+
+    protectPassword(unprotectedPassword: string, signal?: AbortSignal | undefined): Promise<string | null> {
+        let url_ = this.baseUrl + "/data-connections/protect-password";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(unprotectedPassword);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processProtectPassword(_response);
+        });
+    }
+
+    protected processProtectPassword(response: Response): Promise<string | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string | null>(<any>null);
+    }
+
+    getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]> {
+        let url_ = this.baseUrl + "/data-connections/databases";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDatabases(_response);
+        });
+    }
+
+    protected processGetDatabases(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(<any>null);
+    }
+
+    getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure> {
+        let url_ = this.baseUrl + "/data-connections/{id}/database-structure";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetDatabaseStructure(_response);
+        });
+    }
+
+    protected processGetDatabaseStructure(response: Response): Promise<DatabaseStructure> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DatabaseStructure.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DatabaseStructure>(<any>null);
+    }
+}
+
 export interface IPackagesApiClient {
 
-    getCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
+    getCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]>;
 
-    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+    deleteCachedPackage(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined): Promise<CachedPackage[]>;
+    getExplicitlyInstalledCachedPackages(loadMetadata: boolean | undefined, signal?: AbortSignal | undefined): Promise<CachedPackage[]>;
 
-    purgePackageCache(): Promise<FileResponse | null>;
+    purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    getPackageVersions(packageId: string | null | undefined): Promise<string[]>;
+    getPackageVersions(packageId: string | null | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
 
-    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined): Promise<PackageMetadata[]>;
+    search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
-    install(packageId: string | null | undefined, packageVersion: string | null | undefined): Promise<FileResponse | null>;
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class PackagesApiClient implements IPackagesApiClient {
@@ -555,23 +1052,25 @@ export class PackagesApiClient implements IPackagesApiClient {
 
 export interface IScriptsApiClient {
 
-    getScripts(): Promise<ScriptSummary[]>;
+    getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
 
-    create(): Promise<void>;
+    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void>;
 
-    save(id: string): Promise<void>;
+    save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    run(id: string, runOptions: RunOptions): Promise<void>;
+    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void>;
 
-    updateCode(id: string, code: string): Promise<void>;
+    updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    openConfigWindow(id: string, tab: string | null | undefined): Promise<void>;
+    openConfigWindow(id: string, tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    setScriptNamespaces(id: string, namespaces: string[]): Promise<FileResponse | null>;
+    setScriptNamespaces(id: string, namespaces: string[], signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setReferences(id: string, newReferences: Reference[]): Promise<FileResponse | null>;
+    setReferences(id: string, newReferences: Reference[], signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    setScriptKind(id: string, scriptKind: ScriptKind): Promise<FileResponse | null>;
+    setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class ScriptsApiClient implements IScriptsApiClient {
@@ -626,14 +1125,18 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<ScriptSummary[]>(<any>null);
     }
 
-    create(signal?: AbortSignal | undefined): Promise<void> {
+    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/create";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(dto);
+
         let options_ = <RequestInit>{
+            body: content_,
             method: "PATCH",
             signal,
             headers: {
+                "Content-Type": "application/json",
             }
         };
 
@@ -691,14 +1194,14 @@ export class ScriptsApiClient implements IScriptsApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    run(id: string, runOptions: RunOptions, signal?: AbortSignal | undefined): Promise<void> {
+    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(runOptions);
+        const content_ = JSON.stringify(dto);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -922,23 +1425,61 @@ export class ScriptsApiClient implements IScriptsApiClient {
         }
         return Promise.resolve<FileResponse | null>(<any>null);
     }
+
+    setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/data-connection?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (dataConnectionId !== undefined && dataConnectionId !== null)
+            url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PUT",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processSetDataConnection(_response);
+        });
+    }
+
+    protected processSetDataConnection(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
 }
 
 export interface ISessionApiClient {
 
-    getEnvironment(scriptId: string): Promise<ScriptEnvironment>;
+    getEnvironment(scriptId: string, signal?: AbortSignal | undefined): Promise<ScriptEnvironment>;
 
-    getEnvironments(): Promise<ScriptEnvironment[]>;
+    getEnvironments(signal?: AbortSignal | undefined): Promise<ScriptEnvironment[]>;
 
-    openByPath(scriptPath: string): Promise<void>;
+    openByPath(scriptPath: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    close(scriptId: string): Promise<void>;
+    close(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    getActive(): Promise<string | null>;
+    getActive(signal?: AbortSignal | undefined): Promise<string | null>;
 
-    activate(scriptId: string): Promise<void>;
+    activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    activateLastActive(): Promise<void>;
+    activateLastActive(signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class SessionApiClient implements ISessionApiClient {
@@ -1204,13 +1745,13 @@ export class SessionApiClient implements ISessionApiClient {
 
 export interface ISettingsApiClient {
 
-    get(): Promise<Settings>;
+    get(signal?: AbortSignal | undefined): Promise<Settings>;
 
-    update(settings: Settings): Promise<FileResponse | null>;
+    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    openSettingsWindow(tab: string | null | undefined): Promise<void>;
+    openSettingsWindow(tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    showSettingsFile(): Promise<FileResponse | null>;
+    showSettingsFile(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class SettingsApiClient implements ISettingsApiClient {
@@ -1364,7 +1905,7 @@ export class SettingsApiClient implements ISettingsApiClient {
 
 export interface ITypesApiClient {
 
-    additionalTypes(): Promise<Types>;
+    additionalTypes(signal?: AbortSignal | undefined): Promise<Types>;
 }
 
 export class TypesApiClient implements ITypesApiClient {
@@ -1460,6 +2001,77 @@ export interface IAppIdentifier {
     version: string;
 }
 
+export type LogSource = "WebApp" | "ElectronApp";
+
+export class RemoteLogMessage implements IRemoteLogMessage {
+    logger?: string | undefined;
+    logLevel!: LogLevel;
+    message?: string | undefined;
+    optionalParams?: string[] | undefined;
+    date!: Date;
+
+    constructor(data?: IRemoteLogMessage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.logger = _data["logger"];
+            this.logLevel = _data["logLevel"];
+            this.message = _data["message"];
+            if (Array.isArray(_data["optionalParams"])) {
+                this.optionalParams = [] as any;
+                for (let item of _data["optionalParams"])
+                    this.optionalParams!.push(item);
+            }
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): RemoteLogMessage {
+        data = typeof data === 'object' ? data : {};
+        let result = new RemoteLogMessage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["logger"] = this.logger;
+        data["logLevel"] = this.logLevel;
+        data["message"] = this.message;
+        if (Array.isArray(this.optionalParams)) {
+            data["optionalParams"] = [];
+            for (let item of this.optionalParams)
+                data["optionalParams"].push(item);
+        }
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): RemoteLogMessage {
+        const json = this.toJSON();
+        let result = new RemoteLogMessage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRemoteLogMessage {
+    logger?: string | undefined;
+    logLevel: LogLevel;
+    message?: string | undefined;
+    optionalParams?: string[] | undefined;
+    date: Date;
+}
+
+export type LogLevel = "Trace" | "Debug" | "Information" | "Warning" | "Error" | "Critical" | "None";
+
 export abstract class Reference implements IReference {
     title!: string;
 
@@ -1483,8 +2095,13 @@ export abstract class Reference implements IReference {
 
     static fromJS(data: any): Reference {
         data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "AssemblyReference") {
-            let result = new AssemblyReference();
+        if (data["discriminator"] === "AssemblyFileReference") {
+            let result = new AssemblyFileReference();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "AssemblyImageReference") {
+            let result = new AssemblyImageReference();
             result.init(data);
             return result;
         }
@@ -1512,12 +2129,12 @@ export interface IReference {
     title: string;
 }
 
-export class AssemblyReference extends Reference implements IAssemblyReference {
+export class AssemblyFileReference extends Reference implements IAssemblyFileReference {
     assemblyPath!: string;
 
-    constructor(data?: IAssemblyReference) {
+    constructor(data?: IAssemblyFileReference) {
         super(data);
-        this._discriminator = "AssemblyReference";
+        this._discriminator = "AssemblyFileReference";
     }
 
     init(_data?: any) {
@@ -1527,9 +2144,9 @@ export class AssemblyReference extends Reference implements IAssemblyReference {
         }
     }
 
-    static fromJS(data: any): AssemblyReference {
+    static fromJS(data: any): AssemblyFileReference {
         data = typeof data === 'object' ? data : {};
-        let result = new AssemblyReference();
+        let result = new AssemblyFileReference();
         result.init(data);
         return result;
     }
@@ -1541,16 +2158,254 @@ export class AssemblyReference extends Reference implements IAssemblyReference {
         return data;
     }
 
-    clone(): AssemblyReference {
+    clone(): AssemblyFileReference {
         const json = this.toJSON();
-        let result = new AssemblyReference();
+        let result = new AssemblyFileReference();
         result.init(json);
         return result;
     }
 }
 
-export interface IAssemblyReference extends IReference {
+export interface IAssemblyFileReference extends IReference {
     assemblyPath: string;
+}
+
+export class AssemblyImageReference extends Reference implements IAssemblyImageReference {
+    assemblyImage!: AssemblyImage;
+
+    constructor(data?: IAssemblyImageReference) {
+        super(data);
+        if (!data) {
+            this.assemblyImage = new AssemblyImage();
+        }
+        this._discriminator = "AssemblyImageReference";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.assemblyImage = _data["assemblyImage"] ? AssemblyImage.fromJS(_data["assemblyImage"]) : new AssemblyImage();
+        }
+    }
+
+    static fromJS(data: any): AssemblyImageReference {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyImageReference();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["assemblyImage"] = this.assemblyImage ? this.assemblyImage.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AssemblyImageReference {
+        const json = this.toJSON();
+        let result = new AssemblyImageReference();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyImageReference extends IReference {
+    assemblyImage: AssemblyImage;
+}
+
+export class AssemblyImage implements IAssemblyImage {
+    assemblyName!: AssemblyName;
+    image!: string;
+
+    constructor(data?: IAssemblyImage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.assemblyName = new AssemblyName();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.assemblyName = _data["assemblyName"] ? AssemblyName.fromJS(_data["assemblyName"]) : new AssemblyName();
+            this.image = _data["image"];
+        }
+    }
+
+    static fromJS(data: any): AssemblyImage {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyImage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["assemblyName"] = this.assemblyName ? this.assemblyName.toJSON() : <any>undefined;
+        data["image"] = this.image;
+        return data;
+    }
+
+    clone(): AssemblyImage {
+        const json = this.toJSON();
+        let result = new AssemblyImage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyImage {
+    assemblyName: AssemblyName;
+    image: string;
+}
+
+export class AssemblyName implements IAssemblyName {
+    name?: string | undefined;
+    version?: string | undefined;
+    cultureInfo?: string | undefined;
+    cultureName?: string | undefined;
+    codeBase?: string | undefined;
+    escapedCodeBase?: string | undefined;
+    processorArchitecture!: ProcessorArchitecture;
+    contentType!: AssemblyContentType;
+    flags!: AssemblyNameFlags;
+    hashAlgorithm!: AssemblyHashAlgorithm;
+    versionCompatibility!: AssemblyVersionCompatibility;
+    keyPair?: StrongNameKeyPair | undefined;
+    fullName!: string;
+
+    constructor(data?: IAssemblyName) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.version = _data["version"];
+            this.cultureInfo = _data["cultureInfo"];
+            this.cultureName = _data["cultureName"];
+            this.codeBase = _data["codeBase"];
+            this.escapedCodeBase = _data["escapedCodeBase"];
+            this.processorArchitecture = _data["processorArchitecture"];
+            this.contentType = _data["contentType"];
+            this.flags = _data["flags"];
+            this.hashAlgorithm = _data["hashAlgorithm"];
+            this.versionCompatibility = _data["versionCompatibility"];
+            this.keyPair = _data["keyPair"] ? StrongNameKeyPair.fromJS(_data["keyPair"]) : <any>undefined;
+            this.fullName = _data["fullName"];
+        }
+    }
+
+    static fromJS(data: any): AssemblyName {
+        data = typeof data === 'object' ? data : {};
+        let result = new AssemblyName();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["version"] = this.version;
+        data["cultureInfo"] = this.cultureInfo;
+        data["cultureName"] = this.cultureName;
+        data["codeBase"] = this.codeBase;
+        data["escapedCodeBase"] = this.escapedCodeBase;
+        data["processorArchitecture"] = this.processorArchitecture;
+        data["contentType"] = this.contentType;
+        data["flags"] = this.flags;
+        data["hashAlgorithm"] = this.hashAlgorithm;
+        data["versionCompatibility"] = this.versionCompatibility;
+        data["keyPair"] = this.keyPair ? this.keyPair.toJSON() : <any>undefined;
+        data["fullName"] = this.fullName;
+        return data;
+    }
+
+    clone(): AssemblyName {
+        const json = this.toJSON();
+        let result = new AssemblyName();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAssemblyName {
+    name?: string | undefined;
+    version?: string | undefined;
+    cultureInfo?: string | undefined;
+    cultureName?: string | undefined;
+    codeBase?: string | undefined;
+    escapedCodeBase?: string | undefined;
+    processorArchitecture: ProcessorArchitecture;
+    contentType: AssemblyContentType;
+    flags: AssemblyNameFlags;
+    hashAlgorithm: AssemblyHashAlgorithm;
+    versionCompatibility: AssemblyVersionCompatibility;
+    keyPair?: StrongNameKeyPair | undefined;
+    fullName: string;
+}
+
+export type ProcessorArchitecture = "None" | "MSIL" | "X86" | "IA64" | "Amd64" | "Arm";
+
+export type AssemblyContentType = "Default" | "WindowsRuntime";
+
+export type AssemblyNameFlags = "None" | "PublicKey" | "Retargetable" | "EnableJITcompileOptimizer" | "EnableJITcompileTracking";
+
+export type AssemblyHashAlgorithm = "None" | "MD5" | "SHA1" | "SHA256" | "SHA384" | "SHA512";
+
+export type AssemblyVersionCompatibility = "SameMachine" | "SameProcess" | "SameDomain";
+
+export class StrongNameKeyPair implements IStrongNameKeyPair {
+    publicKey!: string;
+
+    constructor(data?: IStrongNameKeyPair) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.publicKey = _data["publicKey"];
+        }
+    }
+
+    static fromJS(data: any): StrongNameKeyPair {
+        data = typeof data === 'object' ? data : {};
+        let result = new StrongNameKeyPair();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["publicKey"] = this.publicKey;
+        return data;
+    }
+
+    clone(): StrongNameKeyPair {
+        const json = this.toJSON();
+        let result = new StrongNameKeyPair();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IStrongNameKeyPair {
+    publicKey: string;
 }
 
 export class PackageReference extends Reference implements IPackageReference {
@@ -1596,6 +2451,512 @@ export class PackageReference extends Reference implements IPackageReference {
 export interface IPackageReference extends IReference {
     packageId: string;
     version: string;
+}
+
+export abstract class DataConnection implements IDataConnection {
+    id!: string;
+    name!: string;
+    type!: DataConnectionType;
+
+    protected _discriminator: string;
+
+    constructor(data?: IDataConnection) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        this._discriminator = "DataConnection";
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.type = _data["type"];
+        }
+    }
+
+    static fromJS(data: any): DataConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "DatabaseConnection") {
+            throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["type"] = this.type;
+        return data;
+    }
+
+    clone(): DataConnection {
+        throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
+    }
+}
+
+export interface IDataConnection {
+    id: string;
+    name: string;
+    type: DataConnectionType;
+}
+
+export type DataConnectionType = "MSSQLServer" | "PostgreSQL";
+
+export class DataConnectionTestResult implements IDataConnectionTestResult {
+    success!: boolean;
+    message?: string | undefined;
+
+    constructor(data?: IDataConnectionTestResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionTestResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionTestResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["message"] = this.message;
+        return data;
+    }
+
+    clone(): DataConnectionTestResult {
+        const json = this.toJSON();
+        let result = new DataConnectionTestResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionTestResult {
+    success: boolean;
+    message?: string | undefined;
+}
+
+export class DatabaseStructure implements IDatabaseStructure {
+    databaseName!: string;
+    schemas!: DatabaseSchema[];
+
+    constructor(data?: IDatabaseStructure) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.schemas = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.databaseName = _data["databaseName"];
+            if (Array.isArray(_data["schemas"])) {
+                this.schemas = [] as any;
+                for (let item of _data["schemas"])
+                    this.schemas!.push(DatabaseSchema.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseStructure {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseStructure();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["databaseName"] = this.databaseName;
+        if (Array.isArray(this.schemas)) {
+            data["schemas"] = [];
+            for (let item of this.schemas)
+                data["schemas"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseStructure {
+        const json = this.toJSON();
+        let result = new DatabaseStructure();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseStructure {
+    databaseName: string;
+    schemas: DatabaseSchema[];
+}
+
+export class DatabaseSchema implements IDatabaseSchema {
+    name?: string | undefined;
+    tables!: DatabaseTable[];
+
+    constructor(data?: IDatabaseSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.tables = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            if (Array.isArray(_data["tables"])) {
+                this.tables = [] as any;
+                for (let item of _data["tables"])
+                    this.tables!.push(DatabaseTable.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        if (Array.isArray(this.tables)) {
+            data["tables"] = [];
+            for (let item of this.tables)
+                data["tables"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseSchema {
+        const json = this.toJSON();
+        let result = new DatabaseSchema();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseSchema {
+    name?: string | undefined;
+    tables: DatabaseTable[];
+}
+
+export class DatabaseTable implements IDatabaseTable {
+    name!: string;
+    displayName!: string;
+    columns!: DatabaseTableColumn[];
+    indexes!: DatabaseIndex[];
+    navigations!: DatabaseTableNavigation[];
+
+    constructor(data?: IDatabaseTable) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.columns = [];
+            this.indexes = [];
+            this.navigations = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.displayName = _data["displayName"];
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(DatabaseTableColumn.fromJS(item));
+            }
+            if (Array.isArray(_data["indexes"])) {
+                this.indexes = [] as any;
+                for (let item of _data["indexes"])
+                    this.indexes!.push(DatabaseIndex.fromJS(item));
+            }
+            if (Array.isArray(_data["navigations"])) {
+                this.navigations = [] as any;
+                for (let item of _data["navigations"])
+                    this.navigations!.push(DatabaseTableNavigation.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseTable {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTable();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["displayName"] = this.displayName;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item.toJSON());
+        }
+        if (Array.isArray(this.indexes)) {
+            data["indexes"] = [];
+            for (let item of this.indexes)
+                data["indexes"].push(item.toJSON());
+        }
+        if (Array.isArray(this.navigations)) {
+            data["navigations"] = [];
+            for (let item of this.navigations)
+                data["navigations"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DatabaseTable {
+        const json = this.toJSON();
+        let result = new DatabaseTable();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTable {
+    name: string;
+    displayName: string;
+    columns: DatabaseTableColumn[];
+    indexes: DatabaseIndex[];
+    navigations: DatabaseTableNavigation[];
+}
+
+export class DatabaseTableColumn implements IDatabaseTableColumn {
+    name!: string;
+    type!: string;
+    clrType!: string;
+    isPrimaryKey!: boolean;
+    isForeignKey!: boolean;
+    order?: number | undefined;
+
+    constructor(data?: IDatabaseTableColumn) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.type = _data["type"];
+            this.clrType = _data["clrType"];
+            this.isPrimaryKey = _data["isPrimaryKey"];
+            this.isForeignKey = _data["isForeignKey"];
+            this.order = _data["order"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseTableColumn {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTableColumn();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["clrType"] = this.clrType;
+        data["isPrimaryKey"] = this.isPrimaryKey;
+        data["isForeignKey"] = this.isForeignKey;
+        data["order"] = this.order;
+        return data;
+    }
+
+    clone(): DatabaseTableColumn {
+        const json = this.toJSON();
+        let result = new DatabaseTableColumn();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTableColumn {
+    name: string;
+    type: string;
+    clrType: string;
+    isPrimaryKey: boolean;
+    isForeignKey: boolean;
+    order?: number | undefined;
+}
+
+export class DatabaseIndex implements IDatabaseIndex {
+    name!: string;
+    type?: string | undefined;
+    isUnique!: boolean;
+    isClustered!: boolean;
+    columns!: string[];
+
+    constructor(data?: IDatabaseIndex) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.columns = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.type = _data["type"];
+            this.isUnique = _data["isUnique"];
+            this.isClustered = _data["isClustered"];
+            if (Array.isArray(_data["columns"])) {
+                this.columns = [] as any;
+                for (let item of _data["columns"])
+                    this.columns!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): DatabaseIndex {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseIndex();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["isUnique"] = this.isUnique;
+        data["isClustered"] = this.isClustered;
+        if (Array.isArray(this.columns)) {
+            data["columns"] = [];
+            for (let item of this.columns)
+                data["columns"].push(item);
+        }
+        return data;
+    }
+
+    clone(): DatabaseIndex {
+        const json = this.toJSON();
+        let result = new DatabaseIndex();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseIndex {
+    name: string;
+    type?: string | undefined;
+    isUnique: boolean;
+    isClustered: boolean;
+    columns: string[];
+}
+
+export class DatabaseTableNavigation implements IDatabaseTableNavigation {
+    name!: string;
+    target!: string;
+    clrType?: string | undefined;
+
+    constructor(data?: IDatabaseTableNavigation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.target = _data["target"];
+            this.clrType = _data["clrType"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseTableNavigation {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseTableNavigation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["target"] = this.target;
+        data["clrType"] = this.clrType;
+        return data;
+    }
+
+    clone(): DatabaseTableNavigation {
+        const json = this.toJSON();
+        let result = new DatabaseTableNavigation();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseTableNavigation {
+    name: string;
+    target: string;
+    clrType?: string | undefined;
 }
 
 export class PackageMetadata implements IPackageMetadata {
@@ -1805,10 +3166,12 @@ export interface IScriptSummary {
     path: string;
 }
 
-export class RunOptions implements IRunOptions {
+export class CreateScriptDto implements ICreateScriptDto {
     code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately!: boolean;
 
-    constructor(data?: IRunOptions) {
+    constructor(data?: ICreateScriptDto) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1820,12 +3183,14 @@ export class RunOptions implements IRunOptions {
     init(_data?: any) {
         if (_data) {
             this.code = _data["code"];
+            this.dataConnectionId = _data["dataConnectionId"];
+            this.runImmediately = _data["runImmediately"];
         }
     }
 
-    static fromJS(data: any): RunOptions {
+    static fromJS(data: any): CreateScriptDto {
         data = typeof data === 'object' ? data : {};
-        let result = new RunOptions();
+        let result = new CreateScriptDto();
         result.init(data);
         return result;
     }
@@ -1833,18 +3198,132 @@ export class RunOptions implements IRunOptions {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["code"] = this.code;
+        data["dataConnectionId"] = this.dataConnectionId;
+        data["runImmediately"] = this.runImmediately;
         return data;
     }
 
-    clone(): RunOptions {
+    clone(): CreateScriptDto {
         const json = this.toJSON();
-        let result = new RunOptions();
+        let result = new CreateScriptDto();
         result.init(json);
         return result;
     }
 }
 
-export interface IRunOptions {
+export interface ICreateScriptDto {
+    code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately: boolean;
+}
+
+export class RunOptionsDto implements IRunOptionsDto {
+    specificCodeToRun?: string | undefined;
+    additionalCode?: SourceCodeDto[] | undefined;
+
+    constructor(data?: IRunOptionsDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.specificCodeToRun = _data["specificCodeToRun"];
+            if (Array.isArray(_data["additionalCode"])) {
+                this.additionalCode = [] as any;
+                for (let item of _data["additionalCode"])
+                    this.additionalCode!.push(SourceCodeDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): RunOptionsDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new RunOptionsDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["specificCodeToRun"] = this.specificCodeToRun;
+        if (Array.isArray(this.additionalCode)) {
+            data["additionalCode"] = [];
+            for (let item of this.additionalCode)
+                data["additionalCode"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): RunOptionsDto {
+        const json = this.toJSON();
+        let result = new RunOptionsDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRunOptionsDto {
+    specificCodeToRun?: string | undefined;
+    additionalCode?: SourceCodeDto[] | undefined;
+}
+
+export class SourceCodeDto implements ISourceCodeDto {
+    usings?: string[] | undefined;
+    code?: string | undefined;
+
+    constructor(data?: ISourceCodeDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["usings"])) {
+                this.usings = [] as any;
+                for (let item of _data["usings"])
+                    this.usings!.push(item);
+            }
+            this.code = _data["code"];
+        }
+    }
+
+    static fromJS(data: any): SourceCodeDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SourceCodeDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.usings)) {
+            data["usings"] = [];
+            for (let item of this.usings)
+                data["usings"].push(item);
+        }
+        data["code"] = this.code;
+        return data;
+    }
+
+    clone(): SourceCodeDto {
+        const json = this.toJSON();
+        let result = new SourceCodeDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISourceCodeDto {
+    usings?: string[] | undefined;
     code?: string | undefined;
 }
 
@@ -1909,6 +3388,7 @@ export class Script implements IScript {
     name!: string;
     path?: string | undefined;
     config!: ScriptConfig;
+    dataConnection?: DataConnection | undefined;
     code!: string;
     isDirty!: boolean;
     directoryPath?: string | undefined;
@@ -1932,6 +3412,7 @@ export class Script implements IScript {
             this.name = _data["name"];
             this.path = _data["path"];
             this.config = _data["config"] ? ScriptConfig.fromJS(_data["config"]) : new ScriptConfig();
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
             this.code = _data["code"];
             this.isDirty = _data["isDirty"];
             this.directoryPath = _data["directoryPath"];
@@ -1952,6 +3433,7 @@ export class Script implements IScript {
         data["name"] = this.name;
         data["path"] = this.path;
         data["config"] = this.config ? this.config.toJSON() : <any>undefined;
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
         data["code"] = this.code;
         data["isDirty"] = this.isDirty;
         data["directoryPath"] = this.directoryPath;
@@ -1972,6 +3454,7 @@ export interface IScript {
     name: string;
     path?: string | undefined;
     config: ScriptConfig;
+    dataConnection?: DataConnection | undefined;
     code: string;
     isDirty: boolean;
     directoryPath?: string | undefined;
@@ -2504,14 +3987,22 @@ export class Types implements ITypes {
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
+    dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
+    dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
+    dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -2531,14 +4022,22 @@ export class Types implements ITypes {
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
             this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChangedEvent.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
             this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmittedEvent.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
+            this.scriptSqlOutputEmittedEvent = _data["scriptSqlOutputEmittedEvent"] ? ScriptSqlOutputEmittedEvent.fromJS(_data["scriptSqlOutputEmittedEvent"]) : <any>undefined;
             this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAddedEvent.fromJS(_data["environmentsAdded"]) : <any>undefined;
             this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemovedEvent.fromJS(_data["environmentsRemoved"]) : <any>undefined;
             this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
             this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChangedEvent.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChangedEvent.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
+            this.dataConnectionSavedEvent = _data["dataConnectionSavedEvent"] ? DataConnectionSavedEvent.fromJS(_data["dataConnectionSavedEvent"]) : <any>undefined;
+            this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdatingEvent = _data["dataConnectionResourcesUpdatingEvent"] ? DataConnectionResourcesUpdatingEvent.fromJS(_data["dataConnectionResourcesUpdatingEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdatedEvent = _data["dataConnectionResourcesUpdatedEvent"] ? DataConnectionResourcesUpdatedEvent.fromJS(_data["dataConnectionResourcesUpdatedEvent"]) : <any>undefined;
+            this.dataConnectionResourcesUpdateFailedEvent = _data["dataConnectionResourcesUpdateFailedEvent"] ? DataConnectionResourcesUpdateFailedEvent.fromJS(_data["dataConnectionResourcesUpdateFailedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
+            this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
+            this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
         }
     }
 
@@ -2558,14 +4057,22 @@ export class Types implements ITypes {
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
         data["scriptConfigPropertyChanged"] = this.scriptConfigPropertyChanged ? this.scriptConfigPropertyChanged.toJSON() : <any>undefined;
         data["scriptOutputEmitted"] = this.scriptOutputEmitted ? this.scriptOutputEmitted.toJSON() : <any>undefined;
+        data["scriptSqlOutputEmittedEvent"] = this.scriptSqlOutputEmittedEvent ? this.scriptSqlOutputEmittedEvent.toJSON() : <any>undefined;
         data["environmentsAdded"] = this.environmentsAdded ? this.environmentsAdded.toJSON() : <any>undefined;
         data["environmentsRemoved"] = this.environmentsRemoved ? this.environmentsRemoved.toJSON() : <any>undefined;
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
         data["activeEnvironmentChanged"] = this.activeEnvironmentChanged ? this.activeEnvironmentChanged.toJSON() : <any>undefined;
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
+        data["dataConnectionSavedEvent"] = this.dataConnectionSavedEvent ? this.dataConnectionSavedEvent.toJSON() : <any>undefined;
+        data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdatingEvent"] = this.dataConnectionResourcesUpdatingEvent ? this.dataConnectionResourcesUpdatingEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdatedEvent"] = this.dataConnectionResourcesUpdatedEvent ? this.dataConnectionResourcesUpdatedEvent.toJSON() : <any>undefined;
+        data["dataConnectionResourcesUpdateFailedEvent"] = this.dataConnectionResourcesUpdateFailedEvent ? this.dataConnectionResourcesUpdateFailedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
+        data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
+        data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
         return data;
     }
 
@@ -2585,14 +4092,22 @@ export interface ITypes {
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
+    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
+    dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
+    dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
+    dataConnectionResourcesUpdatedEvent?: DataConnectionResourcesUpdatedEvent | undefined;
+    dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
@@ -2919,6 +4434,53 @@ export interface IScriptOutputEmittedEvent {
     output?: string | undefined;
 }
 
+export class ScriptSqlOutputEmittedEvent implements IScriptSqlOutputEmittedEvent {
+    scriptId!: string;
+    output?: string | undefined;
+
+    constructor(data?: IScriptSqlOutputEmittedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.output = _data["output"];
+        }
+    }
+
+    static fromJS(data: any): ScriptSqlOutputEmittedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptSqlOutputEmittedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["output"] = this.output;
+        return data;
+    }
+
+    clone(): ScriptSqlOutputEmittedEvent {
+        const json = this.toJSON();
+        let result = new ScriptSqlOutputEmittedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptSqlOutputEmittedEvent {
+    scriptId: string;
+    output?: string | undefined;
+}
+
 export class EnvironmentsAddedEvent implements IEnvironmentsAddedEvent {
     environments!: ScriptEnvironment[];
 
@@ -3162,6 +4724,239 @@ export class ScriptDirectoryChangedEvent implements IScriptDirectoryChangedEvent
 
 export interface IScriptDirectoryChangedEvent {
     scripts: ScriptSummary[];
+}
+
+export class DataConnectionSavedEvent implements IDataConnectionSavedEvent {
+    dataConnection!: DataConnection;
+
+    constructor(data?: IDataConnectionSavedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DataConnectionSavedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionSavedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DataConnectionSavedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionSavedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionSavedEvent {
+    dataConnection: DataConnection;
+}
+
+export class DataConnectionDeletedEvent implements IDataConnectionDeletedEvent {
+    dataConnection!: DataConnection;
+
+    constructor(data?: IDataConnectionDeletedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DataConnectionDeletedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionDeletedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DataConnectionDeletedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionDeletedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionDeletedEvent {
+    dataConnection: DataConnection;
+}
+
+export class DataConnectionResourcesUpdatingEvent implements IDataConnectionResourcesUpdatingEvent {
+    dataConnection!: DataConnection;
+    updatingComponent!: DataConnectionResourceComponent;
+
+    constructor(data?: IDataConnectionResourcesUpdatingEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.updatingComponent = _data["updatingComponent"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdatingEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdatingEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["updatingComponent"] = this.updatingComponent;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdatingEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdatingEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdatingEvent {
+    dataConnection: DataConnection;
+    updatingComponent: DataConnectionResourceComponent;
+}
+
+export type DataConnectionResourceComponent = "SourceCode" | "Assembly" | "RequiredReferences";
+
+export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResourcesUpdatedEvent {
+    dataConnection!: DataConnection;
+    updatedComponent!: DataConnectionResourceComponent;
+
+    constructor(data?: IDataConnectionResourcesUpdatedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.updatedComponent = _data["updatedComponent"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdatedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdatedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["updatedComponent"] = this.updatedComponent;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdatedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdatedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdatedEvent {
+    dataConnection: DataConnection;
+    updatedComponent: DataConnectionResourceComponent;
+}
+
+export class DataConnectionResourcesUpdateFailedEvent implements IDataConnectionResourcesUpdateFailedEvent {
+    dataConnection!: DataConnection;
+    failedComponent!: DataConnectionResourceComponent;
+    error?: string | undefined;
+
+    constructor(data?: IDataConnectionResourcesUpdateFailedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
+            this.failedComponent = _data["failedComponent"];
+            this.error = _data["error"];
+        }
+    }
+
+    static fromJS(data: any): DataConnectionResourcesUpdateFailedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DataConnectionResourcesUpdateFailedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
+        data["failedComponent"] = this.failedComponent;
+        data["error"] = this.error;
+        return data;
+    }
+
+    clone(): DataConnectionResourcesUpdateFailedEvent {
+        const json = this.toJSON();
+        let result = new DataConnectionResourcesUpdateFailedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDataConnectionResourcesUpdateFailedEvent {
+    dataConnection: DataConnection;
+    failedComponent: DataConnectionResourceComponent;
+    error?: string | undefined;
 }
 
 export abstract class CommandBase implements ICommandBase {
@@ -3478,6 +5273,237 @@ export class RequestNewScriptNameCommand extends CommandOfString implements IReq
 
 export interface IRequestNewScriptNameCommand extends ICommandOfString {
     currentScriptName: string;
+}
+
+export abstract class DatabaseConnection extends DataConnection implements IDatabaseConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    databaseName?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData!: boolean;
+
+    constructor(data?: IDatabaseConnection) {
+        super(data);
+        this._discriminator = "DatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.host = _data["host"];
+            this.port = _data["port"];
+            this.databaseName = _data["databaseName"];
+            this.userId = _data["userId"];
+            this.password = _data["password"];
+            this.containsProductionData = _data["containsProductionData"];
+        }
+    }
+
+    static fromJS(data: any): DatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["host"] = this.host;
+        data["port"] = this.port;
+        data["databaseName"] = this.databaseName;
+        data["userId"] = this.userId;
+        data["password"] = this.password;
+        data["containsProductionData"] = this.containsProductionData;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): DatabaseConnection {
+        throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IDatabaseConnection extends IDataConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    databaseName?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData: boolean;
+}
+
+export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnection implements IEntityFrameworkDatabaseConnection {
+    entityFrameworkProviderName!: string;
+
+    constructor(data?: IEntityFrameworkDatabaseConnection) {
+        super(data);
+        this._discriminator = "EntityFrameworkDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.entityFrameworkProviderName = _data["entityFrameworkProviderName"];
+        }
+    }
+
+    static fromJS(data: any): EntityFrameworkDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
+            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["entityFrameworkProviderName"] = this.entityFrameworkProviderName;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): EntityFrameworkDatabaseConnection {
+        throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IEntityFrameworkDatabaseConnection extends IDatabaseConnection {
+    entityFrameworkProviderName: string;
+}
+
+export abstract class EntityFrameworkRelationalDatabaseConnection extends EntityFrameworkDatabaseConnection implements IEntityFrameworkRelationalDatabaseConnection {
+
+    constructor(data?: IEntityFrameworkRelationalDatabaseConnection) {
+        super(data);
+        this._discriminator = "EntityFrameworkRelationalDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): EntityFrameworkRelationalDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
+            let result = new MsSqlServerDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
+            let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): EntityFrameworkRelationalDatabaseConnection {
+        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
+    }
+}
+
+export interface IEntityFrameworkRelationalDatabaseConnection extends IEntityFrameworkDatabaseConnection {
+}
+
+export class MsSqlServerDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMsSqlServerDatabaseConnection {
+
+    constructor(data?: IMsSqlServerDatabaseConnection) {
+        super(data);
+        this._discriminator = "MsSqlServerDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): MsSqlServerDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new MsSqlServerDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): MsSqlServerDatabaseConnection {
+        const json = this.toJSON();
+        let result = new MsSqlServerDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMsSqlServerDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IPostgreSqlDatabaseConnection {
+
+    constructor(data?: IPostgreSqlDatabaseConnection) {
+        super(data);
+        this._discriminator = "PostgreSqlDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): PostgreSqlDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new PostgreSqlDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PostgreSqlDatabaseConnection {
+        const json = this.toJSON();
+        let result = new PostgreSqlDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
 export interface FileResponse {

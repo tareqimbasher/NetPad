@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.Extensions.Logging;
+using NetPad.DotNet;
 using NetPad.Utilities;
 
 namespace NetPad.Assemblies
@@ -13,34 +14,57 @@ namespace NetPad.Assemblies
     {
         private readonly ILogger<UnloadableAssemblyLoader> _logger;
         private bool _unloaded;
-        private readonly Dictionary<string, ReferencedAssembly> _referenceAssemblies;
+        private Dictionary<string, ReferencedAssemblyFile> _referenceAssemblyFiles;
+        private Dictionary<string, AssemblyImage> _referenceAssemblyImages;
 
         public UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> logger) : base(isCollectible: true)
         {
             _logger = logger;
-            _referenceAssemblies = new Dictionary<string, ReferencedAssembly>();
+            _referenceAssemblyFiles = new Dictionary<string, ReferencedAssemblyFile>();
+            _referenceAssemblyImages = new Dictionary<string, AssemblyImage>();
         }
 
-        public UnloadableAssemblyLoader(IEnumerable<string> referenceAssemblyPaths, ILogger<UnloadableAssemblyLoader> logger) : this(logger)
+        public UnloadableAssemblyLoader(
+            IEnumerable<AssemblyImage> referenceAssemblyImages,
+            IEnumerable<string> referenceAssemblyFiles,
+            ILogger<UnloadableAssemblyLoader> logger
+        ) : this(logger)
         {
-            _referenceAssemblies = referenceAssemblyPaths
-                .Select(p => new ReferencedAssembly(p, true))
-                .Distinct()
-                .ToDictionary(k => k.AssemblyName, v => v);
+            WithReferenceAssemblyImages(referenceAssemblyImages);
+            WithReferenceAssemblyFiles(referenceAssemblyFiles);
         }
 
         protected override Assembly? Load(AssemblyName assemblyName)
         {
-            if (_referenceAssemblies.TryGetValue(assemblyName.FullName, out var assembly))
-                return LoadFrom(assembly.Bytes);
+            Assembly? assembly = null;
 
-            foreach (var referenceAssembly in _referenceAssemblies.Values)
+            if (_referenceAssemblyImages.TryGetValue(assemblyName.FullName, out var referenceAssemblyImage))
+                assembly = LoadFrom(referenceAssemblyImage.Image);
+
+            // Try to find it by name if it can't be found by full name. Assemblies generated in memory typically have FullName
+            // strings that are missing things like Version, Culture and PublicKeyToken
+            else if (assemblyName.Name != null && _referenceAssemblyImages.TryGetValue(assemblyName.Name, out referenceAssemblyImage))
+                assembly =  LoadFrom(referenceAssemblyImage.Image);
+
+            else if (_referenceAssemblyFiles.TryGetValue(assemblyName.FullName, out var referenceAssemblyFile))
+                assembly = LoadFrom(referenceAssemblyFile.Bytes);
+
+            else
             {
-                if (referenceAssembly.AssembliesInSameDir?.TryGetValue(assemblyName.FullName, out var r) == true)
-                    return LoadFrom(r!.Bytes);
+                foreach (var assemblyFile in _referenceAssemblyFiles.Values)
+                {
+                    if (assemblyFile.AssembliesInSameDir?.TryGetValue(assemblyName.FullName, out var r) == true)
+                    {
+                        assembly = LoadFrom(r!.Bytes);
+                        break;
+                    }
+                }
             }
 
-            return base.Load(assemblyName);
+            if (assembly == null)
+                assembly = base.Load(assemblyName);
+
+            return assembly;
         }
 
         public Assembly LoadFrom(byte[] assemblyBytes)
@@ -68,7 +92,34 @@ namespace NetPad.Assemblies
             }
         }
 
-        public void UnloadLoadedAssemblies()
+        public IAssemblyLoader WithReferenceAssemblyImages(IEnumerable<AssemblyImage> referenceAssemblyImages)
+        {
+            _referenceAssemblyImages = referenceAssemblyImages
+                .Distinct()
+                .ToDictionary(k => k.AssemblyName.FullName, v => v);
+
+            return this;
+        }
+
+        public IAssemblyLoader WithReferenceAssemblyFiles(IEnumerable<string> referenceAssemblyFiles)
+        {
+            _referenceAssemblyFiles = referenceAssemblyFiles
+                .Select(p => new ReferencedAssemblyFile(p, true))
+                .Distinct()
+                .ToDictionary(k => k.AssemblyName, v => v);
+
+            return this;
+        }
+
+        public void Dispose()
+        {
+            _logger.LogTrace($"{nameof(Dispose)} start");
+            UnloadLoadedAssemblies();
+            GCUtil.CollectAndWait();
+            _logger.LogTrace($"{nameof(Dispose)} end ");
+        }
+
+        private void UnloadLoadedAssemblies()
         {
             _logger.LogTrace($"{nameof(UnloadLoadedAssemblies)} start");
 
@@ -93,20 +144,12 @@ namespace NetPad.Assemblies
             }
         }
 
-        public void Dispose()
-        {
-            _logger.LogTrace($"{nameof(Dispose)} start");
-            UnloadLoadedAssemblies();
-            GCUtil.CollectAndWait();
-            _logger.LogTrace($"{nameof(Dispose)} end ");
-        }
 
-
-        public class ReferencedAssembly
+        private class ReferencedAssemblyFile
         {
             private byte[]? _bytes;
 
-            public ReferencedAssembly(string path, bool scanOtherAssembliesInSameDir)
+            public ReferencedAssemblyFile(string path, bool scanOtherAssembliesInSameDir)
             {
                 Path = path ?? throw new ArgumentNullException(nameof(path));
                 AssemblyName = System.Reflection.AssemblyName.GetAssemblyName(path).FullName;
@@ -114,7 +157,7 @@ namespace NetPad.Assemblies
                 if (scanOtherAssembliesInSameDir)
                 {
                     AssembliesInSameDir = Directory.GetFiles(System.IO.Path.GetDirectoryName(path)!, "*.dll")
-                        .Select(dll => new ReferencedAssembly(dll, false))
+                        .Select(dll => new ReferencedAssemblyFile(dll, false))
                         .ToDictionary(k => k.AssemblyName, v => v);
                 }
             }
@@ -122,9 +165,8 @@ namespace NetPad.Assemblies
             public string Path { get; }
             public string AssemblyName { get; }
             public byte[] Bytes => _bytes ??= File.ReadAllBytes(Path);
-            public Dictionary<string, ReferencedAssembly>? AssembliesInSameDir { get; }
+            public Dictionary<string, ReferencedAssemblyFile>? AssembliesInSameDir { get; }
 
-            /// <inheritdoc/>
             public override bool Equals(object? obj)
             {
                 if (obj == null)
@@ -146,17 +188,15 @@ namespace NetPad.Assemblies
                     return false;
                 }
 
-                return AssemblyName == ((ReferencedAssembly)obj).AssemblyName;
+                return AssemblyName == ((ReferencedAssemblyFile)obj).AssemblyName;
             }
 
-            /// <inheritdoc/>
             public override int GetHashCode()
             {
                 return AssemblyName.GetHashCode();
             }
 
-            /// <inheritdoc/>
-            public static bool operator ==(ReferencedAssembly? left, ReferencedAssembly? right)
+            public static bool operator ==(ReferencedAssemblyFile? left, ReferencedAssemblyFile? right)
             {
                 if (Equals(left, null))
                 {
@@ -169,8 +209,7 @@ namespace NetPad.Assemblies
                 return left.Equals(right);
             }
 
-            /// <inheritdoc/>
-            public static bool operator !=(ReferencedAssembly? left, ReferencedAssembly? right)
+            public static bool operator !=(ReferencedAssemblyFile? left, ReferencedAssemblyFile? right)
             {
                 return !(left == right);
             }

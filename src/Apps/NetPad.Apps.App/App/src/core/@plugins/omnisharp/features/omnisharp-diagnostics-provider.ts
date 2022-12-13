@@ -7,7 +7,8 @@ import * as api from "../api";
 export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
     private readonly unnecessaryMarkerTag = MarkerTag[MarkerTag.Unnecessary].toLowerCase();
     private readonly excluded = new Set<string>([
-        "IDE0008" // Use explicit type instead of "var"
+        "IDE0008",          // Use explicit type instead of "var",
+        "CA1050",           // Declare types in namespaces
     ]);
 
     constructor(
@@ -21,23 +22,24 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
 
         let cancellationTokenSource = new CancellationTokenSource();
 
-        this.eventBus.subscribeToServer(api.DiagnosticsEvent, ev => {
+        this.eventBus.subscribeToServer(api.OmniSharpDiagnosticsEvent, ev => {
+
             cancellationTokenSource.dispose(true);
             cancellationTokenSource = new CancellationTokenSource();
             const token = cancellationTokenSource.token;
 
-            if (ev.scriptId !== scriptId) {
+            if (ev.scriptId !== scriptId || !ev.diagnostics.results) {
                 return;
             }
 
             const markers: editor.IMarkerData[] = [];
 
             for (const quickFix of ev.diagnostics.results.flatMap(r => r.quickFixes)) {
-                if (token.isCancellationRequested) {
+                if (!quickFix || token.isCancellationRequested) {
                     return;
                 }
 
-                if (this.excluded.has(quickFix.id)) {
+                if (quickFix.id && this.excluded.has(quickFix.id)) {
                     continue;
                 }
 
@@ -82,7 +84,7 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
             || quickFix.id == "CS0219"  // CS0219: Unused variable
             || quickFix.id == "CS8019"; // CS8019: Unnecessary using
 
-        if (isFadeout && quickFix.logLevel.toLowerCase() === "hidden" || quickFix.logLevel.toLowerCase() === "none") {
+        if (isFadeout && quickFix.logLevel?.toLowerCase() === "hidden" || quickFix.logLevel?.toLowerCase() === "none") {
             // Roslyn uses hidden, Monaco does not
             return {severity: MarkerSeverity.Hint, isFadeout};
         }
@@ -91,7 +93,7 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
     }
 
     private getDiagnosticSeverity(quickFix: api.DiagnosticLocation): MarkerSeverity | "hidden" {
-        switch (quickFix.logLevel.toLowerCase()) {
+        switch (quickFix.logLevel?.toLowerCase()) {
             case "error":
                 return MarkerSeverity.Error;
             case "warning":

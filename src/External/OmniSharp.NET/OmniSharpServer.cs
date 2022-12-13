@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Utilities;
 
 namespace OmniSharp
 {
-    public abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
+    internal abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
         where TConfiguration : OmniSharpServerConfiguration
     {
         private int _sequence;
@@ -24,13 +25,16 @@ namespace OmniSharp
 
         public abstract Task StopAsync();
 
-        public abstract Task SendAsync(object request);
-        public abstract Task<TResponse?> SendAsync<TResponse>(object request) where TResponse : class;
-        public abstract Task SendAsync<TRequest>(IEnumerable<TRequest> requests);
-        public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests) where TResponse : class;
-        public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request) where TResponse : class;
+        public abstract Task SendAsync(object request, CancellationToken? cancellationToken = default);
+        public abstract Task<TResponse?> SendAsync<TResponse>(object request, CancellationToken? cancellationToken = default) where TResponse : class;
+        public abstract Task SendAsync<TRequest>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default);
+        public abstract Task<TResponse?> SendAsync<TRequest, TResponse>(IEnumerable<TRequest> requests, CancellationToken? cancellationToken = default) where TResponse : class;
+        public abstract Task<TResponse?> SendAsync<TResponse>(string endpointName, object request, CancellationToken? cancellationToken = default) where TResponse : class;
 
-        protected int NextSequence() => ++_sequence;
+        protected int NextSequence()
+        {
+            return Interlocked.Increment(ref _sequence);
+        }
 
         public virtual void Dispose()
         {

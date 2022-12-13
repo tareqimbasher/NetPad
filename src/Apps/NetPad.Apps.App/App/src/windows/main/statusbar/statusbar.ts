@@ -3,7 +3,7 @@ import {PLATFORM, Task} from "aurelia";
 import {IShortcutManager} from "@application";
 
 export class Statusbar {
-    public appStatusMessage?: IAppStatusMessage;
+    public appStatusMessage: IAppStatusMessage | null;
 
     constructor(@ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
@@ -16,7 +16,7 @@ export class Statusbar {
     }
 
     private listenToAppStatusMessages() {
-        let clearMsgTask: Task<void>;
+        let clearMsgTask: Task<void> | null;
 
         this.eventBus.subscribeToServer(AppStatusMessagePublishedEvent, ev => {
             this.appStatusMessage = ev.message;

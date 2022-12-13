@@ -12,39 +12,39 @@ import {IHttpClient} from "aurelia";
 
 export interface IOmniSharpApiClient {
 
-    restartServer(scriptId: string): Promise<boolean>;
+    restartServer(scriptId: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
-    getCompletion(scriptId: string, request: CompletionRequest): Promise<CompletionResponse>;
+    getCompletion(scriptId: string, request: CompletionRequest, signal?: AbortSignal | undefined): Promise<CompletionResponse>;
 
-    getCompletionResolution(scriptId: string, completionItem: CompletionItem2): Promise<CompletionResolveResponse>;
+    getCompletionResolution(scriptId: string, completionItem: CompletionItem2, signal?: AbortSignal | undefined): Promise<CompletionResolveResponse>;
 
-    getCompletionAfterInsert(scriptId: string, completionItem: CompletionItem2): Promise<CompletionAfterInsertResponse>;
+    getCompletionAfterInsert(scriptId: string, completionItem: CompletionItem2, signal?: AbortSignal | undefined): Promise<CompletionAfterInsertResponse>;
 
-    formatCode(scriptId: string, request: CodeFormatRequest): Promise<CodeFormatResponse>;
+    formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse>;
 
-    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest): Promise<SemanticHighlightResponse>;
+    getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest, signal?: AbortSignal | undefined): Promise<SemanticHighlightResponse>;
 
-    findImplementations(scriptId: string, request: FindImplementationsRequest): Promise<QuickFixResponse>;
+    findImplementations(scriptId: string, request: FindImplementationsRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    getQuickInfo(scriptId: string, request: QuickInfoRequest): Promise<QuickInfoResponse>;
+    getQuickInfo(scriptId: string, request: QuickInfoRequest, signal?: AbortSignal | undefined): Promise<QuickInfoResponse>;
 
-    getSignatureHelp(scriptId: string, request: SignatureHelpRequest): Promise<SignatureHelpResponse>;
+    getSignatureHelp(scriptId: string, request: SignatureHelpRequest, signal?: AbortSignal | undefined): Promise<SignatureHelpResponse>;
 
-    findUsages(scriptId: string, request: FindUsagesRequest): Promise<QuickFixResponse>;
+    findUsages(scriptId: string, request: FindUsagesRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    getCodeStructure(scriptId: string): Promise<CodeStructureResponse>;
+    getCodeStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<CodeStructureResponse>;
 
-    getInlayHints(scriptId: string, request: InlayHintRequest): Promise<InlayHintResponse>;
+    getInlayHints(scriptId: string, request: InlayHintRequest, signal?: AbortSignal | undefined): Promise<InlayHintResponse>;
 
-    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest): Promise<InlayHint>;
+    resolveInlayHint(scriptId: string, request: InlayHintResolveRequest, signal?: AbortSignal | undefined): Promise<InlayHint>;
 
-    getCodeActions(scriptId: string, request: GetCodeActionsRequest): Promise<GetCodeActionsResponse>;
+    getCodeActions(scriptId: string, request: GetCodeActionsRequest, signal?: AbortSignal | undefined): Promise<GetCodeActionsResponse>;
 
-    runCodeAction(scriptId: string, request: RunCodeActionRequest): Promise<RunCodeActionResponse>;
+    runCodeAction(scriptId: string, request: RunCodeActionRequest, signal?: AbortSignal | undefined): Promise<RunCodeActionResponse>;
 
-    codeCheck(scriptId: string, request: CodeCheckRequest): Promise<QuickFixResponse>;
+    codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
-    startDiagnostics(scriptId: string): Promise<void>;
+    startDiagnostics(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class OmniSharpApiClient implements IOmniSharpApiClient {
@@ -759,7 +759,7 @@ export class OmniSharpApiClient implements IOmniSharpApiClient {
 
 export interface ITypesApiClient {
 
-    additionalTypes(): Promise<Types>;
+    additionalTypes(signal?: AbortSignal | undefined): Promise<Types>;
 }
 
 export class TypesApiClient implements ITypesApiClient {
@@ -3509,7 +3509,8 @@ export interface ICodeCheckRequest extends IRequest {
 }
 
 export class Types implements ITypes {
-    diagnosticsEvent?: DiagnosticsEvent | undefined;
+    omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
+    omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -3522,7 +3523,8 @@ export class Types implements ITypes {
 
     init(_data?: any) {
         if (_data) {
-            this.diagnosticsEvent = _data["diagnosticsEvent"] ? DiagnosticsEvent.fromJS(_data["diagnosticsEvent"]) : <any>undefined;
+            this.omniSharpDiagnosticsEvent = _data["omniSharpDiagnosticsEvent"] ? OmniSharpDiagnosticsEvent.fromJS(_data["omniSharpDiagnosticsEvent"]) : <any>undefined;
+            this.omniSharpAsyncBufferUpdateCompletedEvent = _data["omniSharpAsyncBufferUpdateCompletedEvent"] ? OmniSharpAsyncBufferUpdateCompletedEvent.fromJS(_data["omniSharpAsyncBufferUpdateCompletedEvent"]) : <any>undefined;
         }
     }
 
@@ -3535,7 +3537,8 @@ export class Types implements ITypes {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["diagnosticsEvent"] = this.diagnosticsEvent ? this.diagnosticsEvent.toJSON() : <any>undefined;
+        data["omniSharpDiagnosticsEvent"] = this.omniSharpDiagnosticsEvent ? this.omniSharpDiagnosticsEvent.toJSON() : <any>undefined;
+        data["omniSharpAsyncBufferUpdateCompletedEvent"] = this.omniSharpAsyncBufferUpdateCompletedEvent ? this.omniSharpAsyncBufferUpdateCompletedEvent.toJSON() : <any>undefined;
         return data;
     }
 
@@ -3548,14 +3551,15 @@ export class Types implements ITypes {
 }
 
 export interface ITypes {
-    diagnosticsEvent?: DiagnosticsEvent | undefined;
+    omniSharpDiagnosticsEvent?: OmniSharpDiagnosticsEvent | undefined;
+    omniSharpAsyncBufferUpdateCompletedEvent?: OmniSharpAsyncBufferUpdateCompletedEvent | undefined;
 }
 
-export class DiagnosticsEvent implements IDiagnosticsEvent {
+export class OmniSharpDiagnosticsEvent implements IOmniSharpDiagnosticsEvent {
     scriptId!: string;
     diagnostics!: DiagnosticMessage;
 
-    constructor(data?: IDiagnosticsEvent) {
+    constructor(data?: IOmniSharpDiagnosticsEvent) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3574,9 +3578,9 @@ export class DiagnosticsEvent implements IDiagnosticsEvent {
         }
     }
 
-    static fromJS(data: any): DiagnosticsEvent {
+    static fromJS(data: any): OmniSharpDiagnosticsEvent {
         data = typeof data === 'object' ? data : {};
-        let result = new DiagnosticsEvent();
+        let result = new OmniSharpDiagnosticsEvent();
         result.init(data);
         return result;
     }
@@ -3588,15 +3592,15 @@ export class DiagnosticsEvent implements IDiagnosticsEvent {
         return data;
     }
 
-    clone(): DiagnosticsEvent {
+    clone(): OmniSharpDiagnosticsEvent {
         const json = this.toJSON();
-        let result = new DiagnosticsEvent();
+        let result = new OmniSharpDiagnosticsEvent();
         result.init(json);
         return result;
     }
 }
 
-export interface IDiagnosticsEvent {
+export interface IOmniSharpDiagnosticsEvent {
     scriptId: string;
     diagnostics: DiagnosticMessage;
 }
@@ -3761,6 +3765,49 @@ export interface IDiagnosticLocation extends IQuickFix {
     logLevel?: string | undefined;
     id?: string | undefined;
     tags?: string[] | undefined;
+}
+
+export class OmniSharpAsyncBufferUpdateCompletedEvent implements IOmniSharpAsyncBufferUpdateCompletedEvent {
+    scriptId!: string;
+
+    constructor(data?: IOmniSharpAsyncBufferUpdateCompletedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): OmniSharpAsyncBufferUpdateCompletedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new OmniSharpAsyncBufferUpdateCompletedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        return data;
+    }
+
+    clone(): OmniSharpAsyncBufferUpdateCompletedEvent {
+        const json = this.toJSON();
+        let result = new OmniSharpAsyncBufferUpdateCompletedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOmniSharpAsyncBufferUpdateCompletedEvent {
+    scriptId: string;
 }
 
 export class ApiException extends Error {

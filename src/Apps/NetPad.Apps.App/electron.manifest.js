@@ -59,12 +59,32 @@ const electronBuilderConfig = {
             },
             {
                 target: "pacman",
+            },
+            {
+                target: "AppImage",
+            },
+            {
+                target: "deb",
+            },
+            {
+                target: "rpm",
             }
         ]
     },
+    nsis: {
+        oneClick: false,
+        allowToChangeInstallationDirectory: true
+    },
     win: {
-        target: "portable",
-        icon: "../../../wwwroot/favicon.ico"
+        icon: "../../../wwwroot/favicon.ico",
+        target: [
+            {
+                target: "portable"
+            },
+            {
+                target: "nsis"
+            }
+        ]
     },
     mac: {
         category: "public.app-category.developer-tools",
@@ -95,7 +115,6 @@ const electronNetConfig = {
     splashscreen: {
         imageFile: "./wwwroot/logo/square/256x256.png"
     },
-    environment: "Production",
     singleInstance: false,
     aspCoreBackendPort: 50900,
     electronPort: 50901,

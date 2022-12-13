@@ -15,18 +15,18 @@ import {DI, IHttpClient, ILogger} from "aurelia";
 export interface ISession extends ISessionApiClient {
     environments: ScriptEnvironment[];
 
-    get active(): ScriptEnvironment | undefined;
+    get active(): ScriptEnvironment | null | undefined;
 
     initialize(): Promise<void>;
 
-    getScriptName(scriptId: string): string | null;
+    getScriptName(scriptId: string): string | undefined;
 }
 
 export const ISession = DI.createInterface<ISession>();
 
 export class Session extends SessionApiClient implements ISession {
     private _active?: ScriptEnvironment | null | undefined;
-    private readonly _environments?: ScriptEnvironment[] = [];
+    private readonly _environments: ScriptEnvironment[] = [];
     private readonly logger: ILogger;
 
     constructor(
@@ -57,7 +57,7 @@ export class Session extends SessionApiClient implements ISession {
         }
     }
 
-    public getScriptName(scriptId: string): string | null {
+    public getScriptName(scriptId: string): string | undefined {
         return this.environments.find(e => e.script.id === scriptId)?.script.name;
     }
 

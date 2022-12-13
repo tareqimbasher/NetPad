@@ -62,13 +62,13 @@ export class PaneManager implements IPaneManager {
         } else {
             const paneAndHost = this.findPaneAndHostByPaneType(paneOrPaneType);
             paneHost = paneAndHost?.paneHost;
-            pane = paneAndHost.pane;
+            pane = paneAndHost?.pane;
         }
 
         paneHost?.activateOrCollapse(pane);
     }
 
-    private findPaneHostByPane(pane: Pane): PaneHost | null {
+    private findPaneHostByPane(pane: Pane): PaneHost | undefined {
         return this._paneHosts.find(h => h.hasPane(pane));
     }
 

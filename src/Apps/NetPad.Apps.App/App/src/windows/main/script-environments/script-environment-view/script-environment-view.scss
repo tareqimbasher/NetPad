@@ -4,11 +4,15 @@ script-environment-view {
     padding-top: 0.5rem;
 
     .script-kind-selector {
-        max-width: 150px;
-        display: inline-block;
+        min-width: 150px;
     }
 
-    .results-container {
+    .data-connection-selector {
+        min-width: 200px;
+        max-width: 350px;
+    }
+
+    .output-container {
         display: flex;
         flex-direction: column;
         @include theme(background-color, resultsBackground);

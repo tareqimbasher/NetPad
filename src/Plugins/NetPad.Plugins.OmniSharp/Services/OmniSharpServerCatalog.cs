@@ -1,6 +1,7 @@
 using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -57,6 +58,7 @@ public class OmniSharpServerCatalog
             environment,
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
             serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
+            serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>(),
             serviceScope.ServiceProvider.GetRequiredService<Settings>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
@@ -73,7 +75,10 @@ public class OmniSharpServerCatalog
             await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...", persistant: true);
             var startTask = server.StartAsync();
 
+            // We don't want to await
+#pragma warning disable CS4014
             startTask.ContinueWith(async (task) =>
+#pragma warning restore CS4014
             {
                 bool started = task.Status == TaskStatus.RanToCompletion && task.Result;
 

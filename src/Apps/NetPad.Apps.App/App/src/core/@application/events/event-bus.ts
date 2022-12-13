@@ -14,9 +14,7 @@ export class EventBus extends EventAggregator implements IEventBus {
         callback: (message: InstanceType<TMessage>, channel: string) => void): IDisposable {
         const channelName = typeof channel === 'string' ? channel : channel.name;
 
-        const proxyCallback = (message: InstanceType<TMessage>, channel: string) =>
-        {
-            this.logger.debug(`Received server push message of type ${channelName}`, message);
+        const proxyCallback = (message: InstanceType<TMessage>, channel: string) => {
             callback(message, channel);
         };
 

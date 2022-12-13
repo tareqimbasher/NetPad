@@ -1,28 +1,32 @@
-import {IScriptService, ISettingService, RunScriptEvent} from "@domain";
+import {CreateScriptDto, IScriptService, ISettingService, RunScriptEvent} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {TogglePaneEvent} from "@application";
-import {NamespacesPane} from "../../../windows/main/panes";
+import {Explorer, NamespacesPane} from "../../../windows/main/panes";
 
 export const BuiltinShortcuts = [
     new Shortcut("New")
         .withCtrlKey()
         .withKey(KeyCode.KeyN)
-        .hasAction((ctx) => ctx.container.get(IScriptService).create())
+        .hasAction((ctx) => ctx.container.get(IScriptService).create(new CreateScriptDto()))
         .configurable()
         .enabled(),
 
     new Shortcut("Close")
         .withCtrlKey()
         .withKey(KeyCode.KeyW)
-        .hasAction((ctx) => ctx.session.close(ctx.session.active.script.id))
+        .hasAction((ctx) => {
+            if (ctx.session.active) ctx.session.close(ctx.session.active.script.id);
+        })
         .configurable()
         .enabled(),
 
     new Shortcut("Save")
         .withCtrlKey()
         .withKey(KeyCode.KeyS)
-        .hasAction((ctx) => ctx.container.get(IScriptService).save(ctx.session.active.script.id))
+        .hasAction((ctx) => {
+            if (ctx.session.active) ctx.container.get(IScriptService).save(ctx.session.active.script.id);
+        })
         .enabled(),
 
     new Shortcut("Save All")
@@ -45,7 +49,11 @@ export const BuiltinShortcuts = [
 
     new Shortcut("Script Properties")
         .withKey(KeyCode.F4)
-        .hasAction((ctx) => ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id, null))
+        .hasAction((ctx) => {
+            if (ctx.session.active) {
+                ctx.container.get(IScriptService).openConfigWindow(ctx.session.active.script.id, null);
+            }
+        })
         .configurable()
         .enabled(),
 
@@ -59,6 +67,13 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.Tab)
         .hasAction((ctx) => ctx.session.activateLastActive())
+        .configurable()
+        .enabled(),
+
+    new Shortcut("Explorer")
+        .withAltKey()
+        .withKey(KeyCode.KeyE)
+        .firesEvent(() => new TogglePaneEvent(Explorer))
         .configurable()
         .enabled(),
 

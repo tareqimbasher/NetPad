@@ -1,6 +1,15 @@
 import {ILogger} from "aurelia";
 import dragula from "dragula";
-import {IAppService, IEventBus, IScriptService, ISession, RunScriptEvent, Script, Settings} from "@domain";
+import {
+    CreateScriptDto,
+    IAppService,
+    IEventBus,
+    IScriptService,
+    ISession,
+    RunScriptEvent,
+    Script,
+    Settings
+} from "@domain";
 import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironments extends ViewModelBase {
@@ -20,7 +29,11 @@ export class ScriptEnvironments extends ViewModelBase {
 
     public async binding() {
         if (this.session.environments.length === 0) {
-            await this.scriptService.create();
+            try {
+                await this.scriptService.create(new CreateScriptDto());
+            } catch (ex) {
+                this.logger.error("Could not create new script", ex);
+            }
         }
 
         this.tabContextMenuOptions = new ContextMenuOptions(".script-tab:not(.new-script-tab)", [
@@ -84,12 +97,47 @@ export class ScriptEnvironments extends ViewModelBase {
     }
 
     public attached() {
-        const dndContainer = this.element.querySelector(".script-tabs > .drag-drop-container");
+        this.initializeTabDragAndDrop();
+    }
+
+    public async tabWheelButtonClicked(scriptId: string, event: MouseEvent) {
+        if (event.button !== 1) return;
+        await this.session.close(scriptId);
+    }
+
+    private getScriptId(tab: Element): string {
+        const scriptId = tab?.attributes.getNamedItem("data-script-id")?.value;
+
+        if (!scriptId)
+            throw new Error(`Could not find script ID on element.`);
+
+        return scriptId;
+    }
+
+    private getScript(tab: Element): Script {
+        const scriptId = this.getScriptId(tab);
+
+        const script = this.session.environments.find(e => e.script.id === scriptId)?.script;
+
+        if (!script)
+            throw new Error(`Could not find script with ID ${scriptId}.`);
+
+        return script;
+    }
+
+    private initializeTabDragAndDrop() {
+        const selector = ".script-tabs > .drag-drop-container";
+        const dndContainer = this.element.querySelector(selector);
+        if (!dndContainer) {
+            this.logger.error(`Could not find elements with selector: '${selector}'. Tab drag and drop will not be initialized.`);
+            return;
+        }
+
         const drake = dragula([dndContainer], {
             direction: "horizontal",
             mirrorContainer: dndContainer,
             invalid: (el, target) => {
-                return el && el.classList.contains("new-script-tab");
+                return !!el && el.classList.contains("new-script-tab");
             }
         });
 
@@ -102,22 +150,6 @@ export class ScriptEnvironments extends ViewModelBase {
 
         dndContainer.addEventListener("wheel", horizontalScroll);
 
-        this.disposables.push(() => dndContainer.removeEventListener("wheel", horizontalScroll))
-    }
-
-    public async tabWheelButtonClicked(scriptId: string, event: MouseEvent) {
-        if (event.button !== 1) return;
-        await this.session.close(scriptId);
-    }
-
-    private getScriptId(tab: Element): string | undefined {
-        return tab?.attributes.getNamedItem("data-script-id")?.value;
-    }
-
-    private getScript(tab: Element): Script | undefined {
-        const scriptId = this.getScriptId(tab);
-        if (scriptId) {
-            return this.session.environments.find(e => e.script.id === scriptId)?.script;
-        }
+        this.disposables.push(() => dndContainer.removeEventListener("wheel", horizontalScroll));
     }
 }

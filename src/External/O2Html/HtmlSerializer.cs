@@ -83,8 +83,8 @@ public sealed class HtmlSerializer
         if (_typePropertyCache.TryGetValue(type, out var propertyInfos))
             return propertyInfos;
 
-        propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.CanRead)
-            .OrderBy(p => p.Name)
+        propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanRead)
             .ToArray();
 
         _typePropertyCache.Add(type, propertyInfos);
@@ -150,9 +150,11 @@ public sealed class HtmlSerializer
         typeof(DateOnly),
 #endif
                    typeof(TimeSpan),
-                   typeof(DateTimeOffset)
+                   typeof(DateTimeOffset),
+                   typeof(Guid)
                ) ||
-               typeof(Type).IsAssignableFrom(type);
+               typeof(Type).IsAssignableFrom(type) ||
+               Nullable.GetUnderlyingType(type) != null;
     }
 
     private static bool IsObjectType(Type type)

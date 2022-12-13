@@ -33,9 +33,9 @@ public class ElementAttribute
         if (!string.IsNullOrWhiteSpace(value))
         {
             var values = Values.ToList();
-            if (appendIfExists || !values.Contains(value))
+            if (appendIfExists || !values.Contains(value!))
             {
-                values.Add(value);
+                values.Add(value!);
                 Set(string.Join(" ", values));
             }
         }

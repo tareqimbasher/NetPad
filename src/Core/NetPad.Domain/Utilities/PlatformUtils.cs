@@ -16,4 +16,6 @@ public static class PlatformUtils
         else
             return OSPlatform.FreeBSD;
     }
+
+    public static bool IsWindowsPlatform() => GetOSPlatform() == OSPlatform.Windows;
 }

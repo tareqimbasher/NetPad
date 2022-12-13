@@ -17,6 +17,9 @@ export class Converter {
     }
 
     public static apiRangeToMonacoRange(range: api.Range): mco.Range {
+        if (!range.start || !range.end)
+            throw new Error("range start or end is undefined or null");
+
         return new mco.Range(
             range.start.line,
             range.start.column,

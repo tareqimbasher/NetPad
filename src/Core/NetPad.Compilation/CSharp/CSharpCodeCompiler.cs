@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -13,7 +15,7 @@ namespace NetPad.Compilation.CSharp
         public CompilationResult Compile(CompilationInput input)
         {
             // TODO write a unit test to test assembly name
-            string assemblyName = "NetPadScript";
+            string assemblyName = "NetPad_CompiledAssembly";
 
             if (input.OutputAssemblyNameTag != null)
                 assemblyName += $"_{input.OutputAssemblyNameTag}";
@@ -40,22 +42,14 @@ namespace NetPad.Compilation.CSharp
             // Build references
             var assemblyLocations = SystemAssemblies.GetAssemblyLocations();
 
-            foreach (var assemblyReferenceLocation in input.AssemblyReferenceLocations)
+            foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
                 assemblyLocations.Add(assemblyReferenceLocation);
 
             assemblyLocations.Add(typeof(IOutputWriter).Assembly.Location);
 
-            var references = assemblyLocations
-                .Where(al => !string.IsNullOrWhiteSpace(al))
-                .Select(location => MetadataReference.CreateFromFile(location));
+            var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 
-            // Use OutputKind.ConsoleApplication vs OutputKind.DynamicallyLinkedLibrary so the generated assembly
-            // is able to be executed as an executable (ie. dotnet ./assembly.dll). Using OutputKind.DynamicallyLinkedLibrary
-            // generates an assembly that does not have an entry point, resulting in failure to execute standalone assembly
-            // in external processes outside of NetPad
-            var outputKind = OutputKind.ConsoleApplication;
-
-            var compilationOptions = new CSharpCompilationOptions(outputKind)
+            var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithOptimizationLevel(OptimizationLevel.Debug)
                 .WithOverflowChecks(true);
@@ -64,6 +58,41 @@ namespace NetPad.Compilation.CSharp
                 new[] { parsedSyntaxTree },
                 references: references,
                 options: compilationOptions);
+        }
+
+        private PortableExecutableReference[] BuildMetadataReferences(IEnumerable<byte[]> assemblyImages, HashSet<string> assemblyLocations)
+        {
+            var references = assemblyImages.Select(i => MetadataReference.CreateFromImage(i)).ToList();
+
+            var locationReferences = assemblyLocations
+                .Where(al => !string.IsNullOrWhiteSpace(al))
+                .Select(location => new
+                {
+                    MetadataReference = MetadataReference.CreateFromFile(location),
+                    AssemblyName = AssemblyName.GetAssemblyName(location)
+                })
+                .ToList();
+
+            var duplicateReferences = locationReferences.GroupBy(r => r.AssemblyName.Name)
+                .Where(grp => grp.Key != null && grp.Count() > 1);
+
+            foreach (var duplicateReferenceGroup in duplicateReferences)
+            {
+                // Take the lowest version. If multiple of the same version, just take one.
+                var duplicatesToRemove = duplicateReferenceGroup
+                    .OrderBy(x => x.AssemblyName.Version)
+                    .Skip(1)
+                    .ToArray();
+
+                foreach (var duplicate in duplicatesToRemove)
+                {
+                    locationReferences.Remove(duplicate);
+                }
+            }
+
+            references.AddRange(locationReferences.Select(r => r.MetadataReference));
+
+            return references.ToArray();
         }
 
         public CSharpParseOptions GetParseOptions()

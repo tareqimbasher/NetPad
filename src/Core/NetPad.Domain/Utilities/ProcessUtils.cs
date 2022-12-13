@@ -22,4 +22,13 @@ public static class ProcessUtils
     {
         return process.WasProcessStarted() && !process.HasExited;
     }
+
+    public static void OpenInDesktopExplorer(string path)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = path,
+            UseShellExecute = true
+        });
+    }
 }

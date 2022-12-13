@@ -3,7 +3,8 @@ import {IDisposable} from "aurelia";
 import {IEventBus, ConfirmSaveCommand, IIpcGateway, YesNoCancel, RequestNewScriptNameCommand} from "@domain";
 
 /**
- * This is utilized for the Web app, not the Electron app
+ * This is utilized for the Web app, not the Electron app.
+ * This enables opening specific dialog windows when running the web app.
  */
 export class WebDialogBackgroundService implements IBackgroundService {
     private disposables: IDisposable[] = [];

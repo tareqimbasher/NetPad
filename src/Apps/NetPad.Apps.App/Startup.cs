@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
@@ -18,20 +19,25 @@ using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.CQs;
+using NetPad.Data;
+using NetPad.Data.EntityFrameworkCore;
 using NetPad.Events;
 using NetPad.Middlewares;
 using NetPad.Packages;
 using NetPad.Plugins;
 using NetPad.Resources;
 using NetPad.Runtimes;
+using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Services;
+using NetPad.Services.Data;
 using NetPad.Sessions;
+using NetPad.Swagger;
 using NetPad.UiInterop;
 
 namespace NetPad
 {
-    public partial class Startup
+    public class Startup
     {
         private readonly Assembly[] _pluginAssemblies =
         {
@@ -42,6 +48,9 @@ namespace NetPad
         {
             Configuration = configuration;
             WebHostEnvironment = webHostEnvironment;
+            Console.WriteLine($"Environment: {webHostEnvironment.EnvironmentName}");
+            Console.WriteLine($"WebRootPath: {webHostEnvironment.WebRootPath}");
+            Console.WriteLine($"ContentRootPath: {webHostEnvironment.ContentRootPath}");
         }
 
         public IConfiguration Configuration { get; }
@@ -62,6 +71,7 @@ namespace NetPad
             services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
             services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
             services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
+            services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
 
             // Script execution
             services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
@@ -72,6 +82,16 @@ namespace NetPad
             //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
+
+            // Data connections
+            services.AddTransient<IDataConnectionResourcesGeneratorFactory, DataConnectionResourcesGeneratorFactory>();
+            services.AddTransient<EntityFrameworkResourcesGenerator>();
+            services.AddTransient<IDatabaseConnectionMetadataProviderFactory, DatabaseConnectionMetadataProviderFactory>();
+            services.AddTransient<EntityFrameworkDatabaseConnectionMetadataProvider>();
+            services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
+            services.AddSingleton(sp => new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
+            services.AddTransient<IDataConnectionPasswordProtector>(s =>
+                new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
 
             // Package management
             services.AddTransient<IPackageProvider, NuGetPackageProvider>();
@@ -137,8 +157,14 @@ namespace NetPad
             // Swagger
             if (WebHostEnvironment.IsDevelopment())
             {
-                AddSwagger(services, pluginRegistrations);
+                SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
             }
+
+            services.AddDataProtection(options =>
+            {
+                // A built-in string that identifies NetPad
+                options.ApplicationDiscriminator = "NETPAD_8C94D5EA-9510-4493-AA43-CADE372ED853";
+            });
 
             // Allow ApplicationConfigurator to add/modify any service registrations it needs
             Program.ApplicationConfigurator.ConfigureServices(services);
@@ -179,11 +205,23 @@ namespace NetPad
             // Set host url
             var hostInfo = services.GetRequiredService<HostInfo>();
             hostInfo.SetWorkingDirectory(env.ContentRootPath);
-            hostInfo.SetHostUrl(
-                app.ServerFeatures
-                    .Get<IServerAddressesFeature>()!
-                    .Addresses
-                    .First(a => a.StartsWith("http:")));
+
+            var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+
+            if (serverAddresses == null || !serverAddresses.Any())
+            {
+                throw new Exception("No server urls specified. Specify the url with the '--urls' parameter");
+            }
+
+            var url = serverAddresses.FirstOrDefault(a => a.StartsWith("https:")) ??
+                      serverAddresses.FirstOrDefault(a => a.StartsWith("http:"));
+
+            if (url == null)
+            {
+                throw new Exception("No server urls specified that start with 'http' or 'https'");
+            }
+
+            hostInfo.SetHostUrl(url);
 
             // Add middlewares
             app.UseMiddleware<ExceptionHandlerMiddleware>();

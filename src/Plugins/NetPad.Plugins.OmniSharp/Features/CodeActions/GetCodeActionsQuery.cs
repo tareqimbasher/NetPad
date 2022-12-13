@@ -23,7 +23,7 @@ public class GetCodeActionsQuery : OmniSharpScriptQuery<OmniSharpGetCodeActionsR
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpGetCodeActionsResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpGetCodeActionsResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

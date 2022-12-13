@@ -33,6 +33,10 @@ button > .icon-base {
     @extend .fa-2xl;
 }
 
+.icon-fw {
+    @extend .fa-fw;
+}
+
 // GENERIC ICONS
 .close-icon {
     @extend %icon-base;
@@ -47,6 +51,16 @@ button > .icon-base {
 .delete-icon {
     @extend %icon-base;
     @extend .fa-trash;
+}
+
+.refresh-icon {
+    @extend %icon-base;
+    @extend .fa-rotate-right;
+}
+
+.configure-icon {
+    @extend %icon-base;
+    @extend .fa-sliders;
 }
 
 .backspace-icon {
@@ -82,13 +96,11 @@ button > .icon-base {
 .folder-icon {
     @extend %icon-base;
     @extend .fa-folder;
-    @extend %text-yellow;
 }
 
 .folder-open-icon {
     @extend %icon-base;
     @extend .fa-folder-open;
-    @extend .text-yellow;
 }
 
 .caret-down-icon {
@@ -121,7 +133,17 @@ button > .icon-base {
     @extend .fa-ellipsis-v;
 }
 
+.open-external-icon {
+    @extend %icon-base;
+    @extend .fa-square-arrow-up-right;
+}
+
 // CONTEXTUAL ICONS
+.explorer-icon {
+    @extend %icon-base;
+    @extend .fa-folder;
+}
+
 .script-icon {
     @extend %icon-base;
     @extend .fa-code;
@@ -225,7 +247,7 @@ button > .icon-base {
     @extend .fa-align-left;
 }
 
-.add-database-connection-icon {
+.add-data-connection-icon {
     @extend %icon-base;
     @extend .fa-cloud-arrow-up;
 }
@@ -233,4 +255,39 @@ button > .icon-base {
 .script-folder-open-icon {
     @extend %icon-base;
     @extend .fa-arrow-up-right-from-square;
+}
+
+.db-primary-key-icon {
+    @extend %icon-base;
+    @extend .fa-key;
+}
+
+.db-foreign-key-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-right-arrow-left;
+}
+
+.db-navigation-icon {
+    @extend %icon-base;
+    @extend .fa-arrows-left-right;
+}
+
+.db-index-icon {
+    @extend %icon-base;
+    @extend .fa-info;
+}
+
+.use-data-connection-current-script-icon {
+    @extend %icon-base;
+    @extend .fa-circle-right;
+}
+
+.use-data-connection-new-script-icon {
+    @extend %icon-base;
+    @extend .fa-plus;
+}
+
+.data-connection-query-action {
+    @extend %icon-base;
+    @extend .fa-bolt;
 }

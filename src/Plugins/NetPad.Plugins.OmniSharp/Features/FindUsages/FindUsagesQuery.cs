@@ -23,7 +23,7 @@ public class FindUsagesQuery : OmniSharpScriptQuery<OmniSharpFindUsagesRequest, 
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

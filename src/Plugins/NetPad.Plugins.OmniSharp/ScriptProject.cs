@@ -1,229 +1,125 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using System.Xml.Linq;
-using NetPad.Configuration;
+﻿using NetPad.Configuration;
+using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Plugins.OmniSharp;
 
-public class ScriptProject
+public class ScriptProject : DotNetCSharpProject
 {
-    private readonly Settings _settings;
     private readonly ILogger<ScriptProject> _logger;
+    private readonly HashSet<Reference> _existingDataConnectionReferences;
+    private readonly SemaphoreSlim _dataConnectionReferencesLock;
 
     public ScriptProject(
         Script script,
         Settings settings,
         ILogger<ScriptProject> logger)
+        : base(
+            Path.Combine(Path.GetTempPath(), "NetPad", "OmniSharp", script.Id.ToString()),
+            "script.csproj",
+            Path.Combine(settings.PackageCacheDirectoryPath, "NuGet")
+        )
     {
-        _settings = settings;
         _logger = logger;
-        Script = script;
+        _existingDataConnectionReferences = new HashSet<Reference>();
+        _dataConnectionReferencesLock = new SemaphoreSlim(1, 1);
 
-        ProjectDirectoryPath = Path.Combine(Path.GetTempPath(), "NetPad", script.Id.ToString());
-        ProjectFilePath = Path.Combine(ProjectDirectoryPath, "script.csproj");
+        Script = script;
         BootstrapperProgramFilePath = Path.Combine(ProjectDirectoryPath, "Bootstrapper_Program.cs");
         UserProgramFilePath = Path.Combine(ProjectDirectoryPath, "User_Program.cs");
+        DataConnectionProgramFilePath = Path.Combine(ProjectDirectoryPath, "Data_Connection_Program.cs");
     }
 
     public Script Script { get; }
-    public string ProjectDirectoryPath { get; }
-    public string ProjectFilePath { get; }
     public string BootstrapperProgramFilePath { get; }
     public string UserProgramFilePath { get; }
+    public string DataConnectionProgramFilePath { get; }
 
-    public async Task InitializeAsync()
+    public override async Task CreateAsync(ProjectOutputType outputType, bool deleteExisting = false)
     {
-        Directory.CreateDirectory(ProjectDirectoryPath);
+        await base.CreateAsync(outputType, deleteExisting);
 
-        if (!File.Exists(ProjectFilePath))
-        {
-            string projXmlTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
-
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Reference Include=""{0}"">
-        <HintPath>{1}</HintPath>
-      </Reference>
-    </ItemGroup>
-
-</Project>
-";
-
-            var domainAssembly = typeof(IOutputWriter).Assembly;
-
-            string projXml = string.Format(projXmlTemplate,
-                domainAssembly.GetName().FullName,
-                domainAssembly.Location);
-
-            await File.WriteAllTextAsync(ProjectFilePath, projXml);
-        }
-
-        foreach (var reference in Script.Config.References)
-        {
-            if (reference is PackageReference pkgRef)
-            {
-                await AddPackageAsync(pkgRef.PackageId, pkgRef.Version);
-            }
-            else if (reference is AssemblyReference asmRef)
-            {
-                await AddAssemblyReferenceAsync(asmRef.AssemblyPath);
-            }
-        }
+        var domainAssembly = typeof(IOutputWriter).Assembly;
+        await AddAssemblyFileReferenceAsync(new AssemblyFileReference(domainAssembly.Location));
+        await AddReferencesAsync(Script.Config.References);
     }
 
-    public Task DeleteAsync()
+    public async Task UpdateReferencesFromDataConnectionAsync(DataConnection? dataConnection, IEnumerable<Reference> dataConnectionReferences)
     {
+        if (dataConnection == null && !_existingDataConnectionReferences.Any())
+        {
+            return;
+        }
+
+        await _dataConnectionReferencesLock.WaitAsync();
+
         try
         {
-            if (Directory.Exists(ProjectDirectoryPath))
+            if (dataConnection == null)
             {
-                Directory.Delete(ProjectDirectoryPath, recursive: true);
+                foreach (var reference in _existingDataConnectionReferences)
+                {
+                    await RemoveDataConnectionReferenceAsync(reference);
+                }
+
+                return;
+            }
+
+            if (dataConnectionReferences.All(_existingDataConnectionReferences.Contains) &&
+                _existingDataConnectionReferences.All(dataConnectionReferences.Contains))
+            {
+                return;
+            }
+
+            // Remove the ones we no longer need
+            var toRemove = _existingDataConnectionReferences.Except(dataConnectionReferences).ToArray();
+            foreach (var reference in toRemove)
+            {
+                await RemoveDataConnectionReferenceAsync(reference);
+            }
+
+            // Add new ones
+            var toAdd = dataConnectionReferences.Except(_existingDataConnectionReferences).ToArray();
+            foreach (var reference in toAdd)
+            {
+                await AddDataConnectionReferenceAsync(reference);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting temporary project directory at path: {ProjectDirectoryPath}", ProjectDirectoryPath);
+            _logger.LogError(ex, "Error occurred while updating project references from data connection");
         }
-
-        return Task.CompletedTask;
-    }
-
-    public async Task AddAssemblyReferenceAsync(string assemblyPath)
-    {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
-
-        var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-        if (root == null)
+        finally
         {
-            throw new Exception("Project XML file is not formatted correctly.");
-        }
-
-        // Check if it is already added
-        if (FindAssemblyReferenceElement(assemblyPath, xmlDoc) != null)
-        {
-            return;
-        }
-
-        var referenceGroup = root.Elements("ItemGroup").FirstOrDefault(g => g.Elements("Reference").Any());
-
-        if (referenceGroup == null)
-        {
-            referenceGroup = new XElement("ItemGroup");
-            root.Add(referenceGroup);
-        }
-
-        var referenceElement = new XElement("Reference");
-
-        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
-
-        var hintPathElement = new XElement("HintPath");
-        hintPathElement.SetValue(assemblyPath);
-        referenceElement.Add(hintPathElement);
-
-        referenceGroup.Add(referenceElement);
-
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
-    }
-
-    public async Task RemoveAssemblyReferenceAsync(string assemblyPath)
-    {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
-
-        var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-        if (root == null)
-        {
-            throw new Exception("Project XML file is not formatted correctly.");
-        }
-
-        var referenceElementToRemove = FindAssemblyReferenceElement(assemblyPath, xmlDoc);
-
-        if (referenceElementToRemove == null)
-        {
-            return;
-        }
-
-        referenceElementToRemove.Remove();
-
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
-    }
-
-    private XElement? FindAssemblyReferenceElement(string assemblyPath, XDocument xmlDoc)
-    {
-        var root = xmlDoc.Elements("Project").First();
-
-        var itemGroups = root.Elements("ItemGroup");
-        foreach (var itemGroup in itemGroups)
-        {
-            var assemblyReferenceElements = itemGroup.Elements("Reference");
-
-            foreach (var assemblyReferenceElement in assemblyReferenceElements)
-            {
-                if (assemblyReferenceElement.Elements("HintPath").Any(hp => hp.Value == assemblyPath))
-                {
-                    return assemblyReferenceElement;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public async Task AddPackageAsync(string packageId, string packageVersion)
-    {
-        var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"add {ProjectFilePath} package {packageId} " +
-            $"--version {packageVersion} " +
-            $"--package-directory {Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet")}")
-        {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            await process.WaitForExitAsync();
+            _dataConnectionReferencesLock.Release();
         }
     }
 
-    public async Task RemovePackageAsync(string packageId)
+    private async Task AddDataConnectionReferenceAsync(Reference reference)
     {
-        var process = Process.Start(new ProcessStartInfo("dotnet",
-            $"remove {ProjectFilePath} package {packageId} " +
-            $"--package-directory {Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet")}")
+        try
         {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            await process.WaitForExitAsync();
+            await AddReferenceAsync(reference);
+            _existingDataConnectionReferences.Add(reference);
         }
-
-        // This is needed so that 'project.assets.json' file is updated properly
-        process = Process.Start(new ProcessStartInfo("dotnet",
-            $"restore {ProjectFilePath}")
+        catch (Exception ex)
         {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
+            _logger.LogError(ex, "Failed to add data connection reference: {Reference}", reference.ToString());
+        }
+    }
 
-        if (process != null)
+    private async Task RemoveDataConnectionReferenceAsync(Reference reference)
+    {
+        try
         {
-            await process.WaitForExitAsync();
+            await RemoveReferenceAsync(reference);
+            _existingDataConnectionReferences.Remove(reference);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to remove data connection reference: {Reference}", reference.ToString());
         }
     }
 }

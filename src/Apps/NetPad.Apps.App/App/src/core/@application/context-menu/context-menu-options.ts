@@ -15,7 +15,7 @@ export class ContextMenuOptions {
  */
 export interface IContextMenuItem {
     /** Display text. */
-    text?: string;
+    text?: string | ((target: Element) => string);
     /** Display icon. */
     icon?: string;
     /** Whether this menu item is meant to act as a divider. */

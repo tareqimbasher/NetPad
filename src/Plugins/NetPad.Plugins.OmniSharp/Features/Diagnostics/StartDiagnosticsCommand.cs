@@ -22,7 +22,7 @@ public class StartDiagnosticsCommand : OmniSharpScriptCommand
             await _server.OmniSharpServer.SendAsync(new OmniSharpDiagnosticRequest
             {
                 FileName = _server.Project.UserProgramFilePath
-            });
+            }, cancellationToken);
 
             return Unit.Value;
         }

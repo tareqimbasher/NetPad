@@ -23,7 +23,7 @@ export class ClipboardPane extends Pane {
     public async select(entry: string, event: MouseEvent) {
         await navigator.clipboard.writeText(entry);
         this.selected = entry;
-        setTimeout(() => this.selected = null, 1000);
+        setTimeout(() => this.selected = undefined, 1000);
     }
 
     public removeEntry(entry: string) {

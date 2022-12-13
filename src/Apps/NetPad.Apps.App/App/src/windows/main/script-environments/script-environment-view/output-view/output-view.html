@@ -1,0 +1,26 @@
+<import from="./results-view/results-view"></import>
+<import from="./sql-view/sql-view"></import>
+
+<div class="toolbar">
+    <div class="tabs">
+        <div class="${view === 'Results' ? 'active' : ''}" click.trigger="view = 'Results'">
+            <b>Results</b>
+        </div>
+        <div class="${view === 'SQL' ? 'active' : ''}" click.trigger="view = 'SQL'">
+            <b>SQL</b>
+        </div>
+    </div>
+    <div class="actions pe-1">
+        <div id="output-toolbar-actions-portal-${environment.script.id}"></div>
+        <i class="action-icon close-icon ms-2"
+           title="Close Results"
+           click.trigger="close()"></i>
+    </div>
+</div>
+
+<results-view show.bind="view === 'Results'"
+              active.bind="view === 'Results'"
+              environment.bind="environment"></results-view>
+<sql-view show.bind="view === 'SQL'"
+          active.bind="view === 'SQL'"
+          environment.bind="environment"></sql-view>

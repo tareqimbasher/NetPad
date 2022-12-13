@@ -41,7 +41,7 @@ export class Util {
      * @param str The string to truncate.
      * @param maxLength The length after which the target string will be truncated.
      */
-    public static truncate(str: string, maxLength: number) {
+    public static truncate(str: string, maxLength: number): string {
         if (!str || maxLength < 0 || str.length <= maxLength) return str;
 
         return str.substr(0, maxLength - 3) + "...";
@@ -52,7 +52,7 @@ export class Util {
      * @param str The string to trim.
      * @param character The character to remove.
      */
-    public static trim(str: string | null | undefined, character: string) {
+    public static trim(str: string, character: string): string {
         if (!str)
             return str;
 
@@ -73,7 +73,7 @@ export class Util {
      * @param str The string to trim.
      * @param characters The characters to remove.
      */
-    public static trimAny(str: string | null | undefined, ...characters: string[]) {
+    public static trimAny(str: string, ...characters: string[]): string {
         if (!str)
             return str;
 
@@ -94,7 +94,7 @@ export class Util {
      * @param str The string to trim.
      * @param character The character to remove.
      */
-    public static trimStart(str: string | null | undefined, character: string) {
+    public static trimStart(str: string, character: string): string {
         if (!str)
             return str;
 
@@ -112,7 +112,7 @@ export class Util {
      * @param str The string to trim.
      * @param character The character to remove.
      */
-    public static trimEnd(str: string | null | undefined, character: string) {
+    public static trimEnd(str: string, character: string): string {
         if (!str)
             return str;
 
@@ -130,7 +130,7 @@ export class Util {
      * @param str The string to trim.
      * @param word The word to remove.
      */
-    public static trimWord(str: string, word: string) {
+    public static trimWord(str: string, word: string): string {
         const len = word.length;
         let start = 0,
             end = str.length;
@@ -200,12 +200,12 @@ export class Util {
      * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
      */
     public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
-        let timeout: number;
-        let isImmediateCall = false;
+        let timeout: number | undefined;
+        let isImmediateCall: boolean | undefined = false;
 
         return (...args: unknown[]) => {
             const later = () => {
-                timeout = null;
+                timeout = undefined;
                 if (!isImmediateCall) func.call(thisArg, ...args);
             };
 

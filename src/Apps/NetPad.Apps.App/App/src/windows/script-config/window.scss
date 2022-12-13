@@ -1,6 +1,2 @@
 @import "~styles/themes";
 
-#buttons-bar {
-    @include theme(border-top, borderColor, 1px solid);
-    padding: 5px 5px 0;
-}

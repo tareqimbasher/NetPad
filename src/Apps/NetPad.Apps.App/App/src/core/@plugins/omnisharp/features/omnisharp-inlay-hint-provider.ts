@@ -30,7 +30,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                 fileName: "",
                 range: Converter.monacoRangeToApiRange(range)
             })
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.inlayHints) {
             return {
@@ -60,14 +60,17 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
     }
 
     public async resolveInlayHint(hint: languages.InlayHint, token: CancellationToken): Promise<languages.InlayHint> {
+        if (!this.inlayHintsMap) return hint;
+
         if (!this.inlayHintsMap.has(hint)) {
             return Promise.reject("Outdated inlay hint was requested to be resolved, aborting.");
         }
 
         const entry = this.inlayHintsMap.get(hint);
-        const omnisharpHint = entry.omnisharpHint;
+        if (!entry) return hint;
 
         const scriptId = EditorUtil.getScriptId(entry.model);
+        const omnisharpHint = entry.omnisharpHint;
 
         const response = await this.omnisharpService.resolveInlayHint(scriptId, new api.InlayHintResolveRequest({
             hint: new api.InlayHint2({
@@ -79,10 +82,14 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                     item2: omnisharpHint.data.item2
                 })
             })
-        }));
+        }), new AbortController().signalFrom(token));
+
+        if (!response) {
+            return hint;
+        }
 
         hint.tooltip = {
-            value: response.tooltip,
+            value: response.tooltip || "",
             supportHtml: true,
             supportThemeIcons: true,
             isTrusted: true
@@ -95,7 +102,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
         return {
             label: inlayHint.label?.trim(),
             tooltip: {
-                value: inlayHint.tooltip,
+                value: inlayHint.tooltip || "",
                 supportHtml: true,
                 supportThemeIcons: true,
                 isTrusted: true

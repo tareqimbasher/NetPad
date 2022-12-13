@@ -36,7 +36,7 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
                 }
             };
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

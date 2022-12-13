@@ -10,14 +10,26 @@ import Aurelia, {
 } from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
-import {IEventBus, IIpcGateway, ISession, ISettingService, Session, Settings, SettingService} from "@domain";
+import {
+    AppService,
+    IAppService,
+    IEventBus,
+    IIpcGateway,
+    ISession,
+    ISettingService,
+    Session,
+    Settings,
+    SettingService
+} from "@domain";
 import {
     ContextMenu,
     DateTimeValueConverter,
+    Env,
     EventBus,
     ExternalLinkCustomAttribute,
     IWindowBootstrapperConstructor,
     PlatformsCustomAttribute,
+    RemoteLogSink,
     SanitizeHtmlValueConverter,
     SettingsBackgroundService,
     SignalRIpcGateway,
@@ -26,7 +38,8 @@ import {
     TextToHtmlValueConverter,
     YesNoValueConverter
 } from "@application";
-import {AppMutationObserver, IBackgroundService, System} from "@common";
+import {AppMutationObserver, IBackgroundService} from "@common";
+import {WebApp} from "@application/apps/web-app";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -35,6 +48,7 @@ const app = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(Settings, new Settings()),
+    Registration.singleton(IAppService, AppService),
     Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
@@ -43,8 +57,8 @@ const app = Aurelia.register(
     Registration.transient(IBackgroundService, SettingsBackgroundService),
     LoggerConfiguration.create({
         colorOptions: ColorOptions.colors,
-        level: LogLevel.debug,
-        sinks: [ConsoleSink],
+        level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
+        sinks: Env.RemoteLoggingEnabled ? [ConsoleSink, RemoteLogSink] : [ConsoleSink],
     }),
 
     // Custom Attributes
@@ -79,13 +93,17 @@ const app = Aurelia.register(
     })
 );
 
+if (!Env.isRunningInElectron()) {
+    WebApp.configure(app);
+}
+
 // Load app settings
 const settings = await app.container.get(ISettingService).get();
 app.container.get(Settings).init(settings.toJSON());
 
 // Determine which window we need to bootstrap and use
 let winOpt = startupOptions.get("win");
-if (!winOpt && !System.isRunningInElectron())
+if (!winOpt && !Env.isRunningInElectron())
     winOpt = "main";
 
 let bootstrapperCtor: IWindowBootstrapperConstructor;
@@ -97,6 +115,10 @@ else if (winOpt === "settings")
     bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
 else if (winOpt === "script-config")
     bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
+else if (winOpt === "data-connection")
+    bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
+else
+    throw new Error(`Unrecognized window: ${winOpt}`);
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));

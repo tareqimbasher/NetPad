@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NetPad.Common;
+using NetPad.DotNet;
 
 namespace NetPad.Compilation
 {
@@ -11,10 +13,10 @@ namespace NetPad.Compilation
 
         public static HashSet<string> GetAssemblyLocations()
         {
-            return _systemAssembliesLocations ??= GetAssemblyLocationsFromAppContext();
+            return _systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot();
         }
 
-        private static HashSet<string> GetAssemblyLocationsFromAppDomain()
+        private static HashSet<string> GetImplementationAssemblyLocationsFromAppDomain()
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly =>
@@ -25,7 +27,7 @@ namespace NetPad.Compilation
                 .ToHashSet();
         }
 
-        private static HashSet<string> GetAssemblyLocationsFromAppContext()
+        private static HashSet<string> GetImplementationAssemblyLocationsFromAppContext()
         {
             string? assemblyPaths = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
             if (string.IsNullOrWhiteSpace(assemblyPaths))
@@ -41,6 +43,30 @@ namespace NetPad.Compilation
                     var fileName = Path.GetFileName(path);
                     return includeList.Any(p => fileName.StartsWith(p));
                 })
+                .ToHashSet();
+        }
+
+        private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot()
+        {
+            var dotnetRoot = DotNetInfo.LocateDotNetRootDirectoryOrThrow();
+            var sdkReferenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
+            var dotnetVer = sdkReferenceAssemblyRoot.GetDirectories()
+                .Where(d => d.Name.StartsWith($"{BadGlobals.DotNetVersion}."))
+                .OrderBy(d => new Version(d.Name))
+                .Last()
+                .Name;
+
+            var referenceAssembliesDir = Path.Combine(sdkReferenceAssemblyRoot.FullName, dotnetVer, "ref", $"net{dotnetVer[0]}.0");
+
+            if (!Directory.Exists(referenceAssembliesDir))
+            {
+                throw new Exception($"Could find reference assemblies directory at {referenceAssembliesDir}." +
+                                    $" dotnetVer: {dotnetVer}." +
+                                    $" sdkReferenceAssemblyRoot: {sdkReferenceAssemblyRoot}");
+            }
+
+            return Directory.GetFiles(referenceAssembliesDir, "*.dll")
+                .Where(a => !a.Contains("VisualBasic"))
                 .ToHashSet();
         }
     }

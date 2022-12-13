@@ -23,7 +23,7 @@ public class GetCompletionsQuery : OmniSharpScriptQuery<OmniSharpCompletionReque
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpCompletionResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpCompletionResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

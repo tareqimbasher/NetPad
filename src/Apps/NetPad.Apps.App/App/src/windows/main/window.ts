@@ -1,5 +1,4 @@
-import Split from "split.js";
-import {ISession, Settings} from "@domain";
+import {DataConnectionStore, ISession, Settings} from "@domain";
 import {
     BuiltinShortcuts,
     EditorSetup,
@@ -8,9 +7,12 @@ import {
     PaneHost,
     PaneHostOrientation,
 } from "@application";
-import {ClipboardPane, NamespacesPane} from "./panes";
+import {ClipboardPane, Explorer, NamespacesPane} from "./panes";
+import {LeftRightPaneHostViewStateController} from "./left-right-pane-host-view-state-controller";
+import {PLATFORM} from "aurelia";
 
 export class Window {
+    public leftPaneHost: PaneHost;
     public rightPaneHost: PaneHost;
 
     constructor(
@@ -18,6 +20,7 @@ export class Window {
         @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
+        private readonly dataConnectionStore: DataConnectionStore,
         private readonly editorSetup: EditorSetup) {
     }
 
@@ -27,32 +30,27 @@ export class Window {
         this.editorSetup.setup();
 
         await this.session.initialize();
+        await this.dataConnectionStore.initialize();
     }
 
     public attached() {
-        Split(["sidebar", "script-environments"], {
-            gutterSize: 6,
-            sizes: [14, 86],
-            minSize: [100, 300],
-        });
+        const viewStateController = new LeftRightPaneHostViewStateController(
+            "#main-content",
+            () => this.leftPaneHost,
+            () => this.rightPaneHost
+        );
 
-        const viewStateController = {
-            split: null,
-            expand: (paneHost) => {
-                viewStateController.split = Split(["#content-left", `pane-host[data-id='${paneHost.id}']`], {
-                    gutterSize: 6,
-                    sizes: [85, 15],
-                    minSize: [300, 100],
-                });
-            },
-            collapse: (paneHost) => {
-                viewStateController.split?.destroy();
-            }
-        };
+        this.leftPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Left, viewStateController);
+        const explorer = this.paneManager.addPaneToHost(Explorer, this.leftPaneHost);
 
         this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
+
+        // Start explorer expanded by default
+        if (!viewStateController.hasSavedState()) {
+            PLATFORM.taskQueue.queueTask(() => explorer.activateOrCollapse(), {delay: 1});
+        }
     }
 
     private registerKeyboardShortcuts() {

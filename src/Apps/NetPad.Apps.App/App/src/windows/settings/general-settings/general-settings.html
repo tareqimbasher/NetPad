@@ -1,10 +1,4 @@
 <div class="section">
-    <h5 class="float-end" show.bind="appId">
-        <div class="badge bg-primary">
-            ${appId.name} v${appId.version}
-        </div>
-    </h5>
-
     <div class="header">
         <i class="theme-icon"></i>
         Appearance
@@ -54,7 +48,7 @@
                        type="checkbox"
                        checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
                 <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
-                    Show colored indicator in Scripts sidebar representing if script ran successfully or not
+                    Show colored indicator in Explorer representing if script ran successfully or not
                 </label>
             </div>
             <div class="form-check">
@@ -63,7 +57,7 @@
                        type="checkbox"
                        checked.bind="settings.appearance.showScriptRunningIndicatorInScriptsList">
                 <label class="form-check-label" for="showScriptRunningIndicatorInScriptsList">
-                    Show indicator in Scripts sidebar when script is running
+                    Show indicator in Explorer when script is running
                 </label>
             </div>
         </div>
@@ -72,7 +66,7 @@
 
 <div class="section">
     <div class="header">
-        <i class="folder-icon"></i>
+        <i class="folder-icon text-yellow"></i>
         Folders
     </div>
 

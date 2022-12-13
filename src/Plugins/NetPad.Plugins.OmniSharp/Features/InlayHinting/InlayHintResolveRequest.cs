@@ -9,7 +9,7 @@ public record InlayHintResolveRequest : OmniSharpInlayHintResolveRequest
     /// <summary>
     /// Hides base Hint property
     /// </summary>
-    public new InlayHint Hint { get; set; }
+    public new InlayHint Hint { get; set; } = null!;
 
     public OmniSharpInlayHintResolveRequest ToOmniSharpInlayHintResolveRequest()
     {
@@ -21,10 +21,10 @@ public record InlayHintResolveRequest : OmniSharpInlayHintResolveRequest
 
     public class InlayHint // Cannot inherit from OmniSharp InlayHint, it is sealed
     {
-        public OmniSharpPoint Position { get; set; }
-        public string Label { get; set; }
+        public OmniSharpPoint Position { get; set; } = null!;
+        public string Label { get; set; } = null!;
         public string? Tooltip { get; set; }
-        public InlayHintData Data { get; set; }
+        public InlayHintData Data { get; set; } = null!;
 
         public OmniSharpInlayHint ToOmniSharpInlayHint()
         {
@@ -40,7 +40,7 @@ public record InlayHintResolveRequest : OmniSharpInlayHintResolveRequest
 
     public class InlayHintData
     {
-        public string Item1 { get; set; }
+        public string Item1 { get; set; } = null!;
         public int Item2 { get; set; }
     }
 }

@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
+using NetPad.Data;
+using NetPad.DotNet;
+using NetPad.Dtos;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -28,10 +31,28 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("create")]
-        public async Task Create()
+        public async Task Create([FromBody] CreateScriptDto dto, [FromServices] IDataConnectionRepository dataConnectionRepository)
         {
             var script = await _mediator.Send(new CreateScriptCommand());
+
+            bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
+            if (hasSeedCode)
+            {
+                await _mediator.Send(new UpdateScriptCodeCommand(script, dto.Code));
+            }
+
+            if (dto.DataConnectionId != null)
+            {
+                var dataConnection = await dataConnectionRepository.GetAsync(dto.DataConnectionId.Value);
+                await _mediator.Send(new SetScriptDataConnectionCommand(script, dataConnection));
+            }
+
             await _mediator.Send(new OpenScriptCommand(script));
+
+            if (hasSeedCode && dto.RunImmediately)
+            {
+                await _mediator.Send(new RunScriptCommand(script.Id, new RunOptions()));
+            }
         }
 
         [HttpPatch("{id:guid}/save")]
@@ -42,9 +63,9 @@ namespace NetPad.Controllers
         }
 
         [HttpPatch("{id:guid}/run")]
-        public async Task Run(Guid id, [FromBody] RunOptions runOptions)
+        public async Task Run(Guid id, [FromBody] RunOptionsDto dto)
         {
-            await _mediator.Send(new RunScriptCommand(id, runOptions));
+            await _mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
         }
 
         [HttpPut("{id:guid}/code")]
@@ -87,6 +108,22 @@ namespace NetPad.Controllers
         {
             var environment = await GetScriptEnvironmentAsync(id);
             environment.Script.Config.SetKind(scriptKind);
+            return NoContent();
+        }
+
+        [HttpPut]
+        [Route("{id:guid}/data-connection")]
+        public async Task<IActionResult> SetDataConnection(Guid id, [FromQuery] Guid? dataConnectionId, [FromServices] IDataConnectionRepository dataConnectionRepository)
+        {
+            var environment = await GetScriptEnvironmentAsync(id);
+
+            DataConnection? dataConnection = null;
+            if (dataConnectionId != null)
+            {
+                dataConnection = await dataConnectionRepository.GetAsync(dataConnectionId.Value);
+            }
+
+            await _mediator.Send(new SetScriptDataConnectionCommand(environment.Script, dataConnection));
             return NoContent();
         }
 

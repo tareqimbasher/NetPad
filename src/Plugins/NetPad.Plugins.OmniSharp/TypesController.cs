@@ -17,6 +17,7 @@ public class TypesController : Controller
 
     private class Types
     {
-        public DiagnosticsEvent? DiagnosticsEvent { get; set; }
+        public OmniSharpDiagnosticsEvent? OmniSharpDiagnosticsEvent { get; set; }
+        public OmniSharpAsyncBufferUpdateCompletedEvent? OmniSharpAsyncBufferUpdateCompletedEvent { get; set; }
     }
 }

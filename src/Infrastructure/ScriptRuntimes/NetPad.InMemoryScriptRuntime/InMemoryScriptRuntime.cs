@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Assemblies;
 using NetPad.Compilation;
+using NetPad.DotNet;
 using NetPad.Exceptions;
 using NetPad.IO;
 using NetPad.Packages;
@@ -21,8 +22,8 @@ namespace NetPad.Runtimes
         private readonly ICodeCompiler _codeCompiler;
         private readonly IPackageProvider _packageProvider;
         private readonly ILogger<InMemoryScriptRuntime> _logger;
-        private readonly IOutputWriter _outputWriter;
-        private readonly HashSet<IOutputWriter> _outputListeners;
+        private readonly IScriptOutput _output;
+        private readonly HashSet<IScriptOutput> _externalOutputs;
         private IServiceScope? _serviceScope;
 
         public InMemoryScriptRuntime(
@@ -39,29 +40,35 @@ namespace NetPad.Runtimes
             _codeCompiler = codeCompiler;
             _packageProvider = packageProvider;
             _logger = logger;
-            _outputListeners = new HashSet<IOutputWriter>();
+            _externalOutputs = new HashSet<IScriptOutput>();
 
-            _outputWriter = new ActionOutputWriter((obj, title) =>
+            void ForwardToExternalOutputs(Func<IScriptOutput, IOutputWriter?> channelGetter, object? obj, string? title)
             {
-                foreach (var outputWriter in _outputListeners)
+                foreach (var externalOutput in _externalOutputs)
                 {
                     try
                     {
-                        outputWriter.WriteAsync(obj, title);
+                        channelGetter(externalOutput)?.WriteAsync(obj, title);
                     }
                     catch
                     {
                         // ignored
                     }
                 }
-            });
+            }
+
+            _output = new ScriptOutput(
+                new ActionOutputWriter((obj, title) => ForwardToExternalOutputs(o => o.PrimaryChannel, obj, title)),
+                new ActionOutputWriter((obj, title) => ForwardToExternalOutputs(o => o.SqlChannel, obj, title))
+            );
         }
 
         public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
         {
             try
             {
-                var (success, assemblyBytes, referenceAssemblyPaths, parsingResult) = await CompileAndGetRefAssemblyPathsAsync(runOptions);
+                var (success, assemblyBytes, referenceAssemblyImages, referenceAssemblyPaths, parsingResult) =
+                    await CompileAndGetReferencesAsync(runOptions);
 
                 if (!success)
                     return RunResult.RunAttemptFailure();
@@ -69,9 +76,10 @@ namespace NetPad.Runtimes
                 var (alcWeakRef, completionSuccess, elapsedMs) = await ExecuteInMemoryAndUnloadAsync(
                     _serviceScope!,
                     assemblyBytes,
+                    referenceAssemblyImages,
                     referenceAssemblyPaths,
                     parsingResult.ParsedCodeInformation,
-                    _outputWriter
+                    _output
                 );
 
                 for (int i = 0; alcWeakRef.IsAlive && (i < 10); i++)
@@ -79,87 +87,89 @@ namespace NetPad.Runtimes
                     GCUtil.CollectAndWait();
                 }
 
+                _logger.LogDebug("alcWeakRef.IsAlive after GC collect?: " + alcWeakRef.IsAlive);
+
                 return !completionSuccess ? RunResult.ScriptCompletionFailure(elapsedMs) : RunResult.Success(elapsedMs);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await _outputWriter.WriteAsync(ex + "\n");
+                await _output.PrimaryChannel.WriteAsync(ex + "\n");
                 return RunResult.RunAttemptFailure();
             }
         }
 
-        public void AddOutputListener(IOutputWriter outputWriter)
+        public void AddOutput(IScriptOutput output)
         {
-            _outputListeners.Add(outputWriter);
+            _externalOutputs.Add(output);
         }
 
-        public void RemoveOutputListener(IOutputWriter outputWriter)
+        public void RemoveOutput(IScriptOutput output)
         {
-            _outputListeners.Remove(outputWriter);
+            _externalOutputs.Remove(output);
         }
 
-        private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths, CodeParsingResult parsingResult)>
-            CompileAndGetRefAssemblyPathsAsync(RunOptions runOptions)
+        private async Task<(
+            bool success,
+            byte[] assemblyBytes,
+            AssemblyImage[] referenceAssemblyImages,
+            string[] referenceAssemblyPaths,
+            CodeParsingResult parsingResult)> CompileAndGetReferencesAsync(RunOptions runOptions)
         {
-            var parsingResult = _codeParser.Parse(_script, runOptions.Code);
+            var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
+            {
+                IncludedCode = runOptions.SpecificCodeToRun,
+                AdditionalCode = runOptions.AdditionalCode
+            });
 
-            var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
+            var referenceAssemblyImages = new List<AssemblyImage>();
+            foreach (var additionalReference in runOptions.AdditionalReferences)
+            {
+                if (additionalReference is AssemblyImageReference assemblyImageReference)
+                    referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
+            }
+
+            var referenceAssemblyPaths = await _script.Config.References
+                .Union(runOptions.AdditionalReferences)
+                .GetAssemblyPathsAsync(_packageProvider);
 
             var fullProgram = parsingResult.GetFullProgram()
-                .Replace("Console.WriteLine", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
+                .Replace("Console.WriteLine",
+                    $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
                 .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
 
-            var compilationResult = _codeCompiler.Compile(
-                new CompilationInput(fullProgram, referenceAssemblyPaths)
-                {
-                    OutputAssemblyNameTag = _script.Name
-                });
+            var compilationResult = _codeCompiler.Compile(new CompilationInput(
+                    fullProgram,
+                    referenceAssemblyImages.Select(a => a.Image),
+                    referenceAssemblyPaths)
+                .WithOutputAssemblyNameTag(_script.Name));
 
             if (!compilationResult.Success)
             {
-                await _outputWriter.WriteAsync(compilationResult.Diagnostics
+                await _output.PrimaryChannel.WriteAsync(compilationResult.Diagnostics
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
                     .JoinToString("\n") + "\n");
 
-                return (false, Array.Empty<byte>(), Array.Empty<string>(), parsingResult);
+                return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>(), parsingResult);
             }
 
-            return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths, parsingResult);
-        }
-
-        private async Task<string[]> GetReferenceAssemblyPathsAsync()
-        {
-            var assemblyPaths = new List<string>();
-
-            foreach (var reference in _script!.Config.References)
-            {
-                if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
-                {
-                    assemblyPaths.Add(aRef.AssemblyPath);
-                }
-                else if (reference is PackageReference pRef)
-                {
-                    assemblyPaths.AddRange(
-                        await _packageProvider.GetPackageAndDependanciesAssembliesAsync(pRef.PackageId, pRef.Version)
-                    );
-                }
-            }
-
-            return assemblyPaths.ToArray();
+            return (true, compilationResult.AssemblyBytes, referenceAssemblyImages.ToArray(),
+                referenceAssemblyPaths.ToArray(), parsingResult);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)> ExecuteInMemoryAndUnloadAsync(
-            IServiceScope serviceScope,
-            byte[] targetAssembly,
-            string[] referenceAssemblyPaths,
-            ParsedCodeInformation parsedCodeInformation,
-            IOutputWriter outputWriter
-        )
+        private async Task<(WeakReference alcWeakRef, bool completionSuccess, double elapsedMs)>
+            ExecuteInMemoryAndUnloadAsync(
+                IServiceScope serviceScope,
+                byte[] targetAssembly,
+                AssemblyImage[] assemblyReferenceImages,
+                string[] referenceAssemblyPaths,
+                ParsedCodeInformation parsedCodeInformation,
+                IScriptOutput output)
         {
             using var scope = serviceScope.ServiceProvider.CreateScope();
             using var assemblyLoader = new UnloadableAssemblyLoader(
+                assemblyReferenceImages,
                 referenceAssemblyPaths,
                 scope.ServiceProvider.GetRequiredService<ILogger<UnloadableAssemblyLoader>>()
             );
@@ -176,13 +186,15 @@ namespace NetPad.Runtimes
             }
 
             string setIOMethodName = parsedCodeInformation.BootstrapperSetIOMethodName;
-            MethodInfo? setIOMethod = bootstrapperType.GetMethod(setIOMethodName, BindingFlags.Static | BindingFlags.NonPublic);
+            MethodInfo? setIOMethod =
+                bootstrapperType.GetMethod(setIOMethodName, BindingFlags.Static | BindingFlags.NonPublic);
             if (setIOMethod == null)
             {
-                throw new Exception($"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
+                throw new Exception(
+                    $"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
             }
 
-            setIOMethod.Invoke(null, new object?[] { outputWriter });
+            setIOMethod.Invoke(null, new object?[] { _output });
 
             MethodInfo? entryPoint = assembly.EntryPoint;
             if (entryPoint == null)
@@ -198,7 +210,7 @@ namespace NetPad.Runtimes
             }
             catch (Exception ex)
             {
-                await outputWriter.WriteAsync((ex.InnerException ?? ex).ToString());
+                await _output.PrimaryChannel.WriteAsync((ex.InnerException ?? ex).ToString());
                 return (alcWeakRef, false, GetElapsedMilliseconds(runStart));
             }
 
@@ -209,7 +221,7 @@ namespace NetPad.Runtimes
         {
             _logger.LogTrace("Dispose start");
 
-            _outputListeners.Clear();
+            _externalOutputs.Clear();
             if (_serviceScope != null)
             {
                 _serviceScope.Dispose();
@@ -223,7 +235,7 @@ namespace NetPad.Runtimes
         {
             _logger.LogTrace("DisposeAsync start");
 
-            _outputListeners.Clear();
+            _externalOutputs.Clear();
             if (_serviceScope != null)
             {
                 _serviceScope.Dispose();

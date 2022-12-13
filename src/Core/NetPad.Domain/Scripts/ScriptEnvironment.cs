@@ -1,12 +1,17 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
+using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
+using NetPad.Utilities;
 
 namespace NetPad.Scripts
 {
@@ -15,10 +20,10 @@ namespace NetPad.Scripts
     {
         private readonly IEventBus _eventBus;
         private readonly ILogger<ScriptEnvironment> _logger;
+        private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
         private IServiceScope? _serviceScope;
         private IInputReader _inputReader;
-        private IOutputWriter _outputWriter;
-
+        private IScriptOutput _output;
         private ScriptStatus _status;
         private double _runDurationMilliseconds;
         private IScriptRuntime? _runtime;
@@ -29,10 +34,11 @@ namespace NetPad.Scripts
             Script = script;
             _serviceScope = serviceScope;
             _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
+            _dataConnectionResourcesCache =
+                _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
-            _outputWriter = ActionOutputWriter.Null;
-
+            _output = IScriptOutput.Null;
             _status = ScriptStatus.Ready;
 
             Initialize();
@@ -57,6 +63,51 @@ namespace NetPad.Scripts
 
             try
             {
+                if (Script.DataConnection != null)
+                {
+                    var connectionCode =
+                        await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(Script.DataConnection);
+                    if (connectionCode.ApplicationCode.Any())
+                    {
+                        runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
+                    }
+
+                    if (Script.DataConnection.Type == DataConnectionType.MSSQLServer)
+                    {
+                        // Special case for MS SQL Server. When targeting a MS SQL server database, we must load the
+                        // os-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
+                        // a specific dir (in app .csproj file). This behavior is only needed when running a Debug build
+                        // See:
+                        // https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212
+                        var appExePath = Assembly.GetEntryAssembly()?.Location;
+                        if (appExePath != null && File.Exists(appExePath))
+                        {
+                            var sqlClientAssemblyPath = Path.Combine(
+                                Path.GetDirectoryName(appExePath)!,
+                                "Microsoft.Data.SqlClient",
+                                "Microsoft.Data.SqlClient.dll");
+                            if (File.Exists(sqlClientAssemblyPath))
+                            {
+                                runOptions.AdditionalReferences.Add(new AssemblyFileReference(sqlClientAssemblyPath));
+                            }
+                        }
+                    }
+
+                    var connectionAssembly =
+                        await _dataConnectionResourcesCache.GetAssemblyAsync(Script.DataConnection);
+                    if (connectionAssembly != null)
+                    {
+                        runOptions.AdditionalReferences.Add(new AssemblyImageReference(connectionAssembly));
+                    }
+
+                    var requiredReferences =
+                        await _dataConnectionResourcesCache.GetRequiredReferencesAsync(Script.DataConnection);
+                    if (requiredReferences.Any())
+                    {
+                        runOptions.AdditionalReferences.AddRange(requiredReferences);
+                    }
+                }
+
                 var runtime = await GetRuntimeAsync();
                 var runResult = await runtime.RunScriptAsync(runOptions);
 
@@ -68,7 +119,7 @@ namespace NetPad.Scripts
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await _outputWriter.WriteAsync(ex + "\n");
+                await _output.PrimaryChannel.WriteAsync(ex + "\n");
                 await SetStatusAsync(ScriptStatus.Error);
             }
             finally
@@ -77,14 +128,14 @@ namespace NetPad.Scripts
             }
         }
 
-        public void SetIO(IInputReader inputReader, IOutputWriter outputWriter)
+        public void SetIO(IInputReader inputReader, IScriptOutput output)
         {
             EnsureNotDisposed();
 
             RemoveScriptRuntimeListeners();
 
             _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-            _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
+            _output = output ?? throw new ArgumentNullException(nameof(output));
 
             AddScriptRuntimeListeners();
         }
@@ -95,12 +146,14 @@ namespace NetPad.Scripts
 
             Script.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName,
+                    args.NewValue));
             });
 
             Script.Config.OnPropertyChanged.Add(async (args) =>
             {
-                await _eventBus.PublishAsync(new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
+                await _eventBus.PublishAsync(
+                    new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
             });
         }
 
@@ -113,7 +166,8 @@ namespace NetPad.Scripts
         private async Task SetRunDurationAsync(double runDurationMs)
         {
             _runDurationMilliseconds = runDurationMs;
-            await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
+            await _eventBus.PublishAsync(
+                new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
         }
 
         private async Task<IScriptRuntime> GetRuntimeAsync()
@@ -133,12 +187,12 @@ namespace NetPad.Scripts
 
         private void AddScriptRuntimeListeners()
         {
-            _runtime?.AddOutputListener(_outputWriter);
+            _runtime?.AddOutput(_output);
         }
 
         private void RemoveScriptRuntimeListeners()
         {
-            _runtime?.RemoveOutputListener(_outputWriter);
+            _runtime?.RemoveOutput(_output);
         }
 
         private void EnsureNotDisposed()

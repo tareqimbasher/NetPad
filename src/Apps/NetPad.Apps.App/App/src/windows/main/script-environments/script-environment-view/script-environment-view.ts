@@ -1,14 +1,17 @@
 import {bindable, ILogger} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import {
     ActiveEnvironmentChangedEvent,
+    DataConnection,
+    DataConnectionStore,
     IEventBus,
     IScriptService,
     ISession,
-    RunOptions,
+    RunOptionsDto,
     RunScriptEvent,
     Script,
     ScriptEnvironment,
-    ScriptKind,
+    ScriptKind, ScriptStatus,
     Settings
 } from "@domain";
 import Split from "split.js";
@@ -17,21 +20,23 @@ import {Editor, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironmentView extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
+
     @observable public editorText: string;
     public running = false;
 
     private split: Split.Instance;
     private textEditorContainer: HTMLElement;
-    private resultsContainer: HTMLElement;
-    private editor: () => Editor;
+    private outputContainer: HTMLElement;
+    private editor: Editor;
     private activatedAtLeastOnce = false;
 
     constructor(
-        readonly settings: Settings,
-        @IScriptService readonly scriptService: IScriptService,
-        @ISession readonly session: ISession,
-        @IShortcutManager readonly shortcutManager: IShortcutManager,
-        @IEventBus readonly eventBus: IEventBus,
+        private readonly settings: Settings,
+        @IScriptService private readonly scriptService: IScriptService,
+        @ISession private readonly session: ISession,
+        private readonly dataConnectionStore: DataConnectionStore,
+        @IShortcutManager private readonly shortcutManager: IShortcutManager,
+        @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
     }
@@ -45,7 +50,27 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     public set kind(value) {
-        this.scriptService.setScriptKind(this.script.id, value);
+        this.scriptService.setScriptKind(this.script.id, value)
+            .catch(err => {
+                this.logger.error("Failed to set script kind", err);
+            });
+    }
+
+    public get dataConnection(): DataConnection | undefined {
+        if (!this.script.dataConnection)
+            return undefined;
+
+        // We want to return the connection object from the connection store, not the connection
+        // defined in the script.dataConnection property because they both reference 2 different
+        // object instances, even though they are "the same connection"
+        return this.dataConnectionStore.connections.find(c => c.id == this.script.dataConnection?.id);
+    }
+
+    public set dataConnection(value: DataConnection | undefined) {
+        this.scriptService.setDataConnection(this.script.id, value?.id)
+            .catch(err => {
+                this.logger.error("Failed to set script data connection", err);
+            });
     }
 
     public get isActive(): boolean {
@@ -72,11 +97,11 @@ export class ScriptEnvironmentView extends ViewModelBase {
                 this.activatedAtLeastOnce = true;
             }
 
-            this.editor().focus();
+            this.editor.focus();
         });
         this.disposables.push(() => activeEnvChangedToken.dispose());
 
-        this.split = Split([this.textEditorContainer, this.resultsContainer], {
+        this.split = Split([this.textEditorContainer, this.outputContainer], {
             gutterSize: 6,
             direction: 'vertical',
             sizes: [100, 0],
@@ -94,16 +119,13 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
         try {
             await this.sendCodeToServer();
-            if (this.settings.results.openOnRun)
-                this.openResultsView();
 
-            const runOptions = new RunOptions();
+            const runOptions = new RunOptionsDto();
 
             // If user has code selected, only run selection
-            const editor = this.editor();
-            const selection = editor.monacoEditor.getSelection();
+            const selection = this.editor.monacoEditor?.getSelection();
             if (selection && !selection.isEmpty()) {
-                runOptions.code = editor.monacoEditor.getModel().getValueInRange(selection);
+                runOptions.specificCodeToRun = this.editor.monacoEditor?.getModel()?.getValueInRange(selection);
             }
 
             await this.scriptService.run(this.script.id, runOptions);
@@ -118,7 +140,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     private openResultsView() {
         if (this.isResultsViewOpen()) return;
-        this.split.setSizes([50, 50]);
+        this.split.setSizes([40, 60]);
     }
 
     private collapseResultsView = () => {
@@ -126,6 +148,13 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     private isResultsViewOpen(): boolean {
-        return this.resultsContainer.clientHeight > 10;
+        return this.outputContainer.clientHeight > 10;
+    }
+
+    @watch<ScriptEnvironmentView>(vm => vm.environment.status)
+    private environmentStatusChanged(newStatus: ScriptStatus) {
+        if (this.settings.results.openOnRun && newStatus === "Running" && !this.isResultsViewOpen()) {
+            this.openResultsView();
+        }
     }
 }

@@ -27,7 +27,7 @@ public class DebugAssemblyUnloadBackgroundService : BackgroundService
 
                 int count = 0;
                 var names = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.FullName)
-                    .Where(n => n?.Contains("NetPadScript") == true)
+                    .Where(n => n?.Contains("NetPad_CompiledAssembly") == true)
                     .Select(s => $"{++count}. {s?.Split(',')[0]}");
 
                 _logger.LogDebug("Loaded NetPad script assemblies (count: {Count}):\n{Assemblies}",

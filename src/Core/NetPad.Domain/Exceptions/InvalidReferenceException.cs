@@ -1,4 +1,5 @@
 using System;
+using NetPad.DotNet;
 using NetPad.Scripts;
 
 namespace NetPad.Exceptions

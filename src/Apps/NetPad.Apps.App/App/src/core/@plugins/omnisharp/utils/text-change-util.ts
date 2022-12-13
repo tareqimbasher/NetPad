@@ -28,7 +28,7 @@ export class TextChangeUtil {
 
             if (textChange.startLine < 1) {
                 // Discard text changes that occur before the first line
-                textChange.newText = textChange.newText.split("\n")
+                textChange.newText = textChange.newText?.split("\n")
                     .slice(1 - textChange.startLine)
                     .join("\n");
 
@@ -36,7 +36,7 @@ export class TextChangeUtil {
             }
 
             edits.push({
-                text: textChange.newText,
+                text: textChange.newText || null,
                 range: Converter.apiLinePositionSpanTextChangeToMonacoRange(textChange),
                 forceMoveMarkers: false
             });
@@ -72,6 +72,8 @@ export class TextChangeUtil {
     private static isAddUsingChange(textChange: LinePositionSpanTextChange) {
         const newText = textChange.newText;
 
+        if (!newText) return;
+
         return (
             // For when we get the normal/expected text format, ex: "using System.Text.Json;\n\n"
             (newText.startsWith("using ") && textChange.startLine === 1)
@@ -82,11 +84,11 @@ export class TextChangeUtil {
     }
 
     private static getNamespacesFromUsings(textChange: LinePositionSpanTextChange): string[] {
-        return textChange.newText.split("\n")
-            .filter(l => l && l.trim())
+        return textChange.newText?.split("\n")
+            .filter(l => !!l && l.trim())
             .map(l => Util.trimWord(l, "using "))
             .map(l => Util.trimEnd(l, ";"))
             .map(l => l.trim())
-            .filter(l => l);
+            .filter(l => l) || [];
     }
 }

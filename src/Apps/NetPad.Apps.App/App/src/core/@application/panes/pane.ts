@@ -31,7 +31,7 @@ export abstract class Pane {
     }
 
     public activateOrCollapse() {
-        this.host.activateOrCollapse(this);
+        this.host?.activateOrCollapse(this);
     }
 
     public hasShortcut(shortcut: Shortcut) {

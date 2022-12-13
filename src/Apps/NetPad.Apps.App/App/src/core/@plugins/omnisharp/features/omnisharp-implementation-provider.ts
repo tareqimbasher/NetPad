@@ -17,10 +17,10 @@ export class OmniSharpImplementationProvider implements IImplementationProvider 
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.quickFixes) {
-            return null;
+            return [];
         }
 
         return response.quickFixes.map(qf => {

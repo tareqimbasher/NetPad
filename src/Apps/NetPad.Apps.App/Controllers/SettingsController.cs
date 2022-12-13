@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using MediatR;
@@ -6,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Configuration;
 using NetPad.CQs;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad.Controllers
 {
@@ -45,15 +45,15 @@ namespace NetPad.Controllers
         [HttpPatch("show-settings-file")]
         public async Task<IActionResult> ShowSettingsFile([FromServices] ISettingsRepository settingsRepository)
         {
-            var path = Path.GetDirectoryName(await settingsRepository.GetSettingsFileLocationAsync());
-            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+            var containingDir = (await settingsRepository.GetSettingsFileLocationAsync())
+                .GetInfo()
+                .DirectoryName;
+
+            if (string.IsNullOrWhiteSpace(containingDir) || !Directory.Exists(containingDir))
                 return Ok();
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = path,
-                UseShellExecute = true
-            });
+            ProcessUtils.OpenInDesktopExplorer(containingDir);
+
             return Ok();
         }
     }

@@ -18,7 +18,7 @@ namespace OmniSharp
         IOmniSharpStdioServer CreateStdioServerFromNewProcess(
             string executablePath,
             string projectPath,
-            string additionalArgs);
+            string? additionalArgs);
 
         /// <summary>
         /// Creates a stdio OmniSharp server from an existing process. Standard input and output must already be redirected.

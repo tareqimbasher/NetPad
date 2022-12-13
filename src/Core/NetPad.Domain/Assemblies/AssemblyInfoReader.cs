@@ -21,13 +21,15 @@ namespace NetPad.Assemblies
             {
                 var typeDef = metadataReader.GetTypeDefinition(typeDefHandle);
 
-                if (string.IsNullOrEmpty(metadataReader.GetString(typeDef.Namespace)))
+                var ns = metadataReader.GetString(typeDef.Namespace);
+
+                if (string.IsNullOrWhiteSpace(ns))
                     continue; // If it's namespace is blank, it's not a user-defined type
 
                 if (!typeDef.Attributes.HasFlag(TypeAttributes.Public))
                     continue;
 
-                namespaces.Add(metadataReader.GetString(typeDef.Namespace));
+                namespaces.Add(ns);
             }
 
             return namespaces;

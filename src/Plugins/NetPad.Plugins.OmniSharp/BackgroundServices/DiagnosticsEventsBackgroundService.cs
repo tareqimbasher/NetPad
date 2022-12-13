@@ -64,7 +64,7 @@ public class DiagnosticsEventsBackgroundService : IHostedService
                 if (!diagnostics.Results.Any())
                     return;
 
-                await _ipcService.SendAsync(new DiagnosticsEvent(scriptId, diagnostics));
+                await _ipcService.SendAsync(new OmniSharpDiagnosticsEvent(scriptId, diagnostics));
             });
 
             return Task.CompletedTask;

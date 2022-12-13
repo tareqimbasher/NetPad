@@ -1,4 +1,4 @@
-import {CancellationToken, editor, languages, Position} from "monaco-editor";
+import {CancellationToken, editor, Emitter, IEvent, languages, Position} from "monaco-editor";
 import {EditorUtil, ICodeLensProvider} from "@application";
 import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
 import {IOmniSharpService} from "../omnisharp-service";
@@ -14,14 +14,19 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
         "Dispose",
         "GetEnumerator",
     ];
+    private _onDidChange: Emitter<this>;
+
+    public onDidChange: IEvent<this>;
 
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+        this._onDidChange = new Emitter<this>();
+        this.onDidChange = this._onDidChange.event;
     }
 
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getCodeStructure(scriptId);
+        const response = await this.omnisharpService.getCodeStructure(scriptId, new AbortController().signalFrom(token));
 
         if (!response || !response.elements) {
             return {
@@ -41,7 +46,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
 
             const range = element.ranges["name"];
 
-            if (range && range.start.line >= 0) {
+            if (range && range.start && range.start.line >= 0) {
                 const codeLensItem: languages.CodeLens = {
                     range: Converter.apiRangeToMonacoRange(range)
                 };
@@ -63,10 +68,11 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
             model,
             this.omnisharpService,
             codeLens.range.startLineNumber,
-            codeLens.range.startColumn);
+            codeLens.range.startColumn,
+            token);
 
         if (!references) {
-            return null;
+            return codeLens;
         }
 
         const count = references.length;

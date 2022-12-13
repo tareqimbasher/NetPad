@@ -4,22 +4,19 @@ using OmniSharp.Utilities;
 
 namespace OmniSharp.Stdio
 {
-    internal class OmniSharpServerStdioProcessAccessor : IOmniSharpServerProcessAccessor<ProcessIOHandler>, IDisposable
+    internal class OmniSharpServerStdioProcessAccessor : IOmniSharpServerProcessAccessor<ProcessIO>, IDisposable
     {
         private readonly OmniSharpStdioServerConfiguration _configuration;
         private ProcessHandler? _processHandler;
-        private ProcessIOHandler? _processIoHandler;
+        private ProcessIO? _processIoHandler;
 
         public OmniSharpServerStdioProcessAccessor(OmniSharpStdioServerConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public async Task<ProcessIOHandler> GetEntryPointAsync()
+        public Task<ProcessIO> GetEntryPointAsync()
         {
-            if (_processIoHandler != null)
-                return _processIoHandler;
-
             if (_configuration.ExternallyManagedProcess)
             {
                 var process = _configuration.ProcessGetter!();
@@ -27,7 +24,7 @@ namespace OmniSharp.Stdio
                 if (!process.IsProcessRunning())
                     throw new Exception("Externally managed OmniSharpServer process is not running.");
 
-                _processIoHandler = new ProcessIOHandler(process);
+                _processIoHandler = new ProcessIO(process);
             }
             else
             {
@@ -36,23 +33,25 @@ namespace OmniSharp.Stdio
 
                 var exePath = _configuration.ExecutablePath!;
                 var exeArgs = _configuration.ExecutableArgs!;
-                
+
                 _processHandler = new ProcessHandler(exePath, exeArgs);
 
-                if (!await _processHandler.StartAsync(false) || _processHandler.Process == null || _processHandler.ProcessIO == null)
+                var startResult = _processHandler.StartProcess();
+
+                if (!startResult.Success || _processHandler.IO == null)
                     throw new Exception($"Could not start process at: {exePath}. Args: {exeArgs}");
 
-                _processIoHandler = _processHandler.ProcessIO;
+                _processIoHandler = _processHandler.IO;
             }
 
-            return _processIoHandler;
+            return Task.FromResult(_processIoHandler);
         }
 
         public Task StopProcessAsync()
         {
             if (_configuration.ExternallyManagedProcess)
             {
-                // Do nothing. Process is controlled externally.
+                // Do nothing. Process is managed externally.
             }
             else
             {

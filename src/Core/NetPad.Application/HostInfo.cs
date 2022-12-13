@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace NetPad
 {
     public class HostInfo
@@ -5,6 +7,7 @@ namespace NetPad
         public HostInfo()
         {
             HostUrl = "http://localhost";
+            WorkingDirectory = Assembly.GetEntryAssembly()?.Location ?? "./";
         }
 
         public string HostUrl { get; private set; }

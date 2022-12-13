@@ -50,7 +50,10 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             {
                 AutoSaveScriptChanges(environment);
 
-                environment.SetIO(ActionInputReader.Null, new IpcScriptOutputWriter(environment, _ipcService));
+                environment.SetIO(ActionInputReader.Null, new ScriptOutput(
+                    new IpcScriptOutputWriter(environment, _ipcService),
+                    new IpcScriptSqlOutputWriter(environment, _ipcService)
+                ));
             }
 
             return Task.CompletedTask;

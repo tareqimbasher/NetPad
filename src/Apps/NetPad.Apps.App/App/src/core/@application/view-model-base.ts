@@ -5,7 +5,7 @@ export class ViewModelBase {
     protected logger: ILogger;
 
     constructor(@ILogger logger: ILogger) {
-        this.logger = logger.scopeTo((this as unknown).constructor.name)
+        this.logger = logger.scopeTo((this as Record<string, unknown>).constructor.name)
     }
 
     public detaching() {

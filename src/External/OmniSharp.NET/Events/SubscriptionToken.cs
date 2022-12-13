@@ -6,13 +6,13 @@ namespace OmniSharp.Events
     {
         private readonly Action _unsubscribe;
 
-        public SubscriptionToken(Action unsubscribe)
+        internal SubscriptionToken(Action unsubscribe)
         {
             _unsubscribe = unsubscribe;
         }
 
         /// <summary>
-        /// Unsubscribes
+        /// Unsubscribes the token.
         /// </summary>
         public void Dispose()
         {

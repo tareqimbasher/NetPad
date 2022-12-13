@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
 using NetPad.Compilation;
 using NetPad.Configuration;
+using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
 using NetPad.Scripts;
@@ -20,19 +23,23 @@ public class AppOmniSharpServer
     private readonly ScriptEnvironment _environment;
     private readonly IOmniSharpServerFactory _omniSharpServerFactory;
     private readonly IOmniSharpServerLocator _omniSharpServerLocator;
+    private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
+
     private readonly Settings _settings;
     private readonly ICodeParser _codeParser;
     private readonly IEventBus _eventBus;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
 
-    private IOmniSharpStdioServer? _omniSharpServer;
     private readonly ScriptProject _project;
+    private IOmniSharpStdioServer? _omniSharpServer;
 
     public AppOmniSharpServer(
         ScriptEnvironment environment,
         IOmniSharpServerFactory omniSharpServerFactory,
         IOmniSharpServerLocator omniSharpServerLocator,
+        IDataConnectionResourcesCache dataConnectionResourcesCache,
         Settings settings,
         ICodeParser codeParser,
         IEventBus eventBus,
@@ -43,6 +50,7 @@ public class AppOmniSharpServer
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
         _omniSharpServerLocator = omniSharpServerLocator;
+        _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _settings = settings;
         _codeParser = codeParser;
         _eventBus = eventBus;
@@ -57,8 +65,8 @@ public class AppOmniSharpServer
     public ScriptProject Project => _project;
 
     public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer
-                                               ?? throw new InvalidOperationException(
-                                                   $"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
+                                                    ?? throw new InvalidOperationException(
+                                                        $"OmniSharp server has not been started yet. Script ID: {_environment.Script.Id}");
 
     /// <summary>
     /// Starts the server.
@@ -74,116 +82,9 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await _project.InitializeAsync();
+        await _project.CreateAsync(ProjectOutputType.Executable, true);
 
-        var codeChangeToken = _eventBus.Subscribe<ScriptCodeUpdatedEvent>(async ev =>
-        {
-            if (ev.Script.Id != _environment.Script.Id || _omniSharpServer == null)
-            {
-                return;
-            }
-
-            await UpdateOmniSharpCodeBufferAsync();
-
-            // Technically we should be doing this, instead of the previous line however when
-            // we do, code in bootstrapper program like the .Dump() extension method is not recognized
-            // TODO need to find a point where we can determine OmniSharp has fully started and is ready to update buffer and for it to register
-            // var parsingResult = _codeParser.Parse(_environment.Script);
-            // await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
-        });
-
-        _subscriptionTokens.Add(codeChangeToken);
-
-        var namespacesChangeToken = _eventBus.Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
-        {
-            if (ev.Script.Id != _environment.Script.Id || _omniSharpServer == null)
-            {
-                return;
-            }
-
-            var parsingResult = _codeParser.Parse(_environment.Script);
-            await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
-        });
-
-        _subscriptionTokens.Add(namespacesChangeToken);
-
-        var referencesChangeToken = _eventBus.Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
-        {
-            if (!ev.Added.Any() && !ev.Removed.Any())
-            {
-                return;
-            }
-
-            foreach (var addedReference in ev.Added)
-            {
-                if (addedReference is PackageReference pkgRef)
-                {
-                    try
-                    {
-                        await _project.AddPackageAsync(pkgRef.PackageId, pkgRef.Version);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to add package to project. " +
-                                             "Package ID: {PackageId}. Package version: {PackageVersion}",
-                            pkgRef.PackageId,
-                            pkgRef.Version);
-                    }
-                }
-                else if (addedReference is AssemblyReference asmRef)
-                {
-                    try
-                    {
-                        await _project.AddAssemblyReferenceAsync(asmRef.AssemblyPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to add assembly reference to project. " +
-                                             "Assembly path: {AssemblyPath}", asmRef.AssemblyPath);
-                    }
-                }
-            }
-
-            foreach (var removedReference in ev.Removed)
-            {
-                if (removedReference is PackageReference pkgRef)
-                {
-                    try
-                    {
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to remove package from project. " +
-                                             "Package ID: {PackageId}. Package version: {PackageVersion}",
-                            pkgRef.PackageId,
-                            pkgRef.Version);
-                    }
-                }
-                else if (removedReference is AssemblyReference asmRef)
-                {
-                    try
-                    {
-                        await _project.RemoveAssemblyReferenceAsync(asmRef.AssemblyPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to remove assembly reference from project. " +
-                                             "Assembly path: {AssemblyPath}", asmRef.AssemblyPath);
-                    }
-                }
-            }
-
-            await OmniSharpServer.SendAsync(new[]
-            {
-                new FilesChangedRequest()
-                {
-                    FileName = _project.ProjectFilePath,
-                    ChangeType = FileChangeType.Change
-                }
-            });
-        });
-
-        _subscriptionTokens.Add(referencesChangeToken);
+        InitializeEventHandlers();
 
         await StartOmniSharpServerAsync(executablePath!);
 
@@ -203,6 +104,12 @@ public class AppOmniSharpServer
         }
 
         await StopOmniSharpServerAsync();
+
+        var semaphores = _bufferUpdateSemaphores.Values.ToArray();
+        foreach (var semaphore in semaphores)
+        {
+            semaphore.Dispose();
+        }
 
         await _eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
@@ -279,13 +186,19 @@ public class AppOmniSharpServer
         // It takes some time for OmniSharp to register its updated buffer after it starts
         if (!string.IsNullOrWhiteSpace(_environment.Script.Code))
         {
+            // We don't want to await
+#pragma warning disable CS4014
             Task.Run(async () =>
+#pragma warning restore CS4014
             {
-                for (int i = 0; i < 10; i++)
-                {
+                await Task.Delay(3000);
+
+                bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
+                                                            || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
+                if (shouldUpdateDataConnectionCodeBuffer)
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
+                else
                     await UpdateOmniSharpCodeBufferAsync();
-                    await Task.Delay(500);
-                }
             });
         }
     }
@@ -320,6 +233,85 @@ public class AppOmniSharpServer
         return true;
     }
 
+
+    # region Event Handlers
+
+    private void InitializeEventHandlers()
+    {
+        Subscribe<ScriptCodeUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            await UpdateOmniSharpCodeBufferAsync();
+
+            // Technically we should be doing this, instead of the previous line however when
+            // we do, code in bootstrapper program like the .Dump() extension method is not recognized
+            // TODO need to find a point where we can determine OmniSharp has fully started and is ready to update buffer and for it to register
+            // var parsingResult = _codeParser.Parse(_environment.Script);
+            // await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+        });
+
+        Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            var parsingResult = _codeParser.Parse(_environment.Script);
+            await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
+        });
+
+        Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            if (!ev.Added.Any() && !ev.Removed.Any()) return;
+
+            await _project.AddReferencesAsync(ev.Added);
+
+            await _project.RemoveReferencesAsync(ev.Removed);
+
+            await NotifyOmniSharpServerProjectFileChangedAsync();
+        });
+
+        Subscribe<DataConnectionResourcesUpdatedEvent>(ev =>
+        {
+            if (_environment.Script.DataConnection == null || ev.DataConnection.Id != _environment.Script.DataConnection.Id) return Task.CompletedTask;
+
+            var dataConnection = ev.DataConnection;
+
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+
+            return Task.CompletedTask;
+        });
+
+        Subscribe<ScriptDataConnectionChangedEvent>(ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return Task.CompletedTask;
+
+            var dataConnection = ev.DataConnection;
+
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+
+            return Task.CompletedTask;
+        });
+    }
+
+    private void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
+    {
+        var token = _eventBus.Subscribe<TEvent>((ev) =>
+        {
+            if (_omniSharpServer != null)
+            {
+                // We don't want to await OmniSharp event handlers
+                handler(ev);
+            }
+
+            return Task.CompletedTask;
+        });
+        _subscriptionTokens.Add(token);
+    }
+
+    #endregion
+
     public async Task UpdateOmniSharpCodeBufferAsync()
     {
         var parsingResult = _codeParser.Parse(_environment.Script);
@@ -329,22 +321,96 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
-        await OmniSharpServer.SendAsync(new UpdateBufferRequest
-        {
-            FileName = _project.UserProgramFilePath,
-            Buffer = parsingResult.UserProgram
-        });
+        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code.Value + ";");
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
     {
-        var namespaces = string.Join("\n", parsingResult.Namespaces.Select(ns => $"global using {ns};"));
-        var bootstrapperProgramCode = $"{namespaces}\n\n{parsingResult.BootstrapperProgram}";
+        var usings = parsingResult.CombineSourceCode().GetAllUsings()
+            .Select(u => u.ToCodeString(true))
+            .JoinToString(Environment.NewLine);
 
-        await OmniSharpServer.SendAsync(new UpdateBufferRequest
+        var bootstrapperProgramCode = $"{usings}\n\n{parsingResult.BootstrapperProgram.Code.ToCodeString()}";
+
+        await UpdateBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
+    }
+
+    private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
+    {
+        List<Reference> references = new List<Reference>();
+
+        if (dataConnection != null)
         {
-            FileName = _project.BootstrapperProgramFilePath,
-            Buffer = bootstrapperProgramCode
+            references.AddRange(await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection));
+
+            var assembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection);
+            if (assembly != null)
+                references.Add(new AssemblyImageReference(assembly));
+        }
+
+        await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
+        await NotifyOmniSharpServerProjectFileChangedAsync();
+
+        var sourceCode = dataConnection == null
+            ? null
+            : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
+        await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
+
+        // Needed to trigger diagnostics and semantic highlighting for script file
+        await Task.Delay(1000);
+        await UpdateOmniSharpCodeBufferAsync();
+
+        await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
+    }
+
+    private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<DataConnectionSourceCode>? sourceCodeTask)
+    {
+        DataConnectionSourceCode? sourceCode = null;
+        if (sourceCodeTask != null)
+        {
+            sourceCode = await sourceCodeTask;
+        }
+
+        string? dataConnectionProgramCode = null;
+
+        if (sourceCode != null)
+        {
+            dataConnectionProgramCode = sourceCode.ApplicationCode.ToCodeString(true);
+        }
+
+        await UpdateBufferAsync(_project.DataConnectionProgramFilePath, dataConnectionProgramCode);
+    }
+
+    private async Task NotifyOmniSharpServerProjectFileChangedAsync()
+    {
+        await OmniSharpServer.SendAsync(new[]
+        {
+            new FilesChangedRequest()
+            {
+                FileName = _project.ProjectFilePath,
+                ChangeType = FileChangeType.Change
+            }
         });
+    }
+
+    private async Task UpdateBufferAsync(string filePath, string? buffer)
+    {
+        var semaphore = _bufferUpdateSemaphores.GetOrAdd(filePath, key => new SemaphoreSlim(1, 1));
+        await semaphore.WaitAsync();
+
+        try
+        {
+            buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
+
+            await OmniSharpServer.SendAsync(new UpdateBufferRequest
+            {
+                FileName = filePath,
+                Buffer = buffer
+            });
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 }

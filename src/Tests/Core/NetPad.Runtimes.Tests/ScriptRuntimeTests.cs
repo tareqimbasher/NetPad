@@ -64,7 +64,7 @@ namespace NetPad.Runtimes.Tests
 
             string? result = null;
             var runtime = await GetScriptRuntimeAsync(script);
-            runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
+            runtime.AddOutput(new ScriptOutput(new ActionOutputWriter((output, title) => result = output?.ToString())));
 
             await runtime.RunScriptAsync(new RunOptions());
 
@@ -87,7 +87,7 @@ namespace NetPad.Runtimes.Tests
 
                 // Keep result in local variable to test that assembly unloads even if we keep reference to result
                 string? result = null;
-                runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
+                runtime.AddOutput(new ScriptOutput(new ActionOutputWriter((output, title) => result = output?.ToString())));
 
                 await runtime.RunScriptAsync(new RunOptions());
 

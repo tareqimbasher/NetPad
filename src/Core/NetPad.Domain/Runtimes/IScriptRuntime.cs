@@ -8,7 +8,7 @@ namespace NetPad.Runtimes
     {
         Task<RunResult> RunScriptAsync(RunOptions runOptions);
 
-        void AddOutputListener(IOutputWriter outputWriter);
-        void RemoveOutputListener(IOutputWriter outputWriter);
+        void AddOutput(IScriptOutput output);
+        void RemoveOutput(IScriptOutput output);
     }
 }

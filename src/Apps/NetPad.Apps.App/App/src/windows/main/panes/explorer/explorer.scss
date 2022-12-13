@@ -1,0 +1,22 @@
+@import "~styles/main";
+@import "~styles/themes";
+
+explorer {
+    display: flex;
+    flex-direction: column;
+
+    .list-group-item {
+        border-right: none;
+        border-left: none;
+        border-width: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-right: 0;
+        user-select: none;
+        @include theme(background-color, backgroundColor);
+    }
+
+    .tree-expand-node-icon, .tree-collapse-node-icon {
+        @extend .text-orange;
+    }
+}

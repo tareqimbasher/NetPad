@@ -8,5 +8,6 @@ namespace NetPad.UiInterop
         Task OpenMainWindowAsync();
         Task OpenSettingsWindowAsync(string? tab = null);
         Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
+        Task OpenDataConnectionWindowAsync(Guid? dataConnectionId);
     }
 }

@@ -23,7 +23,7 @@ public class CodeFormatQuery : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, 
             {
                 Buffer = request.Input.Buffer,
                 FileName = _server.Project.UserProgramFilePath
-            });
+            }, cancellationToken);
         }
     }
 }

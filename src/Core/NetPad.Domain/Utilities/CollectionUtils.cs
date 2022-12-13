@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,14 @@ namespace NetPad.Utilities
                             await asyncAction(partition.Current);
                 })
             );
+        }
+
+        public static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> items) where T : class
+        {
+            foreach (var item in items)
+            {
+                hashSet.Add(item);
+            }
         }
     }
 }

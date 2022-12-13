@@ -4,16 +4,20 @@ import {EditorUtil, ICommandProvider, ICompletionItemProvider} from "@applicatio
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import * as api from "../api";
+import {ILogger} from "aurelia";
 
 export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
+    private readonly logger: ILogger;
 
     constructor(
         @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
         @ISession private readonly session: ISession,
-        @IScriptService private readonly scriptService: IScriptService) {
+        @IScriptService private readonly scriptService: IScriptService,
+        @ILogger logger: ILogger) {
+        this.logger = logger.scopeTo(nameof(OmniSharpCompletionProvider));
     }
 
     public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {
@@ -65,11 +69,15 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             const scriptId = EditorUtil.getScriptId(completion.model);
 
-            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem);
+            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, new AbortController().signalFrom(token));
+
+            if (!resolution || !resolution.item) {
+                return item;
+            }
 
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
-            console.error(ex);
+            this.logger.error("Error resolving CompletionItem", item, ex);
         }
     }
 
@@ -86,13 +94,15 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const scriptId = EditorUtil.getScriptId(model);
 
-        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request);
+        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, new AbortController().signalFrom(token));
 
         if (token.isCancellationRequested || !omnisharpCompletions || !omnisharpCompletions.items) {
             return new CompletionResults();
         }
 
-        const monacoCompletions = omnisharpCompletions.items
+        const apiCompletions = omnisharpCompletions.items.filter(c => !(c.kind === "Property" && c.label.endsWith("_HIDDEN")));
+
+        const monacoCompletions = apiCompletions
             .map(omnisharpCompletion => this.convertToMonacoCompletionItem(model, range, omnisharpCompletion));
 
         if (token.isCancellationRequested) {
@@ -100,7 +110,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         }
 
         return {
-            apiCompletions: omnisharpCompletions.items,
+            apiCompletions: apiCompletions,
             monacoCompletions: monacoCompletions
         };
     }
@@ -135,7 +145,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const tags = apiCompletion.tags && apiCompletion.tags[0] === "Deprecated" ? 1 : [];
 
-        let command: languages.Command = undefined;
+        let command: languages.Command | undefined = undefined;
 
         if (apiCompletion.hasAfterInsertStep) {
             command = {
@@ -144,7 +154,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
                 arguments: [apiCompletion]
             };
         }
-        else if (apiCompletion.additionalTextEdits?.length > 0) {
+        else if (apiCompletion.additionalTextEdits && apiCompletion.additionalTextEdits.length > 0) {
             command = {
                 id: this.insertAdditionalTextEditsCommandId,
                 title: "Insert additional text",
@@ -164,7 +174,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
             range: range,
             tags: tags,
             sortText: sortText,
-            additionalTextEdits: null,
+            additionalTextEdits: undefined,
             command: command
         };
     }

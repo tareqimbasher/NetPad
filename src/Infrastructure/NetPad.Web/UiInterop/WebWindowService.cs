@@ -24,7 +24,7 @@ public class WebWindowService : IUiWindowService
         command.Options.Height = 0.5;
         command.Options.Width = 0.5;
 
-        command.Metadata.Add("tab", tab);
+        if (tab != null) command.Metadata.Add("tab", tab);
 
         await _ipcService.SendAsync(command);
     }
@@ -36,7 +36,18 @@ public class WebWindowService : IUiWindowService
         command.Options.Width = 4 / 5.0;
 
         command.Metadata.Add("script-id", script.Id);
-        command.Metadata.Add("tab", tab);
+        if (tab != null) command.Metadata.Add("tab", tab);
+
+        await _ipcService.SendAsync(command);
+    }
+
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+    {
+        var command = new OpenWindowCommand("data-connection");
+        command.Options.Height = 2 / 3.0;
+        command.Options.Width = 4 / 5.0;
+
+        if (dataConnectionId != null) command.Metadata.Add("data-connection-id", dataConnectionId);
 
         await _ipcService.SendAsync(command);
     }

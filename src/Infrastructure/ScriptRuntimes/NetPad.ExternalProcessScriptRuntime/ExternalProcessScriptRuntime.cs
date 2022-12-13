@@ -9,6 +9,7 @@ using NetPad.Utilities;
 
 namespace NetPad.Runtimes;
 
+// WARNING: THIS CLASS IS NOT READY FOR USE YET
 // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
 public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 {
@@ -92,16 +93,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             File.Copy(referenceAssemblyPath, Path.Combine(dir, Path.GetFileName(referenceAssemblyPath)), true);
         }
 
-        _processHandler = new IO.ProcessHandler("dotnet", assemblyFullPath);
+        _processHandler = new ProcessHandler("dotnet", assemblyFullPath);
         _processHandler.Init();
-        _processHandler.ProcessIO!.OnOutputReceivedHandlers.Add(async (t) =>
-        {
-            await _outputWriter.WriteAsync(t);
-        });
-        _processHandler.ProcessIO!.OnErrorReceivedHandlers.Add(async (t) =>
-        {
-            await _outputWriter.WriteAsync(t);
-        });
+        _processHandler.ProcessIO!.OnOutputReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
+        _processHandler.ProcessIO!.OnErrorReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
 
         var start = DateTime.Now;
 
@@ -109,22 +104,28 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         return runSuccess ? RunResult.Success((DateTime.Now - start).TotalMilliseconds) : RunResult.RunAttemptFailure();
     }
 
+    public void AddOutput(IScriptOutput output)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoveOutput(IScriptOutput output)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths)> CompileAndGetRefAssemblyPathsAsync()
     {
         var parsingResult = _codeParser.Parse(_script);
 
-        var referenceAssemblyPaths = await GetReferenceAssemblyPathsAsync();
+        var referenceAssemblyPaths = await _script!.Config.References.GetAssemblyPathsAsync(_packageProvider);
 
-        //
         var fullProgram = parsingResult.GetFullProgram()
             .Replace("Console.WriteLine", "Program.OutputWriteLine")
             .Replace("Console.Write", "Program.OutputWrite");
 
         var compilationResult = _codeCompiler.Compile(
-            new CompilationInput(fullProgram, referenceAssemblyPaths)
-            {
-                OutputAssemblyNameTag = _script.Name
-            });
+            new CompilationInput(fullProgram, null, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
 
         if (!compilationResult.Success)
         {
@@ -135,38 +136,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             return (false, Array.Empty<byte>(), Array.Empty<string>());
         }
 
-        return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths);
-    }
-
-    private async Task<string[]> GetReferenceAssemblyPathsAsync()
-    {
-        var assemblyPaths = new List<string>();
-
-        foreach (var reference in _script!.Config.References)
-        {
-            if (reference is AssemblyReference aRef && aRef.AssemblyPath != null)
-            {
-                assemblyPaths.Add(aRef.AssemblyPath);
-            }
-            else if (reference is PackageReference pRef)
-            {
-                assemblyPaths.AddRange(
-                    await _packageProvider.GetPackageAndDependanciesAssembliesAsync(pRef.PackageId, pRef.Version)
-                );
-            }
-        }
-
-        return assemblyPaths.ToArray();
-    }
-
-    public void AddOutputListener(IOutputWriter outputWriter)
-    {
-        _outputListeners.Add(outputWriter);
-    }
-
-    public void RemoveOutputListener(IOutputWriter outputWriter)
-    {
-        _outputListeners.Remove(outputWriter);
+        return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray());
     }
 
     public void Dispose()

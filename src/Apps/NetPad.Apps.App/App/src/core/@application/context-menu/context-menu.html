@@ -1,4 +1,4 @@
-<template>
+<template class="${isVisible ? 'visible' : ''}">
     <div class="menu">
         <div class="item ${item.isDivider ? 'divider' : ''}"
              repeat.for="item of options.items"
@@ -9,8 +9,13 @@
                     <div class="icon">
                         <i class="${item.icon}"></i>
                     </div>
-                    <div class="text flex-grow-1 text-truncate">
-                        ${item.text}
+                    <div if.bind="!!item.text && typeof item.text === 'function'"
+                         class="text flex-grow-1 text-truncate"
+                         innerHTML.bind="item.text(activeClickTarget)">
+                    </div>
+                    <div else
+                         class="text flex-grow-1 text-truncate"
+                         innerHTML.bind="item.text">
                     </div>
                     <div class="shortcut" show.bind="item.shortcut">
                         ${item.shortcut.keyComboString}

@@ -48,11 +48,9 @@ namespace NetPad.Runtimes.Tests
 
             string? result = null;
             var runtime = await GetScriptRuntimeAsync(script);
-            runtime.AddOutputListener(new ActionOutputWriter((output, title) => result = output?.ToString()));
+            runtime.AddOutput(new ScriptOutput(new ActionOutputWriter((output, title) => result = output?.ToString())));
 
             await runtime.RunScriptAsync(new RunOptions());
-
-            _testOutputHelper.WriteLine(result);
 
             Assert.Equal(expectedOutput, result);
         }

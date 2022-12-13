@@ -1,11 +1,11 @@
 <template class="d-flex flex-row ${orientation.toLowerCase()} overflow-hidden"
           data-id.bind="id">
-    <div class="ribbon ${orientation === 'Right' ? 'order-2' : 'order-1'}">
+    <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}">
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="activateOrCollapse(pane)"
              title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyComboString + ')') : ''}">
-            <i class="mb-3 ${pane.icon}" show.bind="pane.icon"></i>
+            <i class="mb-3 pane-icon ${pane.icon}" show.bind="pane.icon"></i>
             <span>${pane.name}</span>
         </div>
     </div>

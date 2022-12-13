@@ -27,7 +27,6 @@ namespace NetPad.IO
 
         public Process Process { get; }
 
-        public StreamWriter StandardInput => Process.StandardInput;
         public List<Func<string, Task>> OnOutputReceivedHandlers { get; }
         public List<Func<string, Task>> OnErrorReceivedHandlers { get; }
 

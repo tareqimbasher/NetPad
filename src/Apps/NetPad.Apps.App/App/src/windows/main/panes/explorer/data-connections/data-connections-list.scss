@@ -1,0 +1,59 @@
+@import "~styles/themes";
+
+data-connections-list {
+    padding-top: 0.25rem;
+    display: flex;
+    flex-direction: column;
+
+    .data-connection-structure-tree {
+        > .list-group {
+            padding: 0;
+        }
+    }
+
+    .db-table, .db-column, .db-index, .db-navigation {
+        padding-left: 1.35rem;
+    }
+
+    .single-schema .db-table {
+        padding-left: 0;
+    }
+
+    .display-text {
+        padding-left: 0.5rem;
+        display: flex;
+        align-items: center;
+
+        .row-icon {
+            height: 1rem;
+            width: 1rem;
+            margin-right: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            img {
+                max-height: 100%;
+            }
+        }
+
+        .extra-info {
+            font-size: 0.85rem;
+            margin-left: 0.25rem;
+        }
+    }
+
+    .data-connection-error {
+        max-width: 50%;
+    }
+
+    .data-connection:hover, .display-text:hover {
+        @include theme(background-color, hoverColor);
+    }
+
+    i[class*="-node-icon"] {
+        font-size: 0.75rem;
+        margin-right: 0.30rem;
+    }
+}

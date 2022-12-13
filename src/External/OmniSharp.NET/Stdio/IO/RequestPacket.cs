@@ -1,6 +1,6 @@
 namespace OmniSharp.Stdio.IO
 {
-    public class RequestPacket
+    internal class RequestPacket
     {
         public RequestPacket(int sequence, string command, object arguments)
         {
@@ -8,7 +8,7 @@ namespace OmniSharp.Stdio.IO
             Command = command;
             Arguments = arguments;
         }
-        
+
         public string Command { get; set; }
         public int Seq { get; set; }
         public object Arguments { get; set; }

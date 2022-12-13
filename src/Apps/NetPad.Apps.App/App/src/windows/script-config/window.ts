@@ -19,7 +19,10 @@ export class Window {
     }
 
     public async binding() {
-        const environment = await this.session.getEnvironment(this.startupOptions.get("script-id"));
+        const scriptId = this.startupOptions.get("script-id");
+        if (!scriptId) throw new Error("No script ID provided");
+
+        const environment = await this.session.getEnvironment(scriptId);
         this.script = environment.script;
 
         document.title = `${this.script.name} - Properties`;

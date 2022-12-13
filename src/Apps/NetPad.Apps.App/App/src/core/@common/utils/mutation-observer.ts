@@ -16,7 +16,7 @@ export class AppMutationObserver {
             throw new Error("Callback cannot be null or undefined");
 
         if (!this.mutationObserver) {
-            this.initializeMutationObserver();
+            this.mutationObserver = this.initializeMutationObserver();
         }
 
         const firstListener = this.listeners.length === 0;
@@ -41,12 +41,12 @@ export class AppMutationObserver {
 
         // Stop observing mutations if no more listeners exist
         if (this.listeners.length === 0) {
-            this.mutationObserver.disconnect();
+            this.mutationObserver?.disconnect();
         }
     }
 
     private initializeMutationObserver() {
-        this.mutationObserver = new MutationObserver(
+        return new MutationObserver(
             (mutations, observer) => this.mutationCallback(mutations, observer));
     }
 

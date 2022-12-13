@@ -20,7 +20,9 @@ namespace OmniSharp.Utilities
         {
             var oldContext = SynchronizationContext.Current;
             var synch = new ExclusiveSynchronizationContext();
+
             SynchronizationContext.SetSynchronizationContext(synch);
+
             // ReSharper disable once AsyncVoidLambda
             synch.Post(async _ =>
             {
@@ -38,8 +40,8 @@ namespace OmniSharp.Utilities
                     synch.EndMessageLoop();
                 }
             }, null);
-            synch.BeginMessageLoop();
 
+            synch.BeginMessageLoop();
             SynchronizationContext.SetSynchronizationContext(oldContext);
         }
 
@@ -53,14 +55,16 @@ namespace OmniSharp.Utilities
         {
             var oldContext = SynchronizationContext.Current;
             var synch = new ExclusiveSynchronizationContext();
+
             SynchronizationContext.SetSynchronizationContext(synch);
-            T? ret = default(T?);
+            T? result = default(T?);
+
             // ReSharper disable once AsyncVoidLambda
             synch.Post(async _ =>
             {
                 try
                 {
-                    ret = await func();
+                    result = await func();
                 }
                 catch (Exception e)
                 {
@@ -72,9 +76,10 @@ namespace OmniSharp.Utilities
                     synch.EndMessageLoop();
                 }
             }, null);
+
             synch.BeginMessageLoop();
             SynchronizationContext.SetSynchronizationContext(oldContext);
-            return ret;
+            return result;
         }
 
         private class ExclusiveSynchronizationContext : SynchronizationContext

@@ -12,13 +12,26 @@
 body,
 html {
     height: 100%;
+    font-size: 12.8px;
 }
 
 .window {
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 
     @include theme(background-color, backgroundColor);
     @include theme(color, textColor);
+
+    .bottom-buttons-bar {
+        @extend .p-3;
+        @include theme(border-top, borderColor, 1px solid);
+        display: flex;
+
+        button:not(:last-of-type) {
+            margin-right: 0.375rem;
+        }
+    }
 }
 
 .tabs {

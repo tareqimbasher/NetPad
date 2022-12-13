@@ -3,15 +3,15 @@ import {Util} from "@common";
 
 export class PaneHost {
     public readonly id: string;
-    protected readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
-    protected viewState: PaneHostViewState = PaneHostViewState.Collapsed;
-    protected _active?: Pane;
+    public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
+    protected _viewState: PaneHostViewState = PaneHostViewState.Collapsed;
+    protected _active: Pane | undefined;
 
     private readonly panes: Set<Pane>;
 
     constructor(
         orientation: PaneHostOrientation,
-        readonly viewStateController: IPaneHostViewStateController
+        private readonly viewStateController: IPaneHostViewStateController
     ) {
         this.id = Util.newGuid();
         this.orientation = orientation;
@@ -22,7 +22,24 @@ export class PaneHost {
         return this._active;
     }
 
-    public activateOrCollapse(pane: Pane) {
+    public get viewState(): PaneHostViewState {
+        return this._viewState;
+    }
+
+    protected set viewState(value) {
+        this._viewState = value;
+    }
+
+    public activateOrCollapse(pane?: Pane) {
+        if (!pane) {
+            if (this.panes.size > 0) {
+                pane = [...this.panes][0];
+            }
+            else {
+                throw new Error("No panes are added to this host.");
+            }
+        }
+
         if (pane === this.active && this.viewState === PaneHostViewState.Expanded) {
             this.collapse();
             return;
@@ -44,7 +61,7 @@ export class PaneHost {
         if (this.viewState === PaneHostViewState.Collapsed) return;
         this.viewStateController.collapse(this);
         this.viewState = PaneHostViewState.Collapsed;
-        this._active = null;
+        this._active = undefined;
     }
 
     public hasPane(pane: Pane): boolean {

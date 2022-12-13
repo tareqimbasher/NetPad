@@ -1,8 +1,9 @@
 import {Aurelia, IContainer, ILogger, Registration} from "aurelia";
-import {AppService, IAppService, IScriptService, ScriptService,} from "@domain";
+import {DataConnectionService, IDataConnectionService, IScriptService, ScriptService,} from "@domain";
 import {Window} from "./window";
 import {
     BuiltinCompletionProvider,
+    DataConnectionName,
     Editor,
     ICompletionItemProvider,
     IPaneManager,
@@ -11,10 +12,7 @@ import {
     PaneHost,
     PaneManager,
     ShortcutManager,
-    WebDialogBackgroundService,
-    WebWindowBackgroundService
 } from "@application";
-import {IBackgroundService, System} from "@common";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -27,18 +25,12 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IPaneManager, PaneManager),
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IScriptService, ScriptService),
-            Registration.singleton(IAppService, AppService),
             Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
+            Registration.singleton(IDataConnectionService, DataConnectionService),
             PaneHost,
-            Editor
+            Editor,
+            DataConnectionName
         );
-
-        if (!System.isRunningInElectron()) {
-            app.register(
-                Registration.transient(IBackgroundService, WebDialogBackgroundService),
-                Registration.transient(IBackgroundService, WebWindowBackgroundService)
-            );
-        }
 
         try {
             this.registerPlugins(app.container);

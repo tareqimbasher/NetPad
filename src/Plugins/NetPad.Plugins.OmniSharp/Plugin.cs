@@ -26,6 +26,7 @@ public class Plugin : IPlugin
 
         services.AddHostedService<ServerManagementBackgroundService>();
         services.AddHostedService<DiagnosticsEventsBackgroundService>();
+        services.AddHostedService<EventForwardToIpcBackgroundService>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(OmniSharpMediatorPipeline<,>));
     }

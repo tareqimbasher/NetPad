@@ -36,7 +36,7 @@ public class NuGetPackageProvider : IPackageProvider
         _settings = settings;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
-        _nuGetFramework = NuGetFramework.ParseFolder("net6.0");
+        _nuGetFramework = NuGetFramework.ParseFolder(BadGlobals.TargetFramework);
 
         // hostDependencyContext = DependencyContext.Load(hostAssembly);
         // FrameworkName = hostDependencyContext.Target.Framework;
@@ -106,8 +106,10 @@ public class NuGetPackageProvider : IPackageProvider
     {
         var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
 
-        // Call install to make sure package and all its dependencies are installed if they aren't already
-        await InstallPackageAsync(packageId, packageVersion);
+        if (!IsInstalled(packageIdentity))
+        {
+            await InstallPackageAsync(packageId, packageVersion);
+        }
 
         using var sourceCacheContext = new SourceCacheContext();
         var logger = new NuGetNullLogger();
@@ -145,6 +147,7 @@ public class NuGetPackageProvider : IPackageProvider
         int skip,
         int take,
         bool includePrerelease,
+        bool loadMetadata = false,
         CancellationToken? cancellationToken = null)
     {
         if (skip < 0) skip = 0;
@@ -158,7 +161,10 @@ public class NuGetPackageProvider : IPackageProvider
         var searchResource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
 
         var filter = new SearchFilter(includePrerelease);
+
         // TODO filter results for packages that support current framework
+        // This does not seem to have any effect
+        //filter.SupportedFrameworks = new[] { BadGlobals.TargetFramework };
 
         IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
             term,
@@ -373,6 +379,8 @@ public class NuGetPackageProvider : IPackageProvider
         return packagesToInstall;
     }
 
+    private bool IsInstalled(PackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
+
     private async Task InstallPackagesAsync(
         PackageIdentity explicitPackageToInstallIdentity,
         IEnumerable<SourcePackageDependencyInfo> packagesToInstall,
@@ -405,12 +413,12 @@ public class NuGetPackageProvider : IPackageProvider
                         cancellationToken);
 
                     /*
-                 * Removed extracting of package since there is no way to control it to extract to the same directory
-                 * the downloader resource above extracts to.
-                 *
-                 * The download resource will download the package in dir "GetNuGetCacheDirectoryPath()/packageID/version/"
-                 * The PackageExtractor will extract the package in dir "GetNuGetCacheDirectoryPath()/packageID.version/"
-                 */
+                     * Removed extracting of package since there is no way to control it to extract to the same directory
+                     * the downloader resource above extracts to.
+                     *
+                     * The download resource will download the package in dir "GetNuGetCacheDirectoryPath()/packageID/version/"
+                     * The PackageExtractor will extract the package in dir "GetNuGetCacheDirectoryPath()/packageID.version/"
+                     */
 
                     // Extract the package into the target directory.
                     // var packageExtractionContext = new PackageExtractionContext(
@@ -541,27 +549,29 @@ public class NuGetPackageProvider : IPackageProvider
             return true;
         }
 
-        // Check if there is a runtime library with the same ID as the package is available in the host's runtime libraries.
-        var runtimeLibs = hostDependencies.RuntimeLibraries.Where(r => r.Name == dep.Id);
+        return false;
 
-        return runtimeLibs.Any(r =>
-        {
-            // What version of the library is the host using?
-            var parsedLibVersion = NuGetVersion.Parse(r.Version);
-
-            if (parsedLibVersion.IsPrerelease)
-            {
-                // Always use pre-release versions from the host, otherwise it becomes
-                // a nightmare to develop across multiple active versions.
-                return true;
-            }
-            else
-            {
-                // Does the host version satisfy the version range of the requested package?
-                // If so, we can provide it; otherwise, we cannot.
-                return dep.VersionRange.Satisfies(parsedLibVersion);
-            }
-        });
+        // // Check if there is a runtime library with the same ID as the package is available in the host's runtime libraries.
+        // var runtimeLibs = hostDependencies.RuntimeLibraries.Where(r => r.Name == dep.Id);
+        //
+        // return runtimeLibs.Any(r =>
+        // {
+        //     // What version of the library is the host using?
+        //     var parsedLibVersion = NuGetVersion.Parse(r.Version);
+        //
+        //     if (parsedLibVersion.IsPrerelease)
+        //     {
+        //         // Always use pre-release versions from the host, otherwise it becomes
+        //         // a nightmare to develop across multiple active versions.
+        //         return true;
+        //     }
+        //     else
+        //     {
+        //         // Does the host version satisfy the version range of the requested package?
+        //         // If so, we can provide it; otherwise, we cannot.
+        //         return dep.VersionRange.Satisfies(parsedLibVersion);
+        //     }
+        // });
     }
 
     private SourceRepositoryProvider GetSourceRepositoryProvider()

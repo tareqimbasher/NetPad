@@ -23,7 +23,7 @@ public class GetQuickInfoQuery : OmniSharpScriptQuery<OmniSharpQuickInfoRequest,
 
             omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickInfoResponse>(omniSharpRequest);
+            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickInfoResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

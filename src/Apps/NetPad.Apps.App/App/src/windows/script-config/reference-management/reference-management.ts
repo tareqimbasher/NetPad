@@ -1,7 +1,7 @@
 import {observable} from "@aurelia/runtime";
 import * as path from "path";
 import Split from "split.js";
-import {AssemblyReference, IAssemblyService, Reference} from "@domain";
+import {AssemblyFileReference, IAssemblyService, Reference} from "@domain";
 import {ConfigStore} from "../config-store";
 
 export class ReferenceManagement {
@@ -44,7 +44,7 @@ export class ReferenceManagement {
             else
                 this.selectedReference = this.references[ix];
         } else {
-            this.selectedReference = null;
+            this.selectedReference = undefined;
         }
     }
 
@@ -53,7 +53,7 @@ export class ReferenceManagement {
             return;
         }
 
-        const references = Array.from(newValue).map((d: File) => new AssemblyReference({
+        const references = Array.from(newValue).map((d: File) => new AssemblyFileReference({
             title: path.basename(d.path),
             assemblyPath: d.path
         }));
@@ -64,7 +64,7 @@ export class ReferenceManagement {
 
         // Clear file input element so if user selects X.dll, removes it, then re-selects it
         // the change is observed
-        this.browseInput.value = null;
+        this.browseInput.value = "";
     }
 }
 

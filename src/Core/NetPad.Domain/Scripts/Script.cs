@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using NetPad.Common;
-using NetPad.Exceptions;
+using NetPad.Data;
 
 namespace NetPad.Scripts
 {
@@ -15,9 +14,10 @@ namespace NetPad.Scripts
         private string _name;
         private string _code;
         private string? _path;
+        private DataConnection? _dataConnection;
         private bool _isDirty;
 
-        public Script(Guid id, string name)
+        public Script(Guid id, string name, ScriptConfig config, string code)
         {
             if (id == default)
                 throw new ArgumentException($"{nameof(id)} cannot be an empty GUID");
@@ -30,9 +30,18 @@ namespace NetPad.Scripts
 
             Id = id;
             _name = name;
-            _code = string.Empty;
-            Config = new ScriptConfig(ScriptKind.Program);
+            _code = code;
+            Config = config;
+            Config.OnPropertyChanged.Add(ConfigPropertyChangedHandler);
             OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
+        }
+
+        public Script(Guid id, string name, ScriptConfig config) : this(id, name, config, string.Empty)
+        {
+        }
+
+        public Script(Guid id, string name) : this(id, name, new ScriptConfig(ScriptKind.Program))
+        {
         }
 
         public Script(string name) : this(Guid.NewGuid(), name)
@@ -55,7 +64,14 @@ namespace NetPad.Scripts
             private set => this.RaiseAndSetIfChanged(ref _path, value);
         }
 
-        public ScriptConfig Config { get; private set; }
+
+        public ScriptConfig Config { get; }
+
+        public DataConnection? DataConnection
+        {
+            get => _dataConnection;
+            private set => this.RaiseAndSetIfChanged(ref _dataConnection, value);
+        }
 
         public string Code
         {
@@ -73,44 +89,6 @@ namespace NetPad.Scripts
 
         public bool IsNew => Path == null;
 
-
-        public string Serialize()
-        {
-            return $"{Id}\n" +
-                   $"{JsonSerializer.Serialize(Config)}\n" +
-                   $"#Code\n" +
-                   $"{Code}";
-        }
-
-        public void Deserialize(string contents)
-        {
-            var parts = contents.Split("#Code");
-            if (parts.Length != 2)
-                throw new InvalidScriptFormatException(this, "The script is missing #Code identifier.");
-
-            var part1 = parts[0];
-            var part1Lines = part1.Split("\n");
-            var part2 = parts[1];
-
-            if (!Guid.TryParse(part1Lines.First(), out var id) || id == default)
-                throw new InvalidScriptFormatException(this, "Invalid or non-existent ID.");
-            else
-                Id = id;
-
-            Code = part2.TrimStart();
-
-            Config.RemoveAllPropertyChangedHandlers();
-
-            Config = JsonSerializer.Deserialize<ScriptConfig>(
-                string.Join(Environment.NewLine, part1Lines.Skip(1))) ?? throw new InvalidScriptFormatException(this, "Invalid config section.");
-
-            Config.OnPropertyChanged.Add(change  =>
-            {
-                IsDirty = true;
-                return Task.CompletedTask;
-            });
-        }
-
         public void SetPath(string path)
         {
             if (Path == path)
@@ -122,7 +100,7 @@ namespace NetPad.Scripts
             if (!path.EndsWith(STANDARD_EXTENSION)) path += STANDARD_EXTENSION;
 
             Path = path.Replace('\\', '/');
-            Name = System.IO.Path.GetFileNameWithoutExtension(path);
+            Name = GetNameFromPath(path);
         }
 
         public void UpdateCode(string? newCode)
@@ -134,20 +112,22 @@ namespace NetPad.Scripts
             IsDirty = true;
         }
 
+        public void SetDataConnection(DataConnection? dataConnection)
+        {
+            DataConnection = dataConnection;
+        }
+
         public override string ToString()
         {
             return $"[{Id}] {Name}".TrimEnd();
         }
 
-        public static Script From(string name, string scriptJson, string? path)
+        private Task ConfigPropertyChangedHandler(PropertyChangedArgs propertyChangedArgs)
         {
-            var newScript = new Script(name);
-            newScript.Deserialize(scriptJson);
-
-            if (path != null)
-                newScript.SetPath(path);
-
-            return newScript;
+            IsDirty = true;
+            return Task.CompletedTask;
         }
+
+        public static string GetNameFromPath(string path) => System.IO.Path.GetFileNameWithoutExtension(path);
     }
 }

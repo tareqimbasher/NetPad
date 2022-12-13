@@ -13,15 +13,16 @@ export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
         : Promise<languages.SignatureHelpResult> {
         const scriptId = EditorUtil.getScriptId(model);
 
-
         const response = await this.omnisharpService.getSignatureHelp(scriptId, new api.SignatureHelpRequest({
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
-        }));
+        }), new AbortController().signalFrom(token));
 
         if (!response || !response.signatures) {
-            return null;
+            // Interface does not allow returning of undefined, but it is allowed.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return undefined as any;
         }
 
         const result: languages.SignatureHelpResult = {
@@ -37,20 +38,22 @@ export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
 
         for (const signature of response.signatures) {
             const signatureInfo: languages.SignatureInformation = {
-                label: signature.label,
-                documentation: signature.structuredDocumentation.summaryText,
+                label: signature.label || "",
+                documentation: signature.structuredDocumentation?.summaryText,
                 parameters: []
             }
 
             result.value.signatures.push(signatureInfo);
 
-            for (const parameter of signature.parameters) {
-                const parameterInfo: languages.ParameterInformation = {
-                    label: parameter.label,
-                    documentation: this.getParameterDocumentation(parameter)
-                };
+            if (signature.parameters) {
+                for (const parameter of signature.parameters) {
+                    const parameterInfo: languages.ParameterInformation = {
+                        label: parameter.label || "",
+                        documentation: this.getParameterDocumentation(parameter)
+                    };
 
-                signatureInfo.parameters.push(parameterInfo);
+                    signatureInfo.parameters.push(parameterInfo);
+                }
             }
         }
 
@@ -59,7 +62,7 @@ export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
 
     private getParameterDocumentation(parameter: api.SignatureHelpParameter): string | IMarkdownString {
         const summary = parameter.documentation;
-        if (summary.length > 0) {
+        if (summary && summary.length > 0) {
             const paramText = `**${parameter.name}**: ${summary}`;
             return <IMarkdownString>{
                 value: paramText,

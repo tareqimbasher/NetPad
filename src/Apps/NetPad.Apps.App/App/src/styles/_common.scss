@@ -47,6 +47,10 @@ kbd {
     cursor: pointer;
 }
 
+.btn.btn-basic {
+    background: transparent;
+}
+
 .action-icon {
     @extend %clickable;
     @include theme(color, actionIconColor);
