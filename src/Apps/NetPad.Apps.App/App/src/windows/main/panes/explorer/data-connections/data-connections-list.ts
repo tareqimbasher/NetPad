@@ -207,7 +207,7 @@ export class DataConnectionsList extends ViewModelBase {
         do {
             id = el.getAttribute("data-connection-id");
 
-            if (!!id) {
+            if (id) {
                 break;
             }
 
@@ -241,7 +241,7 @@ export class DataConnectionsList extends ViewModelBase {
         const displayText = clickTarget?.querySelector("b")?.innerText;
         let abbr: string | undefined = undefined;
 
-        if (!!displayText) {
+        if (displayText) {
             const firstChar = displayText[0];
 
             // Extract only upper case chars

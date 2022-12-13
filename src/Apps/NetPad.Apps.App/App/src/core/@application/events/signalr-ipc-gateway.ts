@@ -52,7 +52,7 @@ export class SignalRIpcGateway implements IIpcGateway {
     }
 
     private removeCallback(channelName: string, callback: (message: unknown, channel: string) => void) {
-        let channelCallbacks = this.callbacks.get(channelName);
+        const channelCallbacks = this.callbacks.get(channelName);
 
         if (!!channelCallbacks && channelCallbacks.length > 0) {
             const ix = channelCallbacks.indexOf(callback);

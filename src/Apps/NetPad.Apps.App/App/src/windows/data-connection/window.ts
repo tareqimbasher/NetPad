@@ -28,7 +28,7 @@ export class Window {
     public authType: "none" | "userAndPassword" = "userAndPassword";
     public testingConnectionStatus?: undefined | "testing" | "success" | "fail";
     public testingConnectionFailureMessage?: string;
-    public loadingDatabases: boolean = false;
+    public loadingDatabases = false;
     public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
     private nameField: HTMLInputElement;
