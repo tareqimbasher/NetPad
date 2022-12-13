@@ -97,11 +97,9 @@ results-view {
             }
 
             td {
-                max-width: 100rem;
-
                 > span {
                     width: max-content;
-                    max-width: 100%;
+                    max-width: 50vw;
                     display: block;
                     word-break: break-all;
                 }

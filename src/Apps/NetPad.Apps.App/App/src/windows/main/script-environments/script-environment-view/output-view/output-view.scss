@@ -7,14 +7,23 @@ output-view {
     min-height: 0;
 
     .toolbar {
+        height: 2rem;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
         @include theme(background-color, resultsToolbarBackground);
 
         .tabs {
             display: flex;
             flex-direction: row;
             align-items: center;
+            height: 100%;
 
             > div {
+                height: 100%;
+                display: flex;
+                align-items: center;
                 cursor: pointer;
                 user-select: none;
                 padding-left: 0.35rem;

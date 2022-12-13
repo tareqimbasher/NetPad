@@ -2,21 +2,19 @@
 <import from="./sql-view/sql-view"></import>
 
 <div class="toolbar">
-    <div class="row m-0 p-0">
-        <div class="col ps-2 tabs">
-            <div class="${view === 'Results' ? 'active' : ''}" click.trigger="view = 'Results'">
-                <b>Results</b>
-            </div>
-            <div class="${view === 'SQL' ? 'active' : ''}" click.trigger="view = 'SQL'">
-                <b>SQL</b>
-            </div>
+    <div class="tabs">
+        <div class="${view === 'Results' ? 'active' : ''}" click.trigger="view = 'Results'">
+            <b>Results</b>
         </div>
-        <div class="actions col text-end pe-1">
-            <div id="output-toolbar-actions-portal-${environment.script.id}"></div>
-            <i class="action-icon close-icon ms-2"
-               title="Close Results"
-               click.trigger="close()"></i>
+        <div class="${view === 'SQL' ? 'active' : ''}" click.trigger="view = 'SQL'">
+            <b>SQL</b>
         </div>
+    </div>
+    <div class="actions pe-1">
+        <div id="output-toolbar-actions-portal-${environment.script.id}"></div>
+        <i class="action-icon close-icon ms-2"
+           title="Close Results"
+           click.trigger="close()"></i>
     </div>
 </div>
 
