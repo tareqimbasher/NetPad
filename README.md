@@ -19,8 +19,8 @@ open-source, web-enabled, cross-platform alternative.
   to build and run your scripts.
     * The environment variable `DOTNET_ROOT` or `DOTNET_INSTALL_DIR` must be set
       and point to the directory where .NET is installed.
-* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): (_
-  optional_) needed to create and use database connections.
+* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): 
+  (*optional*) needed to create and use database connections.
 
 ## Contribution
 
@@ -32,8 +32,9 @@ contributions are welcome!
 * The basics:
     * Write, save and run your own scripts
     * Manage namespaces
-    * Standard code editor features
+    * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console
+* Add and use database connections (currently only supports Microsoft SQL Server and PostgreSQL). **This feature is in early release.**
 * Auto-save: If you close NetPad, it will auto-save your changes and
   restore them the next time you fire it up
 * Add NuGet packages
@@ -51,7 +52,7 @@ contributions are welcome!
 
 ## Roadmap :construction:
 
-* Add database connections
+* Add support for more database providers
 * More OmniSharp integrations:
     * Code fix suggestions
     * Format selection
