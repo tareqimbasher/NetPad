@@ -15,15 +15,18 @@ using NetPad.Utilities;
 namespace NetPad.Runtimes
 {
     // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
-    public sealed class InMemoryScriptRuntime : IScriptRuntime
+    public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
     {
+        internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel, IOutputWriter<ScriptOutput> SqlChannel)
+            : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
+
         private readonly Script _script;
         private readonly ICodeParser _codeParser;
         private readonly ICodeCompiler _codeCompiler;
         private readonly IPackageProvider _packageProvider;
         private readonly ILogger<InMemoryScriptRuntime> _logger;
-        private readonly IScriptOutput _output;
-        private readonly HashSet<IScriptOutput> _externalOutputs;
+        private readonly MainScriptOutputAdapter _outputAdapter;
+        private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
         private IServiceScope? _serviceScope;
 
         public InMemoryScriptRuntime(
@@ -40,15 +43,23 @@ namespace NetPad.Runtimes
             _codeCompiler = codeCompiler;
             _packageProvider = packageProvider;
             _logger = logger;
-            _externalOutputs = new HashSet<IScriptOutput>();
+            _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
 
-            void ForwardToExternalOutputs(Func<IScriptOutput, IOutputWriter?> channelGetter, object? obj, string? title)
+            void ForwardToExternalAdapters<TScriptOutput>(
+                Func<IScriptOutputAdapter<ScriptOutput, ScriptOutput>, IOutputWriter<TScriptOutput>?> channelGetter,
+                TScriptOutput? output,
+                string? title)
             {
-                foreach (var externalOutput in _externalOutputs)
+                if (output == null)
+                {
+                    return;
+                }
+
+                foreach (var adapter in _externalOutputAdapters)
                 {
                     try
                     {
-                        channelGetter(externalOutput)?.WriteAsync(obj, title);
+                        channelGetter(adapter)?.WriteAsync(output, title);
                     }
                     catch
                     {
@@ -57,9 +68,15 @@ namespace NetPad.Runtimes
                 }
             }
 
-            _output = new ScriptOutput(
-                new ActionOutputWriter((obj, title) => ForwardToExternalOutputs(o => o.PrimaryChannel, obj, title)),
-                new ActionOutputWriter((obj, title) => ForwardToExternalOutputs(o => o.SqlChannel, obj, title))
+            _outputAdapter = new MainScriptOutputAdapter(
+                new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
+                    o => o.ResultsChannel,
+                    obj,
+                    title)),
+                new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
+                    o => o.SqlChannel,
+                    obj,
+                    title))
             );
         }
 
@@ -78,8 +95,7 @@ namespace NetPad.Runtimes
                     assemblyBytes,
                     referenceAssemblyImages,
                     referenceAssemblyPaths,
-                    parsingResult.ParsedCodeInformation,
-                    _output
+                    parsingResult.ParsedCodeInformation
                 );
 
                 for (int i = 0; alcWeakRef.IsAlive && (i < 10); i++)
@@ -94,27 +110,28 @@ namespace NetPad.Runtimes
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await _output.PrimaryChannel.WriteAsync(ex + "\n");
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex + "\n"));
                 return RunResult.RunAttemptFailure();
             }
         }
 
-        public void AddOutput(IScriptOutput output)
+        public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
         {
-            _externalOutputs.Add(output);
+            _externalOutputAdapters.Add(outputAdapter);
         }
 
-        public void RemoveOutput(IScriptOutput output)
+        public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
         {
-            _externalOutputs.Remove(output);
+            _externalOutputAdapters.Remove(outputAdapter);
         }
 
         private async Task<(
-            bool success,
-            byte[] assemblyBytes,
-            AssemblyImage[] referenceAssemblyImages,
-            string[] referenceAssemblyPaths,
-            CodeParsingResult parsingResult)> CompileAndGetReferencesAsync(RunOptions runOptions)
+                bool success,
+                byte[] assemblyBytes,
+                AssemblyImage[] referenceAssemblyImages,
+                string[] referenceAssemblyPaths,
+                CodeParsingResult parsingResult)>
+            CompileAndGetReferencesAsync(RunOptions runOptions)
         {
             var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
             {
@@ -146,9 +163,10 @@ namespace NetPad.Runtimes
 
             if (!compilationResult.Success)
             {
-                await _output.PrimaryChannel.WriteAsync(compilationResult.Diagnostics
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .JoinToString("\n") + "\n");
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(
+                    compilationResult.Diagnostics
+                        .Where(d => d.Severity == DiagnosticSeverity.Error)
+                        .JoinToString("\n") + "\n"));
 
                 return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>(), parsingResult);
             }
@@ -164,8 +182,7 @@ namespace NetPad.Runtimes
                 byte[] targetAssembly,
                 AssemblyImage[] assemblyReferenceImages,
                 string[] referenceAssemblyPaths,
-                ParsedCodeInformation parsedCodeInformation,
-                IScriptOutput output)
+                ParsedCodeInformation parsedCodeInformation)
         {
             using var scope = serviceScope.ServiceProvider.CreateScope();
             using var assemblyLoader = new UnloadableAssemblyLoader(
@@ -194,7 +211,7 @@ namespace NetPad.Runtimes
                     $"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
             }
 
-            setIOMethod.Invoke(null, new object?[] { _output });
+            setIOMethod.Invoke(null, new object?[] { _outputAdapter });
 
             MethodInfo? entryPoint = assembly.EntryPoint;
             if (entryPoint == null)
@@ -210,7 +227,7 @@ namespace NetPad.Runtimes
             }
             catch (Exception ex)
             {
-                await _output.PrimaryChannel.WriteAsync((ex.InnerException ?? ex).ToString());
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput((ex.InnerException ?? ex).ToString()));
                 return (alcWeakRef, false, GetElapsedMilliseconds(runStart));
             }
 
@@ -221,7 +238,7 @@ namespace NetPad.Runtimes
         {
             _logger.LogTrace("Dispose start");
 
-            _externalOutputs.Clear();
+            _externalOutputAdapters.Clear();
             if (_serviceScope != null)
             {
                 _serviceScope.Dispose();
@@ -235,7 +252,7 @@ namespace NetPad.Runtimes
         {
             _logger.LogTrace("DisposeAsync start");
 
-            _externalOutputs.Clear();
+            _externalOutputAdapters.Clear();
             if (_serviceScope != null)
             {
                 _serviceScope.Dispose();

@@ -30,17 +30,8 @@ export class SqlView extends ViewModelBase {
 
     private appendResults(results: string | null | undefined) {
         if (!results) return;
-
-        let output = results
-            .replaceAll(" ", "&nbsp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll("\n", "<br/>");
-
-        output += "<br/><br/>";
-
         const template = document.createElement("template");
-        template.innerHTML = output;
+        template.innerHTML = results;
         this.outputElement.appendChild(template.content);
     }
 

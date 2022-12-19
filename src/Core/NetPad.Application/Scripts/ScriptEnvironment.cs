@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
@@ -11,7 +7,6 @@ using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
-using NetPad.Utilities;
 
 namespace NetPad.Scripts
 {
@@ -21,12 +16,12 @@ namespace NetPad.Scripts
         private readonly IEventBus _eventBus;
         private readonly ILogger<ScriptEnvironment> _logger;
         private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
-        private IServiceScope? _serviceScope;
+        private readonly IServiceScope _serviceScope;
         private IInputReader _inputReader;
-        private IScriptOutput _output;
+        private IScriptOutputAdapter<ScriptOutput, ScriptOutput> _outputAdapter;
         private ScriptStatus _status;
         private double _runDurationMilliseconds;
-        private IScriptRuntime? _runtime;
+        private IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>? _runtime;
         private bool _isDisposed;
 
         public ScriptEnvironment(Script script, IServiceScope serviceScope)
@@ -38,7 +33,7 @@ namespace NetPad.Scripts
                 _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
             _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
             _inputReader = ActionInputReader.Null;
-            _output = IScriptOutput.Null;
+            _outputAdapter = IScriptOutputAdapter<ScriptOutput, ScriptOutput>.Null;
             _status = ScriptStatus.Ready;
 
             Initialize();
@@ -109,17 +104,23 @@ namespace NetPad.Scripts
                 }
 
                 var runtime = await GetRuntimeAsync();
+
                 var runResult = await runtime.RunScriptAsync(runOptions);
 
                 await SetRunDurationAsync(runResult.DurationMs);
                 await SetStatusAsync(runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error);
 
-                _logger.LogDebug("Run completed with status: {Status}", Status);
+                _logger.LogDebug("Run completed with status: {Status}",
+                    runResult.IsScriptCompletedSuccessfully
+                        ? "Success"
+                        : runResult.IsRunAttemptSuccessful
+                            ? "Failure in script code"
+                            : "Could not run");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error running script");
-                await _output.PrimaryChannel.WriteAsync(ex + "\n");
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
                 await SetStatusAsync(ScriptStatus.Error);
             }
             finally
@@ -128,22 +129,20 @@ namespace NetPad.Scripts
             }
         }
 
-        public void SetIO(IInputReader inputReader, IScriptOutput output)
+        public void SetIO(IInputReader inputReader, IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
         {
             EnsureNotDisposed();
 
-            RemoveScriptRuntimeListeners();
+            RemoveScriptRuntimeOutputHandlers();
 
             _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-            _output = output ?? throw new ArgumentNullException(nameof(output));
+            _outputAdapter = outputAdapter ?? throw new ArgumentNullException(nameof(outputAdapter));
 
-            AddScriptRuntimeListeners();
+            AddScriptRuntimeOutputHandlers();
         }
 
         private void Initialize()
         {
-            EnsureNotDisposed();
-
             Script.OnPropertyChanged.Add(async (args) =>
             {
                 await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName,
@@ -176,23 +175,23 @@ namespace NetPad.Scripts
             {
                 _logger.LogDebug("Initializing new runtime");
 
-                var factory = _serviceScope!.ServiceProvider.GetRequiredService<IScriptRuntimeFactory>();
+                var factory = _serviceScope.ServiceProvider.GetRequiredService<IScriptRuntimeFactory>();
                 _runtime = await factory.CreateScriptRuntimeAsync(Script);
 
-                AddScriptRuntimeListeners();
+                AddScriptRuntimeOutputHandlers();
             }
 
             return _runtime;
         }
 
-        private void AddScriptRuntimeListeners()
+        private void AddScriptRuntimeOutputHandlers()
         {
-            _runtime?.AddOutput(_output);
+            _runtime?.AddOutput(_outputAdapter);
         }
 
-        private void RemoveScriptRuntimeListeners()
+        private void RemoveScriptRuntimeOutputHandlers()
         {
-            _runtime?.RemoveOutput(_output);
+            _runtime?.RemoveOutput(_outputAdapter);
         }
 
         private void EnsureNotDisposed()
@@ -234,10 +233,9 @@ namespace NetPad.Scripts
             if (disposing)
             {
                 _runtime?.Dispose();
-                _serviceScope?.Dispose();
-
                 _runtime = null;
-                _serviceScope = null;
+
+                _serviceScope.Dispose(); // won't this dispose the runtime anyways?
 
                 Script.RemoveAllPropertyChangedHandlers();
                 Script.Config.RemoveAllPropertyChangedHandlers();
@@ -257,11 +255,10 @@ namespace NetPad.Scripts
             }
             else
             {
-                _serviceScope?.Dispose();
+                _serviceScope.Dispose();
             }
 
             _runtime = null;
-            _serviceScope = null;
         }
     }
 }

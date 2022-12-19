@@ -8,7 +8,7 @@ using NetPad.Tests.Services;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Domain.Tests.Scripts
+namespace NetPad.Application.Tests.Scripts
 {
     public class ScriptEnvironmentFactoryTests : TestBase
     {

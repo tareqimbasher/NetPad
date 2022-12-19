@@ -3,29 +3,71 @@ using System.Linq;
 using System.Threading.Tasks;
 using NetPad.Events;
 using NetPad.IO;
-using NetPad.Scripts;
 using NetPad.UiInterop;
 using O2Html;
 using O2Html.Dom;
 
 namespace NetPad.Services;
 
-public class IpcScriptOutputWriter : IOutputWriter
+public class IpcScriptResultOutputWriter : IpcScriptOutputWriter
 {
-    private readonly ScriptEnvironment _environment;
-    private readonly IIpcService _ipcService;
+    public IpcScriptResultOutputWriter(Guid scriptId, IIpcService ipcService) : base(scriptId, ipcService)
+    {
+    }
+
+    protected override async Task IpcSendAsync(string? msg)
+    {
+        await _ipcService.SendAsync(new ScriptOutputEmittedEvent(_scriptId, msg));
+    }
+}
+
+public class IpcScriptSqlOutputWriter : IpcScriptOutputWriter
+{
+    public IpcScriptSqlOutputWriter(Guid scriptId, IIpcService ipcService) : base(scriptId, ipcService)
+    {
+    }
+
+    protected override async Task IpcSendAsync(string? msg)
+    {
+        await _ipcService.SendAsync(new ScriptSqlOutputEmittedEvent(_scriptId, msg));
+    }
+}
+
+public abstract class IpcScriptOutputWriter : IOutputWriter<ScriptOutput>
+{
+    protected readonly Guid _scriptId;
+    protected readonly IIpcService _ipcService;
+
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
     {
         ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference
     };
 
-    public IpcScriptOutputWriter(ScriptEnvironment environment, IIpcService ipcService)
+    protected IpcScriptOutputWriter(Guid scriptId, IIpcService ipcService)
     {
-        _environment = environment;
+        _scriptId = scriptId;
         _ipcService = ipcService;
     }
 
-    public async Task WriteAsync(object? output, string? title = null)
+    protected abstract Task IpcSendAsync(string? msg);
+
+    public async Task WriteAsync(ScriptOutput? output, string? title = null)
+    {
+        if (output is HtmlScriptOutput htmlScriptOutput)
+        {
+            await IpcSendAsync(htmlScriptOutput.Body);
+        }
+        else if (output is RawScriptOutput rawScriptOutput)
+        {
+            await IpcSendAsync(ToHtml(rawScriptOutput.Body, title));
+        }
+        else
+        {
+            await IpcSendAsync(ToHtml(output, title));
+        }
+    }
+
+    private static string ToHtml(object? output, string? title = null)
     {
         var group = new Element("div").WithAddClass("group");
 
@@ -53,6 +95,6 @@ public class IpcScriptOutputWriter : IOutputWriter
 
         group.AddChild(element);
 
-            await _ipcService.SendAsync(new ScriptOutputEmittedEvent(_environment.Script.Id, group.ToHtml()));
+        return group.ToHtml();
     }
 }

@@ -4,13 +4,12 @@ sql-view {
     flex-grow: 1;
     min-height: 0;
 
-    .output {
+    .html-output-container {
         padding: 0.25rem;
         font-family: monospace;
         font-size: 0.90rem;
         overflow-x: auto;
         flex-grow: 1;
-        white-space: nowrap;
 
         &.text-wrap {
             overflow-wrap: break-word;

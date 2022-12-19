@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -88,7 +87,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
                                 $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
         }
 
-        return new AssemblyImage(new AssemblyName(result.AssemblyName), result.AssemblyBytes);
+        return new AssemblyImage(result.AssemblyName, result.AssemblyBytes);
     }
 
     public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
@@ -152,8 +151,8 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         // in our Script top-level program
         var dbContext = model.DbContextFile;
         code.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
-            .AppendLine("{")
             .AppendLine(@"
+{
     public Program()
     {
     }
@@ -164,10 +163,16 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.LogTo(output =>
-        {
-            if (output.Contains(""Executing DbCommand"")) output.DumpToSqlOutput(""EF Core Log"");
-        });
+        optionsBuilder
+            .LogTo(
+                output =>
+                {
+                    if (!output.Contains(""Executing DbCommand"")) return;
+
+                    ScriptUtils.SqlWrite(output);
+                },
+                new[] { Microsoft.EntityFrameworkCore.DbLoggerCategory.Database.Command.Name }
+            );
 
         base.OnConfiguring(optionsBuilder);
     }
@@ -175,12 +180,14 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         // 2. Add the DbContext property
         code
-            .AppendLine("\tprivate static Program? _program;")
             .AppendLine(@"
+    private static Program? _program;
+
     /// <summary>
     /// The DbContext instance used to access the database.
     /// </summary>
-    public static Program DataContext => _program ??= new Program();");
+    public static Program DataContext => _program ??= new Program();
+");
 
 
         var dbContextCodeLines = dbContext.Code.Value!.Split(Environment.NewLine).ToList();

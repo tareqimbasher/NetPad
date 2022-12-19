@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using NetPad.Application;
 using NetPad.IO;
 
 namespace NetPad.Configuration
@@ -20,6 +21,8 @@ namespace NetPad.Configuration
         /// Path of where the app stores logs.
         /// </summary>
         public static readonly DirectoryPath LogFolderPath = Path.Combine(AppDataFolderPath.Path, "Logs");
+
+        public static readonly DirectoryPath TempFolderPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
 
 
         public Settings()

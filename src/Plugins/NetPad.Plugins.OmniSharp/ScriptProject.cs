@@ -17,7 +17,7 @@ public class ScriptProject : DotNetCSharpProject
         Settings settings,
         ILogger<ScriptProject> logger)
         : base(
-            Path.Combine(Path.GetTempPath(), "NetPad", "OmniSharp", script.Id.ToString()),
+            Settings.TempFolderPath.Combine("OmniSharp", script.Id.ToString()).Path,
             "script.csproj",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet")
         )
@@ -41,7 +41,7 @@ public class ScriptProject : DotNetCSharpProject
     {
         await base.CreateAsync(outputType, deleteExisting);
 
-        var domainAssembly = typeof(IOutputWriter).Assembly;
+        var domainAssembly = typeof(IOutputWriter<>).Assembly;
         await AddAssemblyFileReferenceAsync(new AssemblyFileReference(domainAssembly.Location));
         await AddReferencesAsync(Script.Config.References);
     }

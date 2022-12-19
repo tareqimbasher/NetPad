@@ -5,8 +5,13 @@ namespace NetPad.IO
     /// <summary>
     /// Writes output.
     /// </summary>
-    public interface IOutputWriter
+    public interface IOutputWriter<in TOutput>
     {
-        Task WriteAsync(object? output, string? title = null);
+        /// <summary>
+        /// Writes output.
+        /// </summary>
+        /// <param name="output">The output to write.</param>
+        /// <param name="title">A title to associate with the output.</param>
+        Task WriteAsync(TOutput? output, string? title = null);
     }
 }

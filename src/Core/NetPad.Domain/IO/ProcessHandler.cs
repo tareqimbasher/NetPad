@@ -5,87 +5,181 @@ using NetPad.Utilities;
 
 namespace NetPad.IO
 {
-    public class ProcessHandler : IDisposable
+    public class ProcessStartResult
     {
+        public ProcessStartResult(bool success, Task<int> waitForExitTask)
+        {
+            Success = success;
+            WaitForExitTask = waitForExitTask;
+        }
+
+        /// <summary>
+        /// Indicates if the process was started successfully or not.
+        /// </summary>
+        public bool Success { get; }
+
+        /// <summary>
+        /// A task that completes when the process terminates. It returns the process exit code.
+        /// </summary>
+        public Task<int> WaitForExitTask { get; }
+    }
+
+    public sealed class ProcessHandler : IDisposable
+    {
+        private readonly string? _commandText;
+        private readonly string? _args;
         private Process? _process;
-        private ProcessIOHandler? _processIOHandler;
-        private bool _ranOnce;
+        private ProcessIO? _io;
+        private ProcessStartInfo? _processStartInfo;
+        private Task<int>? _processStartTask;
+        private bool _isDisposed;
 
-        public ProcessHandler(string commandText)
+        public ProcessHandler(string commandText) : this(commandText, null)
         {
-            CommandText = commandText;
+            _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
         }
 
-        public ProcessHandler(string commandText, string args) : this(commandText)
+        public ProcessHandler(string commandText, string? args)
         {
-            Args = args;
+            _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
+            _args = args;
         }
 
-        public string CommandText { get; }
-        public string? Args { get; }
-
-        public Process? Process => _process;
-        public ProcessIOHandler? ProcessIO => _processIOHandler;
-
-        public void Init()
+        public ProcessHandler(ProcessStartInfo processStartInfo)
         {
-            if (_process != null && _process.HasExited != true)
-                throw new InvalidOperationException($"Process is still running and has not exited yet. Process PID: {_process?.Id}.");
+            _processStartInfo = processStartInfo ?? throw new ArgumentNullException(nameof(processStartInfo));
+        }
 
-            var startInfo = new ProcessStartInfo(CommandText)
+        public Process Process
+        {
+            get
             {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            _process = new Process { StartInfo = startInfo};
-            _process.EnableRaisingEvents = true;
-
-            if (!string.IsNullOrWhiteSpace(Args))
-                _process.StartInfo.Arguments = Args;
-
-            _processIOHandler = new ProcessIOHandler(_process);
-        }
-
-        public async Task<bool> RunAsync(bool waitForExit = true)
-        {
-            if (_process == null)
-                throw new InvalidOperationException($"Process is not initialized.");
-
-            var success = _process.Start();
-            if (!success)
-                return false;
-
-            if (!_ranOnce)
-            {
-                _process.BeginOutputReadLine();
-                _process.BeginErrorReadLine();
+                Init();
+                return _process!;
             }
+        }
 
-            _ranOnce = true;
+        public ProcessIO IO
+        {
+            get
+            {
+                Init();
+                return _io!;
+            }
+        }
 
-            if (!waitForExit) return true;
+        public ProcessStartResult StartProcess()
+        {
+            EnsureNotDisposed();
 
-            await _process.WaitForExitAsync();
+            Init();
 
-            return true;
+            var process = _process!;
+
+            if (process.IsProcessRunning())
+                throw new InvalidOperationException(
+                    $"Process is already started and has not terminated yet. Process PID: {process.Id}.");
+
+            process.Start();
+
+            // We have to wait for the process or otherwise it exists shortly after its spawned
+            _processStartTask = Task.Run(() =>
+            {
+                process.WaitForExit();
+                return process.ExitCode;
+            });
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            bool started = process.IsProcessRunning();
+
+            return new ProcessStartResult(started, _processStartTask);
         }
 
         public void StopProcess()
         {
-            if (_process != null && _process.IsProcessRunning())
-                _process.Kill();
+            EnsureNotDisposed();
 
-            _process?.Dispose();
+            if (_process != null)
+            {
+                if (_process.IsProcessRunning())
+                {
+                    _process.Kill();
+                }
+
+                _processStartTask = null;
+                _process.Dispose();
+                _process = null;
+            }
+
+            if (_io != null)
+            {
+                _io.Dispose();
+                _io = null;
+            }
+        }
+
+        public void Restart()
+        {
+            if (_process?.IsProcessRunning() == true)
+            {
+                StopProcess();
+            }
+
+            StartProcess();
         }
 
         public void Dispose()
         {
-            _processIOHandler?.Dispose();
             StopProcess();
+            _isDisposed = true;
+        }
+
+        private void Init()
+        {
+            EnsureNotDisposed();
+
+            if (_processStartInfo == null!)
+            {
+                _processStartInfo = new ProcessStartInfo(_commandText!)
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                if (!string.IsNullOrWhiteSpace(_args))
+                    _processStartInfo.Arguments = _args;
+
+                // Copy current env variables to new process
+                var envVars = Environment.GetEnvironmentVariables();
+                foreach (string key in envVars.Keys)
+                {
+                    _processStartInfo.EnvironmentVariables[key] = envVars[key]?.ToString();
+                }
+            }
+
+            if (_process == null)
+            {
+                _process = new Process
+                {
+                    StartInfo = _processStartInfo,
+                    EnableRaisingEvents = true
+                };
+
+                _io = new ProcessIO(_process);
+            }
+        }
+
+        private void EnsureNotDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(ProcessHandler), "The process handler is disposed.");
+            }
         }
     }
 }

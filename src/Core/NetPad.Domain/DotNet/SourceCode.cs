@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 
@@ -74,5 +77,42 @@ public class SourceCode
         builder.AppendLine(Code.ToCodeString());
 
         return builder.ToString();
+    }
+
+    public static SourceCode Parse(string text)
+    {
+        var syntaxTreeRoot = CSharpSyntaxTree.ParseText(text).GetRoot();
+        var nodes = syntaxTreeRoot.DescendantNodes().ToArray();
+
+        var usings = new HashSet<string>();
+        var usingSpans = new List<(int startIndex, int length)>();
+
+        foreach (var usingDirective in nodes.OfType<UsingDirectiveSyntax>())
+        {
+            int startIndex = usingDirective.Span.Start;
+            int length = usingDirective.Span.Length;
+
+            usingSpans.Add((startIndex, length));
+
+            var ns = text.Substring(startIndex, length)
+                .Split(' ').Skip(1).JoinToString(" ")
+                .TrimEnd(';');
+
+            usings.Add(ns);
+        }
+
+        string code;
+
+        if (!usings.Any())
+        {
+            code = text;
+        }
+        else
+        {
+            usingSpans = usingSpans.OrderBy(s => s.startIndex).ToList();
+            code = text.RemoveRanges(usingSpans);
+        }
+
+        return new SourceCode(code, usings);
     }
 }

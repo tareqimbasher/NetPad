@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace NetPad.Utilities
@@ -51,6 +53,36 @@ namespace NetPad.Utilities
             }
 
             return str.Substring(from, to - from);
+        }
+
+        public static string RemoveRanges(this string str, List<(int startIndex, int length)> ranges)
+        {
+            var newStr = new StringBuilder();
+
+            ranges = ranges.OrderBy(r => r.startIndex).ToList();
+            int currentRangeIndex = 0;
+            var currentRange = ranges[currentRangeIndex];
+
+            for (int i = 0; i < str.Length;)
+            {
+                if (i == currentRange.startIndex)
+                {
+                    i = i + currentRange.length;
+                    if ((currentRangeIndex + 1) < ranges.Count) currentRange = ranges[++currentRangeIndex];
+                    continue;
+                }
+
+                newStr.Append(str[i]);
+                i++;
+            }
+
+            return newStr.ToString();
+        }
+
+        public static string RemoveInvalidFileNameCharacters(string str)
+        {
+            var invalid = Path.GetInvalidFileNameChars().ToHashSet();
+            return new string(str.Where(c => !invalid.Contains(c)).ToArray());
         }
     }
 }
