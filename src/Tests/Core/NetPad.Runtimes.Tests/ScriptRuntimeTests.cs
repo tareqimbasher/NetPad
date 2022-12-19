@@ -26,7 +26,7 @@ namespace NetPad.Runtimes.Tests
 
         protected override void ConfigureServices(ServiceCollection services)
         {
-            services.AddTransient<ICodeParser, CSharpCodeParser>();
+            services.AddTransient<ICodeParser, InMemoryRuntimeCSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<DefaultInMemoryScriptRuntimeFactory>();
@@ -64,7 +64,7 @@ namespace NetPad.Runtimes.Tests
 
             string? result = null;
             var runtime = await GetScriptRuntimeAsync(script);
-            runtime.AddOutput(new ScriptOutput(new ActionOutputWriter((output, title) => result = output?.ToString())));
+            runtime.AddOutput(new ScriptOutputAdapter<ScriptOutput,ScriptOutput>(new ActionOutputWriter<ScriptOutput>((output, title) => result = output?.Body?.ToString())));
 
             await runtime.RunScriptAsync(new RunOptions());
 
@@ -87,7 +87,7 @@ namespace NetPad.Runtimes.Tests
 
                 // Keep result in local variable to test that assembly unloads even if we keep reference to result
                 string? result = null;
-                runtime.AddOutput(new ScriptOutput(new ActionOutputWriter((output, title) => result = output?.ToString())));
+                runtime.AddOutput(new ScriptOutputAdapter<ScriptOutput,ScriptOutput>(new ActionOutputWriter<ScriptOutput>((output, title) => result = output?.Body?.ToString())));
 
                 await runtime.RunScriptAsync(new RunOptions());
 
