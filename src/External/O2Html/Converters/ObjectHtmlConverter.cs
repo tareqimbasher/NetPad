@@ -46,8 +46,7 @@ public class ObjectHtmlConverter : HtmlConverter
                 .WithTitle(property.PropertyType.GetReadableName(withNamespace: true, forHtml: true))
                 .AddText($"{name}: ");
 
-            var valueTd = tr.AddAndGetElement("td");
-            valueTd.AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
+            htmlSerializer.SerializeWithinTableRow(tr, value, property.PropertyType, serializationScope);
         }
 
         return table;
