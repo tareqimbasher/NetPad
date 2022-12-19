@@ -137,6 +137,16 @@ export class ScriptEnvironmentView extends ViewModelBase {
         }
     }
 
+    private async stop() {
+        if (this.environment.status !== "Running") return;
+
+        try {
+            await this.scriptService.stop(this.script.id);
+        } catch (ex) {
+            this.logger.error("Error while stopping script", ex);
+        }
+    }
+
     private async sendCodeToServer() {
         await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
     }

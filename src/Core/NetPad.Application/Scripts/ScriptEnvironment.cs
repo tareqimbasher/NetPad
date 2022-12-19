@@ -103,7 +103,12 @@ namespace NetPad.Scripts
                     }
                 }
 
+                // Script could have been requested to stop by this point
+                if (Status == ScriptStatus.Stopping) return;
+
                 var runtime = await GetRuntimeAsync();
+
+                if (Status == ScriptStatus.Stopping) return;
 
                 var runResult = await runtime.RunScriptAsync(runOptions);
 
@@ -126,6 +131,40 @@ namespace NetPad.Scripts
             finally
             {
                 _logger.LogTrace($"{nameof(RunAsync)} end");
+            }
+        }
+
+        public async Task StopAsync()
+        {
+            EnsureNotDisposed();
+
+            _logger.LogTrace($"{nameof(StopAsync)} start");
+
+            if (Status != ScriptStatus.Running)
+                throw new InvalidOperationException("Script is not running.");
+
+            await SetStatusAsync(ScriptStatus.Stopping);
+
+            try
+            {
+                // The runtime might not have been initialized yet which means no running is taking place
+                if (_runtime != null)
+                {
+                    await _runtime.StopScriptAsync();
+                }
+
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput($"Script stopped on {DateTime.Now}"));
+                await SetStatusAsync(ScriptStatus.Ready);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping script");
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
+                await SetStatusAsync(ScriptStatus.Error);
+            }
+            finally
+            {
+                _logger.LogTrace($"{nameof(StopAsync)} end");
             }
         }
 

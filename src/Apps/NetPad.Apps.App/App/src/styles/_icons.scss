@@ -154,6 +154,11 @@ button > .icon-base {
     @extend .fa-play;
 }
 
+.stop-icon {
+    @extend %icon-base;
+    @extend .fa-stop;
+}
+
 .script-properties-icon {
     @extend %icon-base;
     @extend .fa-wrench;

@@ -86,7 +86,16 @@ namespace NetPad.IO
             _processStartTask = Task.Run(() =>
             {
                 process.WaitForExit();
-                return process.ExitCode;
+
+                try
+                {
+                    return process.ExitCode;
+                }
+                catch (Exception ex)
+                {
+                    // Can throw if process is killed
+                    return -1;
+                }
             });
 
             process.BeginOutputReadLine();
