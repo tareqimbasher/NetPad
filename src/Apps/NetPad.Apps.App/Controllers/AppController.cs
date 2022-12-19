@@ -22,12 +22,16 @@ public class AppController : Controller
     }
 
     [HttpPatch("open-folder-containing-script")]
-    public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath)
+    public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath, [FromServices] Settings settings)
     {
         if (scriptPath == null)
             return BadRequest();
 
         var dirPath = Path.GetDirectoryName(scriptPath);
+
+        if (dirPath == null || !dirPath.StartsWith(settings.ScriptsDirectoryPath))
+            return Unauthorized($"Not allowed.");
+
         if (!Directory.Exists(dirPath))
             return BadRequest($"Directory does not exist at: {dirPath}");
 
