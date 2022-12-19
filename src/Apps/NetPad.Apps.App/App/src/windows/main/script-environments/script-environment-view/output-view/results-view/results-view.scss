@@ -5,16 +5,4 @@ results-view {
     flex-direction: column;
     flex-grow: 1;
     min-height: 0;
-
-    .html-output-container {
-        padding: 0.25rem;
-        font-family: monospace;
-        font-size: 0.90rem;
-        overflow-x: auto;
-        flex-grow: 1;
-
-        &.text-wrap {
-            overflow-wrap: break-word;
-        }
-    }
 }
