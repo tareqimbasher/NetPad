@@ -40,7 +40,8 @@ public abstract class IpcScriptOutputWriter : IOutputWriter<ScriptOutput>
 
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
     {
-        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference
+        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+        DoNotSerializeNonRootEmptyCollections = true
     };
 
     protected IpcScriptOutputWriter(Guid scriptId, IIpcService ipcService)

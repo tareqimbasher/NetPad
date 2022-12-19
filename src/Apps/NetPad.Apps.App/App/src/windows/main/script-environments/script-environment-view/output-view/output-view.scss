@@ -65,7 +65,7 @@ output-view {
         */
         padding: 0.25rem;
         font-family: monospace;
-        font-size: 0.90rem;
+        font-size: 14px;
         overflow-x: auto;
         flex-grow: 1;
 
@@ -82,15 +82,23 @@ output-view {
             margin: 0 0 10px;
         }
 
-        .null {
+        %null {
             color: #797e81;
             font-style: italic;
+        }
+
+        .null {
+            @extend %null;
         }
 
         .cyclic-reference {
             font-style: italic;
             font-size: 10px;
             color: red;
+        }
+
+        .empty-collection {
+            @extend %null;
         }
 
         /* GROUPS */

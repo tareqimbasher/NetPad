@@ -85,7 +85,8 @@ internal static class Utils
 {
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
     {
-        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference
+        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+        DoNotSerializeNonRootEmptyCollections = true
     };
 
     public static string ToHtml(object? output, string? title = null)
