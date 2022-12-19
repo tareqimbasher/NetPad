@@ -16,6 +16,11 @@ public class HtmlSerializerSettings
 
     public List<HtmlConverter> Converters { get; }
     public CssClasses CssClasses { get; }
+
+    /// <summary>
+    /// If true, will not serialize empty collections that are not the root object being serialized. Default is false.
+    /// </summary>
+    public bool DoNotSerializeNonRootEmptyCollections { get; set; } = false;
 }
 
 public class CssClasses
@@ -24,9 +29,11 @@ public class CssClasses
     internal const string DefaultPropertyNameClass = "property-name";
     internal const string DefaultTableCssClass = "table table-sm table-bordered";
     internal const string DefaultCyclicReferenceCssClass = "cyclic-reference";
+    internal const string DefaultEmptyCollectionCssClass = "empty-collection";
 
     public string Null { get; set; } = DefaultNullCssClass;
     public string PropertyName { get; set; } = DefaultPropertyNameClass;
     public string Table { get; set; } = DefaultTableCssClass;
     public string CyclicReference { get; set; } = DefaultCyclicReferenceCssClass;
+    public string EmptyCollection { get; set; } = DefaultEmptyCollectionCssClass;
 }

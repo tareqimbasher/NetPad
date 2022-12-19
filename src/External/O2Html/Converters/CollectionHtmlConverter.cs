@@ -9,18 +9,51 @@ public class CollectionHtmlConverter : HtmlConverter
 {
     public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
+        return WriteHtmlPrivate(obj, type, serializationScope, htmlSerializer).element;
+    }
+
+    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    {
+        var td = tr.AddAndGetElement("td");
+
         if (obj == null)
-            return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
+        {
+            td.AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
+            return;
+        }
+
+        var enumerable = ToEnumerable(obj);
+        var result = WriteHtmlPrivate(enumerable, type, serializationScope, htmlSerializer);
+
+        if (!htmlSerializer.SerializerSettings.DoNotSerializeNonRootEmptyCollections || result.collectionLength != 0)
+        {
+            td.AddChild(result.element);
+        }
+        else
+        {
+            td.AddChild(new EmptyCollection().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
+        }
+    }
+
+    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    {
+        return htmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
+    }
+
+    private (Element element, int? collectionLength) WriteHtmlPrivate<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    {
+        if (obj == null)
+            return (new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null), null);
 
         if (serializationScope.CheckAddAddIsAlreadySerialized(obj))
         {
             var referenceLoopHandling = htmlSerializer.SerializerSettings.ReferenceLoopHandling;
 
             if (referenceLoopHandling == ReferenceLoopHandling.IgnoreAndSerializeCyclicReference)
-                return new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference);
+                return (new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference), null);
 
             if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
-                return new Element("div");
+                return (new Element("div"), null);
 
             if (referenceLoopHandling == ReferenceLoopHandling.Error)
                 throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
@@ -62,26 +95,7 @@ public class CollectionHtmlConverter : HtmlConverter
             table.AddAndGetHeading($"{type.GetReadableName(withNamespace: false, forHtml: true)} ({collectionLength} items)");
         }
 
-        return table;
-    }
-
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
-    {
-        var td = tr.AddAndGetElement("td");
-
-        if (obj == null)
-        {
-            td.AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
-            return;
-        }
-
-        var enumerable = ToEnumerable(obj);
-        td.AddChild(WriteHtml(enumerable, type, serializationScope, htmlSerializer));
-    }
-
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
-    {
-        return htmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
+        return (table, collectionLength);
     }
 
     private IEnumerable ToEnumerable<T>(T obj)
