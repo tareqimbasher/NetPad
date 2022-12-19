@@ -76,12 +76,14 @@ namespace NetPad
             // Script execution
             services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
             services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
-            services.AddTransient<ICodeParser, CSharpCodeParser>();
             services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
-            services.AddTransient<IScriptRuntimeFactory, DefaultInMemoryScriptRuntimeFactory>();
-            //services.AddTransient<IScriptRuntimeFactory, DefaultExternalProcessScriptRuntimeFactory>();
             services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
             services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
+
+            // Select how we will run scripts, using an external process or in-memory
+            // NOTE: A different app, ex. a CLI version of NetPad, could use in-memory
+            services.AddExternalProcessScriptRuntime();
+            // services.AddInMemoryScriptRuntime();
 
             // Data connections
             services.AddTransient<IDataConnectionResourcesGeneratorFactory, DataConnectionResourcesGeneratorFactory>();

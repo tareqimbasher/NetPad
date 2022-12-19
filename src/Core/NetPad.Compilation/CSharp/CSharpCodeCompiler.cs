@@ -45,7 +45,7 @@ namespace NetPad.Compilation.CSharp
             foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
                 assemblyLocations.Add(assemblyReferenceLocation);
 
-            assemblyLocations.Add(typeof(IOutputWriter).Assembly.Location);
+            assemblyLocations.Add(typeof(IOutputWriter<>).Assembly.Location);
 
             var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 

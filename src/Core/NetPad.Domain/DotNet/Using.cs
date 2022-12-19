@@ -46,9 +46,6 @@ public class Using : SourceCodeElement<string>
 
         if (value.EndsWith(";"))
             throw new ArgumentException("Cannot end with a semi-colon", nameof(value));
-
-        if (value.Contains(' '))
-            throw new ArgumentException("Cannot contain spaces", nameof(value));
     }
 
     public static Using Parse(string text)

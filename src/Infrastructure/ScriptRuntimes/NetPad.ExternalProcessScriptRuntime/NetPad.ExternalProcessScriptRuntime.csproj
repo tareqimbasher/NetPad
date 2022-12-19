@@ -8,7 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\..\..\External\O2Html\O2Html.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="ScriptUtils.cs" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Common;
 using NetPad.Compilation;
+using NetPad.Configuration;
+using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
@@ -9,17 +12,20 @@ using NetPad.Utilities;
 
 namespace NetPad.Runtimes;
 
-// WARNING: THIS CLASS IS NOT READY FOR USE YET
 // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
-public sealed class ExternalProcessScriptRuntime : IScriptRuntime
+public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
 {
+    internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel, IOutputWriter<ScriptOutput> SqlChannel)
+        : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
+
     private readonly Script _script;
     private readonly ICodeParser _codeParser;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
-    private readonly IOutputWriter _outputWriter;
-    private readonly HashSet<IOutputWriter> _outputListeners;
+    private readonly MainScriptOutputAdapter _outputAdapter;
+    private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
+    private readonly DirectoryInfo _externalProcessSpawnRoot;
     private IServiceScope? _serviceScope;
 
     private ProcessHandler? _processHandler;
@@ -38,40 +44,71 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _logger = logger;
-        _outputListeners = new HashSet<IOutputWriter>();
+        _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
+        _externalProcessSpawnRoot = Settings.TempFolderPath.Combine("processes", _script.Id.ToString()).GetInfo();
 
-        _outputWriter = new ActionOutputWriter((obj, title) =>
+        // Used to forward output sent to the main _outputAdapter to any configured external output adapters
+        void ForwardToExternalAdapters<TScriptOutput>(
+            Func<IScriptOutputAdapter<ScriptOutput, ScriptOutput>, IOutputWriter<TScriptOutput>?> channelGetter,
+            TScriptOutput? output,
+            string? title)
         {
-            foreach (var outputWriter in _outputListeners)
+            if (output == null)
+            {
+                return;
+            }
+
+            foreach (var externalAdapter in _externalOutputAdapters)
             {
                 try
                 {
-                    outputWriter.WriteAsync(obj, title);
+                    channelGetter(externalAdapter)?.WriteAsync(output, title);
                 }
                 catch
                 {
                     // ignored
                 }
             }
-        });
+        }
+
+        _outputAdapter = new MainScriptOutputAdapter(
+            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
+                o => o.ResultsChannel,
+                obj,
+                title)),
+            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
+                o => o.SqlChannel,
+                obj,
+                title))
+        );
     }
 
     public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {
-        throw new NotImplementedException("Testing this runtime is not yet complete");
-        var dir = "/home/tips/test/";
+        _logger.LogDebug("Starting to run script");
 
-        var (success, assemblyBytes, referenceAssemblyPaths) = await CompileAndGetRefAssemblyPathsAsync();
+        try
+        {
+            var compileResult = await CompileAndGetReferencesAsync(runOptions);
 
-        if (!success)
-            return RunResult.RunAttemptFailure();
+            if (!compileResult.success)
+                return RunResult.RunAttemptFailure();
 
-        var scriptName = _script.Name.Replace(" ", "_");
-        var assemblyFullPath = Path.Combine(dir, $"{scriptName}.dll");
+            var rootDir = _externalProcessSpawnRoot;
 
-        await File.WriteAllBytesAsync(assemblyFullPath, assemblyBytes);
+            var scriptName = StringUtils.RemoveInvalidFileNameCharacters(_script.Name).Replace(" ", "_");
+            var assemblyFullPath = Path.Combine(rootDir.FullName, $"{scriptName}.dll");
 
-        var runtimeConfig = string.Format(@"{{
+            if (rootDir.Exists)
+            {
+                rootDir.Delete(true);
+            }
+
+            rootDir.Create();
+
+            await File.WriteAllBytesAsync(assemblyFullPath, compileResult.assemblyBytes);
+
+            var template = @"{{
     ""runtimeOptions"": {{
         ""framework"": {{
             ""name"": ""Microsoft.NETCore.App"",
@@ -82,68 +119,178 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             {0}
         ]
     }}
-}}", referenceAssemblyPaths.Select(x => $"\"{Path.GetDirectoryName(x)}\"").JoinToString(",\n"));
-        await File.WriteAllTextAsync(Path.Combine(dir, $"{scriptName}.runtimeconfig.json"), runtimeConfig);
+}}";
+            var runtimeConfig = string.Format(
+                template,
+                compileResult.referenceAssemblyPaths.Select(x => $"\"{Path.GetDirectoryName(x)}\"").JoinToString(",\n")
+            );
 
-        var domainDll = typeof(IOutputWriter).Assembly.Location;
-        File.Copy(domainDll, Path.Combine(dir, Path.GetFileName(domainDll)), true);
+            await File.WriteAllTextAsync(Path.Combine(rootDir.FullName, $"{scriptName}.runtimeconfig.json"), runtimeConfig);
 
-        foreach (var referenceAssemblyPath in referenceAssemblyPaths)
+            // var domainDll = typeof(IOutputWriter<>).Assembly.Location;
+            // File.Copy(domainDll, Path.Combine(rootDir.FullName, Path.GetFileName(domainDll)), true);
+
+            foreach (var referenceAssemblyImage in compileResult.referenceAssemblyImages)
+            {
+                var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
+
+                await File.WriteAllBytesAsync(Path.Combine(rootDir.FullName, fileName), referenceAssemblyImage.Image);
+            }
+
+            foreach (var referenceAssemblyPath in compileResult.referenceAssemblyPaths)
+            {
+                // HACK: Needed to fix MS Build issue not copying the correct SqlClient assembly to output dir
+                bool overwrite = Path.GetFileName(referenceAssemblyPath) != "Microsoft.Data.SqlClient.dll";
+
+                var destPath = Path.Combine(rootDir.FullName, Path.GetFileName(referenceAssemblyPath));
+
+                if (overwrite || !File.Exists(destPath))
+                    File.Copy(referenceAssemblyPath, destPath, true);
+            }
+
+            _processHandler = new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), assemblyFullPath);
+
+            _processHandler.IO!.OnOutputReceivedHandlers.Add(async (output) =>
+            {
+                _logger.LogDebug("Script output received. Length: {OutputLength}", (output?.Length.ToString() ?? "null"));
+
+                ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
+
+                if (output != null)
+                {
+                    try
+                    {
+                        externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                    }
+                    catch
+                    {
+                        _logger.LogDebug("Script output is not JSON or could not be serialized");
+                    }
+                }
+
+                if (externalProcessOutput?.Output == null)
+                {
+                    await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
+                }
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Results)
+                {
+                    await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
+                }
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql && _outputAdapter.SqlChannel != null)
+                {
+                    await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
+                }
+            });
+
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+
+            var start = DateTime.Now;
+
+            var startResult = _processHandler.StartProcess();
+
+            if (!startResult.Success)
+            {
+                return RunResult.RunAttemptFailure();
+            }
+
+            var exitCode = await startResult.WaitForExitTask;
+
+            var elapsed = (DateTime.Now - start).TotalMilliseconds;
+
+            return exitCode == 0
+                ? RunResult.Success((DateTime.Now - start).TotalMilliseconds)
+                : RunResult.ScriptCompletionFailure(elapsed);
+        }
+        catch (Exception ex)
         {
-            File.Copy(referenceAssemblyPath, Path.Combine(dir, Path.GetFileName(referenceAssemblyPath)), true);
+            _logger.LogError(ex, "Error running script");
+            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
+            return RunResult.RunAttemptFailure();
+        }
+    }
+
+    public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    {
+        _externalOutputAdapters.Add(outputAdapter);
+    }
+
+    public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    {
+        _externalOutputAdapters.Remove(outputAdapter);
+    }
+
+    private async Task<(
+            bool success,
+            byte[] assemblyBytes,
+            AssemblyImage[] referenceAssemblyImages,
+            string[] referenceAssemblyPaths)>
+        CompileAndGetReferencesAsync(RunOptions runOptions)
+    {
+        /*
+         * Parse script code into the code that will be compiled
+         */
+        var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
+        {
+            IncludedCode = runOptions.SpecificCodeToRun,
+            AdditionalCode = runOptions.AdditionalCode
+        });
+
+        var fullProgram = parsingResult.GetFullProgram();
+
+        /*
+         * Compile assembly references
+         */
+        var referenceAssemblyImages = new List<AssemblyImage>();
+        foreach (var additionalReference in runOptions.AdditionalReferences)
+        {
+            if (additionalReference is AssemblyImageReference assemblyImageReference)
+                referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
         }
 
-        _processHandler = new ProcessHandler("dotnet", assemblyFullPath);
-        _processHandler.Init();
-        _processHandler.ProcessIO!.OnOutputReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
-        _processHandler.ProcessIO!.OnErrorReceivedHandlers.Add(async (t) => { await _outputWriter.WriteAsync(t); });
+        var referenceAssemblyPaths = await _script.Config.References
+            .Union(runOptions.AdditionalReferences)
+            .GetAssemblyPathsAsync(_packageProvider);
 
-        var start = DateTime.Now;
+        /*
+         * Add custom assemblies
+         */
+        referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
+        // Needed to serialize output in external process to HTML
+        referenceAssemblyPaths.Add(typeof(O2Html.HtmlConvert).Assembly.Location);
 
-        var runSuccess = await _processHandler.RunAsync(true);
-        return runSuccess ? RunResult.Success((DateTime.Now - start).TotalMilliseconds) : RunResult.RunAttemptFailure();
-    }
 
-    public void AddOutput(IScriptOutput output)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void RemoveOutput(IScriptOutput output)
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task<(bool success, byte[] assemblyBytes, string[] referenceAssemblyPaths)> CompileAndGetRefAssemblyPathsAsync()
-    {
-        var parsingResult = _codeParser.Parse(_script);
-
-        var referenceAssemblyPaths = await _script!.Config.References.GetAssemblyPathsAsync(_packageProvider);
-
-        var fullProgram = parsingResult.GetFullProgram()
-            .Replace("Console.WriteLine", "Program.OutputWriteLine")
-            .Replace("Console.Write", "Program.OutputWrite");
-
-        var compilationResult = _codeCompiler.Compile(
-            new CompilationInput(fullProgram, null, referenceAssemblyPaths).WithOutputAssemblyNameTag(_script.Name));
+        /*
+         * Compile
+         */
+        var compilationResult = _codeCompiler.Compile(new CompilationInput(
+                fullProgram,
+                referenceAssemblyImages.Select(a => a.Image),
+                referenceAssemblyPaths)
+            .WithOutputAssemblyNameTag(_script.Name));
 
         if (!compilationResult.Success)
         {
-            await _outputWriter.WriteAsync(compilationResult.Diagnostics
+            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(compilationResult.Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .JoinToString("\n") + "\n");
+                .JoinToString("\n") + "\n"));
 
-            return (false, Array.Empty<byte>(), Array.Empty<string>());
+            return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>());
         }
 
-        return (true, compilationResult.AssemblyBytes, referenceAssemblyPaths.ToArray());
+        return (
+            true,
+            compilationResult.AssemblyBytes,
+            referenceAssemblyImages.ToArray(),
+            referenceAssemblyPaths.ToArray()
+        );
     }
 
     public void Dispose()
     {
         _logger.LogTrace("Dispose start");
 
-        _outputListeners.Clear();
+        _processHandler?.Dispose();
+        _externalOutputAdapters.Clear();
         if (_serviceScope != null)
         {
             _serviceScope.Dispose();
@@ -157,7 +304,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
     {
         _logger.LogTrace("DisposeAsync start");
 
-        _outputListeners.Clear();
+        _processHandler?.Dispose();
+        _externalOutputAdapters.Clear();
         if (_serviceScope != null)
         {
             _serviceScope.Dispose();

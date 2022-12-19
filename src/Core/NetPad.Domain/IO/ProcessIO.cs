@@ -2,24 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using NetPad.Utilities;
 
 namespace NetPad.IO
 {
-    public class ProcessIOHandler : IDisposable
+    public class ProcessIO : IDisposable
     {
-        private readonly object _outputReceivedLock;
-        private readonly object _errorReceivedLock;
-
-        public ProcessIOHandler(Process process)
+        public ProcessIO(Process process)
         {
             Process = process;
 
-            _outputReceivedLock = new object();
-            _errorReceivedLock = new object();
-            OnOutputReceivedHandlers = new List<Func<string, Task>>();
-            OnErrorReceivedHandlers = new List<Func<string, Task>>();
+            OnOutputReceivedHandlers = new HashSet<Func<string, Task>>();
+            OnErrorReceivedHandlers = new HashSet<Func<string, Task>>();
 
             Process.OutputDataReceived += OutputReceived;
             Process.ErrorDataReceived += ErrorReceived;
@@ -27,17 +22,18 @@ namespace NetPad.IO
 
         public Process Process { get; }
 
-        public List<Func<string, Task>> OnOutputReceivedHandlers { get; }
-        public List<Func<string, Task>> OnErrorReceivedHandlers { get; }
+        public StreamWriter StandardInput => Process.StandardInput;
+        public HashSet<Func<string, Task>> OnOutputReceivedHandlers { get; }
+        public HashSet<Func<string, Task>> OnErrorReceivedHandlers { get; }
 
         private void OutputReceived(object? sender, DataReceivedEventArgs ev)
         {
             if (ev.Data == null)
                 return;
 
-            foreach (var handler in OnOutputReceivedHandlers)
+            foreach (var handler in OnOutputReceivedHandlers.ToArray())
             {
-                AsyncHelpers.RunSync(() => handler(ev.Data));
+                Task.Run(async () => { await handler(ev.Data); });
             }
         }
 
@@ -46,9 +42,9 @@ namespace NetPad.IO
             if (ev.Data == null)
                 return;
 
-            foreach (var handler in OnErrorReceivedHandlers)
+            foreach (var handler in OnErrorReceivedHandlers.ToArray())
             {
-                AsyncHelpers.RunSync(() => handler(ev.Data));
+                Task.Run(async () => { await handler(ev.Data); });
             }
         }
 

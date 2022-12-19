@@ -5,6 +5,7 @@ using NetPad.Scripts;
 
 namespace NetPad.Compilation.CSharp
 {
+    [Obsolete("Each runtime defines its own code parser now")]
     public class CSharpCodeParser : ICodeParser
     {
         public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
@@ -56,27 +57,21 @@ namespace NetPad.Compilation.CSharp
         {
             return $@"class {{0}}
 {{{{
-    internal static {nameof(IScriptOutput)} Output {{{{ get; set; }}}}
+    internal static IScriptOutputAdapter<ScriptOutput, ScriptOutput> Output {{{{ get; set; }}}}
 
-    // Entry point used when running script in external process
-    static async System.Threading.Tasks.Task Main(string[] args)
-    {{{{
-        // {{1}}(new ActionOutputWriter((o, t) => Console.WriteLine(o?.ToString())));
-    }}}}
-
-    private static void {{1}}({nameof(IScriptOutput)} output)
+    private static void {{1}}(IScriptOutputAdapter<ScriptOutput, ScriptOutput> output)
     {{{{
         Output = output;
     }}}}
 
     internal static void OutputWrite(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutput.PrimaryChannel)}.WriteAsync(o, title);
+        Output.{nameof(IScriptOutputAdapter<object, object>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 
     internal static void OutputWriteLine(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutput.PrimaryChannel)}.WriteAsync(o, title);
+        Output.{nameof(IScriptOutputAdapter<object, object>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 }}}}
 
@@ -97,7 +92,7 @@ static class Exts
 
     internal static void DumpToSqlOutput<T>(this T? o, string? title = null)
     {{{{
-        {{0}}.Output.{nameof(IScriptOutput.SqlChannel)}?.WriteAsync(o, title);
+        {{0}}.Output.{nameof(IScriptOutputAdapter<object, object>.SqlChannel)}?.WriteAsync(o, title);
     }}}}
 }}}}
 ";

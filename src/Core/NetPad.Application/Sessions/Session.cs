@@ -70,17 +70,17 @@ namespace NetPad.Sessions
         public async Task CloseAsync(Guid scriptId, bool activateNextScript = true)
         {
             _logger.LogDebug("Closing script: {ScriptId}", scriptId);
-            var environmentToClose = Get(scriptId);
-            if (environmentToClose == null)
+            var environment = Get(scriptId);
+            if (environment == null)
                 return;
 
-            var ix = _environments.IndexOf(environmentToClose);
+            var ix = _environments.IndexOf(environment);
 
-            _environments.Remove(environmentToClose);
-            await environmentToClose.DisposeAsync();
-            await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environmentToClose));
+            _environments.RemoveAt(ix);
+            await environment.DisposeAsync();
+            await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
 
-            if (activateNextScript && Active == environmentToClose)
+            if (activateNextScript && Active == environment)
             {
                 if (_environments.Any())
                 {

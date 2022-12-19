@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
@@ -41,7 +40,7 @@ public class EntityFrameworkDatabaseScaffolder
         _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
         _logger = logger;
         _project = new DotNetCSharpProject(
-            Path.Combine(Path.GetTempPath(), AppIdentifier.AppName, "TypedContexts", connection.Id.ToString()),
+            Settings.TempFolderPath.Combine( "TypedContexts", connection.Id.ToString()).Path,
             projectFileName: "database",
             packageCacheDirectoryPath: Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
 
@@ -132,7 +131,7 @@ class Program
             throw new Exception("Could not start scaffolding process");
         }
 
-        using var processIO = new ProcessIOHandler(process);
+        using var processIO = new ProcessIO(process);
 
         var toolOutput = new List<string>();
         processIO.OnOutputReceivedHandlers.Add(output =>
@@ -191,7 +190,7 @@ class Program
         var syntaxTreeRoot = CSharpSyntaxTree.ParseText(scaffoldedCode).GetRoot();
         var nodes = syntaxTreeRoot.DescendantNodes().ToArray();
 
-        var namespaces = new HashSet<string>();
+        var usings = new HashSet<string>();
 
         foreach (var usingDirective in nodes.OfType<UsingDirectiveSyntax>())
         {
@@ -199,7 +198,7 @@ class Program
                 .Split(' ')[1]
                 .TrimEnd(';');
 
-            namespaces.Add(ns);
+            usings.Add(ns);
         }
 
         var classDeclaration = nodes.OfType<ClassDeclarationSyntax>().Single();
@@ -207,7 +206,7 @@ class Program
         var className = classDeclaration.Identifier.ValueText;
         var isDbContext = classCode.Contains(" : DbContext");
 
-        var sourceFile = new ScaffoldedSourceFile(file.FullName, className, classCode, namespaces)
+        var sourceFile = new ScaffoldedSourceFile(file.FullName, className, classCode, usings)
         {
             IsDbContext = isDbContext
         };
