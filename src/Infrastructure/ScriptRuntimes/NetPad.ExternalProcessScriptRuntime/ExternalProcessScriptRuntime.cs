@@ -127,9 +127,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             await File.WriteAllTextAsync(Path.Combine(rootDir.FullName, $"{scriptName}.runtimeconfig.json"), runtimeConfig);
 
-            // var domainDll = typeof(IOutputWriter<>).Assembly.Location;
-            // File.Copy(domainDll, Path.Combine(rootDir.FullName, Path.GetFileName(domainDll)), true);
-
             foreach (var referenceAssemblyImage in compileResult.referenceAssemblyImages)
             {
                 var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
@@ -148,6 +145,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     File.Copy(referenceAssemblyPath, destPath, true);
             }
 
+            // TODO optimize this section
             _processHandler = new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), assemblyFullPath);
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async (output) =>
@@ -193,7 +191,9 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 return RunResult.RunAttemptFailure();
             }
 
-            var exitCode = await startResult.WaitForExitTask;
+            int exitCode = await startResult.WaitForExitTask;
+
+            DisposeProcessHandler();
 
             var elapsed = (DateTime.Now - start).TotalMilliseconds;
 
@@ -207,6 +207,19 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
             return RunResult.RunAttemptFailure();
         }
+    }
+
+    public Task StopScriptAsync()
+    {
+        DisposeProcessHandler();
+        return Task.CompletedTask;
+    }
+
+    private void DisposeProcessHandler()
+    {
+        if (_processHandler == null) return;
+        _processHandler.Dispose();
+        _processHandler = null;
     }
 
     public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)

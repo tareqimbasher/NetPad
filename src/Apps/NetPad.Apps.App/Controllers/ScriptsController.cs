@@ -68,6 +68,12 @@ namespace NetPad.Controllers
             await _mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
         }
 
+        [HttpPatch("{id:guid}/stop")]
+        public async Task Stop(Guid id)
+        {
+            await _mediator.Send(new StopScriptCommand(id));
+        }
+
         [HttpPut("{id:guid}/code")]
         public async Task UpdateCode(Guid id, [FromBody] string code)
         {

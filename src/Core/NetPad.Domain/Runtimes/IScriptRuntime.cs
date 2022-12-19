@@ -10,6 +10,7 @@ namespace NetPad.Runtimes
     public interface IScriptRuntime : IDisposable, IAsyncDisposable
     {
         Task<RunResult> RunScriptAsync(RunOptions runOptions);
+        Task StopScriptAsync();
     }
 
     /// <summary>

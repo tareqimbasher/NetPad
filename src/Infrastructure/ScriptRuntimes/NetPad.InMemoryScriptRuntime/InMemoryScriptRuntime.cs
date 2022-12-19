@@ -115,6 +115,11 @@ namespace NetPad.Runtimes
             }
         }
 
+        public Task StopScriptAsync()
+        {
+            throw new InvalidOperationException("Cannot stop a script running in-memory.");
+        }
+
         public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
         {
             _externalOutputAdapters.Add(outputAdapter);
