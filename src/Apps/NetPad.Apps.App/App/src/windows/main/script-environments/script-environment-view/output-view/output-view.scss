@@ -60,12 +60,14 @@ output-view {
     }
 
     .html-output-container {
+        $font-size: 12px;
+
         /*
         * CSS for the Container housing generated HTML
         */
         padding: 0.25rem;
         font-family: monospace;
-        font-size: 14px;
+        font-size: $font-size;
         overflow-x: auto;
         flex-grow: 1;
 
@@ -77,6 +79,17 @@ output-view {
         /*
         * CSS for generated HTML
         */
+        span {
+            // When text is wrapped and user selects/highlights text, highlight background of lines
+            // that aren't the first line, will overlap with lines above and below. This is to make
+            // that overlap disappear and also to give more breathing room for multi line text
+            line-height: $font-size + 5;
+
+            &::first-line {
+                line-height: $font-size;
+            }
+        }
+
         hr {
             color: dodgerblue;
             margin: 0 0 10px;
