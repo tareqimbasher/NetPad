@@ -49,7 +49,7 @@ scripts-list {
                 }
 
                 .script-dirty-flag {
-                    @extend .text-orange;
+                    @extend %text-orange;
                 }
 
                 &.is-active {

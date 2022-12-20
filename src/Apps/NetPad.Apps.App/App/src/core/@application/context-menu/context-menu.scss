@@ -43,7 +43,8 @@ context-menu {
             }
 
             .text {
-
+                display: flex;
+                align-items: center;
             }
 
             .shortcut {

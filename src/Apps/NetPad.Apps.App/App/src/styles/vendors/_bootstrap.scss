@@ -53,10 +53,6 @@ textarea.form-control {
     @include theme(border-color, borderColor);
 }
 
-.dropdown-item {
-    @include theme(color, textColor);
-}
-
 .list-group-item {
     @include theme(background-color, listBackground);
     @include theme(color, textColor);
@@ -113,14 +109,17 @@ textarea.form-control {
     > .btn {
         @include theme(color, textColor);
     }
-
-    .dropdown-menu {
-        @include theme(background-color, formControlBackground);
-        @include theme(color, textColor);
-
-        .dropdown-item:hover {
-            @include theme(background-color, hoverColor);
-        }
-    }
 }
 
+.dropdown-menu {
+    @include theme(background-color, formControlBackground);
+    @include theme(color, textColor);
+
+    .dropdown-item {
+        @include theme(color, textColor);
+    }
+
+    .dropdown-item:hover {
+        @include theme(background-color, hoverColor);
+    }
+}

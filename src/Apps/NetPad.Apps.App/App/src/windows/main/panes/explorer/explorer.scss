@@ -17,6 +17,6 @@ explorer {
     }
 
     .tree-expand-node-icon, .tree-collapse-node-icon {
-        @extend .text-orange;
+        @extend %text-orange;
     }
 }
