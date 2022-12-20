@@ -15,7 +15,8 @@ namespace NetPad.Runtimes;
 // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
 public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
 {
-    internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel, IOutputWriter<ScriptOutput> SqlChannel)
+    internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel,
+            IOutputWriter<ScriptOutput> SqlChannel)
         : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
 
     private readonly Script _script;
@@ -115,17 +116,16 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             ""version"": ""6.0.0""
         }},
         ""rollForward"": ""Minor"",
-        ""additionalProbingPaths"": [
-            {0}
-        ]
+        ""additionalProbingPaths"": {0}
     }}
 }}";
             var runtimeConfig = string.Format(
                 template,
-                compileResult.referenceAssemblyPaths.Select(x => $"\"{Path.GetDirectoryName(x)}\"").JoinToString(",\n")
+                JsonSerializer.Serialize(compileResult.referenceAssemblyPaths.Select(Path.GetDirectoryName).ToHashSet())
             );
 
-            await File.WriteAllTextAsync(Path.Combine(rootDir.FullName, $"{scriptName}.runtimeconfig.json"), runtimeConfig);
+            await File.WriteAllTextAsync(Path.Combine(rootDir.FullName, $"{scriptName}.runtimeconfig.json"),
+                runtimeConfig);
 
             foreach (var referenceAssemblyImage in compileResult.referenceAssemblyImages)
             {
@@ -150,7 +150,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async (output) =>
             {
-                _logger.LogDebug("Script output received. Length: {OutputLength}", (output?.Length.ToString() ?? "null"));
+                _logger.LogDebug("Script output received. Length: {OutputLength}",
+                    (output?.Length.ToString() ?? "null"));
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
 
@@ -158,7 +159,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     try
                     {
-                        externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                        externalProcessOutput =
+                            JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
                     }
                     catch
                     {
@@ -174,13 +176,17 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql && _outputAdapter.SqlChannel != null)
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql &&
+                         _outputAdapter.SqlChannel != null)
                 {
                     await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) =>
+            {
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
+            });
 
             var start = DateTime.Now;
 
@@ -235,8 +241,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private async Task<(
             bool success,
             byte[] assemblyBytes,
-            AssemblyImage[] referenceAssemblyImages,
-            string[] referenceAssemblyPaths)>
+            HashSet<AssemblyImage> referenceAssemblyImages,
+            HashSet<string> referenceAssemblyPaths)>
         CompileAndGetReferencesAsync(RunOptions runOptions)
     {
         /*
@@ -253,16 +259,17 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         /*
          * Compile assembly references
          */
-        var referenceAssemblyImages = new List<AssemblyImage>();
+        var referenceAssemblyImages = new HashSet<AssemblyImage>();
         foreach (var additionalReference in runOptions.AdditionalReferences)
         {
             if (additionalReference is AssemblyImageReference assemblyImageReference)
                 referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
         }
 
-        var referenceAssemblyPaths = await _script.Config.References
-            .Union(runOptions.AdditionalReferences)
-            .GetAssemblyPathsAsync(_packageProvider);
+        var referenceAssemblyPaths = (await _script.Config.References
+                .Union(runOptions.AdditionalReferences)
+                .GetAssemblyPathsAsync(_packageProvider))
+            .ToHashSet();
 
         /*
          * Add custom assemblies
@@ -287,14 +294,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
                 .JoinToString("\n") + "\n"));
 
-            return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>());
+            return (false, Array.Empty<byte>(), new HashSet<AssemblyImage>(), new HashSet<string>());
         }
 
         return (
             true,
             compilationResult.AssemblyBytes,
-            referenceAssemblyImages.ToArray(),
-            referenceAssemblyPaths.ToArray()
+            referenceAssemblyImages,
+            referenceAssemblyPaths
         );
     }
 
