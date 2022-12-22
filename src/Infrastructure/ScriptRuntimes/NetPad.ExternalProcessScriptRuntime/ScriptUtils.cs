@@ -85,7 +85,7 @@ internal static class Utils
 {
     private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
     {
-        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+        ReferenceLoopHandling = O2Html.ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
         DoNotSerializeNonRootEmptyCollections = true
     };
 
@@ -101,21 +101,21 @@ internal static class Utils
                 .AddText(title);
         }
 
-        O2Html.Dom.Element element;
+        O2Html.Dom.Node node;
 
         try
         {
-            element = HtmlConvert.Serialize(output, _htmlSerializerSettings);
+            node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
         }
         catch (Exception ex)
         {
-            element = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
+            node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
         }
 
-        if (element.Children.All(c => c.Type == O2Html.Dom.NodeType.Text))
+        if (node is O2Html.Dom.Element element && element.Children.All(c => c.Type == O2Html.Dom.NodeType.Text))
             group.WithAddClass("text");
 
-        group.AddChild(element);
+        group.AddChild(node);
 
         return group.ToHtml();
     }

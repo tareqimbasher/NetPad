@@ -12,7 +12,7 @@
 body,
 html {
     height: 100%;
-    font-size: 12.8px;
+    font-size: 13px;
 }
 
 .window {
@@ -79,5 +79,9 @@ html {
 
     .hover-text-#{"" + $color}:hover, %hover-text-#{"" + $color}:hover {
         color: map.get($colors, $color) !important;
+    }
+
+    .bg-#{"" + $color}, %bg-#{"" + $color} {
+        background-color: map.get($colors, $color) !important;
     }
 }

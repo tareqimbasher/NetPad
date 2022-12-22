@@ -2,5 +2,6 @@
     <div class="d-flex align-items-center">
         <img src.bind="iconUrl" style="max-height: 1.2rem; margin-right: 0.35rem;"/>
         ${connection.name}
+        <span class="production-marker badge" show.bind="connection.containsProductionData">Production</span>
     </div>
 </template>

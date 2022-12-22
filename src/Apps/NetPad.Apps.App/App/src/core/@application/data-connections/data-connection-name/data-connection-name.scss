@@ -1,0 +1,9 @@
+@import "~styles/main";
+
+data-connection-name {
+    .production-marker {
+        @extend %text-white;
+        @extend %bg-orange;
+        margin-left: 1rem;
+    }
+}

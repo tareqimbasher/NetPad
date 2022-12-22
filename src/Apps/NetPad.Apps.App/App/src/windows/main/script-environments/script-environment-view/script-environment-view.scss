@@ -1,3 +1,4 @@
+@import "~styles/main";
 @import "~styles/themes";
 
 script-environment-view {
@@ -16,5 +17,14 @@ script-environment-view {
         display: flex;
         flex-direction: column;
         @include theme(background-color, resultsBackground);
+    }
+
+    .production-marker {
+        @extend %bg-orange;
+        @extend %text-black;
+        writing-mode: vertical-rl;
+        font-weight: bold;
+        text-align: center;
+        cursor: default;
     }
 }

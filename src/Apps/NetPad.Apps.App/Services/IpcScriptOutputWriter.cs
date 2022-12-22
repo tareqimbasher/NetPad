@@ -80,21 +80,24 @@ public abstract class IpcScriptOutputWriter : IOutputWriter<ScriptOutput>
                 .AddText(title);
         }
 
-        Element element;
+        Node node;
 
         try
         {
-            element = HtmlConvert.Serialize(output, _htmlSerializerSettings);
+            node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
         }
         catch (Exception ex)
         {
-            element = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
+            node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
         }
 
-        if (element.Children.All(c => c.Type == NodeType.Text))
+        if (node is Element element && element.Children.All(c => c.Type == NodeType.Text))
             group.WithAddClass("text");
 
-        group.AddChild(element);
+        if (output is Exception)
+            group.WithAddClass("error");
+
+        group.AddChild(node);
 
         return group.ToHtml();
     }

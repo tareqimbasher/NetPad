@@ -108,6 +108,11 @@ button > .icon-base {
     @extend .fa-caret-down;
 }
 
+.caret-up-icon {
+    @extend %icon-base;
+    @extend .fa-caret-up;
+}
+
 .tree-collapse-node-icon {
     @extend %icon-base;
     @extend .fa-minus;

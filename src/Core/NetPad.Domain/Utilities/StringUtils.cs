@@ -79,10 +79,11 @@ namespace NetPad.Utilities
             return newStr.ToString();
         }
 
-        public static string RemoveInvalidFileNameCharacters(string str)
+        public static string RemoveInvalidFileNameCharacters(string str, string? replaceWith = null)
         {
-            var invalid = Path.GetInvalidFileNameChars().ToHashSet();
-            return new string(str.Where(c => !invalid.Contains(c)).ToArray());
+            var invalid = Path.GetInvalidFileNameChars().ToArray();
+
+            return string.Join(replaceWith ?? string.Empty, str.Split(invalid, StringSplitOptions.None));
         }
     }
 }
