@@ -1,8 +1,9 @@
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
-import {bindable, IDisposable, ILogger} from "aurelia";
+import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {ViewModelBase} from "@application";
+import {ResultControls} from "./result-controls";
 
 export class ResultsView extends ViewModelBase {
     public resultsViewSettings: ResultsPaneViewSettings;
@@ -59,66 +60,3 @@ export class ResultsView extends ViewModelBase {
     }
 }
 
-class ResultControls implements IDisposable {
-    private disposables: (() => void)[] = [];
-
-    constructor(private readonly resultsElement: HTMLElement) {
-    }
-
-    public bind(content: DocumentFragment) {
-
-        for (const table of Array.from(content.querySelectorAll("table"))) {
-
-            let collapseTarget = table.querySelector(":scope > thead > tr > th.table-item-count");
-            if (!collapseTarget)
-                collapseTarget = table.querySelector(":scope > thead > tr > th");
-
-            if (!collapseTarget) continue;
-
-            collapseTarget.classList.add("collapse-actionable");
-            const clickHandler = () => this.toggle(table);
-            collapseTarget.addEventListener("click", clickHandler);
-
-            this.disposables.push(() => {
-                if (collapseTarget) {
-                    collapseTarget.removeEventListener("click", clickHandler);
-                }
-            });
-
-            const caret = document.createElement("i");
-            collapseTarget.prepend(caret);
-            caret.classList.add("caret-down-icon", "icon-lg", "me-2");
-        }
-    }
-
-    public expand(element: Element) {
-        element.classList.remove("collapsed");
-    }
-
-    public collapse(element: Element) {
-        element.classList.add("collapsed");
-    }
-
-    public toggle(element: Element) {
-        if (element.classList.contains("collapsed"))
-            this.expand(element);
-        else
-            this.collapse(element);
-    }
-
-    private expandAllTables() {
-        this.querySelectorAll("table").forEach(t => this.expand(t));
-    }
-
-    private collapseAllTables() {
-        this.querySelectorAll("table").forEach(t => this.collapse(t));
-    }
-
-    querySelectorAll(selectors: string) {
-        return Array.from(this.resultsElement.querySelectorAll(selectors))
-    }
-
-    public dispose(): void {
-        this.disposables.forEach(d => d());
-    }
-}

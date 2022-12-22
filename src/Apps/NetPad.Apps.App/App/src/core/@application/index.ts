@@ -43,4 +43,6 @@ export * from "./editor/editor-setup";
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
 
+export * from "./tables/resizable-table";
+
 export * from "./data-connections/data-connection-name/data-connection-name";

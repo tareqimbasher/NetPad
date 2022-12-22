@@ -1,3 +1,4 @@
+@import "~styles/main";
 @import "~styles/themes";
 
 output-view {
@@ -8,6 +9,7 @@ output-view {
 
     .toolbar {
         height: 2rem;
+        min-height: 2rem;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -59,15 +61,15 @@ output-view {
         }
     }
 
+    /*
+    * CSS for the Container housing generated HTML
+    */
     .html-output-container {
-        $font-size: 12px;
+        $font-size: 13px;
 
-        /*
-        * CSS for the Container housing generated HTML
-        */
+        //font-family: "monospace";
         padding: 0.25rem;
-        font-family: monospace;
-        font-size: $font-size;
+        line-height: 1;
         overflow-x: auto;
         flex-grow: 1;
 
@@ -79,17 +81,6 @@ output-view {
         /*
         * CSS for generated HTML
         */
-        span {
-            // When text is wrapped and user selects/highlights text, highlight background of lines
-            // that aren't the first line, will overlap with lines above and below. This is to make
-            // that overlap disappear and also to give more breathing room for multi line text
-            line-height: $font-size + 5;
-
-            &::first-line {
-                line-height: $font-size;
-            }
-        }
-
         hr {
             color: dodgerblue;
             margin: 0 0 10px;
@@ -97,7 +88,6 @@ output-view {
 
         %null {
             color: #797e81;
-            font-style: italic;
         }
 
         .null {
@@ -106,7 +96,7 @@ output-view {
 
         .cyclic-reference {
             font-style: italic;
-            font-size: 10px;
+            font-size: $font-size - 1;
             color: red;
         }
 
@@ -123,12 +113,16 @@ output-view {
                 padding-top: 0;
                 padding-bottom: 0;
             }
-        }
 
-        .titled.group {
-            border-left: 2px orange solid;
-            margin-top: 0.5rem;
-            margin-bottom: 1rem;
+            &.error {
+                @extend %text-red;
+            }
+
+            &.titled {
+                border-left: 2px orange solid;
+                margin-top: 0.5rem;
+                margin-bottom: 1rem;
+            }
         }
 
         .title {
@@ -146,24 +140,25 @@ output-view {
             margin: 5px 0;
             border-color: $table-outline-color;
 
-            table.table {
-                margin: 0;
-            }
-
             &.collapsed > tbody {
                 visibility: collapse;
             }
 
-            td, th {
-                padding: 4px 5px;
-                line-height: 100%;
+            table {
+                margin: 0;
             }
 
             th {
+                line-height: 1;
+                padding: 3px 5px;
                 color: white;
                 background-color: $table-outline-color;
 
-                &.table-item-count {
+                &:not(:last-of-type) {
+                    border-right: 1px #3da3da solid;
+                }
+
+                &.table-info-header {
                     background-color: #525252;
                     border-color: #525252;
                     border-top-width: 1px;
@@ -175,13 +170,19 @@ output-view {
             }
 
             td {
-                > span {
-                    width: max-content;
-                    max-width: 50vw;
-                    display: block;
-                    word-break: break-all;
+                line-height: $font-size + 5;
+                padding: 0 5px;
+
+                > table {
+                    margin-top: 4px !important;
+                    margin-bottom: 4px !important;
                 }
             }
+
+            tbody td {
+                overflow-wrap: break-word;
+            }
+
 
             tbody {
                 border-top-width: 0;
