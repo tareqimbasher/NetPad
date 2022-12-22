@@ -14,7 +14,11 @@ using NetPad.Utilities;
 
 namespace NetPad.Runtimes
 {
-    // If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised
+    /// <summary>
+    /// A script runtime that runs scripts in memory.
+    ///
+    /// NOTE: If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised.
+    /// </summary>
     public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
     {
         internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel, IOutputWriter<ScriptOutput> SqlChannel)
@@ -133,8 +137,8 @@ namespace NetPad.Runtimes
         private async Task<(
                 bool success,
                 byte[] assemblyBytes,
-                AssemblyImage[] referenceAssemblyImages,
-                string[] referenceAssemblyPaths,
+                HashSet<AssemblyImage> referenceAssemblyImages,
+                HashSet<string> referenceAssemblyPaths,
                 CodeParsingResult parsingResult)>
             CompileAndGetReferencesAsync(RunOptions runOptions)
         {
@@ -144,7 +148,7 @@ namespace NetPad.Runtimes
                 AdditionalCode = runOptions.AdditionalCode
             });
 
-            var referenceAssemblyImages = new List<AssemblyImage>();
+            var referenceAssemblyImages = new HashSet<AssemblyImage>();
             foreach (var additionalReference in runOptions.AdditionalReferences)
             {
                 if (additionalReference is AssemblyImageReference assemblyImageReference)
@@ -162,7 +166,7 @@ namespace NetPad.Runtimes
 
             var compilationResult = _codeCompiler.Compile(new CompilationInput(
                     fullProgram,
-                    referenceAssemblyImages.Select(a => a.Image),
+                    referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
                     referenceAssemblyPaths)
                 .WithOutputAssemblyNameTag(_script.Name));
 
@@ -173,11 +177,16 @@ namespace NetPad.Runtimes
                         .Where(d => d.Severity == DiagnosticSeverity.Error)
                         .JoinToString("\n") + "\n"));
 
-                return (false, Array.Empty<byte>(), Array.Empty<AssemblyImage>(), Array.Empty<string>(), parsingResult);
+                return (false, Array.Empty<byte>(), new HashSet<AssemblyImage>(), new HashSet<string>(), parsingResult);
             }
 
-            return (true, compilationResult.AssemblyBytes, referenceAssemblyImages.ToArray(),
-                referenceAssemblyPaths.ToArray(), parsingResult);
+            return (
+                true,
+                compilationResult.AssemblyBytes,
+                referenceAssemblyImages,
+                referenceAssemblyPaths,
+                parsingResult
+            );
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -185,8 +194,8 @@ namespace NetPad.Runtimes
             ExecuteInMemoryAndUnloadAsync(
                 IServiceScope serviceScope,
                 byte[] targetAssembly,
-                AssemblyImage[] assemblyReferenceImages,
-                string[] referenceAssemblyPaths,
+                HashSet<AssemblyImage> assemblyReferenceImages,
+                HashSet<string> referenceAssemblyPaths,
                 ParsedCodeInformation parsedCodeInformation)
         {
             using var scope = serviceScope.ServiceProvider.CreateScope();

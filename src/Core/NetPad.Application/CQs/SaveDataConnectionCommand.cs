@@ -41,7 +41,7 @@ public class SaveDataConnectionCommand : Command
 
             await _eventBus.PublishAsync(new DataConnectionSavedEvent(updated));
 
-            bool shouldRefreshResources = existing == null || HasChangedOtherThanName(existing, updated);
+            bool shouldRefreshResources = existing == null || ShouldRefreshResources(existing, updated);
 
             if (shouldRefreshResources)
             {
@@ -52,7 +52,13 @@ public class SaveDataConnectionCommand : Command
             return Unit.Value;
         }
 
-        private bool HasChangedOtherThanName(DataConnection existing, DataConnection updated)
+        private static readonly HashSet<string> _propertiesToIgnore = new()
+        {
+            nameof(DataConnection.Name),
+            nameof(DatabaseConnection.ContainsProductionData)
+        };
+
+        private bool ShouldRefreshResources(DataConnection existing, DataConnection updated)
         {
             var existingConnectionType = existing.GetType();
             var updatedConnectionType = updated.GetType();
@@ -64,16 +70,19 @@ public class SaveDataConnectionCommand : Command
 
             var properties = updatedConnectionType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.Name != nameof(DataConnection.Name));
+                .Where(p => !_propertiesToIgnore.Contains(p.Name));
 
             foreach (var property in properties)
             {
                 var existingConnectionValue = property.GetValue(existing);
                 var updatedConnectionValue = property.GetValue(updated);
 
-                bool changed = (existingConnectionValue != null && updatedConnectionValue == null)
-                               || (existingConnectionValue == null && updatedConnectionValue != null)
-                               || existingConnectionValue?.Equals(updatedConnectionValue) != true;
+                bool changed = !(existingConnectionValue == null && updatedConnectionValue == null) &&
+                               (
+                                   (existingConnectionValue != null && updatedConnectionValue == null)
+                                   || (existingConnectionValue == null && updatedConnectionValue != null)
+                                   || existingConnectionValue!.Equals(updatedConnectionValue) != true
+                               );
 
                 if (changed)
                 {
