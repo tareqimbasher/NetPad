@@ -27,7 +27,6 @@ export class ConfigStore {
     }
 
     public updateNamespaces(namespaces: string[]) {
-        this._namespaces.splice(0);
         this._namespaces = [...namespaces];
         this.updateNamespaceCount();
     }

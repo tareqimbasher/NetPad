@@ -41,7 +41,7 @@ export class NamespaceManagement {
     public configStoreChanged() {
         const secondsSinceLastLocalUpdate = !this.lastSet ? null : (new Date().getTime() - this.lastSet?.getTime()) / 1000;
 
-        // This is so that the local value does not update while the user is typing
+        // To stop an infinite loop
         if (!secondsSinceLastLocalUpdate || secondsSinceLastLocalUpdate >= 1) {
             this.updateLocal(this.configStore.namespaces);
         }
@@ -52,10 +52,12 @@ export class NamespaceManagement {
     }
 
     private validate(namespace: string): string | null {
+        if (namespace.endsWith(";"))
+            return `The namespace "${namespace}" should not end with a semi-colon ";"`;
         if (namespace.startsWith("using "))
-            return `The namespace "${namespace}" should not start with "using".`;
+            return `The namespace "${namespace}" should not start with "using"`;
         if (namespace.length > 0 && !Util.isLetter(namespace[0]) && namespace[0] !== "_")
-            return `The namespace "${namespace}" seems incorrect. It must start with an alphabet or underscore.`;
+            return `The namespace "${namespace}" seems incorrect. It must start with an alphabet or underscore`;
 
         return null;
     }

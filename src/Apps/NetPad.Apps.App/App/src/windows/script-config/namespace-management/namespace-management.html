@@ -1,5 +1,5 @@
 <h6>List each namespace on a separate line</h6>
 <textarea class="form-control flex-grow-1"
-          value.bind="namespaces & debounce"
+          value.bind="namespaces & updateTrigger:'blur'"
           spellcheck="false"></textarea>
 <label class="mt-2 text-red" show.bind="!!error">${error}</label>

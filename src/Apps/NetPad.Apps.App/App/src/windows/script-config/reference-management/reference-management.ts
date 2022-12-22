@@ -1,4 +1,5 @@
 import {observable} from "@aurelia/runtime";
+import {watch} from "@aurelia/runtime-html";
 import * as path from "path";
 import Split from "split.js";
 import {AssemblyFileReference, IAssemblyService, Reference} from "@domain";
@@ -65,6 +66,17 @@ export class ReferenceManagement {
         // Clear file input element so if user selects X.dll, removes it, then re-selects it
         // the change is observed
         this.browseInput.value = "";
+    }
+
+    @watch<ReferenceManagement>(vm => vm.configStore.namespaces.length)
+    private updateSelectedWhenNamespacesChange() {
+        if (!this.namespaces || this.namespaces.length === 0) return;
+
+        const configured = new Set(this.configStore.namespaces);
+
+        for (const namespace of this.namespaces) {
+            namespace.selected = configured.has(namespace.name);
+        }
     }
 }
 
