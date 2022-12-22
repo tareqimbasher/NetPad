@@ -7,7 +7,7 @@ namespace O2Html.Converters;
 
 public class CollectionHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         return WriteHtmlPrivate(obj, type, serializationScope, htmlSerializer).element;
     }
@@ -31,7 +31,7 @@ public class CollectionHtmlConverter : HtmlConverter
         }
         else
         {
-            td.AddChild(new EmptyCollection().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
+            td.AddChild(new EmptyCollection(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
         }
     }
 
@@ -63,7 +63,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
         Type elementType = htmlSerializer.GetElementType(type) ?? typeof(object);
 
-        var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);
+        var table = new Table();
 
         int collectionLength = 0;
 
@@ -86,13 +86,13 @@ public class CollectionHtmlConverter : HtmlConverter
             var countHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
             countHeaderRow
                 .AddAndGetElement("th")
-                .WithAddClass("table-item-count")
+                .WithAddClass("table-info-header")
                 .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
-                .AddText($"({collectionLength} items)");
+                .AddText($"{type.GetReadableName(forHtml: true)} ({collectionLength} items)");
         }
         else
         {
-            table.AddAndGetHeading($"{type.GetReadableName(withNamespace: false, forHtml: true)} ({collectionLength} items)");
+            table.AddAndGetHeading($"{type.GetReadableName(forHtml: true)} ({collectionLength} items)");
         }
 
         return (table, collectionLength);

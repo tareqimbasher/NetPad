@@ -6,7 +6,7 @@ namespace O2Html.Converters;
 
 public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
@@ -17,12 +17,12 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
             .ReplaceIfExists(">", "&gt;")
             .ReplaceIfExists("\n", "<br/>");
 
-        return new Element("span").WithText(str);
+        return new TextNode(str);
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td").AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
+        tr.AddAndGetElement("td").WithText(obj?.ToString());
     }
 
     public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)

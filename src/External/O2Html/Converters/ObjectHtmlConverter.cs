@@ -7,7 +7,7 @@ namespace O2Html.Converters;
 
 public class ObjectHtmlConverter : HtmlConverter
 {
-    public override Element WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
@@ -26,7 +26,7 @@ public class ObjectHtmlConverter : HtmlConverter
                 throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
         }
 
-        var table = new Table().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Table);
+        var table = new Table();
 
         table.Head.AddAndGetElement("tr")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
@@ -41,7 +41,6 @@ public class ObjectHtmlConverter : HtmlConverter
 
             var tr = table.Body.AddAndGetElement("tr");
             tr.AddAndGetElement("td")
-                .AddAndGetElement("span")
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
                 .WithTitle(property.PropertyType.GetReadableName(withNamespace: true, forHtml: true))
                 .AddText($"{name}: ");
@@ -64,9 +63,8 @@ public class ObjectHtmlConverter : HtmlConverter
 
         foreach (var property in properties)
         {
-            var td = tr.AddAndGetElement("td");
             object? value = GetPropertyValue(property, ref obj!);
-            td.AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
+            htmlSerializer.SerializeWithinTableRow(tr, value, property.PropertyType, serializationScope);
         }
     }
 

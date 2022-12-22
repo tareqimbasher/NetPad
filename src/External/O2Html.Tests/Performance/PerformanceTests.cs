@@ -32,12 +32,12 @@ public class PerformanceTests
     {
         var cars = GetCars(1000);
 
-        Element element = null!;
+        Node node = null!;
 
         Benchmark("All", () =>
         {
-            Benchmark("Serialize to Element", () => element = HtmlConvert.Serialize(cars));
-            Benchmark("To HTML", () => element.ToHtml());
+            Benchmark("Serialize to Element", () => node = HtmlConvert.Serialize(cars));
+            Benchmark("To HTML", () => node.ToHtml());
         });
     }
 

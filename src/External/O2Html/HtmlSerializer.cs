@@ -40,7 +40,7 @@ public sealed class HtmlSerializer
 
     public List<HtmlConverter> Converters { get; }
 
-    public Element Serialize<T>(T? obj, Type type, SerializationScope? serializationScope = null)
+    public Node Serialize<T>(T? obj, Type type, SerializationScope? serializationScope = null)
     {
         var converter = GetConverter(type);
         if (converter == null)

@@ -27,7 +27,7 @@ public class Table : Element
         if (title != null)
             th.WithTitle(title);
 
-        return th.AddAndGetElement("a").WithText(headingText);
+        return th.WithText(headingText);
     }
 
     private Element GetHeaderRow()
