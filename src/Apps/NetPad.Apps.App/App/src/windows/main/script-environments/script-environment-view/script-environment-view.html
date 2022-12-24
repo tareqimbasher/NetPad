@@ -44,7 +44,7 @@
             <option model.bind="null">None</option>
             <option repeat.for="connection of dataConnectionStore.connections"
                     model.bind="connection">
-                ${connection.name} (${connection.type}) <span show.bind="dataConnection.containsProductionData"> - Production</span>
+                ${connection.name} (${connection.type})
             </option>
         </select>
     </div>

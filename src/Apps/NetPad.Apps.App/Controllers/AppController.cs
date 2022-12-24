@@ -27,17 +27,17 @@ public class AppController : Controller
         if (scriptPath == null)
             return BadRequest();
 
-        var dirPath = Path.GetDirectoryName(scriptPath);
+        var file = new FileInfo(scriptPath);
 
-        if (dirPath == null || !dirPath.StartsWith(settings.ScriptsDirectoryPath))
-            return Unauthorized($"Not allowed.");
+        if (!file.Exists || file.Directory?.Exists != true)
+            return Unauthorized("Not allowed");
 
-        if (!Directory.Exists(dirPath))
-            return BadRequest($"Directory does not exist at: {dirPath}");
+        if (!file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath))
+            return Unauthorized("Not allowed");
 
         Process.Start(new ProcessStartInfo
         {
-            FileName = dirPath,
+            FileName = file.Directory.FullName,
             UseShellExecute = true
         });
         return Ok();
