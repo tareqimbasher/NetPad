@@ -1,17 +1,28 @@
-﻿using NetPad.IO;
-using O2Html;
+﻿using System.Text;
+using NetPad.Html;
+using NetPad.IO;
 
-public static class ScriptUtils
+public static class ScriptRuntimeServices
 {
+    private static TextWriter _defaultConsoleOutput;
     private static IScriptOutputAdapter<object, object>? _output;
+
+    public static void Init()
+    {
+        // Capture default TextWriter used by system to write to the console
+        _defaultConsoleOutput = Console.Out;
+
+        // Redirect standard console output
+        Console.SetOut(new ActionTextWriter(new ActionOutputWriter<object>((o, _) => ResultWrite(o))));
+    }
 
     internal static IScriptOutputAdapter<object, object> Output
     {
         get
         {
             _output ??= new ScriptOutputAdapter<object, object>(
-                new ExternalProcessOutputWriter(ExternalProcessOutputChannel.Results),
-                new ExternalProcessOutputWriter(ExternalProcessOutputChannel.Sql)
+                new ExternalProcessOutputWriter(ExternalProcessOutputChannel.Results, _defaultConsoleOutput),
+                new ExternalProcessOutputWriter(ExternalProcessOutputChannel.Sql, _defaultConsoleOutput)
             );
 
             return _output;
@@ -45,7 +56,7 @@ public static class Extensions
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static T? Dump<T>(this T? o, string? title = null)
     {
-        ScriptUtils.ResultWrite(o, title);
+        ScriptRuntimeServices.ResultWrite(o, title);
         return o;
     }
 }
@@ -53,20 +64,26 @@ public static class Extensions
 public class ExternalProcessOutputWriter : IOutputWriter<object>
 {
     private readonly ExternalProcessOutputChannel _channel;
+    private readonly TextWriter _defaultConsoleOutput;
+    private uint _outputCounter;
 
-    public ExternalProcessOutputWriter(ExternalProcessOutputChannel channel)
+    public ExternalProcessOutputWriter(ExternalProcessOutputChannel channel, TextWriter defaultConsoleOutput)
     {
         _channel = channel;
+        _defaultConsoleOutput = defaultConsoleOutput;
     }
 
     public System.Threading.Tasks.Task WriteAsync(object? output, string? title = null)
     {
-        var html = Utils.ToHtml(output, title);
+        var html = HtmlSerializer.Serialize(output, title);
 
-        var processOutput = new ExternalProcessOutput<HtmlScriptOutput>(_channel, new HtmlScriptOutput(html));
+        var processOutput = new ExternalProcessOutput<HtmlScriptOutput>(
+            _channel,
+            new HtmlScriptOutput(Interlocked.Increment(ref _outputCounter), html));
+
         var serializedOutput = NetPad.Common.JsonSerializer.Serialize(processOutput);
 
-        Console.WriteLine(serializedOutput);
+        _defaultConsoleOutput.WriteLine(serializedOutput);
 
         return System.Threading.Tasks.Task.CompletedTask;
     }
@@ -81,42 +98,24 @@ public enum ExternalProcessOutputChannel
 
 public record ExternalProcessOutput<TOutput>(ExternalProcessOutputChannel Channel, TOutput? Output);
 
-internal static class Utils
+class ActionTextWriter : TextWriter
 {
-    private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
+    private readonly IOutputWriter<object> _outputWriter;
+
+    public ActionTextWriter(IOutputWriter<object> outputWriter)
     {
-        ReferenceLoopHandling = O2Html.ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
-        DoNotSerializeNonRootEmptyCollections = true
-    };
+        _outputWriter = outputWriter;
+    }
 
-    public static string ToHtml(object? output, string? title = null)
+    public override Encoding Encoding => Encoding.Default;
+
+    public override void Write(string? value)
     {
-        var group = new O2Html.Dom.Element("div").WithAddClass("group");
+        _outputWriter.WriteAsync(value);
+    }
 
-        if (title != null)
-        {
-            group.WithAddClass("titled")
-                .AddAndGetElement("h6")
-                .WithAddClass("title")
-                .AddText(title);
-        }
-
-        O2Html.Dom.Node node;
-
-        try
-        {
-            node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
-        }
-        catch (Exception ex)
-        {
-            node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
-        }
-
-        if (node is O2Html.Dom.Element element && element.Children.All(c => c.Type == O2Html.Dom.NodeType.Text))
-            group.WithAddClass("text");
-
-        group.AddChild(node);
-
-        return group.ToHtml();
+    public override void WriteLine()
+    {
+        _outputWriter.WriteAsync("\n");
     }
 }

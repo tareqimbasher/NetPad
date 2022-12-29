@@ -66,6 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Infrastructure.Tests", "Tests\Infrastructure\NetPad.Infrastructure.Tests\NetPad.Infrastructure.Tests.csproj", "{73C3CD0F-BC83-42BE-A4FE-6169482413F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Presentation", "Core\NetPad.Presentation\NetPad.Presentation.csproj", "{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -152,6 +154,10 @@ Global
 		{73C3CD0F-BC83-42BE-A4FE-6169482413F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73C3CD0F-BC83-42BE-A4FE-6169482413F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73C3CD0F-BC83-42BE-A4FE-6169482413F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
@@ -177,5 +183,6 @@ Global
 		{DE8479FC-373E-4860-A2EA-25676D977534} = {4624BD9B-C1C8-42C4-9C62-CAACB1C68258}
 		{CE6863C5-6B3A-4555-8FB3-D3782E182074} = {6DD496D9-D5F3-4985-854C-165CD1B2691E}
 		{73C3CD0F-BC83-42BE-A4FE-6169482413F9} = {CE6863C5-6B3A-4555-8FB3-D3782E182074}
+		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
 	EndGlobalSection
 EndGlobal

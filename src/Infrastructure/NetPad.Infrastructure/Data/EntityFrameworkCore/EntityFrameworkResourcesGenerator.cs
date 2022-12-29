@@ -164,12 +164,13 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
+            .EnableSensitiveDataLogging()
             .LogTo(
                 output =>
                 {
                     if (!output.Contains(""Executing DbCommand"")) return;
 
-                    ScriptUtils.SqlWrite(output);
+                    ScriptRuntimeServices.SqlWrite(output);
                 },
                 new[] { Microsoft.EntityFrameworkCore.DbLoggerCategory.Database.Command.Name }
             );

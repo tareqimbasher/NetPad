@@ -7,7 +7,7 @@ namespace NetPad.Runtimes;
 
 public class InMemoryRuntimeCSharpCodeParser : ICodeParser
 {
-    public const string BootstrapperClassName = "ScriptUtils";
+    public const string BootstrapperClassName = "ScriptRuntimeServices";
     public const string BootstrapperSetIOMethodName = "SetIO";
 
     private static readonly string[] _usingsNeededByBaseProgram =

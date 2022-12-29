@@ -171,7 +171,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     }
                     catch
                     {
-                        _logger.LogDebug("Script output is not JSON or could not be serialized");
+                        _logger.LogDebug("Script output is not JSON or could not be deserialized");
                     }
                 }
 
@@ -246,6 +246,12 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private async Task<RunDependencies?> GetRunDependencies(RunOptions runOptions)
     {
         /*
+         * Add code that initializes runtime services
+         */
+        runOptions.AdditionalCode.Add(new SourceCode("public partial class Program " +
+                                                     $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.Init(); }} }}"));
+
+        /*
          * Parse script code into the code that will be compiled
          */
         var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
@@ -279,6 +285,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
         // Needed to serialize output in external process to HTML
         referenceAssemblyPaths.Add(typeof(O2Html.HtmlConvert).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(NetPad.Html.HtmlSerializer).Assembly.Location);
 
 
         /*

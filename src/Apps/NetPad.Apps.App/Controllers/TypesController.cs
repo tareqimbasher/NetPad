@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
-using NetPad.Data;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Events;
+using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -25,6 +25,7 @@ namespace NetPad.Controllers
             public YesNoCancel YesNoCancel { get; set; }
 
             public Script? Script { get; set; }
+            public HtmlScriptOutput? HtmlScriptOutput { get; set; }
             public SettingsUpdatedEvent? SettingsUpdated { get; set; }
             public AppStatusMessagePublishedEvent? AppStatusMessagePublished { get; set; }
             public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }

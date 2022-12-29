@@ -7,8 +7,8 @@ namespace NetPad.Runtimes
 {
     public class ExternalProcessRuntimeCSharpCodeParser : ICodeParser
     {
-        public const string BootstrapperClassName = nameof(ScriptUtils);
-        public const string BootstrapperSetIOMethodName = nameof(ScriptUtils.SetIO);
+        public const string BootstrapperClassName = nameof(ScriptRuntimeServices);
+        public const string BootstrapperSetIOMethodName = nameof(ScriptRuntimeServices.SetIO);
 
         public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
         {
@@ -42,7 +42,7 @@ namespace NetPad.Runtimes
 
         public string GetBootstrapperProgram()
         {
-            return AssemblyUtil.ReadEmbeddedResource(typeof(ScriptUtils).Assembly, "ScriptUtils.cs");
+            return AssemblyUtil.ReadEmbeddedResource(typeof(ScriptRuntimeServices).Assembly, $"{nameof(ScriptRuntimeServices)}.cs");
         }
     }
 }
