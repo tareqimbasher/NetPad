@@ -22,7 +22,8 @@
     "rules": {
         "@typescript-eslint/no-explicit-any": "error",      // Use unknown where acceptable instead of any
         "@typescript-eslint/no-unused-vars": "off",         // It is useful to keep function params around even when not used
-        "@typescript-eslint/no-empty-interface": "off"      // Some interfaces are used as markers
+        "@typescript-eslint/no-empty-interface": "off",     // Some interfaces are used as markers,
+        "@typescript-eslint/no-empty-function": "off"       // Virtual members that are meant to be overidden
     },
     "overrides": [
         {

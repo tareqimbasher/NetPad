@@ -2,6 +2,8 @@ $light: (
     textColor: #34314b,
     textContrastColor: #d4d4d4,
     backgroundColor: #f3f3f3,
+    backgroundDarkerColor: #f3f3f3,
+    backgroundLighterColor: #f6f6f6,
     borderColor: #ccc,
     borderColorContrast: #444,
     hoverColor: rgba(0, 0, 0, 0.075),
@@ -16,6 +18,7 @@ $light: (
     actionIconHoverColor: black,
     formControlBackground: #eee,
     kbdBackground: #212529,
+    boxShadow: 0 0 8px 2px rgba(0, 0, 0, 0.16),
     // WINDOW
     windowBorderColor: #ccc,
     // HEADER

@@ -2,6 +2,8 @@ $dark: (
     textColor: #dcdcdc,
     textContrastColor: #34314b,
     backgroundColor: #222,
+    backgroundDarkerColor: #1c1c1c,
+    backgroundLighterColor: #333,
     borderColor: #3f3f3f,
     borderColorContrast: #555,
     hoverColor: rgba(255, 255, 255, 0.075),
@@ -16,6 +18,7 @@ $dark: (
     actionIconHoverColor: white,
     formControlBackground: #333,
     kbdBackground: #59646e,
+    boxShadow: 0 0 8px 2px rgb(0, 0, 0, .36),
     // WINDOW
     windowBorderColor: #333,
     // HEADER

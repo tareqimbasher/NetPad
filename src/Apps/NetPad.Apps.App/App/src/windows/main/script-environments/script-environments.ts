@@ -133,13 +133,21 @@ export class ScriptEnvironments extends ViewModelBase {
             return;
         }
 
-        const drake = dragula([dndContainer], {
+        const drakeOptions: dragula.DragulaOptions = {
             direction: "horizontal",
             mirrorContainer: dndContainer,
             invalid: (el, target) => {
                 return !!el && el.classList.contains("new-script-tab");
             }
-        });
+        };
+
+        // Type definition don't include these 2 properties
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (drakeOptions as unknown as any).slideFactorX = 10;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (drakeOptions as unknown as any).slideFactorY = 10;
+
+        const drake = dragula([dndContainer], drakeOptions);
 
         this.disposables.push(() => drake.destroy());
 

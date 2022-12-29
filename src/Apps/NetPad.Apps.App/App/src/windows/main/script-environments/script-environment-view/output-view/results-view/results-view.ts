@@ -1,16 +1,12 @@
-import {ResultsPaneViewSettings} from "./results-view-settings";
-import {IEventBus, ISession, ScriptEnvironment, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
-import {bindable, ILogger} from "aurelia";
+import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {ViewModelBase} from "@application";
+import {ResultsPaneViewSettings} from "./results-view-settings";
+import {HtmlScriptOutput, IEventBus, ISession, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
 import {ResultControls} from "./result-controls";
+import {OutputViewBase} from "../output-view-base";
 
-export class ResultsView extends ViewModelBase {
+export class ResultsView extends OutputViewBase {
     public resultsViewSettings: ResultsPaneViewSettings;
-    @bindable public environment: ScriptEnvironment;
-    @bindable public active: boolean;
-
-    private outputElement: HTMLElement;
     private resultControls: ResultControls;
 
     constructor(private readonly settings: Settings,
@@ -24,39 +20,90 @@ export class ResultsView extends ViewModelBase {
 
     public attached() {
         this.resultControls = new ResultControls(this.outputElement);
+        this.disposables.push(() => this.resultControls.dispose());
 
         const token = this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
             if (msg.scriptId === this.environment.script.id) {
-                this.appendResults(msg.output);
+                if (!msg.output) return;
+
+                const output = JSON.parse(msg.output) as HtmlScriptOutput;
+                this.appendOutput(output);
             }
         });
         this.disposables.push(() => token.dispose());
     }
 
-    public override detaching() {
-        this.resultControls.dispose();
-        super.detaching();
+    protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
+        this.resultControls.bind(documentFragment);
     }
 
-    private appendResults(results: string | null | undefined) {
-        if (!results) return;
-
-        const template = document.createElement("template");
-        template.innerHTML = results;
-        this.resultControls.bind(template.content);
-        this.outputElement.appendChild(template.content);
-    }
-
-    private clearResults() {
+    protected override beforeClearOutput() {
         this.resultControls.dispose();
-        while (this.outputElement.firstChild && this.outputElement.lastChild)
-            this.outputElement.removeChild(this.outputElement.lastChild);
     }
 
     @watch<ResultsView>(vm => vm.environment.status)
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
-            this.clearResults();
+            this.clearOutput();
+    }
+
+    private attemptsAtWrappingEachResultLetterWithSpan() {
+        // Was going to be used for search functionality, but performance of inserting
+        // potentially millions of span elements in the page proved to be very poor
+
+        // Array.from(template.content.querySelectorAll("*")).forEach(el => {
+        //     const currentInnerHtml = el.innerHTML;
+        //     let newInnerHtml = "";
+        //     let isInsideXml = false;
+        //
+        //     for (let iChar = 0; iChar < currentInnerHtml.length; iChar++) {
+        //         const char = currentInnerHtml[iChar];
+        //
+        //         if (char === "<") {
+        //             isInsideXml = true;
+        //         }
+        //
+        //         if (isInsideXml) {
+        //             newInnerHtml += char;
+        //             if (char === ">") isInsideXml = false;
+        //             continue;
+        //         }
+        //
+        //         if (char === " ")
+        //             newInnerHtml += char;
+        //         else {
+        //             newInnerHtml +=
+        //                 `<span class="${char}">`
+        //                 + char
+        //                 + '</span>';
+        //         }
+        //     }
+        //
+        //     el.innerHTML = newInnerHtml;
+        // });
+
+
+        //template.normalize();
+        // Array.from(template.content.querySelectorAll("*")).forEach(el => {
+        //     const textNodes = Array.from(el.childNodes).filter(n => n.nodeType === Node.TEXT_NODE) as Text[];
+        //     textNodes.forEach(n => {
+        //         if (!n.data) return;
+        //         const replacements: Element[] = [];
+        //         for (let iChar = 0; iChar < n.data.length; iChar++) {
+        //             const char = n.data[iChar];
+        //             if (char === " ") continue;
+        //
+        //             try {
+        //                 const span = document.createElement("span");
+        //                 span.classList.add(char.toLowerCase());
+        //                 span.innerText = char;
+        //                 replacements.push(span);
+        //             } catch (ex) {
+        //                 console.error(`Failed to replace char '${char}'`, n, ex);
+        //             }
+        //         }
+        //         n.replaceWith(...replacements);
+        //     });
+        // });
     }
 }
-

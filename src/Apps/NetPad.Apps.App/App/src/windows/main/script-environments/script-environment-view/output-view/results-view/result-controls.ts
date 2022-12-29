@@ -23,7 +23,7 @@ export class ResultControls implements IDisposable {
                 collapseTarget.addEventListener("click", clickHandler);
 
                 this.disposables.push(() => {
-                    collapseTarget!.removeEventListener("click", clickHandler);
+                    collapseTarget?.removeEventListener("click", clickHandler);
                 });
 
                 const caret = document.createElement("i");

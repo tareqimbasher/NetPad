@@ -4018,6 +4018,7 @@ export interface IOmniSharpInlayHintsOptions {
 export class Types implements ITypes {
     yesNoCancel!: YesNoCancel;
     script?: Script | undefined;
+    htmlScriptOutput?: HtmlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
@@ -4053,6 +4054,7 @@ export class Types implements ITypes {
         if (_data) {
             this.yesNoCancel = _data["yesNoCancel"];
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
+            this.htmlScriptOutput = _data["htmlScriptOutput"] ? HtmlScriptOutput.fromJS(_data["htmlScriptOutput"]) : <any>undefined;
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdatedEvent.fromJS(_data["settingsUpdated"]) : <any>undefined;
             this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublishedEvent.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
@@ -4088,6 +4090,7 @@ export class Types implements ITypes {
         data = typeof data === 'object' ? data : {};
         data["yesNoCancel"] = this.yesNoCancel;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
+        data["htmlScriptOutput"] = this.htmlScriptOutput ? this.htmlScriptOutput.toJSON() : <any>undefined;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
         data["appStatusMessagePublished"] = this.appStatusMessagePublished ? this.appStatusMessagePublished.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
@@ -4123,6 +4126,7 @@ export class Types implements ITypes {
 export interface ITypes {
     yesNoCancel: YesNoCancel;
     script?: Script | undefined;
+    htmlScriptOutput?: HtmlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
@@ -4147,6 +4151,88 @@ export interface ITypes {
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
+
+export abstract class ScriptOutput implements IScriptOutput {
+    body?: any | undefined;
+    order!: number;
+
+    constructor(data?: IScriptOutput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.body = _data["body"];
+            this.order = _data["order"];
+        }
+    }
+
+    static fromJS(data: any): ScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'ScriptOutput' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["body"] = this.body;
+        data["order"] = this.order;
+        return data;
+    }
+
+    clone(): ScriptOutput {
+        throw new Error("The abstract class 'ScriptOutput' cannot be instantiated.");
+    }
+}
+
+export interface IScriptOutput {
+    body?: any | undefined;
+    order: number;
+}
+
+export class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput {
+    body?: string | undefined;
+
+    constructor(data?: IHtmlScriptOutput) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.body = _data["body"];
+        }
+    }
+
+    static fromJS(data: any): HtmlScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new HtmlScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["body"] = this.body;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): HtmlScriptOutput {
+        const json = this.toJSON();
+        let result = new HtmlScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHtmlScriptOutput extends IScriptOutput {
+    body?: string | undefined;
+}
 
 export class SettingsUpdatedEvent implements ISettingsUpdatedEvent {
     settings!: Settings;

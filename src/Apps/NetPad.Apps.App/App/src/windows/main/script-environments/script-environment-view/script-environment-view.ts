@@ -153,7 +153,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     private openResultsView() {
         if (this.isResultsViewOpen()) return;
-        this.split.setSizes([40, 60]);
+        this.split.setSizes([30, 70]);
     }
 
     private collapseResultsView = () => {

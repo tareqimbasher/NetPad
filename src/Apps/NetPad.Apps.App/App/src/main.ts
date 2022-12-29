@@ -27,6 +27,7 @@ import {
     Env,
     EventBus,
     ExternalLinkCustomAttribute,
+    FindTextBox,
     IWindowBootstrapperConstructor,
     PlatformsCustomAttribute,
     RemoteLogSink,
@@ -73,8 +74,9 @@ const app = Aurelia.register(
     SanitizeHtmlValueConverter,
     YesNoValueConverter,
 
-    // Custom elements
+    // Custom elements that we want available everywhere
     ContextMenu,
+    FindTextBox,
 
     // Tasks
     AppTask.beforeActivate(IContainer, async container => {

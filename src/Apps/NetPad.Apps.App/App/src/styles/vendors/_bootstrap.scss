@@ -39,6 +39,10 @@ a.btn-link:hover {
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
+
+    &:focus {
+        @include theme(border-color, activeColor);
+    }
 }
 
 textarea.form-control {
@@ -47,7 +51,6 @@ textarea.form-control {
 }
 
 .form-select {
-    //@extend .form-select-sm;
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);

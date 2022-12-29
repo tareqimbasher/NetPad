@@ -9,13 +9,13 @@ export class ViewModelBase {
     }
 
     public detaching() {
-        this.disposables.forEach(disposable => {
+        for (const disposable of this.disposables) {
             try {
                 disposable();
             }
             catch (ex) {
                 this.logger.error("Error while disposing", ex, disposable);
             }
-        });
+        }
     }
 }

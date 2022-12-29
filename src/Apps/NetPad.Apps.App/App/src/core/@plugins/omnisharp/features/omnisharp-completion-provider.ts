@@ -85,7 +85,12 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         const request = new api.CompletionRequest();
         request.line = range.startLineNumber;
         request.column = range.endColumn;
-        request.completionTrigger = (ctx.triggerKind + 1) as unknown as api.CompletionTriggerKind;
+        request.completionTrigger =
+            ctx.triggerKind === languages.CompletionTriggerKind.Invoke
+                ? "Invoked"
+                : ctx.triggerKind === languages.CompletionTriggerKind.TriggerCharacter
+                    ? "TriggerCharacter"
+                    : "TriggerForIncompleteCompletions";
         request.triggerCharacter = ctx.triggerCharacter;
 
         if (token.isCancellationRequested) {

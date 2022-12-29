@@ -42,7 +42,8 @@ export * from "./editor/editor-setup";
 
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
-
+export * from "./find-text-box/find-text-box";
+export * from "./find-text-box/find-text-box-options";
 export * from "./tables/resizable-table";
 
 export * from "./data-connections/data-connection-name/data-connection-name";

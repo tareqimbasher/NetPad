@@ -1,18 +1,9 @@
-import {
-    IEventBus,
-    ScriptEnvironment,
-    ScriptSqlOutputEmittedEvent,
-    ScriptStatus
-} from "@domain";
-import {ViewModelBase} from "@application";
-import {bindable, ILogger} from "aurelia";
+import {HtmlScriptOutput, IEventBus, ScriptSqlOutputEmittedEvent, ScriptStatus} from "@domain";
+import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {OutputViewBase} from "../output-view-base";
 
-export class SqlView extends ViewModelBase {
-    @bindable public environment: ScriptEnvironment;
-    @bindable public active: boolean;
-
-    private outputElement: HTMLElement;
+export class SqlView extends OutputViewBase {
     private textWrap: boolean;
 
     constructor(@IEventBus private readonly eventBus: IEventBus, @ILogger logger: ILogger) {
@@ -22,27 +13,18 @@ export class SqlView extends ViewModelBase {
     public attached() {
         const token = this.eventBus.subscribeToServer(ScriptSqlOutputEmittedEvent, msg => {
             if (msg.scriptId === this.environment.script.id) {
-                this.appendResults(msg.output);
+                if (!msg.output) return;
+
+                const output = JSON.parse(msg.output) as HtmlScriptOutput;
+                this.appendOutput(output);
             }
         });
         this.disposables.push(() => token.dispose());
     }
 
-    private appendResults(results: string | null | undefined) {
-        if (!results) return;
-        const template = document.createElement("template");
-        template.innerHTML = results;
-        this.outputElement.appendChild(template.content);
-    }
-
-    private clearResults() {
-        while (this.outputElement.firstChild && this.outputElement.lastChild)
-            this.outputElement.removeChild(this.outputElement.lastChild);
-    }
-
     @watch<SqlView>(vm => vm.environment.status)
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
-            this.clearResults();
+            this.clearOutput();
     }
 }

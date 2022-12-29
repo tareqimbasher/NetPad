@@ -83,6 +83,16 @@ button > .icon-base {
     @extend .fa-bolt;
 }
 
+.up-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-up;
+}
+
+.down-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-down;
+}
+
 .keyboard-icon {
     @extend %icon-base;
     @extend .fa-keyboard;

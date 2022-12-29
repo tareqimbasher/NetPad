@@ -1,0 +1,46 @@
+@import "~styles/themes";
+
+find-text-box {
+    @include theme(background-color, backgroundDarkerColor);
+    @include theme(box-shadow, boxShadow);
+    position: absolute;
+    top: 0;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    z-index: 1;
+
+    > input {
+        width: 300px !important;
+    }
+
+    .found-count {
+        margin-left: 0.5rem;
+        font-size: 0.85rem;
+
+        &.none-found {
+            color: salmon;
+        }
+    }
+}
+
+.text-search-result {
+    background-color: yellow;
+    color: black;
+
+    &.text-search-active {
+        color: red;
+    }
+}
+
+.hide-text-search-results {
+    .text-search-result {
+        background-color: inherit;
+        color: inherit;
+
+        &.text-search-active {
+            color: inherit;
+        }
+    }
+}

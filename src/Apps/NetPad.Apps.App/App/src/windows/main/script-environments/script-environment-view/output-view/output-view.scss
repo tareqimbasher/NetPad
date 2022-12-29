@@ -73,6 +73,10 @@ output-view {
         overflow-x: auto;
         flex-grow: 1;
 
+        &:focus {
+            outline: none;
+        }
+
         &.text-wrap {
             overflow-wrap: break-word;
         }
@@ -108,11 +112,6 @@ output-view {
         .group {
             padding: 0.25rem 0.25rem;
             border-left: 2px transparent solid;
-
-            &.text {
-                padding-top: 0;
-                padding-bottom: 0;
-            }
 
             &.error {
                 @extend %text-red;
