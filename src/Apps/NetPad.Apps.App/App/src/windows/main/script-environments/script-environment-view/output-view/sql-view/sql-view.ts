@@ -6,10 +6,11 @@ import {FindTextBoxOptions} from "@application";
 
 export class SqlView extends OutputViewBase {
     private textWrap: boolean;
-    private colorize: boolean = true;
+    private colorize: boolean;
 
     constructor(@IEventBus private readonly eventBus: IEventBus, @ILogger logger: ILogger) {
         super(logger);
+        this.colorize = true;
     }
 
     public override bound() {
