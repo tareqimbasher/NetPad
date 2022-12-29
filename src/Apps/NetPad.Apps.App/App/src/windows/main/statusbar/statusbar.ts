@@ -16,7 +16,7 @@ export class Statusbar {
     }
 
     private listenToAppStatusMessages() {
-        let clearMsgTask: Task<void> | null;
+        let clearMsgTask: number | null = null;
 
         this.eventBus.subscribeToServer(AppStatusMessagePublishedEvent, ev => {
             this.appStatusMessage = ev.message;
@@ -24,18 +24,18 @@ export class Statusbar {
                 this.appStatusMessage.scriptName = this.session.getScriptName(this.appStatusMessage.scriptId);
             }
 
-            if (clearMsgTask) {
-                clearMsgTask.cancel();
+            if (clearMsgTask !== null) {
+                PLATFORM.clearTimeout(clearMsgTask);
             }
 
             if (this.appStatusMessage.persistant) {
                 return;
             }
 
-            clearMsgTask = PLATFORM.taskQueue.queueTask(() => {
+            clearMsgTask = PLATFORM.setTimeout(() => {
                 this.appStatusMessage = null;
                 clearMsgTask = null;
-            }, { delay: 10000 });
+            }, 10000);
         });
     }
 }

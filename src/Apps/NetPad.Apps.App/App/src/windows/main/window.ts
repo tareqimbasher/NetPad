@@ -49,7 +49,7 @@ export class Window {
 
         // Start explorer expanded by default
         if (!viewStateController.hasSavedState()) {
-            PLATFORM.taskQueue.queueTask(() => explorer.activateOrCollapse(), {delay: 1});
+            PLATFORM.setTimeout(() => explorer.activateOrCollapse(), 1);
         }
     }
 

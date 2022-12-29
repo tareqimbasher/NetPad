@@ -12,7 +12,7 @@ export class LeftRightPaneHostViewStateController implements IPaneHostViewStateC
         private readonly mainContentSelector: string,
         private readonly leftPaneHostGetter?: () => PaneHost,
         private readonly rightPaneHostGetter?: () => PaneHost) {
-        PLATFORM.taskQueue.queueTask(() => this.loadState(), {delay: 1});
+        PLATFORM.setTimeout(() => this.loadState(), 1);
     }
 
     private get left(): PaneHostSplitInfo | undefined {

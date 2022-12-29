@@ -19,9 +19,9 @@ export class Editor extends ViewModelBase {
     }
 
     public async attached(): Promise<void> {
-        PLATFORM.taskQueue.queueTask(() => {
+        setTimeout(() => {
             this.initializeEditor();
-        }, {delay: 100});
+        }, 100);
     }
 
     public override detaching() {
@@ -63,10 +63,10 @@ export class Editor extends ViewModelBase {
 
     @watch<Editor>(vm => vm.session.active)
     private activeScriptEnvironmentChanged() {
-        PLATFORM.taskQueue.queueTask(() => {
+        PLATFORM.setTimeout(() => {
             if (this.environment === this.session.active)
                 this.updateEditorLayout();
-        }, {delay: 100});
+        }, 100);
     }
 
     private updateEditorLayout() {
