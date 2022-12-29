@@ -14,7 +14,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        var td = tr.AddAndGetElement("td");
+        var td = tr.AddAndGetElement("td").WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue);
 
         if (obj == null)
         {

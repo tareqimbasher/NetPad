@@ -55,7 +55,9 @@ public class ObjectHtmlConverter : HtmlConverter
     {
         if (obj == null)
         {
-            tr.AddAndGetElement("td").AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
+            tr.AddAndGetElement("td")
+                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+                .AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
             return;
         }
 
