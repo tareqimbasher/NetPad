@@ -3,4 +3,36 @@ sql-view {
     flex-direction: column;
     flex-grow: 1;
     min-height: 0;
+
+    .html-output-container {
+        .group.text {
+            line-height: 1.35;
+        }
+
+        .query-params {
+            color: green;
+            font-weight: bold;
+        }
+
+        .query-time {
+            color: goldenrod;
+            font-weight: bold;
+        }
+
+        .sql-keyword {
+            color: #0080fd;
+            font-weight: bold;
+        }
+
+        .sql-select {
+        }
+
+        .sql-update {
+            color: orange;
+        }
+
+        .sql-delete {
+            color: red;
+        }
+    }
 }
