@@ -4,16 +4,23 @@ using System.Threading.Tasks;
 
 namespace OmniSharp.Utilities
 {
-    internal class ProcessStartResult
+    public class ProcessStartResult
     {
-        public ProcessStartResult(bool success, Task waitForExitTask)
+        public ProcessStartResult(bool success, Task<int> waitForExitTask)
         {
             Success = success;
             WaitForExitTask = waitForExitTask;
         }
 
+        /// <summary>
+        /// Indicates if the process was started successfully or not.
+        /// </summary>
         public bool Success { get; }
-        public Task WaitForExitTask { get; }
+
+        /// <summary>
+        /// A task that completes when the process terminates. It returns the process exit code.
+        /// </summary>
+        public Task<int> WaitForExitTask { get; }
     }
 
     internal sealed class ProcessHandler : IDisposable
@@ -21,38 +28,129 @@ namespace OmniSharp.Utilities
         private readonly string? _commandText;
         private readonly string? _args;
         private Process? _process;
-        private Task? _processStartTask;
+        private ProcessIO? _io;
         private ProcessStartInfo? _processStartInfo;
+        private Task<int>? _processStartTask;
+        private bool _isDisposed;
 
-        public ProcessHandler(string commandText)
+        public ProcessHandler(string commandText) : this(commandText, null)
         {
             _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
         }
 
-        public ProcessHandler(string commandText, string args) : this(commandText)
+        public ProcessHandler(string commandText, string? args)
         {
-            _args = args ?? throw new ArgumentNullException(nameof(args));
+            _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
+            _args = args;
         }
 
-        public Process Process => _process ??
-                                  throw new InvalidOperationException(
-                                      "Process has not been started yet");
-
-        public ProcessIO? IO { get; private set; }
-
-        public ProcessStartResult StartProcess(ProcessStartInfo? processStartInfo = null)
+        public ProcessHandler(ProcessStartInfo processStartInfo)
         {
-            if (_process != null && _process.IsProcessRunning())
-                throw new InvalidOperationException(
-                    $"Process is already started and has not exited yet. Process PID: {_process.Id}.");
+            _processStartInfo = processStartInfo ?? throw new ArgumentNullException(nameof(processStartInfo));
+        }
 
-            if (processStartInfo != null)
+        public Process Process
+        {
+            get
             {
-                _processStartInfo = processStartInfo;
+                Init();
+                return _process!;
             }
-            else if (_processStartInfo == null)
+        }
+
+        public ProcessIO IO
+        {
+            get
             {
-                _processStartInfo = new ProcessStartInfo(_commandText)
+                Init();
+                return _io!;
+            }
+        }
+
+        public ProcessStartResult StartProcess()
+        {
+            EnsureNotDisposed();
+
+            Init();
+
+            var process = _process!;
+
+            if (process.IsProcessRunning())
+                throw new InvalidOperationException(
+                    $"Process is already started and has not terminated yet. Process PID: {process.Id}.");
+
+            process.Start();
+
+            // We have to wait for the process or otherwise it exists shortly after its spawned
+            _processStartTask = Task.Run(() =>
+            {
+                process.WaitForExit();
+
+                try
+                {
+                    return process.ExitCode;
+                }
+                catch (Exception ex)
+                {
+                    // Can throw if process is killed
+                    return -1;
+                }
+            });
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            bool started = process.IsProcessRunning();
+
+            return new ProcessStartResult(started, _processStartTask);
+        }
+
+        public void StopProcess()
+        {
+            EnsureNotDisposed();
+
+            if (_process != null)
+            {
+                if (_process.IsProcessRunning())
+                {
+                    _process.Kill();
+                }
+
+                _processStartTask = null;
+                _process.Dispose();
+                _process = null;
+            }
+
+            if (_io != null)
+            {
+                _io.Dispose();
+                _io = null;
+            }
+        }
+
+        public void Restart()
+        {
+            if (_process?.IsProcessRunning() == true)
+            {
+                StopProcess();
+            }
+
+            StartProcess();
+        }
+
+        public void Dispose()
+        {
+            StopProcess();
+            _isDisposed = true;
+        }
+
+        private void Init()
+        {
+            EnsureNotDisposed();
+
+            if (_processStartInfo == null!)
+            {
+                _processStartInfo = new ProcessStartInfo(_commandText!)
                 {
                     CreateNoWindow = true,
                     UseShellExecute = false,
@@ -72,52 +170,24 @@ namespace OmniSharp.Utilities
                 }
             }
 
-
-            _process = new Process
+            if (_process == null)
             {
-                StartInfo = _processStartInfo,
-                EnableRaisingEvents = true
-            };
+                _process = new Process
+                {
+                    StartInfo = _processStartInfo,
+                    EnableRaisingEvents = true
+                };
 
-            IO = new ProcessIO(_process);
-
-            _process.Start();
-
-            // We have to wait for the process or otherwise it exists shortly after its spawned
-            _processStartTask = Task.Run(() => { _process.WaitForExit(); });
-
-            _process.BeginOutputReadLine();
-            _process.BeginErrorReadLine();
-
-            bool started = _process.IsProcessRunning();
-
-            return new ProcessStartResult(started, _processStartTask);
-        }
-
-        public void StopProcess()
-        {
-            if (_process != null && _process.IsProcessRunning())
-            {
-                _process.Kill();
+                _io = new ProcessIO(_process);
             }
-
-            _processStartTask = null;
-            _process?.Dispose();
         }
 
-        public void Restart()
+        private void EnsureNotDisposed()
         {
-            if (_process?.IsProcessRunning() == true)
+            if (_isDisposed)
             {
-                StopProcess();
+                throw new ObjectDisposedException(nameof(ProcessHandler), "The process handler is disposed.");
             }
-
-            StartProcess(_processStartInfo);
-        }
-
-        public void Dispose()
-        {
-            StopProcess();
         }
     }
 }
