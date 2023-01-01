@@ -157,7 +157,7 @@ and access the app via your web browser, ex: `http://localhost:5010`
 
 The app is built and packaged
 using [electron-builder](https://www.electron.build/). Build the app for the
-desired platform from the root directory of `NetPad.Web`
+desired platform from the root directory of `NetPad.Apps.App`
 project:
 
 ```

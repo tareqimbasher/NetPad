@@ -1,20 +1,28 @@
-name: build
+name: "Build"
 
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feat/*
   pull_request:
     branches: [ main ]
-  
-  # Allows running this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   app:
-    runs-on: ubuntu-latest
+    name: ".NET App"
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: ./src
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, windows-2022, macos-11 ]
 
     steps:
       - name: 🚚 Checkout latest
@@ -35,6 +43,7 @@ jobs:
         run: dotnet test --no-build --verbosity normal
   
   spa:
+    name: "SPA App"
     runs-on: ubuntu-latest
     defaults:
       run:
