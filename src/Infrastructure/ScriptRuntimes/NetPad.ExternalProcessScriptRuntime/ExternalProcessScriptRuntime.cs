@@ -108,58 +108,16 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             processRootFolder.Create();
 
-            var fileSafeScriptName = StringUtils.RemoveInvalidFileNameCharacters(_script.Name, "_").Replace(" ", "_");
-            FilePath scriptAssemblyFilePath = Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.dll");
-
-            await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, runDependencies.ScriptAssemblyBytes);
-
-            const string runtimeConfigFileTemplate = @"{{
-    ""runtimeOptions"": {{
-        ""framework"": {{
-            ""name"": ""Microsoft.NETCore.App"",
-            ""version"": ""6.0.0""
-        }},
-        ""rollForward"": ""Minor"",
-        ""additionalProbingPaths"": {0}
-    }}
-}}";
-            var runtimeConfigFileContents = string.Format(
-                runtimeConfigFileTemplate,
-                JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
-            );
-
-            await File.WriteAllTextAsync(
-                Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
-                runtimeConfigFileContents
-            );
-
-            foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
-            {
-                var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
-
-                await File.WriteAllBytesAsync(Path.Combine(processRootFolder.FullName, fileName), referenceAssemblyImage.Image);
-            }
-
-            foreach (var referenceAssemblyPath in runDependencies.AssemblyPathDependencies)
-            {
-                // HACK: Needed to fix MS Build issue not copying the correct SqlClient assembly to output dir
-                bool overwrite = Path.GetFileName(referenceAssemblyPath) != "Microsoft.Data.SqlClient.dll";
-
-                var destPath = Path.Combine(processRootFolder.FullName, Path.GetFileName(referenceAssemblyPath));
-
-                // Aside from checking the overwrite flag here, checking file exists means that the first assembly
-                // in the list of paths will win. Later assemblies with the same file name will not be copied to the
-                // output directory.
-                if (overwrite || !File.Exists(destPath))
-                    File.Copy(referenceAssemblyPath, destPath, true);
-            }
+            var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(processRootFolder, runDependencies);
 
             // TODO optimize this section
-            _processHandler = new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
+            _processHandler =
+                new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async (output) =>
             {
-                _logger.LogDebug("Script output received. Length: {OutputLength}", (output?.Length.ToString() ?? "null"));
+                _logger.LogDebug("Script output received. Length: {OutputLength}",
+                    (output?.Length.ToString() ?? "null"));
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
 
@@ -167,7 +125,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     try
                     {
-                        externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                        externalProcessOutput =
+                            JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
                     }
                     catch
                     {
@@ -183,13 +142,17 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql && _outputAdapter.SqlChannel != null)
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql &&
+                         _outputAdapter.SqlChannel != null)
                 {
                     await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) =>
+            {
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
+            });
 
             var start = DateTime.Now;
 
@@ -206,7 +169,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             var elapsed = (DateTime.Now - start).TotalMilliseconds;
 
-            _logger.LogDebug("Script run completed with exit code: {ExitCode}. Duration: {Duration} ms", exitCode, elapsed);
+            _logger.LogDebug("Script run completed with exit code: {ExitCode}. Duration: {Duration} ms", exitCode,
+                elapsed);
 
             return exitCode == 0
                 ? RunResult.Success(elapsed)
@@ -218,6 +182,65 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
             return RunResult.RunAttemptFailure();
         }
+    }
+
+    private async Task<FilePath> SetupExternalProcessFolderAsync(DirectoryInfo processRootFolder, RunDependencies runDependencies)
+    {
+        var fileSafeScriptName = StringUtils.RemoveInvalidFileNameCharacters(_script.Name, "_").Replace(" ", "_");
+        FilePath scriptAssemblyFilePath = Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.dll");
+
+        await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, runDependencies.ScriptAssemblyBytes);
+
+        const string runtimeConfigFileTemplate = @"{{
+    ""runtimeOptions"": {{
+        ""framework"": {{
+            ""name"": ""Microsoft.NETCore.App"",
+            ""version"": ""6.0.0""
+        }},
+        ""rollForward"": ""Minor"",
+        ""additionalProbingPaths"": {0}
+    }}
+}}";
+        var runtimeConfigFileContents = string.Format(
+            runtimeConfigFileTemplate,
+            JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
+        );
+
+        await File.WriteAllTextAsync(
+            Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
+            runtimeConfigFileContents
+        );
+
+        foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
+        {
+            var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
+
+            await File.WriteAllBytesAsync(Path.Combine(processRootFolder.FullName, fileName),
+                referenceAssemblyImage.Image);
+        }
+
+        foreach (var referenceAssemblyPath in runDependencies.AssemblyPathDependencies)
+        {
+            var destPath = Path.Combine(processRootFolder.FullName, Path.GetFileName(referenceAssemblyPath));
+
+            // Checking file exists means that the first assembly in the list of paths will win.
+            // Later assemblies with the same file name will not be copied to the output directory.
+            if (!File.Exists(destPath))
+                File.Copy(referenceAssemblyPath, destPath, true);
+        }
+
+        foreach (var asset in runDependencies.Assets)
+        {
+            if (!asset.CopyFrom.Exists())
+            {
+                continue;
+            }
+
+            var copyTo = Path.Combine(processRootFolder.FullName, asset.CopyTo.Path);
+            File.Copy(asset.CopyFrom.Path, copyTo, overwrite: true);
+        }
+
+        return scriptAssemblyFilePath;
     }
 
     public Task StopScriptAsync()
@@ -309,7 +332,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         return new RunDependencies(
             compilationResult.AssemblyBytes,
             referenceAssemblyImages,
-            referenceAssemblyPaths
+            referenceAssemblyPaths,
+            runOptions.Assets
         );
     }
 
@@ -347,5 +371,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private record RunDependencies(
         byte[] ScriptAssemblyBytes,
         HashSet<AssemblyImage> AssemblyImageDependencies,
-        HashSet<string> AssemblyPathDependencies);
+        HashSet<string> AssemblyPathDependencies,
+        HashSet<RunAsset> Assets);
 }

@@ -79,6 +79,9 @@ const electronBuilderConfig = {
         icon: "../../../wwwroot/favicon.ico",
         target: [
             {
+                target: "dir"
+            },
+            {
                 target: "portable"
             },
             {

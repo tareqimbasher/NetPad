@@ -15,10 +15,7 @@ public class RunOptionsDto
     {
         AdditionalCode ??= Array.Empty<SourceCodeDto>();
 
-        var runOptions = new RunOptions()
-        {
-            SpecificCodeToRun = SpecificCodeToRun
-        };
+        var runOptions = new RunOptions(SpecificCodeToRun);
 
         runOptions.AdditionalCode.AddRange(AdditionalCode.Select(c => new SourceCode(c.Code, c.Usings)));
 
