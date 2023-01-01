@@ -30,7 +30,7 @@ export abstract class SearchImplementation {
                 && SearchImplementation.hasSemiColonAfter(htmlSource, index)) continue;
 
             searchTextFoundAtIndexes.push(index);
-        } while (index < 0)
+        } while (index >= 0)
 
         return searchTextFoundAtIndexes;
     }
