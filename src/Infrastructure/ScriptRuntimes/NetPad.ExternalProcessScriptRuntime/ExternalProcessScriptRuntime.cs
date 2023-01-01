@@ -50,7 +50,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _packageProvider = packageProvider;
         _logger = logger;
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
-        _externalProcessSpawnRoot = Settings.TempFolderPath.Combine("processes", _script.Id.ToString()).GetInfo();
+        _externalProcessSpawnRoot = AppDataProvider.ExternalProcessesDirectoryPath.Combine(_script.Id.ToString()).GetInfo();
 
         // Used to forward output sent to the main _outputAdapter to any configured external output adapters
         void ForwardToExternalAdapters<TScriptOutput>(
@@ -92,14 +92,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     {
         _logger.LogDebug("Starting to run script");
 
+        var processRootFolder = _externalProcessSpawnRoot;
+
         try
         {
             var runDependencies = await GetRunDependencies(runOptions);
 
             if (runDependencies == null)
                 return RunResult.RunAttemptFailure();
-
-            var processRootFolder = _externalProcessSpawnRoot;
 
             if (processRootFolder.Exists)
             {
@@ -149,10 +149,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) =>
-            {
-                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
-            });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
 
             var start = DateTime.Now;
 
@@ -181,6 +178,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             _logger.LogError(ex, "Error running script");
             await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
             return RunResult.RunAttemptFailure();
+        }
+        finally
+        {
+            if (processRootFolder.Exists) processRootFolder.Delete(recursive: true);
         }
     }
 

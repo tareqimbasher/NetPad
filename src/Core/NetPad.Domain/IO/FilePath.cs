@@ -5,9 +5,11 @@ using NetPad.Utilities;
 
 namespace NetPad.IO;
 
-public record DirectoryPath
+public abstract record AbsolutePath
 {
-    public DirectoryPath(string path) =>
+    public string Path { get; }
+
+    public AbsolutePath(string path) =>
         Path =
             string.IsNullOrWhiteSpace(path)
                 ? throw new ArgumentException("path cannot be null or empty")
@@ -15,10 +17,13 @@ public record DirectoryPath
                     ? throw new ArgumentException("Path contains illegal characters")
                     : System.IO.Path.GetFullPath(path.Trim());
 
-    public string Path { get; }
-
     public override string ToString() => Path;
+    public abstract bool Exists();
+    public abstract void DeleteIfExists();
+}
 
+public record DirectoryPath(string Path) : AbsolutePath(Path)
+{
     public virtual bool Equals(DirectoryPath? other) =>
         Path.Equals(other?.Path,
             PlatformUtils.IsWindowsPlatform()
@@ -34,24 +39,17 @@ public record DirectoryPath
     public DirectoryPath Combine(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
     public FilePath CombineFilePath(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
 
-    public bool Exists() => Directory.Exists(Path);
+    public override bool Exists() => Directory.Exists(Path);
+
+    public override void DeleteIfExists()
+    {
+        var dir = GetInfo();
+        if (dir.Exists) dir.Delete(recursive: true);
+    }
 }
 
-public record FilePath
+public record FilePath(string Path) : AbsolutePath(Path)
 {
-
-    public FilePath(string path) =>
-        Path =
-            string.IsNullOrWhiteSpace(path)
-                ? throw new ArgumentException("path cannot be null or empty")
-                : System.IO.Path.GetInvalidPathChars().Intersect(path).Any() || System.IO.Path.GetInvalidFileNameChars().Intersect(System.IO.Path.GetFileName(path)).Any()
-                    ? throw new ArgumentException($"Path {path} contains illegal characters")
-                    : System.IO.Path.GetFullPath(path.Trim());
-
-    public string Path { get; }
-
-    public override string ToString() => Path;
-
     public virtual bool Equals(FilePath? other) =>
         Path.Equals(other?.Path,
             PlatformUtils.IsWindowsPlatform()
@@ -66,7 +64,13 @@ public record FilePath
 
     public FilePath Combine(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
 
-    public bool Exists() => File.Exists(Path);
+    public override bool Exists() => File.Exists(Path);
+
+    public override void DeleteIfExists()
+    {
+        var file = GetInfo();
+        if (file.Exists) file.Delete();
+    }
 }
 
 public record RelativePath

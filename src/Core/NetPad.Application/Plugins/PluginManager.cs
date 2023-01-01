@@ -16,6 +16,8 @@ public class PluginManager : IPluginManager
         _pluginInitialization = pluginInitialization;
     }
 
+    public IEnumerable<PluginRegistration> PluginRegistrations => _pluginRegistrations.Values;
+
     public PluginRegistration RegisterPlugin(Assembly assembly, IServiceCollection services)
     {
         var pluginTypes = assembly.GetExportedTypes().Where(t => t.IsClass && typeof(IPlugin).IsAssignableFrom(t)).ToArray();

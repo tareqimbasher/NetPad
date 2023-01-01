@@ -1,29 +1,11 @@
 using System;
-using System.IO;
 using System.Text.Json.Serialization;
-using NetPad.Application;
-using NetPad.IO;
 
 namespace NetPad.Configuration
 {
     public class Settings : ISettingsOptions
     {
         public const string LatestSettingsVersion = "1.0";
-
-        /// <summary>
-        /// Path of NetPad's local data directory.
-        /// </summary>
-        public static readonly DirectoryPath AppDataFolderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "NetPad");
-
-        /// <summary>
-        /// Path of where the app stores logs.
-        /// </summary>
-        public static readonly DirectoryPath LogFolderPath = Path.Combine(AppDataFolderPath.Path, "Logs");
-
-        public static readonly DirectoryPath TempFolderPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
-
 
         public Settings()
         {
@@ -124,21 +106,13 @@ namespace NetPad.Configuration
                 Version = Version.Parse(LatestSettingsVersion);
 
             if (string.IsNullOrWhiteSpace(ScriptsDirectoryPath))
-                ScriptsDirectoryPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    "Documents",
-                    "NetPad",
-                    "Scripts");
+                ScriptsDirectoryPath = AppDataProvider.Defaults.ScriptsDirectoryPath.Path;
 
             if (string.IsNullOrWhiteSpace(AutoSaveScriptsDirectoryPath))
-                AutoSaveScriptsDirectoryPath = Path.Combine(AppDataFolderPath.Path,
-                    "AutoSave",
-                    "Scripts");
+                AutoSaveScriptsDirectoryPath = AppDataProvider.Defaults.AutoSaveScriptsDirectoryPath.Path;
 
             if (string.IsNullOrWhiteSpace(PackageCacheDirectoryPath))
-                PackageCacheDirectoryPath = Path.Combine(AppDataFolderPath.Path,
-                    "Cache",
-                    "Packages");
+                PackageCacheDirectoryPath = AppDataProvider.Defaults.PackageCacheDirectoryPath.Path;
 
             (Appearance ??= new AppearanceOptions()).DefaultMissingValues();
             (Editor ??= new EditorOptions()).DefaultMissingValues();

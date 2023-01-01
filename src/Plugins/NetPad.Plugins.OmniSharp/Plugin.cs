@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using NetPad.Configuration;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
 using NetPad.Plugins.OmniSharp.Services;
 using OmniSharp;
@@ -33,5 +34,11 @@ public class Plugin : IPlugin
 
     public void Configure(IApplicationBuilder app, IHostEnvironment env)
     {
+    }
+
+    public Task CleaupAsync()
+    {
+        Consts.OmniSharpServerProcessesDirectoryPath.DeleteIfExists();
+        return Task.CompletedTask;
     }
 }

@@ -25,4 +25,9 @@ public interface IPlugin
     /// Configure application.
     /// </summary>
     void Configure(IApplicationBuilder app, IHostEnvironment env);
+
+    /// <summary>
+    /// Invokes any cleanup the plugins needs to make.
+    /// </summary>
+    Task CleaupAsync();
 }

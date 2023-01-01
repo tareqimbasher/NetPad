@@ -53,7 +53,7 @@ namespace NetPad
 
         private static void ConfigureLogging(LoggerConfiguration serilogConfig, IConfiguration appConfig)
         {
-            Environment.SetEnvironmentVariable("NETPAD_LOG_DIR", Settings.LogFolderPath.Path);
+            Environment.SetEnvironmentVariable("NETPAD_LOG_DIR", AppDataProvider.LogDirectoryPath.Path);
 
             serilogConfig.ReadFrom.Configuration(appConfig);
         }

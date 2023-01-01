@@ -17,7 +17,7 @@ public class ScriptProject : DotNetCSharpProject
         Settings settings,
         ILogger<ScriptProject> logger)
         : base(
-            Settings.TempFolderPath.Combine("OmniSharp", script.Id.ToString()).Path,
+            Consts.OmniSharpServerProcessesDirectoryPath.Combine(script.Id.ToString()).Path,
             "script.csproj",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet")
         )

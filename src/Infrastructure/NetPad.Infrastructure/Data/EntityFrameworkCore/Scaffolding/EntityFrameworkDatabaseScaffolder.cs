@@ -40,7 +40,7 @@ public class EntityFrameworkDatabaseScaffolder
         _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
         _logger = logger;
         _project = new DotNetCSharpProject(
-            Settings.TempFolderPath.Combine( "TypedContexts", connection.Id.ToString()).Path,
+            AppDataProvider.TypedContextsDirectoryPath.Combine(connection.Id.ToString()).Path,
             projectFileName: "database",
             packageCacheDirectoryPath: Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
 

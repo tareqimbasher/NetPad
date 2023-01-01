@@ -7,6 +7,7 @@ namespace NetPad.Plugins;
 
 public interface IPluginManager
 {
+    IEnumerable<PluginRegistration> PluginRegistrations { get; }
     PluginRegistration RegisterPlugin(Assembly assembly, IServiceCollection services);
     void ConfigurePlugins(IApplicationBuilder app, IHostEnvironment env);
 }

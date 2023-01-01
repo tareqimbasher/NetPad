@@ -16,7 +16,7 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
     public FileSystemDataConnectionRepository(Settings settings)
     {
         _settings = settings;
-        _connectionsFilePath = Path.Combine(Settings.AppDataFolderPath.Path, "data-connections.json");
+        _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
     }
 
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
