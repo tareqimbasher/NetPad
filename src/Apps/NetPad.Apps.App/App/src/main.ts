@@ -1,13 +1,4 @@
-import Aurelia, {
-    AppTask,
-    ColorOptions,
-    ConsoleSink,
-    IContainer,
-    ILogger,
-    LoggerConfiguration,
-    LogLevel,
-    Registration
-} from 'aurelia';
+import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import {
@@ -22,6 +13,7 @@ import {
     SettingService
 } from "@domain";
 import {
+    ConsoleLogSink,
     ContextMenu,
     DateTimeValueConverter,
     Env,
@@ -29,6 +21,7 @@ import {
     ExternalLinkCustomAttribute,
     FindTextBox,
     IWindowBootstrapperConstructor,
+    LogConfig,
     PlatformsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
@@ -44,7 +37,7 @@ import {WebApp} from "@application/apps/web-app";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
-// Register common dependencies
+// Register common dependencies shared for all windows
 const app = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, startupOptions),
@@ -56,10 +49,17 @@ const app = Aurelia.register(
     Registration.singleton(ISettingService, SettingService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.transient(IBackgroundService, SettingsBackgroundService),
-    LoggerConfiguration.create({
+    LogConfig.register({
         colorOptions: ColorOptions.colors,
         level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
-        sinks: Env.RemoteLoggingEnabled ? [ConsoleSink, RemoteLogSink] : [ConsoleSink],
+        sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
+        rules: [
+            {
+                // Suppress Aurelia's own debug messages when evaluating HTML case expressions
+                loggerRegex: new RegExp("^Case-#"),
+                logLevel: LogLevel.none
+            }
+        ]
     }),
 
     // Custom Attributes
@@ -78,7 +78,7 @@ const app = Aurelia.register(
     ContextMenu,
     FindTextBox,
 
-    // Tasks
+    // Tasks that run before the app is activated
     AppTask.beforeActivate(IContainer, async container => {
         const backgroundServices = container.getAll(IBackgroundService);
 
@@ -104,23 +104,23 @@ const settings = await app.container.get(ISettingService).get();
 app.container.get(Settings).init(settings.toJSON());
 
 // Determine which window we need to bootstrap and use
-let winOpt = startupOptions.get("win");
-if (!winOpt && !Env.isRunningInElectron())
-    winOpt = "main";
+let windowName = startupOptions.get("win");
+if (!windowName && !Env.isRunningInElectron())
+    windowName = "main";
 
 let bootstrapperCtor: IWindowBootstrapperConstructor;
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-if (winOpt === "main")
+if (windowName === "main")
     bootstrapperCtor = require("./windows/main/main").Bootstrapper;
-else if (winOpt === "settings")
+else if (windowName === "settings")
     bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
-else if (winOpt === "script-config")
+else if (windowName === "script-config")
     bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
-else if (winOpt === "data-connection")
+else if (windowName === "data-connection")
     bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
 else
-    throw new Error(`Unrecognized window: ${winOpt}`);
+    throw new Error(`Unrecognized window: ${windowName}`);
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));

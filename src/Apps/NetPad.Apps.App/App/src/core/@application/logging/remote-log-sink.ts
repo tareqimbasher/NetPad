@@ -1,13 +1,14 @@
-﻿import {ISink, ILogEvent, DefaultLogEvent} from "@aurelia/kernel";
+﻿import {DefaultLogEvent, ILogEvent, ISink} from "@aurelia/kernel";
 import {IAppService, LogLevel, RemoteLogMessage} from "@domain";
 import {BufferedQueue} from "@common";
 import {Env} from "@application/env";
+import {LogConfig} from "./log-config";
 
 export class RemoteLogSink implements ISink {
     public readonly handleEvent: (event: ILogEvent) => void;
     private queue: BufferedQueue<RemoteLogMessage>;
 
-    constructor(@IAppService appService: IAppService) {
+    constructor(@IAppService appService: IAppService, logConfig: LogConfig) {
 
         this.queue = new BufferedQueue<RemoteLogMessage>({
             flushOnSize: 10,
@@ -15,10 +16,14 @@ export class RemoteLogSink implements ISink {
             onFlush: async (items: RemoteLogMessage[]) => {
                 await appService.sendRemoteLog(Env.isRunningInElectron() ? "ElectronApp" : "WebApp", items);
             }
-        })
+        });
 
         this.handleEvent = (event) => {
-            const now = new Date;
+            const now = new Date();
+
+            logConfig.applyRules(event);
+
+            if (event.severity === 6) return;
 
             const msg = event.toString();
             const details: string[] = [];
@@ -64,8 +69,6 @@ export class RemoteLogSink implements ISink {
                 return "Error";
             case 5:
                 return "Critical";
-            case 6:
-                return "None";
             default:
                 return "None";
         }
