@@ -17,7 +17,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     public bound() {
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
-            ".null, .property-value, .property-name, .group.text");
+            ".null, .property-value, .property-name, .text");
     }
 
     protected appendOutput(output: HtmlScriptOutput) {

@@ -13,15 +13,8 @@ public static class HtmlSerializer
 
     public static string Serialize(object? output, string? title = null)
     {
-        var group = new Element("div").WithAddClass("group");
-
-        if (title != null)
-        {
-            group.WithAddClass("titled")
-                .AddAndGetElement("h6")
-                .WithAddClass("title")
-                .AddText(title);
-        }
+        bool titled = title != null;
+        bool outputIsException = output is Exception;
 
         Node node;
 
@@ -32,13 +25,34 @@ public static class HtmlSerializer
         catch (Exception ex)
         {
             node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
+            outputIsException = true;
         }
 
-        if (node is TextNode || (node is Element element && element.Children.All(c => c.Type == NodeType.Text)))
-            group.WithAddClass("text");
+        bool outputIsAllText = node is TextNode || (node is Element element && element.Children.All(c => c.Type == NodeType.Text));
 
-        if (output is Exception)
+        var group = new Element("div").WithAddClass("group");
+
+        if (outputIsException)
+        {
             group.WithAddClass("error");
+        }
+
+        if (titled)
+        {
+            group.WithAddClass("titled")
+                .AddAndGetElement("h6")
+                .WithAddClass("title")
+                .AddText(title);
+
+            if (outputIsAllText)
+            {
+                node = new Element("span").WithAddClass("text").WithChild(node);
+            }
+        }
+        else if (outputIsAllText)
+        {
+            group.WithAddClass("text");
+        }
 
         group.AddChild(node);
 
