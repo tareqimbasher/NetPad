@@ -31,7 +31,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public binding() {
-        this.dataConnectionContextOptions = new ContextMenuOptions(".list-group-item.data-connection", [
+        this.dataConnectionContextOptions = new ContextMenuOptions("data-connection-name", [
             {
                 icon: "use-data-connection-current-script-icon",
                 text: "Use in Current Script",
@@ -171,7 +171,8 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async addConnection() {
-        await this.dataConnectionService.openDataConnectionWindow(null);
+        this.dataConnectionViewModels.push(this.dataConnectionViewModels[3]);
+        // await this.dataConnectionService.openDataConnectionWindow(null);
     }
 
     public async editConnection(connectionId: string) {

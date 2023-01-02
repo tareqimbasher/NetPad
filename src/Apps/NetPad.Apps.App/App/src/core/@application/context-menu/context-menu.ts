@@ -106,24 +106,25 @@ export class ContextMenu extends ViewModelBase {
 
         const mutationHandler = (mutations: MutationRecord[], observer: MutationObserver) => {
             for (const mutation of mutations) {
-                for (const addedNode of Array.from(mutation.addedNodes).map(n => n as Element)) {
-                    if (addedNode && !!addedNode.matches && !this.contextClickTargets.has(addedNode)) {
-                        const clickTargets = this.findClickTargets(addedNode);
-                        for (const clickTarget of clickTargets) {
-                            this.contextClickTargets.add(clickTarget);
-                            this.logger.debug(`Added element with selector '${this.options.selector}' to click targets`);
-                        }
-                    }
+                if (mutation.type !== "childList") continue;
+
+                // Check mutation target if it should be added/removed to click targets
+                if (mutation.addedNodes.length > 0 && mutation.removedNodes.length === 0) {
+                    const target = mutation.target as Element;
+                    this.addClickTargets(target);
+                } else if (mutation.removedNodes.length > 0 && mutation.addedNodes.length === 0) {
+                    const target = mutation.target as Element;
+                    this.removeClickTargets(target);
                 }
 
+                // Check added nodes if they should be added to click targets
+                for (const addedNode of Array.from(mutation.addedNodes).map(n => n as Element)) {
+                    this.addClickTargets(addedNode);
+                }
+
+                // Check removed nodes if they should be removed from click targets
                 for (const removedNode of Array.from(mutation.removedNodes).map(n => n as Element)) {
-                    if (removedNode && !!removedNode.matches) {
-                        const clickTargets = this.findClickTargets(removedNode);
-                        for (const clickTarget of clickTargets) {
-                            this.contextClickTargets.delete(clickTarget);
-                            this.logger.debug(`Removed element with selector '${this.options.selector}' from click targets`);
-                        }
-                    }
+                    this.removeClickTargets(removedNode);
                 }
             }
         };
@@ -132,13 +133,32 @@ export class ContextMenu extends ViewModelBase {
         this.disposables.push(() => mutationObserverSubscriptionToken.dispose());
     }
 
+    private addClickTargets(element: Element) {
+        if (!element || !element.matches || this.contextClickTargets.has(element)) return;
+
+        const clickTargets = this.findClickTargets(element);
+        for (const clickTarget of clickTargets) {
+            this.contextClickTargets.add(clickTarget);
+            this.logger.debug(`Added element with selector '${this.options.selector}' to click targets`);
+        }
+    }
+
+    private removeClickTargets(element: Element) {
+        if (!element || !element.matches) return;
+
+        const clickTargets = this.findClickTargets(element);
+        for (const clickTarget of clickTargets) {
+            this.contextClickTargets.delete(clickTarget);
+            this.logger.debug(`Removed element with selector '${this.options.selector}' from click targets`);
+        }
+    }
+
     private findClickTargets(element: Element): Element[] {
         const matches: Element[] = [];
 
         if (element.matches(this.options.selector)) {
             matches.push(element);
-        }
-        else {
+        } else {
             const childMatches = Array.from(element.children).filter(x => x.matches(this.options.selector));
             if (childMatches.length > 0) {
                 for (const match of childMatches) {
