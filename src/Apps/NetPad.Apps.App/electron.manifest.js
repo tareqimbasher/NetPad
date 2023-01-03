@@ -41,9 +41,9 @@ const electronBuilderConfig = {
     //     afterInstall: "bin/res/install-mime.sh"
     // },
     linux: {
-        category: "Development;IDE;Building;Database;TextEditor;",
+        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
         icon: "../../../wwwroot/logo/circle/",
-        artifactName: "${name}-${arch}-${version}.${ext}",
+        category: "Development;IDE;Building;Database;TextEditor;",
         desktop: {
             Type: "Application",
             Name: "NetPad",
@@ -55,9 +55,6 @@ const electronBuilderConfig = {
         },
         target: [
             {
-                target: "dir"
-            },
-            {
                 target: "pacman",
             },
             {
@@ -68,7 +65,10 @@ const electronBuilderConfig = {
             },
             {
                 target: "rpm",
-            }
+            },
+            {
+                target: "zip",
+            },
         ]
     },
     nsis: {
@@ -76,27 +76,27 @@ const electronBuilderConfig = {
         allowToChangeInstallationDirectory: true
     },
     win: {
+        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
         icon: "../../../wwwroot/favicon.ico",
         target: [
             {
-                target: "dir"
-            },
-            {
-                target: "portable"
-            },
-            {
                 target: "nsis"
+            },
+            {
+                target: "zip"
             }
+
         ]
     },
     mac: {
+        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
         category: "public.app-category.developer-tools",
         icon: "../../../wwwroot/logo/circle/logo.icns",
         darkModeSupport: true,
         target: [
             {
-                target: "dir"
-            },
+                target: "zip"
+            }
         ]
     }
 }
@@ -118,9 +118,8 @@ const electronNetConfig = {
     splashscreen: {
         imageFile: "./wwwroot/logo/square/256x256.png"
     },
-    singleInstance: false,
-    aspCoreBackendPort: 50900,
-    electronPort: 50901,
+    singleInstance: true,
+    electronPort: 57931,
     build: electronBuilderConfig
 };
 

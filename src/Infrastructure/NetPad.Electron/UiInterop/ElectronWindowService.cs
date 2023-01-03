@@ -145,6 +145,8 @@ namespace NetPad.Electron.UiInterop
                 window.OnClosed += () => _singleInstanceWindows.Remove(windowName);
             }
 
+            await window.WebContents.Session.ClearCacheAsync();
+
             return window;
         }
 

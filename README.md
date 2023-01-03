@@ -19,7 +19,7 @@ open-source, web-enabled, cross-platform alternative.
   to build and run your scripts.
     * The environment variable `DOTNET_ROOT` or `DOTNET_INSTALL_DIR` must be set
       and point to the directory where .NET is installed.
-* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): 
+* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
 
 ## Contribution
@@ -34,7 +34,8 @@ contributions are welcome!
     * Manage namespaces
     * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console
-* Add and use database connections (currently only supports Microsoft SQL Server and PostgreSQL). **This feature is in early release.**
+* Add and use database connections (currently only supports Microsoft SQL Server
+  and PostgreSQL). **This feature is in early release.**
 * Auto-save: If you close NetPad, it will auto-save your changes and
   restore them the next time you fire it up
 * Add NuGet packages
@@ -77,9 +78,13 @@ contributions are welcome!
 
 When the Electron app is started, it launches an ASP.NET Core backend that
 serves the Aurelia SPA app. Communication between the SPA and ASP.NET Core
-backend occurs via REST API calls and Electron's IPC protocol.
+backend occurs via REST API calls and SignalR.
 
 ## Development
+
+This section describes how to build and run NetPad from source.
+NetPad can be run as an Electron desktop app or as a web application
+accessed with a web browser.
 
 ### Requirements
 
@@ -89,12 +94,7 @@ backend occurs via REST API calls and Electron's IPC protocol.
   development tool, currently, needs this to run.
 * EF Core tools 6.x
 
-### Building & Running the app from source
-
-NetPad can be run as a desktop app, via Electron, or as a web application
-accessed with a web browser.
-
-#### NetPad as a Desktop app
+### NetPad as a Desktop app
 
 #### 1. Run the SPA
 
@@ -109,29 +109,29 @@ npm start
 
 #### 2. Run the .NET app
 
-The first time you run the Electron version of NetPad:
+Install the Electron.NET CLI tool:
 
 ```
-# Install the Electron.NET CLI tool
 dotnet tool install ElectronNET.CLI -g
 ```
 
-Then:
+Start the app:
 
 ```
-# Start the app in watch mode
 cd Apps/NetPad.Apps.App
+
+# Start in watch mode
 electronize start /watch /manifest electron.manifest.js
 
-# Or to start the app without watch mode
+# OR without watch mode
 electronize start /manifest electron.manifest.js /PublishSingleFile false
 ```
 
 ###### Note
 
-> Only the first electronize start is slow. Later runs are much faster.
+> Only the first `electronize start` is slow. Later runs are much faster.
 
-#### NetPad as a Web app (accessed from a browser)
+### NetPad as a Web app (accessed from a browser)
 
 #### 1. Run the SPA
 
@@ -155,16 +155,24 @@ and access the app via your web browser, ex: `http://localhost:5010`
 
 ## Packaging :package:
 
-The app is built and packaged
-using [electron-builder](https://www.electron.build/). Build the app for the
-desired platform from the root directory of `NetPad.Apps.App`
-project:
+The Electron app is built and packaged using
+[electron-builder](https://www.electron.build/). Configuration is in
+the `electron.manifest.js` file.
+
+Build the app for the desired platform from the root directory
+of the `NetPad.Apps.App` project:
 
 ```
 electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
 electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
 electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
 ```
+
+Packaged files can be found in the `bin/Desktop` folder.
+
+On Linux, the `scripts/package-electron.sh` script can be used to package
+the Electron app, in which case packaged files can be found in the `dist/`
+folder.
 
 See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
 for additional CLI options when packaging the app,

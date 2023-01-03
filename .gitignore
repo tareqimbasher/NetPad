@@ -348,3 +348,4 @@ src/Apps/Web/Blink.Apps.WebApp/global.json
 NuGetScratch/
 VBCSCompiler/
 .dotnet/
+dist/

@@ -74,7 +74,6 @@ class Program
 {
     static void Main()
     {
-        // MainMethodBodyPlaceholder
     }
 }");
 

@@ -171,8 +171,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async addConnection() {
-        this.dataConnectionViewModels.push(this.dataConnectionViewModels[3]);
-        // await this.dataConnectionService.openDataConnectionWindow(null);
+        await this.dataConnectionService.openDataConnectionWindow(null);
     }
 
     public async editConnection(connectionId: string) {
