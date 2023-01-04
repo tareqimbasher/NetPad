@@ -21,6 +21,11 @@ public class HtmlSerializerSettings
     /// If true, will not serialize empty collections that are not the root object being serialized. Default is false.
     /// </summary>
     public bool DoNotSerializeNonRootEmptyCollections { get; set; }
+
+    /// <summary>
+    /// If set, only this number of items will be serialized when serializing IQueryable collections.
+    /// </summary>
+    public int? MaxIQueryableSerializeLength { get; set; }
 }
 
 public class CssClasses

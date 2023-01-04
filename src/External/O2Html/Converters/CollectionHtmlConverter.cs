@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -22,8 +23,7 @@ public class CollectionHtmlConverter : HtmlConverter
             return;
         }
 
-        var enumerable = ToEnumerable(obj);
-        var result = WriteHtmlPrivate(enumerable, type, serializationScope, htmlSerializer);
+        var result = WriteHtmlPrivate(obj, type, serializationScope, htmlSerializer);
 
         if (!htmlSerializer.SerializerSettings.DoNotSerializeNonRootEmptyCollections || result.collectionLength != 0)
         {
@@ -59,13 +59,16 @@ public class CollectionHtmlConverter : HtmlConverter
                 throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
         }
 
-        var collection = ToEnumerable(obj);
-
         Type elementType = htmlSerializer.GetElementType(type) ?? typeof(object);
 
         var table = new Table();
 
         int collectionLength = 0;
+
+        var enumerable = ToEnumerable(obj);
+        var collection = htmlSerializer.SerializerSettings.MaxIQueryableSerializeLength >= 0 && obj is IQueryable
+            ? enumerable.Cast<object?>().AsQueryable().Take(1000)
+            : enumerable;
 
         foreach (var item in collection)
         {
