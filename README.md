@@ -5,7 +5,10 @@ A cross-platform C# editor and playground.
 [![build](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml)
 [![CodeQL](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml)
 
-![preview-main](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main.png?raw=true)
+|                                                  Dark                                                   |                                                  Light                                                   |
+|:-------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------:|
+|    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-dark.png?raw=true)    |    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-light.png?raw=true)    |
+| ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-sql-output-dark.png?raw=true) | ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-sql-output-light.png?raw=true) |
 
 ## Motivation
 
@@ -53,21 +56,26 @@ contributions are welcome!
 
 ## Roadmap :construction:
 
+* Debugger
 * Add support for more database providers
-* More OmniSharp integrations:
-    * Code fix suggestions
-    * Format selection
-    * Format as you type
-    * Go-to definition
-    * Go-to symbol
-    * Rename symbol
-    * ...and more
-* Workspaces/Sessions
-* More results console features:
+* Quality of Life:
     * Support for more complex objects in the results console, ex: Dumping
       images
     * Exporting results to different file formats, or to the clipboard
-    * CTRL-F to find text
+    * Change results styling
+    * Pop-out results into own window
+    * Change max result set length when dumping Entity Framework IQueryable
+      collections (default is 1000 items)
+    * Ability to use Console.Read() to ask for input
+    * Workspaces/Sessions
+* More OmniSharp integrations:
+  * Code fix suggestions
+  * Format selection
+  * Format as you type
+  * Go-to definition
+  * Go-to symbol
+  * Rename symbol
+  * ...and more
 * Plugins
 
 ## Tech Stack :computer:
