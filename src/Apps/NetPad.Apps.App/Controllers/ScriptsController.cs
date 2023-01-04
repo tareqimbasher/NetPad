@@ -11,132 +11,134 @@ using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
-namespace NetPad.Controllers
+namespace NetPad.Controllers;
+
+[ApiController]
+[Route("scripts")]
+public class ScriptsController : Controller
 {
-    [ApiController]
-    [Route("scripts")]
-    public class ScriptsController : Controller
+    private readonly IMediator _mediator;
+
+    public ScriptsController(IMediator mediator)
     {
-        private readonly IMediator _mediator;
+        _mediator = mediator;
+    }
 
-        public ScriptsController(IMediator mediator)
+    [HttpGet]
+    public async Task<IEnumerable<ScriptSummary>> GetScripts()
+    {
+        return await _mediator.Send(new GetAllScriptsQuery());
+    }
+
+    [HttpPatch("create")]
+    public async Task Create([FromBody] CreateScriptDto dto, [FromServices] IDataConnectionRepository dataConnectionRepository)
+    {
+        var script = await _mediator.Send(new CreateScriptCommand());
+
+        bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
+        if (hasSeedCode)
         {
-            _mediator = mediator;
+            await _mediator.Send(new UpdateScriptCodeCommand(script, dto.Code));
         }
 
-        [HttpGet]
-        public async Task<IEnumerable<ScriptSummary>> GetScripts()
+        if (dto.DataConnectionId != null)
         {
-            return await _mediator.Send(new GetAllScriptsQuery());
+            var dataConnection = await dataConnectionRepository.GetAsync(dto.DataConnectionId.Value);
+            await _mediator.Send(new SetScriptDataConnectionCommand(script, dataConnection));
         }
 
-        [HttpPatch("create")]
-        public async Task Create([FromBody] CreateScriptDto dto, [FromServices] IDataConnectionRepository dataConnectionRepository)
+        await _mediator.Send(new OpenScriptCommand(script));
+
+        if (hasSeedCode && dto.RunImmediately)
         {
-            var script = await _mediator.Send(new CreateScriptCommand());
+            await _mediator.Send(new RunScriptCommand(script.Id, new RunOptions()));
+        }
+    }
 
-            bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
-            if (hasSeedCode)
-            {
-                await _mediator.Send(new UpdateScriptCodeCommand(script, dto.Code));
-            }
+    [HttpPatch("{id:guid}/save")]
+    public async Task Save(Guid id)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        await _mediator.Send(new SaveScriptCommand(environment.Script));
+    }
 
-            if (dto.DataConnectionId != null)
-            {
-                var dataConnection = await dataConnectionRepository.GetAsync(dto.DataConnectionId.Value);
-                await _mediator.Send(new SetScriptDataConnectionCommand(script, dataConnection));
-            }
+    [HttpPatch("{id:guid}/run")]
+    public async Task Run(Guid id, [FromBody] RunOptionsDto dto)
+    {
+        await _mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
+    }
 
-            await _mediator.Send(new OpenScriptCommand(script));
+    [HttpPatch("{id:guid}/stop")]
+    public async Task Stop(Guid id)
+    {
+        await _mediator.Send(new StopScriptCommand(id));
+    }
 
-            if (hasSeedCode && dto.RunImmediately)
-            {
-                await _mediator.Send(new RunScriptCommand(script.Id, new RunOptions()));
-            }
+    [HttpPut("{id:guid}/code")]
+    public async Task UpdateCode(Guid id, [FromBody] string code)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        await _mediator.Send(new UpdateScriptCodeCommand(environment.Script, code));
+    }
+
+    [HttpPatch("{id:guid}/open-config")]
+    public async Task OpenConfigWindow([FromServices] IUiWindowService uiWindowService, Guid id, [FromQuery] string? tab = null)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        var script = environment.Script;
+        await uiWindowService.OpenScriptConfigWindowAsync(script, tab);
+    }
+
+    [HttpPut("{id:guid}/namespaces")]
+    public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        await _mediator.Send(new UpdateScriptNamespacesCommand(environment.Script, namespaces));
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/references")]
+    public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> newReferences)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        await _mediator.Send(new UpdateScriptReferencesCommand(environment.Script, newReferences));
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/kind")]
+    public async Task<IActionResult> SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        environment.Script.Config.SetKind(scriptKind);
+        return NoContent();
+    }
+
+    [HttpPut]
+    [Route("{id:guid}/data-connection")]
+    public async Task<IActionResult> SetDataConnection(
+        Guid id,
+        [FromQuery] Guid? dataConnectionId,
+        [FromServices] IDataConnectionRepository dataConnectionRepository)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        DataConnection? dataConnection = null;
+        if (dataConnectionId != null)
+        {
+            dataConnection = await dataConnectionRepository.GetAsync(dataConnectionId.Value);
         }
 
-        [HttpPatch("{id:guid}/save")]
-        public async Task Save(Guid id)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-            await _mediator.Send(new SaveScriptCommand(environment.Script));
-        }
+        await _mediator.Send(new SetScriptDataConnectionCommand(environment.Script, dataConnection));
+        return NoContent();
+    }
 
-        [HttpPatch("{id:guid}/run")]
-        public async Task Run(Guid id, [FromBody] RunOptionsDto dto)
-        {
-            await _mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
-        }
-
-        [HttpPatch("{id:guid}/stop")]
-        public async Task Stop(Guid id)
-        {
-            await _mediator.Send(new StopScriptCommand(id));
-        }
-
-        [HttpPut("{id:guid}/code")]
-        public async Task UpdateCode(Guid id, [FromBody] string code)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-            await _mediator.Send(new UpdateScriptCodeCommand(environment.Script, code));
-        }
-
-        [HttpPatch("{id:guid}/open-config")]
-        public async Task OpenConfigWindow([FromServices] IUiWindowService uiWindowService, Guid id, [FromQuery] string? tab = null)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-            var script = environment.Script;
-            await uiWindowService.OpenScriptConfigWindowAsync(script, tab);
-        }
-
-        [HttpPut("{id:guid}/namespaces")]
-        public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-
-            await _mediator.Send(new UpdateScriptNamespacesCommand(environment.Script, namespaces));
-
-            return NoContent();
-        }
-
-        [HttpPut("{id:guid}/references")]
-        public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> newReferences)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-
-            await _mediator.Send(new UpdateScriptReferencesCommand(environment.Script, newReferences));
-
-            return NoContent();
-        }
-
-        [HttpPut("{id:guid}/kind")]
-        public async Task<IActionResult> SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-            environment.Script.Config.SetKind(scriptKind);
-            return NoContent();
-        }
-
-        [HttpPut]
-        [Route("{id:guid}/data-connection")]
-        public async Task<IActionResult> SetDataConnection(Guid id, [FromQuery] Guid? dataConnectionId, [FromServices] IDataConnectionRepository dataConnectionRepository)
-        {
-            var environment = await GetScriptEnvironmentAsync(id);
-
-            DataConnection? dataConnection = null;
-            if (dataConnectionId != null)
-            {
-                dataConnection = await dataConnectionRepository.GetAsync(dataConnectionId.Value);
-            }
-
-            await _mediator.Send(new SetScriptDataConnectionCommand(environment.Script, dataConnection));
-            return NoContent();
-        }
-
-        private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
-        {
-            var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(id, true));
-            return environment!;
-        }
+    private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
+    {
+        var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(id, true));
+        return environment!;
     }
 }

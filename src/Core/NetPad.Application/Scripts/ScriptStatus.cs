@@ -1,10 +1,9 @@
-namespace NetPad.Scripts
+namespace NetPad.Scripts;
+
+public enum ScriptStatus
 {
-    public enum ScriptStatus
-    {
-        Ready = 0,
-        Running = 1,
-        Stopping = 2,
-        Error = 3
-    }
+    Ready = 0,
+    Running = 1,
+    Stopping = 2,
+    Error = 3
 }

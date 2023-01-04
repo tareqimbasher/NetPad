@@ -1,38 +1,36 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
-namespace NetPad.Assemblies
+namespace NetPad.Assemblies;
+
+public class AssemblyInfoReader : IAssemblyInfoReader
 {
-    public class AssemblyInfoReader : IAssemblyInfoReader
+    public HashSet<string> GetNamespaces(byte[] assembly)
     {
-        public HashSet<string> GetNamespaces(byte[] assembly)
+        var namespaces = new HashSet<string>();
+
+        using var stream = new MemoryStream(assembly);
+        using var portableExecutableReader = new PEReader(stream);
+        var metadataReader = portableExecutableReader.GetMetadataReader();
+
+        foreach (var typeDefHandle in metadataReader.TypeDefinitions)
         {
-            var namespaces = new HashSet<string>();
+            var typeDef = metadataReader.GetTypeDefinition(typeDefHandle);
 
-            using var stream = new MemoryStream(assembly);
-            using var portableExecutableReader = new PEReader(stream);
-            var metadataReader = portableExecutableReader.GetMetadataReader();
+            var ns = metadataReader.GetString(typeDef.Namespace);
 
-            foreach (var typeDefHandle in metadataReader.TypeDefinitions)
-            {
-                var typeDef = metadataReader.GetTypeDefinition(typeDefHandle);
+            if (string.IsNullOrWhiteSpace(ns))
+                continue; // If it's namespace is blank, it's not a user-defined type
 
-                var ns = metadataReader.GetString(typeDef.Namespace);
+            if (!typeDef.Attributes.HasFlag(TypeAttributes.Public))
+                continue;
 
-                if (string.IsNullOrWhiteSpace(ns))
-                    continue; // If it's namespace is blank, it's not a user-defined type
-
-                if (!typeDef.Attributes.HasFlag(TypeAttributes.Public))
-                    continue;
-
-                namespaces.Add(ns);
-            }
-
-            return namespaces;
+            namespaces.Add(ns);
         }
+
+        return namespaces;
     }
 }

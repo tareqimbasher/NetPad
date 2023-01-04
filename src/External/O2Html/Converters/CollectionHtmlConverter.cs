@@ -82,7 +82,7 @@ public class CollectionHtmlConverter : HtmlConverter
             var properties = htmlSerializer.GetReadableProperties(elementType);
             foreach (var property in properties)
             {
-                table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(withNamespace: true, forHtml: true))
+                table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true, true))
                     .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
             }
 

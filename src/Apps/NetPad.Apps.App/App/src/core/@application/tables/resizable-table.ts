@@ -1,7 +1,7 @@
 import {IDisposable} from "aurelia";
 
 export class ResizableTable implements IDisposable {
-    private disposables : (() => void)[] = [];
+    private disposables: (() => void)[] = [];
 
     constructor(public table: HTMLTableElement) {
     }

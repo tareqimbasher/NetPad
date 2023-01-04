@@ -4,57 +4,57 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NetPad.Utilities;
 
-namespace NetPad.Common
+namespace NetPad.Common;
+
+public interface INotifyOnPropertyChanged
 {
-    public interface INotifyOnPropertyChanged
+    List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+}
+
+public class PropertyChangedArgs
+{
+    public PropertyChangedArgs(object obj, string propertyName, object? newValue)
     {
-        List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
+        Object = obj;
+        PropertyName = propertyName;
+        NewValue = newValue;
     }
 
-    public class PropertyChangedArgs
+    public object Object { get; set; }
+    public string PropertyName { get; set; }
+    public object? NewValue { get; set; }
+}
+
+public static class INotifyOnPropertyChangedExtensions
+{
+    public static TReturn RaiseAndSetIfChanged<TObject, TReturn>(
+        this TObject obj,
+        ref TReturn backingField,
+        TReturn newValue,
+        [CallerMemberName] string? propertyName = null)
+        where TObject : INotifyOnPropertyChanged
     {
-        public PropertyChangedArgs(object obj, string propertyName, object? newValue)
+        if (propertyName is null)
         {
-            Object = obj;
-            PropertyName = propertyName;
-            NewValue = newValue;
+            throw new ArgumentNullException(nameof(propertyName));
         }
 
-        public object Object { get; set; }
-        public string PropertyName { get; set; }
-        public object? NewValue { get; set; }
-    }
-
-    public static class INotifyOnPropertyChangedExtensions
-    {
-        public static TReturn RaiseAndSetIfChanged<TObject, TReturn>(
-            this TObject obj,
-            ref TReturn backingField,
-            TReturn newValue,
-            [CallerMemberName] string? propertyName = null)
-            where TObject : INotifyOnPropertyChanged
+        if (EqualityComparer<TReturn>.Default.Equals(backingField, newValue))
         {
-            if (propertyName is null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            if (EqualityComparer<TReturn>.Default.Equals(backingField, newValue))
-            {
-                return newValue;
-            }
-
-            backingField = newValue;
-            foreach (var handler in obj.OnPropertyChanged)
-            {
-                AsyncHelpers.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, newValue)));
-            }
             return newValue;
         }
 
-        public static void RemoveAllPropertyChangedHandlers<TObject>(this TObject obj) where TObject : INotifyOnPropertyChanged
+        backingField = newValue;
+        foreach (var handler in obj.OnPropertyChanged)
         {
-            obj.OnPropertyChanged?.Clear();
+            AsyncHelpers.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, newValue)));
         }
+
+        return newValue;
+    }
+
+    public static void RemoveAllPropertyChangedHandlers<TObject>(this TObject obj) where TObject : INotifyOnPropertyChanged
+    {
+        obj.OnPropertyChanged?.Clear();
     }
 }

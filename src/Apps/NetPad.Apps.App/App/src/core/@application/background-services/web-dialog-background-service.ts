@@ -1,6 +1,6 @@
 import {IBackgroundService} from "@common";
 import {IDisposable} from "aurelia";
-import {IEventBus, ConfirmSaveCommand, IIpcGateway, YesNoCancel, RequestNewScriptNameCommand} from "@domain";
+import {ConfirmSaveCommand, IEventBus, IIpcGateway, RequestNewScriptNameCommand, YesNoCancel} from "@domain";
 
 /**
  * This is utilized for the Web app, not the Electron app.
@@ -16,11 +16,15 @@ export class WebDialogBackgroundService implements IBackgroundService {
 
     public start(): Promise<void> {
         this.disposables.push(
-            this.eventBus.subscribeToServer(ConfirmSaveCommand, async msg => { await this.confirmSave(msg); })
+            this.eventBus.subscribeToServer(ConfirmSaveCommand, async msg => {
+                await this.confirmSave(msg);
+            })
         );
 
         this.disposables.push(
-            this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => { await this.requestNewScriptName(msg); })
+            this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => {
+                await this.requestNewScriptName(msg);
+            })
         );
 
         return Promise.resolve(undefined);

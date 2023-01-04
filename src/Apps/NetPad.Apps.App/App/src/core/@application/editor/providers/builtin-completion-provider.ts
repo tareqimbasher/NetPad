@@ -40,7 +40,7 @@ export class BuiltinCompletionProvider implements ICompletionItemProvider {
 
             completionItems.push({
                 label: snippet.prefix,
-                documentation:  {
+                documentation: {
                     value: `<i>Snippet:</i> <b>${snippet.description}</b>`,
                     isTrusted: false,
                     supportHtml: true,

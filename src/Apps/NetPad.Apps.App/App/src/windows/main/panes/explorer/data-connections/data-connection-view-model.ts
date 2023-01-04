@@ -7,7 +7,7 @@ import {
 } from "@domain";
 
 export class DataConnectionViewModel {
-    private  resourceLoading = new Set<DataConnectionResourceComponent>();
+    private resourceLoading = new Set<DataConnectionResourceComponent>();
 
     public expanded = false;
     public structure?: DatabaseStructure;

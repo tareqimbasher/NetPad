@@ -22,7 +22,7 @@ describe("DateTime Value Converter", () => {
         expect(result).toBe(date.toUTCString());
     });
 
-    it ("should return a locale formatted string", () => {
+    it("should return a locale formatted string", () => {
         const converter = getConverter();
         const date = new Date();
 
@@ -31,7 +31,7 @@ describe("DateTime Value Converter", () => {
         expect(result).toBe(date.toLocaleString());
     });
 
-    it ("should return a UTC formatted string by default", () => {
+    it("should return a UTC formatted string by default", () => {
         const converter = getConverter();
         const date = new Date();
 

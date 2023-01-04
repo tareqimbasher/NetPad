@@ -2,7 +2,7 @@ import {bindable, ILogger, PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {IScriptService, ISession, ScriptEnvironment, Settings} from "@domain";
-import {ViewModelBase, EditorUtil, EditorSetup} from "@application";
+import {EditorSetup, EditorUtil, ViewModelBase} from "@application";
 
 export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;

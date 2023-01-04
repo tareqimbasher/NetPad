@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {languages, editor} from "monaco-editor";
+import {editor, languages} from "monaco-editor";
 
 export interface ICompletionItemProvider extends languages.CompletionItemProvider{}
 export const ICompletionItemProvider = DI.createInterface<ICompletionItemProvider>();
@@ -32,11 +32,13 @@ export interface ICodeActionProvider extends languages.CodeActionProvider{}
 export const ICodeActionProvider = DI.createInterface<ICodeActionProvider>();
 
 export interface ICommandProvider {
-    provideCommands(): {id: string, handler: (accessor: unknown, ...args: unknown[]) => void}[];
+    provideCommands(): { id: string, handler: (accessor: unknown, ...args: unknown[]) => void }[];
 }
+
 export const ICommandProvider = DI.createInterface<ICommandProvider>();
 
 export interface IDiagnosticsProvider {
     provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
 }
+
 export const IDiagnosticsProvider = DI.createInterface<IDiagnosticsProvider>();

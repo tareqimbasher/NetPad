@@ -76,6 +76,7 @@ class and a `IPersonsApiClient` interface.
 4. Register your new `PersonService` with the DI container.
 
 **Full example:**
+
 ```typescript
 import {DI} from "aurelia";
 import {IPersonsApiClient, PersonsApiClient} from "@domain";
@@ -92,6 +93,7 @@ export class PersonService extends PersonsApiClient implements IPersonService {
 ```
 
 Register your implementation with DI container in `main.ts`:
+
 ```typescript
 app.register(Registration.singleton(IPersonService, PersonService));
 ```

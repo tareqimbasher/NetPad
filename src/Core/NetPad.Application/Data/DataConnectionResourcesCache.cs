@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using NetPad.Compilation;
 using NetPad.DotNet;
 using NetPad.Events;
 
@@ -11,9 +10,9 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
     private readonly IDataConnectionResourcesGeneratorFactory _dataConnectionResourcesGeneratorFactory;
     private readonly IEventBus _eventBus;
 
-    private readonly object _sourceCodeTaskLock = new object();
-    private readonly object _assemblyTaskLock = new object();
-    private readonly object _requiredReferencesLock = new object();
+    private readonly object _sourceCodeTaskLock = new();
+    private readonly object _assemblyTaskLock = new();
+    private readonly object _requiredReferencesLock = new();
 
     public DataConnectionResourcesCache(IDataConnectionResourcesGeneratorFactory dataConnectionResourcesGeneratorFactory, IEventBus eventBus)
     {
@@ -51,7 +50,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.SourceCode));
 
-            resources.SourceCode = Task.Run<DataConnectionSourceCode>(async () =>
+            resources.SourceCode = Task.Run(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
                 return await generator.GenerateSourceCodeAsync(dataConnection);
@@ -67,7 +66,10 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.SourceCode = null;
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.SourceCode, task.Exception));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
+                        dataConnection,
+                        DataConnectionResourceComponent.SourceCode,
+                        task.Exception));
                 }
             });
 
@@ -110,7 +112,10 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.Assembly = null;
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.Assembly, task.Exception));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
+                        dataConnection,
+                        DataConnectionResourceComponent.Assembly,
+                        task.Exception));
                 }
             });
 
@@ -147,13 +152,19 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, resources, DataConnectionResourceComponent.RequiredReferences));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(
+                        dataConnection,
+                        resources,
+                        DataConnectionResourceComponent.RequiredReferences));
                 }
                 else if (task.Status == TaskStatus.Faulted)
                 {
                     // If an error occurred, null the task so the next time its called it tries again
                     resources.RequiredReferences = null;
-                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences, task.Exception));
+                    _eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
+                        dataConnection,
+                        DataConnectionResourceComponent.RequiredReferences,
+                        task.Exception));
                 }
             });
 

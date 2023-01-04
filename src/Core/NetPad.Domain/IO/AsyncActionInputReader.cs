@@ -12,8 +12,7 @@ public class AsyncActionInputReader : IInputReader
         _action = action;
     }
 
-    public static AsyncActionInputReader Null =>
-        new AsyncActionInputReader(() => Task.FromResult<string?>(null));
+    public static AsyncActionInputReader Null => new(() => Task.FromResult<string?>(null));
 
     public async Task<string?> ReadAsync()
     {

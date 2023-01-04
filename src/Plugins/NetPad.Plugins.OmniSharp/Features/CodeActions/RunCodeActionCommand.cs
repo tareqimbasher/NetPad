@@ -17,8 +17,7 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
     {
         private readonly AppOmniSharpServer _server;
 
-        private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter =
-            new FileOperationResponseCollectionJsonConverter();
+        private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter = new();
 
         public Handler(AppOmniSharpServer server)
         {
@@ -52,7 +51,7 @@ public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActio
                 return null;
             }
 
-            return new RunCodeActionResponse()
+            return new RunCodeActionResponse
             {
                 Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(changesArr.ToJsonString(),
                     new JsonSerializerOptions

@@ -77,7 +77,7 @@ public class OmniSharpServerCatalog
 
             // We don't want to await
 #pragma warning disable CS4014
-            startTask.ContinueWith(async (task) =>
+            startTask.ContinueWith(async task =>
 #pragma warning restore CS4014
             {
                 bool started = task.Status == TaskStatus.RanToCompletion && task.Result;
@@ -89,7 +89,7 @@ public class OmniSharpServerCatalog
                 await _appStatusMessagePublisher.PublishAsync(
                     environment.Script.Id,
                     $"OmniSharp Server {(started ? "started" : "failed to start")}",
-                    priority: started ? AppStatusMessagePriority.Normal : AppStatusMessagePriority.High);
+                    started ? AppStatusMessagePriority.Normal : AppStatusMessagePriority.High);
 
                 if (!started)
                 {

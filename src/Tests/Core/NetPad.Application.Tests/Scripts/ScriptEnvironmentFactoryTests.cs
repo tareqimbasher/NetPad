@@ -8,30 +8,29 @@ using NetPad.Tests.Services;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Application.Tests.Scripts
+namespace NetPad.Application.Tests.Scripts;
+
+public class ScriptEnvironmentFactoryTests : TestBase
 {
-    public class ScriptEnvironmentFactoryTests : TestBase
+    public ScriptEnvironmentFactoryTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public ScriptEnvironmentFactoryTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
+    }
 
-        protected override void ConfigureServices(ServiceCollection services)
-        {
-            services.AddTransient<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
+    protected override void ConfigureServices(ServiceCollection services)
+    {
+        services.AddTransient<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
 
-            base.ConfigureServices(services);
-        }
+        base.ConfigureServices(services);
+    }
 
-        [Fact]
-        public async Task CreateEnvironment_CreatesEnvironmentSuccessfully()
-        {
-            IScriptEnvironmentFactory factory = new DefaultScriptEnvironmentFactory(ServiceProvider);
-            var script = ScriptTestHelper.CreateScript();
+    [Fact]
+    public async Task CreateEnvironment_CreatesEnvironmentSuccessfully()
+    {
+        IScriptEnvironmentFactory factory = new DefaultScriptEnvironmentFactory(ServiceProvider);
+        var script = ScriptTestHelper.CreateScript();
 
-            ScriptEnvironment environment = await factory.CreateEnvironmentAsync(script);
+        ScriptEnvironment environment = await factory.CreateEnvironmentAsync(script);
 
-            Assert.NotNull(environment);
-        }
+        Assert.NotNull(environment);
     }
 }

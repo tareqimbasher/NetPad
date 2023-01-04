@@ -20,12 +20,12 @@ export class ScriptsList extends ViewModelBase {
     private readonly rootScriptFolder: ScriptFolderViewModel;
     private scriptsMap: Map<string, ScriptViewModel>;
 
-    constructor(@ISession private readonly  session: ISession,
-                @IScriptService private readonly  scriptService: IScriptService,
-                @IAppService private readonly  appService: IAppService,
+    constructor(@ISession private readonly session: ISession,
+                @IScriptService private readonly scriptService: IScriptService,
+                @IAppService private readonly appService: IAppService,
                 @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
-                @IEventBus private readonly  eventBus: IEventBus,
-                private readonly  settings: Settings,
+                @IEventBus private readonly eventBus: IEventBus,
+                private readonly settings: Settings,
                 @ILogger logger: ILogger) {
 
         super(logger);
@@ -37,8 +37,7 @@ export class ScriptsList extends ViewModelBase {
     public async attached() {
         try {
             this.loadScripts(await this.scriptService.getScripts());
-        }
-        catch (ex) {
+        } catch (ex) {
             this.logger.error("Error loading scripts", ex);
         }
 

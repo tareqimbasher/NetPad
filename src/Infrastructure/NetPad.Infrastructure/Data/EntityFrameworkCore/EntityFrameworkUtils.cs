@@ -48,7 +48,10 @@ internal static class EntityFrameworkUtils
             foreach (var navigation in entityType.GetNavigations())
             {
                 var targetEntityType = navigation.TargetEntityType;
-                table.AddNavigation(navigation.Name, targetEntityType.GetTableName() ?? targetEntityType.Name, navigation.PropertyInfo?.PropertyType.GetReadableName());
+                table.AddNavigation(
+                    navigation.Name,
+                    targetEntityType.GetTableName() ?? targetEntityType.Name,
+                    navigation.PropertyInfo?.PropertyType.GetReadableName());
             }
 
             foreach (var property in entityType.GetProperties())
@@ -81,7 +84,9 @@ internal static class EntityFrameworkUtils
         return structure;
     }
 
-    public static bool IsEntityFrameworkDataConnection(this DataConnection dataConnection, [MaybeNullWhen(false)] out EntityFrameworkDatabaseConnection entityFrameworkDatabaseConnection)
+    public static bool IsEntityFrameworkDataConnection(
+        this DataConnection dataConnection,
+        [MaybeNullWhen(false)] out EntityFrameworkDatabaseConnection entityFrameworkDatabaseConnection)
     {
         if (dataConnection is EntityFrameworkDatabaseConnection ef)
         {

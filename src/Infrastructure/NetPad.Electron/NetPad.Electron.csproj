@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+        <PackageReference Include="ElectronNET.API" Version="13.5.1"/>
     </ItemGroup>
 
 </Project>

@@ -98,7 +98,7 @@ public enum ExternalProcessOutputChannel
 
 public record ExternalProcessOutput<TOutput>(ExternalProcessOutputChannel Channel, TOutput? Output);
 
-class ActionTextWriter : TextWriter
+internal class ActionTextWriter : TextWriter
 {
     private readonly IOutputWriter<object> _outputWriter;
 

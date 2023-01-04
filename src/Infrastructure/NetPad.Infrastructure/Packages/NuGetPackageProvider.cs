@@ -226,7 +226,7 @@ public class NuGetPackageProvider : IPackageProvider
         var installPath = GetInstallPath(packageIdentity);
 
         if (installPath != null && Directory.Exists(installPath))
-            Directory.Delete(installPath, recursive: true);
+            Directory.Delete(installPath, true);
 
         return Task.CompletedTask;
     }
@@ -579,7 +579,7 @@ public class NuGetPackageProvider : IPackageProvider
         // TODO Give user ability to configure additional package sources
         var sourceProvider = new PackageSourceProvider(NullSettings.Instance, new[]
         {
-            new PackageSource(NugetApiUri),
+            new PackageSource(NugetApiUri)
         });
 
         return new SourceRepositoryProvider(sourceProvider, Repository.Provider.GetCoreV3());

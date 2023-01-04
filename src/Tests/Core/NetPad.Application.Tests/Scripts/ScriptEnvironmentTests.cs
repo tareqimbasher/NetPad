@@ -11,40 +11,39 @@ using NetPad.Tests.Services;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Application.Tests.Scripts
+namespace NetPad.Application.Tests.Scripts;
+
+public class ScriptEnvironmentTests : TestBase
 {
-    public class ScriptEnvironmentTests : TestBase
+    public ScriptEnvironmentTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
     {
-        public ScriptEnvironmentTests(ITestOutputHelper testOutputHelper) : base(testOutputHelper)
-        {
-        }
+    }
 
-        protected override void ConfigureServices(ServiceCollection services)
-        {
-            services.AddTransient<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
+    protected override void ConfigureServices(ServiceCollection services)
+    {
+        services.AddTransient<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
 
-            base.ConfigureServices(services);
-        }
+        base.ConfigureServices(services);
+    }
 
-        [Fact]
-        public void RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
-        {
-            var script = ScriptTestHelper.CreateScript();
-            var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
-            environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
+    [Fact]
+    public void RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
+    {
+        var script = ScriptTestHelper.CreateScript();
+        var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
+        environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
 
-            Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync(new RunOptions()));
-        }
+        Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync(new RunOptions()));
+    }
 
-        [Fact]
-        public async Task RunningAfterDisposingEnvironment_ThrowsInvalidOperationException()
-        {
-            var script = ScriptTestHelper.CreateScript();
-            var environment = new ScriptEnvironment(script, ServiceProvider.CreateScope());
+    [Fact]
+    public async Task RunningAfterDisposingEnvironment_ThrowsInvalidOperationException()
+    {
+        var script = ScriptTestHelper.CreateScript();
+        var environment = new ScriptEnvironment(script, ServiceProvider.CreateScope());
 
-            environment.Dispose();
+        environment.Dispose();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => environment.RunAsync(new RunOptions()));
-        }
+        await Assert.ThrowsAsync<InvalidOperationException>(() => environment.RunAsync(new RunOptions()));
     }
 }

@@ -41,8 +41,8 @@ public class EntityFrameworkDatabaseScaffolder
         _logger = logger;
         _project = new DotNetCSharpProject(
             AppDataProvider.TypedContextsDirectoryPath.Combine(connection.Id.ToString()).Path,
-            projectFileName: "database",
-            packageCacheDirectoryPath: Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
+            "database",
+            Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
 
         _dbModelOutputDirPath = Path.Combine(_project.ProjectDirectoryPath, "DbModel");
     }
@@ -88,7 +88,7 @@ class Program
             "Microsoft.EntityFrameworkCore.Design",
             "Microsoft.EntityFrameworkCore.Design",
             await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_packageProvider)
-            ?? throw new Exception($"Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
+            ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
         ));
 
         Directory.CreateDirectory(_dbModelOutputDirPath);
@@ -114,7 +114,7 @@ class Program
             WorkingDirectory = _project.ProjectDirectoryPath,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            RedirectStandardError = true
         };
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH

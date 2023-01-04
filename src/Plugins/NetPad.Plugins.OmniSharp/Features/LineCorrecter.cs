@@ -10,7 +10,7 @@ public static class LineCorrecter
 
     public static OmniSharpPoint AdjustForOmniSharp(int userCodeStartsOnLine, OmniSharpPoint point)
     {
-        return new()
+        return new OmniSharpPoint
         {
             Line = AdjustForOmniSharp(userCodeStartsOnLine, point.Line),
             Column = point.Column
@@ -30,7 +30,7 @@ public static class LineCorrecter
 
     public static OmniSharpPoint AdjustForResponse(int userCodeStartsOnLine, OmniSharpPoint point)
     {
-        return new()
+        return new OmniSharpPoint
         {
             Line = AdjustForResponse(userCodeStartsOnLine, point.Line),
             Column = point.Column

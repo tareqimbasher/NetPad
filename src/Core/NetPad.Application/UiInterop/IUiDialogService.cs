@@ -1,11 +1,9 @@
-using System.Threading.Tasks;
 using NetPad.Scripts;
 
-namespace NetPad.UiInterop
+namespace NetPad.UiInterop;
+
+public interface IUiDialogService
 {
-    public interface IUiDialogService
-    {
-        Task<YesNoCancel> AskUserIfTheyWantToSave(Script script);
-        Task<string?> AskUserForSaveLocation(Script script);
-    }
+    Task<YesNoCancel> AskUserIfTheyWantToSave(Script script);
+    Task<string?> AskUserForSaveLocation(Script script);
 }

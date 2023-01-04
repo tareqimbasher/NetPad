@@ -67,7 +67,7 @@ public class PluginManager : IPluginManager
         if (_pluginRegistrations.ContainsKey(plugin.Id))
         {
             throw new Exception($"Plugin from assembly '{assembly.FullName}' has ID '{plugin.Id}', " +
-                                $"but another plugin is already registered with this ID.");
+                                "but another plugin is already registered with this ID.");
         }
 
         if (string.IsNullOrWhiteSpace(plugin.Name))

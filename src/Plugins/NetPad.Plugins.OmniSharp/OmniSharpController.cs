@@ -37,7 +37,7 @@ public class OmniSharpController : Controller
     {
         var response = await _mediator.Send(new GetCompletionsQuery(scriptId, request), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions()
+        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
         {
             IncludeFields = true // To serialize tuples correctly
         });
@@ -50,7 +50,7 @@ public class OmniSharpController : Controller
     {
         var response = await _mediator.Send(new ResolveCompletionQuery(scriptId, completionItem), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions()
+        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
         {
             IncludeFields = true
         });
@@ -95,7 +95,7 @@ public class OmniSharpController : Controller
     {
         var response = await _mediator.Send(new GetInlayHintsQuery(scriptId, request), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions()
+        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
         {
             IncludeFields = true
         });

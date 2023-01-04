@@ -9,6 +9,8 @@ using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
 using NetPad.Utilities;
+using O2Html;
+using HtmlSerializer = NetPad.Html.HtmlSerializer;
 
 namespace NetPad.Runtimes;
 
@@ -114,10 +116,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             _processHandler =
                 new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
-            _processHandler.IO!.OnOutputReceivedHandlers.Add(async (output) =>
+            _processHandler.IO!.OnOutputReceivedHandlers.Add(async output =>
             {
                 _logger.LogDebug("Script output received. Length: {OutputLength}",
-                    (output?.Length.ToString() ?? "null"));
+                    output?.Length.ToString() ?? "null");
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
 
@@ -149,7 +151,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async (output) => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
 
             var start = DateTime.Now;
 
@@ -181,7 +183,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         }
         finally
         {
-            if (processRootFolder.Exists) processRootFolder.Delete(recursive: true);
+            if (processRootFolder.Exists) processRootFolder.Delete(true);
         }
     }
 
@@ -238,7 +240,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             }
 
             var copyTo = Path.Combine(processRootFolder.FullName, asset.CopyTo.Path);
-            File.Copy(asset.CopyFrom.Path, copyTo, overwrite: true);
+            File.Copy(asset.CopyFrom.Path, copyTo, true);
         }
 
         return scriptAssemblyFilePath;
@@ -308,8 +310,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
          */
         referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
         // Needed to serialize output in external process to HTML
-        referenceAssemblyPaths.Add(typeof(O2Html.HtmlConvert).Assembly.Location);
-        referenceAssemblyPaths.Add(typeof(NetPad.Html.HtmlSerializer).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(HtmlSerializer).Assembly.Location);
 
 
         /*

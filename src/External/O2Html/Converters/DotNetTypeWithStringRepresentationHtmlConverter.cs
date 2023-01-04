@@ -25,7 +25,9 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td").WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue).AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
+        tr.AddAndGetElement("td")
+            .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+            .AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 
     public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)

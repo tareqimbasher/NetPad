@@ -11,9 +11,10 @@ export class ConfigStore {
         {route: "namespaces", text: "Namespaces"},
     ];
 
-    public get namespaces(): ReadonlyArray<string>  {
+    public get namespaces(): ReadonlyArray<string> {
         return this._namespaces;
     }
+
     public get references(): ReadonlyArray<Reference> {
         return this._references;
     }

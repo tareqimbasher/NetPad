@@ -147,7 +147,7 @@ public sealed class HtmlSerializer
                    typeof(decimal),
                    typeof(DateTime),
 #if NET6_0_OR_GREATER
-        typeof(DateOnly),
+                   typeof(DateOnly),
 #endif
                    typeof(TimeSpan),
                    typeof(DateTimeOffset),

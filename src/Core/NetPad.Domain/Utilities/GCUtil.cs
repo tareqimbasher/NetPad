@@ -1,13 +1,12 @@
 using System;
 
-namespace NetPad.Utilities
+namespace NetPad.Utilities;
+
+public static class GCUtil
 {
-    public static class GCUtil
+    public static void CollectAndWait()
     {
-        public static void CollectAndWait()
-        {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 }

@@ -1,43 +1,43 @@
 using Microsoft.Extensions.Logging;
-using NetPad.CQs;
 using NetPad.Common;
+using NetPad.CQs;
 using NetPad.UiInterop;
 
-namespace NetPad.Electron.UiInterop
+namespace NetPad.Electron.UiInterop;
+
+public class ElectronIpcService : IIpcService
 {
-    public class ElectronIpcService : IIpcService
+    private readonly ILogger<ElectronIpcService> _logger;
+
+    public ElectronIpcService(ILogger<ElectronIpcService> logger)
     {
-        private readonly ILogger<ElectronIpcService> _logger;
+        _logger = logger;
+    }
 
-        public ElectronIpcService(ILogger<ElectronIpcService> logger)
+    public async Task SendAsync<TMessage>(TMessage message) where TMessage : class
+    {
+        await SendAsync(typeof(TMessage).Name, message);
+    }
+
+    public Task SendAsync(string channel, object? message)
+    {
+        try
         {
-            _logger = logger;
+            ElectronNET.API.Electron.IpcMain.Send(
+                ElectronUtil.MainWindow,
+                channel,
+                JsonSerializer.Serialize(message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending message on channel: {Channel}", channel);
         }
 
-        public async Task SendAsync<TMessage>(TMessage message) where TMessage : class
-        {
-            await SendAsync(typeof(TMessage).Name, message);
-        }
+        return Task.CompletedTask;
+    }
 
-        public Task SendAsync(string channel, object? message)
-        {
-            try
-            {
-                ElectronNET.API.Electron.IpcMain.Send(
-                    ElectronUtil.MainWindow,
-                    channel,
-                    JsonSerializer.Serialize(message));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending message on channel: {Channel}", channel);
-            }
-            return Task.CompletedTask;
-        }
-
-        public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message)
-        {
-            throw new PlatformNotSupportedException();
-        }
+    public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message)
+    {
+        throw new PlatformNotSupportedException();
     }
 }

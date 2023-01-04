@@ -7,6 +7,7 @@ export class KeyboardShortcutSettings {
     @bindable public settings: Settings;
     public currentSettings: Readonly<Settings>;
     public builtinShortcuts: Shortcut[] = [];
+
     //public keyCombo?: string;
 
     constructor(currentSettings: Settings) {

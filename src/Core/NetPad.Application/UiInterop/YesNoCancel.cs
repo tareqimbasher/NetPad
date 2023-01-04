@@ -1,7 +1,8 @@
-namespace NetPad.UiInterop
+namespace NetPad.UiInterop;
+
+public enum YesNoCancel
 {
-    public enum YesNoCancel
-    {
-        Yes, No, Cancel
-    }
+    Yes,
+    No,
+    Cancel
 }

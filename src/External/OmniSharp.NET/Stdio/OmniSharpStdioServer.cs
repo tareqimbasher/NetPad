@@ -27,7 +27,7 @@ namespace OmniSharp.Stdio
         private readonly HashSet<Func<string, Task>> _onErrorReceivedHandlers;
         private bool _isStopped = true;
 
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             IncludeFields = true // To serialize Tuples
         };

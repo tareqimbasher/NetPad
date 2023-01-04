@@ -6,7 +6,8 @@
     <div class="window">
         <div class="flex-grow-height-restricted d-flex flex-column">
             <ul class="tabs nav nav-tabs mb-3">
-                <li class="nav-item ${tab === configStore.selectedTab ? 'active' : ''}" repeat.for="tab of configStore.tabs">
+                <li class="nav-item ${tab === configStore.selectedTab ? 'active' : ''}"
+                    repeat.for="tab of configStore.tabs">
                     <div class="nav-link" click.trigger="configStore.selectedTab = tab">${tab.text}</div>
                 </li>
             </ul>

@@ -58,7 +58,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         var applicationCode = GenerateApplicationCode(model);
 
-        return new DataConnectionSourceCode()
+        return new DataConnectionSourceCode
         {
             DataAccessCode = new SourceCodeCollection(model.SourceFiles),
             ApplicationCode = applicationCode

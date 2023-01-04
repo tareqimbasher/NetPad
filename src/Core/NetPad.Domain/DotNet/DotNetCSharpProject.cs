@@ -99,7 +99,7 @@ public class DotNetCSharpProject
     {
         if (Directory.Exists(ProjectDirectoryPath))
         {
-            Directory.Delete(ProjectDirectoryPath, recursive: true);
+            Directory.Delete(ProjectDirectoryPath, true);
         }
 
         return Task.CompletedTask;

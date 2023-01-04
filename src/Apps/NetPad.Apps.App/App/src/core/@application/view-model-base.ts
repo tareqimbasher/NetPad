@@ -12,8 +12,7 @@ export class ViewModelBase {
         for (const disposable of this.disposables) {
             try {
                 disposable();
-            }
-            catch (ex) {
+            } catch (ex) {
                 this.logger.error("Error while disposing", ex, disposable);
             }
         }

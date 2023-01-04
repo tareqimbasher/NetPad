@@ -23,5 +23,5 @@ public enum ReferenceLoopHandling
     /// <summary>
     /// Serialize loop references.
     /// </summary>
-    Serialize,
+    Serialize
 }

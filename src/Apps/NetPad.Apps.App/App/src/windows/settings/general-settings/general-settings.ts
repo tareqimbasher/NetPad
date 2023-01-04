@@ -1,6 +1,5 @@
 import {bindable} from "aurelia";
-import {AppIdentifier, IAppService, Settings} from "@domain";
-import {Util} from "@common";
+import {Settings} from "@domain";
 
 export class GeneralSettings {
     @bindable public settings: Settings;

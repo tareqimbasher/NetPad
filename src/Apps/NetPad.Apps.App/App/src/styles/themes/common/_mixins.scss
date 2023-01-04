@@ -45,19 +45,20 @@
     }
 */
 @mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
-  @each $theme in $themes {
-    @if (themeExists($key, $theme)) {
-      $value: getThemeValue($key, $theme);
+    @each $theme in $themes {
+        @if (themeExists($key, $theme)) {
+            $value: getThemeValue($key, $theme);
 
-      //:global(.#{$theme}) & {
-      @at-root .#{$theme} #{&} { // if you aren't using css-modules, use this instead of the :global line above
-        #{$property}: #{$inlineExtra} #{$value} #{$postExtra}; //fallback for browsers that shouldn't exist anymore
-        #{$property}: #{$inlineExtra} var(--theme-#{$theme}-#{$key}, #{$value}) #{$postExtra};
-      }
-    } @else {
-      @error "Property #{$key} doesn't exist in #{$theme}";
+            //:global(.#{$theme}) & {
+            @at-root .#{$theme} #{&} {
+                // if you aren't using css-modules, use this instead of the :global line above
+                #{$property}: #{$inlineExtra} #{$value} #{$postExtra}; //fallback for browsers that shouldn't exist anymore
+                #{$property}: #{$inlineExtra} var(--theme-#{$theme}-#{$key}, #{$value}) #{$postExtra};
+            }
+        } @else {
+            @error "Property #{$key} doesn't exist in #{$theme}";
+        }
     }
-  }
 }
 
 /*
@@ -66,41 +67,41 @@
   This will add a new theme to the themes array and the theme color list.
 */
 @mixin generateThemeMappings($themeName, $newThemeMap) {
-  //creates/adds to list of theme names
-  $themes: append($themes, $themeName, $separator: comma) !global;
+    //creates/adds to list of theme names
+    $themes: append($themes, $themeName, $separator: comma) !global;
 
-  @each $key, $value in $newThemeMap {
-    //adds new themeKey if doesn't exist
-    @if not map-has-key($themeValues, $key) {
-      $themeValues: map-merge(
-        $themeValues,
-        (
-          $key: (
-            $themeName: $value,
-          ),
-        )
-      ) !global;
+    @each $key, $value in $newThemeMap {
+        //adds new themeKey if doesn't exist
+        @if not map-has-key($themeValues, $key) {
+            $themeValues: map-merge(
+                    $themeValues,
+                    (
+                        $key: (
+                            $themeName: $value,
+                        ),
+                    )
+            ) !global;
+        }
+            //adds to existing key map
+        @else {
+            $existingKeyMap: map-get($themeValues, $key);
+            //if theme variable doesn't exist, add it
+            @if not map-get($existingKeyMap, $themeName) {
+                $newKeyMap: map-merge(
+                        $existingKeyMap,
+                        (
+                            $themeName: $value,
+                        )
+                );
+                $themeValues: map-merge(
+                        $themeValues,
+                        (
+                            $key: $newKeyMap,
+                        )
+                ) !global;
+            }
+        }
     }
-    //adds to existing key map
-    @else {
-      $existingKeyMap: map-get($themeValues, $key);
-      //if theme variable doesn't exist, add it
-      @if not map-get($existingKeyMap, $themeName) {
-        $newKeyMap: map-merge(
-          $existingKeyMap,
-          (
-            $themeName: $value,
-          )
-        );
-        $themeValues: map-merge(
-          $themeValues,
-          (
-            $key: $newKeyMap,
-          )
-        ) !global;
-      }
-    }
-  }
 }
 
 /*
@@ -109,11 +110,11 @@
   Really should only be called in the html selector at the app root.
 */
 @mixin generateThemeVariables {
-  @each $key, $val in $themeValues {
-    @each $theme in $themes {
-      @if (themeExists($key, $theme)) {
-        --theme-#{$theme}-#{$key}: #{getThemeValue($key, $theme)};
-      }
+    @each $key, $val in $themeValues {
+        @each $theme in $themes {
+            @if (themeExists($key, $theme)) {
+                --theme-#{$theme}-#{$key}: #{getThemeValue($key, $theme)};
+            }
+        }
     }
-  }
 }

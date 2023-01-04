@@ -90,7 +90,8 @@ public interface IEventBus
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <returns>EventSubscription used to unsubscribing</returns>
-    EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences) where TEvent : class, IEvent;
+    EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences)
+        where TEvent : class, IEvent;
 
     /// <summary>
     /// Subscribe to a Event type with the given destination and delivery action with the given filter.
@@ -104,7 +105,8 @@ public interface IEventBus
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <param name="proxy">Proxy to use when delivering the Events</param>
     /// <returns>EventSubscription used to unsubscribing</returns>
-    EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences, IEventProxy proxy) where TEvent : class, IEvent;
+    EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences, IEventProxy proxy)
+        where TEvent : class, IEvent;
 
     /// <summary>
     /// Unsubscribe.
@@ -113,7 +115,6 @@ public interface IEventBus
     /// </summary>
     /// <param name="subscriptionToken">Subscription token received from Subscribe</param>
     void Unsubscribe(EventSubscriptionToken subscriptionToken);
-
 
 
     /// <summary>

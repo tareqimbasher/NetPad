@@ -6,14 +6,14 @@ import {
     ICodeLensProvider,
     ICommandProvider,
     ICompletionItemProvider,
+    IDiagnosticsProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
     IReferenceProvider,
-    ISignatureHelpProvider,
-    IDiagnosticsProvider
+    ISignatureHelpProvider
 } from "@application";
 import {Actions} from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";

@@ -7,7 +7,7 @@ using NetPad.Utilities;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
-class DownloadProgress : IProgress<float>
+internal class DownloadProgress : IProgress<float>
 {
     private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private int _lastValueReported;
@@ -92,7 +92,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         }
         catch
         {
-            await _appStatusMessagePublisher.PublishAsync($"OmniSharp download failed", AppStatusMessagePriority.High, persistant: true);
+            await _appStatusMessagePublisher.PublishAsync("OmniSharp download failed", AppStatusMessagePriority.High, true);
             throw;
         }
     }

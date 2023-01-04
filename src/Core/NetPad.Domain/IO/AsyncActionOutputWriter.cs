@@ -12,8 +12,7 @@ public class AsyncActionOutputWriter<TOutput> : IOutputWriter<TOutput>
         _action = action;
     }
 
-    public static AsyncActionOutputWriter<TOutput> Null =>
-        new AsyncActionOutputWriter<TOutput>((_, _) => Task.CompletedTask);
+    public static AsyncActionOutputWriter<TOutput> Null => new((_, _) => Task.CompletedTask);
 
     public async Task WriteAsync(TOutput? output, string? title = null)
     {

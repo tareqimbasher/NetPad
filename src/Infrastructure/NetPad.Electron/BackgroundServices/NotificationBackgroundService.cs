@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using NetPad.Electron.UiInterop;
 using NetPad.Events;
 using NetPad.Resources;
-using NetPad.DotNet;
 using NetPad.Scripts;
 
 namespace NetPad.Electron.BackgroundServices;

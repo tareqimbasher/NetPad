@@ -69,13 +69,13 @@ contributions are welcome!
     * Ability to use Console.Read() to ask for input
     * Workspaces/Sessions
 * More OmniSharp integrations:
-  * Code fix suggestions
-  * Format selection
-  * Format as you type
-  * Go-to definition
-  * Go-to symbol
-  * Rename symbol
-  * ...and more
+    * Code fix suggestions
+    * Format selection
+    * Format as you type
+    * Go-to definition
+    * Go-to symbol
+    * Rename symbol
+    * ...and more
 * Plugins
 
 ## Tech Stack :computer:

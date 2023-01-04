@@ -1,7 +1,5 @@
 ﻿using MediatR;
-using NetPad.Configuration;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
-using NetPad.Plugins.OmniSharp.Services;
 using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp;

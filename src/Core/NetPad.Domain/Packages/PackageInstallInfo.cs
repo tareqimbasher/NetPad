@@ -24,5 +24,6 @@ public class PackageInstallInfo
 
 public enum PackageInstallReason
 {
-    Explicit, Dependency
+    Explicit,
+    Dependency
 }

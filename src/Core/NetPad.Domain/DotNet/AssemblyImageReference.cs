@@ -4,7 +4,6 @@ namespace NetPad.DotNet;
 
 public class AssemblyImageReference : Reference
 {
-
     public AssemblyImageReference(AssemblyImage assemblyImage) : base(assemblyImage.AssemblyName.Name ?? assemblyImage.AssemblyName.FullName ?? "(Unknown)")
     {
         AssemblyImage = assemblyImage;

@@ -1,7 +1,6 @@
-namespace NetPad.Scripts
+namespace NetPad.Scripts;
+
+public class ScriptDuplicationOptions
 {
-    public class ScriptDuplicationOptions
-    {
-        public bool CopyCode { get; set; }
-    }
+    public bool CopyCode { get; set; }
 }

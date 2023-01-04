@@ -28,7 +28,7 @@ public record InlayHintResolveRequest : OmniSharpInlayHintResolveRequest
 
         public OmniSharpInlayHint ToOmniSharpInlayHint()
         {
-            return new OmniSharpInlayHint()
+            return new OmniSharpInlayHint
             {
                 Label = Label,
                 Tooltip = Tooltip,

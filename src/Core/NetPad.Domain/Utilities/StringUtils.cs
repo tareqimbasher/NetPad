@@ -4,86 +4,85 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace NetPad.Utilities
+namespace NetPad.Utilities;
+
+public static class StringUtils
 {
-    public static class StringUtils
+    private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+
+    public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
+        string.Join(separator, collection);
+
+    public static string RemoveLeadingBOMString(string str) =>
+        str.StartsWith(_bomString, StringComparison.Ordinal) ? str.Remove(0, _bomString.Length) : str;
+
+    public static string DefaultIfNullOrWhitespace(this string str, string defaultString = "") =>
+        !string.IsNullOrWhiteSpace(str) ? str : defaultString;
+
+    public static Uri? ToUriOrDefault(string uriString)
     {
-        private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+        return Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+    }
 
-        public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
-            string.Join(separator, collection);
+    public static string[] SplitLastOccurence(this string str, string separator)
+    {
+        int ix = str.LastIndexOf(separator, StringComparison.Ordinal);
 
-        public static string RemoveLeadingBOMString(string str) =>
-            str.StartsWith(_bomString, StringComparison.Ordinal) ? str.Remove(0, _bomString.Length) : str;
-
-        public static string DefaultIfNullOrWhitespace(this string str, string defaultString = "") =>
-            !string.IsNullOrWhiteSpace(str) ? str : defaultString;
-
-        public static Uri? ToUriOrDefault(string uriString)
+        if (ix < 0)
         {
-            return Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
+            return new[] { str };
         }
 
-        public static string[] SplitLastOccurence(this string str, string separator)
+        return new[]
         {
-            int ix = str.LastIndexOf(separator, StringComparison.Ordinal);
+            str[..ix],
+            str[(ix + 1)..]
+        };
+    }
 
-            if (ix < 0)
+    public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurence = false)
+    {
+        int from = str.IndexOf(startDelimiter, StringComparison.Ordinal) + startDelimiter.Length;
+        int to = !useLastEndDelimiterOccurence
+            ? str.IndexOf(endDelimiter, StringComparison.Ordinal)
+            : str.LastIndexOf(endDelimiter, StringComparison.Ordinal);
+
+        if (from < 0 || to < 0)
+        {
+            return str;
+        }
+
+        return str.Substring(from, to - from);
+    }
+
+    public static string RemoveRanges(this string str, List<(int startIndex, int length)> ranges)
+    {
+        var newStr = new StringBuilder();
+
+        ranges = ranges.OrderBy(r => r.startIndex).ToList();
+        int currentRangeIndex = 0;
+        var currentRange = ranges[currentRangeIndex];
+
+        for (int i = 0; i < str.Length;)
+        {
+            if (i == currentRange.startIndex)
             {
-                return new[] { str };
+                i = i + currentRange.length;
+                if (currentRangeIndex + 1 < ranges.Count) currentRange = ranges[++currentRangeIndex];
+                continue;
             }
 
-            return new[]
-            {
-                str[..ix],
-                str[(ix + 1)..]
-            };
+            newStr.Append(str[i]);
+            i++;
         }
 
-        public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurence = false)
-        {
-            int from = str.IndexOf(startDelimiter, StringComparison.Ordinal) + startDelimiter.Length;
-            int to = !useLastEndDelimiterOccurence
-                ? str.IndexOf(endDelimiter, StringComparison.Ordinal)
-                : str.LastIndexOf(endDelimiter, StringComparison.Ordinal);
+        return newStr.ToString();
+    }
 
-            if (from < 0 || to < 0)
-            {
-                return str;
-            }
+    public static string RemoveInvalidFileNameCharacters(string str, string? replaceWith = null)
+    {
+        var invalid = Path.GetInvalidFileNameChars().ToArray();
 
-            return str.Substring(from, to - from);
-        }
-
-        public static string RemoveRanges(this string str, List<(int startIndex, int length)> ranges)
-        {
-            var newStr = new StringBuilder();
-
-            ranges = ranges.OrderBy(r => r.startIndex).ToList();
-            int currentRangeIndex = 0;
-            var currentRange = ranges[currentRangeIndex];
-
-            for (int i = 0; i < str.Length;)
-            {
-                if (i == currentRange.startIndex)
-                {
-                    i = i + currentRange.length;
-                    if ((currentRangeIndex + 1) < ranges.Count) currentRange = ranges[++currentRangeIndex];
-                    continue;
-                }
-
-                newStr.Append(str[i]);
-                i++;
-            }
-
-            return newStr.ToString();
-        }
-
-        public static string RemoveInvalidFileNameCharacters(string str, string? replaceWith = null)
-        {
-            var invalid = Path.GetInvalidFileNameChars().ToArray();
-
-            return string.Join(replaceWith ?? string.Empty, str.Split(invalid, StringSplitOptions.None));
-        }
+        return string.Join(replaceWith ?? string.Empty, str.Split(invalid, StringSplitOptions.None));
     }
 }

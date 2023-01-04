@@ -11,7 +11,8 @@ import {
     RunScriptEvent,
     Script,
     ScriptEnvironment,
-    ScriptKind, ScriptStatus,
+    ScriptKind,
+    ScriptStatus,
     Settings
 } from "@domain";
 import Split from "split.js";

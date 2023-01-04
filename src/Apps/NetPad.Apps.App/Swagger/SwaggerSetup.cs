@@ -68,7 +68,7 @@ internal static class SwaggerSetup
                     TypeScriptVersion = 4.4m,
                     EnumStyle = TypeScriptEnumStyle.StringLiteral,
                     GenerateCloneMethod = true,
-                    MarkOptionalProperties = true,
+                    MarkOptionalProperties = true
                 }
             };
 

@@ -40,18 +40,22 @@ public class CssClasses
     /// The CSS class that null values will have
     /// </summary>
     public string Null { get; set; } = DefaultNullCssClass;
+
     /// <summary>
     /// The CSS class that property names will have
     /// </summary>
     public string PropertyName { get; set; } = DefaultPropertyNameClass;
+
     /// <summary>
     /// The CSS class that property values will have
     /// </summary>
     public string PropertyValue { get; set; } = DefaultPropertyValueClass;
+
     /// <summary>
     /// The CSS class that empty collections will have
     /// </summary>
     public string EmptyCollection { get; set; } = DefaultEmptyCollectionCssClass;
+
     /// <summary>
     /// The CSS class that cyclic references will have
     /// </summary>

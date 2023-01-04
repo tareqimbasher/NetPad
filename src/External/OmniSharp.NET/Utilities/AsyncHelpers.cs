@@ -85,7 +85,7 @@ namespace OmniSharp.Utilities
         private class ExclusiveSynchronizationContext : SynchronizationContext
         {
             private bool _done;
-            private readonly AutoResetEvent _workItemsWaiting = new AutoResetEvent(false);
+            private readonly AutoResetEvent _workItemsWaiting = new(false);
             private readonly Queue<Tuple<SendOrPostCallback, object>> items = new();
 
             public Exception? InnerException { get; set; }

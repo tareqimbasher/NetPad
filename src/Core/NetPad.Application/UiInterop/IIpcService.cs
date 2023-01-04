@@ -1,12 +1,10 @@
-using System.Threading.Tasks;
 using NetPad.CQs;
 
-namespace NetPad.UiInterop
+namespace NetPad.UiInterop;
+
+public interface IIpcService
 {
-    public interface IIpcService
-    {
-        Task SendAsync<TMessage>(TMessage message) where TMessage : class;
-        Task SendAsync(string channel, object? message);
-        Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message);
-    }
+    Task SendAsync<TMessage>(TMessage message) where TMessage : class;
+    Task SendAsync(string channel, object? message);
+    Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message);
 }

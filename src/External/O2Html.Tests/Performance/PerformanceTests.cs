@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using O2Html.Dom;
 using Xunit;
 using Xunit.Abstractions;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace O2Html.Tests.Performance;
 
 public class PerformanceTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    private static readonly Random _random = new Random();
+    private static readonly Random _random = new();
 
     public PerformanceTests(ITestOutputHelper testOutputHelper)
     {
@@ -22,8 +24,8 @@ public class PerformanceTests
     {
         var cars = GetCars(1000);
 
-        Benchmark("STJ", () => System.Text.Json.JsonSerializer.Serialize(cars));
-        Benchmark("Json.NET", () => Newtonsoft.Json.JsonConvert.SerializeObject(cars));
+        Benchmark("STJ", () => JsonSerializer.Serialize(cars));
+        Benchmark("Json.NET", () => JsonConvert.SerializeObject(cars));
         Benchmark("O2HTML", () => HtmlConvert.Serialize(cars).ToHtml());
     }
 
@@ -82,7 +84,7 @@ public class PerformanceTests
             .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
 
-    class Car
+    private class Car
     {
         public Car()
         {
@@ -90,13 +92,13 @@ public class PerformanceTests
             Model = GenerateRandomString(15);
             Year = 2022;
             CreatedDate = new DateTime(2022, 1, 1);
-            Features = new List<Feature>()
+            Features = new List<Feature>
             {
-                new Feature(),
-                new Feature(),
-                new Feature(),
-                new Feature(),
-                new Feature(),
+                new(),
+                new(),
+                new(),
+                new(),
+                new()
             };
         }
 
@@ -107,7 +109,7 @@ public class PerformanceTests
         public List<Feature> Features { get; set; }
     }
 
-    class Feature
+    private class Feature
     {
         public Feature()
         {

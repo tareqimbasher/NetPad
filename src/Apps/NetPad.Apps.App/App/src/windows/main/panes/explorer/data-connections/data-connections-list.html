@@ -51,7 +51,8 @@
                                 <span if.bind="schema.name">${schema.name}</span>
                                 <span else class="text-muted">default</span>
                             </div>
-                            <div class="list-group" if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
+                            <div class="list-group"
+                                 if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
                                 <div class="list-group-item db-table"
                                      repeat.for="table of schema.tables"
                                      title="Table name: ${table.name}">

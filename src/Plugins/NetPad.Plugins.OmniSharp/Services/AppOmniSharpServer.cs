@@ -32,7 +32,6 @@ public class AppOmniSharpServer
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
 
-    private readonly ScriptProject _project;
     private IOmniSharpStdioServer? _omniSharpServer;
 
     public AppOmniSharpServer(
@@ -55,14 +54,14 @@ public class AppOmniSharpServer
         _codeParser = codeParser;
         _eventBus = eventBus;
         _logger = logger;
-        _subscriptionTokens = new();
+        _subscriptionTokens = new List<EventSubscriptionToken>();
 
-        _project = new ScriptProject(environment.Script, settings, scriptProjectLogger);
+        Project = new ScriptProject(environment.Script, settings, scriptProjectLogger);
     }
 
     public Guid ScriptId => _environment.Script.Id;
 
-    public ScriptProject Project => _project;
+    public ScriptProject Project { get; }
 
     public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer
                                                     ?? throw new InvalidOperationException(
@@ -82,7 +81,7 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await _project.CreateAsync(ProjectOutputType.Executable, true);
+        await Project.CreateAsync(ProjectOutputType.Executable, true);
 
         InitializeEventHandlers();
 
@@ -113,7 +112,7 @@ public class AppOmniSharpServer
 
         await _eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
-        await _project.DeleteAsync();
+        await Project.DeleteAsync();
     }
 
     public async Task<bool> RestartAsync(Action<string>? progress = null)
@@ -169,15 +168,15 @@ public class AppOmniSharpServer
             $"RoslynExtensionsOptions:InlayHintsOptions:EnableForTypes={_settings.OmniSharp.InlayHints.EnableTypes}",
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes={_settings.OmniSharp.InlayHints.EnableImplicitVariableTypes}",
             $"RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes={_settings.OmniSharp.InlayHints.EnableLambdaParameterTypes}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={_settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}",
+            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={_settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
         }.JoinToString(" ");
 
-        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, _project.ProjectDirectoryPath, args);
+        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, Project.ProjectDirectoryPath, args);
 
         _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args} and project dir: {ProjDirPath}",
             executablePath,
             args,
-            _project.ProjectDirectoryPath);
+            Project.ProjectDirectoryPath);
 
         await omniSharpServer.StartAsync();
 
@@ -219,7 +218,7 @@ public class AppOmniSharpServer
     {
         if (string.IsNullOrWhiteSpace(executablePath))
         {
-            _logger.LogError($"Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled.");
+            _logger.LogError("Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled");
             return false;
         }
 
@@ -265,9 +264,9 @@ public class AppOmniSharpServer
 
             if (!ev.Added.Any() && !ev.Removed.Any()) return;
 
-            await _project.AddReferencesAsync(ev.Added);
+            await Project.AddReferencesAsync(ev.Added);
 
-            await _project.RemoveReferencesAsync(ev.Removed);
+            await Project.RemoveReferencesAsync(ev.Removed);
 
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
@@ -297,7 +296,7 @@ public class AppOmniSharpServer
 
     private void Subscribe<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent
     {
-        var token = _eventBus.Subscribe<TEvent>((ev) =>
+        var token = _eventBus.Subscribe<TEvent>(ev =>
         {
             if (_omniSharpServer != null)
             {
@@ -321,7 +320,7 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
     {
-        await UpdateBufferAsync(_project.UserProgramFilePath, parsingResult.UserProgram.Code.Value + ";");
+        await UpdateBufferAsync(Project.UserProgramFilePath, parsingResult.UserProgram.Code.Value + ";");
     }
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
@@ -332,7 +331,7 @@ public class AppOmniSharpServer
 
         var bootstrapperProgramCode = $"{usings}\n\n{parsingResult.BootstrapperProgram.Code.ToCodeString()}";
 
-        await UpdateBufferAsync(_project.BootstrapperProgramFilePath, bootstrapperProgramCode);
+        await UpdateBufferAsync(Project.BootstrapperProgramFilePath, bootstrapperProgramCode);
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
@@ -348,7 +347,7 @@ public class AppOmniSharpServer
                 references.Add(new AssemblyImageReference(assembly));
         }
 
-        await _project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
+        await Project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
 
         var sourceCode = dataConnection == null
@@ -378,16 +377,16 @@ public class AppOmniSharpServer
             dataConnectionProgramCode = sourceCode.ApplicationCode.ToCodeString(true);
         }
 
-        await UpdateBufferAsync(_project.DataConnectionProgramFilePath, dataConnectionProgramCode);
+        await UpdateBufferAsync(Project.DataConnectionProgramFilePath, dataConnectionProgramCode);
     }
 
     private async Task NotifyOmniSharpServerProjectFileChangedAsync()
     {
         await OmniSharpServer.SendAsync(new[]
         {
-            new FilesChangedRequest()
+            new FilesChangedRequest
             {
-                FileName = _project.ProjectFilePath,
+                FileName = Project.ProjectFilePath,
                 ChangeType = FileChangeType.Change
             }
         });

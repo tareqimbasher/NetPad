@@ -3,145 +3,144 @@ using NetPad.Events;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 
-namespace NetPad.Sessions
+namespace NetPad.Sessions;
+
+public class Session : ISession
 {
-    public class Session : ISession
+    private readonly IScriptEnvironmentFactory _scriptEnvironmentFactory;
+    private readonly IEventBus _eventBus;
+    private readonly ILogger<Session> _logger;
+    private readonly List<ScriptEnvironment> _environments;
+    private Guid? _lastActiveScriptId;
+
+    public Session(
+        IScriptEnvironmentFactory scriptEnvironmentFactory,
+        IEventBus eventBus,
+        ILogger<Session> logger)
     {
-        private readonly IScriptEnvironmentFactory _scriptEnvironmentFactory;
-        private readonly IEventBus _eventBus;
-        private readonly ILogger<Session> _logger;
-        private readonly List<ScriptEnvironment> _environments;
-        private Guid? _lastActiveScriptId;
+        _scriptEnvironmentFactory = scriptEnvironmentFactory;
+        _eventBus = eventBus;
+        _logger = logger;
+        _environments = new List<ScriptEnvironment>();
+    }
 
-        public Session(
-            IScriptEnvironmentFactory scriptEnvironmentFactory,
-            IEventBus eventBus,
-            ILogger<Session> logger)
+    public IReadOnlyList<ScriptEnvironment> Environments => _environments.AsReadOnly();
+
+    public ScriptEnvironment? Active { get; private set; }
+
+
+    public ScriptEnvironment? Get(Guid scriptId)
+    {
+        return _environments.FirstOrDefault(m => m.Script.Id == scriptId);
+    }
+
+    public async Task OpenAsync(Script script, bool activate = true)
+    {
+        var environment = Get(script.Id);
+
+        if (environment == null)
         {
-            _scriptEnvironmentFactory = scriptEnvironmentFactory;
-            _eventBus = eventBus;
-            _logger = logger;
-            _environments = new List<ScriptEnvironment>();
+            environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
+            _environments.Add(environment);
+            await _eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
         }
 
-        public IReadOnlyList<ScriptEnvironment> Environments => _environments.AsReadOnly();
-
-        public ScriptEnvironment? Active { get; private set; }
-
-
-        public ScriptEnvironment? Get(Guid scriptId)
+        if (activate)
         {
-            return _environments.FirstOrDefault(m => m.Script.Id == scriptId);
+            await ActivateAsync(script.Id);
+        }
+    }
+
+    public async Task OpenAsync(IEnumerable<Script> scripts)
+    {
+        Script? last = null;
+
+        foreach (var script in scripts)
+        {
+            await OpenAsync(script, activate: false);
+            last = script;
         }
 
-        public async Task OpenAsync(Script script, bool activate = true)
+        if (last != null)
         {
-            var environment = Get(script.Id);
-
-            if (environment == null)
-            {
-                environment = await _scriptEnvironmentFactory.CreateEnvironmentAsync(script);
-                _environments.Add(environment);
-                await _eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
-            }
-
-            if (activate)
-            {
-                await ActivateAsync(script.Id);
-            }
+            await ActivateAsync(last.Id);
         }
+    }
 
-        public async Task OpenAsync(IEnumerable<Script> scripts)
+    public async Task CloseAsync(Guid scriptId, bool activateNextScript = true)
+    {
+        _logger.LogDebug("Closing script: {ScriptId}", scriptId);
+        var environment = Get(scriptId);
+        if (environment == null)
+            return;
+
+        var ix = _environments.IndexOf(environment);
+
+        _environments.RemoveAt(ix);
+        await environment.DisposeAsync();
+        await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
+
+        if (activateNextScript && Active == environment)
         {
-            Script? last = null;
-
-            foreach (var script in scripts)
+            if (_environments.Any())
             {
-                await OpenAsync(script, activate: false);
-                last = script;
-            }
-
-            if (last != null)
-            {
-                await ActivateAsync(last.Id);
-            }
-        }
-
-        public async Task CloseAsync(Guid scriptId, bool activateNextScript = true)
-        {
-            _logger.LogDebug("Closing script: {ScriptId}", scriptId);
-            var environment = Get(scriptId);
-            if (environment == null)
-                return;
-
-            var ix = _environments.IndexOf(environment);
-
-            _environments.RemoveAt(ix);
-            await environment.DisposeAsync();
-            await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
-
-            if (activateNextScript && Active == environment)
-            {
-                if (_environments.Any())
-                {
-                    if (CanActivateLastActiveScript())
-                        await ActivateAsync(_lastActiveScriptId);
-                    else
-                    {
-                        ix = ix == 0 ? 1 : (ix - 1);
-                        await ActivateAsync(_environments[ix].Script.Id);
-                    }
-                }
+                if (CanActivateLastActiveScript())
+                    await ActivateAsync(_lastActiveScriptId);
                 else
                 {
-                    await ActivateAsync(null);
+                    ix = ix == 0 ? 1 : ix - 1;
+                    await ActivateAsync(_environments[ix].Script.Id);
                 }
             }
-
-            _logger.LogDebug("Closed script: {ScriptId}", scriptId);
-        }
-
-        public async Task CloseAsync(IEnumerable<Guid> scriptIds)
-        {
-            var ids = scriptIds.ToArray();
-
-            for (int i = 0; i < ids.Length; i++)
-            {
-                var id = ids[i];
-
-                bool isLastScriptInBatch = i == (ids.Length - 1);
-
-                await CloseAsync(id, activateNextScript: isLastScriptInBatch);
-            }
-        }
-
-        public Task ActivateAsync(Guid? scriptId)
-        {
-            ScriptEnvironment? newActive;
-            _lastActiveScriptId = Active?.Script.Id;
-
-            if (scriptId == null)
-                newActive = null;
             else
             {
-                var environment = Get(scriptId.Value);
-                newActive = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
+                await ActivateAsync(null);
             }
-
-            Active = newActive;
-            _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
-
-            return Task.CompletedTask;
         }
 
-        public Task ActivateLastActiveScriptAsync()
-        {
-            if (CanActivateLastActiveScript())
-                ActivateAsync(_lastActiveScriptId);
-
-            return Task.CompletedTask;
-        }
-
-        private bool CanActivateLastActiveScript() => _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
+        _logger.LogDebug("Closed script: {ScriptId}", scriptId);
     }
+
+    public async Task CloseAsync(IEnumerable<Guid> scriptIds)
+    {
+        var ids = scriptIds.ToArray();
+
+        for (int i = 0; i < ids.Length; i++)
+        {
+            var id = ids[i];
+
+            bool isLastScriptInBatch = i == ids.Length - 1;
+
+            await CloseAsync(id, isLastScriptInBatch);
+        }
+    }
+
+    public Task ActivateAsync(Guid? scriptId)
+    {
+        ScriptEnvironment? newActive;
+        _lastActiveScriptId = Active?.Script.Id;
+
+        if (scriptId == null)
+            newActive = null;
+        else
+        {
+            var environment = Get(scriptId.Value);
+            newActive = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
+        }
+
+        Active = newActive;
+        _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
+
+        return Task.CompletedTask;
+    }
+
+    public Task ActivateLastActiveScriptAsync()
+    {
+        if (CanActivateLastActiveScript())
+            ActivateAsync(_lastActiveScriptId);
+
+        return Task.CompletedTask;
+    }
+
+    private bool CanActivateLastActiveScript() => _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
 }

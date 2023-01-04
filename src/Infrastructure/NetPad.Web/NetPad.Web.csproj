@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
     </ItemGroup>
 
 </Project>

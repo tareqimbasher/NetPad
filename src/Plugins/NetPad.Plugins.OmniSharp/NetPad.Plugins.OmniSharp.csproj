@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2" />
+        <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
-      <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
-      <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
+        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj"/>
+        <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj"/>
     </ItemGroup>
 
 </Project>

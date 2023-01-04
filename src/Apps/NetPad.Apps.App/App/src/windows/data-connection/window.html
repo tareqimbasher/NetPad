@@ -124,13 +124,16 @@
                                 Test Connection
                             </button>
 
-                            <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus" switch.bind="testingConnectionStatus">
-                                <span case="testing" class="spinner-border spinner-border-sm" title="Please wait..."></span>
+                            <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus"
+                                 switch.bind="testingConnectionStatus">
+                                <span case="testing" class="spinner-border spinner-border-sm"
+                                      title="Please wait..."></span>
                                 <i case="success" class="check-circle-icon text-green" title="Success"></i>
                                 <i case="fail" class="warning-icon text-yellow" title="Connection failed"></i>
                             </div>
 
-                            <p class="text-red mt-3" show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
+                            <p class="text-red mt-3"
+                               show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
                                 ${testingConnectionFailureMessage}
                             </p>
                         </div>

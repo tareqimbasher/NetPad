@@ -38,7 +38,13 @@ public class NullPackageProvider : IPackageProvider
         return Task.CompletedTask;
     }
 
-    public Task<PackageMetadata[]> SearchPackagesAsync(string? term, int skip, int take, bool includePrerelease, bool loadMetadata = false, CancellationToken? cancellationToken = null)
+    public Task<PackageMetadata[]> SearchPackagesAsync(
+        string? term,
+        int skip,
+        int take,
+        bool includePrerelease,
+        bool loadMetadata = false,
+        CancellationToken? cancellationToken = null)
     {
         return Task.FromResult(Array.Empty<PackageMetadata>());
     }

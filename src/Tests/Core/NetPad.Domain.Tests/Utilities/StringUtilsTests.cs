@@ -1,39 +1,38 @@
-using NetPad.Utilities;
 using System.Text;
+using NetPad.Utilities;
 using Xunit;
 
-namespace NetPad.Domain.Tests.Utilities
+namespace NetPad.Domain.Tests.Utilities;
+
+public class StringUtilsTests
 {
-    public class StringUtilsTests
+    [Fact]
+    public void JoinToString_JoinsToString()
     {
-        [Fact]
-        public void JoinToString_JoinsToString()
-        {
-            var collection = new[] { "Test1", "Test2" };
+        var collection = new[] { "Test1", "Test2" };
 
-            var joinedStr = StringUtils.JoinToString(collection, ",");
+        var joinedStr = collection.JoinToString(",");
 
-            Assert.Equal("Test1,Test2", joinedStr);
-        }
+        Assert.Equal("Test1,Test2", joinedStr);
+    }
 
-        [Fact]
-        public void RemoveLeadingBOMString_RemovesLeadingBOMString()
-        {
-            var strWithBOM = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble()) + "test";
+    [Fact]
+    public void RemoveLeadingBOMString_RemovesLeadingBOMString()
+    {
+        var strWithBOM = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble()) + "test";
 
-            var strWithoutBOM = StringUtils.RemoveLeadingBOMString(strWithBOM);
+        var strWithoutBOM = StringUtils.RemoveLeadingBOMString(strWithBOM);
 
-            Assert.Equal("test", strWithoutBOM);
-        }
+        Assert.Equal("test", strWithoutBOM);
+    }
 
-        [Fact]
-        public void RemoveLeadingBOMString_DoesNotRemoveNonLeadingBOMString()
-        {
-            var strWithBOM = "test" + Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+    [Fact]
+    public void RemoveLeadingBOMString_DoesNotRemoveNonLeadingBOMString()
+    {
+        var strWithBOM = "test" + Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
-            var result = StringUtils.RemoveLeadingBOMString(strWithBOM);
+        var result = StringUtils.RemoveLeadingBOMString(strWithBOM);
 
-            Assert.Equal(strWithBOM, result);
-        }
+        Assert.Equal(strWithBOM, result);
     }
 }

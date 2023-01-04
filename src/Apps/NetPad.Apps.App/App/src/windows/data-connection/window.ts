@@ -208,8 +208,7 @@ export class Window {
     private async unprotectedPasswordEntered() {
         const dbConnection = this.connection as DatabaseConnection;
         if (!this.unprotectedPassword) dbConnection.password = this.unprotectedPassword;
-        else
-        {
+        else {
             dbConnection.password = await this.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;
         }
     }
@@ -234,8 +233,7 @@ export class Window {
 
             try {
                 this.databasesOnServer = await this.dataConnectionService.getDatabases(this.connection);
-            }
-            finally {
+            } finally {
                 this.loadingDatabases = false;
             }
         }

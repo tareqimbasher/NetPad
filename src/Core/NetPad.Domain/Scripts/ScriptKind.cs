@@ -1,8 +1,7 @@
-namespace NetPad.Scripts
+namespace NetPad.Scripts;
+
+public enum ScriptKind
 {
-    public enum ScriptKind
-    {
-        Expression = 0,
-        Program = 1
-    }
+    Expression = 0,
+    Program = 1
 }

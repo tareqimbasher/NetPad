@@ -1,4 +1,4 @@
-import {CancellationToken, editor, languages, Position, Range} from "monaco-editor";
+import {CancellationToken, editor, languages, Position} from "monaco-editor";
 import {EditorUtil, IReferenceProvider} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";

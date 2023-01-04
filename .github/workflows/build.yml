@@ -2,7 +2,7 @@ name: "Build"
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
-  
+
 on:
   push:
     branches:

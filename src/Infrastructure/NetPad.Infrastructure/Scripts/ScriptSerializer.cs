@@ -29,11 +29,11 @@ public static class ScriptSerializer
         }
         else if (script.DataConnection != null)
         {
-            serializedDataConnection = new SerializedDataConnection()
+            serializedDataConnection = new SerializedDataConnection
             {
                 Id = script.DataConnection.Id,
                 Name = script.DataConnection.Name,
-                Type = script.DataConnection.Type,
+                Type = script.DataConnection.Type
             };
         }
 
@@ -41,7 +41,7 @@ public static class ScriptSerializer
 
         return $"{script.Id}\n" +
                $"{JsonSerializer.Serialize(scriptData)}\n" +
-               $"#Code\n" +
+               "#Code\n" +
                $"{script.Code}";
     }
 

@@ -10,7 +10,6 @@ namespace NetPad.Data;
 
 // Only used for NSwag
 [JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
-
 [System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<DataConnection>))]
 [KnownType("GetKnownTypes")]
 public abstract class DataConnection
@@ -39,14 +38,14 @@ public abstract class DataConnection
 
     #region KnownTypes
 
-    static Type[] GetKnownTypes()
+    private static Type[] GetKnownTypes()
     {
         return DataConnectionKnownTypes.ScanForKnownTypes();
     }
 
     private static class DataConnectionKnownTypes
     {
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private static Type[]? _knownTypes;
 
         public static Type[] ScanForKnownTypes()

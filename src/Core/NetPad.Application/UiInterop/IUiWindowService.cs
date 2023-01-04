@@ -1,13 +1,11 @@
-using System.Threading.Tasks;
 using NetPad.Scripts;
 
-namespace NetPad.UiInterop
+namespace NetPad.UiInterop;
+
+public interface IUiWindowService
 {
-    public interface IUiWindowService
-    {
-        Task OpenMainWindowAsync();
-        Task OpenSettingsWindowAsync(string? tab = null);
-        Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
-        Task OpenDataConnectionWindowAsync(Guid? dataConnectionId);
-    }
+    Task OpenMainWindowAsync();
+    Task OpenSettingsWindowAsync(string? tab = null);
+    Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
+    Task OpenDataConnectionWindowAsync(Guid? dataConnectionId);
 }

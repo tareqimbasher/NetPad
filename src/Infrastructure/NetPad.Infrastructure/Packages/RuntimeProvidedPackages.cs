@@ -138,6 +138,6 @@ internal static class RuntimeProvidedPackages
         "System.Xml.XmlDocument",
         "System.Xml.XmlSerializer",
         "System.Xml.XPath",
-        "System.Xml.XPath.XDocument",
+        "System.Xml.XPath.XDocument"
     };
 }

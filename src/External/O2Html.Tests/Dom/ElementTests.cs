@@ -1,6 +1,6 @@
+using System.Linq;
 using O2Html.Dom;
 using Xunit;
-using System.Linq;
 
 namespace O2Html.Tests.Dom;
 

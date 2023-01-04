@@ -19,7 +19,7 @@ public class CodeFormatQuery : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, 
 
         public async Task<OmniSharpCodeFormatResponse?> Handle(CodeFormatQuery request, CancellationToken cancellationToken)
         {
-            return await _server.OmniSharpServer.SendAsync<OmniSharpCodeFormatResponse>(new OmniSharpCodeFormatRequest()
+            return await _server.OmniSharpServer.SendAsync<OmniSharpCodeFormatResponse>(new OmniSharpCodeFormatRequest
             {
                 Buffer = request.Input.Buffer,
                 FileName = _server.Project.UserProgramFilePath

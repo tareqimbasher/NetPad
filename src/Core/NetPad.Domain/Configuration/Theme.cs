@@ -1,7 +1,7 @@
-namespace NetPad.Configuration
+namespace NetPad.Configuration;
+
+public enum Theme
 {
-    public enum Theme
-    {
-        Dark, Light
-    }
+    Dark,
+    Light
 }

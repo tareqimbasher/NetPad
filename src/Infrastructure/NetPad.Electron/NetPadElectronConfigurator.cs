@@ -45,7 +45,7 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
                 }
             };
 
-            ElectronNET.API.Electron.App.WillQuit += (args) =>
+            ElectronNET.API.Electron.App.WillQuit += args =>
             {
                 var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                 appLifetime.StopApplication();

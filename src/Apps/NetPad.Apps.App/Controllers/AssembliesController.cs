@@ -5,55 +5,52 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
 using NetPad.DotNet;
 using NetPad.Packages;
-using NetPad.Scripts;
 
-namespace NetPad.Controllers
+namespace NetPad.Controllers;
+
+[ApiController]
+[Route("assemblies")]
+public class AssembliesController : Controller
 {
-    [ApiController]
-    [Route("assemblies")]
-    public class AssembliesController : Controller
+    private readonly IAssemblyInfoReader _assemblyInfoReader;
+    private readonly IPackageProvider _packageProvider;
+
+    public AssembliesController(IAssemblyInfoReader assemblyInfoReader, IPackageProvider packageProvider)
     {
-        private readonly IAssemblyInfoReader _assemblyInfoReader;
-        private readonly IPackageProvider _packageProvider;
+        _assemblyInfoReader = assemblyInfoReader;
+        _packageProvider = packageProvider;
+    }
 
-        public AssembliesController(IAssemblyInfoReader assemblyInfoReader, IPackageProvider packageProvider)
+    [HttpPatch("namespaces")]
+    public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
+    {
+        if (reference is AssemblyFileReference assemblyFileReference)
         {
-            _assemblyInfoReader = assemblyInfoReader;
-            _packageProvider = packageProvider;
+            if (assemblyFileReference.AssemblyPath == null)
+                throw new Exception("Assembly path is null.");
+
+            return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyFileReference.AssemblyPath)));
         }
 
-        [HttpPatch("namespaces")]
-        public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
+        if (reference is PackageReference packageReference)
         {
-            if (reference is AssemblyFileReference assemblyFileReference)
+            var assemblies = await _packageProvider.GetCachedPackageAssembliesAsync(
+                packageReference.PackageId,
+                packageReference.Version);
+
+            var namespaces = new HashSet<string>();
+
+            foreach (var assembly in assemblies)
             {
-                if (assemblyFileReference.AssemblyPath == null)
-                    throw new Exception("Assembly path is null.");
-
-                return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyFileReference.AssemblyPath)));
-            }
-            else if (reference is PackageReference packageReference)
-            {
-                var assemblies = await _packageProvider.GetCachedPackageAssembliesAsync(
-                    packageReference.PackageId,
-                    packageReference.Version);
-
-                var namespaces = new HashSet<string>();
-
-                foreach (var assembly in assemblies)
+                foreach (var ns in _assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assembly)))
                 {
-                    foreach (var ns in _assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assembly)))
-                    {
-                        namespaces.Add(ns);
-                    }
+                    namespaces.Add(ns);
                 }
+            }
 
-                return Ok(namespaces);
-            }
-            else
-            {
-                throw new Exception($"Unhandled reference type: {reference.GetType().Name}");
-            }
+            return Ok(namespaces);
         }
+
+        throw new Exception($"Unhandled reference type: {reference.GetType().Name}");
     }
 }

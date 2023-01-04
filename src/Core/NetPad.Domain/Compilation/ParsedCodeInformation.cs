@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace NetPad.Compilation;
 
 public class ParsedCodeInformation

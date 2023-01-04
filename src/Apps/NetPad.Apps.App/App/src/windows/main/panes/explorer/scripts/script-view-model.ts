@@ -8,7 +8,7 @@ export class ScriptViewModel extends ScriptSummary {
     public environment?: ScriptEnvironment;
     public isActive: boolean;
 
-    public get cssClasses() : string {
+    public get cssClasses(): string {
         let classes = this.isActive ? 'is-active' : "";
 
         if (this.environment) {

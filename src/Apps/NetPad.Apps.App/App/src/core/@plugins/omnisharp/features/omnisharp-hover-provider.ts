@@ -17,7 +17,7 @@ export class OmniSharpHoverProvider implements IHoverProvider {
         }), new AbortController().signalFrom(token));
 
         if (!response || !response.markdown) {
-            return { contents: [] };
+            return {contents: []};
         }
 
         return {

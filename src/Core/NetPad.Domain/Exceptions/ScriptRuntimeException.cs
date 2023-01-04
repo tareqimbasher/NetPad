@@ -1,11 +1,10 @@
 using System;
 
-namespace NetPad.Exceptions
+namespace NetPad.Exceptions;
+
+public class ScriptRuntimeException : Exception
 {
-    public class ScriptRuntimeException : Exception
+    public ScriptRuntimeException(string message) : base(message)
     {
-        public ScriptRuntimeException(string message) : base(message)
-        {
-        }
     }
 }

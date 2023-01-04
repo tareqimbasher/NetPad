@@ -8,54 +8,50 @@ using NetPad.Electron;
 using NetPad.Web;
 using Serilog;
 
-namespace NetPad
+namespace NetPad;
+
+public static class Program
 {
-    public static class Program
+    internal static IApplicationConfigurator ApplicationConfigurator { get; private set; } = null!;
+
+    public static int Main(string[] args)
     {
-        internal static IApplicationConfigurator ApplicationConfigurator { get; private set; } = null!;
-
-        public static int Main(string[] args)
+        try
         {
-            try
-            {
-                // Configure as an Electron app or a web app
-                ApplicationConfigurator = args.Any(a => a.Contains("/ELECTRONPORT", StringComparison.OrdinalIgnoreCase))
-                    ? new NetPadElectronConfigurator()
-                    : new NetPadWebConfigurator();
+            // Configure as an Electron app or a web app
+            ApplicationConfigurator = args.Any(a => a.Contains("/ELECTRONPORT", StringComparison.OrdinalIgnoreCase))
+                ? new NetPadElectronConfigurator()
+                : new NetPadWebConfigurator();
 
-                CreateHostBuilder(args).Build().Run();
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            CreateHostBuilder(args).Build().Run();
+            return 0;
         }
-
-        private static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(config => { config.AddJsonFile("appsettings.Local.json", optional: true); })
-                .UseSerilog((ctx, config) =>
-                {
-                    ConfigureLogging(config, ctx.Configuration);
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    ApplicationConfigurator.ConfigureWebHost(webBuilder, args);
-                    webBuilder.UseStartup<Startup>();
-                });
-
-        private static void ConfigureLogging(LoggerConfiguration serilogConfig, IConfiguration appConfig)
+        catch (Exception ex)
         {
-            Environment.SetEnvironmentVariable("NETPAD_LOG_DIR", AppDataProvider.LogDirectoryPath.Path);
-
-            serilogConfig.ReadFrom.Configuration(appConfig);
+            Console.WriteLine(ex);
+            Log.Fatal(ex, "Host terminated unexpectedly");
+            return 1;
         }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+
+    private static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration(config => { config.AddJsonFile("appsettings.Local.json", true); })
+            .UseSerilog((ctx, config) => { ConfigureLogging(config, ctx.Configuration); })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                ApplicationConfigurator.ConfigureWebHost(webBuilder, args);
+                webBuilder.UseStartup<Startup>();
+            });
+
+    private static void ConfigureLogging(LoggerConfiguration serilogConfig, IConfiguration appConfig)
+    {
+        Environment.SetEnvironmentVariable("NETPAD_LOG_DIR", AppDataProvider.LogDirectoryPath.Path);
+
+        serilogConfig.ReadFrom.Configuration(appConfig);
     }
 }

@@ -65,7 +65,7 @@ public static class HtmlElementExtensions
     public static Null AddAndGetNull(this Element element)
     {
         var child = new Null();
-        element .AddChild(child);
+        element.AddChild(child);
         return child;
     }
 

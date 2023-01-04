@@ -54,8 +54,7 @@ export class AppMutationObserver {
         for (const listener of this.listeners) {
             try {
                 listener(mutations, observer);
-            }
-            catch (ex) {
+            } catch (ex) {
                 this.logger.error("Error while executing mutation callback for listener", listener);
             }
         }

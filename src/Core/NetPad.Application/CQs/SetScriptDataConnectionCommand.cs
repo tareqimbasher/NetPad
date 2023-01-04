@@ -7,7 +7,6 @@ namespace NetPad.CQs;
 
 public class SetScriptDataConnectionCommand : Command
 {
-
     public SetScriptDataConnectionCommand(Script script, DataConnection? connection)
     {
         Script = script;

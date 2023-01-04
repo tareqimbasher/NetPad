@@ -1,5 +1,5 @@
 import {AppStatusMessage, AppStatusMessagePublishedEvent, IEventBus, ISession, ISettingService,} from "@domain";
-import {PLATFORM, Task} from "aurelia";
+import {PLATFORM} from "aurelia";
 import {IShortcutManager} from "@application";
 
 export class Statusbar {

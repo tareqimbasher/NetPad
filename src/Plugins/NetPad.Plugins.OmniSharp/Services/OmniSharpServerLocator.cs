@@ -8,7 +8,7 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
     private readonly Settings _settings;
     private readonly IOmniSharpServerDownloader _omniSharpServerDownloader;
     private readonly ILogger<OmniSharpServerLocator> _logger;
-    private static readonly SemaphoreSlim _downloadLock = new SemaphoreSlim(1);
+    private static readonly SemaphoreSlim _downloadLock = new(1);
 
     public OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloader omniSharpServerDownloader, ILogger<OmniSharpServerLocator> logger)
     {

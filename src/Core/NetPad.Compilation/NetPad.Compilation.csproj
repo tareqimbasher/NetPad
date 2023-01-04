@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\NetPad.Domain\NetPad.Domain.csproj"/>
     </ItemGroup>
 
 </Project>

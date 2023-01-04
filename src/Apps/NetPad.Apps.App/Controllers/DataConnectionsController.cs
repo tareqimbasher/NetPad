@@ -44,7 +44,7 @@ public class DataConnectionsController : Controller
         // isn't triggered when serializing a single object. It works on collections though.
         var json = JsonSerializer.Serialize(connection, typeof(DataConnection));
 
-        return new ContentResult()
+        return new ContentResult
         {
             StatusCode = 200,
             Content = json,

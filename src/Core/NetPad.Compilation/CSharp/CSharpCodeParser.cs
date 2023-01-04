@@ -3,59 +3,57 @@ using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Scripts;
 
-namespace NetPad.Compilation.CSharp
+namespace NetPad.Compilation.CSharp;
+
+[Obsolete("Each runtime defines its own code parser now")]
+public class CSharpCodeParser : ICodeParser
 {
-    [Obsolete("Each runtime defines its own code parser now")]
-    public class CSharpCodeParser : ICodeParser
+    public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
+    public const string BootstrapperSetIOMethodName = "SetIO";
+
+    private static readonly string[] _usingsNeededByBaseProgram =
     {
-        public const string BootstrapperClassName = "ScriptProgram_Bootstrap";
-        public const string BootstrapperSetIOMethodName = "SetIO";
+        "System",
+        "NetPad.IO"
+    };
 
-        private static readonly string[] _usingsNeededByBaseProgram =
+    public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
+    {
+        var userProgram = GetUserProgram(options?.IncludedCode ?? script.Code, script.Config.Kind);
+
+        var bootstrapperProgramTemplate = GetBootstrapperProgramTemplate();
+        var bootstrapperProgram = string.Format(
+            bootstrapperProgramTemplate,
+            BootstrapperClassName,
+            BootstrapperSetIOMethodName);
+
+        var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _usingsNeededByBaseProgram);
+
+        return new CodeParsingResult(
+            new SourceCode(userProgram, script.Config.Namespaces),
+            bootstrapperProgramSourceCode,
+            options?.AdditionalCode,
+            new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
+    }
+
+    public string GetUserProgram(string code, ScriptKind kind)
+    {
+        string userCode;
+        string scriptCode = code;
+
+        if (kind == ScriptKind.Expression)
         {
-            "System",
-            "NetPad.IO"
-        };
-
-        public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
-        {
-            var userProgram = GetUserProgram(options?.IncludedCode ?? script.Code, script.Config.Kind);
-
-            var bootstrapperProgramTemplate = GetBootstrapperProgramTemplate();
-            var bootstrapperProgram = string.Format(
-                bootstrapperProgramTemplate,
-                BootstrapperClassName,
-                BootstrapperSetIOMethodName);
-
-            var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _usingsNeededByBaseProgram);
-
-            return new CodeParsingResult(
-                new SourceCode(userProgram, script.Config.Namespaces),
-                bootstrapperProgramSourceCode,
-                options?.AdditionalCode,
-                new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
+            throw new NotImplementedException("Expression code parsing is not implemented yet.");
         }
 
-        public string GetUserProgram(string code, ScriptKind kind)
-        {
-            string userCode;
-            string scriptCode = code;
+        userCode = scriptCode;
 
-            if (kind == ScriptKind.Expression)
-            {
-                throw new NotImplementedException("Expression code parsing is not implemented yet.");
-            }
-            else
-            {
-                userCode = scriptCode;
-            }
+        return userCode;
+    }
 
-            return userCode;
-        }
-
-        public string GetBootstrapperProgramTemplate()
-        {
-            return $@"class {{0}}
+    public string GetBootstrapperProgramTemplate()
+    {
+        return $@"class {{0}}
 {{{{
     internal static IScriptOutputAdapter<ScriptOutput, ScriptOutput> Output {{{{ get; set; }}}}
 
@@ -96,6 +94,5 @@ static class Exts
     }}}}
 }}}}
 ";
-        }
     }
 }

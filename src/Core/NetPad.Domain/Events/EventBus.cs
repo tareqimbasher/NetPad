@@ -10,7 +10,7 @@ namespace NetPad.Events;
 /// </summary>
 public sealed class EventBus : IEventBus
 {
-    readonly ISubscriberErrorHandler _subscriberErrorHandler;
+    private readonly ISubscriberErrorHandler _subscriberErrorHandler;
 
     #region ctor methods
 
@@ -31,9 +31,9 @@ public sealed class EventBus : IEventBus
     private class WeakEventSubscription<TEvent> : IEventSubscription
         where TEvent : class, IEvent
     {
-        protected EventSubscriptionToken _subscriptionToken;
-        protected WeakReference _deliveryAction;
-        protected WeakReference _eventFilter;
+        protected readonly EventSubscriptionToken _subscriptionToken;
+        protected readonly WeakReference _deliveryAction;
+        protected readonly WeakReference _eventFilter;
 
         public EventSubscriptionToken SubscriptionToken
         {
@@ -45,7 +45,7 @@ public sealed class EventBus : IEventBus
             if (@event == null)
                 return false;
 
-            if (!(typeof(TEvent).IsAssignableFrom(@event.GetType())))
+            if (!typeof(TEvent).IsAssignableFrom(@event.GetType()))
                 return false;
 
             if (!_deliveryAction.IsAlive)
@@ -94,9 +94,9 @@ public sealed class EventBus : IEventBus
     private class StrongEventSubscription<TEvent> : IEventSubscription
         where TEvent : class, IEvent
     {
-        protected EventSubscriptionToken _subscriptionToken;
-        protected Func<TEvent, Task> _deliveryAction;
-        protected Func<TEvent, bool> _eventFilter;
+        protected readonly EventSubscriptionToken _subscriptionToken;
+        protected readonly Func<TEvent, Task> _deliveryAction;
+        protected readonly Func<TEvent, bool> _eventFilter;
 
         public EventSubscriptionToken SubscriptionToken
         {
@@ -108,7 +108,7 @@ public sealed class EventBus : IEventBus
             if (@event == null)
                 return false;
 
-            if (!(typeof(TEvent).IsAssignableFrom(@event.GetType())))
+            if (!typeof(TEvent).IsAssignableFrom(@event.GetType()))
                 return false;
 
             return _eventFilter.Invoke((TEvent)@event);
@@ -161,8 +161,8 @@ public sealed class EventBus : IEventBus
         }
     }
 
-    private readonly object _subscriptionsPadlock = new object();
-    private readonly List<SubscriptionItem> _subscriptions = new List<SubscriptionItem>();
+    private readonly object _subscriptionsPadlock = new();
+    private readonly List<SubscriptionItem> _subscriptions = new();
 
     #endregion
 
@@ -179,7 +179,7 @@ public sealed class EventBus : IEventBus
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, (m) => true, true, DefaultEventProxy.Instance);
+        return AddSubscriptionInternal(deliveryAction, m => true, true, DefaultEventProxy.Instance);
     }
 
     /// <summary>
@@ -195,7 +195,7 @@ public sealed class EventBus : IEventBus
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, IEventProxy proxy) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, (m) => true, true, proxy);
+        return AddSubscriptionInternal(deliveryAction, m => true, true, proxy);
     }
 
     /// <summary>
@@ -209,7 +209,7 @@ public sealed class EventBus : IEventBus
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, bool useStrongReferences) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, (m) => true, useStrongReferences, DefaultEventProxy.Instance);
+        return AddSubscriptionInternal(deliveryAction, m => true, useStrongReferences, DefaultEventProxy.Instance);
     }
 
     /// <summary>
@@ -225,7 +225,7 @@ public sealed class EventBus : IEventBus
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, bool useStrongReferences, IEventProxy proxy) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, (m) => true, useStrongReferences, proxy);
+        return AddSubscriptionInternal(deliveryAction, m => true, useStrongReferences, proxy);
     }
 
     /// <summary>
@@ -239,7 +239,7 @@ public sealed class EventBus : IEventBus
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, eventFilter, true, DefaultEventProxy.Instance);
+        return AddSubscriptionInternal(deliveryAction, eventFilter, true, DefaultEventProxy.Instance);
     }
 
     /// <summary>
@@ -256,7 +256,7 @@ public sealed class EventBus : IEventBus
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, IEventProxy proxy)
         where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, eventFilter, true, proxy);
+        return AddSubscriptionInternal(deliveryAction, eventFilter, true, proxy);
     }
 
     /// <summary>
@@ -272,7 +272,7 @@ public sealed class EventBus : IEventBus
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences)
         where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, eventFilter, useStrongReferences, DefaultEventProxy.Instance);
+        return AddSubscriptionInternal(deliveryAction, eventFilter, useStrongReferences, DefaultEventProxy.Instance);
     }
 
     /// <summary>
@@ -290,7 +290,7 @@ public sealed class EventBus : IEventBus
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences,
         IEventProxy proxy) where TEvent : class, IEvent
     {
-        return AddSubscriptionInternal<TEvent>(deliveryAction, eventFilter, useStrongReferences, proxy);
+        return AddSubscriptionInternal(deliveryAction, eventFilter, useStrongReferences, proxy);
     }
 
     /// <summary>
@@ -311,7 +311,7 @@ public sealed class EventBus : IEventBus
     /// <param name="event">Event to deliver</param>
     public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : class, IEvent
     {
-        await PublishInternalAsync<TEvent>(@event);
+        await PublishInternalAsync(@event);
     }
 
     #endregion
@@ -355,7 +355,7 @@ public sealed class EventBus : IEventBus
         lock (_subscriptionsPadlock)
         {
             var currentlySubscribed = (from sub in _subscriptions
-                where object.ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
+                where ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
                 select sub).ToList();
 
             currentlySubscribed.ForEach(sub => _subscriptions.Remove(sub));
@@ -406,7 +406,6 @@ public class DefaultSubscriberErrorHandler : ISubscriberErrorHandler
 public sealed class EventSubscriptionToken : IDisposable
 {
     private readonly WeakReference _hub;
-    private readonly Type _eventType;
 
     /// <summary>
     /// Initializes a new instance of the EventSubscriptionToken class.
@@ -420,10 +419,10 @@ public sealed class EventSubscriptionToken : IDisposable
             throw new ArgumentOutOfRangeException(nameof(eventType));
 
         _hub = new WeakReference(hub);
-        _eventType = eventType;
+        EventType = eventType;
     }
 
-    public Type EventType => _eventType;
+    public Type EventType { get; }
 
     public void Dispose()
     {
@@ -448,8 +447,6 @@ public sealed class EventSubscriptionToken : IDisposable
 /// </summary>
 public sealed class DefaultEventProxy : IEventProxy
 {
-    private static readonly DefaultEventProxy _instance = new DefaultEventProxy();
-
     static DefaultEventProxy()
     {
     }
@@ -457,13 +454,7 @@ public sealed class DefaultEventProxy : IEventProxy
     /// <summary>
     /// Singleton instance of the proxy.
     /// </summary>
-    public static DefaultEventProxy Instance
-    {
-        get
-        {
-            return _instance;
-        }
-    }
+    public static DefaultEventProxy Instance { get; } = new();
 
     private DefaultEventProxy()
     {

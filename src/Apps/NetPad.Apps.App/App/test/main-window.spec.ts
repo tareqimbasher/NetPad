@@ -1,6 +1,3 @@
-import {render} from './helper';
-import {Window} from '../src/windows/main/window';
-
 describe('my-app', () => {
     it("ignored", () => {
         // ignored

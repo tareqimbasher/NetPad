@@ -8,7 +8,7 @@ namespace NetPad.Infrastructure.Tests.Data.EntityFrameworkCore.DataConnections;
 
 public class PostgreSqlDatabaseConnectionTests : CommonTests
 {
-    public PostgreSqlDatabaseConnectionTests(): base(DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL")
+    public PostgreSqlDatabaseConnectionTests() : base(DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL")
     {
     }
 
@@ -42,7 +42,7 @@ public class PostgreSqlDatabaseConnectionTests : CommonTests
         new[] { "host", "port", null, "user id", "password", "Host=host:port;Database=;UserId=user id;Password=password" },
         new[] { "host", "port", "db name", null, "password", "Host=host:port;Database=db name;Password=password" },
         new[] { "host", "port", "db name", "user id", null, "Host=host:port;Database=db name;UserId=user id" },
-        new[] { "host", "port", "db name", null, null, "Host=host:port;Database=db name" },
+        new[] { "host", "port", "db name", null, null, "Host=host:port;Database=db name" }
     };
 
     protected override EntityFrameworkDatabaseConnection CreateConnection()

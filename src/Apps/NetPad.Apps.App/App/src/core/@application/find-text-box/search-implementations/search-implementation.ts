@@ -5,7 +5,7 @@ export abstract class SearchImplementation {
             .replaceAll(" ", "&nbsp;")
             .replaceAll("<", "&lt;")
             .replaceAll(">", "&gt;")
-        ;
+            ;
     }
 
     /**

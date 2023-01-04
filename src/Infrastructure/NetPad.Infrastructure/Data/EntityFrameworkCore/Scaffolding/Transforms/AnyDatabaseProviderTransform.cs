@@ -21,7 +21,8 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
         var sb = new StringBuilder(dbContextFile.Code.Value);
 
         // Convert he existing DbContext to a generic class
-        sb.Replace($"partial class {dbContextFile.ClassName} : DbContext", $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
+        sb.Replace($"partial class {dbContextFile.ClassName} : DbContext",
+            $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
         sb.Replace($"DbContextOptions<{dbContextFile.ClassName}>", "DbContextOptions<TContext>");
 
         // Add a non-generic DbContext that inherits from the new generic DbContext

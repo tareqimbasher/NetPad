@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using NetPad.Compilation;
 using NetPad.Data;
 using NetPad.DotNet;
 

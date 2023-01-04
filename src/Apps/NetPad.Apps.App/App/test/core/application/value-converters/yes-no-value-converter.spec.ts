@@ -1,6 +1,6 @@
 ﻿import {YesNoValueConverter} from "@application/value-converters/yes-no-value-converter";
 
-describe ("Yes/No Value Converter", () => {
+describe("Yes/No Value Converter", () => {
     it("should return null when it cannot convert value", () => {
         const invalidValues = [3, "text", new Date(), {}];
         const converter = new YesNoValueConverter();
@@ -12,10 +12,10 @@ describe ("Yes/No Value Converter", () => {
         }
     });
 
-   it("should return Yes when given a true boolean value", () => {
-       const converter = new YesNoValueConverter();
-       const result = converter.toView(true);
-       expect(result).toBe("Yes");
+    it("should return Yes when given a true boolean value", () => {
+        const converter = new YesNoValueConverter();
+        const result = converter.toView(true);
+        expect(result).toBe("Yes");
     });
 
     it("should return Yes when given a true string value", () => {

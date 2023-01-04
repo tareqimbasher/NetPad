@@ -7,8 +7,8 @@ namespace NetPad.DotNet;
 
 public static class DotNetInfo
 {
-    private static readonly object _dotNetExeLocateLock = new object();
-    private static readonly object _dotNetEfToolExeLocateLock = new object();
+    private static readonly object _dotNetExeLocateLock = new();
+    private static readonly object _dotNetEfToolExeLocateLock = new();
     private static string? _dotNetPath;
     private static string? _dotNetEfToolPath;
 

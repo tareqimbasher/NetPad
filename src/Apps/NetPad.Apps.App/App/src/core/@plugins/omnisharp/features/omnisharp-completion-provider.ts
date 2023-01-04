@@ -158,8 +158,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
                 title: "",
                 arguments: [apiCompletion]
             };
-        }
-        else if (apiCompletion.additionalTextEdits && apiCompletion.additionalTextEdits.length > 0) {
+        } else if (apiCompletion.additionalTextEdits && apiCompletion.additionalTextEdits.length > 0) {
             command = {
                 id: this.insertAdditionalTextEditsCommandId,
                 title: "Insert additional text",

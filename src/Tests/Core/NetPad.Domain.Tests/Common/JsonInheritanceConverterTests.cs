@@ -119,32 +119,32 @@ public class JsonInheritanceConverterTests
     [JsonConverter(typeof(JsonInheritanceConverter<BaseTypeUsingInheritanceConverter>))]
     [KnownType(typeof(DerivedType1UsingInheritanceConverter))]
     [KnownType(typeof(DerivedType2UsingInheritanceConverter))]
-    abstract class BaseTypeUsingInheritanceConverter
+    private abstract class BaseTypeUsingInheritanceConverter
     {
         public string BaseProperty { get; set; } = "Base Property Value";
     }
 
-    class DerivedType1UsingInheritanceConverter : BaseTypeUsingInheritanceConverter
+    private class DerivedType1UsingInheritanceConverter : BaseTypeUsingInheritanceConverter
     {
         public string DerivedType1Property { get; set; } = "Derived Type 1 Property";
     }
 
-    class DerivedType2UsingInheritanceConverter : BaseTypeUsingInheritanceConverter
+    private class DerivedType2UsingInheritanceConverter : BaseTypeUsingInheritanceConverter
     {
         public string DerivedType2Property { get; set; } = "Derived Type 2 Property";
     }
 
-    abstract class BaseTypeNotUsingInheritanceConverter
+    private abstract class BaseTypeNotUsingInheritanceConverter
     {
         public string BaseProperty { get; set; } = "Base Property Value";
     }
 
-    class DerivedType1NotUsingInheritanceConverter : BaseTypeNotUsingInheritanceConverter
+    private class DerivedType1NotUsingInheritanceConverter : BaseTypeNotUsingInheritanceConverter
     {
         public string DerivedType1Property { get; set; } = "Derived Type 1 Property";
     }
 
-    class DerivedType2NotUsingInheritanceConverter : BaseTypeNotUsingInheritanceConverter
+    private class DerivedType2NotUsingInheritanceConverter : BaseTypeNotUsingInheritanceConverter
     {
         public string DerivedType2Property { get; set; } = "Derived Type 2 Property";
     }

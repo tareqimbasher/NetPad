@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace NetPad.Application;
 
@@ -8,7 +9,7 @@ public class AppIdentifier
 
     public AppIdentifier()
     {
-        Version = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version ?? new();
+        Version = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version();
     }
 
     public string Name => AppName;

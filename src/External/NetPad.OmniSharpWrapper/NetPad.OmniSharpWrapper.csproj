@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2" />
+        <PackageReference Include="OmniSharp.Abstractions" Version="1.38.2"/>
     </ItemGroup>
 
 </Project>

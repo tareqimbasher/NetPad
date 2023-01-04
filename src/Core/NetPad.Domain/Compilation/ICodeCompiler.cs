@@ -1,7 +1,6 @@
-namespace NetPad.Compilation
+namespace NetPad.Compilation;
+
+public interface ICodeCompiler
 {
-    public interface ICodeCompiler
-    {
-        CompilationResult Compile(CompilationInput input);
-    }
+    CompilationResult Compile(CompilationInput input);
 }

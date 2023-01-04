@@ -1,7 +1,6 @@
-namespace NetPad.Scripts
+namespace NetPad.Scripts;
+
+public interface IScriptEnvironmentFactory
 {
-    public interface IScriptEnvironmentFactory
-    {
-        Task<ScriptEnvironment> CreateEnvironmentAsync(Script script);
-    }
+    Task<ScriptEnvironment> CreateEnvironmentAsync(Script script);
 }

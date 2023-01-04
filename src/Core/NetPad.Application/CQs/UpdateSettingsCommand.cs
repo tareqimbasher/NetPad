@@ -42,7 +42,7 @@ public class UpdateSettingsCommand : Command
 
             await _eventBus.PublishAsync(new SettingsUpdatedEvent(_settings));
 
-            return Unit.Value;;
+            return Unit.Value;
         }
     }
 }

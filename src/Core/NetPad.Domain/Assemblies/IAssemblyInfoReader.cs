@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace NetPad.Assemblies
+namespace NetPad.Assemblies;
+
+public interface IAssemblyInfoReader
 {
-    public interface IAssemblyInfoReader
-    {
-        public HashSet<string> GetNamespaces(byte[] assembly);
-    }
+    public HashSet<string> GetNamespaces(byte[] assembly);
 }

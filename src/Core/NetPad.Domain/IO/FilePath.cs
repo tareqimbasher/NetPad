@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NetPad.Utilities;
@@ -32,9 +33,9 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
 
     public override int GetHashCode() => Path.ToLowerInvariant().GetHashCode();
 
-    public static implicit operator DirectoryPath(string name) => new DirectoryPath(name);
+    public static implicit operator DirectoryPath(string name) => new(name);
 
-    public DirectoryInfo GetInfo() => new DirectoryInfo(Path);
+    public DirectoryInfo GetInfo() => new(Path);
 
     public DirectoryPath Combine(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
     public FilePath CombineFilePath(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
@@ -44,7 +45,7 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
     public override void DeleteIfExists()
     {
         var dir = GetInfo();
-        if (dir.Exists) dir.Delete(recursive: true);
+        if (dir.Exists) dir.Delete(true);
     }
 }
 
@@ -58,9 +59,9 @@ public record FilePath(string Path) : AbsolutePath(Path)
 
     public override int GetHashCode() => Path.ToLowerInvariant().GetHashCode();
 
-    public static implicit operator FilePath(string name) => new FilePath(name);
+    public static implicit operator FilePath(string name) => new(name);
 
-    public FileInfo GetInfo() => new FileInfo(Path);
+    public FileInfo GetInfo() => new(Path);
 
     public FilePath Combine(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
 
@@ -79,7 +80,8 @@ public record RelativePath
         Path =
             string.IsNullOrWhiteSpace(path)
                 ? throw new ArgumentException("path cannot be null or empty")
-                : System.IO.Path.GetInvalidPathChars().Intersect(path).Any() || System.IO.Path.GetInvalidFileNameChars().Intersect(System.IO.Path.GetFileName(path)).Any()
+                : System.IO.Path.GetInvalidPathChars().Distinct().Intersect(path).Any() ||
+                  System.IO.Path.GetInvalidFileNameChars().Intersect(System.IO.Path.GetFileName(path)).Any()
                     ? throw new ArgumentException($"Path {path} contains illegal characters")
                     : path.Trim();
 
@@ -95,7 +97,7 @@ public record RelativePath
 
     public override int GetHashCode() => Path.ToLowerInvariant().GetHashCode();
 
-    public static implicit operator RelativePath(string name) => new RelativePath(name);
+    public static implicit operator RelativePath(string name) => new(name);
 
     public bool Exists() => File.Exists(Path);
 

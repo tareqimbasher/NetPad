@@ -1,18 +1,18 @@
 import * as monaco from "monaco-editor";
 import {all} from "aurelia";
 import {
+    ICodeActionProvider,
+    ICodeLensProvider,
     ICommandProvider,
     ICompletionItemProvider,
+    IDiagnosticsProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
-    IImplementationProvider,
     IHoverProvider,
-    ISignatureHelpProvider,
-    IReferenceProvider,
-    ICodeLensProvider,
+    IImplementationProvider,
     IInlayHintsProvider,
-    ICodeActionProvider,
-    IDiagnosticsProvider
+    IReferenceProvider,
+    ISignatureHelpProvider
 } from "./providers/interfaces";
 import {Util} from "@common";
 

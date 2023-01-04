@@ -10,6 +10,6 @@ $themeValues: ();
 @include generateThemeMappings(theme-dark, $dark);
 
 html {
-  @include generateThemeVariables;
+    @include generateThemeVariables;
 }
 

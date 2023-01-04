@@ -1,4 +1,3 @@
-import {observable} from '@aurelia/runtime';
 import Split from "split.js";
 import {CachedPackage, IAppService, IPackageService, PackageMetadata, PackageReference} from "@domain";
 import {ConfigStore} from "../config-store";

@@ -3,162 +3,161 @@ using ElectronNET.API.Entities;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
-namespace NetPad.Electron.UiInterop
+namespace NetPad.Electron.UiInterop;
+
+public class ElectronWindowService : IUiWindowService
 {
-    public class ElectronWindowService : IUiWindowService
+    private readonly HostInfo _hostInfo;
+    private static readonly Dictionary<string, BrowserWindow> _singleInstanceWindows = new();
+
+    public ElectronWindowService(HostInfo hostInfo)
     {
-        private readonly HostInfo _hostInfo;
-        private static readonly Dictionary<string, BrowserWindow> _singleInstanceWindows = new();
+        _hostInfo = hostInfo;
+    }
 
-        public ElectronWindowService(HostInfo hostInfo)
+    private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
+
+    public async Task OpenMainWindowAsync()
+    {
+        var display = await PrimaryDisplay();
+        var window = await CreateWindowAsync("main", false, new BrowserWindowOptions
         {
-            _hostInfo = hostInfo;
+            Height = display.Bounds.Height * 2 / 3,
+            Width = display.Bounds.Width * 2 / 3,
+            X = display.Bounds.X,
+            Y = display.Bounds.Y,
+            AutoHideMenuBar = true
+        });
+
+        window.Center();
+        window.Maximize();
+    }
+
+    public async Task OpenSettingsWindowAsync(string? tab = null)
+    {
+        const string windowName = "settings";
+
+        if (FocusExistingWindowIfOpen(windowName))
+        {
+            return;
         }
 
-        private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
+        var display = await PrimaryDisplay();
 
-        public async Task OpenMainWindowAsync()
+        var queryParams = new List<(string, object?)>();
+        if (tab != null) queryParams.Add(("tab", tab));
+
+        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
-            var display = await PrimaryDisplay();
-            var window = await CreateWindowAsync("main", false, new BrowserWindowOptions
-            {
-                Height = display.Bounds.Height * 2 / 3,
-                Width = display.Bounds.Width * 2 / 3,
-                X = display.Bounds.X,
-                Y = display.Bounds.Y,
-                AutoHideMenuBar = true,
-            });
+            Title = "Settings",
+            Height = display.Bounds.Height * 2 / 3,
+            Width = display.Bounds.Width * 1 / 2,
+            AutoHideMenuBar = true
+        }, queryParams.ToArray());
 
-            window.Center();
-            window.Maximize();
+        window.SetParentWindow(ElectronUtil.MainWindow);
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+        window.Center();
+    }
+
+    public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
+    {
+        const string windowName = "script-config";
+
+        if (FocusExistingWindowIfOpen(windowName))
+        {
+            return;
         }
 
-        public async Task OpenSettingsWindowAsync(string? tab = null)
+        var display = await PrimaryDisplay();
+
+        var queryParams = new List<(string, object?)>();
+        queryParams.Add(("script-id", script.Id));
+        if (tab != null) queryParams.Add(("tab", tab));
+
+        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
-            const string windowName = "settings";
+            Title = script.Name,
+            Height = display.Bounds.Height * 2 / 3,
+            Width = display.Bounds.Width * 4 / 5,
+            AutoHideMenuBar = true
+        }, queryParams.ToArray());
 
-            if (FocusExistingWindowIfOpen(windowName))
-            {
-                return;
-            }
+        window.SetParentWindow(ElectronUtil.MainWindow);
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+        window.Center();
+    }
 
-            var display = await PrimaryDisplay();
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+    {
+        const string windowName = "data-connection";
 
-            var queryParams = new List<(string, object?)>();
-            if (tab != null) queryParams.Add(("tab", tab));
-
-            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
-            {
-                Title = "Settings",
-                Height = display.Bounds.Height * 2 / 3,
-                Width = display.Bounds.Width * 1 / 2,
-                AutoHideMenuBar = true,
-            }, queryParams.ToArray());
-
-            window.SetParentWindow(ElectronUtil.MainWindow);
-            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-            window.Center();
+        if (FocusExistingWindowIfOpen(windowName))
+        {
+            return;
         }
 
-        public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
+        var display = await PrimaryDisplay();
+
+        var queryParams = new List<(string, object?)>();
+        if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
+
+        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
-            const string windowName = "script-config";
+            Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
+            Height = display.Bounds.Height * 4 / 10,
+            Width = 550,
+            AutoHideMenuBar = true,
+            MinWidth = 550,
+            MinHeight = 550
+        }, queryParams.ToArray());
 
-            if (FocusExistingWindowIfOpen(windowName))
-            {
-                return;
-            }
+        window.SetParentWindow(ElectronUtil.MainWindow);
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+        window.Center();
+    }
 
-            var display = await PrimaryDisplay();
+    private async Task<BrowserWindow> CreateWindowAsync(
+        string windowName,
+        bool singleInstance,
+        BrowserWindowOptions options,
+        params (string key, object? value)[] queryParams)
+    {
+        var url = $"{_hostInfo.HostUrl}?win={windowName}";
 
-            var queryParams = new List<(string, object?)>();
-            queryParams.Add(("script-id", script.Id));
-            if (tab != null) queryParams.Add(("tab", tab));
-
-            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
-            {
-                Title = script.Name,
-                Height = display.Bounds.Height * 2 / 3,
-                Width = display.Bounds.Width * 4 / 5,
-                AutoHideMenuBar = true,
-            }, queryParams.ToArray());
-
-            window.SetParentWindow(ElectronUtil.MainWindow);
-            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-            window.Center();
+        if (queryParams.Any())
+        {
+            url += "&" + string.Join("&", queryParams.Select(p => $"{p.key}={p.value}"));
         }
 
-        public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+        if (options.MinHeight == 0) options.MinHeight = 100;
+        if (options.MinWidth == 0) options.MinWidth = 100;
+        options.Center = true;
+
+        var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+
+        if (singleInstance)
         {
-            const string windowName = "data-connection";
-
-            if (FocusExistingWindowIfOpen(windowName))
-            {
-                return;
-            }
-
-            var display = await PrimaryDisplay();
-
-            var queryParams = new List<(string, object?)>();
-            if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
-
-            var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
-            {
-                Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
-                Height = display.Bounds.Height * 4 / 10,
-                Width = 550,
-                AutoHideMenuBar = true,
-                MinWidth = 550,
-                MinHeight = 550
-            }, queryParams.ToArray());
-
-            window.SetParentWindow(ElectronUtil.MainWindow);
-            var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-            window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-            window.Center();
+            _singleInstanceWindows.Add(windowName, window);
+            window.OnClosed += () => _singleInstanceWindows.Remove(windowName);
         }
 
-        private async Task<BrowserWindow> CreateWindowAsync(
-            string windowName,
-            bool singleInstance,
-            BrowserWindowOptions options,
-            params (string key, object? value)[] queryParams)
+        await window.WebContents.Session.ClearCacheAsync();
+
+        return window;
+    }
+
+    private bool FocusExistingWindowIfOpen(string windowName)
+    {
+        if (_singleInstanceWindows.TryGetValue(windowName, out var window))
         {
-            var url = $"{_hostInfo.HostUrl}?win={windowName}";
-
-            if (queryParams.Any())
-            {
-                url += "&" + string.Join("&", queryParams.Select(p => $"{p.key}={p.value}"));
-            }
-
-            if (options.MinHeight == 0) options.MinHeight = 100;
-            if (options.MinWidth == 0) options.MinWidth = 100;
-            options.Center = true;
-
-            var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
-
-            if (singleInstance)
-            {
-                _singleInstanceWindows.Add(windowName, window);
-                window.OnClosed += () => _singleInstanceWindows.Remove(windowName);
-            }
-
-            await window.WebContents.Session.ClearCacheAsync();
-
-            return window;
+            window.Focus();
+            return true;
         }
 
-        private bool FocusExistingWindowIfOpen(string windowName)
-        {
-            if (_singleInstanceWindows.TryGetValue(windowName, out var window))
-            {
-                window.Focus();
-                return true;
-            }
-
-            return false;
-        }
+        return false;
     }
 }

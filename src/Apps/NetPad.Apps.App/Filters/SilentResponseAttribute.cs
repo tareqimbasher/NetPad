@@ -16,4 +16,3 @@ public class SilentResponseAttribute : ActionFilterAttribute
         context.Result = _response;
     }
 }
-

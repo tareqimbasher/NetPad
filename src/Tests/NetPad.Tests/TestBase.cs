@@ -6,57 +6,56 @@ using NetPad.Events;
 using NetPad.Tests.Logging;
 using Xunit.Abstractions;
 
-namespace NetPad.Tests
+namespace NetPad.Tests;
+
+public abstract class TestBase : IDisposable
 {
-    public abstract class TestBase : IDisposable
+    protected readonly ITestOutputHelper _testOutputHelper;
+
+    public TestBase(ITestOutputHelper testOutputHelper)
     {
-        protected readonly ITestOutputHelper _testOutputHelper;
+        _testOutputHelper = testOutputHelper;
 
-        public TestBase(ITestOutputHelper testOutputHelper)
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", false)
+            .AddJsonFile("appsettings.Local.json", true)
+            .Build();
+
+        var services = new ServiceCollection();
+
+        services.AddLogging(config =>
         {
-            _testOutputHelper = testOutputHelper;
+            config.AddProvider(new XUnitLoggerProvider(testOutputHelper));
+            config.AddConfiguration(configuration.GetSection("Logging"));
+        });
 
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Local.json", optional: true)
-                .Build();
+        services.AddSingleton<IEventBus, EventBus>();
 
-            var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider(true);
 
-            services.AddLogging(config =>
-            {
-                config.AddProvider(new XUnitLoggerProvider(testOutputHelper));
-                config.AddConfiguration(configuration.GetSection("Logging"));
-            });
+        Logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(GetType().FullName!);
+    }
 
-            services.AddSingleton<IEventBus, EventBus>();
+    protected ServiceProvider ServiceProvider { get; }
+    protected ILogger Logger { get; }
 
-            ConfigureServices(services);
-            ServiceProvider = services.BuildServiceProvider(true);
+    protected virtual void ConfigureServices(ServiceCollection services)
+    {
+    }
 
-            Logger = ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(GetType().FullName!);
-        }
 
-        protected ServiceProvider ServiceProvider { get; }
-        protected ILogger Logger { get; }
-
-        protected virtual void ConfigureServices(ServiceCollection services)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
         {
+            ServiceProvider.Dispose();
         }
+    }
 
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                ServiceProvider.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

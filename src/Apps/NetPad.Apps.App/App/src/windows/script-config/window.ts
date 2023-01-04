@@ -35,8 +35,7 @@ export class Window {
             await this.scriptService.setScriptNamespaces(this.script.id, this.configStore.namespaces as string[]);
             await this.scriptService.setReferences(this.script.id, this.configStore.references as Reference[]);
             window.close();
-        }
-        catch (ex) {
+        } catch (ex) {
             alert(ex);
         }
     }

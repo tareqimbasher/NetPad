@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace NetPad.Utilities;
 
@@ -55,6 +54,7 @@ public static class TypeUtils
             {
                 return true;
             }
+
             type = type.BaseType;
         }
 

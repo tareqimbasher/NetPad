@@ -1,4 +1,5 @@
 using MediatR;
+using OmniSharp.Models.V2;
 
 namespace NetPad.Plugins.OmniSharp.Features.InlayHinting;
 
@@ -26,10 +27,10 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
                 return null;
             }
 
-            omniSharpRequest.Location = new()
+            omniSharpRequest.Location = new Location
             {
                 FileName = _server.Project.UserProgramFilePath,
-                Range = new()
+                Range = new OmniSharpRange
                 {
                     Start = omniSharpRequest.Location.Range.Start,
                     End = omniSharpRequest.Location.Range.End

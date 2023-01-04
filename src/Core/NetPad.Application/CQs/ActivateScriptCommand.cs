@@ -24,7 +24,7 @@ public class ActivateScriptCommand : Command
         public async Task<Unit> Handle(ActivateScriptCommand request, CancellationToken cancellationToken)
         {
             await _session.ActivateAsync(request.ScriptId);
-            return Unit.Value;;
+            return Unit.Value;
         }
     }
 }

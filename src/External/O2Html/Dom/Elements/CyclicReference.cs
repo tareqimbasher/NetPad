@@ -6,6 +6,6 @@ public class CyclicReference : Element
 {
     public CyclicReference(Type type) : base("div")
     {
-        AddText($"Cyclic reference ({type.GetReadableName(withNamespace: true, forHtml: true)})");
+        AddText($"Cyclic reference ({type.GetReadableName(true, true)})");
     }
 }

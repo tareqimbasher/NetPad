@@ -13,7 +13,7 @@ public class SourceCode
     private readonly HashSet<Using> _usings;
     private bool _changed;
 
-    public SourceCode() : this(code: null, usings: Array.Empty<Using>())
+    public SourceCode() : this(null, Array.Empty<Using>())
     {
     }
 

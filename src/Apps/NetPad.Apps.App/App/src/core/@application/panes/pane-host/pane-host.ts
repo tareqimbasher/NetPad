@@ -34,8 +34,7 @@ export class PaneHost {
         if (!pane) {
             if (this.panes.size > 0) {
                 pane = [...this.panes][0];
-            }
-            else {
+            } else {
                 throw new Error("No panes are added to this host.");
             }
         }
