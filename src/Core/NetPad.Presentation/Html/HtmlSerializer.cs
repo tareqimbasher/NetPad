@@ -9,6 +9,7 @@ public static class HtmlSerializer
     {
         ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
         DoNotSerializeNonRootEmptyCollections = true,
+        MaxIQueryableSerializeLength = 1000
     };
 
     public static string Serialize(object? output, string? title = null)
