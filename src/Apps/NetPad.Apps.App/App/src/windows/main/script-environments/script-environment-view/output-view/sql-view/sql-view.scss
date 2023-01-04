@@ -5,6 +5,8 @@ sql-view {
     min-height: 0;
 
     .html-output-container {
+        white-space: nowrap;
+
         .group.text {
             line-height: 1.35;
         }

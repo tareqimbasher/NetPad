@@ -69,20 +69,31 @@ export class SqlView extends OutputViewBase {
 class Colorizer {
     public static colorize(html: string): string {
         // Date/time
-        const startString = "dbug:&nbsp;";
-        const textStart = html.indexOf(startString);
-        html = html.substring(0, textStart + startString.length)
-            + `<span class="query-time">`
-            + html.substring(textStart + startString.length, textStart + startString.length + 28)
-            + `</span>`
-            + html.substring(textStart + startString.length + 28);
+        const spaceSplitParts = html.split("&nbsp;");
+        spaceSplitParts[1] = `<span class="query-time">${spaceSplitParts[1]}`;
+        spaceSplitParts[2] = `${spaceSplitParts[2]}</span>`;
+        html = spaceSplitParts.join("&nbsp;");
 
         // Parameters
-        html = html
-            .split("[Parameters=[")
+        const paramNames: string[] = [];
+        const paramParts = html.split("[Parameters=[");
+        if (paramParts.length > 1 || !paramParts[1].startsWith("]")) {
+            // paramParts[1] looks like: @__p_1='1000', @__p_0='2'], CommandType='Text', CommandTimeout='30']...
+            const params = paramParts[1].split("]")[0].split(",");
+            for (const param of params) {
+                const parts = param.split("=");
+                paramNames.push(parts[0]);
+            }
+        }
+
+        html = paramParts
             .join(`[Parameters=[<span class="query-params">`)
             .split("],&nbsp;CommandType")
             .join("</span>],&nbsp;CommandType");
+
+        for (const paramName of paramNames) {
+            html = html.replaceAll(paramName, `<span class="query-params">${paramName}</span>`)
+        }
 
         // Keywords
         for (const keyword of this.keywords) {

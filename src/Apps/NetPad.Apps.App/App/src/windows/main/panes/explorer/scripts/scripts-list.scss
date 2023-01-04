@@ -54,7 +54,7 @@ scripts-list {
 
                 &.is-active {
                     .script-name {
-                        @extend .text-blue;
+                        font-weight: bold;
                     }
                 }
 
