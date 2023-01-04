@@ -1993,6 +1993,7 @@ export class TypesApiClient implements ITypesApiClient {
 export class AppIdentifier implements IAppIdentifier {
     name!: string;
     version!: string;
+    productVersion!: string;
 
     constructor(data?: IAppIdentifier) {
         if (data) {
@@ -2007,6 +2008,7 @@ export class AppIdentifier implements IAppIdentifier {
         if (_data) {
             this.name = _data["name"];
             this.version = _data["version"];
+            this.productVersion = _data["productVersion"];
         }
     }
 
@@ -2021,6 +2023,7 @@ export class AppIdentifier implements IAppIdentifier {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["version"] = this.version;
+        data["productVersion"] = this.productVersion;
         return data;
     }
 
@@ -2035,6 +2038,7 @@ export class AppIdentifier implements IAppIdentifier {
 export interface IAppIdentifier {
     name: string;
     version: string;
+    productVersion: string;
 }
 
 export type LogSource = "WebApp" | "ElectronApp";

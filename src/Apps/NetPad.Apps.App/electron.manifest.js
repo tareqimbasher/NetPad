@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2020 Tareq Imbasher",
-    buildVersion: "0.1.0",
+    buildVersion: "0.1.0-alpha.1",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -62,6 +62,7 @@ const electronBuilderConfig = {
             },
             {
                 target: "deb",
+                depends: ["libnotify4", "libxtst6", "libnss3"]
             },
             {
                 target: "rpm",
