@@ -18,9 +18,12 @@
     </div>
 </div>
 
-<results-view show.bind="view === 'Results'"
-              active.bind="view === 'Results'"
-              environment.bind="environment"></results-view>
-<sql-view show.bind="view === 'SQL'"
-          active.bind="view === 'SQL'"
-          environment.bind="environment"></sql-view>
+<div class="views"
+     style="font-family: ${settings.results.font ? settings.results.font : 'inherit'}">
+    <results-view show.bind="view === 'Results'"
+                  active.bind="view === 'Results'"
+                  environment.bind="environment"></results-view>
+    <sql-view show.bind="view === 'SQL'"
+              active.bind="view === 'SQL'"
+              environment.bind="environment"></sql-view>
+</div>

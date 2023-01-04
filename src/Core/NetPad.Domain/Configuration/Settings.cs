@@ -74,7 +74,8 @@ namespace NetPad.Configuration
 
             Results
                 .SetOpenOnRun(options.OpenOnRun)
-                .SetTextWrap(options.TextWrap);
+                .SetTextWrap(options.TextWrap)
+                .SetFont(options.Font);
 
             return this;
         }

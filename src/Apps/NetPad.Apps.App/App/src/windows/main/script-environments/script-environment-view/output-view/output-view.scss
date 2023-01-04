@@ -7,6 +7,13 @@ output-view {
     flex-grow: 1;
     min-height: 0;
 
+    > .views {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 0;
+    }
+
     .toolbar {
         height: 2rem;
         min-height: 2rem;

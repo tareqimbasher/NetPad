@@ -3754,6 +3754,7 @@ export interface IEditorOptions {
 export class ResultsOptions implements IResultsOptions {
     openOnRun!: boolean;
     textWrap!: boolean;
+    font?: string | undefined;
 
     constructor(data?: IResultsOptions) {
         if (data) {
@@ -3768,6 +3769,7 @@ export class ResultsOptions implements IResultsOptions {
         if (_data) {
             this.openOnRun = _data["openOnRun"];
             this.textWrap = _data["textWrap"];
+            this.font = _data["font"];
         }
     }
 
@@ -3782,6 +3784,7 @@ export class ResultsOptions implements IResultsOptions {
         data = typeof data === 'object' ? data : {};
         data["openOnRun"] = this.openOnRun;
         data["textWrap"] = this.textWrap;
+        data["font"] = this.font;
         return data;
     }
 
@@ -3796,6 +3799,7 @@ export class ResultsOptions implements IResultsOptions {
 export interface IResultsOptions {
     openOnRun: boolean;
     textWrap: boolean;
+    font?: string | undefined;
 }
 
 export class OmniSharpOptions implements IOmniSharpOptions {

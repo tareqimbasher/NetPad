@@ -24,3 +24,38 @@
         </div>
     </div>
 </div>
+
+<div class="section">
+    <div class="header">
+        <i class="theme-icon"></i>
+        Appearance
+    </div>
+
+    <div class="body">
+        <div class="sub-header">Font</div>
+        <div class="body">
+            <div class="form-check">
+                <input id="font-system"
+                       name="font"
+                       class="form-check-input"
+                       type="radio"
+                       model.bind=""
+                       checked.bind="settings.results.font">
+                <label class="form-check-label" for="font-system">
+                    System font
+                </label>
+            </div>
+            <div class="form-check">
+                <input id="font-monospace"
+                       name="font"
+                       class="form-check-input"
+                       type="radio"
+                       model.bind="'monospace'"
+                       checked.bind="settings.results.font">
+                <label class="form-check-label" for="font-monospace" style="font-family: monospace">
+                    Monospace
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
