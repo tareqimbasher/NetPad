@@ -78,90 +78,42 @@ fi
 
 mkdir -p "$PACKAGES_DEST_DIR"
 
-distribute() {
-  local filename="$1"
-  local os="$2"
+package() {
+  local os="$1"
 
-  # We don't want to remove the "os" from .zip files
-  [[ $filename == *.zip ]] && new_name=$filename || new_name=${filename/-$os/}
-
-  if [[ "$filename" != "$new_name" ]]; then
-    echo "   - Renaming: $filename -> $new_name"
-    mv -- "$filename" "$new_name"
+  if [[ $build == "true" ]]; then
+    echo "- Building..."
+    cd "$APP_DIR" || exit 1
+    electronize build /manifest electron.manifest.js /PublishSingleFile false /target "$os"
   fi
 
-  echo "   - Copying: $new_name"
-  mv "$new_name" "$PACKAGES_DEST_DIR/$new_name"
+  echo "- Distributing..."
+  cd "$PACKAGES_SOURCE_DIR" || exit 1
+  for filename in *.*; do
+    if [[ -d $filename ]]; then
+      continue
+    fi
+
+    if [[ $filename != *.exe* ]] && [[ $filename != *.zip ]] && [[ $filename != *.pacman ]] && [[ $filename != *.AppImage ]] && [[ $filename != *.deb ]] && [[ $filename != *.rpm ]]; then
+      continue
+    fi
+
+    echo "   - Copying: $filename"
+    mv "$filename" "$PACKAGES_DEST_DIR/$filename"
+  done
 }
 
 if [[ -z $os ]] || [[ $os == "linux" ]]; then
   printf "%b" "${GREEN}\n# LINUX packages\n${ENDCOLOR}"
-
-  if [[ $build == "true" ]]; then
-    echo "- Building..."
-    cd "$APP_DIR" || exit 1
-    electronize build /manifest electron.manifest.js /PublishSingleFile false /target linux
-  fi
-
-  echo "- Distributing..."
-  cd "$PACKAGES_SOURCE_DIR" || exit 1
-  for filename in *-linux.*; do
-    if [[ -d $filename ]]; then
-      continue
-    fi
-
-    if [[ $filename != *.pacman ]] && [[ $filename != *.AppImage ]] && [[ $filename != *.deb ]] && [[ $filename != *.rpm ]] && [[ $filename != *.zip ]]; then
-      continue
-    fi
-
-    distribute "$filename" "linux"
-  done
+  package linux
 fi
 
 if [[ -z $os ]] || [[ $os == "osx" ]]; then
   printf "%b" "${GREEN}\n# OSX packages\n${ENDCOLOR}"
-
-  if [[ $build == "true" ]]; then
-    echo "- Building..."
-    cd "$APP_DIR" || exit 1
-    electronize build /manifest electron.manifest.js /PublishSingleFile false /target osx
-  fi
-
-  echo "- Distributing..."
-  cd "$PACKAGES_SOURCE_DIR" || exit 1
-  for filename in *-mac.*; do
-    if [[ -d $filename ]]; then
-      continue
-    fi
-
-    if [[ $filename != *.zip ]]; then
-      continue
-    fi
-
-    distribute "$filename" "mac"
-  done
+  package osx
 fi
 
 if [[ -z $os ]] || [[ $os == "win" ]]; then
   printf "%b" "${GREEN}\n# WINDOWS packages\n${ENDCOLOR}"
-
-  if [[ $build == "true" ]]; then
-    echo "- Building..."
-    cd "$APP_DIR" || exit 1
-    electronize build /manifest electron.manifest.js /PublishSingleFile false /target win
-  fi
-
-  echo "- Distributing..."
-  cd "$PACKAGES_SOURCE_DIR" || exit 1
-  for filename in *-win.*; do
-    if [[ -d $filename ]]; then
-      continue
-    fi
-
-    if [[ $filename != *.exe* ]] && [[ $filename != *.zip ]]; then
-      continue
-    fi
-
-    distribute "$filename" "win"
-  done
+  package win
 fi

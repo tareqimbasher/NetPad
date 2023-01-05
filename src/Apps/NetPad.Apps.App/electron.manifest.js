@@ -37,9 +37,6 @@ const electronBuilderConfig = {
         },
         "**/*"
     ],
-    // pacman: {
-    //     afterInstall: "bin/res/install-mime.sh"
-    // },
     linux: {
         artifactName: "${name}-${version}-${arch}-${os}.${ext}",
         icon: "../../../wwwroot/logo/circle/",
@@ -62,7 +59,6 @@ const electronBuilderConfig = {
             },
             {
                 target: "deb",
-                depends: ["libnotify4", "libxtst6", "libnss3"]
             },
             {
                 target: "rpm",
@@ -70,23 +66,6 @@ const electronBuilderConfig = {
             {
                 target: "zip",
             },
-        ]
-    },
-    nsis: {
-        oneClick: false,
-        allowToChangeInstallationDirectory: true
-    },
-    win: {
-        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
-        icon: "../../../wwwroot/favicon.ico",
-        target: [
-            {
-                target: "nsis"
-            },
-            {
-                target: "zip"
-            }
-
         ]
     },
     mac: {
@@ -99,6 +78,36 @@ const electronBuilderConfig = {
                 target: "zip"
             }
         ]
+    },
+    win: {
+        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
+        icon: "../../../wwwroot/favicon.ico",
+        target: [
+            {
+                target: "nsis"
+            },
+            {
+                target: "zip"
+            }
+        ]
+    },
+    pacman: {
+        artifactName: "${name}-${version}-${arch}.${ext}",
+    },
+    appImage: {
+        artifactName: "${name}-${version}-${arch}.${ext}",
+    },
+    deb: {
+        artifactName: "${name}-${version}-${arch}.${ext}",
+        depends: ["libnotify4", "libxtst6", "libnss3"]
+    },
+    rpm: {
+        artifactName: "${name}-${version}-${arch}.${ext}",
+    },
+    nsis: {
+        artifactName: "${name}-${version}-${arch}.${ext}",
+        oneClick: false,
+        allowToChangeInstallationDirectory: true,
     }
 }
 
