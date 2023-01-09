@@ -16,6 +16,10 @@ We love [LinqPad](https://www.linqpad.net/), but we also miss its tremendous
 utility when running on non-Windows platforms. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
+The goal isn't to reach 100% feature parity with LinqPad, but
+to offer an acceptable alternative that covers the most common features
+needed by a user of such software.
+
 ## Requirements
 
 * [.NET SDK 6.x](https://dotnet.microsoft.com/en-us/download/dotnet/6.0): used
