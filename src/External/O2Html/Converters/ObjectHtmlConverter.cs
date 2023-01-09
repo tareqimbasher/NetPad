@@ -40,12 +40,17 @@ public class ObjectHtmlConverter : HtmlConverter
             object? value = GetPropertyValue(property, ref obj!);
 
             var tr = table.Body.AddAndGetElement("tr");
+
+            // Add property name
             tr.AddAndGetElement("td")
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
                 .WithTitle(property.PropertyType.GetReadableName(true, true))
                 .AddText($"{name}: ");
 
-            htmlSerializer.SerializeWithinTableRow(tr, value, property.PropertyType, serializationScope);
+            // Add property value
+            tr.AddAndGetElement("td")
+                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+                .AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
         }
 
         return table;
@@ -66,7 +71,10 @@ public class ObjectHtmlConverter : HtmlConverter
         foreach (var property in properties)
         {
             object? value = GetPropertyValue(property, ref obj!);
-            htmlSerializer.SerializeWithinTableRow(tr, value, property.PropertyType, serializationScope);
+
+            tr.AddAndGetElement("td")
+                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+                .AddChild(htmlSerializer.Serialize(value, property.PropertyType, serializationScope));
         }
     }
 
