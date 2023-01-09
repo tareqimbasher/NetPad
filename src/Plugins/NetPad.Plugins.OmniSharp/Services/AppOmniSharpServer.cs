@@ -82,6 +82,7 @@ public class AppOmniSharpServer
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
         await Project.CreateAsync(ProjectOutputType.Executable, true);
+        await Project.RestoreAsync();
 
         InitializeEventHandlers();
 

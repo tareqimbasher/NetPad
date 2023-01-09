@@ -144,6 +144,28 @@ public class DotNetCSharpProject
         }
     }
 
+    /// <summary>
+    /// Runs 'dotnet restore' on project
+    /// </summary>
+    public virtual async Task RestoreAsync()
+    {
+        EnsurePackageCacheDirectoryExists();
+
+        var process = Process.Start(new ProcessStartInfo(
+            DotNetInfo.LocateDotNetExecutableOrThrow(),
+            $"restore \"{ProjectFilePath}\"")
+        {
+            UseShellExecute = false,
+            WorkingDirectory = ProjectDirectoryPath,
+            CreateNoWindow = true
+        });
+
+        if (process != null)
+        {
+            await process.WaitForExitAsync();
+        }
+    }
+
 
     public Task AddReferenceAsync(Reference reference)
     {
