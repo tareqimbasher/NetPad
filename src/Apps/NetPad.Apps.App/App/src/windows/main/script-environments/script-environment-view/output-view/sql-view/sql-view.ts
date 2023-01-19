@@ -77,22 +77,26 @@ class Colorizer {
         // Parameters
         const paramNames: string[] = [];
         const paramParts = html.split("[Parameters=[");
+
         if (paramParts.length > 1 || !paramParts[1].startsWith("]")) {
             // paramParts[1] looks like: @__p_1='1000', @__p_0='2'], CommandType='Text', CommandTimeout='30']...
             const params = paramParts[1].split("]")[0].split(",");
-            for (const param of params) {
-                const parts = param.split("=");
-                paramNames.push(parts[0]);
+
+            if (params.length > 0 && !!params[0]) {
+                for (const param of params) {
+                    const parts = param.split("=");
+                    paramNames.push(parts[0]);
+                }
+
+                html = paramParts
+                    .join(`[Parameters=[<span class="query-params">`)
+                    .split("],&nbsp;CommandType")
+                    .join("</span>],&nbsp;CommandType");
+
+                for (const paramName of paramNames) {
+                    html = html.replaceAll(paramName, `<span class="query-params">${paramName}</span>`)
+                }
             }
-        }
-
-        html = paramParts
-            .join(`[Parameters=[<span class="query-params">`)
-            .split("],&nbsp;CommandType")
-            .join("</span>],&nbsp;CommandType");
-
-        for (const paramName of paramNames) {
-            html = html.replaceAll(paramName, `<span class="query-params">${paramName}</span>`)
         }
 
         // Keywords
