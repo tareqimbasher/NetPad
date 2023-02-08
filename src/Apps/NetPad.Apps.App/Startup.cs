@@ -108,7 +108,7 @@ public class Startup
         // Hosted services
         services.AddHostedService<EventForwardToIpcBackgroundService>();
         services.AddHostedService<ScriptEnvironmentBackgroundService>();
-        services.AddHostedService<ScriptDirectoryBackgroundService>();
+        services.AddHostedService<ScriptsFileWatcherBackgroundService>();
         if (WebHostEnvironment.IsDevelopment())
         {
             //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();

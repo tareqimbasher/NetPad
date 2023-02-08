@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace NetPad.Utilities;
 
-public static class ProcessUtils
+public static class ProcessUtil
 {
     public static bool WasProcessStarted(this Process process)
     {

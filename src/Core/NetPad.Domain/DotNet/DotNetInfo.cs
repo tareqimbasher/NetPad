@@ -21,7 +21,7 @@ public static class DotNetInfo
     {
         var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
                          ?? Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR")
-                         ?? (PlatformUtils.IsWindowsPlatform() ? @"C:\Program Files\dotnet" : "/usr/local/share/dotnet");
+                         ?? (PlatformUtil.IsWindowsPlatform() ? @"C:\Program Files\dotnet" : "/usr/local/share/dotnet");
 
         if (Directory.Exists(dotnetRoot)) return dotnetRoot;
 
@@ -175,11 +175,11 @@ public static class DotNetInfo
 
     private static string GetDotNetExeName()
     {
-        return PlatformUtils.IsWindowsPlatform() ? "dotnet.exe" : "dotnet";
+        return PlatformUtil.IsWindowsPlatform() ? "dotnet.exe" : "dotnet";
     }
 
     private static string GetDotNetEfToolExeName()
     {
-        return PlatformUtils.IsWindowsPlatform() ? "dotnet-ef.exe" : "dotnet-ef";
+        return PlatformUtil.IsWindowsPlatform() ? "dotnet-ef.exe" : "dotnet-ef";
     }
 }

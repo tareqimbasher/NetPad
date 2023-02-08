@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace NetPad.Utilities;
 
-public static class AsyncHelpers
+public static class AsyncUtil
 {
     public static void FireAndForget(Func<Task> func)
     {

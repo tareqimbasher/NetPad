@@ -10,16 +10,16 @@ using NetPad.UiInterop;
 namespace NetPad.BackgroundServices;
 
 /// <summary>
-/// Monitors script directory for changes and notifies IPC clients that it changed.
+/// Monitors scripts directory, on disk, for changes and notifies IPC clients that it changed.
 /// </summary>
-public class ScriptDirectoryBackgroundService : BackgroundService
+public class ScriptsFileWatcherBackgroundService : BackgroundService
 {
     private readonly IScriptRepository _scriptRepository;
     private readonly IIpcService _ipcService;
     private readonly Settings _settings;
     private FileSystemWatcher? _scriptDirWatcher;
 
-    public ScriptDirectoryBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
+    public ScriptsFileWatcherBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
         base(loggerFactory)
     {
         _scriptRepository = scriptRepository;
@@ -31,7 +31,7 @@ public class ScriptDirectoryBackgroundService : BackgroundService
     {
         _scriptDirWatcher = new FileSystemWatcher(_settings.ScriptsDirectoryPath)
         {
-            Filter = "*.netpad",
+            Filter = $"*.{Script.STANDARD_EXTENSION_WO_DOT}",
             NotifyFilter = NotifyFilters.LastWrite
                            | NotifyFilters.FileName
                            | NotifyFilters.DirectoryName

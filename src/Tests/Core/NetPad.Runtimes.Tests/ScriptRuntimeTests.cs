@@ -67,9 +67,10 @@ public class ScriptRuntimeTests : TestBase
         runtime.AddOutput(
             new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(new ActionOutputWriter<ScriptOutput>((output, title) => result = output?.Body?.ToString())));
 
-        await runtime.RunScriptAsync(new RunOptions());
+        var runResult = await runtime.RunScriptAsync(new RunOptions());
 
         Assert.Equal(expectedOutput, result);
+        Assert.True(runResult.IsRunAttemptSuccessful);
     }
 
     [Fact]
@@ -114,7 +115,8 @@ public class ScriptRuntimeTests : TestBase
     {
         serviceProvider ??= ServiceProvider;
 
-        return (InMemoryScriptRuntime)await serviceProvider.GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
+        return (InMemoryScriptRuntime)await serviceProvider
+            .GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
             .CreateScriptRuntimeAsync(script);
     }
 

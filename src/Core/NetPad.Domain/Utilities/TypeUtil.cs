@@ -2,7 +2,7 @@ using System;
 
 namespace NetPad.Utilities;
 
-public static class TypeUtils
+public static class TypeUtil
 {
     public static string GetReadableName(this Type type, bool withNamespace = false, bool forHtml = false)
     {

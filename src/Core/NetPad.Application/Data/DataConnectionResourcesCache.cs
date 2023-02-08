@@ -123,7 +123,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         }
     }
 
-    public Task<IEnumerable<Reference>> GetRequiredReferencesAsync(DataConnection dataConnection)
+    public Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
     {
         if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.RequiredReferences != null)
         {
@@ -142,7 +142,7 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences));
 
-            resources.RequiredReferences = Task.Run<IEnumerable<Reference>>(async () =>
+            resources.RequiredReferences = Task.Run(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
                 return await generator.GetRequiredReferencesAsync(dataConnection);

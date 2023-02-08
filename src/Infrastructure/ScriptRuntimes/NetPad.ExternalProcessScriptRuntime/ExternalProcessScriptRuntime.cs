@@ -25,6 +25,17 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             IOutputWriter<ScriptOutput> SqlChannel)
         : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
 
+    private const string RuntimeConfigFileTemplate = @"{{
+    ""runtimeOptions"": {{
+        ""framework"": {{
+            ""name"": ""Microsoft.NETCore.App"",
+            ""version"": ""6.0.0""
+        }},
+        ""rollForward"": ""Minor"",
+        ""additionalProbingPaths"": {0}
+    }}
+}}";
+
     private readonly Script _script;
     private readonly ICodeParser _codeParser;
     private readonly ICodeCompiler _codeCompiler;
@@ -32,7 +43,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
     private readonly MainScriptOutputAdapter _outputAdapter;
     private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
-    private readonly DirectoryInfo _externalProcessSpawnRoot;
+    private readonly DirectoryInfo _externalProcessRootDirectory;
     private IServiceScope? _serviceScope;
 
     private ProcessHandler? _processHandler;
@@ -52,7 +63,9 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _packageProvider = packageProvider;
         _logger = logger;
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
-        _externalProcessSpawnRoot = AppDataProvider.ExternalProcessesDirectoryPath.Combine(_script.Id.ToString()).GetInfo();
+        _externalProcessRootDirectory = AppDataProvider.ExternalProcessesDirectoryPath
+            .Combine(_script.Id.ToString())
+            .GetInfo();
 
         // Used to forward output sent to the main _outputAdapter to any configured external output adapters
         void ForwardToExternalAdapters<TScriptOutput>(
@@ -94,8 +107,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     {
         _logger.LogDebug("Starting to run script");
 
-        var processRootFolder = _externalProcessSpawnRoot;
-
         try
         {
             var runDependencies = await GetRunDependencies(runOptions);
@@ -103,14 +114,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             if (runDependencies == null)
                 return RunResult.RunAttemptFailure();
 
-            if (processRootFolder.Exists)
+            if (_externalProcessRootDirectory.Exists)
             {
-                processRootFolder.Delete(true);
+                _externalProcessRootDirectory.Delete(true);
             }
 
-            processRootFolder.Create();
+            _externalProcessRootDirectory.Create();
 
-            var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(processRootFolder, runDependencies);
+            var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
             // TODO optimize this section
             _processHandler =
@@ -118,7 +129,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async output =>
             {
-                _logger.LogDebug("Script output received. Length: {OutputLength}",
+                _logger.LogDebug(
+                    "Script output received. Length: {OutputLength}",
                     output?.Length.ToString() ?? "null");
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
@@ -132,7 +144,9 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     }
                     catch
                     {
-                        _logger.LogDebug("Script output is not JSON or could not be deserialized");
+                        _logger.LogDebug(
+                            "Script output is not JSON or could not be deserialized. Output: '{Output}'",
+                            output);
                     }
                 }
 
@@ -144,16 +158,21 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql &&
-                         _outputAdapter.SqlChannel != null)
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql
+                         && _outputAdapter.SqlChannel != null)
                 {
                     await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output =>
+            {
+                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
+            });
 
             var start = DateTime.Now;
+
+            int exitCode;
 
             var startResult = _processHandler.StartProcess();
 
@@ -162,13 +181,13 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 return RunResult.RunAttemptFailure();
             }
 
-            int exitCode = await startResult.WaitForExitTask;
-
-            DisposeProcessHandler();
+            exitCode = await startResult.WaitForExitTask;
 
             var elapsed = (DateTime.Now - start).TotalMilliseconds;
 
-            _logger.LogDebug("Script run completed with exit code: {ExitCode}. Duration: {Duration} ms", exitCode,
+            _logger.LogDebug(
+                "Script run completed with exit code: {ExitCode}. Duration: {Duration} ms",
+                exitCode,
                 elapsed);
 
             return exitCode == 0
@@ -183,29 +202,24 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         }
         finally
         {
-            if (processRootFolder.Exists) processRootFolder.Delete(true);
+            StopAndCleanup();
         }
     }
 
-    private async Task<FilePath> SetupExternalProcessFolderAsync(DirectoryInfo processRootFolder, RunDependencies runDependencies)
+    private async Task<FilePath> SetupExternalProcessFolderAsync(
+        DirectoryInfo processRootFolder,
+        RunDependencies runDependencies)
     {
-        var fileSafeScriptName = StringUtils.RemoveInvalidFileNameCharacters(_script.Name, "_").Replace(" ", "_");
+        var fileSafeScriptName = StringUtil
+            .RemoveInvalidFileNameCharacters(_script.Name, "_")
+            .Replace(" ", "_");
+
         FilePath scriptAssemblyFilePath = Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.dll");
 
         await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, runDependencies.ScriptAssemblyBytes);
 
-        const string runtimeConfigFileTemplate = @"{{
-    ""runtimeOptions"": {{
-        ""framework"": {{
-            ""name"": ""Microsoft.NETCore.App"",
-            ""version"": ""6.0.0""
-        }},
-        ""rollForward"": ""Minor"",
-        ""additionalProbingPaths"": {0}
-    }}
-}}";
         var runtimeConfigFileContents = string.Format(
-            runtimeConfigFileTemplate,
+            RuntimeConfigFileTemplate,
             JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
         );
 
@@ -218,7 +232,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         {
             var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
 
-            await File.WriteAllBytesAsync(Path.Combine(processRootFolder.FullName, fileName),
+            await File.WriteAllBytesAsync(
+                Path.Combine(processRootFolder.FullName, fileName),
                 referenceAssemblyImage.Image);
         }
 
@@ -244,29 +259,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         }
 
         return scriptAssemblyFilePath;
-    }
-
-    public Task StopScriptAsync()
-    {
-        DisposeProcessHandler();
-        return Task.CompletedTask;
-    }
-
-    private void DisposeProcessHandler()
-    {
-        if (_processHandler == null) return;
-        _processHandler.Dispose();
-        _processHandler = null;
-    }
-
-    public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
-    {
-        _externalOutputAdapters.Add(outputAdapter);
-    }
-
-    public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
-    {
-        _externalOutputAdapters.Remove(outputAdapter);
     }
 
     private async Task<RunDependencies?> GetRunDependencies(RunOptions runOptions)
@@ -338,6 +330,50 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             referenceAssemblyPaths,
             runOptions.Assets
         );
+    }
+
+    public Task StopScriptAsync()
+    {
+        StopAndCleanup();
+        return Task.CompletedTask;
+    }
+
+    private void StopAndCleanup()
+    {
+        if (_externalProcessRootDirectory.Exists)
+        {
+            try
+            {
+                _externalProcessRootDirectory.Delete(true);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("Could not delete process root directory: {Path}", _externalProcessRootDirectory.FullName);
+            }
+        }
+
+        if (_processHandler != null)
+        {
+            try
+            {
+                _processHandler.Dispose();
+                _processHandler = null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error disposing process handler");
+            }
+        }
+    }
+
+    public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    {
+        _externalOutputAdapters.Add(outputAdapter);
+    }
+
+    public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    {
+        _externalOutputAdapters.Remove(outputAdapter);
     }
 
     public void Dispose()

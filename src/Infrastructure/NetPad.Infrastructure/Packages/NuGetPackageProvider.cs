@@ -255,11 +255,11 @@ public class NuGetPackageProvider : IPackageProvider
                     Version = nuspecReader.GetVersion().ToString(),
                     Authors = nuspecReader.GetAuthors(),
                     Description = nuspecReader.GetDescription(),
-                    IconUrl = StringUtils.ToUriOrDefault(nuspecReader.GetIconUrl()), // GetIcon()
-                    ProjectUrl = StringUtils.ToUriOrDefault(nuspecReader.GetProjectUrl()),
+                    IconUrl = StringUtil.ToUriOrDefault(nuspecReader.GetIconUrl()), // GetIcon()
+                    ProjectUrl = StringUtil.ToUriOrDefault(nuspecReader.GetProjectUrl()),
                     PackageDetailsUrl = null, // Does not exist in nuspec file
-                    LicenseUrl = StringUtils.ToUriOrDefault(nuspecReader.GetLicenseUrl()),
-                    ReadmeUrl = StringUtils.ToUriOrDefault(nuspecReader.GetReadme()),
+                    LicenseUrl = StringUtil.ToUriOrDefault(nuspecReader.GetLicenseUrl()),
+                    ReadmeUrl = StringUtil.ToUriOrDefault(nuspecReader.GetReadme()),
                     ReportAbuseUrl = null,
                     RequireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance(),
                     Dependencies = nuspecReader.GetDependencyGroups().Select(dg =>

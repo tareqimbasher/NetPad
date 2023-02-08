@@ -5,9 +5,13 @@ using System.Threading.Tasks;
 
 namespace NetPad.Utilities;
 
-public static class StreamUtils
+public static class StreamUtil
 {
-    public static async Task CopyToAsync(this Stream source, Stream destination, int bufferSize, IProgress<long>? progress = null,
+    public static async Task CopyToAsync(
+        this Stream source,
+        Stream destination,
+        int bufferSize,
+        IProgress<long>? progress = null,
         CancellationToken cancellationToken = default)
     {
         if (source == null)

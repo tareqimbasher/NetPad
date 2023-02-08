@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.DotNet;
 
@@ -14,5 +13,5 @@ public class DataConnectionResources
     public DataConnection DataConnection { get; }
     public Task<DataConnectionSourceCode>? SourceCode { get; set; }
     public Task<AssemblyImage?>? Assembly { get; set; }
-    public Task<IEnumerable<Reference>>? RequiredReferences { get; set; }
+    public Task<Reference[]>? RequiredReferences { get; set; }
 }

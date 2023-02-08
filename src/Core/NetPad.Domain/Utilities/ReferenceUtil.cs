@@ -6,7 +6,7 @@ using NetPad.Packages;
 
 namespace NetPad.Utilities;
 
-public static class ReferenceUtils
+public static class ReferenceUtil
 {
     public static async Task<HashSet<string>> GetAssemblyPathsAsync(this IEnumerable<Reference> references, IPackageProvider packageProvider)
     {

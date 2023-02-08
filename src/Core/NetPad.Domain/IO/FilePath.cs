@@ -27,7 +27,7 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
 {
     public virtual bool Equals(DirectoryPath? other) =>
         Path.Equals(other?.Path,
-            PlatformUtils.IsWindowsPlatform()
+            PlatformUtil.IsWindowsPlatform()
                 ? StringComparison.InvariantCultureIgnoreCase
                 : StringComparison.InvariantCulture);
 
@@ -53,7 +53,7 @@ public record FilePath(string Path) : AbsolutePath(Path)
 {
     public virtual bool Equals(FilePath? other) =>
         Path.Equals(other?.Path,
-            PlatformUtils.IsWindowsPlatform()
+            PlatformUtil.IsWindowsPlatform()
                 ? StringComparison.InvariantCultureIgnoreCase
                 : StringComparison.InvariantCulture);
 
@@ -91,7 +91,7 @@ public record RelativePath
 
     public virtual bool Equals(RelativePath? other) =>
         Path.Equals(other?.Path,
-            PlatformUtils.IsWindowsPlatform()
+            PlatformUtil.IsWindowsPlatform()
                 ? StringComparison.InvariantCultureIgnoreCase
                 : StringComparison.InvariantCulture);
 

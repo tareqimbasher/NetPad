@@ -4,10 +4,10 @@ using Xunit;
 
 namespace NetPad.Domain.Tests.Utilities;
 
-public class StringUtilsTests
+public class StringUtilTests
 {
     [Fact]
-    public void JoinToString_JoinsToString()
+    public void JoinToString_CreatesAStringFromACollection()
     {
         var collection = new[] { "Test1", "Test2" };
 
@@ -21,8 +21,9 @@ public class StringUtilsTests
     {
         var strWithBOM = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble()) + "test";
 
-        var strWithoutBOM = StringUtils.RemoveLeadingBOMString(strWithBOM);
+        var strWithoutBOM = StringUtil.RemoveLeadingBOMString(strWithBOM);
 
+        Assert.NotEqual("test", strWithBOM);
         Assert.Equal("test", strWithoutBOM);
     }
 
@@ -31,7 +32,7 @@ public class StringUtilsTests
     {
         var strWithBOM = "test" + Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
-        var result = StringUtils.RemoveLeadingBOMString(strWithBOM);
+        var result = StringUtil.RemoveLeadingBOMString(strWithBOM);
 
         Assert.Equal(strWithBOM, result);
     }

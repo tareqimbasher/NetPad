@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NetPad.Utilities;
 
-public static class CollectionUtils
+public static class CollectionUtil
 {
     public static Task ForEachAsync<T>(this IEnumerable<T> collection, int degreeOfParallelism, Func<T, Task> asyncAction)
     {

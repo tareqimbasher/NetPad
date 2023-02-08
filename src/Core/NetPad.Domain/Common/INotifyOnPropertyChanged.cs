@@ -47,7 +47,7 @@ public static class INotifyOnPropertyChangedExtensions
         backingField = newValue;
         foreach (var handler in obj.OnPropertyChanged)
         {
-            AsyncHelpers.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, newValue)));
+            AsyncUtil.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, newValue)));
         }
 
         return newValue;

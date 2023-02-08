@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NetPad.Utilities;
 
-public static class DelegateUtils
+public static class DelegateUtil
 {
     public static Action<T> Debounce<T>(this Action<T> func, int milliseconds = 300)
     {

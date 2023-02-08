@@ -24,7 +24,7 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
             return new OmniSharpServerLocation(_settings.OmniSharp.ExecutablePath);
         }
 
-        var platform = PlatformUtils.GetOSPlatform();
+        var platform = PlatformUtil.GetOSPlatform();
 
         // Lock so that multiple threads don't attempt to download at the same time
         await _downloadLock.WaitAsync();

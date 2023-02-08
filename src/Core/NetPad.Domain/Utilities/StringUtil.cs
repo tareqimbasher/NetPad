@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NetPad.Utilities;
 
-public static class StringUtils
+public static class StringUtil
 {
     private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
@@ -40,10 +40,10 @@ public static class StringUtils
         };
     }
 
-    public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurence = false)
+    public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurrence = false)
     {
         int from = str.IndexOf(startDelimiter, StringComparison.Ordinal) + startDelimiter.Length;
-        int to = !useLastEndDelimiterOccurence
+        int to = !useLastEndDelimiterOccurrence
             ? str.IndexOf(endDelimiter, StringComparison.Ordinal)
             : str.LastIndexOf(endDelimiter, StringComparison.Ordinal);
 

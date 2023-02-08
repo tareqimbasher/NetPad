@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.Data;
 using NetPad.DotNet;
@@ -27,8 +26,8 @@ public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
         return Task.FromResult(new DataConnectionSourceCode());
     }
 
-    public Task<IEnumerable<Reference>> GetRequiredReferencesAsync(DataConnection dataConnection)
+    public Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
     {
-        return Task.FromResult<IEnumerable<Reference>>(Array.Empty<Reference>());
+        return Task.FromResult(Array.Empty<Reference>());
     }
 }
