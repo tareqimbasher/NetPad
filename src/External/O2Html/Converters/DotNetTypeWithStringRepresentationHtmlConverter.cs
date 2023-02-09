@@ -12,13 +12,13 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
 
         var str = obj.ToString()?
-            .ReplaceIfExists("&", "&amp;")
-            .ReplaceIfExists(" ", "&nbsp;")
-            .ReplaceIfExists("<", "&lt;")
-            .ReplaceIfExists(">", "&gt;")
-            .ReplaceIfExists("\"", "&quot;")
-            .ReplaceIfExists("'", "&apos;")
-            .ReplaceIfExists("\n", "<br/>");
+            .ReplaceIfExists("&", Consts.HtmlAmpersand)
+            .ReplaceIfExists(" ", Consts.HtmlSpace)
+            .ReplaceIfExists("<", Consts.HtmlLessThan)
+            .ReplaceIfExists(">", Consts.HtmlGreaterThan)
+            .ReplaceIfExists("\"", Consts.HtmlQuote)
+            .ReplaceIfExists("'", Consts.HtmlApostrophe)
+            .ReplaceIfExists("\n", Consts.HtmlNewLine);
 
         return new TextNode(str);
     }

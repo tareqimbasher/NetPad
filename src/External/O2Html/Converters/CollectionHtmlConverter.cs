@@ -1,6 +1,10 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
+#if NET6_0_OR_GREATER
+using System.Text.Json;
+#endif
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -8,12 +12,14 @@ namespace O2Html.Converters;
 
 public class CollectionHtmlConverter : HtmlConverter
 {
-    public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope,
+        HtmlSerializer htmlSerializer)
     {
         return WriteHtmlPrivate(obj, type, serializationScope, htmlSerializer).element;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope,
+        HtmlSerializer htmlSerializer)
     {
         var td = tr.AddAndGetElement("td").WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue);
 
@@ -31,7 +37,8 @@ public class CollectionHtmlConverter : HtmlConverter
         }
         else
         {
-            td.AddChild(new EmptyCollection(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
+            td.AddChild(
+                new EmptyCollection(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
         }
     }
 
@@ -40,7 +47,8 @@ public class CollectionHtmlConverter : HtmlConverter
         return htmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
     }
 
-    private (Element element, int? collectionLength) WriteHtmlPrivate<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    private (Element element, int? collectionLength) WriteHtmlPrivate<T>(T obj, Type type,
+        SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         if (obj == null)
             return (new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null), null);
@@ -50,13 +58,16 @@ public class CollectionHtmlConverter : HtmlConverter
             var referenceLoopHandling = htmlSerializer.SerializerSettings.ReferenceLoopHandling;
 
             if (referenceLoopHandling == ReferenceLoopHandling.IgnoreAndSerializeCyclicReference)
-                return (new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.CyclicReference), null);
+                return (
+                    new CyclicReference(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses
+                        .CyclicReference), null);
 
             if (referenceLoopHandling == ReferenceLoopHandling.Ignore)
                 return (new Element("div"), null);
 
             if (referenceLoopHandling == ReferenceLoopHandling.Error)
-                throw new HtmlSerializationException($"A reference loop was detected. Object already serialized: {type.FullName}");
+                throw new HtmlSerializationException(
+                    $"A reference loop was detected. Object already serialized: {type.FullName}");
         }
 
         Type elementType = htmlSerializer.GetElementType(type) ?? typeof(object);
@@ -77,6 +88,8 @@ public class CollectionHtmlConverter : HtmlConverter
             htmlSerializer.SerializeWithinTableRow(tr, item, elementType, serializationScope);
         }
 
+        string headerRowText = GetHeaderRowText(collection, type, collectionLength);
+
         if (htmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
         {
             var properties = htmlSerializer.GetReadableProperties(elementType);
@@ -87,18 +100,60 @@ public class CollectionHtmlConverter : HtmlConverter
             }
 
             var countHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
+
             countHeaderRow
                 .AddAndGetElement("th")
                 .WithAddClass("table-info-header")
                 .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
-                .AddText($"{type.GetReadableName(forHtml: true)} ({collectionLength} items)");
+                .AddText(headerRowText);
         }
         else
         {
-            table.AddAndGetHeading($"{type.GetReadableName(forHtml: true)} ({collectionLength} items)");
+            table.AddAndGetHeading(headerRowText);
         }
 
         return (table, collectionLength);
+    }
+
+    private string GetHeaderRowText(IEnumerable collection, Type collectionType, int collectionLength)
+    {
+        string headerRowText = "";
+
+        var collectionTypeName = collectionType.GetReadableName(forHtml: true);
+
+        if (collectionTypeName.StartsWith("IGrouping" + Consts.HtmlLessThan))
+        {
+            var keyProp = collectionType.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public);
+            if (keyProp != null)
+            {
+                object? keyValue = keyProp.GetValue(collection);
+
+                string? keyValueStr = null;
+
+#if NET6_0_OR_GREATER
+                keyValueStr = JsonSerializer.Serialize(keyValue);
+#else
+                keyValueStr = keyValue?.ToString();
+#endif
+
+                keyValueStr = keyValueStr == null
+                    ? "(null)"
+                    : keyValueStr.Length <= 50
+                        ? keyValueStr
+                        : keyValueStr.Substring(0, 50);
+
+                headerRowText += "Key = "
+                                 + keyValueStr
+                                 + Consts.HtmlSpace
+                                 + Consts.HtmlSpace
+                                 + Consts.HtmlSpace
+                                 + Consts.HtmlSpace;
+            }
+        }
+
+        headerRowText += $"{collectionTypeName} ({collectionLength} items)";
+
+        return headerRowText;
     }
 
     private IEnumerable ToEnumerable<T>(T obj)
