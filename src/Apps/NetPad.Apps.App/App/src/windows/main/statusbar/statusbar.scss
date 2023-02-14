@@ -4,11 +4,34 @@
 statusbar {
     @include theme(background-color, statusbarBackground);
     height: $statusbar-height;
-    max-height: 20px;
+    max-height: $statusbar-height;
+    padding: 0 0.5rem;
+    display: flex;
 
-    .right-column {
+    .left-column, .middle-column, .right-column {
+        flex-grow: 1;
+        flex-basis: 0;
         display: flex;
         flex-direction: row;
+        align-items: center;
         gap: 0.5em
+    }
+
+    .left-column {
+        font-size: 0.9rem;
+    }
+
+    .middle-column {
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .right-column {
+        justify-content: flex-end;
+    }
+
+    .active-app-status-message {
+        border-bottom: transparent 2px solid;
+        max-width: 35rem;
     }
 }

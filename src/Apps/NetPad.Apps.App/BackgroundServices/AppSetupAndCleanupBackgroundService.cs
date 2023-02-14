@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.Plugins;
 using NetPad.Scripts;
@@ -14,16 +15,19 @@ public class AppSetupAndCleanupBackgroundService : BackgroundService
     private readonly ISession _session;
     private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
     private readonly IPluginManager _pluginManager;
+    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
 
     public AppSetupAndCleanupBackgroundService(
         ISession session,
         IAutoSaveScriptRepository autoSaveScriptRepository,
         IPluginManager pluginManager,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
         ILoggerFactory loggerFactory) : base(loggerFactory)
     {
         _session = session;
         _autoSaveScriptRepository = autoSaveScriptRepository;
         _pluginManager = pluginManager;
+        _appStatusMessagePublisher = appStatusMessagePublisher;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,6 +39,8 @@ public class AppSetupAndCleanupBackgroundService : BackgroundService
 
     protected override async Task StoppingAsync(CancellationToken cancellationToken)
     {
+        await _appStatusMessagePublisher.PublishAsync("Stopping...", AppStatusMessagePriority.Normal, true);
+
         var environments = _session.Environments;
 
         await _session.CloseAsync(environments.Select(e => e.Script.Id).ToArray());

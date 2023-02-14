@@ -154,6 +154,16 @@ button > .icon-base {
 }
 
 // CONTEXTUAL ICONS
+.info-icon {
+    @extend %icon-base;
+    @extend .fa-circle-info;
+}
+
+.attention-icon {
+    @extend %icon-base;
+    @extend .fa-circle-exclamation;
+}
+
 .explorer-icon {
     @extend %icon-base;
     @extend .fa-folder;

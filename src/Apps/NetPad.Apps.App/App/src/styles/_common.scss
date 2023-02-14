@@ -64,8 +64,14 @@ kbd {
     }
 }
 
-.text-truncate-1-line,
-%text-truncate-1-line {
+.text-truncate-1-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// Multi line truncating uses line clamps
+%text-truncate-multi-line {
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     display: -webkit-box;
@@ -73,12 +79,12 @@ kbd {
 }
 
 .text-truncate-2-lines {
-    @extend %text-truncate-1-line;
+    @extend %text-truncate-multi-line;
     -webkit-line-clamp: 2;
 }
 
 .text-truncate-3-lines {
-    @extend %text-truncate-1-line;
+    @extend %text-truncate-multi-line;
     -webkit-line-clamp: 3;
 }
 

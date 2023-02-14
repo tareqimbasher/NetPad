@@ -42,7 +42,7 @@ public class ElectronWindowService : IUiWindowService
             Width = display.Bounds.Width * 2 / 3,
             X = display.Bounds.X,
             Y = display.Bounds.Y,
-            AutoHideMenuBar = false
+            AutoHideMenuBar = true
         });
 
         window.Center();

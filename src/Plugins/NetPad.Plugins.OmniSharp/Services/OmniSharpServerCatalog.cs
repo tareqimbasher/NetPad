@@ -49,7 +49,8 @@ public class OmniSharpServerCatalog
     {
         if (_items.ContainsKey(environment.Script.Id))
         {
-            throw new InvalidOperationException($"An OmniSharp server already exists for script ID: {environment.Script.Id}");
+            throw new InvalidOperationException(
+                $"An OmniSharp server already exists for script ID: {environment.Script.Id}");
         }
 
         var serviceScope = _serviceScope.ServiceProvider.CreateScope();
@@ -72,7 +73,8 @@ public class OmniSharpServerCatalog
 
         try
         {
-            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...", persistant: true);
+            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...",
+                persistant: true);
             var startTask = server.StartAsync();
 
             // We don't want to await
@@ -107,6 +109,11 @@ public class OmniSharpServerCatalog
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred starting OmniSharp server");
+                    await _appStatusMessagePublisher.PublishAsync(
+                        environment.Script.Id,
+                        "OmniSharp Server failed to start",
+                        AppStatusMessagePriority.High,
+                        true);
                     return null;
                 }
 
@@ -118,7 +125,12 @@ public class OmniSharpServerCatalog
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred starting OmniSharp server");
+            _logger.LogError(ex, "Error occurred while attempting to start OmniSharp server");
+            await _appStatusMessagePublisher.PublishAsync(
+                environment.Script.Id,
+                "OmniSharp Server failed to start",
+                AppStatusMessagePriority.High,
+                true);
         }
     }
 

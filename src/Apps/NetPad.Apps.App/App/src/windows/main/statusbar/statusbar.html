@@ -1,21 +1,22 @@
-<div class="d-flex h-100">
-    <div class="left-column ms-3 me-auto">
-        <b>${session.active.status}</b>
+<div class="left-column">
+    <b>${activeEnvironment.status}</b>
 
-        <span show.bind="session.active.status !== 'Running' && session.active.runDurationMilliseconds"
-              title="The time it took to run the script. This includes time overhead of starting a the process that the script runs in.">
-            (Took: ${session.active.runDurationMilliseconds} ms)
+    <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds"
+          title="The time it took to run the script. This includes time overhead of starting a the process that the script runs in.">
+            (Took: ${activeEnvironment.runDurationMilliseconds} ms)
         </span>
+</div>
+<div class="middle-column">
+    <div class="active-app-status-message text-truncate-1-line" show.bind="appStatusMessage">
+        <i class="${appStatusMessage.priority === 'High' ? 'attention-icon text-red' : 'info-icon text-blue'} pe-2"></i>
+        ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
     </div>
-    <div class="right-column me-3">
-        <div show.bind="appStatusMessage">
-            ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
-        </div>
-        <i class="theme-icon action-icon"
-           click.trigger="settingsService.toggleTheme()"
-           title="Toggle Theme"></i>
-        <i class="settings-icon action-icon"
-           click.trigger="settingsService.openSettingsWindow()"
-           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
-    </div>
+</div>
+<div class="right-column">
+    <i class="theme-icon action-icon"
+       click.trigger="settingsService.toggleTheme()"
+       title="Toggle Theme"></i>
+    <i class="settings-icon action-icon"
+       click.trigger="settingsService.openSettingsWindow()"
+       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
 </div>

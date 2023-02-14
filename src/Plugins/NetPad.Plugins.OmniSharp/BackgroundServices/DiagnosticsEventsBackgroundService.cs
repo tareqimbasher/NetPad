@@ -59,7 +59,9 @@ public class DiagnosticsEventsBackgroundService : IHostedService
                     return;
 
                 // Only send diagnostics for user program
-                diagnostics.Results = diagnostics.Results.Where(d => d.FileName == server.Project.UserProgramFilePath).ToArray();
+                diagnostics.Results = diagnostics.Results
+                    .Where(d => d.FileName == server.Project.UserProgramFilePath)
+                    .ToArray();
 
                 if (!diagnostics.Results.Any())
                     return;
