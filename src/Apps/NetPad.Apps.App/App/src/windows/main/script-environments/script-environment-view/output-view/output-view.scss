@@ -146,6 +146,8 @@ output-view {
             margin: 5px 0;
             border-color: $table-outline-color;
 
+            thead th { position: sticky !important; top: 0; z-index: 1; }
+
             &.collapsed > tbody {
                 visibility: collapse;
             }
