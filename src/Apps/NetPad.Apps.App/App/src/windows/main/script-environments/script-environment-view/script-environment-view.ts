@@ -22,7 +22,7 @@ import {Editor, IShortcutManager, ViewModelBase} from "@application";
 export class ScriptEnvironmentView extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
 
-    @observable public editorText: string;
+    public editorTextChanged: (newValue: string) => void = newValue => this.editorTextChangedPrivate(newValue);
     public running = false;
 
     private split: Split.Instance;
@@ -40,6 +40,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
+        this.logger.debug("constructing");
     }
 
     public get script(): Script {
@@ -51,6 +52,8 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     public set kind(value) {
+        this.logger.debug("Setting script kind");
+
         this.scriptService.setScriptKind(this.script.id, value)
             .catch(err => {
                 this.logger.error("Failed to set script kind", err);
@@ -68,6 +71,8 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     public set dataConnection(value: DataConnection | undefined) {
+        this.logger.debug("Setting data connection");
+
         this.scriptService.setDataConnection(this.script.id, value?.id)
             .catch(err => {
                 this.logger.error("Failed to set script data connection", err);
@@ -78,7 +83,13 @@ export class ScriptEnvironmentView extends ViewModelBase {
         return this.session.active === this.environment;
     }
 
+    public bound() {
+        this.logger = this.logger.scopeTo(`[${this.environment.script.id}] ${this.environment.script.name}`);
+        this.logger.debug("bound");
+    }
     public attached() {
+        this.logger.debug("attaching");
+
         this.kind = this.script.config.kind;
 
         const runScriptEventToken = this.eventBus.subscribe(RunScriptEvent, async msg => {
@@ -112,14 +123,20 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
         if (this.environment.status === "Running")
             this.openResultsView();
+
+        this.logger.debug("attached");
     }
 
-    private async editorTextChanged(newText: string, oldText: string) {
+    private async editorTextChangedPrivate(newText: string | null | undefined) {
+        this.logger.debug("Editor text changed");
+        this.script.code = newText || "";
         await this.sendCodeToServer();
     }
 
     private async run() {
         if (this.environment.status === "Running") return;
+
+        this.logger.debug("Running");
 
         try {
             await this.sendCodeToServer();
@@ -141,6 +158,8 @@ export class ScriptEnvironmentView extends ViewModelBase {
     private async stop() {
         if (this.environment.status !== "Running") return;
 
+        this.logger.debug("Stopping...");
+
         try {
             await this.scriptService.stop(this.script.id);
         } catch (ex) {
@@ -149,15 +168,18 @@ export class ScriptEnvironmentView extends ViewModelBase {
     }
 
     private async sendCodeToServer() {
-        await this.scriptService.updateCode(this.script.id, this.editorText ?? "");
+        this.logger.debug("Sending code to server");
+        await this.scriptService.updateCode(this.script.id, this.script.code);
     }
 
     private openResultsView() {
         if (this.isResultsViewOpen()) return;
+        this.logger.debug("Opening results view");
         this.split.setSizes([30, 70]);
     }
 
     private collapseResultsView = () => {
+        this.logger.debug("Collapsing results view");
         this.split.collapse(1);
     }
 

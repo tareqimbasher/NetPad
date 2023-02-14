@@ -67,7 +67,7 @@
          -->
         <editor if.bind="isActive || activatedAtLeastOnce"
                 environment.bind="environment"
-                text.two-way="editorText"
+                text-changed.bind="editorTextChanged"
                 view-model.ref="editor"></editor>
     </div>
     <div ref="outputContainer" class="output-container overflow-hidden">

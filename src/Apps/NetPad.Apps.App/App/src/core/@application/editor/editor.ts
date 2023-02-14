@@ -6,7 +6,7 @@ import {EditorSetup, EditorUtil, ViewModelBase} from "@application";
 
 export class Editor extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
-    @bindable public text: string;
+    @bindable public textChanged?: (newValue: string) => void;
     public monacoEditor?: monaco.editor.IStandaloneCodeEditor;
 
     constructor(
@@ -16,18 +16,38 @@ export class Editor extends ViewModelBase {
         @IScriptService readonly scriptService: IScriptService,
         @ILogger logger: ILogger) {
         super(logger);
+        this.logger.debug("constructing");
+    }
+
+    public bound() {
+        this.logger = this.logger.scopeTo(`[${this.environment.script.id}] ${this.environment.script.name}`);
+        this.logger.debug("bound");
     }
 
     public async attached(): Promise<void> {
+        this.logger.debug("attaching");
+
         setTimeout(() => {
             this.initializeEditor();
         }, 100);
+
+        this.logger.debug("attached");
     }
 
     public override detaching() {
+        this.logger.debug("detaching");
+
         this.monacoEditor?.getModel()?.dispose();
         this.monacoEditor?.dispose();
         super.detaching();
+
+        this.logger.debug("detached");
+    }
+
+    public getText(): string {
+        if (!this.monacoEditor) return "";
+
+        return this.monacoEditor.getValue();
     }
 
     public focus() {
@@ -43,13 +63,12 @@ export class Editor extends ViewModelBase {
             "semanticHighlighting.enabled": true
         });
 
-        this.text = this.environment.script.code;
         this.updateEditorSettings();
         this.focus();
 
         this.monacoEditor.onDidChangeModelContent(ev => {
-            if (this.monacoEditor)
-                this.text = this.monacoEditor.getValue();
+            if (this.monacoEditor && this.textChanged)
+                this.textChanged(this.monacoEditor.getValue());
         });
 
         const mainContent = document.getElementById("main-content");
