@@ -45,7 +45,7 @@ public class CloseScriptCommand : Command
             var scriptEnvironment = _session.Get(scriptId) ?? throw new ScriptNotFoundException(scriptId);
             var script = scriptEnvironment.Script;
 
-            if (script.IsDirty)
+            if (script.IsDirty && !string.IsNullOrEmpty(script.Code))
             {
                 var response = await _uiDialogService.AskUserIfTheyWantToSave(script);
                 if (response == YesNoCancel.Cancel)

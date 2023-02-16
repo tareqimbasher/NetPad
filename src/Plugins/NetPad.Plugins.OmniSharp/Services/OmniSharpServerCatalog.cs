@@ -73,8 +73,7 @@ public class OmniSharpServerCatalog
 
         try
         {
-            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...",
-                persistant: true);
+            await _appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
             var startTask = server.StartAsync();
 
             // We don't want to await
