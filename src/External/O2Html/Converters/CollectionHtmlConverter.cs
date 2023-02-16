@@ -99,6 +99,8 @@ public class CollectionHtmlConverter : HtmlConverter
                     .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
             }
 
+            table.Head.ChildElements.Single().WithAddClass("table-data-header");
+
             var countHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
 
             countHeaderRow

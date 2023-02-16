@@ -44,7 +44,7 @@ public class ObjectHtmlConverter : HtmlConverter
             // Add property name
             tr.AddAndGetElement("td")
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
-                .WithTitle(property.PropertyType.GetReadableName(true, true))
+                .WithTitle($"[{property.PropertyType.GetReadableName(true, true)}] {name}")
                 .AddText($"{name}: ");
 
             // Add property value
