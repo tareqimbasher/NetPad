@@ -20,7 +20,6 @@ import {
     EventBus,
     ExternalLinkCustomAttribute,
     FindTextBox,
-    IWindowBootstrapperConstructor,
     LogConfig,
     PlatformsCustomAttribute,
     RemoteLogSink,
@@ -34,6 +33,7 @@ import {
 } from "@application";
 import {AppMutationObserver, IBackgroundService} from "@common";
 import {WebApp} from "@application/apps/web-app";
+import * as appTasks from "./main.tasks";
 
 const startupOptions = new URLSearchParams(window.location.search);
 
@@ -74,25 +74,15 @@ const app = Aurelia.register(
     SanitizeHtmlValueConverter,
     YesNoValueConverter,
 
-    // Custom elements that we want available everywhere
+    // Global custom elements that we want available everywhere without needing
+    // to require (import) them in our HTML or JS
     ContextMenu,
     FindTextBox,
 
-    // Tasks that run before the app is activated
-    AppTask.beforeActivate(IContainer, async container => {
-        const backgroundServices = container.getAll(IBackgroundService);
-
-        const logger = container.get(ILogger);
-        logger.info(`Starting ${backgroundServices.length} background services`);
-
-        for (const backgroundService of backgroundServices) {
-            try {
-                await backgroundService.start();
-            } catch (ex) {
-                logger.error(`Error starting background service ${backgroundService.constructor.name}. ${ex.toString()}`);
-            }
-        }
-    })
+    // Tasks that run at specific points in the app's lifecycle
+    AppTask.beforeActivate(IContainer, appTasks.configureFetchClient),
+    AppTask.beforeActivate(IContainer, appTasks.startBackgroundServices),
+    AppTask.afterActivate(IContainer, container => container.get(ILogger).debug("App activated"))
 );
 
 if (!Env.isRunningInElectron()) {
@@ -103,28 +93,6 @@ if (!Env.isRunningInElectron()) {
 const settings = await app.container.get(ISettingService).get();
 app.container.get(Settings).init(settings.toJSON());
 
-// Determine which window we need to bootstrap and use
-let windowName = startupOptions.get("win");
-if (!windowName && !Env.isRunningInElectron())
-    windowName = "main";
-
-let bootstrapperCtor: IWindowBootstrapperConstructor;
-
-/* eslint-disable @typescript-eslint/no-var-requires */
-if (windowName === "main")
-    bootstrapperCtor = require("./windows/main/main").Bootstrapper;
-else if (windowName === "settings")
-    bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
-else if (windowName === "script-config")
-    bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
-else if (windowName === "data-connection")
-    bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
-else
-    throw new Error(`Unrecognized window: ${windowName}`);
-/* eslint-enable @typescript-eslint/no-var-requires */
-
-const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
-bootstrapper.registerServices(app);
-
 // Start the app
-app.app(bootstrapper.getEntry()).start();
+const entryPoint = appTasks.configureAppEntryPoint(app);
+app.app(entryPoint).start();
