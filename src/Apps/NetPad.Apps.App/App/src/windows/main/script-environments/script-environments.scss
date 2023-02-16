@@ -5,19 +5,32 @@ script-environments {
     min-width: 0;
     overflow: hidden;
 
-    .script-tabs {
-        flex-wrap: nowrap;
+    .script-tabs-bar {
         display: flex;
         align-items: center;
-        @include theme(border-bottom, borderColor, 1px solid);
+
+        .actions {
+            flex-basis: 20px;
+            min-width: 20px;
+            text-align: right;
+        }
+    }
+
+    .script-tabs {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        flex-grow: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
 
         .drag-drop-container {
             @extend %hide-scrollbar;
             flex-wrap: nowrap;
-            flex-shrink: 1;
+            flex-grow: 1;
             display: flex;
             align-items: center;
-            overflow-x: auto;
+            overflow-x: hidden;
             overflow-y: hidden;
         }
 
@@ -27,7 +40,6 @@ script-environments {
             align-items: center;
             white-space: nowrap;
             font-size: 0.925rem;
-            font-weight: bold;
             cursor: default;
             @include theme(background-color, tabColor);
 
@@ -84,6 +96,7 @@ script-environments {
 
             &.active {
                 @include theme(background-color, tabActiveColor);
+                font-weight: bold;
 
                 .script-name {
                     color: dodgerblue;
@@ -92,8 +105,57 @@ script-environments {
 
             &.new-script-tab {
                 margin-left: 1px;
-                padding-left: 0.4rem;
-                padding-right: 0.4rem;
+                padding-left: 0.6rem;
+                padding-right: 0.6rem;
+            }
+        }
+    }
+
+    &.style2 {
+        border-bottom: none !important;
+
+        .script-tab {
+            @include theme(background-color, tabColor);
+            font-weight: normal !important;
+            border-top: transparent 2px solid;
+            border-bottom: transparent 2px solid;
+
+            .script-name {
+                @include theme(color, tabInactiveTextColor);
+            }
+
+            &.active {
+                @include theme(background-color, tabActiveColor);
+                @include theme(border-bottom, borderContrastColor, 2px solid);
+                @include theme(border-bottom-color, activeColor);
+
+                .script-name {
+                    @include theme(color, tabActiveTextColor);
+                }
+            }
+
+            &.new-script-tab {
+            }
+        }
+    }
+
+    &.comfy {
+        .script-tab {
+            height: 2.5rem !important;
+            font-size: 1rem !important;
+
+            .script-tab-content {
+                padding-left: 1.3rem !important;
+            }
+
+            .script-tab-addon {
+                margin-right: 8px !important;
+            }
+        }
+
+        .script-tabs-bar {
+            .actions {
+                font-size: 1.2rem;
             }
         }
     }

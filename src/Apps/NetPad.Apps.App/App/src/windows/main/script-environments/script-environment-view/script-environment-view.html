@@ -1,6 +1,6 @@
 <import from="./output-view/output-view"></import>
 
-<div class="header ps-2 pe-2 mb-3 d-flex align-items-center">
+<div class="header d-flex align-items-center">
     <div class="d-flex">
         <button class="btn btn-sm btn-success me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
                 show.bind="environment.status !== 'Running'"
@@ -8,7 +8,7 @@
                 click.trigger="run()">
             <i class="run-icon"></i>
         </button>
-        <button class="btn btn-sm btn-danger me-2"
+        <button class="btn btn-danger me-2"
                 show.bind="environment.status === 'Running'"
                 title="Stop"
                 click.trigger="stop()">

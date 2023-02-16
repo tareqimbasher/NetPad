@@ -1,6 +1,7 @@
 import {ILogger} from "aurelia";
 import dragula from "dragula";
 import {
+    ActiveEnvironmentChangedEvent,
     CreateScriptDto,
     IAppService,
     IEventBus,
@@ -97,6 +98,12 @@ export class ScriptEnvironments extends ViewModelBase {
     }
 
     public attached() {
+        this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, msg => {
+            setTimeout(() => {
+                this.element.querySelector(`.script-tab[data-script-id="${msg.scriptId}"]`)?.scrollIntoView();
+            }, 1);
+        });
+
         this.initializeTabDragAndDrop();
     }
 

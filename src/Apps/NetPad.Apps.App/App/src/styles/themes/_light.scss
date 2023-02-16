@@ -1,15 +1,18 @@
 $light: (
     textColor: #34314b,
+    textHighestContrastTextColor: #000,
     textContrastColor: #d4d4d4,
-    backgroundColor: #f3f3f3,
+    backgroundColor: rgb(243, 243, 243),
     backgroundDarkerColor: #f3f3f3,
     backgroundLighterColor: #f6f6f6,
     borderColor: #ccc,
-    borderColorContrast: #444,
+    borderContrastColor: #bfbfbf,
     hoverColor: rgba(0, 0, 0, 0.075),
     activeColor: #0d6efd,
-    tabColor: #e1e1e1,
-    tabActiveColor: #c7c7c7,
+    tabColor: rgb(236, 236, 236),
+    tabActiveColor: rgb(255, 255, 255),
+    tabActiveTextColor: #000,
+    tabInactiveTextColor: rgba(0, 0, 0, 0.65),
     splitterColor: #dcdcdc,
     scrollbarTrackColor: #CECECE,
     scrollbarThumbColor: #7E8182,
@@ -28,6 +31,7 @@ $light: (
     // PANES
     paneRibbonBackground: #e1e1e1,
     // SCRIPT VIEW
+    scriptHeaderBackground: #fff,
     resultsBackground: #fafafa,
     resultsToolbarBackground: #ccc,
     // CONTEXT MENU

@@ -1,15 +1,18 @@
 $dark: (
     textColor: #dcdcdc,
+    textHighestContrastColor: #fff,
     textContrastColor: #34314b,
     backgroundColor: #222,
     backgroundDarkerColor: #1c1c1c,
     backgroundLighterColor: #333,
     borderColor: #3f3f3f,
-    borderColorContrast: #555,
+    borderContrastColor: #555,
     hoverColor: rgba(255, 255, 255, 0.075),
     activeColor: #0d6efd,
-    tabColor: #2d2d2d,
-    tabActiveColor: #3f3f3f,
+    tabColor: rgb(45, 45, 45),
+    tabActiveColor: rgb(30, 30, 30),
+    tabActiveTextColor: #fff,
+    tabInactiveTextColor: rgba(255, 255, 255, 0.65),
     splitterColor: #282828,
     scrollbarTrackColor: #343434,
     scrollbarThumbColor: #777,
@@ -28,6 +31,7 @@ $dark: (
     // PANES
     paneRibbonBackground: #252525,
     // SCRIPT VIEW
+    scriptHeaderBackground: #1e1e1e,
     resultsBackground: #222,
     resultsToolbarBackground: #333,
     // CONTEXT MENU

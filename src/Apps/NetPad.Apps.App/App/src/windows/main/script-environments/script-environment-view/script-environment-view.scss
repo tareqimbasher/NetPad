@@ -2,7 +2,10 @@
 @import "~styles/themes";
 
 script-environment-view {
-    padding-top: 0.5rem;
+    .header {
+        @include theme(background-color, scriptHeaderBackground);
+        padding: 0.25rem 0.5rem;
+    }
 
     .script-kind-selector {
         min-width: 150px;
@@ -26,5 +29,16 @@ script-environment-view {
         font-weight: bold;
         text-align: center;
         cursor: default;
+    }
+}
+
+.comfy script-environment-view {
+    .header {
+        padding: 0.45rem 0.5rem;
+
+        button {
+            padding: 0.1rem 0.675rem;
+            font-size: 1rem;
+        }
     }
 }
