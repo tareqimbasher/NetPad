@@ -1,0 +1,64 @@
+@import "~styles/variables";
+@import "~styles/themes";
+
+titlebar {
+    @include theme(background-color, statusbarBackground);
+    height: $titlebar-height;
+    max-height: $titlebar-height;
+    display: flex;
+    align-items: stretch;
+    user-select: none;
+    -webkit-app-region: drag;
+
+    .left-column, .middle-column, .right-column {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5em;
+    }
+
+    .left-column {
+        padding-left: 0.75rem;
+    }
+
+    .middle-column {
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .right-column {
+        justify-content: flex-end;
+        display: flex;
+        align-items: stretch;
+
+        .actions {
+            -webkit-app-region: no-drag;
+            display: flex;
+            align-items: center;
+
+            i {
+                margin-left: 1rem;
+            }
+        }
+
+        .window-controls {
+            display: flex;
+            align-items: stretch;
+            -webkit-app-region: no-drag;
+
+            i {
+                display: flex;
+                align-items: center;
+                font-size: 1rem;
+                padding-right: 1rem;
+                padding-left: 1rem;
+                cursor: default;
+
+                &:hover {
+                    @include theme(background-color, hoverColor);
+                }
+            }
+        }
+    }
+}

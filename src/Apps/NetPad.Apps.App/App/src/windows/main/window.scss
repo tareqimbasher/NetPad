@@ -1,5 +1,5 @@
 @import "~styles/variables";
 
 #content {
-    height: calc(100vh - #{$statusbar-height});
+    height: calc(100vh - #{$titlebar-height} - #{$statusbar-height});
 }

@@ -1,0 +1,28 @@
+<div class="left-column">
+    <img src="logo/circle/128x128.png" alt="" style="max-height: 18px"/>
+</div>
+<div class="middle-column">
+    ${title}
+</div>
+<div class="right-column">
+    <div class="actions">
+        <i class="window-always-on-top-icon action-icon ${isWindowAlwaysOnTop ? 'text-blue' : ''}"
+           click.trigger="toggleWindowAlwaysOnTop()"
+           title="${isWindowAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
+        <i class="settings-icon action-icon"
+           click.trigger="openSettingsWindow()"
+           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+    </div>
+
+    <div class="window-controls">
+        <i class="window-minimize-icon action-icon"
+           click.trigger="minimize()"
+           title="Minimize"></i>
+        <i class="window-maximize-icon action-icon"
+           click.trigger="maximize()"
+           title="Maximize"></i>
+        <i class="window-close-icon action-icon hover-bg-red"
+           click.trigger="close()"
+           title="Close"></i>
+    </div>
+</div>

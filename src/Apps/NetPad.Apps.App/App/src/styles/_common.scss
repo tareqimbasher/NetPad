@@ -113,3 +113,19 @@ kbd {
 ::-webkit-scrollbar-corner {
     @include theme(background-color, scrollbarTrackColor);
 }
+
+.fade-in {
+    opacity: 0;
+    animation-name: fade-in;
+    animation-duration: 0.6s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

@@ -6,6 +6,7 @@
 @import "./vendors/dragula";
 @import "./variables";
 @import "./common";
+@import "./colors";
 @import "./icons";
 @import "./themes";
 
@@ -72,16 +73,14 @@ html {
     /* stylelint-enable scss/at-extend-no-missing-placeholder */
 }
 
-@each $color in map-keys($colors) {
-    .text-#{"" + $color}, %text-#{"" + $color} {
-        color: map.get($colors, $color) !important;
+.theme-dark {
+    .btn-themed {
+        @extend .btn-dark
     }
+}
 
-    .hover-text-#{"" + $color}:hover, %hover-text-#{"" + $color}:hover {
-        color: map.get($colors, $color) !important;
-    }
-
-    .bg-#{"" + $color}, %bg-#{"" + $color} {
-        background-color: map.get($colors, $color) !important;
+.theme-light {
+    .btn-themed {
+        @extend .btn-light
     }
 }

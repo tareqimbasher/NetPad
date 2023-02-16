@@ -154,6 +154,27 @@ button > .icon-base {
 }
 
 // CONTEXTUAL ICONS
+.window-close-icon {
+    @extend %icon-base;
+    @extend .fa-xmark;
+}
+
+.window-maximize-icon {
+    @extend %icon-base;
+    @extend .fa-square;
+    @extend .fa-regular;
+}
+
+.window-minimize-icon {
+    @extend %icon-base;
+    @extend .fa-minus;
+}
+
+.window-always-on-top-icon {
+    @extend %icon-base;
+    @extend .fa-thumb-tack;
+}
+
 .info-icon {
     @extend %icon-base;
     @extend .fa-circle-info;

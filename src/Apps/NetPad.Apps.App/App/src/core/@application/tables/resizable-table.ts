@@ -18,9 +18,9 @@ export class ResizableTable implements IDisposable {
             resizer.classList.add("column-resizer");
             resizer.style.zIndex = "1";
             resizer.style.top = "0";
-            resizer.style.right = "-3px";
+            resizer.style.right = "-4px";
             resizer.style.width = "6px";
-            resizer.style.height = "100%";
+            resizer.style.bottom = "0";
             resizer.style.position = "absolute";
             resizer.style.cursor = "col-resize";
             resizer.style.userSelect = "none";
@@ -42,16 +42,14 @@ export class ResizableTable implements IDisposable {
         let pageX, curCol, curColWidth, tableWidth;
 
         const setResizerHeight = () => {
-            let heightOfNonMainHeaderRows = 0;
-            if (table.tHead && table.tHead.rows.length > 1) {
-                for (let i = 0; i < table.tHead.rows.length - 1; i++) {
-                    heightOfNonMainHeaderRows += table.tHead.rows[i].offsetHeight;
-                }
-            }
-            resizer.style.height = (table.offsetHeight - heightOfNonMainHeaderRows) + "px";
+            const tableRect = this.table.getBoundingClientRect();
+            const tableBottomY = tableRect.height + tableRect.y;
+            const resizerHeight = tableBottomY - resizer.getBoundingClientRect().y;
+
+            resizer.style.height = `${resizerHeight}px`;
         };
 
-        const tableMouseEnterHandler = () => {
+        const tableMouseOverHandler = () => {
             // We set the height of the resizer here because table height might change
             setResizerHeight();
         };
@@ -67,13 +65,13 @@ export class ResizableTable implements IDisposable {
         };
 
         const mouseOverHandler = (e) => {
-            e.target.style.borderRight = '2px solid dodgerblue';
+            e.target.style.borderLeft = '2px solid dodgerblue';
             // We set the height of the resizer here because table height might change
             setResizerHeight();
         };
 
         const mouseOutHandler = (e) => {
-            e.target.style.borderRight = '';
+            e.target.style.borderLeft = '';
         };
 
         const mouseMoveHandler = (e) => {
@@ -90,7 +88,7 @@ export class ResizableTable implements IDisposable {
             curColWidth = undefined
         };
 
-        table.addEventListener("mouseenter", tableMouseEnterHandler);
+        table.addEventListener("mouseover", tableMouseOverHandler);
         resizer.addEventListener('mousedown', mouseDownHandler);
         resizer.addEventListener('mouseover', mouseOverHandler);
         resizer.addEventListener('mouseout', mouseOutHandler);
@@ -98,7 +96,7 @@ export class ResizableTable implements IDisposable {
         document.addEventListener('mousemove', mouseMoveHandler);
 
         this.disposables.push(() => {
-            table.removeEventListener("mouseenter", tableMouseEnterHandler);
+            table.removeEventListener("mouseover", tableMouseOverHandler);
             resizer.removeEventListener('mousedown', mouseDownHandler);
             resizer.removeEventListener('mouseover', mouseOverHandler);
             resizer.removeEventListener('mouseout', mouseOutHandler);

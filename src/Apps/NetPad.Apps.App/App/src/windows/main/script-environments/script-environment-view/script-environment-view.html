@@ -2,7 +2,7 @@
 
 <div class="header d-flex align-items-center">
     <div class="d-flex">
-        <button class="btn btn-sm btn-success me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
+        <button class="btn btn-sm btn-themed text-green me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
                 show.bind="environment.status !== 'Running'"
                 title="${shortcutManager.getShortcutByName('Run').toString()}"
                 click.trigger="run()">
@@ -14,12 +14,12 @@
                 click.trigger="stop()">
             <i class="stop-icon"></i>
         </button>
-        <button class="btn btn-sm btn-secondary me-2"
+        <button class="btn btn-sm btn-themed text-blue me-2"
                 title="${shortcutManager.getShortcutByName('Save').toString()}"
                 click.trigger="scriptService.save(script.id)">
             <i class="save-icon"></i>
         </button>
-        <button class="btn btn-sm btn-secondary"
+        <button class="btn btn-sm btn-themed"
                 title="${shortcutManager.getShortcutByName('Script Properties').toString()}"
                 click.trigger="scriptService.openConfigWindow(script.id)"
                 disabled.bind="environment.status === 'Running'">

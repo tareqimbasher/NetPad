@@ -7,6 +7,7 @@ export * from "./events/run-script-event";
 
 export * from "./configuration/setting-service";
 export * from "./app/app-service";
+export * from "./window/window-service";
 export * from "./sessions/session";
 export * from "./scripts/script-service";
 export * from "./assemblies/assembly-service";

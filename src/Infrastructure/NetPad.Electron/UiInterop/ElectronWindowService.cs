@@ -33,19 +33,53 @@ public class ElectronWindowService : IUiWindowService
 
     private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
 
+    public async Task MaximizeMainWindowAsync()
+    {
+        var window = ElectronUtil.MainWindow;
+
+        if (await window.IsMaximizedAsync())
+            ElectronUtil.MainWindow.Unmaximize();
+        else
+            ElectronUtil.MainWindow.Maximize();
+    }
+
+    public async Task MinimizeMainWindowAsync()
+    {
+        var window = ElectronUtil.MainWindow;
+
+        if (await window.IsMinimizedAsync())
+            ElectronUtil.MainWindow.Restore();
+        else
+            ElectronUtil.MainWindow.Minimize();
+    }
+
+    public async Task ToggleAlwaysOnTopMainWindowAsync()
+    {
+        var window = ElectronUtil.MainWindow;
+
+        if (await window.IsAlwaysOnTopAsync())
+            ElectronUtil.MainWindow.SetAlwaysOnTop(false);
+        else
+            ElectronUtil.MainWindow.SetAlwaysOnTop(true);
+    }
+
+
     public async Task OpenMainWindowAsync()
     {
         var display = await PrimaryDisplay();
         var window = await CreateWindowAsync("main", false, new BrowserWindowOptions
         {
+            Show = false,
             Height = display.Bounds.Height * 2 / 3,
             Width = display.Bounds.Width * 2 / 3,
             X = display.Bounds.X,
             Y = display.Bounds.Y,
-            AutoHideMenuBar = true
+            AutoHideMenuBar = true,
+            TitleBarStyle = TitleBarStyle.hidden,
+            Frame = false
         });
 
-        window.Center();
+        window.Show();
         window.Maximize();
 
         lock (_singleInstanceWindows)
@@ -164,6 +198,8 @@ public class ElectronWindowService : IUiWindowService
         options.Center = true;
 
         var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+
+        _logger.LogDebug("Created window with name: {WindowName} and ID: {ID}", windowName, window.Id);
 
         if (singleInstance)
         {
@@ -339,7 +375,8 @@ public class ElectronWindowService : IUiWindowService
                             {
                                 // On force reload, start fresh and close any old
                                 // open secondary windows
-                                var mainWindowId = ElectronNET.API.Electron.WindowManager.BrowserWindows.ToList().First().Id;
+                                var mainWindowId = ElectronNET.API.Electron.WindowManager.BrowserWindows.ToList()
+                                    .First().Id;
                                 ElectronNET.API.Electron.WindowManager.BrowserWindows.ToList().ForEach(browserWindow =>
                                 {
                                     if (browserWindow.Id != mainWindowId)
@@ -358,7 +395,11 @@ public class ElectronWindowService : IUiWindowService
                             }
                         }
                     },
-                    new MenuItem { Label = "Open Developer Tools", Accelerator = "CmdOrCtrl+Shift+I", Role = MenuRole.toggledevtools },
+                    new MenuItem
+                    {
+                        Label = "Open Developer Tools", Accelerator = "CmdOrCtrl+Shift+I",
+                        Role = MenuRole.toggledevtools
+                    },
                     new MenuItem { Type = MenuType.separator },
                     new MenuItem { Label = "Actual Size", Accelerator = "CmdOrCtrl+0", Role = MenuRole.resetzoom },
                     new MenuItem { Label = "Zoom in", Accelerator = "CmdOrCtrl+Plus", Role = MenuRole.zoomin },
@@ -372,8 +413,10 @@ public class ElectronWindowService : IUiWindowService
                         {
                             try
                             {
-                                bool isFullScreen = await ElectronNET.API.Electron.WindowManager.BrowserWindows.First().IsFullScreenAsync();
-                                ElectronNET.API.Electron.WindowManager.BrowserWindows.First().SetFullScreen(!isFullScreen);
+                                bool isFullScreen = await ElectronNET.API.Electron.WindowManager.BrowserWindows.First()
+                                    .IsFullScreenAsync();
+                                ElectronNET.API.Electron.WindowManager.BrowserWindows.First()
+                                    .SetFullScreen(!isFullScreen);
                             }
                             catch (Exception ex)
                             {
@@ -415,12 +458,16 @@ public class ElectronWindowService : IUiWindowService
                     new MenuItem
                     {
                         Label = "GitHub",
-                        Click = async () => await ElectronNET.API.Electron.Shell.OpenExternalAsync("https://github.com/tareqimbasher/NetPad")
+                        Click = async () =>
+                            await ElectronNET.API.Electron.Shell.OpenExternalAsync(
+                                "https://github.com/tareqimbasher/NetPad")
                     },
                     new MenuItem
                     {
                         Label = "Search Issues",
-                        Click = async () => await ElectronNET.API.Electron.Shell.OpenExternalAsync("https://github.com/tareqimbasher/NetPad/issues")
+                        Click = async () =>
+                            await ElectronNET.API.Electron.Shell.OpenExternalAsync(
+                                "https://github.com/tareqimbasher/NetPad/issues")
                     }
                 }
             }

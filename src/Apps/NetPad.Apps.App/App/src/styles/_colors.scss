@@ -1,0 +1,21 @@
+﻿@use "sass:map";
+
+$colors: () !default;
+
+@each $color in map-keys($colors) {
+    .text-#{"" + $color}, %text-#{"" + $color} {
+        color: map.get($colors, $color) !important;
+    }
+
+    .hover-text-#{"" + $color}:hover, %hover-text-#{"" + $color}:hover {
+        color: map.get($colors, $color) !important;
+    }
+
+    .bg-#{"" + $color}, %bg-#{"" + $color} {
+        background-color: map.get($colors, $color) !important;
+    }
+
+    .hover-bg-#{"" + $color}:hover, %hover-bg-#{"" + $color}:hover {
+        background-color: map.get($colors, $color) !important;
+    }
+}

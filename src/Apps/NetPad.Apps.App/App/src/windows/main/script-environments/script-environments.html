@@ -15,7 +15,10 @@
                          click.trigger="session.activate(env.script.id)"
                          auxclick.trigger="tabWheelButtonClicked(env.script.id, $event)">
 
-                        <span class="script-name">${env.script.name}</span>
+                        <span class="script-name">
+                            <img src="img/csharp-logo.png" alt="" style="max-height: 1rem" class="me-3"/>
+                            ${env.script.name}
+                        </span>
 
                         <span class="script-status"
                               if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"

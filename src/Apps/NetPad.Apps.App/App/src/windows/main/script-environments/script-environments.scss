@@ -122,6 +122,8 @@ script-environments {
 
             .script-name {
                 @include theme(color, tabInactiveTextColor);
+                display: flex;
+                align-items: center;
             }
 
             &.active {
@@ -133,9 +135,6 @@ script-environments {
                     @include theme(color, tabActiveTextColor);
                 }
             }
-
-            &.new-script-tab {
-            }
         }
     }
 
@@ -145,7 +144,7 @@ script-environments {
             font-size: 1rem !important;
 
             .script-tab-content {
-                padding-left: 1.3rem !important;
+                padding-left: 0.95rem !important;
             }
 
             .script-tab-addon {

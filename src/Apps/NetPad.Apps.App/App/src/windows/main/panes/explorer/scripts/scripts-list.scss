@@ -60,7 +60,7 @@ scripts-list {
 
                 &.is-open {
                     .script-icon {
-                        @extend .text-blue;
+                        @extend %text-blue;
                     }
                 }
 
@@ -74,7 +74,7 @@ scripts-list {
             }
 
             .script-folder-open-icon {
-                @extend .text-blue;
+                @extend %text-blue;
                 visibility: hidden;
             }
 

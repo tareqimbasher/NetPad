@@ -1,9 +1,11 @@
 <template class="theme-${settings.appearance.theme.toLowerCase()}">
     <require from="./script-environments/script-environments"></require>
+    <require from="./titlebar/titlebar"></require>
     <require from="./statusbar/statusbar"></require>
 
     <div class="window">
-        <div id="content" class="flex-grow-1 d-flex flex-row">
+        <titlebar platforms="Electron"></titlebar>
+        <div id="content" class="flex-grow-1 d-flex flex-row fade-in">
             <au-compose view-model.bind="leftPaneHost" containerless></au-compose>
             <script-environments id="main-content" class="flex-grow-height-restricted"></script-environments>
             <au-compose view-model.bind="rightPaneHost" containerless></au-compose>

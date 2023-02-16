@@ -8,9 +8,11 @@ import {
     IIpcGateway,
     ISession,
     ISettingService,
+    IWindowService,
     Session,
     Settings,
-    SettingService
+    SettingService,
+    WindowService
 } from "@domain";
 import {
     ConsoleLogSink,
@@ -43,6 +45,7 @@ const app = Aurelia.register(
     Registration.instance(URLSearchParams, startupOptions),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
+    Registration.singleton(IWindowService, WindowService),
     Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),

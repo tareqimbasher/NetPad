@@ -13,6 +13,21 @@ public class WebWindowService : IUiWindowService
         _ipcService = ipcService;
     }
 
+    public Task MaximizeMainWindowAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task MinimizeMainWindowAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task ToggleAlwaysOnTopMainWindowAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     public Task OpenMainWindowAsync()
     {
         throw new PlatformNotSupportedException();
