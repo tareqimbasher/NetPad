@@ -1,4 +1,4 @@
-import {HubConnection, HubConnectionBuilder} from "@microsoft/signalr";
+import {HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel as SignalRLogLevel} from "@microsoft/signalr";
 import {ILogger, PLATFORM} from "aurelia";
 import {IIpcGateway} from "@domain";
 import {SubscriptionToken} from "@common";
@@ -16,14 +16,57 @@ export class SignalRIpcGateway implements IIpcGateway {
 
         this.connection = new HubConnectionBuilder()
             .withUrl("/ipc-hub")
+            .configureLogging(SignalRLogLevel.Information)
+            .withAutomaticReconnect({
+                nextRetryDelayInMilliseconds: retryContext => {
+                    let nextDelay: number | null = retryContext.previousRetryCount < 3
+                        ? 500
+                        : 5000;
+
+                    if (retryContext.elapsedMilliseconds > 20000) {
+                        // If we've been reconnecting for more than 20 seconds so far, stop reconnecting.
+                        nextDelay = null;
+                    }
+
+                    return nextDelay;
+                }
+            })
             .build();
 
-        this.connection.onclose(error => {
-            this.logger.warn("SignalR IPC Gateway connection was closed. Will try to reconnect in 2 seconds", error);
-            PLATFORM.setTimeout(() => this.connection.start(), 2000);
+        this.connection.onreconnecting(error => {
+            this.logger.debug("Reconnecting", error);
         });
 
-        this.connection.start();
+        this.connection.onreconnected(error => {
+            this.logger.debug("Reconnected", error);
+        });
+
+        this.connection.onclose(error => {
+            this.logger.warn("Connection was closed. Will try to reconnect in 2 seconds", error);
+            PLATFORM.setTimeout(() => {
+                if (this.connection.state === HubConnectionState.Disconnected)
+                    this.connection.start();
+            }, 2000);
+        });
+
+        this.startConnection();
+    }
+
+    private async startConnection(): Promise<void> {
+        if (this.connection.state === HubConnectionState.Connected)
+            return;
+
+        try {
+            await this.connection.start();
+
+            if (this.connection.state === HubConnectionState.Disconnected)
+                throw new Error("Connection did not start");
+
+            this.logger.debug("Connected");
+        } catch (ex) {
+            this.logger.error("Failed to start connection. Will retry in 2 seconds...", ex);
+            setTimeout(() => this.startConnection(), 2000);
+        }
     }
 
     public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
