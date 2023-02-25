@@ -14,7 +14,7 @@ export class Titlebar {
     public get title() {
         const activeScriptName = this.session.active?.script.name;
 
-        return !!activeScriptName ? activeScriptName + " - NetPad" : "NetPad";
+        return !activeScriptName ? "NetPad" : activeScriptName + " - NetPad";
     }
 
     public async minimize() {

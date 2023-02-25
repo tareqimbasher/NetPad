@@ -75,12 +75,12 @@ html {
 
 .theme-dark {
     .btn-themed {
-        @extend .btn-dark
+        @extend .btn-dark;
     }
 }
 
 .theme-light {
     .btn-themed {
-        @extend .btn-light
+        @extend .btn-light;
     }
 }
