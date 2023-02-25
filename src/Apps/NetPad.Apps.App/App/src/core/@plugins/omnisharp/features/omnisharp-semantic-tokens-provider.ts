@@ -30,7 +30,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
         });
 
         this.eventBus.subscribeToServer(api.OmniSharpAsyncBufferUpdateCompletedEvent, message => {
-            setTimeout(() => this._onDidChange.fire(), 1000);
+            setTimeout(() => this._onDidChange.fire(), 500);
         });
     }
 
@@ -60,6 +60,11 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
         }
 
         if (cancellationToken.isCancellationRequested) {
+            return null;
+        }
+
+        // We don't need to retreive semantic info if there is no code in the editor
+        if (model.getValue().trim().length == 0) {
             return null;
         }
 

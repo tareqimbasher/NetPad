@@ -25,23 +25,23 @@ export class Editor extends ViewModelBase {
     }
 
     public async attached(): Promise<void> {
-        this.logger.debug("attaching");
+        this.logger.debug("attached start");
 
         setTimeout(() => {
             this.initializeEditor();
         }, 100);
 
-        this.logger.debug("attached");
+        this.logger.debug("attached end");
     }
 
     public override detaching() {
-        this.logger.debug("detaching");
+        this.logger.debug("detaching start");
 
         this.monacoEditor?.getModel()?.dispose();
         this.monacoEditor?.dispose();
         super.detaching();
 
-        this.logger.debug("detached");
+        this.logger.debug("detaching end");
     }
 
     public getText(): string {
