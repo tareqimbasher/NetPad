@@ -11,8 +11,8 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>NetPad</RootNamespace>
         <Nullable>enable</Nullable>
-        <AssemblyVersion>0.1.0</AssemblyVersion>
-        <FileVersion>0.1.0</FileVersion>
+        <AssemblyVersion>0.1.1</AssemblyVersion>
+        <FileVersion>0.1.1</FileVersion>
         <InformationalVersion>0.1.0</InformationalVersion>
     </PropertyGroup>
     <ItemGroup>
@@ -33,6 +33,9 @@
         <None Remove="App\dist\**"/>
         <Content Remove="App\dist\**"/>
         <Content Include="electron.manifest.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="electron.manifest.dev.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

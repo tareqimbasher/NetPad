@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2020 Tareq Imbasher",
-    buildVersion: "0.1.0",
+    buildVersion: "0.1.1",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -112,6 +112,7 @@ const electronBuilderConfig = {
 }
 
 const electronNetConfig = {
+    environment: "Production",
     name: "netpad",
     description: "A cross-platform C# editor and playground.",
     executable: "NetPad.Apps.App",

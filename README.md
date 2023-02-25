@@ -13,21 +13,33 @@ A cross-platform C# editor and playground.
 ## Motivation
 
 We love [LinqPad](https://www.linqpad.net/), but we also miss its tremendous
-utility when running on non-Windows platforms. This is an effort to develop an
+utility when not working on Windows. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
 The goal isn't to reach 100% feature parity with LinqPad, but
 to offer an acceptable alternative that covers the most common features
-needed by a user of such software.
+developers need, and if we're lucky, maybe a few useful new ones!
 
 ## Requirements
 
-* [.NET SDK 6.x](https://dotnet.microsoft.com/en-us/download/dotnet/6.0): used
+The following must be be installed to run NetPad:
+
+* [.NET SDK (.NET 6 or higher)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0): used
   to build and run your scripts.
-    * The environment variable `DOTNET_ROOT` or `DOTNET_INSTALL_DIR` must be set
+    * The environment variable `DOTNET_ROOT` (or `DOTNET_INSTALL_DIR`) must be set
       and point to the directory where .NET is installed.
-* [EF Core tools 6.x](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
+* [EF Core tools (.NET 6 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
+
+## [Download](https://github.com/tareqimbasher/NetPad/releases)
+
+You can download the latest version on the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
+
+## Updates
+
+NetPad does not have an auto-update feature yet, but it's in the works.
+The latest version can be downloaded on the [Releases](https://github.com/tareqimbasher/NetPad/releases)
+page.
 
 ## Contribution
 
@@ -82,15 +94,20 @@ contributions are welcome!
     * ...and more
 * Plugins
 
+---
+
 ## Tech Stack :computer:
 
+* .NET Core
 * Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
-* ASP.NET Core
 * Aurelia 2 ([docs](https://docs.aurelia.io/))
 
-When the Electron app is started, it launches an ASP.NET Core backend that
-serves the Aurelia SPA app. Communication between the SPA and ASP.NET Core
-backend occurs via REST API calls and SignalR.
+### How it works: In a nutshell
+
+NetPad runs an ASP.NET web app that hosts a web-based user interface. It can be packaged as an
+Electron desktop app or served and accessed on any browser.
+
+Communication between the user interface and the ASP.NET backend occurs via HTTP calls and SignalR.
 
 ## Development
 
@@ -101,12 +118,12 @@ accessed with a web browser.
 ### Requirements
 
 * Node v16+ (npm v8+)
-* .NET SDK 6.x
-* .NET SDK 5.x: if you plan on running the Electron app. The `electronize`
-  development tool, currently, needs this to run.
-* EF Core tools 6.x
+* .NET SDK 6.x (or higher)
+* .NET SDK 5.x: if you plan on running the Electron app. This is not a dependency of NetPad itself
+  but a dependency of the `electronize` development tool. It, currently, needs this to run.
+* EF Core tools 6.x (or higher)
 
-### NetPad as a Desktop app
+### NetPad as an Electron desktop app
 
 #### 1. Run the SPA
 
@@ -133,10 +150,10 @@ Start the app:
 cd Apps/NetPad.Apps.App
 
 # Start in watch mode
-electronize start /watch /manifest electron.manifest.js
+electronize start /watch /manifest electron.manifest.dev.js
 
 # OR without watch mode
-electronize start /manifest electron.manifest.js /PublishSingleFile false
+electronize start /manifest electron.manifest.dev.js /PublishSingleFile false
 ```
 
 ###### Note
@@ -163,7 +180,7 @@ cd Apps/NetPad.Apps.App
 dotnet watch run --environment Development
 ```
 
-and access the app via your web browser, ex: `http://localhost:5010`
+and access the app via your web browser, ex: `http://localhost:57930`
 
 ## Packaging :package:
 
