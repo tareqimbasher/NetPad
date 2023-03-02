@@ -78,6 +78,11 @@ button > .icon-base {
     @extend .fa-warning;
 }
 
+.error-icon {
+    @extend %icon-base;
+    @extend .fa-circle-xmark;
+}
+
 .actions-icon {
     @extend %icon-base;
     @extend .fa-bolt;

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using NetPad.Utilities;
 
 namespace NetPad.DotNet;
@@ -11,6 +12,8 @@ public static class DotNetInfo
     private static readonly object _dotNetEfToolExeLocateLock = new();
     private static string? _dotNetPath;
     private static string? _dotNetEfToolPath;
+
+    public static Version GetDotNetRuntimeVersion() => Environment.Version;
 
     public static string LocateDotNetRootDirectoryOrThrow()
     {
@@ -31,6 +34,7 @@ public static class DotNetInfo
 
         return !Directory.Exists(dotnetRoot) ? null : dotnetRoot;
     }
+
 
     public static string LocateDotNetExecutableOrThrow()
     {
@@ -100,6 +104,28 @@ public static class DotNetInfo
 
         return _dotNetPath;
     }
+
+    public static Version? GetDotNetSdkVersion(string dotnetSdkExePath)
+    {
+        var p = Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = dotnetSdkExePath,
+            Arguments = "--version",
+            RedirectStandardOutput = true
+        });
+
+        if (p == null)
+            throw new Exception("Could not start dotnet sdk executable");
+
+        string output = p.StandardOutput.ReadToEnd();
+        p.WaitForExit();
+
+        return Version.TryParse(output, out var version) ? version : null;
+    }
+
 
     public static string LocateDotNetEfToolExecutableOrThrow()
     {
@@ -172,6 +198,30 @@ public static class DotNetInfo
 
         return _dotNetEfToolPath;
     }
+
+    public static Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
+    {
+        var p = Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = dotNetEfToolExePath,
+            Arguments = "--version",
+            RedirectStandardOutput = true
+        });
+
+        if (p == null)
+            throw new Exception("Could not start EF dotnet tool executable");
+
+        string output = p.StandardOutput.ReadToEnd();
+        p.WaitForExit();
+
+        return Version.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
+            ? version
+            : null;
+    }
+
 
     private static string GetDotNetExeName()
     {

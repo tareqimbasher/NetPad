@@ -1,6 +1,8 @@
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+using NetPad.Application;
 using NetPad.Configuration;
+using NetPad.CQs;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -8,10 +10,12 @@ namespace NetPad.Electron.UiInterop;
 
 public class ElectronDialogService : IUiDialogService
 {
+    private readonly IIpcService _ipcService;
     private readonly Settings _settings;
 
-    public ElectronDialogService(Settings settings)
+    public ElectronDialogService(IIpcService ipcService, Settings settings)
     {
+        _ipcService = ipcService;
         _settings = settings;
     }
 
@@ -48,5 +52,10 @@ public class ElectronDialogService : IUiDialogService
             path += Script.STANDARD_EXTENSION;
 
         return path;
+    }
+
+    public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)
+    {
+        await _ipcService.SendAsync(new AlertUserAboutMissingAppDependencies(dependencyCheckResult));
     }
 }

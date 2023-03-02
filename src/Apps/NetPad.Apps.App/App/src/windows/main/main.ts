@@ -1,9 +1,10 @@
-import {Aurelia, IContainer, ILogger, Registration} from "aurelia";
-import {DataConnectionService, IDataConnectionService, IScriptService, ScriptService,} from "@domain";
+import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
+import {DataConnectionService, IAppService, IDataConnectionService, IScriptService, ScriptService,} from "@domain";
 import {Window} from "./window";
 import {
     BuiltinCompletionProvider,
     DataConnectionName,
+    DialogBackgroundService,
     Editor,
     ICompletionItemProvider,
     IPaneManager,
@@ -13,6 +14,7 @@ import {
     PaneManager,
     ShortcutManager,
 } from "@application";
+import {IBackgroundService} from "@common";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -27,9 +29,11 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
             Registration.singleton(IDataConnectionService, DataConnectionService),
+            Registration.singleton(IBackgroundService, DialogBackgroundService),
             PaneHost,
             Editor,
-            DataConnectionName
+            DataConnectionName,
+            AppTask.afterActivate(IContainer, container => container.get(IAppService).notifyClientAppIsReady())
         );
 
         try {

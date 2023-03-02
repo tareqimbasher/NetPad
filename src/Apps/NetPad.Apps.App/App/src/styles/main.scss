@@ -73,6 +73,14 @@ html {
     /* stylelint-enable scss/at-extend-no-missing-placeholder */
 }
 
+.dialog {
+    @include theme(background-color, backgroundColor);
+    @include theme(color, textColor);
+
+    min-width: 100px;
+    min-height: 50px;
+}
+
 .theme-dark {
     .btn-themed {
         @extend .btn-dark;

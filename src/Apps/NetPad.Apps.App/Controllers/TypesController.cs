@@ -45,6 +45,10 @@ public class TypesController : Controller
         public OpenWindowCommand? OpenWindowCommand { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
         public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }
+        public AlertUserCommand? AlertUserCommand { get; set; }
+        public ConfirmWithUserCommand? ConfirmWithUserCommand { get; set; }
+        public PromptUserCommand? PromptUserCommand { get; set; }
+        public AlertUserAboutMissingAppDependencies? AlertUserAboutMissingAppDependencies { get; set; }
         public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
     }

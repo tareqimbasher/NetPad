@@ -4,6 +4,7 @@ import {
     ActiveEnvironmentChangedEvent,
     DataConnection,
     DataConnectionStore,
+    IAppService,
     IEventBus,
     IScriptService,
     ISession,
@@ -16,7 +17,6 @@ import {
     Settings
 } from "@domain";
 import Split from "split.js";
-import {observable} from "@aurelia/runtime";
 import {Editor, IShortcutManager, ViewModelBase} from "@application";
 
 export class ScriptEnvironmentView extends ViewModelBase {
@@ -24,6 +24,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     public editorTextChanged: (newValue: string) => void = newValue => this.editorTextChangedPrivate(newValue);
     public running = false;
+    public dotNetSdkVersion = "";
 
     private split: Split.Instance;
     private textEditorContainer: HTMLElement;
@@ -34,6 +35,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
     constructor(
         private readonly settings: Settings,
         @IScriptService private readonly scriptService: IScriptService,
+        @IAppService private readonly appService: IAppService,
         @ISession private readonly session: ISession,
         private readonly dataConnectionStore: DataConnectionStore,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
@@ -120,6 +122,12 @@ export class ScriptEnvironmentView extends ViewModelBase {
             minSize: [50, 0],
         });
         this.disposables.push(() => this.split.destroy());
+
+        this.appService.checkDependencies().then(result => {
+            if (result?.dotNetSdkVersion?.startsWith("6.")) this.dotNetSdkVersion = "6";
+            else if (result?.dotNetSdkVersion?.startsWith("7.")) this.dotNetSdkVersion = "7";
+            else this.dotNetSdkVersion = "";
+        });
 
         if (this.environment.status === "Running")
             this.openResultsView();

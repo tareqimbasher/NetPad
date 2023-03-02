@@ -6,8 +6,12 @@ import {
     ISettingService,
     ScriptEnvironment,
 } from "@domain";
-import {PLATFORM} from "aurelia";
+import {IDialogService, PLATFORM} from "aurelia";
 import {IShortcutManager} from "@application";
+import {
+    AppDependenciesCheckDialog
+} from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
+import {DialogBase} from "@application/dialogs/dialog-base";
 
 export class Statusbar {
     public appStatusMessage: IAppStatusMessage | null;
@@ -16,6 +20,7 @@ export class Statusbar {
     constructor(@ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                @IDialogService private readonly dialogService: IDialogService,
                 @IEventBus private readonly eventBus: IEventBus) {
     }
 
@@ -25,6 +30,10 @@ export class Statusbar {
 
     public binding() {
         this.listenToAppStatusMessages();
+    }
+
+    public async showAppDepsCheckDialog() {
+        await DialogBase.toggle(this.dialogService, AppDependenciesCheckDialog);
     }
 
     private listenToAppStatusMessages() {

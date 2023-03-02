@@ -1,3 +1,4 @@
+using NetPad.Application;
 using NetPad.CQs;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -26,5 +27,10 @@ public class WebDialogService : IUiDialogService
             return null;
 
         return $"/{newName}{Script.STANDARD_EXTENSION}";
+    }
+
+    public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)
+    {
+        await _ipcService.SendAsync(new AlertUserAboutMissingAppDependencies(dependencyCheckResult));
     }
 }

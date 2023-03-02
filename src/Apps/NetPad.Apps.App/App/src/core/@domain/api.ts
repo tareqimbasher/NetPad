@@ -14,6 +14,10 @@ export interface IAppApiClient {
 
     getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
+    notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void>;
+
+    checkDependencies(signal?: AbortSignal | undefined): Promise<AppDependencyCheckResult>;
+
     openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
@@ -66,6 +70,72 @@ export class AppApiClient implements IAppApiClient {
             });
         }
         return Promise.resolve<AppIdentifier>(<any>null);
+    }
+
+    notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/app/client/ready";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "POST",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processNotifyClientAppIsReady(_response);
+        });
+    }
+
+    protected processNotifyClientAppIsReady(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    checkDependencies(signal?: AbortSignal | undefined): Promise<AppDependencyCheckResult> {
+        let url_ = this.baseUrl + "/app/check-dependencies";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processCheckDependencies(_response);
+        });
+    }
+
+    protected processCheckDependencies(response: Response): Promise<AppDependencyCheckResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = AppDependencyCheckResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<AppDependencyCheckResult>(<any>null);
     }
 
     openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
@@ -2154,6 +2224,57 @@ export interface IAppIdentifier {
     productVersion: string;
 }
 
+export class AppDependencyCheckResult implements IAppDependencyCheckResult {
+    dotNetRuntimeVersion!: string;
+    dotNetSdkVersion?: string | undefined;
+    dotNetEfToolVersion?: string | undefined;
+
+    constructor(data?: IAppDependencyCheckResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dotNetRuntimeVersion = _data["dotNetRuntimeVersion"];
+            this.dotNetSdkVersion = _data["dotNetSdkVersion"];
+            this.dotNetEfToolVersion = _data["dotNetEfToolVersion"];
+        }
+    }
+
+    static fromJS(data: any): AppDependencyCheckResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new AppDependencyCheckResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dotNetRuntimeVersion"] = this.dotNetRuntimeVersion;
+        data["dotNetSdkVersion"] = this.dotNetSdkVersion;
+        data["dotNetEfToolVersion"] = this.dotNetEfToolVersion;
+        return data;
+    }
+
+    clone(): AppDependencyCheckResult {
+        const json = this.toJSON();
+        let result = new AppDependencyCheckResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAppDependencyCheckResult {
+    dotNetRuntimeVersion: string;
+    dotNetSdkVersion?: string | undefined;
+    dotNetEfToolVersion?: string | undefined;
+}
+
 export type LogSource = "WebApp" | "ElectronApp";
 
 export class RemoteLogMessage implements IRemoteLogMessage {
@@ -4159,6 +4280,10 @@ export class Types implements ITypes {
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    alertUserCommand?: AlertUserCommand | undefined;
+    confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
+    promptUserCommand?: PromptUserCommand | undefined;
+    alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 
@@ -4195,6 +4320,10 @@ export class Types implements ITypes {
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
+            this.alertUserCommand = _data["alertUserCommand"] ? AlertUserCommand.fromJS(_data["alertUserCommand"]) : <any>undefined;
+            this.confirmWithUserCommand = _data["confirmWithUserCommand"] ? ConfirmWithUserCommand.fromJS(_data["confirmWithUserCommand"]) : <any>undefined;
+            this.promptUserCommand = _data["promptUserCommand"] ? PromptUserCommand.fromJS(_data["promptUserCommand"]) : <any>undefined;
+            this.alertUserAboutMissingAppDependencies = _data["alertUserAboutMissingAppDependencies"] ? AlertUserAboutMissingAppDependencies.fromJS(_data["alertUserAboutMissingAppDependencies"]) : <any>undefined;
             this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
             this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
         }
@@ -4231,6 +4360,10 @@ export class Types implements ITypes {
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
+        data["alertUserCommand"] = this.alertUserCommand ? this.alertUserCommand.toJSON() : <any>undefined;
+        data["confirmWithUserCommand"] = this.confirmWithUserCommand ? this.confirmWithUserCommand.toJSON() : <any>undefined;
+        data["promptUserCommand"] = this.promptUserCommand ? this.promptUserCommand.toJSON() : <any>undefined;
+        data["alertUserAboutMissingAppDependencies"] = this.alertUserAboutMissingAppDependencies ? this.alertUserAboutMissingAppDependencies.toJSON() : <any>undefined;
         data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
         data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
         return data;
@@ -4267,6 +4400,10 @@ export interface ITypes {
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    alertUserCommand?: AlertUserCommand | undefined;
+    confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
+    promptUserCommand?: PromptUserCommand | undefined;
+    alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
 }
@@ -5516,6 +5653,173 @@ export class RequestNewScriptNameCommand extends CommandOfString implements IReq
 
 export interface IRequestNewScriptNameCommand extends ICommandOfString {
     currentScriptName: string;
+}
+
+export class AlertUserCommand extends Command implements IAlertUserCommand {
+    message!: string;
+
+    constructor(data?: IAlertUserCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): AlertUserCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new AlertUserCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AlertUserCommand {
+        const json = this.toJSON();
+        let result = new AlertUserCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAlertUserCommand extends ICommand {
+    message: string;
+}
+
+export class ConfirmWithUserCommand extends CommandOfYesNoCancel implements IConfirmWithUserCommand {
+    message!: string;
+
+    constructor(data?: IConfirmWithUserCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): ConfirmWithUserCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new ConfirmWithUserCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): ConfirmWithUserCommand {
+        const json = this.toJSON();
+        let result = new ConfirmWithUserCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IConfirmWithUserCommand extends ICommandOfYesNoCancel {
+    message: string;
+}
+
+export class PromptUserCommand extends CommandOfString implements IPromptUserCommand {
+    message!: string;
+    prefillValue?: string | undefined;
+
+    constructor(data?: IPromptUserCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.message = _data["message"];
+            this.prefillValue = _data["prefillValue"];
+        }
+    }
+
+    static fromJS(data: any): PromptUserCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new PromptUserCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        data["prefillValue"] = this.prefillValue;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PromptUserCommand {
+        const json = this.toJSON();
+        let result = new PromptUserCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPromptUserCommand extends ICommandOfString {
+    message: string;
+    prefillValue?: string | undefined;
+}
+
+export class AlertUserAboutMissingAppDependencies extends Command implements IAlertUserAboutMissingAppDependencies {
+    dependencyCheckResult!: AppDependencyCheckResult;
+
+    constructor(data?: IAlertUserAboutMissingAppDependencies) {
+        super(data);
+        if (!data) {
+            this.dependencyCheckResult = new AppDependencyCheckResult();
+        }
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.dependencyCheckResult = _data["dependencyCheckResult"] ? AppDependencyCheckResult.fromJS(_data["dependencyCheckResult"]) : new AppDependencyCheckResult();
+        }
+    }
+
+    static fromJS(data: any): AlertUserAboutMissingAppDependencies {
+        data = typeof data === 'object' ? data : {};
+        let result = new AlertUserAboutMissingAppDependencies();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dependencyCheckResult"] = this.dependencyCheckResult ? this.dependencyCheckResult.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): AlertUserAboutMissingAppDependencies {
+        const json = this.toJSON();
+        let result = new AlertUserAboutMissingAppDependencies();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IAlertUserAboutMissingAppDependencies extends ICommand {
+    dependencyCheckResult: AppDependencyCheckResult;
 }
 
 export abstract class DatabaseConnection extends DataConnection implements IDatabaseConnection {

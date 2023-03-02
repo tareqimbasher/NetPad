@@ -4,29 +4,40 @@ import {IIpcGateway} from "@domain";
 import {SubscriptionToken} from "@common";
 
 export class SignalRIpcGateway implements IIpcGateway {
-    private readonly connection: HubConnection
     private readonly logger: ILogger;
     private readonly signalrHandlers: Map<string, (...args: unknown[]) => void>;
     private readonly callbacks: Map<string, ((message: unknown, channel: string) => void)[]>;
+    private connection: HubConnection
+    private disposed = false;
 
     constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(SignalRIpcGateway));
         this.signalrHandlers = new Map<string, (...args: unknown[]) => void>();
         this.callbacks = new Map<string, ((message: unknown, channel: string) => void)[]>();
+    }
+
+    public async start(): Promise<void> {
+        if (this.disposed) {
+            throw new Error("Gateway is disposed");
+        }
+
+        if (this.connection) {
+            throw new Error("Gateway has already started");
+        }
 
         this.connection = new HubConnectionBuilder()
             .withUrl("/ipc-hub")
             .configureLogging(SignalRLogLevel.Information)
             .withAutomaticReconnect({
                 nextRetryDelayInMilliseconds: retryContext => {
-                    let nextDelay: number | null = retryContext.previousRetryCount < 3
+                    // If disposed or if we've been reconnecting for more than 20 seconds so far, stop reconnecting.
+                    if (this.disposed || retryContext.elapsedMilliseconds > 20000) {
+                        return null;
+                    }
+
+                    let nextDelay: number = retryContext.previousRetryCount < 3
                         ? 500
                         : 5000;
-
-                    if (retryContext.elapsedMilliseconds > 20000) {
-                        // If we've been reconnecting for more than 20 seconds so far, stop reconnecting.
-                        nextDelay = null;
-                    }
 
                     return nextDelay;
                 }
@@ -42,21 +53,28 @@ export class SignalRIpcGateway implements IIpcGateway {
         });
 
         this.connection.onclose(error => {
-            this.logger.warn("Connection was closed. Will try to reconnect in 2 seconds", error);
+            if (this.disposed) {
+                this.logger.info("Connection was closed. Gateway is disposed, will not try to reconnect");
+                return;
+            }
+
+            this.logger.warn("Connection was closed. Will try to reconnect in 2 seconds. Error: ", error);
+
             PLATFORM.setTimeout(() => {
                 if (this.connection.state === HubConnectionState.Disconnected)
-                    this.connection.start();
+                    this.startConnection();
             }, 2000);
         });
 
-        this.startConnection();
+        await this.startConnection();
     }
 
     private async startConnection(): Promise<void> {
-        if (this.connection.state === HubConnectionState.Connected)
+        if (this.disposed || this.connection.state === HubConnectionState.Connected)
             return;
 
         try {
+            this.logger.debug("Starting connection...");
             await this.connection.start();
 
             if (this.connection.state === HubConnectionState.Disconnected)
@@ -110,6 +128,14 @@ export class SignalRIpcGateway implements IIpcGateway {
         }
     }
 
+    private removeAllCallbacks() {
+        for (const [channelName, callbacks] of this.callbacks) {
+            while (callbacks.length > 0) {
+                this.removeCallback(channelName, callbacks[0]);
+            }
+        }
+    }
+
     private ensureOrRegisterNewSignalrHandler(channelName: string): void {
         if (this.signalrHandlers.has(channelName)) return;
 
@@ -142,5 +168,16 @@ export class SignalRIpcGateway implements IIpcGateway {
 
         this.connection.off(channelName);
         this.signalrHandlers.delete(channelName);
+    }
+
+    public dispose(): void {
+        if (this.disposed) return;
+        this.disposed = true;
+
+        this.removeAllCallbacks();
+
+        // TODO Stop using IDisposable from aurelia package and copy it to be part of app code
+        //  also create an interface IAsyncDisposable and use it here
+        this.connection.stop();
     }
 }

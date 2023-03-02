@@ -49,6 +49,7 @@ public class Startup
     {
         Configuration = configuration;
         WebHostEnvironment = webHostEnvironment;
+        Console.WriteLine($".NET Version: {Environment.Version.ToString()}");
         Console.WriteLine($"Environment: {webHostEnvironment.EnvironmentName}");
         Console.WriteLine($"WebRootPath: {webHostEnvironment.WebRootPath}");
         Console.WriteLine($"ContentRootPath: {webHostEnvironment.ContentRootPath}");

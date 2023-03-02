@@ -1,4 +1,12 @@
-import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
+import Aurelia, {
+    AppTask,
+    ColorOptions,
+    DialogDefaultConfiguration,
+    IContainer,
+    ILogger,
+    LogLevel,
+    Registration
+} from 'aurelia';
 import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import {
@@ -36,13 +44,12 @@ import {
 import {AppMutationObserver, IBackgroundService} from "@common";
 import {WebApp} from "@application/apps/web-app";
 import * as appTasks from "./main.tasks";
-
-const startupOptions = new URLSearchParams(window.location.search);
+import {AppLifeCycle} from "./main.app-lifecycle";
 
 // Register common dependencies shared for all windows
-const app = Aurelia.register(
+const builder = Aurelia.register(
     Registration.instance(String, window.location.origin),
-    Registration.instance(URLSearchParams, startupOptions),
+    Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
     Registration.singleton(IWindowService, WindowService),
@@ -51,7 +58,7 @@ const app = Aurelia.register(
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingService, SettingService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
-    Registration.transient(IBackgroundService, SettingsBackgroundService),
+    Registration.singleton(IBackgroundService, SettingsBackgroundService),
     LogConfig.register({
         colorOptions: ColorOptions.colors,
         level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
@@ -61,15 +68,23 @@ const app = Aurelia.register(
                 // Suppress Aurelia's own debug messages when evaluating HTML case expressions
                 loggerRegex: new RegExp("^Case-#"),
                 logLevel: LogLevel.none
+            },
+            {
+                loggerRegex: new RegExp("ShortcutManager"),
+                logLevel: LogLevel.none
             }
         ]
     }),
+    DialogDefaultConfiguration.customize((config) => {
+        config.lock = true;
+    }),
 
-    // Custom Attributes
+
+    // Global Custom Attributes
     ExternalLinkCustomAttribute,
     PlatformsCustomAttribute,
 
-    // Value Converters
+    // Global Value Converters
     DateTimeValueConverter,
     TakeValueConverter,
     SortValueConverter,
@@ -77,25 +92,41 @@ const app = Aurelia.register(
     SanitizeHtmlValueConverter,
     YesNoValueConverter,
 
-    // Global custom elements that we want available everywhere without needing
-    // to require (import) them in our HTML or JS
+    // Global Custom Elements
     ContextMenu,
     FindTextBox,
-
-    // Tasks that run at specific points in the app's lifecycle
-    AppTask.beforeActivate(IContainer, appTasks.configureFetchClient),
-    AppTask.beforeActivate(IContainer, appTasks.startBackgroundServices),
-    AppTask.afterActivate(IContainer, container => container.get(ILogger).debug("App activated"))
 );
 
+const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
+
+const appLifeCycle = new AppLifeCycle(logger);
+
+builder.register(
+    // Tasks that run at specific points in the app's lifecycle
+    AppTask.beforeCreate(IContainer, async (container) => appLifeCycle.beforeCreate(container)),
+    AppTask.hydrating(IContainer, async (container) => appLifeCycle.hydrating(container)),
+    AppTask.hydrated(IContainer, async (container) => appLifeCycle.hydrated(container)),
+    AppTask.beforeActivate(IContainer, async (container) => appLifeCycle.beforeActivate(container)),
+    AppTask.afterActivate(IContainer, async (container) => appLifeCycle.afterActivate(container)),
+    AppTask.beforeDeactivate(IContainer, async (container) => appLifeCycle.beforeDeactivate(container)),
+    AppTask.afterDeactivate(IContainer, async (container) => appLifeCycle.afterDeactivate(container)),
+)
+
 if (!Env.isRunningInElectron()) {
-    WebApp.configure(app);
+    WebApp.configure(builder);
 }
 
 // Load app settings
-const settings = await app.container.get(ISettingService).get();
-app.container.get(Settings).init(settings.toJSON());
+const settings = await builder.container.get(ISettingService).get();
+builder.container.get(Settings).init(settings.toJSON());
 
 // Start the app
-const entryPoint = appTasks.configureAppEntryPoint(app);
-app.app(entryPoint).start();
+const entryPoint = appTasks.configureAndGetAppEntryPoint(builder);
+
+const app = builder.app(entryPoint);
+
+logger.debug("Starting app...");
+
+await app.start();
+
+logger.debug("App started");

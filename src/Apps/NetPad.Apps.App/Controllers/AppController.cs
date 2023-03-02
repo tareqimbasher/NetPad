@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Configuration;
+using NetPad.CQs;
 using NetPad.Filters;
+using NetPad.UiInterop;
 
 namespace NetPad.Controllers;
 
@@ -20,6 +24,20 @@ public class AppController : Controller
     {
         return appIdentifier;
     }
+
+    [HttpPost("client/ready")]
+    public async Task NotifyClientAppIsReady([FromServices] IUiDialogService uiDialogService, [FromServices] IMediator mediator)
+    {
+        var result = await CheckDependencies(mediator);
+
+        if (result.DotNetSdkVersion is not null && result.DotNetEfToolVersion is not null) return;
+
+        await uiDialogService.AlertUserAboutMissingDependencies(result);
+    }
+
+    [HttpPatch("check-dependencies")]
+    public async Task<AppDependencyCheckResult> CheckDependencies([FromServices] IMediator mediator) =>
+        await mediator.Send(new CheckAppDependenciesQuery());
 
     [HttpPatch("open-folder-containing-script")]
     public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath, [FromServices] Settings settings)

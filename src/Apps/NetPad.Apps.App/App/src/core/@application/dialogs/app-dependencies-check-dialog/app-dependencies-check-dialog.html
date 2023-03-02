@@ -1,0 +1,71 @@
+﻿<template class="app-dependencies-check-dialog">
+    <h4>NetPad Dependencies Check</h4>
+
+    <div style="margin-top: 3rem;">
+        <h5>
+            <i class="check-circle-icon text-green"></i>
+            .NET Runtime
+        </h5>
+
+        <span>
+            NetPad is running on .NET v${dependencyCheckResult.dotNetRuntimeVersion}
+        </span>
+    </div>
+
+    <div style="margin-top: 3rem;">
+        <h5>
+            <i class="${!dependencyCheckResult.dotNetSdkVersion ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
+            .NET SDK
+            <small if.bind="dependencyCheckResult.dotNetSdkVersion">(installed: v${dependencyCheckResult.dotNetSdkVersion})</small>
+        </h5>
+
+        <div if.bind="!dependencyCheckResult.dotNetSdkVersion">
+            <span class="text-red">A compatible .NET SDK could not be found.</span>
+
+            <div class="mt-4">
+                Make sure the .NET SDK is installed and the <code>dotnet</code> executable is on your <i>PATH</i>.
+                You will need .NET SDK version 6 (or higher) to be able to run scripts.
+            </div>
+        </div>
+        <span else>
+            .NET SDK is installed.
+        </span>
+    </div>
+
+    <div style="margin-top: 3rem; margin-bottom: 2rem">
+        <h5>
+            <i class="${!dependencyCheckResult.dotNetEfToolVersion ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
+            Entity Framework Core .NET Tool
+            <small if.bind="dependencyCheckResult.dotNetEfToolVersion">(installed: v${dependencyCheckResult.dotNetEfToolVersion})</small>
+        </h5>
+        <div if.bind="!dependencyCheckResult.dotNetEfToolVersion">
+            <span class="">Entity Framework Core .NET tool is not installed.</span>
+
+            <div class="mt-4">
+                <b>This is optional</b>, but you will need to install version 6 (or higher) of the
+                <code>dotnet-ef</code>
+                tool and ensure it is on your <i>PATH</i> if you want to be able to add and use database connections.
+            </div>
+        </div>
+        <span else>
+           Entity Framework Core .NET tool is installed.
+        </span>
+    </div>
+
+    <div style="margin-top: 1rem" if.bind="!dependencyCheckResult.dotNetSdkVersion || !dependencyCheckResult.dotNetEfToolVersion">
+        <i class="info-icon text-blue"></i>
+        Please restart NetPad after installing any of the dependencies above.
+    </div>
+
+    <hr />
+
+    <div style="margin-top: 1rem; text-align: right">
+        <a class="btn btn-primary"
+           external-link
+           href="https://dotnet.microsoft.com/en-us/download">Download .NET SDK</a>
+        <a class="btn btn-secondary"
+           external-link
+           href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core Tool</a>
+        <button class="btn btn-outline-secondary" click.trigger="close()">Close</button>
+    </div>
+</template>

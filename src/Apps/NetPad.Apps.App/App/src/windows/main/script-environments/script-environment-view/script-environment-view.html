@@ -27,6 +27,16 @@
         </button>
     </div>
     <div class="ms-5 d-flex">
+        <b>SDK:</b>
+        <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
+                value.bind="dotNetSdkVersion"
+                disabled>
+            <option value=""></option>
+            <option value="6">.NET 6</option>
+            <option value="7">.NET 7</option>
+        </select>
+    </div>
+    <div class="ms-5 d-flex">
         <b>Kind:</b>
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"

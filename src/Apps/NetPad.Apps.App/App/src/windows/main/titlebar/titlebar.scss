@@ -46,6 +46,7 @@ titlebar {
             display: flex;
             align-items: stretch;
             -webkit-app-region: no-drag;
+            z-index: 1000;
 
             i {
                 display: flex;

@@ -9,9 +9,14 @@ import {SubscriptionToken} from "@common";
  */
 export class ElectronIpcGateway implements IIpcGateway {
     private readonly logger: ILogger;
+    private connectedChannels = new Set<string>();
 
     constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(ElectronIpcGateway));
+    }
+
+    public start(): Promise<void> {
+        return Promise.resolve(undefined);
     }
 
     public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
@@ -22,10 +27,21 @@ export class ElectronIpcGateway implements IIpcGateway {
         };
 
         ipcRenderer.on(channelName, handler);
-        return new SubscriptionToken(() => ipcRenderer.off(channelName, handler));
+        this.connectedChannels.add(channelName);
+
+        return new SubscriptionToken(() => {
+            ipcRenderer.off(channelName, handler);
+            this.connectedChannels.delete(channelName);
+        });
     }
 
-    send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult> {
+    public send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult> {
         throw new Error("Platform not supported");
+    }
+
+    public dispose(): void {
+        for (const channel of this.connectedChannels) {
+            ipcRenderer.removeAllListeners(channel);
+        }
     }
 }

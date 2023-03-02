@@ -29,7 +29,7 @@ export const startBackgroundServices = async (container: IContainer) => {
     const backgroundServices = container.getAll(IBackgroundService);
 
     const logger = container.get(ILogger);
-    logger.info(`Starting ${backgroundServices.length} background services`);
+    logger.debug(`Starting ${backgroundServices.length} background services`);
 
     for (const backgroundService of backgroundServices) {
         try {
@@ -40,8 +40,23 @@ export const startBackgroundServices = async (container: IContainer) => {
     }
 }
 
-export const configureAppEntryPoint = (app: IAurelia) => {
-    const startupOptions = app.container.get(URLSearchParams);
+export const stopBackgroundServices = async (container: IContainer) => {
+    const backgroundServices = container.getAll(IBackgroundService);
+
+    const logger = container.get(ILogger);
+    logger.debug(`Stopping ${backgroundServices.length} background services`);
+
+    for (const backgroundService of backgroundServices) {
+        try {
+            await backgroundService.stop();
+        } catch (ex) {
+            logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+        }
+    }
+};
+
+export const configureAndGetAppEntryPoint = (builder: IAurelia) => {
+    const startupOptions = builder.container.get(URLSearchParams);
 
     // Determine which window we need to bootstrap and use
     let windowName = startupOptions.get("win");
@@ -63,8 +78,8 @@ export const configureAppEntryPoint = (app: IAurelia) => {
         throw new Error(`Unrecognized window: ${windowName}`);
     /* eslint-enable @typescript-eslint/no-var-requires */
 
-    const bootstrapper = new bootstrapperCtor(app.container.get(ILogger));
-    bootstrapper.registerServices(app);
+    const bootstrapper = new bootstrapperCtor(builder.container.get(ILogger));
+    bootstrapper.registerServices(builder);
 
     return bootstrapper.getEntry();
 }

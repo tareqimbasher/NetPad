@@ -19,6 +19,7 @@ export * from "./events/signalr-ipc-gateway";
 export * from "./events/toggle-pane-event";
 
 export * from "./background-services/settings-background-service";
+export * from "./background-services/dialog-background-service";
 export * from "./background-services/web-window-background-service";
 export * from "./background-services/web-dialog-background-service";
 
