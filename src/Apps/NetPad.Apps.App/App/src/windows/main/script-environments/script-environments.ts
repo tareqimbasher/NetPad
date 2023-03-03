@@ -1,4 +1,4 @@
-import {ILogger} from "aurelia";
+import {ILogger, IObserverLocator} from "aurelia";
 import dragula from "dragula";
 import {
     ActiveEnvironmentChangedEvent,
@@ -12,9 +12,11 @@ import {
     Settings
 } from "@domain";
 import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
+import {LocalStorageBacked} from "@common";
 
 export class ScriptEnvironments extends ViewModelBase {
     public tabContextMenuOptions: ContextMenuOptions;
+    public headerStyle: HeaderStyle;
 
     constructor(
         private readonly element: Element,
@@ -24,8 +26,13 @@ export class ScriptEnvironments extends ViewModelBase {
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IEventBus private readonly eventBus: IEventBus,
         private readonly settings: Settings,
+        @IObserverLocator observerLocator: IObserverLocator,
         @ILogger logger: ILogger) {
         super(logger);
+
+        this.headerStyle = new HeaderStyle(observerLocator);
+        this.headerStyle.load();
+        this.disposables.push(() => this.headerStyle.dispose());
     }
 
     public async binding() {
@@ -168,3 +175,20 @@ export class ScriptEnvironments extends ViewModelBase {
         this.disposables.push(() => dndContainer.removeEventListener("wheel", horizontalScroll));
     }
 }
+
+class HeaderStyle extends LocalStorageBacked {
+    public style: "minimal" | "bold" = "minimal";
+    public size: "comfy" | "compact" = "comfy";
+
+    constructor(observerLocator: IObserverLocator) {
+        super("script-environments.header-style");
+
+        const properties = [
+            nameof(this.style),
+            nameof(this.size),
+        ];
+
+        super.autoSave(observerLocator, properties);
+    }
+}
+

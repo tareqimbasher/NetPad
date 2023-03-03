@@ -13,6 +13,10 @@ script-environments {
             flex-basis: 20px;
             min-width: 20px;
             text-align: right;
+
+            .dropdown-header {
+                font-size: 1rem;
+            }
         }
     }
 
@@ -111,7 +115,7 @@ script-environments {
         }
     }
 
-    &.style2 {
+    &.minimal {
         border-bottom: none !important;
 
         .script-tab {

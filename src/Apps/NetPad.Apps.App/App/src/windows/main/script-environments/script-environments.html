@@ -1,8 +1,5 @@
-<template class="d-flex flex-column ${size} ${style}">
+<template class="d-flex flex-column ${headerStyle.size} ${headerStyle.style}">
     <require from="./script-environment-view/script-environment-view"></require>
-
-    <let size.bind="'comfy'"></let>
-    <let style.bind="'style2'"></let>
 
     <div class="script-tabs-bar">
         <div class="script-tabs">
@@ -56,34 +53,34 @@
                 <li><h6 class="dropdown-header">Style</h6></li>
                 <li>
                     <button class="dropdown-item"
-                            click.trigger="style = 'style1'">
-                        <i class="fa fa-sm fa-check me-3 ${style === 'style1' ? '' : 'invisible'}" style=""></i>
-                        Style 1
+                            click.trigger="headerStyle.style = 'minimal'">
+                        <i class="fa fa-sm fa-check me-3 ${headerStyle.style === 'minimal' ? '' : 'invisible'}"></i>
+                        Minimal
                     </button>
                 </li>
                 <li>
                     <button class="dropdown-item"
-                            click.trigger="style = 'style2'">
-                        <i class="fa fa-sm fa-check me-3 ${style === 'style2' ? '' : 'invisible'}" style=""></i>
-                        Style 2
+                            click.trigger="headerStyle.style = 'bold'">
+                        <i class="fa fa-sm fa-check me-3 ${headerStyle.style === 'bold' ? '' : 'invisible'}"></i>
+                        Bold
                     </button>
                 </li>
                 <li>
                     <hr class="dropdown-divider">
                 </li>
-                <li><h6 class="dropdown-header">Sizing</h6></li>
+                <li><h6 class="dropdown-header">Density</h6></li>
                 <li>
                     <button class="dropdown-item"
-                            click.trigger="size = 'compact'">
-                        <i class="fa fa-sm fa-check me-3 ${size === 'compact' ? '' : 'invisible'}" style=""></i>
-                        Compact
+                            click.trigger="headerStyle.size = 'comfy'">
+                        <i class="fa fa-sm fa-check me-3 ${headerStyle.size === 'comfy' ? '' : 'invisible'}"></i>
+                        Comfy
                     </button>
                 </li>
                 <li>
                     <button class="dropdown-item"
-                            click.trigger="size = 'comfy'">
-                        <i class="fa fa-sm fa-check me-3 ${size === 'comfy' ? '' : 'invisible'}" style=""></i>
-                        Comfy
+                            click.trigger="headerStyle.size = 'compact'">
+                        <i class="fa fa-sm fa-check me-3 ${headerStyle.size === 'compact' ? '' : 'invisible'}"></i>
+                        Compact
                     </button>
                 </li>
             </ul>
