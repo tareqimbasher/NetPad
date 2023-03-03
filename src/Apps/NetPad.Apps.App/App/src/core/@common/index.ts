@@ -1,4 +1,5 @@
 export * from "./data/buffered-queue";
+export * from "./data/semaphore";
 
 export * from "./background-services/ibackground-service";
 

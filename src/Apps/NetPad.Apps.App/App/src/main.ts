@@ -113,8 +113,8 @@ builder.register(
 
 // Configure the proper platform
 const platformType = Env.isRunningInElectron()
-    ? require("@application/platforms/electron-platform").ElectronPlatform
-    : require("@application/platforms/web-platform").WebPlatform;
+    ? (await import("@application/platforms/electron-platform")).ElectronPlatform
+    : (await import("@application/platforms/web-platform")).WebPlatform;
 
 const platform = new platformType() as IPlatform;
 platform.configure(builder);

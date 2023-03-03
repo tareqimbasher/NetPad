@@ -35,11 +35,9 @@ export class SignalRIpcGateway implements IIpcGateway {
                         return null;
                     }
 
-                    let nextDelay: number = retryContext.previousRetryCount < 3
+                    return retryContext.previousRetryCount < 3
                         ? 500
                         : 5000;
-
-                    return nextDelay;
                 }
             })
             .build();

@@ -63,6 +63,7 @@ internal static class SwaggerSetup
                 GenerateClientInterfaces = true,
                 QueryNullValue = null,
                 UseAbortSignal = true,
+                ClientBaseClass = "ApiClientBase",
                 TypeScriptGeneratorSettings =
                 {
                     TypeScriptVersion = 4.4m,

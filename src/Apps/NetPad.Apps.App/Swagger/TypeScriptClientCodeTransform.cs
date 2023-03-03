@@ -16,6 +16,9 @@ internal static class TypeScriptClientCodeTransform
             .Replace(
                 "http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }",
                 "@IHttpClient http?: IHttpClient")
+            .Replace(
+                "return this.http.fetch(url_, options_)",
+                "return this.makeFetchCall(() => this.http.fetch(url_, options_))")
 
             // Convert to lines
             .Split("\n")
@@ -28,7 +31,11 @@ internal static class TypeScriptClientCodeTransform
         lines.Insert(0, "// @ts-nocheck");
 
         // Add the imports we want
-        lines.Insert(9, "import {IHttpClient} from \"aurelia\";");
+        lines.InsertRange(9,new[]
+        {
+            "import {IHttpClient} from \"aurelia\";",
+            "import {ApiClientBase} from \"@domain/api-client-base\";",
+        });
 
         // Other transforms
         AddAbortSignalParametersToApiClientInterfaces(lines);
