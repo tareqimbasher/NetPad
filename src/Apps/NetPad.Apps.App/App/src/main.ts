@@ -42,9 +42,9 @@ import {
     YesNoValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService} from "@common";
-import {WebApp} from "@application/apps/web-app";
 import * as appTasks from "./main.tasks";
 import {AppLifeCycle} from "./main.app-lifecycle";
+import {IPlatform} from "@application/platforms/iplatform";
 
 // Register common dependencies shared for all windows
 const builder = Aurelia.register(
@@ -99,10 +99,9 @@ const builder = Aurelia.register(
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
 
+// Configure app lifecycle actions
 const appLifeCycle = new AppLifeCycle(logger);
-
 builder.register(
-    // Tasks that run at specific points in the app's lifecycle
     AppTask.beforeCreate(IContainer, async (container) => appLifeCycle.beforeCreate(container)),
     AppTask.hydrating(IContainer, async (container) => appLifeCycle.hydrating(container)),
     AppTask.hydrated(IContainer, async (container) => appLifeCycle.hydrated(container)),
@@ -112,9 +111,13 @@ builder.register(
     AppTask.afterDeactivate(IContainer, async (container) => appLifeCycle.afterDeactivate(container)),
 )
 
-if (!Env.isRunningInElectron()) {
-    WebApp.configure(builder);
-}
+// Configure the proper platform
+const platformType = Env.isRunningInElectron()
+    ? require("@application/platforms/electron-platform").ElectronPlatform
+    : require("@application/platforms/web-platform").WebPlatform;
+
+const platform = new platformType() as IPlatform;
+platform.configure(builder);
 
 // Load app settings
 const settings = await builder.container.get(ISettingService).get();

@@ -2,6 +2,9 @@ import * as appTasks from "./main.tasks";
 import {IContainer, ILogger} from "aurelia";
 import {IIpcGateway} from "@domain";
 
+/**
+ * Actions that run at specific points in the app's lifecycle
+ */
 export class AppLifeCycle {
     constructor(private readonly logger: ILogger) {
     }
