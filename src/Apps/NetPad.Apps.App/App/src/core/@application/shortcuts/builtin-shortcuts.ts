@@ -1,10 +1,40 @@
 import {CreateScriptDto, IScriptService, ISettingService, RunScriptEvent} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
-import {TogglePaneEvent} from "@application";
+import {EditorUtil} from "../editor/editor-util";
 import {Explorer, NamespacesPane} from "../../../windows/main/panes";
+import {TogglePaneEvent} from "../events/toggle-pane-event"
+import * as monaco from "monaco-editor";
 
 export const BuiltinShortcuts = [
+    new Shortcut("Command Palette")
+        .withKey(KeyCode.F1)
+        .hasAction(ctx => {
+            const activeScriptId = ctx.session.active?.script.id;
+            if (!activeScriptId) {
+                return;
+            }
+
+            const editors = monaco.editor.getEditors();
+            if (!editors.length) {
+                return;
+            }
+
+            let editor = editors.find(e => {
+                const model = e.getModel();
+                return !model ? false : (EditorUtil.getScriptId(model) === activeScriptId);
+            })
+
+            if (!editor) {
+                editor = editors.find(e => e.hasTextFocus() || e.hasWidgetFocus()) || editors[0];
+            }
+
+            editor.focus();
+            editor.trigger("", "editor.action.quickCommand", null);
+        })
+        .configurable(false)
+        .enabled(),
+
     new Shortcut("New")
         .withCtrlKey()
         .withKey(KeyCode.KeyN)

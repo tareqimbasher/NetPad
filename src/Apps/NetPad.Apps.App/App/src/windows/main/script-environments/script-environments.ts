@@ -183,12 +183,10 @@ class HeaderStyle extends LocalStorageBacked {
     constructor(observerLocator: IObserverLocator) {
         super("script-environments.header-style");
 
-        const properties = [
+        super.autoSave(observerLocator, [
             nameof(this.style),
             nameof(this.size),
-        ];
-
-        super.autoSave(observerLocator, properties);
+        ]);
     }
 }
 

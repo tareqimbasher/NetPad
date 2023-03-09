@@ -56,7 +56,7 @@ public static class DotNetInfo
 
         lock (_dotNetExeLocateLock)
         {
-            string? path;
+            string? path = null;
 
             if (_dotNetPath != null)
             {
@@ -65,23 +65,30 @@ public static class DotNetInfo
 
             var exeName = GetDotNetExeName();
 
-            // Try getting path using ShellExecute
-            // Prioritize this over DOTNET_ROOT environment variable in case user defines a different path for dotnet for the execution of this app.
-            var process = Process.Start(new ProcessStartInfo
+            try
             {
-                UseShellExecute = true,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = exeName,
-                Arguments = "--version"
-            });
+                // Try getting path using ShellExecute
+                // Prioritize this over DOTNET_ROOT environment variable in case user defines a different path for dotnet for the execution of this app.
+                var process = Process.Start(new ProcessStartInfo
+                {
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = exeName,
+                    Arguments = "--version"
+                });
 
-            path = process?.MainModule?.FileName;
+                path = process?.MainModule?.FileName;
 
-            // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
-            if (path?.EndsWith(exeName) != true)
+                // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
+                if (path?.EndsWith(exeName) != true)
+                {
+                    path = null;
+                }
+            }
+            catch
             {
-                path = null;
+                // if it failed, it wasn't found
             }
 
             if (string.IsNullOrEmpty(path))
@@ -148,7 +155,7 @@ public static class DotNetInfo
 
         lock (_dotNetEfToolExeLocateLock)
         {
-            string? path;
+            string? path = null;
 
             if (_dotNetEfToolPath != null)
             {
@@ -157,23 +164,30 @@ public static class DotNetInfo
 
             var exeName = GetDotNetEfToolExeName();
 
-            // Try getting path using ShellExecute
-            // Prioritize this over global tool install path in case user defines a different path for dotnet for the execution of this app.
-            var process = Process.Start(new ProcessStartInfo
+            try
             {
-                UseShellExecute = true,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = exeName,
-                Arguments = "--version"
-            });
+                // Try getting path using ShellExecute
+                // Prioritize this over global tool install path in case user defines a different path for dotnet for the execution of this app.
+                var process = Process.Start(new ProcessStartInfo
+                {
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = exeName,
+                    Arguments = "--version"
+                });
 
-            path = process?.MainModule?.FileName;
+                path = process?.MainModule?.FileName;
 
-            // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
-            if (path?.EndsWith(exeName) != true)
+                // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
+                if (path?.EndsWith(exeName) != true)
+                {
+                    path = null;
+                }
+            }
+            catch
             {
-                path = null;
+                // if it failed, it wasn't found
             }
 
             if (string.IsNullOrEmpty(path))

@@ -49,18 +49,26 @@ public static class SystemAssemblies
     private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot()
     {
         var dotnetRoot = DotNetInfo.LocateDotNetRootDirectoryOrThrow();
-        var sdkReferenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
+        var sdkReferenceAssemblyRoot =
+            new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
         var dotnetVer = sdkReferenceAssemblyRoot.GetDirectories()
-            .Where(d => d.Name.StartsWith($"{BadGlobals.DotNetVersion}."))
-            .OrderBy(d => new Version(d.Name))
-            .Last()
-            .Name;
+            .Select(d => Version.TryParse(d.Name, out var version)
+                ? new
+                {
+                    Directory = d,
+                    Version = version
+                }
+                : null)
+            .Where(d => d != null)
+            .MaxBy(d => d!.Version)?
+            .Directory.Name;
 
-        var referenceAssembliesDir = Path.Combine(sdkReferenceAssemblyRoot.FullName, dotnetVer, "ref", $"net{dotnetVer[0]}.0");
+        var referenceAssembliesDir =
+            Path.Combine(sdkReferenceAssemblyRoot.FullName, dotnetVer, "ref", $"net{dotnetVer[0]}.0");
 
         if (!Directory.Exists(referenceAssembliesDir))
         {
-            throw new Exception($"Could find reference assemblies directory at {referenceAssembliesDir}." +
+            throw new Exception($"Could not find reference assemblies directory at {referenceAssembliesDir}." +
                                 $" dotnetVer: {dotnetVer}." +
                                 $" sdkReferenceAssemblyRoot: {sdkReferenceAssemblyRoot}");
         }

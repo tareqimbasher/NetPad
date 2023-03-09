@@ -1,4 +1,14 @@
 ﻿.app-dependencies-check-dialog {
     width: 600px;
     padding: 2rem;
+    min-width: 200px;
+    min-height: 200px;
+
+    .section {
+        margin-top: 3rem;
+
+        &:last-of-type {
+            margin-bottom: 2rem;
+        }
+    }
 }

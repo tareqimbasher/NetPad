@@ -29,10 +29,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     ""runtimeOptions"": {{
         ""framework"": {{
             ""name"": ""Microsoft.NETCore.App"",
-            ""version"": ""6.0.0""
+            ""version"": ""{0}""
         }},
         ""rollForward"": ""Minor"",
-        ""additionalProbingPaths"": {0}
+        ""additionalProbingPaths"": {1}
     }}
 }}";
 
@@ -220,6 +220,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         var runtimeConfigFileContents = string.Format(
             RuntimeConfigFileTemplate,
+            DotNetInfo.GetDotNetSdkVersion(DotNetInfo.LocateDotNetExecutableOrThrow()).Major + ".0.0",
             JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
         );
 
@@ -340,18 +341,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private void StopAndCleanup()
     {
-        if (_externalProcessRootDirectory.Exists)
-        {
-            try
-            {
-                _externalProcessRootDirectory.Delete(true);
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning("Could not delete process root directory: {Path}", _externalProcessRootDirectory.FullName);
-            }
-        }
-
         if (_processHandler != null)
         {
             try
@@ -362,6 +351,18 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error disposing process handler");
+            }
+
+            if (_externalProcessRootDirectory.Exists)
+            {
+                try
+                {
+                    _externalProcessRootDirectory.Delete(true);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning("Could not delete process root directory: {Path}", _externalProcessRootDirectory.FullName);
+                }
             }
         }
     }

@@ -7,6 +7,7 @@ export class AppDependenciesCheckDialog extends DialogBase {
     public dotnetSdkMissing = false;
     public dotnetEfCoreToolMissing = false;
     public dependencyCheckResult?: AppDependencyCheckResult;
+    public loading = true;
 
     constructor(@IDialogDom dialogDom: IDialogDom,
                 @ILogger logger: ILogger,
@@ -14,14 +15,16 @@ export class AppDependenciesCheckDialog extends DialogBase {
         super(dialogDom, logger);
     }
 
-    public async activate(dependencyCheckResult?: AppDependencyCheckResult) {
-        if (!dependencyCheckResult) {
-            dependencyCheckResult = await this.appService.checkDependencies();
-        }
+    public activate(dependencyCheckResult?: AppDependencyCheckResult) {
+        const promise: Promise<AppDependencyCheckResult> = dependencyCheckResult
+            ? Promise.resolve(dependencyCheckResult)
+            : this.appService.checkDependencies();
 
-        this.dependencyCheckResult = dependencyCheckResult;
-
-        this.dotnetSdkMissing = !dependencyCheckResult.dotNetSdkVersion;
-        this.dotnetEfCoreToolMissing = !dependencyCheckResult.dotNetEfToolVersion;
+        promise.then(r => {
+            this.dependencyCheckResult = r;
+            this.dotnetSdkMissing = !this.dependencyCheckResult.dotNetSdkVersion;
+            this.dotnetEfCoreToolMissing = !this.dependencyCheckResult.dotNetEfToolVersion;
+            this.loading = false;
+        });
     }
 }

@@ -13,9 +13,13 @@
     </div>
 </div>
 <div class="right-column">
+    <i class="info-icon action-icon"
+       click.trigger="showQuickTipsDialog()"
+       title="Quick Tips"></i>
     <i class="check-circle-icon action-icon"
        click.trigger="showAppDepsCheckDialog()"
-       title="App Dependencies Check"></i>
+       title="App Dependencies Check"
+       platforms="Electron"></i>
     <i class="theme-icon action-icon"
        click.trigger="settingsService.toggleTheme()"
        title="Toggle Theme"></i>

@@ -1,5 +1,5 @@
 import {bindable} from "aurelia";
-import {Env} from "@application/env";
+import {Env} from "@domain";
 
 /**
  * Used to mark an element to show only if the current running platform is supported.

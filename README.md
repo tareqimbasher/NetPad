@@ -24,10 +24,10 @@ developers need, and if we're lucky, maybe a few useful new ones!
 
 The following must be be installed to run NetPad:
 
-* [.NET SDK (.NET 6 or higher)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0): used
-  to build and run your scripts.
+* [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0):
     * The environment variable `DOTNET_ROOT` (or `DOTNET_INSTALL_DIR`) must be set
       and point to the directory where .NET is installed.
+    * You can have additional .NET SDKs installed but you still need .NET 6 SDK installed too.
 * [EF Core tools (.NET 6 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
 
@@ -118,7 +118,7 @@ accessed with a web browser.
 ### Requirements
 
 * Node v16+ (npm v8+)
-* .NET SDK 6.x (or higher)
+* .NET SDK 6.x
 * .NET SDK 5.x: if you plan on running the Electron app. This is not a dependency of NetPad itself
   but a dependency of the `electronize` development tool. It, currently, needs this to run.
 * EF Core tools 6.x (or higher)

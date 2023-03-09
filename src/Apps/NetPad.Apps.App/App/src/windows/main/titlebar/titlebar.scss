@@ -36,9 +36,10 @@ titlebar {
             -webkit-app-region: no-drag;
             display: flex;
             align-items: center;
+            z-index: 1000;
 
             i {
-                margin-left: 1rem;
+                margin-left: 1.25rem;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.DotNet;
 
@@ -8,15 +9,49 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 {
     public class Handler : IRequestHandler<CheckAppDependenciesQuery, AppDependencyCheckResult>
     {
-        public Task<AppDependencyCheckResult> Handle(CheckAppDependenciesQuery request, CancellationToken cancellationToken)
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(ILogger<Handler> logger)
         {
-            var dotnetSdkExePath = DotNetInfo.LocateDotNetExecutable();
-            var dotNetEfToolExePath = DotNetInfo.LocateDotNetEfToolExecutable();
+            _logger = logger;
+        }
+
+        public Task<AppDependencyCheckResult> Handle(CheckAppDependenciesQuery request,
+            CancellationToken cancellationToken)
+        {
+            string? dotNetSdkVersion = null;
+            string? dotNetEfToolVersion = null;
+
+            try
+            {
+                var dotnetSdkExePath = DotNetInfo.LocateDotNetExecutable();
+
+                dotNetSdkVersion = dotnetSdkExePath == null
+                    ? null
+                    : DotNetInfo.GetDotNetSdkVersion(dotnetSdkExePath)?.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting .NET SDK version");
+            }
+
+            try
+            {
+                var dotNetEfToolExePath = DotNetInfo.LocateDotNetEfToolExecutable();
+
+                dotNetEfToolVersion = dotNetEfToolExePath == null
+                    ? null
+                    : DotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath)?.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting .NET Entity Framework Tool version");
+            }
 
             var result = new AppDependencyCheckResult(
                 DotNetInfo.GetDotNetRuntimeVersion().ToString(),
-                dotnetSdkExePath == null ? null : DotNetInfo.GetDotNetSdkVersion(dotnetSdkExePath)?.ToString(),
-                dotNetEfToolExePath == null ? null : DotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath)?.ToString()
+                dotNetSdkVersion,
+                dotNetEfToolVersion
             );
 
             return Task.FromResult(result);

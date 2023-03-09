@@ -1,7 +1,6 @@
 ﻿import {DefaultLogEvent, ILogEvent, ISink} from "@aurelia/kernel";
-import {IAppService, LogLevel, RemoteLogMessage} from "@domain";
+import {Env, IAppService, LogLevel, RemoteLogMessage} from "@domain";
 import {BufferedQueue} from "@common";
-import {Env} from "@application/env";
 import {LogConfig} from "./log-config";
 
 export class RemoteLogSink implements ISink {

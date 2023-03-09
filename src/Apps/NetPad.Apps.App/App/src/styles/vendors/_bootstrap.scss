@@ -26,6 +26,8 @@ $nav-link-padding-y:                0.25rem;
 $input-btn-focus-width:             0.1rem;
 $form-select-indicator-color:       silver;
 
+$info:                              #6f42c1;
+
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
 @import "~styles/themes";

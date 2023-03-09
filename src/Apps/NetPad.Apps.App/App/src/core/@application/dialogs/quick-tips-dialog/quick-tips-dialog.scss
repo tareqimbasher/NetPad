@@ -1,0 +1,17 @@
+﻿.quick-tips-dialog {
+    width: 600px;
+    padding: 2rem;
+
+    .main-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .tips > li {
+        line-height: 2.15rem;
+        font-size: 1.1rem;
+
+        &:not(:first-child) {
+            margin-top: 1.2rem;
+        }
+    }
+}

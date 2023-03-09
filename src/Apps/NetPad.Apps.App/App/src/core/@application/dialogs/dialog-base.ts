@@ -11,28 +11,33 @@ export abstract class DialogBase extends ViewModelBase {
     ) {
         super(logger);
         dialogDom.contentHost.classList.add("dialog");
-        dialogDom.overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        dialogDom.overlay.classList.add("dialog-overlay");
     }
 
     public attaching() {
-        const animation = this.dialogDom.contentHost.animate([{opacity: "0"}, {opacity: "1"}], {
-            duration: 100,
+        // Animate the parent so the overlay is included in the opacity animation
+        const animation = this.dialogDom.contentHost.parentElement?.animate([{opacity: "0"}, {opacity: "1"}], {
+            duration: 200,
         });
 
-        return animation.finished;
+        return animation?.finished;
     }
 
     public override detaching() {
         super.detaching();
 
-        const animation = this.dialogDom.contentHost.animate([{opacity: "1"}, {opacity: "0"}], {
-            duration: 100,
+        const animation = this.dialogDom.contentHost.parentElement?.animate([{opacity: "1"}, {opacity: "0"}], {
+            duration: 200,
         });
 
-        return animation.finished;
+        return animation?.finished;
     }
 
-    public static async toggle<TDialog extends Constructable>(dialogService: IDialogService, dialogComponent: TDialog, model?: unknown) {
+    public static async toggle<TDialog extends Constructable>(
+        dialogService: IDialogService,
+        dialogComponent: TDialog,
+        model?: unknown) {
+
         const key = dialogComponent.name;
 
         let instance = DialogBase.instances.get(key);

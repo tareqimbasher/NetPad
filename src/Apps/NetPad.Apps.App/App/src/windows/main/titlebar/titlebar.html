@@ -6,12 +6,12 @@
 </div>
 <div class="right-column">
     <div class="actions">
-        <i class="window-always-on-top-icon action-icon ${isWindowAlwaysOnTop ? 'text-blue' : ''}"
-           click.trigger="toggleWindowAlwaysOnTop()"
-           title="${isWindowAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
         <i class="settings-icon action-icon"
            click.trigger="openSettingsWindow()"
            title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+        <i class="window-always-on-top-icon action-icon ${isWindowAlwaysOnTop ? 'text-blue' : ''}"
+           click.trigger="toggleWindowAlwaysOnTop()"
+           title="${isWindowAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
     </div>
 
     <div class="window-controls">

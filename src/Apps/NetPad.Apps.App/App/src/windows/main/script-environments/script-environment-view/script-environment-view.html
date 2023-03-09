@@ -30,8 +30,11 @@
         <b>SDK:</b>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="dotNetSdkVersion"
+                title="The .NET runtime that will be used to run this script.
+This is not configurable right now, and depends on the .NET SDK visible on the path."
                 disabled>
             <option value=""></option>
+            <option value="5">.NET 5</option>
             <option value="6">.NET 6</option>
             <option value="7">.NET 7</option>
         </select>
@@ -59,7 +62,7 @@
         </select>
     </div>
     <div class="ms-auto me-3 text-truncate">
-        ${script.config.references.length} References
+        <a class="btn-link" click.trigger="scriptService.openConfigWindow(script.id)">${script.config.references.length} References</a>
     </div>
 </div>
 

@@ -11,6 +11,7 @@ import 'bootstrap/dist/js/bootstrap.bundle';
 import './styles/main.scss';
 import {
     AppService,
+    Env,
     IAppService,
     IEventBus,
     IIpcGateway,
@@ -26,7 +27,6 @@ import {
     ConsoleLogSink,
     ContextMenu,
     DateTimeValueConverter,
-    Env,
     EventBus,
     ExternalLinkCustomAttribute,
     FindTextBox,
