@@ -1,4 +1,4 @@
-@import "./functions.scss";
+@import "./functions";
 
 /*
   @mixin theme($property, $key, $inlineExtra:null, $postExtra:null)
@@ -46,8 +46,8 @@
 */
 @mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
     @each $theme in $themes {
-        @if (themeExists($key, $theme)) {
-            $value: getThemeValue($key, $theme);
+        @if themeExists($key, $theme) {
+            $value: getthemevalue($key, $theme);
 
             //:global(.#{$theme}) & {
             @at-root .#{$theme} #{&} {
@@ -72,32 +72,34 @@
 
     @each $key, $value in $newThemeMap {
         //adds new themeKey if doesn't exist
-        @if not map-has-key($themeValues, $key) {
-            $themeValues: map-merge(
-                    $themeValues,
-                    (
-                        $key: (
-                            $themeName: $value,
-                        ),
-                    )
+        @if not map-has-key($theme-values, $key) {
+            $theme-values: map-merge(
+                $theme-values,
+                (
+                    $key: (
+                        $themeName: $value,
+                    ),
+                )
             ) !global;
         }
-            //adds to existing key map
+
+        //adds to existing key map
         @else {
-            $existingKeyMap: map-get($themeValues, $key);
+            $existingKeyMap: map-get($theme-values, $key);
+
             //if theme variable doesn't exist, add it
             @if not map-get($existingKeyMap, $themeName) {
                 $newKeyMap: map-merge(
-                        $existingKeyMap,
-                        (
-                            $themeName: $value,
-                        )
+                    $existingKeyMap,
+                    (
+                        $themeName: $value,
+                    )
                 );
-                $themeValues: map-merge(
-                        $themeValues,
-                        (
-                            $key: $newKeyMap,
-                        )
+                $theme-values: map-merge(
+                    $theme-values,
+                    (
+                        $key: $newKeyMap,
+                    )
                 ) !global;
             }
         }
@@ -110,9 +112,9 @@
   Really should only be called in the html selector at the app root.
 */
 @mixin generateThemeVariables {
-    @each $key, $val in $themeValues {
+    @each $key, $val in $theme-values {
         @each $theme in $themes {
-            @if (themeExists($key, $theme)) {
+            @if themeExists($key, $theme) {
                 --theme-#{$theme}-#{$key}: #{getThemeValue($key, $theme)};
             }
         }

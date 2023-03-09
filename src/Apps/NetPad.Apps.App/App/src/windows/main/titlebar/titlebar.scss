@@ -10,7 +10,9 @@ titlebar {
     user-select: none;
     -webkit-app-region: drag;
 
-    .left-column, .middle-column, .right-column {
+    .left-column,
+    .middle-column,
+    .right-column {
         flex: 1 1 0;
         display: flex;
         flex-direction: row;

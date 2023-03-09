@@ -10,7 +10,8 @@ scripts-list {
         overflow: auto;
 
         .list-group-item {
-            &.script-folder, &.script {
+            &.script-folder,
+            &.script {
                 padding: 1px 8px;
 
                 &:hover {
@@ -45,7 +46,7 @@ scripts-list {
                 .script-status {
                     display: flex;
                     align-items: center;
-                    margin-right: 0.20rem;
+                    margin-right: 0.2rem;
                 }
 
                 .script-dirty-flag {

@@ -1,12 +1,13 @@
 // Gets a color value from color map, defined in colorDefinitions
-/*@function color($colorName) {
+
+/* @function color($colorName) {
     @return map-get($colors, $colorName);
-}*/
+} */
 
 // Helper function for checking if theme exists in theme colors
 @function themeExists($key, $theme) {
-    @if map-has-key($themeValues, $key) {
-        @return map-has-key(map-get($themeValues, $key), $theme);
+    @if map-has-key($theme-values, $key) {
+        @return map-has-key(map-get($theme-values, $key), $theme);
     }
 
     @return null;
@@ -14,5 +15,5 @@
 
 // Helper function for getting a theme value
 @function getThemeValue($key, $theme) {
-    @return map-get(map-get($themeValues, $key), $theme);
+    @return map-get(map-get($theme-values, $key), $theme);
 }

@@ -16,7 +16,8 @@ explorer {
         @include theme(background-color, backgroundColor);
     }
 
-    .tree-expand-node-icon, .tree-collapse-node-icon {
+    .tree-expand-node-icon,
+    .tree-collapse-node-icon {
         @extend %text-orange;
     }
 }

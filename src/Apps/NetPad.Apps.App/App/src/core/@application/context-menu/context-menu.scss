@@ -10,14 +10,20 @@ context-menu {
     min-width: 285px;
     max-width: 600px;
     padding: 10px 0;
-    -webkit-box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
-    0 5px 5px -3px rgba(0, 0, 0, 0.2);
-    -moz-box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
-    0 5px 5px -3px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12),
-    0 5px 5px -3px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 8px 10px 1px rgb(0 0 0 / 14%),
+        0 3px 14px 2px rgb(0 0 0 / 12%),
+        0 5px 5px -3px rgb(0 0 0 / 20%);
+    box-shadow:
+        0 8px 10px 1px rgb(0 0 0 / 14%),
+        0 3px 14px 2px rgb(0 0 0 / 12%),
+        0 5px 5px -3px rgb(0 0 0 / 20%);
+    box-shadow:
+        0 8px 10px 1px rgb(0 0 0 / 14%),
+        0 3px 14px 2px rgb(0 0 0 / 12%),
+        0 5px 5px -3px rgb(0 0 0 / 20%);
     transition: visibility 0.2s, opacity 0.2s linear;
-    -moz-transition: visibility 0.2s, opacity 0.2s linear;
+    transition: visibility 0.2s, opacity 0.2s linear;
 
     &.visible {
         opacity: 1;
@@ -31,7 +37,7 @@ context-menu {
             padding: 2px 5px;
 
             &:hover {
-                background-color: rgba(30, 144, 255, 0.5);
+                background-color: rgb(30 144 255 / 50%);
             }
 
             .item-container {

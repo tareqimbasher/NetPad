@@ -6,7 +6,8 @@ editor {
         text-decoration: wavy underline red;
     }
 
-    span[class*=' dyn-rule'], span[class^='dyn-rule'] {
+    span[class*=" dyn-rule"],
+    span[class^="dyn-rule"] {
         color: gray;
         font-size: 80%;
         margin-right: 2px;

@@ -11,7 +11,10 @@ data-connections-list {
         }
     }
 
-    .db-table, .db-column, .db-index, .db-navigation {
+    .db-table,
+    .db-column,
+    .db-index,
+    .db-navigation {
         padding-left: 1.35rem;
     }
 
@@ -48,12 +51,13 @@ data-connections-list {
         max-width: 50%;
     }
 
-    .data-connection:hover, .display-text:hover {
+    .data-connection:hover,
+    .display-text:hover {
         @include theme(background-color, hoverColor);
     }
 
     i[class*="-node-icon"] {
         font-size: 0.75rem;
-        margin-right: 0.30rem;
+        margin-right: 0.3rem;
     }
 }

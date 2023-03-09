@@ -1,13 +1,15 @@
 @import "~styles/themes";
 
 .connection-details {
-    > .row, fieldset > .row {
+    > .row,
+    fieldset > .row {
         margin-bottom: 1rem;
     }
 }
 
 .connection-type-logo {
     max-width: 1rem;
+
     //max-height: 1rem;
     margin-right: 0.25rem;
 }
@@ -25,6 +27,6 @@
 }
 
 .required::after {
-    content: '*';
+    content: "*";
     color: red;
 }
