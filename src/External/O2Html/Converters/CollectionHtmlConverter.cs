@@ -93,13 +93,17 @@ public class CollectionHtmlConverter : HtmlConverter
         if (htmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
         {
             var properties = htmlSerializer.GetReadableProperties(elementType);
-            foreach (var property in properties)
-            {
-                table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true, true))
-                    .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
-            }
 
-            table.Head.ChildElements.Single().WithAddClass("table-data-header");
+            if (properties.Any())
+            {
+                foreach (var property in properties)
+                {
+                    table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true, true))
+                        .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
+                }
+
+                table.Head.ChildElements.Single().WithAddClass("table-data-header");
+            }
 
             var countHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
 
