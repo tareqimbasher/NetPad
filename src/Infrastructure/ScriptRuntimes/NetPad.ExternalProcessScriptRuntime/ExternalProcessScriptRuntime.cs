@@ -27,12 +27,13 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private const string RuntimeConfigFileTemplate = @"{{
     ""runtimeOptions"": {{
+        ""tfm"": ""{0}"",
         ""framework"": {{
             ""name"": ""Microsoft.NETCore.App"",
-            ""version"": ""{0}""
+            ""version"": ""{1}""
         }},
         ""rollForward"": ""Minor"",
-        ""additionalProbingPaths"": {1}
+        ""additionalProbingPaths"": {2}
     }}
 }}";
 
@@ -121,7 +122,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             _externalProcessRootDirectory.Create();
 
-            var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
+            var scriptAssemblyFilePath =
+                await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
             // TODO optimize this section
             _processHandler =
@@ -165,10 +167,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output =>
-            {
-                await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
-            });
+            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
 
             var start = DateTime.Now;
 
@@ -218,15 +217,9 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, runDependencies.ScriptAssemblyBytes);
 
-        var runtimeConfigFileContents = string.Format(
-            RuntimeConfigFileTemplate,
-            DotNetInfo.GetDotNetSdkVersion(DotNetInfo.LocateDotNetExecutableOrThrow()).Major + ".0.0",
-            JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
-        );
-
         await File.WriteAllTextAsync(
             Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
-            runtimeConfigFileContents
+            GenerateRuntimeConfigFileContents(runDependencies)
         );
 
         foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
@@ -333,6 +326,31 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         );
     }
 
+    private string? GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
+    {
+        var latestDotNetSdkVersion = DotNetInfo.GetDotNetSdkVersionsOrThrow()
+            .OrderBy(v => v.Version)
+            .Last();
+
+        var tfm = $"net{latestDotNetSdkVersion.Major}.0";
+        var runtimeVersion = DotNetInfo.GetDotNetRuntimeVersionsOrThrow()
+            .Where(v =>
+                v.FrameworkName == "Microsoft.NETCore.App"
+                && v.Major == latestDotNetSdkVersion.Major)
+            .MaxBy(v => v.Version)?
+            .Version;
+
+        if (runtimeVersion == null)
+            throw new Exception($"Could not find a .NET {latestDotNetSdkVersion.Major} runtime");
+
+        return string.Format(
+            RuntimeConfigFileTemplate,
+            tfm,
+            runtimeVersion,
+            JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
+        );
+    }
+
     public Task StopScriptAsync()
     {
         StopAndCleanup();
@@ -361,7 +379,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning("Could not delete process root directory: {Path}", _externalProcessRootDirectory.FullName);
+                    _logger.LogWarning("Could not delete process root directory: {Path}",
+                        _externalProcessRootDirectory.FullName);
                 }
             }
         }

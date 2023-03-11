@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NetPad.Common;
 using NetPad.Utilities;
 
 namespace NetPad.DotNet;
@@ -13,7 +14,11 @@ public static class DotNetInfo
     private static string? _dotNetPath;
     private static string? _dotNetEfToolPath;
 
-    public static Version GetDotNetRuntimeVersion() => Environment.Version;
+    /// <summary>
+    /// Returns the version of the .NET runtime used in the current app domain.
+    /// </summary>
+    public static Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
+
 
     public static string LocateDotNetRootDirectoryOrThrow()
     {
@@ -112,15 +117,28 @@ public static class DotNetInfo
         return _dotNetPath;
     }
 
-    public static Version? GetDotNetSdkVersion(string dotnetSdkExePath)
+
+    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow()
     {
+        var versions = GetDotNetRuntimeVersions();
+
+        return versions.Length > 0
+            ? versions
+            : throw new Exception("Could not find any .NET runtimes");
+    }
+
+    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersions()
+    {
+        var dotNetExePath = LocateDotNetExecutable();
+        if (dotNetExePath == null) return Array.Empty<DotNetRuntimeVersion>();
+
         var p = Process.Start(new ProcessStartInfo
         {
             UseShellExecute = false,
             CreateNoWindow = true,
             WindowStyle = ProcessWindowStyle.Hidden,
-            FileName = dotnetSdkExePath,
-            Arguments = "--version",
+            FileName = dotNetExePath,
+            Arguments = "--list-runtimes",
             RedirectStandardOutput = true
         });
 
@@ -130,7 +148,51 @@ public static class DotNetInfo
         string output = p.StandardOutput.ReadToEnd();
         p.WaitForExit();
 
-        return Version.TryParse(output, out var version) ? version : null;
+        return output.Split(Environment.NewLine)
+            .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).ToArray())
+            .Where(a => a.Length == 2)
+            .Where(a => a.All(x => x.Any()) && int.TryParse(a[1][0].ToString(), out _))
+            .Select(a => new DotNetRuntimeVersion(a[0], a[1]))
+            .ToArray();
+    }
+
+
+    public static DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow()
+    {
+        var versions = GetDotNetSdkVersions();
+
+        return versions.Length > 0
+            ? versions
+            : throw new Exception("Could not find any .NET SDKs");
+    }
+
+    public static DotNetSdkVersion[] GetDotNetSdkVersions()
+    {
+        var dotNetExePath = LocateDotNetExecutable();
+        if (dotNetExePath == null) return Array.Empty<DotNetSdkVersion>();
+
+        var p = Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = dotNetExePath,
+            Arguments = "--list-sdks",
+            RedirectStandardOutput = true
+        });
+
+        if (p == null)
+            throw new Exception("Could not start dotnet sdk executable");
+
+        string output = p.StandardOutput.ReadToEnd();
+        p.WaitForExit();
+
+        return output.Split(Environment.NewLine)
+            .Select(l => l.Split(" ")[0])
+            .Where(v => v.Any() && int.TryParse(v[0].ToString(), out _))
+            .Where(v => v.StartsWith(BadGlobals.DotNetVersion.ToString()))
+            .Select(v => new DotNetSdkVersion(v))
+            .ToArray();
     }
 
 

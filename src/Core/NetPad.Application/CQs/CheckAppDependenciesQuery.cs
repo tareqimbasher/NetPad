@@ -19,20 +19,16 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
         public Task<AppDependencyCheckResult> Handle(CheckAppDependenciesQuery request,
             CancellationToken cancellationToken)
         {
-            string? dotNetSdkVersion = null;
+            DotNetSdkVersion[]? dotNetSdkVersions = null;
             string? dotNetEfToolVersion = null;
 
             try
             {
-                var dotnetSdkExePath = DotNetInfo.LocateDotNetExecutable();
-
-                dotNetSdkVersion = dotnetSdkExePath == null
-                    ? null
-                    : DotNetInfo.GetDotNetSdkVersion(dotnetSdkExePath)?.ToString();
+                dotNetSdkVersions = DotNetInfo.GetDotNetSdkVersions();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting .NET SDK version");
+                _logger.LogError(ex, "Error getting .NET SDK versions");
             }
 
             try
@@ -49,8 +45,8 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
             }
 
             var result = new AppDependencyCheckResult(
-                DotNetInfo.GetDotNetRuntimeVersion().ToString(),
-                dotNetSdkVersion,
+                DotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
+                dotNetSdkVersions?.Select(v => v.Version.ToString()).ToArray() ?? Array.Empty<string>(),
                 dotNetEfToolVersion
             );
 

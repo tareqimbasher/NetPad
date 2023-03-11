@@ -60,6 +60,9 @@ public static class SystemAssemblies
                 }
                 : null)
             .Where(d => d != null)
+            // TODO this line should be removed when wanting to run under different .net frameworks
+            // removing it now causes compiling db connection assembly to fail
+            .Where(d => d!.Version.Major == BadGlobals.DotNetVersion)
             .MaxBy(d => d!.Version)?
             .Directory.Name;
 

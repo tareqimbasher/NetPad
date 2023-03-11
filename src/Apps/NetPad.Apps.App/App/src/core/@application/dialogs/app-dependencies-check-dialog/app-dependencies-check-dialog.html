@@ -17,36 +17,39 @@
 
         <div class="section">
             <h5>
-                <i class="${!dependencyCheckResult.dotNetSdkVersion ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
-                .NET SDK
-                <small if.bind="dependencyCheckResult.dotNetSdkVersion">(installed:
-                    v${dependencyCheckResult.dotNetSdkVersion})</small>
+                <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
+                .NET 6 SDK
+                <small if.bind="dependencyCheckResult.dotNetSdkVersions.length">(latest installed:
+                    v${latestDotnetSdkVersion})</small>
             </h5>
 
-            <div if.bind="!dependencyCheckResult.dotNetSdkVersion">
-                <span class="text-red">A compatible .NET SDK could not be found.</span>
-
+            <div if.bind="dotnetSdkMissing">
                 <div class="mt-4">
-                    Make sure the .NET SDK is installed and the <code>dotnet</code> executable is on your <i>PATH</i>.
-                    You will need .NET SDK version 6 (or higher) to be able to run scripts.
+                    <span class="text-red mt-2">.NET 6 SDK could not be found.</span>
+                    <br/>
+                    Make sure the .NET 6 SDK is installed and the <code>dotnet</code> executable is on your <i>PATH</i>.
                 </div>
             </div>
-            <span else>
-            .NET SDK is installed.
-        </span>
+            <div else>
+                The .NET 6 SDK is installed.
+                The following .NET SDKs are installed:
+                <ul>
+                    <li repeat.for="version of dependencyCheckResult.dotNetSdkVersions">${version}</li>
+                </ul>
+            </div>
         </div>
 
         <div class="section">
             <h5>
-                <i class="${!dependencyCheckResult.dotNetEfToolVersion ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
+                <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
                 Entity Framework Core .NET Tool
-                <small if.bind="dependencyCheckResult.dotNetEfToolVersion">(installed:
+                <small if.bind="!dotnetEfCoreToolMissing">(installed:
                     v${dependencyCheckResult.dotNetEfToolVersion})</small>
             </h5>
-            <div if.bind="!dependencyCheckResult.dotNetEfToolVersion">
-                <span class="">Entity Framework Core .NET tool is not installed.</span>
-
-                <div class="mt-4">
+            <div if.bind="dotnetEfCoreToolMissing">
+                <div class="mt-4 mt-2">
+                    <span>Entity Framework Core .NET tool is not installed.</span>
+                    <br/>
                     <b>This is optional</b>, but you will need to install version 6 (or higher) of the
                     <code>dotnet-ef</code>
                     tool and ensure it is on your <i>PATH</i> if you want to be able to add and use database
@@ -59,7 +62,7 @@
         </div>
 
         <div class="section"
-             if.bind="!dependencyCheckResult.dotNetSdkVersion || !dependencyCheckResult.dotNetEfToolVersion">
+             if.bind="dotnetSdkMissing || dotnetEfCoreToolMissing">
             <i class="info-icon text-blue"></i>
             Please restart NetPad after installing any of the dependencies above.
         </div>
@@ -78,7 +81,7 @@
         <div class="buttons">
             <a class="btn btn-primary"
                external-link
-               href="https://dotnet.microsoft.com/en-us/download">Download .NET SDK</a>
+               href="https://dotnet.microsoft.com/en-us/download/dotnet/6.0">Download .NET 6 SDK</a>
             <a class="btn btn-secondary"
                external-link
                href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core
