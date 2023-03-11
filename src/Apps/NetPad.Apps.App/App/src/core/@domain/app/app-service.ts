@@ -13,10 +13,16 @@ export class AppService extends AppApiClient implements IAppService {
     }, 3000);
 
     public override async checkDependencies(signal?: AbortSignal | undefined): Promise<AppDependencyCheckResult> {
-        if (this.lastDependencyCheckResult) return this.lastDependencyCheckResult;
+        if (!this.lastDependencyCheckResult) {
+            this.lastDependencyCheckResult = super.checkDependencies(signal);
+            this.debouncedNullifyLastDepCheckResult();
+        }
 
-        this.lastDependencyCheckResult = super.checkDependencies(signal);
-        this.debouncedNullifyLastDepCheckResult();
-        return this.lastDependencyCheckResult;
+        // Even though we're caching, we want to return a new instance everytime
+        // Reason is consumers of service methods assume they are getting data they can
+        // take ownership of. They should be able to mutate the result without having
+        // to worry about, or take into account, other consumers also reading from the same
+        // cached instance.
+        return this.lastDependencyCheckResult.then(r => AppDependencyCheckResult.fromJS(r));
     }
 }

@@ -31,12 +31,13 @@
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="dotNetSdkVersion"
                 title="The .NET runtime that will be used to run this script.
-This is not configurable right now, and depends on the .NET SDK visible on the path."
+This is not configurable right now, and defaults to latest .NET 6 runtime installed."
                 disabled>
             <option value=""></option>
             <option value="5">.NET 5</option>
             <option value="6">.NET 6</option>
             <option value="7">.NET 7</option>
+            <option value="8">.NET 8</option>
         </select>
     </div>
     <div class="ms-5 d-flex">

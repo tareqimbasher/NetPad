@@ -124,9 +124,15 @@ export class ScriptEnvironmentView extends ViewModelBase {
         this.disposables.push(() => this.split.destroy());
 
         this.appService.checkDependencies().then(result => {
-            if (result?.dotNetSdkVersion?.startsWith("6.")) this.dotNetSdkVersion = "6";
-            else if (result?.dotNetSdkVersion?.startsWith("7.")) this.dotNetSdkVersion = "7";
-            else this.dotNetSdkVersion = "";
+            if (!result?.dotNetSdkVersions.length) {
+                this.dotNetSdkVersion = "";
+                return;
+            }
+
+            const latest = result.dotNetSdkVersions.sort((a, b) => -1 * a.localeCompare(b))[0];
+            const firstChar = latest[0];
+
+            this.dotNetSdkVersion = isNaN(Number(firstChar)) ? "" : firstChar;
         });
 
         if (this.environment.status === "Running")

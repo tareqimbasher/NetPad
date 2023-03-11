@@ -707,7 +707,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1779,7 +1779,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -2236,22 +2236,29 @@ export interface IAppIdentifier {
 
 export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetRuntimeVersion!: string;
-    dotNetSdkVersion?: string | undefined;
+    dotNetSdkVersions!: string[];
     dotNetEfToolVersion?: string | undefined;
 
-    constructor(data?: IAppDependencyCheckResult) {
+        constructor(data?: IAppDependencyCheckResult) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+        if (!data) {
+            this.dotNetSdkVersions = [];
+        }
     }
 
     init(_data?: any) {
         if (_data) {
             this.dotNetRuntimeVersion = _data["dotNetRuntimeVersion"];
-            this.dotNetSdkVersion = _data["dotNetSdkVersion"];
+            if (Array.isArray(_data["dotNetSdkVersions"])) {
+                this.dotNetSdkVersions = [] as any;
+                for (let item of _data["dotNetSdkVersions"])
+                    this.dotNetSdkVersions!.push(item);
+            }
             this.dotNetEfToolVersion = _data["dotNetEfToolVersion"];
         }
     }
@@ -2266,7 +2273,11 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dotNetRuntimeVersion"] = this.dotNetRuntimeVersion;
-        data["dotNetSdkVersion"] = this.dotNetSdkVersion;
+        if (Array.isArray(this.dotNetSdkVersions)) {
+            data["dotNetSdkVersions"] = [];
+            for (let item of this.dotNetSdkVersions)
+                data["dotNetSdkVersions"].push(item);
+        }
         data["dotNetEfToolVersion"] = this.dotNetEfToolVersion;
         return data;
     }
@@ -2281,7 +2292,7 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
 
 export interface IAppDependencyCheckResult {
     dotNetRuntimeVersion: string;
-    dotNetSdkVersion?: string | undefined;
+    dotNetSdkVersions: string[];
     dotNetEfToolVersion?: string | undefined;
 }
 
