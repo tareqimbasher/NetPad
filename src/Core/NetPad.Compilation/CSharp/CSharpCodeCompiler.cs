@@ -28,7 +28,7 @@ public class CSharpCodeCompiler : ICodeCompiler
         var result = compilation.Emit(stream);
 
         stream.Seek(0, SeekOrigin.Begin);
-        return new CompilationResult(result.Success,  new AssemblyName(assemblyName), assemblyName + ".dll", stream.ToArray(), result.Diagnostics);
+        return new CompilationResult(result.Success, new AssemblyName(assemblyName), assemblyName + ".dll", stream.ToArray(), result.Diagnostics);
     }
 
     private CSharpCompilation CreateCompilation(CompilationInput input, string assemblyName)
