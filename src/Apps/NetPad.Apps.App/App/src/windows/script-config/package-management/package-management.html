@@ -99,7 +99,7 @@
                    type="text"
                    placeholder="Search packages..."
                    value.bind="searchTerm & debounce:400"/>
-            <select class="form-select ms-2" style="max-width: 45px" value.bind="searchTake">
+            <select class="form-select ms-2" style="max-width: 100px" value.bind="searchTake">
                 <option model.bind="10">10 results</option>
                 <option model.bind="20">20 results</option>
                 <option model.bind="50">50 results</option>
