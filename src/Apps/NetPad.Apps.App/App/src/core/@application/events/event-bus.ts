@@ -1,5 +1,6 @@
-import {Constructable, EventAggregator, IDisposable, ILogger} from "aurelia";
+import {Constructable, EventAggregator, ILogger} from "aurelia";
 import {IEventBus, IIpcGateway} from "@domain";
+import {IDisposable} from "@common";
 
 export class EventBus extends EventAggregator implements IEventBus {
     private readonly logger: ILogger;

@@ -29,11 +29,11 @@ export class ContextMenu extends ViewModelBase {
 
         const mouseClickHandler = ev => this.handleClickEvent(ev);
         document.addEventListener("mousedown", mouseClickHandler);
-        this.disposables.push(() => document.removeEventListener("mousedown", mouseClickHandler));
+        this.addDisposable(() => document.removeEventListener("mousedown", mouseClickHandler));
 
         const windowBlurHandler = () => this.hideContextMenu();
         window.addEventListener("blur", windowBlurHandler);
-        this.disposables.push(() => window.removeEventListener("blur", windowBlurHandler));
+        this.addDisposable(() => window.removeEventListener("blur", windowBlurHandler));
 
         PLATFORM.taskQueue.queueTask(() => this.trackContextClickTargets());
     }
@@ -130,7 +130,7 @@ export class ContextMenu extends ViewModelBase {
         };
 
         const mutationObserverSubscriptionToken = this.mutationObserver.subscribe(mutationHandler);
-        this.disposables.push(() => mutationObserverSubscriptionToken.dispose());
+        this.addDisposable(mutationObserverSubscriptionToken);
     }
 
     private addClickTargets(element: Element) {

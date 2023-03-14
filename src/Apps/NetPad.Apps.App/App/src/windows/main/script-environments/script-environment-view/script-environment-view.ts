@@ -42,7 +42,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
-        this.logger.debug("constructing");
     }
 
     public get script(): Script {
@@ -87,11 +86,9 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
     public bound() {
         this.logger = this.logger.scopeTo(`[${this.environment.script.id}] ${this.environment.script.name}`);
-        this.logger.debug("bound");
     }
-    public attached() {
-        this.logger.debug("attaching");
 
+    public attached() {
         this.kind = this.script.config.kind;
 
         const runScriptEventToken = this.eventBus.subscribe(RunScriptEvent, async msg => {
@@ -100,7 +97,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
                 await this.run();
             }
         });
-        this.disposables.push(() => runScriptEventToken.dispose());
+        this.addDisposable(runScriptEventToken);
 
         const activeEnvChangedToken = this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, message => {
             if (this.environment.script.id !== message.scriptId) {
@@ -113,7 +110,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
             this.editor.focus();
         });
-        this.disposables.push(() => activeEnvChangedToken.dispose());
+        this.addDisposable(activeEnvChangedToken);
 
         this.split = Split([this.textEditorContainer, this.outputContainer], {
             gutterSize: 6,
@@ -121,7 +118,7 @@ export class ScriptEnvironmentView extends ViewModelBase {
             sizes: [100, 0],
             minSize: [50, 0],
         });
-        this.disposables.push(() => this.split.destroy());
+        this.addDisposable(() => this.split.destroy());
 
         this.appService.checkDependencies().then(result => {
             if (!result?.dotNetSdkVersions.length) {
@@ -137,8 +134,6 @@ export class ScriptEnvironmentView extends ViewModelBase {
 
         if (this.environment.status === "Running")
             this.openResultsView();
-
-        this.logger.debug("attached");
     }
 
     private async editorTextChangedPrivate(newText: string | null | undefined) {

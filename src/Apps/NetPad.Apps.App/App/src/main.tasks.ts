@@ -8,7 +8,7 @@ export const configureFetchClient = (container: IContainer) => {
     const client = container.get(IHttpClient);
     const logger = container.get(ILogger).scopeTo("http-client");
 
-    const shouldLogErrors = (error: Error | undefined) => error && error.name?.startsWith("AbortError");
+    const shouldLogErrors = (error: Error | undefined) => error && !error.name?.startsWith("AbortError");
 
     client.configure(config =>
         config

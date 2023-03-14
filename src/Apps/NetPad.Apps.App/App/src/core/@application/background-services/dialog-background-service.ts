@@ -7,15 +7,14 @@
     PromptUserCommand,
     YesNoCancel
 } from "@domain";
-import {IBackgroundService} from "@common";
-import {IDialogService, IDisposable, ILogger} from "aurelia";
+import {IBackgroundService, WithDisposables} from "@common";
+import {IDialogService, ILogger} from "aurelia";
 import {DialogBase} from "@application/dialogs/dialog-base";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
 
-export class DialogBackgroundService implements IBackgroundService {
-    private disposables: IDisposable[] = [];
+export class DialogBackgroundService extends WithDisposables implements IBackgroundService {
     private logger: ILogger;
 
     constructor(@IEventBus private readonly eventBus: IEventBus,
@@ -23,23 +22,24 @@ export class DialogBackgroundService implements IBackgroundService {
                 @IDialogService private readonly dialogService,
                 @ILogger logger: ILogger
     ) {
+        super();
         this.logger = logger.scopeTo(nameof(DialogBackgroundService));
     }
 
     public start(): Promise<void> {
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(AlertUserCommand, async msg => await this.alert(msg))
         );
 
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(ConfirmWithUserCommand, async msg => await this.confirm(msg))
         );
 
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(PromptUserCommand, async msg => await this.prompt(msg))
         );
 
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(AlertUserAboutMissingAppDependencies, async msg => await this.alertUserAboutMissingAppDependencies(msg))
         );
 
@@ -47,13 +47,7 @@ export class DialogBackgroundService implements IBackgroundService {
     }
 
     public stop(): void {
-        for (const disposable of this.disposables) {
-            try {
-                disposable.dispose();
-            } catch (ex) {
-                this.logger.error("Error stopping service", ex);
-            }
-        }
+        this.dispose();
     }
 
     private async alert(command: AlertUserCommand) {

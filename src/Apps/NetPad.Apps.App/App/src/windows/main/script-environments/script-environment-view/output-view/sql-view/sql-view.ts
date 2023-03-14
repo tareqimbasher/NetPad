@@ -33,7 +33,7 @@ export class SqlView extends OutputViewBase {
                 this.appendOutput(output);
             }
         });
-        this.disposables.push(() => token.dispose());
+        this.addDisposable(token);
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {

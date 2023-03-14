@@ -1,5 +1,4 @@
-import {IBackgroundService} from "@common";
-import {IDisposable} from "aurelia";
+import {IBackgroundService, IDisposable} from "@common";
 import {IEventBus, OpenWindowCommand} from "@domain";
 
 /**

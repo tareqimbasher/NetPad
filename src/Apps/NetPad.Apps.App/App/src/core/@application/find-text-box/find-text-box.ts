@@ -47,10 +47,10 @@ export class FindTextBox extends ViewModelBase {
         };
 
         this.options.rootElement.addEventListener("keydown", ctrlFHandler);
-        this.disposables.push(() => this.options.rootElement.removeEventListener("keydown", ctrlFHandler));
+        this.addDisposable(() => this.options.rootElement.removeEventListener("keydown", ctrlFHandler));
 
         this.txtSearch.addEventListener("keydown", searchTextBoxKeyHandler);
-        this.disposables.push(() => this.txtSearch.removeEventListener("keydown", searchTextBoxKeyHandler));
+        this.addDisposable(() => this.txtSearch.removeEventListener("keydown", searchTextBoxKeyHandler));
     }
 
 

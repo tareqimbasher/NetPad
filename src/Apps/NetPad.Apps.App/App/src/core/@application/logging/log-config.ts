@@ -11,7 +11,7 @@ export class LogConfig {
     public applyRules(event: ILogEvent): void {
         const info = event as DefaultLogEvent;
         if (info.scope && info.scope.length) {
-            const logger = info.scope[0];
+            const logger = info.scope.join('.');
 
             for (const rule of this.rules) {
                 if (rule.loggerRegex.test(logger))

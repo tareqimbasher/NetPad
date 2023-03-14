@@ -25,23 +25,16 @@ export class Editor extends ViewModelBase {
     }
 
     public async attached(): Promise<void> {
-        this.logger.debug("attached start");
-
         setTimeout(() => {
             this.initializeEditor();
         }, 100);
-
-        this.logger.debug("attached end");
     }
 
     public override detaching() {
-        this.logger.debug("detaching start");
+        super.detaching();
 
         this.monacoEditor?.getModel()?.dispose();
         this.monacoEditor?.dispose();
-        super.detaching();
-
-        this.logger.debug("detaching end");
     }
 
     public getText(): string {
@@ -77,7 +70,7 @@ export class Editor extends ViewModelBase {
         const ob = new ResizeObserver(entries => this.updateEditorLayout());
         if (mainContent) ob.observe(mainContent);
         ob.observe(this.element);
-        this.disposables.push(() => ob.disconnect());
+        this.addDisposable(() => ob.disconnect());
     }
 
     @watch<Editor>(vm => vm.session.active)

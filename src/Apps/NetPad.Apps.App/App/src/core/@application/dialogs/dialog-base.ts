@@ -14,7 +14,9 @@ export abstract class DialogBase extends ViewModelBase {
         dialogDom.overlay.classList.add("dialog-overlay");
     }
 
-    public attaching() {
+    public override attaching() {
+        super.attaching();
+
         // Animate the parent so the overlay is included in the opacity animation
         const animation = this.dialogDom.contentHost.parentElement?.animate([{opacity: "0"}, {opacity: "1"}], {
             duration: 200,

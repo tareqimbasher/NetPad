@@ -1,3 +1,5 @@
+export * from "./disposable";
+
 export * from "./data/buffered-queue";
 export * from "./data/semaphore";
 export * from "./data/local-storage-backed";

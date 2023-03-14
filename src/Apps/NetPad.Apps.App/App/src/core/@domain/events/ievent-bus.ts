@@ -1,5 +1,6 @@
-import {DI, IDisposable, IEventAggregator} from "aurelia";
+import {DI, IEventAggregator} from "aurelia";
 import {Constructable} from "@aurelia/kernel/src/interfaces";
+import {IDisposable} from "@common";
 
 export interface IEventBus extends IEventAggregator {
     /**

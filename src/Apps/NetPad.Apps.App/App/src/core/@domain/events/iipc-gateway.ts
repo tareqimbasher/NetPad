@@ -1,4 +1,5 @@
-import {DI, IDisposable} from "aurelia";
+import {DI} from "aurelia";
+import {IDisposable} from "@common";
 
 export interface IIpcGateway extends IDisposable {
     start(): Promise<void>;

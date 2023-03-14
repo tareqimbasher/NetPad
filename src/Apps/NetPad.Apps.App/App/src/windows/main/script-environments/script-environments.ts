@@ -32,7 +32,7 @@ export class ScriptEnvironments extends ViewModelBase {
 
         this.headerStyle = new HeaderStyle(observerLocator);
         this.headerStyle.load();
-        this.disposables.push(() => this.headerStyle.dispose());
+        this.addDisposable(this.headerStyle);
     }
 
     public async binding() {
@@ -163,7 +163,7 @@ export class ScriptEnvironments extends ViewModelBase {
 
         const drake = dragula([dndContainer], drakeOptions);
 
-        this.disposables.push(() => drake.destroy());
+        this.addDisposable(() => drake.destroy());
 
         const horizontalScroll = (ev: WheelEvent) => {
             dndContainer.scrollLeft += (ev.deltaY ?? 1);
@@ -172,7 +172,7 @@ export class ScriptEnvironments extends ViewModelBase {
 
         dndContainer.addEventListener("wheel", horizontalScroll);
 
-        this.disposables.push(() => dndContainer.removeEventListener("wheel", horizontalScroll));
+        this.addDisposable(() => dndContainer.removeEventListener("wheel", horizontalScroll));
     }
 }
 

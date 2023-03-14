@@ -70,9 +70,13 @@ const builder = Aurelia.register(
                 logLevel: LogLevel.none
             },
             {
+                loggerRegex: new RegExp(/.\.ComponentLifecycle/),
+                logLevel: LogLevel.none
+            },
+            {
                 loggerRegex: new RegExp("ShortcutManager"),
                 logLevel: LogLevel.none
-            }
+            },
         ]
     }),
     DialogDefaultConfiguration.customize((config) => {

@@ -22,7 +22,7 @@ export class ExternalLinkCustomAttribute extends ViewModelBase {
         };
 
         this.element.addEventListener("click", handler);
-        this.disposables.push(() => this.element.removeEventListener("click", handler));
+        this.addDisposable(() => this.element.removeEventListener("click", handler));
     }
 
     private async openLinkExternally(event: Event): Promise<void> {

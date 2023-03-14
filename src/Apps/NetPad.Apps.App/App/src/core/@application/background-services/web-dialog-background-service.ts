@@ -1,27 +1,25 @@
-import {IBackgroundService} from "@common";
-import {IDisposable} from "aurelia";
+import {IBackgroundService, WithDisposables} from "@common";
 import {ConfirmSaveCommand, IEventBus, IIpcGateway, RequestNewScriptNameCommand, YesNoCancel} from "@domain";
 
 /**
  * This is utilized for the Web app, not the Electron app.
  * This enables opening specific dialog windows when running the web app.
  */
-export class WebDialogBackgroundService implements IBackgroundService {
-    private disposables: IDisposable[] = [];
-
+export class WebDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,
                 @IIpcGateway readonly ipcGateway: IIpcGateway
     ) {
+        super();
     }
 
     public start(): Promise<void> {
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(ConfirmSaveCommand, async msg => {
                 await this.confirmSave(msg);
             })
         );
 
-        this.disposables.push(
+        this.addDisposable(
             this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => {
                 await this.requestNewScriptName(msg);
             })
@@ -31,7 +29,7 @@ export class WebDialogBackgroundService implements IBackgroundService {
     }
 
     public stop(): void {
-        this.disposables.forEach(d => d.dispose());
+        this.dispose();
     }
 
     private async confirmSave(command: ConfirmSaveCommand) {

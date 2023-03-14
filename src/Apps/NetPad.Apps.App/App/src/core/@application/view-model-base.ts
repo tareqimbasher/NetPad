@@ -1,20 +1,27 @@
 import {ILogger} from "aurelia";
+import {WithDisposables} from "@common";
 
-export class ViewModelBase {
-    protected disposables: (() => void)[] = [];
+/**
+ * Can be used as a base class for a UI component's view model, offers common functionality.
+ */
+export class ViewModelBase extends WithDisposables {
     protected logger: ILogger;
 
     constructor(@ILogger logger: ILogger) {
+        super();
         this.logger = logger.scopeTo((this as Record<string, unknown>).constructor.name)
     }
 
+    public attaching() {
+        this.logComponentLifecycle("attaching...");
+    }
+
     public detaching() {
-        for (const disposable of this.disposables) {
-            try {
-                disposable();
-            } catch (ex) {
-                this.logger.error("Error while disposing", ex, disposable);
-            }
-        }
+        this.logComponentLifecycle("detaching...");
+        this.dispose();
+    }
+
+    private logComponentLifecycle(action: string) {
+        this.logger.scopeTo("ComponentLifecycle").debug(action);
     }
 }

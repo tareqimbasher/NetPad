@@ -1,10 +1,23 @@
-import {IDisposable} from "aurelia";
+import {IDisposable} from "@common/disposable";
 
 export class SubscriptionToken implements IDisposable {
-    constructor(private readonly disposeAction: () => void) {
+    private disposeAction: (() => void) | null;
+    private isDisposed = false;
+
+    constructor(disposeAction: () => void) {
+        this.disposeAction = disposeAction;
     }
 
     public dispose(): void {
-        this.disposeAction();
+        if (this.isDisposed) return;
+
+        try{
+            if (this.disposeAction) {
+                this.disposeAction();
+            }
+        } finally {
+            this.isDisposed = true;
+            this.disposeAction = null;
+        }
     }
 }

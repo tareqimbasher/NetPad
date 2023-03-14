@@ -20,7 +20,7 @@ export class ResultsView extends OutputViewBase {
 
     public attached() {
         this.resultControls = new ResultControls(this.outputElement);
-        this.disposables.push(() => this.resultControls.dispose());
+        this.addDisposable(() => this.resultControls.dispose());
 
         const token = this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
             if (msg.scriptId === this.environment.script.id) {
@@ -30,7 +30,7 @@ export class ResultsView extends OutputViewBase {
                 this.appendOutput(output);
             }
         });
-        this.disposables.push(() => token.dispose());
+        this.addDisposable(() => token.dispose());
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {

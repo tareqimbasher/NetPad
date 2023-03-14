@@ -1,10 +1,9 @@
-import {IDisposable} from "aurelia";
 import {ResizableTable} from "@application";
+import {WithDisposables} from "@common";
 
-export class ResultControls implements IDisposable {
-    private disposables: (() => void)[] = [];
-
+export class ResultControls extends WithDisposables {
     constructor(private readonly resultsElement: HTMLElement) {
+        super();
     }
 
     public bind(content: DocumentFragment) {
@@ -22,7 +21,7 @@ export class ResultControls implements IDisposable {
                 };
                 collapseTarget.addEventListener("click", clickHandler);
 
-                this.disposables.push(() => {
+                this.addDisposable(() => {
                     collapseTarget?.removeEventListener("click", clickHandler);
                 });
 
@@ -33,7 +32,7 @@ export class ResultControls implements IDisposable {
 
             const resizableTable = new ResizableTable(table);
             resizableTable.init();
-            this.disposables.push(() => resizableTable.dispose());
+            this.addDisposable(resizableTable);
 
             if (table.tBodies.length > 0) {
                 const cells = Array.from(table.querySelectorAll(":scope > tbody > tr > td")) as HTMLTableCellElement[];
@@ -90,9 +89,5 @@ export class ResultControls implements IDisposable {
 
     querySelectorAll(selectors: string) {
         return Array.from(this.resultsElement.querySelectorAll(selectors))
-    }
-
-    public dispose(): void {
-        this.disposables.forEach(d => d());
     }
 }

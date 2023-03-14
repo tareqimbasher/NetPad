@@ -1,9 +1,8 @@
-import {IDisposable} from "aurelia";
+import {WithDisposables} from "@common";
 
-export class ResizableTable implements IDisposable {
-    private disposables: (() => void)[] = [];
-
+export class ResizableTable extends WithDisposables {
     constructor(public table: HTMLTableElement) {
+        super();
     }
 
     public init() {
@@ -29,12 +28,6 @@ export class ResizableTable implements IDisposable {
             heading.style.position = "relative";
             heading.appendChild(resizer);
             this.setListeners(this.table, resizer);
-        }
-    }
-
-    public dispose(): void {
-        for (const disposable of this.disposables) {
-            disposable();
         }
     }
 
@@ -95,7 +88,7 @@ export class ResizableTable implements IDisposable {
         document.addEventListener('mouseup', mouseUpHandler);
         document.addEventListener('mousemove', mouseMoveHandler);
 
-        this.disposables.push(() => {
+        this.addDisposable(() => {
             table.removeEventListener("mouseover", tableMouseOverHandler);
             resizer.removeEventListener('mousedown', mouseDownHandler);
             resizer.removeEventListener('mouseover', mouseOverHandler);
