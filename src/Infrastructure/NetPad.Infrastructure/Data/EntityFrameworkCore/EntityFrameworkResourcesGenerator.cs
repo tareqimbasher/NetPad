@@ -177,17 +177,33 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         base.OnConfiguring(optionsBuilder);
     }
+
+    /// <summary>
+    /// Calls DataContext.SaveChanges();
+    /// </summary>
+    public static int SaveChanges()
+    {
+        return DataContext.SaveChanges();
+    }
+
+    /// <summary>
+    /// Calls DataContext.SaveChangesAsync(CancellationToken cancellationToken);
+    /// </summary>
+    public static Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return DataContext.SaveChangesAsync(cancellationToken);
+    }
 ");
 
         // 2. Add the DbContext property
         code
-            .AppendLine(@"
+            .AppendLine($@"
     private static Program? _program;
 
     /// <summary>
     /// The DbContext instance used to access the database.
     /// </summary>
-    public static Program DataContext => _program ??= new Program();
+    public static {dbContext.ClassName}<Program> DataContext => _program ??= new Program();
 ");
 
 
