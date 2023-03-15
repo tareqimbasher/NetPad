@@ -6,7 +6,7 @@ import {
     IShortcutManager,
     ViewModelBase
 } from "@application";
-import {AppMutationObserver} from "@common";
+import {AppMutationObserver, Util} from "@common";
 
 export class ContextMenu extends ViewModelBase {
     @bindable options: ContextMenuOptions;
@@ -100,73 +100,26 @@ export class ContextMenu extends ViewModelBase {
     }
 
     private trackContextClickTargets() {
-        const found = document.querySelectorAll(this.options.selector);
-        this.contextClickTargets = new Set<Element>(Array.from(found));
-        this.logger.debug(`Found and added ${found.length} elements with selector '${this.options.selector}' to click targets on initialization`);
+
+        const locateClickTargets = Util.debounce(this, () => {
+            this.logger.debug("Locating click targets...");
+
+            const found = document.querySelectorAll(this.options.selector);
+            this.contextClickTargets.clear();
+            Array.from(found).forEach(e => this.contextClickTargets.add(e));
+
+            this.logger.debug(`Tracking ${found.length} elements with selector '${this.options.selector}' as context click targets`);
+        }, 500, true);
 
         const mutationHandler = (mutations: MutationRecord[], observer: MutationObserver) => {
-            for (const mutation of mutations) {
-                if (mutation.type !== "childList") continue;
-
-                // Check mutation target if it should be added/removed to click targets
-                if (mutation.addedNodes.length > 0 && mutation.removedNodes.length === 0) {
-                    const target = mutation.target as Element;
-                    this.addClickTargets(target);
-                } else if (mutation.removedNodes.length > 0 && mutation.addedNodes.length === 0) {
-                    const target = mutation.target as Element;
-                    this.removeClickTargets(target);
-                }
-
-                // Check added nodes if they should be added to click targets
-                for (const addedNode of Array.from(mutation.addedNodes).map(n => n as Element)) {
-                    this.addClickTargets(addedNode);
-                }
-
-                // Check removed nodes if they should be removed from click targets
-                for (const removedNode of Array.from(mutation.removedNodes).map(n => n as Element)) {
-                    this.removeClickTargets(removedNode);
-                }
+            if (mutations.some(m => m.type !== "childList")) {
+                return;
             }
+
+            locateClickTargets();
         };
 
         const mutationObserverSubscriptionToken = this.mutationObserver.subscribe(mutationHandler);
         this.addDisposable(mutationObserverSubscriptionToken);
-    }
-
-    private addClickTargets(element: Element) {
-        if (!element || !element.matches || this.contextClickTargets.has(element)) return;
-
-        const clickTargets = this.findClickTargets(element);
-        for (const clickTarget of clickTargets) {
-            this.contextClickTargets.add(clickTarget);
-            this.logger.debug(`Added element with selector '${this.options.selector}' to click targets`);
-        }
-    }
-
-    private removeClickTargets(element: Element) {
-        if (!element || !element.matches) return;
-
-        const clickTargets = this.findClickTargets(element);
-        for (const clickTarget of clickTargets) {
-            this.contextClickTargets.delete(clickTarget);
-            this.logger.debug(`Removed element with selector '${this.options.selector}' from click targets`);
-        }
-    }
-
-    private findClickTargets(element: Element): Element[] {
-        const matches: Element[] = [];
-
-        if (element.matches(this.options.selector)) {
-            matches.push(element);
-        } else {
-            const childMatches = Array.from(element.children).filter(x => x.matches(this.options.selector));
-            if (childMatches.length > 0) {
-                for (const match of childMatches) {
-                    matches.push(match);
-                }
-            }
-        }
-
-        return matches;
     }
 }

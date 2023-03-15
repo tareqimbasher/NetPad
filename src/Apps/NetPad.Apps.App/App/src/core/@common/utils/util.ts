@@ -197,7 +197,7 @@ export class Util {
      * @param thisArg The value to use as this when calling func.
      * @param func The function to debounce.
      * @param waitMs The number of milliseconds to debounce.
-     * @param immediate If true, will execute func immediately and then waits for the interval before calling func.
+     * @param immediate If true, will execute func immediately and then waits for the interval before func can be executed again.
      */
     public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
         let timeout: number | undefined;
