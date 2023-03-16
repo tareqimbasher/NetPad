@@ -65,17 +65,25 @@ const builder = Aurelia.register(
         sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
         rules: [
             {
-                // Suppress Aurelia's own debug messages when evaluating HTML case expressions
+                loggerRegex: new RegExp("AppLifeCycle"),
+                logLevel: LogLevel.warn
+            },
+            {
+                // Aurelia's own debug messages when evaluating HTML case expressions
                 loggerRegex: new RegExp("^Case-#"),
-                logLevel: LogLevel.none
+                logLevel: LogLevel.warn
             },
             {
                 loggerRegex: new RegExp(/.\.ComponentLifecycle/),
-                logLevel: LogLevel.none
+                logLevel: LogLevel.warn
             },
             {
                 loggerRegex: new RegExp("ShortcutManager"),
-                logLevel: LogLevel.none
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp("ContextMenu"),
+                logLevel: LogLevel.warn
             },
         ]
     }),
