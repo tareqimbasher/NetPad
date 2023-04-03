@@ -1,13 +1,5 @@
-import Aurelia, {
-    AppTask,
-    ColorOptions,
-    DialogDefaultConfiguration,
-    IContainer,
-    ILogger,
-    LogLevel,
-    Registration
-} from 'aurelia';
-import 'bootstrap/dist/js/bootstrap.bundle';
+import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
+import {DialogDefaultConfiguration} from "@aurelia/dialog";
 import './styles/main.scss';
 import {
     AppService,
@@ -39,6 +31,8 @@ import {
     SortValueConverter,
     TakeValueConverter,
     TextToHtmlValueConverter,
+    TooltipCustomAttribute,
+    TruncateValueConverter,
     YesNoValueConverter
 } from "@application";
 import {AppMutationObserver, IBackgroundService} from "@common";
@@ -65,12 +59,16 @@ const builder = Aurelia.register(
         sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
         rules: [
             {
-                loggerRegex: new RegExp("AppLifeCycle"),
+                loggerRegex: new RegExp(/AppLifeCycle/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/SignalRIpcGateway/),
                 logLevel: LogLevel.warn
             },
             {
                 // Aurelia's own debug messages when evaluating HTML case expressions
-                loggerRegex: new RegExp("^Case-#"),
+                loggerRegex: new RegExp(/^Case-#/),
                 logLevel: LogLevel.warn
             },
             {
@@ -78,11 +76,11 @@ const builder = Aurelia.register(
                 logLevel: LogLevel.warn
             },
             {
-                loggerRegex: new RegExp("ShortcutManager"),
+                loggerRegex: new RegExp(/ShortcutManager/),
                 logLevel: LogLevel.warn
             },
             {
-                loggerRegex: new RegExp("ContextMenu"),
+                loggerRegex: new RegExp(/ContextMenu/),
                 logLevel: LogLevel.warn
             },
         ]
@@ -95,6 +93,7 @@ const builder = Aurelia.register(
     // Global Custom Attributes
     ExternalLinkCustomAttribute,
     PlatformsCustomAttribute,
+    TooltipCustomAttribute,
 
     // Global Value Converters
     DateTimeValueConverter,
@@ -103,6 +102,7 @@ const builder = Aurelia.register(
     TextToHtmlValueConverter,
     SanitizeHtmlValueConverter,
     YesNoValueConverter,
+    TruncateValueConverter,
 
     // Global Custom Elements
     ContextMenu,
@@ -114,14 +114,14 @@ const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
 // Configure app lifecycle actions
 const appLifeCycle = new AppLifeCycle(logger);
 builder.register(
-    AppTask.beforeCreate(IContainer, async (container) => appLifeCycle.beforeCreate(container)),
+    AppTask.creating(IContainer, async (container) => appLifeCycle.creating(container)),
     AppTask.hydrating(IContainer, async (container) => appLifeCycle.hydrating(container)),
     AppTask.hydrated(IContainer, async (container) => appLifeCycle.hydrated(container)),
-    AppTask.beforeActivate(IContainer, async (container) => appLifeCycle.beforeActivate(container)),
-    AppTask.afterActivate(IContainer, async (container) => appLifeCycle.afterActivate(container)),
-    AppTask.beforeDeactivate(IContainer, async (container) => appLifeCycle.beforeDeactivate(container)),
-    AppTask.afterDeactivate(IContainer, async (container) => appLifeCycle.afterDeactivate(container)),
-)
+    AppTask.activating(IContainer, async (container) => appLifeCycle.activating(container)),
+    AppTask.activated(IContainer, async (container) => appLifeCycle.activated(container)),
+    AppTask.deactivating(IContainer, async (container) => appLifeCycle.deactivating(container)),
+    AppTask.deactivated(IContainer, async (container) => appLifeCycle.deactivated(container)),
+);
 
 // Configure the proper platform
 const platformType = Env.isRunningInElectron()

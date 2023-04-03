@@ -16,9 +16,10 @@ export class LogConfig {
 
         for (const rule of this.rules) {
             const shouldSuppress = rule.loggerRegex.test(loggerName)
-                && (event as any).severity < rule.logLevel;
+                && event.severity < rule.logLevel;
 
             if (shouldSuppress) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (event as any).severity = LogLevel.none;
                 return;
             }

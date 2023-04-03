@@ -47,7 +47,7 @@
 @mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
     @each $theme in $themes {
         @if themeExists($key, $theme) {
-            $value: getthemevalue($key, $theme);
+            $value: getThemeValue($key, $theme);
 
             //:global(.#{$theme}) & {
             @at-root .#{$theme} #{&} {

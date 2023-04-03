@@ -1,4 +1,4 @@
-export enum PaneHostViewState {
+export enum PaneHostViewMode {
     Collapsed = "Collapsed",
     Expanded = "Expanded"
 }

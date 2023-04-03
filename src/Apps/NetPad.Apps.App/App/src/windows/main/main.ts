@@ -1,11 +1,11 @@
-import {AppTask, Aurelia, IContainer, IDialogService, ILogger, Registration} from "aurelia";
+import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
+import {IDialogService} from "@aurelia/dialog";
+import {IBackgroundService} from "@common";
 import {DataConnectionService, IAppService, IDataConnectionService, IScriptService, ScriptService,} from "@domain";
-import {Window} from "./window";
 import {
     BuiltinCompletionProvider,
     DataConnectionName,
     DialogBackgroundService,
-    Editor,
     ICompletionItemProvider,
     IPaneManager,
     IShortcutManager,
@@ -14,7 +14,8 @@ import {
     PaneManager,
     ShortcutManager,
 } from "@application";
-import {IBackgroundService} from "@common";
+import {Window} from "./window";
+import {TextEditor} from "@application/editor/text-editor";
 import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
 
 export class Bootstrapper implements IWindowBootstrapper {
@@ -32,9 +33,9 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
             PaneHost,
-            Editor,
+            TextEditor,
             DataConnectionName,
-            AppTask.afterActivate(IContainer, async container => {
+            AppTask.activated(IContainer, async container => {
                 container.get(IAppService).notifyClientAppIsReady();
                 await QuickTipsDialog.showIfFirstVisit(container.get(IDialogService));
             })

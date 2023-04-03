@@ -9,39 +9,39 @@ export class AppLifeCycle {
     constructor(private readonly logger: ILogger) {
     }
 
-    public async beforeCreate(container: IContainer): Promise<void> {
-        this.logger.debug("Creating app...");
+    public async creating(container: IContainer): Promise<void> {
+        this.logger.debug("App being created...");
 
         await container.get(IIpcGateway).start();
     }
 
     public async hydrating(container: IContainer): Promise<void> {
-        this.logger.debug("Hydrating app...");
+        this.logger.debug("App hydrating...");
     }
 
     public async hydrated(container: IContainer): Promise<void> {
         this.logger.debug("App hydrated");
     }
 
-    public async beforeActivate(container: IContainer): Promise<void> {
+    public async activating(container: IContainer): Promise<void> {
         this.logger.debug("App activating...");
 
         await appTasks.configureFetchClient(container);
         await appTasks.startBackgroundServices(container);
     }
 
-    public async afterActivate(container: IContainer): Promise<void> {
+    public async activated(container: IContainer): Promise<void> {
         this.logger.debug("App activated");
     }
 
-    public async beforeDeactivate(container: IContainer): Promise<void> {
+    public async deactivating(container: IContainer): Promise<void> {
         this.logger.debug("App deactivating...");
 
         await appTasks.stopBackgroundServices(container);
         container.get(IIpcGateway).dispose();
     }
 
-    public async afterDeactivate(container: IContainer): Promise<void> {
+    public async deactivated(container: IContainer): Promise<void> {
         this.logger.debug("App deactivated");
     }
 }

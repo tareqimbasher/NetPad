@@ -1,0 +1,29 @@
+@import "~styles/main";
+@import "~styles/themes";
+
+toolbar {
+    @include theme(background-color, scriptHeaderBackground);
+    padding: 0.25rem 0.5rem;
+
+    .dotnet-runtime-selector {
+        min-width: 70px;
+    }
+
+    .script-kind-selector {
+        min-width: 150px;
+    }
+
+    .data-connection-selector {
+        min-width: 200px;
+        max-width: 350px;
+    }
+}
+
+.comfy toolbar {
+    padding: 0.45rem 0.5rem;
+
+    button {
+        padding: 0.1rem 0.675rem;
+        font-size: 1rem;
+    }
+}

@@ -1,10 +1,13 @@
-import {IPaneHostViewStateController, Pane, PaneHostOrientation, PaneHostViewState} from "@application";
+import {IPaneHostViewStateController, Pane, PaneHostOrientation, PaneHostViewMode} from "@application";
 import {Util} from "@common";
+import {Constructable, IHydratedParentController} from "aurelia";
 
 export class PaneHost {
     public readonly id: string;
     public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
-    protected _viewState: PaneHostViewState = PaneHostViewState.Collapsed;
+    public element: HTMLElement | null | undefined;
+
+    protected _viewMode: PaneHostViewMode = PaneHostViewMode.Collapsed;
     protected _active: Pane | undefined;
 
     private readonly panes: Set<Pane>;
@@ -22,15 +25,26 @@ export class PaneHost {
         return this._active;
     }
 
-    public get viewState(): PaneHostViewState {
-        return this._viewState;
+    public get viewMode(): PaneHostViewMode {
+        return this._viewMode;
     }
 
-    protected set viewState(value) {
-        this._viewState = value;
+    protected set viewMode(value) {
+        this._viewMode = value;
     }
 
-    public activateOrCollapse(pane?: Pane) {
+    private attached(initiator: IHydratedParentController) {
+        this.element = initiator.host;
+    }
+
+    public toggle(pane?: Pane) {
+        if (pane === this.active && this.viewMode === PaneHostViewMode.Expanded)
+            this.collapse();
+        else
+            this.expand(pane);
+    }
+
+    public expand(pane?: Pane) {
         if (!pane) {
             if (this.panes.size > 0) {
                 pane = [...this.panes][0];
@@ -39,27 +53,18 @@ export class PaneHost {
             }
         }
 
-        if (pane === this.active && this.viewState === PaneHostViewState.Expanded) {
-            this.collapse();
-            return;
-        }
-
         this._active = pane;
 
-        if (this.viewState === PaneHostViewState.Collapsed)
-            this.expand();
-    }
-
-    public expand() {
-        if (this.viewState === PaneHostViewState.Expanded) return;
-        this.viewStateController.expand(this);
-        this.viewState = PaneHostViewState.Expanded;
+        if (this.viewMode !== PaneHostViewMode.Expanded) {
+            this.viewStateController.expand(this);
+            this.viewMode = PaneHostViewMode.Expanded;
+        }
     }
 
     public collapse() {
-        if (this.viewState === PaneHostViewState.Collapsed) return;
+        if (this.viewMode === PaneHostViewMode.Collapsed) return;
         this.viewStateController.collapse(this);
-        this.viewState = PaneHostViewState.Collapsed;
+        this.viewMode = PaneHostViewMode.Collapsed;
         this._active = undefined;
     }
 
@@ -67,8 +72,7 @@ export class PaneHost {
         return this.panes.has(pane);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public getPane<TPane extends Pane>(paneType: any): TPane | null {
+    public getPane<TPane extends Pane>(paneType: Constructable<TPane>): TPane | null {
         for (const pane of this.panes) {
             if (pane instanceof paneType)
                 return pane as TPane;

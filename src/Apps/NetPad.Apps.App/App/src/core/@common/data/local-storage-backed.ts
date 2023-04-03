@@ -1,9 +1,10 @@
 ﻿import {IObserver} from "@aurelia/runtime";
-import {IObserverLocator, LifecycleFlags} from "aurelia";
+import {IObserverLocator} from "aurelia";
 import {WithDisposables} from "@common/disposable";
 
 export class LocalStorageBacked extends WithDisposables {
     public readonly scope: string;
+    public readonly localStorageKey: string;
 
     constructor(scope: string) {
         super();
@@ -15,6 +16,7 @@ export class LocalStorageBacked extends WithDisposables {
             throw new Error("Scope should not start or end with a space");
 
         this.scope = scope;
+        this.localStorageKey = this.getScopedKey("value");
     }
 
     public load(): LocalStorageBacked {
@@ -37,7 +39,7 @@ export class LocalStorageBacked extends WithDisposables {
         const observers: IObserver[] = propertiesThatTriggerAutoSave.map(p => observerLocator.getObserver(this, p));
 
         const handler = {
-            handleChange: (newValue: unknown, previousValue: unknown, flags: LifecycleFlags) => {
+            handleChange: (newValue: unknown, previousValue: unknown) => {
                 if (newValue == previousValue) return;
 
                 const newObj = { };

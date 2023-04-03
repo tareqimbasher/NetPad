@@ -1,0 +1,48 @@
+@import "~styles/themes";
+
+output-view-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .tabs {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 100%;
+
+        > div {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.25rem 0.6rem;
+
+            &:not(:last-child) {
+                margin-right: 0.35rem;
+            }
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
+
+            &.active {
+                @include theme(background-color, hoverColor);
+                @include theme(color, activeColor);
+            }
+        }
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+
+        .action-icon {
+            margin-right: 0.3rem;
+        }
+    }
+}

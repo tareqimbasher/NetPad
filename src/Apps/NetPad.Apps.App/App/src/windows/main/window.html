@@ -1,15 +1,20 @@
 <template class="theme-${settings.appearance.theme.toLowerCase()}">
-    <require from="./script-environments/script-environments"></require>
-    <require from="./titlebar/titlebar"></require>
-    <require from="./statusbar/statusbar"></require>
+    <import from="./titlebar/titlebar"></import>
+    <import from="./statusbar/statusbar"></import>
+    <import from="./work-area/work-area"></import>
 
     <div class="window">
         <titlebar platforms="Electron"></titlebar>
-        <div id="content" class="flex-grow-1 d-flex flex-row fade-in">
-            <au-compose view-model.bind="leftPaneHost" containerless></au-compose>
-            <script-environments id="main-content" class="flex-grow-height-restricted"></script-environments>
-            <au-compose view-model.bind="rightPaneHost" containerless></au-compose>
+
+        <div id="window-main-content" class="flex-grow-1 d-flex flex-row fade-in">
+            <au-compose component.bind="leftPaneHost" containerless></au-compose>
+            <div id="window-middle-content" class="flex-grow-height-restricted d-flex flex-column">
+                <work-area class="flex-grow-height-restricted"></work-area>
+                <au-compose component.bind="bottomPaneHost" containerless></au-compose>
+            </div>
+            <au-compose component.bind="rightPaneHost" containerless></au-compose>
         </div>
+
         <statusbar></statusbar>
     </div>
 </template>

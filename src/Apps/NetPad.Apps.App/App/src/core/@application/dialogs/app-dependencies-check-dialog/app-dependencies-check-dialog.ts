@@ -1,5 +1,5 @@
 ﻿import {DialogBase} from "@application/dialogs/dialog-base";
-import {IDialogDom} from "@aurelia/runtime-html";
+import {IDialogDom} from "@aurelia/dialog";
 import {ILogger} from "aurelia";
 import {AppDependencyCheckResult, IAppService} from "@domain";
 

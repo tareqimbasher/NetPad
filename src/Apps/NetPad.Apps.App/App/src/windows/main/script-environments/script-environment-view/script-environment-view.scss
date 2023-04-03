@@ -23,6 +23,7 @@ script-environment-view {
     .output-container {
         display: flex;
         flex-direction: column;
+        overflow: hidden;
         @include theme(background-color, resultsBackground);
     }
 

@@ -1,0 +1,14 @@
+<div class="tabs">
+    <div repeat.for="tab of options.tabs"
+         class="${tab.active ? 'active' : ''}"
+         click.trigger="tabClicked(tab, $event)">
+        <b>${tab.text}</b>
+    </div>
+</div>
+<div class="actions pe-1">
+    <i repeat.for="action of options.actions"
+       class="ms-2 ${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'text-blue' : ''}"
+       show.bind="!action.show || action.show()"
+       title.bind="action.label"
+       click.trigger="actionClicked(action, $event)"></i>
+</div>

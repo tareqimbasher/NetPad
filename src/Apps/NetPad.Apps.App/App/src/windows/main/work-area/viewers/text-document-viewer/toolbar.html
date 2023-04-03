@@ -1,0 +1,66 @@
+<template class="d-flex align-items-center">
+    <div class="d-flex">
+        <button class="btn btn-sm btn-themed text-green me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
+                show.bind="environment.status !== 'Running'"
+                title="${getShortcutKeyCombo('Run')}"
+                click.trigger="run()">
+            <i class="run-icon"></i>
+        </button>
+        <button class="btn btn-danger me-2"
+                show.bind="environment.status === 'Running'"
+                title="Stop"
+                click.trigger="stop()">
+            <i class="stop-icon"></i>
+        </button>
+        <button class="btn btn-sm btn-themed text-blue me-2"
+                title="${getShortcutKeyCombo('Save')}"
+                click.trigger="save()">
+            <i class="save-icon"></i>
+        </button>
+        <button class="btn btn-sm btn-themed"
+                title="${getShortcutKeyCombo('Script Properties')}"
+                click.trigger="openProperties()"
+                disabled.bind="environment.status === 'Running'">
+            <i class="script-properties-icon"></i>
+        </button>
+    </div>
+    <div class="ms-5 d-flex">
+        <b>SDK:</b>
+        <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
+                value.bind="dotNetSdkVersion"
+                title="The .NET runtime that will be used to run this script.
+This is not configurable right now, and defaults to latest .NET 6 runtime installed."
+                disabled>
+            <option value=""></option>
+            <option value="5">.NET 5</option>
+            <option value="6">.NET 6</option>
+            <option value="7">.NET 7</option>
+            <option value="8">.NET 8</option>
+        </select>
+    </div>
+    <div class="ms-5 d-flex">
+        <b>Kind:</b>
+        <select class="form-select form-select-sm script-kind-selector ms-3"
+                value.bind="kind"
+                disabled.bind="environment.status === 'Running'">
+            <!--FEATURE NOT READY YET-->
+            <!--<option value="Expression">C# Expression (Not supported yet)</option>-->
+            <option value="Program">C# Program</option>
+        </select>
+    </div>
+    <div class="ms-5 me-3 d-flex flex-grow-1">
+        <b>Connection:</b>
+        <select class="form-select form-select-sm data-connection-selector ms-3"
+                value.bind="dataConnection"
+                disabled.bind="environment.status === 'Running'">
+            <option model.bind="null">None</option>
+            <option repeat.for="connection of dataConnectionStore.connections"
+                    model.bind="connection">
+                ${connection.name} (${connection.type})
+            </option>
+        </select>
+    </div>
+    <div class="ms-auto me-3 text-truncate">
+        <a class="btn-link" click.trigger="openProperties()">${script.config.references.length} References</a>
+    </div>
+</template>

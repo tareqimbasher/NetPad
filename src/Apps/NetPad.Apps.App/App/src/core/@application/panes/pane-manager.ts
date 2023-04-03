@@ -1,17 +1,15 @@
-import {DI, IContainer} from "aurelia";
+import {Constructable, DI, IContainer} from "aurelia";
 import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation, TogglePaneEvent} from "@application";
 import {IEventBus} from "@domain";
 
 export interface IPaneManager {
-    get paneHosts(): ReadonlyArray<PaneHost>;
-
     createPaneHost(orientation: PaneHostOrientation, viewStateController: IPaneHostViewStateController): PaneHost;
 
-    addPaneToHost<TPane extends Pane>(paneType: unknown, paneHost: PaneHost): TPane;
+    addPaneToHost<TPane extends Pane>(paneType: Constructable<TPane>, paneHost: PaneHost): TPane;
 
-    activateOrCollapse(pane: Pane): void;
+    toggle(pane: Pane): void;
 
-    activateOrCollapse(paneType: unknown): void;
+    toggle(paneType: unknown): void;
 }
 
 export const IPaneManager = DI.createInterface<IPaneManager>();
@@ -20,7 +18,7 @@ export class PaneManager implements IPaneManager {
     private _paneHosts: PaneHost[] = [];
 
     constructor(@IContainer private readonly container: IContainer, @IEventBus private readonly eventBus: IEventBus) {
-        eventBus.subscribe(TogglePaneEvent, message => this.activateOrCollapse(message.paneType));
+        eventBus.subscribe(TogglePaneEvent, message => this.toggle(message.paneType));
     }
 
     public get paneHosts(): ReadonlyArray<PaneHost> {
@@ -33,26 +31,25 @@ export class PaneManager implements IPaneManager {
         return host;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public addPaneToHost<TPane extends Pane>(paneType: any, targetPaneHost: PaneHost): TPane {
+    public addPaneToHost<TPane extends Pane>(paneType: Constructable<TPane>, targetPaneHost: PaneHost): TPane {
         if (!(paneType.prototype instanceof Pane))
             throw new Error("paneType is not a type of Pane");
 
-        let pane: Pane;
+        let pane: TPane;
 
         const existing = this.findPaneAndHostByPaneType(paneType);
         if (existing) {
-            pane = existing.pane;
+            pane = existing.pane as TPane;
             existing.paneHost.removePane(pane);
         } else
-            pane = this.container.get(paneType);
+            pane = this.container.get(paneType) as TPane;
 
         targetPaneHost.addPane(pane);
 
         return pane as TPane;
     }
 
-    public activateOrCollapse(paneOrPaneType: Pane | unknown): void {
+    public toggle<TPane extends Pane>(paneOrPaneType: Pane | Constructable<TPane>): void {
         let paneHost: PaneHost | undefined;
         let pane: Pane | undefined;
 
@@ -65,14 +62,16 @@ export class PaneManager implements IPaneManager {
             pane = paneAndHost?.pane;
         }
 
-        paneHost?.activateOrCollapse(pane);
+        if (!paneHost) return;
+
+        paneHost.toggle(pane);
     }
 
     private findPaneHostByPane(pane: Pane): PaneHost | undefined {
         return this._paneHosts.find(h => h.hasPane(pane));
     }
 
-    private findPaneAndHostByPaneType(paneType: unknown): { paneHost: PaneHost, pane: Pane } | null {
+    private findPaneAndHostByPaneType<TPane extends Pane>(paneType: Constructable<TPane>): { paneHost: PaneHost, pane: Pane } | null {
         for (const paneHost of this._paneHosts) {
             const pane = paneHost.getPane(paneType);
             if (pane) {

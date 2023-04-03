@@ -21,7 +21,8 @@ $dark: (
     actionIconHoverColor: white,
     formControlBackground: #333,
     kbdBackground: #59646e,
-    boxShadow: 0 0 8px 2px rgb(0, 0, 0, .36),
+    boxShadowBottom: 0 7px 8px -8px rgb(0, 0, 0, .36),
+    boxShadowBottomAndSides: 0 0 8px 2px rgb(0, 0, 0, .36),
     // WINDOW
     windowBorderColor: #333,
     // HEADER

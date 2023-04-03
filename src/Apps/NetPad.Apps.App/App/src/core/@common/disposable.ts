@@ -14,14 +14,16 @@ export abstract class WithDisposables implements IDisposable {
     }
 
     public dispose() {
-        let disposable: (() => void) | undefined | null;
+        let disposable = this.disposables.pop();
 
-        while (disposable = this.disposables.pop()) {
+        while (disposable) {
             try {
                 disposable();
             } catch (ex) {
                 console.error("Error while disposing", disposable, ex);
             }
+
+            disposable = this.disposables.pop();
         }
     }
 }

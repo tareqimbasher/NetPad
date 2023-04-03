@@ -1,0 +1,13 @@
+﻿<import from="./toolbar"></import>
+
+<toolbar viewable.bind="viewable"></toolbar>
+
+<div class="text-editor-container flex-grow-height-restricted d-flex">
+    <div class="production-marker"
+         if.bind="viewable.environment.script.dataConnection.containsProductionData"
+         title="This scripts targets a data connection that contains Production data. Be careful!">
+        PRODUCTION
+    </div>
+
+    <text-editor view-model.ref="editor"></text-editor>
+</div>

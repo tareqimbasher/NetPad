@@ -30,8 +30,8 @@ export abstract class Pane {
         this._host = paneHost;
     }
 
-    public activateOrCollapse() {
-        this.host?.activateOrCollapse(this);
+    public activate() {
+        this.host?.expand(this);
     }
 
     public hasShortcut(shortcut: Shortcut) {

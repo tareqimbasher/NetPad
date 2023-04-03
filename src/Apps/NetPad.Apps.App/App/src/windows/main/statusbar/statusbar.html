@@ -13,6 +13,12 @@
     </div>
 </div>
 <div class="right-column">
+    <div if.bind="activeEditor.position"
+         click.trigger="goToEditorCursorPosition()"
+         tooltip="Go to Line/Column">
+        Ln ${activeEditor.position.lineNumber}, Col ${activeEditor.position.column}
+    </div>
+
     <i class="info-icon action-icon"
        click.trigger="showQuickTipsDialog()"
        title="Quick Tips"></i>

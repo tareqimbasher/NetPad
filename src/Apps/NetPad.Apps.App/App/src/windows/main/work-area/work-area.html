@@ -1,0 +1,61 @@
+<template class="${appearance.size} ${appearance.style}">
+    <import from="./tab-bar/tab-bar"></import>
+
+    <div repeat.for="host of viewerHosts"
+         if.bind="host.viewables.size > 0"
+         class="viewer-host ${host === viewerHosts.active ? 'active' : ''}"
+         tabindex="${$index}"
+         click.trigger="viewerHosts.activate(host)">
+
+        <div class="top-bar">
+            <tab-bar viewer-host.bind="host"
+                     viewables.bind="host.viewables"
+                     active.bind="host.activeViewable"></tab-bar>
+
+            <div class="appearance-picker">
+                <i class="actions-dropdown-icon action-icon ps-3 pe-3"
+                   title="Actions"
+                   data-bs-toggle="dropdown"></i>
+                <ul class="dropdown-menu">
+                    <li><h6 class="dropdown-header">Style</h6></li>
+                    <li>
+                        <button class="dropdown-item"
+                                click.trigger="appearance.style = 'minimal'">
+                            <i class="fa fa-sm fa-check me-3 ${appearance.style === 'minimal' ? '' : 'invisible'}"></i>
+                            Minimal
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item"
+                                click.trigger="appearance.style = 'bold'">
+                            <i class="fa fa-sm fa-check me-3 ${appearance.style === 'bold' ? '' : 'invisible'}"></i>
+                            Bold
+                        </button>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><h6 class="dropdown-header">Density</h6></li>
+                    <li>
+                        <button class="dropdown-item"
+                                click.trigger="appearance.size = 'comfy'">
+                            <i class="fa fa-sm fa-check me-3 ${appearance.size === 'comfy' ? '' : 'invisible'}"></i>
+                            Comfy
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item"
+                                click.trigger="appearance.size = 'compact'">
+                            <i class="fa fa-sm fa-check me-3 ${appearance.size === 'compact' ? '' : 'invisible'}"></i>
+                            Compact
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <au-compose repeat.for="viewer of host.viewers"
+                    component.bind="viewer"
+                    containerless></au-compose>
+    </div>
+</template>
