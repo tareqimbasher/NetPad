@@ -13,6 +13,11 @@ public class WebWindowService : IUiWindowService
         _ipcService = ipcService;
     }
 
+    public Task<WindowState?> GetWindowStateAsync()
+    {
+        return Task.FromResult<WindowState?>(null);
+    }
+
     public Task MaximizeMainWindowAsync()
     {
         return Task.CompletedTask;

@@ -9,16 +9,16 @@
         <i class="settings-icon action-icon"
            click.trigger="openSettingsWindow()"
            title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
-        <i class="window-always-on-top-icon action-icon ${isWindowAlwaysOnTop ? 'text-blue' : ''}"
+        <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
            click.trigger="toggleWindowAlwaysOnTop()"
-           title="${isWindowAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
+           title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
     </div>
 
     <div class="window-controls">
         <i class="window-minimize-icon action-icon"
            click.trigger="minimize()"
            title="Minimize"></i>
-        <i class="window-maximize-icon action-icon"
+        <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
            click.trigger="maximize()"
            title="Maximize"></i>
         <i class="window-close-icon action-icon hover-bg-red"

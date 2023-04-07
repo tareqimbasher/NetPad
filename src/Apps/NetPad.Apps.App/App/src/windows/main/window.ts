@@ -36,7 +36,7 @@ export class Window {
         const middleContentElement = document.getElementById("window-middle-content");
         const workAreaElement = middleContentElement?.querySelector("work-area") as HTMLElement;
 
-        if (!middleContentElement || workAreaElement) throw new Error("Could not find required elements");
+        if (!middleContentElement || !workAreaElement) throw new Error("Could not find required elements");
 
         const sideToSideController = new PaneHostViewStateController(
             () => [this.leftPaneHost, middleContentElement, this.rightPaneHost],

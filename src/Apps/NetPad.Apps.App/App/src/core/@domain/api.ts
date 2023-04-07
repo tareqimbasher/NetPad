@@ -2065,6 +2065,8 @@ export class TypesApiClient extends ApiClientBase implements ITypesApiClient {
 
 export interface IWindowApiClient {
 
+    getState(signal?: AbortSignal | undefined): Promise<WindowState>;
+
     maximize(signal?: AbortSignal | undefined): Promise<void>;
 
     minimize(signal?: AbortSignal | undefined): Promise<void>;
@@ -2081,6 +2083,41 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
         super();
         this.http = http ? http : <any>window;
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getState(signal?: AbortSignal | undefined): Promise<WindowState> {
+        let url_ = this.baseUrl + "/window/state";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetState(_response);
+        });
+    }
+
+    protected processGetState(response: Response): Promise<WindowState> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = WindowState.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<WindowState>(<any>null);
     }
 
     maximize(signal?: AbortSignal | undefined): Promise<void> {
@@ -6067,6 +6104,63 @@ export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatab
 
 export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
+
+export class WindowState implements IWindowState {
+    viewStatus!: WindowViewStatus;
+    isAlwaysOnTop!: boolean;
+    isMinimized!: boolean;
+    isMaximized!: boolean;
+
+    constructor(data?: IWindowState) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.viewStatus = _data["viewStatus"];
+            this.isAlwaysOnTop = _data["isAlwaysOnTop"];
+            this.isMinimized = _data["isMinimized"];
+            this.isMaximized = _data["isMaximized"];
+        }
+    }
+
+    static fromJS(data: any): WindowState {
+        data = typeof data === 'object' ? data : {};
+        let result = new WindowState();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["viewStatus"] = this.viewStatus;
+        data["isAlwaysOnTop"] = this.isAlwaysOnTop;
+        data["isMinimized"] = this.isMinimized;
+        data["isMaximized"] = this.isMaximized;
+        return data;
+    }
+
+    clone(): WindowState {
+        const json = this.toJSON();
+        let result = new WindowState();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWindowState {
+    viewStatus: WindowViewStatus;
+    isAlwaysOnTop: boolean;
+    isMinimized: boolean;
+    isMaximized: boolean;
+}
+
+export type WindowViewStatus = "Unknown" | "Minimized" | "UnMaximized" | "Maximized";
 
 export interface FileResponse {
     data: Blob;

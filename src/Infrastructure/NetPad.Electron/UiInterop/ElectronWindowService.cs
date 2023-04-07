@@ -13,7 +13,7 @@ namespace NetPad.Electron.UiInterop;
 public class ElectronWindowService : IUiWindowService
 {
     private static readonly ConcurrentDictionary<string, BrowserWindow> _singleInstanceWindows = new();
-    private static bool _isMenuInitialized = false;
+    private static bool _isMenuInitialized;
     private readonly HostInfo _hostInfo;
     private readonly ISession _session;
     private readonly IMediator _mediator;
@@ -32,6 +32,23 @@ public class ElectronWindowService : IUiWindowService
     }
 
     private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
+
+    public async Task<WindowState?> GetWindowStateAsync()
+    {
+        var main = ElectronUtil.MainWindow;
+
+        WindowViewStatus viewStatus;
+
+        if (await main.IsMaximizedAsync())
+            viewStatus = WindowViewStatus.Maximized;
+        else if (await main.IsMinimizedAsync())
+            viewStatus = WindowViewStatus.Minimized;
+        else
+            viewStatus = WindowViewStatus.UnMaximized;
+
+        bool isAlwaysOnTop = await main.IsAlwaysOnTopAsync();
+        return new WindowState(viewStatus, isAlwaysOnTop);
+    }
 
     public async Task MaximizeMainWindowAsync()
     {

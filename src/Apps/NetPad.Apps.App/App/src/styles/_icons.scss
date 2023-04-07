@@ -175,6 +175,12 @@ button > .icon-base {
     @extend .fa-regular;
 }
 
+.window-restore-icon {
+    @extend %icon-base;
+    @extend .fa-window-restore;
+    @extend .fa-regular;
+}
+
 .window-minimize-icon {
     @extend %icon-base;
     @extend .fa-minus;

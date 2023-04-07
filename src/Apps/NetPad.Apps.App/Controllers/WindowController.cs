@@ -15,6 +15,12 @@ public class WindowController : Controller
         _uiWindowService = uiWindowService;
     }
 
+    [HttpGet("state")]
+    public async Task<WindowState?> GetState()
+    {
+        return await _uiWindowService.GetWindowStateAsync();
+    }
+
     [HttpPatch("maximize")]
     public async Task Maximize()
     {

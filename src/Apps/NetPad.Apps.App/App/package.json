@@ -20,7 +20,8 @@
         "start-web": "webpack serve --env target=web",
         "build": "rimraf dist && webpack --env production",
         "analyze": "rimraf dist && webpack --env production --analyze",
-        "test": "jest"
+        "test": "jest",
+        "precommit": "npm run lint && jest"
     },
     "jest": {
         "testEnvironment": "jsdom",

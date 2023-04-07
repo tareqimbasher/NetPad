@@ -37,11 +37,22 @@ titlebar {
         .actions {
             -webkit-app-region: no-drag;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             z-index: 1000;
 
             i {
-                margin-left: 1.25rem;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                display: flex;
+                align-items: center;
+
+                &:not(:last-child) {
+                    margin-right: 0.5rem;
+                }
+
+                &:hover {
+                    @include theme(background-color, hoverColor);
+                }
             }
         }
 

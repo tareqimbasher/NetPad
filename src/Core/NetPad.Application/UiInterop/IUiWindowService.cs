@@ -4,6 +4,7 @@ namespace NetPad.UiInterop;
 
 public interface IUiWindowService
 {
+    Task<WindowState?> GetWindowStateAsync();
     Task MaximizeMainWindowAsync();
     Task MinimizeMainWindowAsync();
     Task ToggleAlwaysOnTopMainWindowAsync();
