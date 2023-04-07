@@ -1,0 +1,43 @@
+<div class="drag-drop-container">
+    <div class="view-tab ${viewable === active ? 'active' : ''}"
+         repeat.for="viewable of viewables"
+         data-viewable-id.bind="viewable.id"
+         title.bind="viewable.environment.script.path || (viewable.isDirty ? 'Unsaved' : '')">
+        <div class="view-tab-content"
+             click.trigger="activate(viewable)"
+             auxclick.trigger="tabWheelButtonClicked(viewable, $event)">
+
+            <div class="script-name">
+                <img src="img/csharp-logo.png" alt="" style="max-height: 1rem" class="me-3"/>
+                ${viewable.name}
+            </div>
+
+            <div class="script-status"
+                 if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
+                 switch.bind="viewable.environment.status">
+                <span case="Running" class="spinner-border script-running-indicator"></span>
+                <i case="Ready" if.bind="viewable.environment.runDurationMilliseconds"
+                   class="script-status-success-icon icon-xs"
+                   title="Script ran successfully"></i>
+                <i case="Error" class="script-status-error-icon icon-xs"
+                   title="Error occurred"></i>
+            </div>
+
+        </div>
+        <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
+            <i class="dirty-flag script-status-dirty-icon icon-xs"
+               title="Error occurred"></i>
+            <i class="view-tab-close-button close-icon action-icon"
+               title="${shortcutManager.getShortcutByName('Close').toString()}"
+               click.trigger="close(viewable)"></i>
+        </div>
+    </div>
+</div>
+
+<div class="view-tab new-tab"
+     click.trigger="new()"
+     title="${shortcutManager.getShortcutByName('New').toString()}">
+    <i class="add-script-icon"></i>
+</div>
+
+<context-menu options.bind="tabContextMenuOptions"></context-menu>

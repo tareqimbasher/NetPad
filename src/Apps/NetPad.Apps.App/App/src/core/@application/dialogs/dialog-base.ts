@@ -1,6 +1,6 @@
-﻿import {IDialogDom} from "@aurelia/runtime-html";
-import {ViewModelBase} from "@application/view-model-base";
-import {Constructable, DialogOpenResult, IDialogService, ILogger} from "aurelia";
+﻿import {ViewModelBase} from "@application/view-model-base";
+import {Constructable, ILogger} from "aurelia";
+import {DialogOpenResult, IDialogDom, IDialogService} from "@aurelia/dialog";
 
 export abstract class DialogBase extends ViewModelBase {
     private static instances = new Map<string, DialogOpenResult>();

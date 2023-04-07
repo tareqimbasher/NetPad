@@ -1,6 +1,6 @@
-﻿import {DialogBase} from "@application/dialogs/dialog-base";
-import {IDialogDom} from "@aurelia/runtime-html";
-import {IDialogService, ILogger} from "aurelia";
+﻿import {ILogger} from "aurelia";
+import {IDialogDom, IDialogService} from "@aurelia/dialog";
+import {DialogBase} from "@application/dialogs/dialog-base";
 
 export class QuickTipsDialog extends DialogBase {
     private static currentVersion = "1"; // Increment this to retrigger this popup to show as first time

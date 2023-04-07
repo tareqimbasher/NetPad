@@ -1,0 +1,6 @@
+<template style="font-family: ${settings.results.font ? settings.results.font : 'inherit'}">
+    <au-compose repeat.for="tab of toolbar.options.tabs"
+                class="d-flex flex-grow-height-restricted"
+                component.bind="tab.view"
+                show.bind="tab.active"></au-compose>
+</template>

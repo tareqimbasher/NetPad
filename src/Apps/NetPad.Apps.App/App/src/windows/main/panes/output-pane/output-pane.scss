@@ -1,0 +1,8 @@
+@import "~styles/themes";
+
+output-pane {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    @include theme(background-color, resultsBackground);
+}

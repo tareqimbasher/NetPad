@@ -42,29 +42,28 @@ public class AppController : Controller
         await mediator.Send(new CheckAppDependenciesQuery());
 
     [HttpPatch("open-folder-containing-script")]
-    public IActionResult OpenFolderContainingScript([FromQuery] string? scriptPath, [FromServices] Settings settings)
+    public void OpenFolderContainingScript([FromQuery] string? scriptPath, [FromServices] Settings settings)
     {
         if (scriptPath == null)
-            return BadRequest();
+            throw new Exception("Script has no path");
 
         var file = new FileInfo(scriptPath);
 
         if (!file.Exists || file.Directory?.Exists != true)
-            return Unauthorized("Not allowed");
+            throw new Exception("Not allowed");
 
         if (!file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath))
-            return Unauthorized("Not allowed");
+            throw new Exception("Not allowed");
 
         Process.Start(new ProcessStartInfo
         {
             FileName = file.Directory.FullName,
             UseShellExecute = true
         });
-        return Ok();
     }
 
     [HttpPatch("open-scripts-folder")]
-    public IActionResult OpenScriptsFolder([FromQuery] string? path, [FromServices] Settings settings)
+    public void OpenScriptsFolder([FromQuery] string? path, [FromServices] Settings settings)
     {
         string sanitized;
 
@@ -74,18 +73,17 @@ public class AppController : Controller
             sanitized = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\'));
 
         if (!Directory.Exists(sanitized))
-            return BadRequest($"Directory does not exist at: {path}");
+            throw new Exception($"Directory does not exist at: {path}");
 
         Process.Start(new ProcessStartInfo
         {
             FileName = sanitized,
             UseShellExecute = true
         });
-        return Ok();
     }
 
     [HttpPatch("open-package-cache-folder")]
-    public IActionResult OpenPackageCacheFolder([FromServices] Settings settings)
+    public void OpenPackageCacheFolder([FromServices] Settings settings)
     {
         var path = settings.PackageCacheDirectoryPath;
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
@@ -96,7 +94,6 @@ public class AppController : Controller
             FileName = path,
             UseShellExecute = true
         });
-        return Ok();
     }
 
     [HttpPost("log/{source}")]

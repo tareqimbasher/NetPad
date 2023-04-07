@@ -7,13 +7,12 @@ import {
     PaneHost,
     PaneHostOrientation,
 } from "@application";
-import {ClipboardPane, Explorer, NamespacesPane} from "./panes";
-import {LeftRightPaneHostViewStateController} from "./left-right-pane-host-view-state-controller";
-import {PLATFORM} from "aurelia";
+import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 
 export class Window {
     public leftPaneHost: PaneHost;
     public rightPaneHost: PaneHost;
+    public bottomPaneHost: PaneHost;
 
     constructor(
         private readonly settings: Settings,
@@ -34,22 +33,38 @@ export class Window {
     }
 
     public attached() {
-        const viewStateController = new LeftRightPaneHostViewStateController(
-            "#main-content",
-            () => this.leftPaneHost,
-            () => this.rightPaneHost
+        const middleContentElement = document.getElementById("window-middle-content");
+        const workAreaElement = middleContentElement?.querySelector("work-area") as HTMLElement;
+
+        if (!middleContentElement || workAreaElement) throw new Error("Could not find required elements");
+
+        const sideToSideController = new PaneHostViewStateController(
+            () => [this.leftPaneHost, middleContentElement, this.rightPaneHost],
+            "horizontal",
+            15
         );
 
-        this.leftPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Left, viewStateController);
-        const explorer = this.paneManager.addPaneToHost(Explorer, this.leftPaneHost);
+        this.leftPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Left, sideToSideController);
+        this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, sideToSideController);
 
-        this.rightPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Right, viewStateController);
+        const explorer = this.paneManager.addPaneToHost(Explorer, this.leftPaneHost);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
 
+
+        const topBottomController = new PaneHostViewStateController(
+            () => [workAreaElement, this.bottomPaneHost],
+            "vertical",
+            50
+        );
+
+        this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);
+        this.paneManager.addPaneToHost(OutputPane, this.bottomPaneHost);
+
+
         // Start explorer expanded by default
-        if (!viewStateController.hasSavedState()) {
-            PLATFORM.setTimeout(() => explorer.activateOrCollapse(), 1);
+        if (!sideToSideController.hasSavedState()) {
+            setTimeout(() => explorer.activate(), 1);
         }
     }
 

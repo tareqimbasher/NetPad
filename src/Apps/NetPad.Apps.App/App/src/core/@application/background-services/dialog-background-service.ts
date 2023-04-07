@@ -1,4 +1,6 @@
-﻿import {
+﻿import {ILogger} from "aurelia";
+import {IDialogService} from "@aurelia/dialog";
+import {
     AlertUserAboutMissingAppDependencies,
     AlertUserCommand,
     ConfirmWithUserCommand,
@@ -8,7 +10,6 @@
     YesNoCancel
 } from "@domain";
 import {IBackgroundService, WithDisposables} from "@common";
-import {IDialogService, ILogger} from "aurelia";
 import {DialogBase} from "@application/dialogs/dialog-base";
 import {
     AppDependenciesCheckDialog

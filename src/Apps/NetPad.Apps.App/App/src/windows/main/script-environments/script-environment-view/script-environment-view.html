@@ -84,7 +84,7 @@ This is not configurable right now, and defaults to latest .NET 6 runtime instal
                 text-changed.bind="editorTextChanged"
                 view-model.ref="editor"></editor>
     </div>
-    <div ref="outputContainer" class="output-container overflow-hidden">
+    <div ref="outputContainer" class="output-container">
         <output-view environment.bind="environment"
                      close.bind="collapseResultsView"></output-view>
     </div>

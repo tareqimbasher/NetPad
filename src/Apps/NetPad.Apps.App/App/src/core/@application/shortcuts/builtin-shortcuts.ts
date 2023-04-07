@@ -1,9 +1,9 @@
-import {CreateScriptDto, IScriptService, ISettingService, RunScriptEvent} from "@domain";
+import {CreateScriptDto, IScriptService, ISettingService} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {EditorUtil} from "../editor/editor-util";
 import {Explorer, NamespacesPane} from "../../../windows/main/panes";
-import {TogglePaneEvent} from "../events/toggle-pane-event"
+import {RunScriptEvent, TogglePaneEvent} from "@application"
 import * as monaco from "monaco-editor";
 
 export const BuiltinShortcuts = [

@@ -32,10 +32,11 @@ module.exports = function (env, {analyze}) {
     const environment = production ? "production" : "development";
     const target = env.target || "electron";
 
-    console.log("Run info:");
+    console.log("Build info:");
     console.log(`   Environment: ${environment}`);
     console.log(`   Target: ${target}`);
 
+    /** @type {import('webpack').Configuration} */
     return {
         target: target === "web" ? "web" : "electron-renderer",
         mode: production ? 'production' : 'development',
@@ -76,7 +77,11 @@ module.exports = function (env, {analyze}) {
         devServer: {
             historyApiFallback: true,
             //open: !process.env.CI,
-            port: 9000
+            port: 9000,
+            client: {
+                progress: true,
+                overlay: false
+            },
         },
         module: {
             rules: [
@@ -117,7 +122,11 @@ module.exports = function (env, {analyze}) {
             }),
             new MonacoWebpackPlugin({
                 languages: [
-                    "csharp"
+                    "csharp",
+                    //"sql",
+                    //"mysql",
+                    //"pgsql",
+                    //"json",
                 ]
             }),
             analyze && new BundleAnalyzerPlugin()

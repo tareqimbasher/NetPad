@@ -9,7 +9,6 @@ import {
     IScriptService,
     ISession,
     RunOptionsDto,
-    RunScriptEvent,
     Script,
     ScriptEnvironment,
     ScriptKind,
@@ -17,7 +16,7 @@ import {
     Settings
 } from "@domain";
 import Split from "split.js";
-import {Editor, IShortcutManager, ViewModelBase} from "@application";
+import {Editor, IShortcutManager, RunScriptEvent, ViewModelBase} from "@application";
 
 export class ScriptEnvironmentView extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;

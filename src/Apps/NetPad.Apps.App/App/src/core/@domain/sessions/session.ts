@@ -13,7 +13,7 @@ import {
 import {DI, IHttpClient, ILogger} from "aurelia";
 
 export interface ISession extends ISessionApiClient {
-    environments: ScriptEnvironment[];
+    environments: ReadonlyArray<ScriptEnvironment>;
 
     get active(): ScriptEnvironment | null | undefined;
 
@@ -25,8 +25,9 @@ export interface ISession extends ISessionApiClient {
 export const ISession = DI.createInterface<ISession>();
 
 export class Session extends SessionApiClient implements ISession {
+    public readonly environments: ScriptEnvironment[] = [];
+
     private _active?: ScriptEnvironment | null | undefined;
-    private readonly _environments: ScriptEnvironment[] = [];
     private readonly logger: ILogger;
 
     constructor(
@@ -39,10 +40,6 @@ export class Session extends SessionApiClient implements ISession {
         this.subscribeToEvents();
     }
 
-    public get environments(): ScriptEnvironment[] {
-        return this._environments;
-    }
-
     public get active(): ScriptEnvironment | null | undefined {
         return this._active;
     }
@@ -53,7 +50,7 @@ export class Session extends SessionApiClient implements ISession {
 
         const activeScriptId = await this.getActive();
         if (activeScriptId) {
-            this._active = this._environments.find(e => e.script.id === activeScriptId);
+            this._active = this.environments.find(e => e.script.id === activeScriptId);
         }
     }
 
@@ -76,6 +73,11 @@ export class Session extends SessionApiClient implements ISession {
         return this.environments;
     }
 
+    public override async activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        if (scriptId === this.active?.script.id) return;
+        return super.activate(scriptId, signal);
+    }
+
     private subscribeToEvents() {
         this.eventBus.subscribeToServer(EnvironmentsAddedEvent, message => {
             this.environments.push(...message.environments);
@@ -95,7 +97,7 @@ export class Session extends SessionApiClient implements ISession {
             if (!activeScriptId)
                 this._active = null;
             else {
-                const environment = this._environments.find(e => e.script.id == activeScriptId);
+                const environment = this.environments.find(e => e.script.id == activeScriptId);
                 if (environment)
                     this._active = environment;
                 else

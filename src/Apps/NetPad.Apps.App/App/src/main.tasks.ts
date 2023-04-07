@@ -8,7 +8,8 @@ export const configureFetchClient = (container: IContainer) => {
     const client = container.get(IHttpClient);
     const logger = container.get(ILogger).scopeTo("http-client");
 
-    const shouldLogErrors = (error: Error | undefined) => error && !error.name?.startsWith("AbortError");
+    const isAbortError = (error: Error | undefined) => error instanceof Error && error.name?.startsWith("AbortError");
+    const shouldLogErrors = (error: Error | undefined) => error && !isAbortError(error);
 
     client.configure(config =>
         config
@@ -17,13 +18,17 @@ export const configureFetchClient = (container: IContainer) => {
                 requestError(error: Request | unknown): Request | Response | Promise<Request | Response> {
                     if (error instanceof Request) return error;
 
-                    if (shouldLogErrors(error as Error)) logger.error("Request Error", error);
+                    if (shouldLogErrors(error as Error))
+                        logger.error("Request Error", error);
+
                     throw error;
                 },
                 responseError(error: Response | unknown, request?: Request): Response | Promise<Response> {
                     if (error instanceof Response) return error;
 
-                    if (shouldLogErrors(error as Error)) logger.error("Response Error", error);
+                    if (shouldLogErrors(error as Error))
+                        logger.error("Response Error", error);
+
                     throw error;
                 }
             })

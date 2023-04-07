@@ -7,11 +7,10 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    RunScriptEvent,
     Script,
     Settings
 } from "@domain";
-import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
+import {ContextMenuOptions, IShortcutManager, RunScriptEvent, ViewModelBase} from "@application";
 import {LocalStorageBacked} from "@common";
 
 export class ScriptEnvironments extends ViewModelBase {
@@ -105,11 +104,11 @@ export class ScriptEnvironments extends ViewModelBase {
     }
 
     public attached() {
-        this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, msg => {
+        this.addDisposable(this.eventBus.subscribeToServer(ActiveEnvironmentChangedEvent, msg => {
             setTimeout(() => {
                 this.element.querySelector(`.script-tab[data-script-id="${msg.scriptId}"]`)?.scrollIntoView();
             }, 1);
-        });
+        }));
 
         this.initializeTabDragAndDrop();
     }

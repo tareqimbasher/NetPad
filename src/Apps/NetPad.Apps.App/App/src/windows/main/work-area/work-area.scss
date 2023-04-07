@@ -1,0 +1,40 @@
+@import "~styles/main";
+@import "~styles/themes";
+
+work-area {
+    display: flex;
+    flex-direction: row;
+    min-width: 0;
+    overflow: hidden;
+
+    .viewer-host {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 0;
+        min-width: 0;
+
+        &:focus-visible {
+            outline: none !important;
+        }
+    }
+
+    .top-bar {
+        display: flex;
+        align-items: center;
+
+        tab-bar {
+            flex-grow: 1;
+        }
+
+        .appearance-picker {
+            flex-basis: 20px;
+            min-width: 20px;
+            text-align: right;
+
+            .dropdown-header {
+                font-size: 1rem;
+            }
+        }
+    }
+}

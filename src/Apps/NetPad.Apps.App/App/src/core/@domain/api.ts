@@ -19,11 +19,11 @@ export interface IAppApiClient {
 
     checkDependencies(signal?: AbortSignal | undefined): Promise<AppDependencyCheckResult>;
 
-    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<void>;
 
     sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void>;
 }
@@ -140,7 +140,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
         return Promise.resolve<AppDependencyCheckResult>(<any>null);
     }
 
-    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    openFolderContainingScript(scriptPath: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/app/open-folder-containing-script?";
         if (scriptPath !== undefined && scriptPath !== null)
             url_ += "scriptPath=" + encodeURIComponent("" + scriptPath) + "&";
@@ -150,7 +150,6 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             method: "PATCH",
             signal,
             headers: {
-                "Accept": "application/octet-stream"
             }
         };
 
@@ -159,23 +158,22 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
         });
     }
 
-    protected processOpenFolderContainingScript(response: Response): Promise<FileResponse | null> {
+    protected processOpenFolderContainingScript(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<FileResponse | null>(<any>null);
+        return Promise.resolve<void>(<any>null);
     }
 
-    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    openScriptsFolder(path: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/app/open-scripts-folder?";
         if (path !== undefined && path !== null)
             url_ += "path=" + encodeURIComponent("" + path) + "&";
@@ -185,7 +183,6 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             method: "PATCH",
             signal,
             headers: {
-                "Accept": "application/octet-stream"
             }
         };
 
@@ -194,23 +191,22 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
         });
     }
 
-    protected processOpenScriptsFolder(response: Response): Promise<FileResponse | null> {
+    protected processOpenScriptsFolder(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<FileResponse | null>(<any>null);
+        return Promise.resolve<void>(<any>null);
     }
 
-    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/app/open-package-cache-folder";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -218,7 +214,6 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             method: "PATCH",
             signal,
             headers: {
-                "Accept": "application/octet-stream"
             }
         };
 
@@ -227,20 +222,19 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
         });
     }
 
-    protected processOpenPackageCacheFolder(response: Response): Promise<FileResponse | null> {
+    protected processOpenPackageCacheFolder(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<FileResponse | null>(<any>null);
+        return Promise.resolve<void>(<any>null);
     }
 
     sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void> {
@@ -707,7 +701,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1779,7 +1773,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -2239,7 +2233,7 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetSdkVersions!: string[];
     dotNetEfToolVersion?: string | undefined;
 
-        constructor(data?: IAppDependencyCheckResult) {
+    constructor(data?: IAppDependencyCheckResult) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))

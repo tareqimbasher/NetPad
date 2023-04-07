@@ -64,8 +64,9 @@ export class Editor extends ViewModelBase {
                 this.textChanged(this.monacoEditor.getValue());
         });
 
-        const mainContent = document.getElementById("main-content");
-        if (!mainContent) this.logger.error("Could not find element with ID 'main-content'");
+        const resizeObservedElementId = "window-middle-content";
+        const mainContent = document.getElementById(resizeObservedElementId);
+        if (!mainContent) this.logger.error(`Could not find element with ID '${resizeObservedElementId}'`);
 
         const ob = new ResizeObserver(entries => this.updateEditorLayout());
         if (mainContent) ob.observe(mainContent);

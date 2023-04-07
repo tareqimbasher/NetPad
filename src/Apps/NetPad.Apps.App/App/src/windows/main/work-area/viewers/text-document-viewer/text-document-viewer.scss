@@ -1,0 +1,21 @@
+@import "~styles/main";
+
+text-document-viewer {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    .text-editor-container {
+        height: 100%;
+    }
+
+    .production-marker {
+        @extend %bg-orange;
+        @extend %text-black;
+        writing-mode: vertical-rl;
+        font-weight: bold;
+        text-align: center;
+        cursor: default;
+    }
+}

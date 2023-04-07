@@ -1,20 +1,25 @@
-<template class="d-flex flex-row ${orientation.toLowerCase()} overflow-hidden"
+<template class="${orientation.toLowerCase()} overflow-hidden"
           data-id.bind="id">
     <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}">
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
-             click.trigger="activateOrCollapse(pane)"
+             click.trigger="toggle(pane)"
              title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyComboString + ')') : ''}">
-            <i class="mb-3 pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
             <span>${pane.name}</span>
         </div>
     </div>
-    <div class="content flex-fill d-flex flex-column min-w-0" show.bind="viewState === 'Expanded'">
-        <div class="header d-flex justify-content-between align-items-center p-2">
+    <div class="content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
+        <div class="pane-toolbar d-flex align-items-center p-2">
             <div class="text-truncate">
-                ${active.name}
+                ${active.name | truncate:30}${active.toolbar ? ':' : ''}
             </div>
-            <div class="justify-content-end ms-1">
+
+            <div class="flex-grow-1 pane-toolbar-composed" if.bind="active.toolbar">
+                <au-compose component.bind="active.toolbar"></au-compose>
+            </div>
+
+            <div class="justify-content-end ms-auto">
                 <span class="me-2" if.bind="active.actions.length">
                     <i class="actions-dropdown-icon action-icon ps-3 pe-3"
                        title="Actions"
@@ -34,7 +39,7 @@
             </div>
         </div>
         <au-compose repeat.for="pane of panes"
-                    view-model.bind="pane"
+                    component.bind="pane"
                     show.bind="pane === active"
                     class="content-container flex-fill overflow-x-auto d-flex">
         </au-compose>

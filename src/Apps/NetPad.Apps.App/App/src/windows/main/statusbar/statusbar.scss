@@ -7,6 +7,7 @@ statusbar {
     max-height: $statusbar-height;
     padding: 0 0.5rem;
     display: flex;
+    line-height: $statusbar-height;
 
     .left-column,
     .middle-column,
@@ -30,6 +31,16 @@ statusbar {
 
     .right-column {
         justify-content: flex-end;
+
+        > * {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            cursor: pointer;
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
+        }
     }
 
     .active-app-status-message {

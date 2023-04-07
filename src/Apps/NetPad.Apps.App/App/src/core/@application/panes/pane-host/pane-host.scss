@@ -3,30 +3,10 @@
 $ribbon-width: 20px;
 
 pane-host {
-    min-width: $ribbon-width;
+    display: flex;
 
     .ribbon {
-        width: $ribbon-width;
-    }
-
-    .pane-tag {
-        line-height: $ribbon-width;
-        width: $ribbon-width;
-        writing-mode: vertical-lr;
-        padding: 0.5rem 0.1rem;
-    }
-
-    &.left {
-        .pane-tag {
-            transform: rotate(180deg);
-
-            .pane-icon {
-                transform: rotate(180deg);
-            }
-        }
-    }
-
-    .ribbon {
+        display: flex;
         @include theme(background, paneRibbonBackground);
 
         .pane-tag {
@@ -35,18 +15,24 @@ pane-host {
             display: flex;
             align-items: center;
 
-            &:hover {
-                @include theme(background-color, hoverColor);
-            }
-
             &.active {
                 @include theme(background-color, tabActiveColor);
+            }
+
+            &:hover {
+                @include theme(background-color, hoverColor);
             }
         }
     }
 
-    .header {
-        @include theme(border-bottom, borderColor, 1px solid);
+    .pane-toolbar {
+        z-index: 1;
+        @include theme(box-shadow, boxShadowBottom);
+
+        > .pane-toolbar-composed {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
     }
 
     .content {
@@ -60,5 +46,65 @@ pane-host {
     .pane-collapser {
         font-size: 17px;
         line-height: 100%;
+    }
+}
+
+pane-host.left,
+pane-host.right {
+    flex-direction: row;
+    min-width: $ribbon-width;
+
+    .ribbon {
+        flex-direction: column;
+        width: $ribbon-width;
+    }
+
+    .pane-tag {
+        writing-mode: vertical-lr;
+        line-height: $ribbon-width;
+        width: $ribbon-width;
+        padding: 0.5rem 0.1rem;
+
+        .pane-icon {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    .content {
+        min-width: 0;
+    }
+}
+
+pane-host.left {
+    .pane-tag {
+        transform: rotate(180deg);
+
+        .pane-icon {
+            transform: rotate(180deg);
+        }
+    }
+}
+
+pane-host.bottom {
+    flex-direction: column-reverse;
+    min-height: $ribbon-width;
+
+    .ribbon {
+        flex-direction: row;
+        height: $ribbon-width;
+    }
+
+    .pane-tag {
+        line-height: $ribbon-width;
+        height: $ribbon-width;
+        padding: 0.1rem 0.5rem;
+
+        .pane-icon {
+            margin-right: 0.5rem;
+        }
+    }
+
+    .content {
+        min-height: 0;
     }
 }

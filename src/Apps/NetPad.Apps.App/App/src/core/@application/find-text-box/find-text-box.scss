@@ -2,7 +2,7 @@
 
 find-text-box {
     @include theme(background-color, backgroundDarkerColor);
-    @include theme(box-shadow, boxShadow);
+    @include theme(box-shadow, boxShadowBottomAndSides);
     position: absolute;
     top: 0;
     right: 20px;
