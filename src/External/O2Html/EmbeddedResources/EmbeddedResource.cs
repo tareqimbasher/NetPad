@@ -18,5 +18,5 @@ public class EmbeddedResource
     public string Name { get; }
     public Assembly Assembly { get; }
 
-    public string GetContents() => Util.ReadEmbeddedResource(Assembly, Name);
+    public string GetContents() => Utilities.ReadEmbeddedResource(Assembly, Name);
 }

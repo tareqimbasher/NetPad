@@ -98,7 +98,7 @@ public class CollectionHtmlConverter : HtmlConverter
             {
                 foreach (var property in properties)
                 {
-                    table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true, true))
+                    table.AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true))
                         .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
                 }
 
@@ -125,7 +125,7 @@ public class CollectionHtmlConverter : HtmlConverter
     {
         string headerRowText = "";
 
-        var collectionTypeName = collectionType.GetReadableName(forHtml: true);
+        var collectionTypeName = collectionType.GetReadableName();
 
         if (collectionTypeName.StartsWith("IGrouping" + Consts.HtmlLessThan))
         {

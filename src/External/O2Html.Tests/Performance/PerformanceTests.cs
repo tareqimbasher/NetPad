@@ -22,17 +22,28 @@ public class PerformanceTests
     [Fact(Skip = "Adhoc for performance testing")]
     public void LibComparison_Performance_Test()
     {
-        var cars = GetCars(1000);
+        int times = 3;
+        bool preRun = true;
 
-        Benchmark("STJ", () => JsonSerializer.Serialize(cars));
-        Benchmark("Json.NET", () => JsonConvert.SerializeObject(cars));
-        Benchmark("O2HTML", () => HtmlConvert.Serialize(cars).ToHtml());
+        foreach (var itemsCount in new[] {1, 10, 100, 1000, 10000})
+        {
+            var cars = GetCars(itemsCount);
+
+            _testOutputHelper.WriteLine($"Serializing {itemsCount} Cars");
+            Benchmark("System.Text.Json", () => JsonSerializer.Serialize(cars), times, preRun);
+            Benchmark("Json.NET", () => JsonConvert.SerializeObject(cars), times, preRun);
+            Benchmark("O2HTML", () => HtmlConvert.Serialize(cars).ToHtml(), times, preRun);
+            _testOutputHelper.WriteLine("");
+        }
     }
 
     [Fact(Skip = "Adhoc for performance testing")]
     public void O2HTML_Performance_Tests()
     {
-        var cars = GetCars(1000);
+        var cars = GetCars(100);
+
+        // To cache
+        _ = HtmlConvert.Serialize(cars).ToHtml();
 
         Node node = null!;
 
@@ -50,8 +61,15 @@ public class PerformanceTests
         HtmlConvert.Serialize(cars);
     }
 
-    private void Benchmark(string label, Action action, int runTimes = 1)
+    private void Benchmark(string label, Action action, int runTimes = 1, bool preRun = false)
     {
+        if (preRun)
+        {
+            // Run action first so that if first call caches data that later calls will use,
+            // we don't get skewed results for non-cached call
+            action();
+        }
+
         var timings = new List<double>();
 
         for (int i = 0; i < runTimes; i++)

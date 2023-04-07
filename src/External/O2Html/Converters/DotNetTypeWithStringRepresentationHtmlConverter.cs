@@ -11,16 +11,7 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
         if (obj == null)
             return new Null().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
 
-        var str = obj.ToString()?
-            .ReplaceIfExists("&", Consts.HtmlAmpersand)
-            .ReplaceIfExists(" ", Consts.HtmlSpace)
-            .ReplaceIfExists("<", Consts.HtmlLessThan)
-            .ReplaceIfExists(">", Consts.HtmlGreaterThan)
-            .ReplaceIfExists("\"", Consts.HtmlQuote)
-            .ReplaceIfExists("'", Consts.HtmlApostrophe)
-            .ReplaceIfExists("\n", Consts.HtmlNewLine);
-
-        return new TextNode(str);
+        return new TextNode(obj.ToString());
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)

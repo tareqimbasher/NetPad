@@ -27,7 +27,7 @@ public class TextNode : Node
     public override void ToHtml(List<byte> output, Formatting? formatting = null)
     {
         if (!string.IsNullOrEmpty(Text))
-            output.AddRange(Encoding.UTF8.GetBytes(Text));
+            output.AddRange(Encoding.UTF8.GetBytes(Utilities.EscapeStringForHtml(Text)));
     }
 
     public override string ToString() => ToHtml();

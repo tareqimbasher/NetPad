@@ -19,7 +19,7 @@ internal static class InternalExtensions
         return source;
     }
 
-    public static string GetReadableName(this Type type, bool withNamespace = false, bool forHtml = false)
+    public static string GetReadableName(this Type type, bool withNamespace = false)
     {
         string name = type.FullName ?? type.Name;
 
@@ -30,7 +30,7 @@ internal static class InternalExtensions
 
             foreach (var tArg in type.GenericTypeArguments)
             {
-                name += GetReadableName(tArg, withNamespace, forHtml) + ", ";
+                name += GetReadableName(tArg, withNamespace) + ", ";
             }
 
             name = name.TrimEnd(' ', ',') + ">";
@@ -42,13 +42,6 @@ internal static class InternalExtensions
 
             if (typeNamespace.Length > 1 && name.StartsWith(typeNamespace))
                 name = name.Substring(typeNamespace.Length + 1); // +1 to trim the '.' after the namespace
-        }
-
-        if (forHtml)
-        {
-            name = name
-                .ReplaceIfExists("<", "&lt;")
-                .ReplaceIfExists(">", "&gt;");
         }
 
         if (type.FullName?.StartsWith("System.Nullable`") == true)

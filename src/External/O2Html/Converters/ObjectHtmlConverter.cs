@@ -30,7 +30,7 @@ public class ObjectHtmlConverter : HtmlConverter
 
         table.Head.AddAndGetElement("tr")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
-            .AddText(type.GetReadableName(true, true));
+            .AddText(type.GetReadableName(true));
 
         var properties = htmlSerializer.GetReadableProperties(type);
 
@@ -44,7 +44,7 @@ public class ObjectHtmlConverter : HtmlConverter
             // Add property name
             tr.AddAndGetElement("td")
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
-                .WithTitle($"[{property.PropertyType.GetReadableName(true, true)}] {name}")
+                .WithTitle($"[{property.PropertyType.GetReadableName(true)}] {name}")
                 .AddText($"{name}: ");
 
             // Add property value
