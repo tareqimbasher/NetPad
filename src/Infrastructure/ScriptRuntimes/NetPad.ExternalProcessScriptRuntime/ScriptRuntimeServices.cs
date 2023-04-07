@@ -73,7 +73,7 @@ public class ExternalProcessOutputWriter : IOutputWriter<object>
         _defaultConsoleOutput = defaultConsoleOutput;
     }
 
-    public System.Threading.Tasks.Task WriteAsync(object? output, string? title = null)
+    public async System.Threading.Tasks.Task WriteAsync(object? output, string? title = null)
     {
         var html = HtmlSerializer.Serialize(output, title);
 
@@ -83,9 +83,7 @@ public class ExternalProcessOutputWriter : IOutputWriter<object>
 
         var serializedOutput = NetPad.Common.JsonSerializer.Serialize(processOutput);
 
-        _defaultConsoleOutput.WriteLine(serializedOutput);
-
-        return System.Threading.Tasks.Task.CompletedTask;
+        await _defaultConsoleOutput.WriteLineAsync(serializedOutput);
     }
 }
 

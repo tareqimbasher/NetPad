@@ -76,11 +76,11 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
     {
         var autoSave = new Func<Guid, Task>(async scriptId =>
         {
-            if (scriptId != environment.Script.Id)
+            if (scriptId != environment.Script.Id || !environment.Script.IsDirty)
                 return;
 
             await _autoSaveScriptRepository.SaveAsync(environment.Script);
-        }).DebounceAsync(300);
+        }).DebounceAsync(3000);
 
         var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChangedEvent>(ev =>
         {

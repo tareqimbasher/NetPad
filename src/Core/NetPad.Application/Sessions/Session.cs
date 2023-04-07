@@ -120,6 +120,11 @@ public class Session : ISession
         ScriptEnvironment? newActive;
         _lastActiveScriptId = Active?.Script.Id;
 
+        if (scriptId == Active?.Script.Id)
+        {
+            return Task.CompletedTask;
+        }
+
         if (scriptId == null)
             newActive = null;
         else
