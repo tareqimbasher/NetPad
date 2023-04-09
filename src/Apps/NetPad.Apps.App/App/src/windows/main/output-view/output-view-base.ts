@@ -68,6 +68,7 @@ export abstract class OutputViewBase extends ViewModelBase {
 
     protected clearOutput() {
         this.beforeClearOutput();
+        this.lastOutputOrder = 0;
         this.outputElement.innerHTML = "";
     }
 
