@@ -56,7 +56,10 @@ public static class Extensions
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static T? Dump<T>(this T? o, string? title = null)
     {
-        ScriptRuntimeServices.ResultWrite(o, title);
+        if (typeof(T) == typeof(string))
+            ScriptRuntimeServices.ResultWrite(o + "\n", title);
+        else
+            ScriptRuntimeServices.ResultWrite(o, title);
         return o;
     }
 }

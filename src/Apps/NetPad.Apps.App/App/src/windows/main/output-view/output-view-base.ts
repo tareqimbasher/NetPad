@@ -8,6 +8,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     protected outputElement: HTMLElement;
     protected findTextBoxOptions: FindTextBoxOptions;
     private lastOutputOrder = 0;
+    private lastOutputElement?: Element | null;
     private pendingOutputQueue: HtmlScriptOutput[] = [];
 
     protected constructor(@ILogger logger: ILogger) {
@@ -60,16 +61,34 @@ export abstract class OutputViewBase extends ViewModelBase {
         template.innerHTML = html;
 
         this.beforeAppendOutputHtml(template.content);
-        this.outputElement.appendChild(template.content);
+
+        const newElement = template.content.firstElementChild;
+        if (!newElement)
+            throw new Error("Empty DocumentFragment");
+
+        if (this.lastOutputElement
+            && this.lastOutputElement.classList.contains("group")
+            && this.lastOutputElement.classList.contains("text")
+            && newElement.classList.contains("group")
+            && newElement.classList.contains("text")
+        ) {
+            this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + newElement.innerHTML;
+        } else {
+            this.lastOutputElement = this.outputElement.appendChild(newElement);
+        }
     }
 
     protected beforeAppendOutputHtml(documentFragment: DocumentFragment) {
     }
 
-    protected clearOutput() {
+    protected clearOutput(reset: boolean = false) {
         this.beforeClearOutput();
-        this.lastOutputOrder = 0;
+        this.lastOutputElement = null;
         this.outputElement.innerHTML = "";
+
+        if (reset) {
+            this.lastOutputOrder = 0;
+        }
     }
 
     protected beforeClearOutput() {

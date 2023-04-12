@@ -22,6 +22,11 @@ export class ResultsView extends OutputViewBase {
         const rvs = this.resultsViewSettings;
         this.toolbarActions = [
             {
+                label: "Clear",
+                icon: "clear-output-icon",
+                clicked: async () => this.clearOutput(),
+            },
+            {
                 label: "Collapse All",
                 icon: "tree-collapse-all-icon",
                 clicked: async () => this.resultControls.collapseAllTables()
@@ -69,6 +74,6 @@ export class ResultsView extends OutputViewBase {
     @watch<ResultsView>(vm => vm.environment.status)
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
-            this.clearOutput();
+            this.clearOutput(true);
     }
 }

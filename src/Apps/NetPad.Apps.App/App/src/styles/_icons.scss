@@ -284,6 +284,11 @@ button > .icon-base {
     @extend .text-gray;
 }
 
+.clear-output-icon {
+    @extend %icon-base;
+    @extend .fa-broom;
+}
+
 .add-package-icon {
     @extend %icon-base;
     @extend .fa-plus;

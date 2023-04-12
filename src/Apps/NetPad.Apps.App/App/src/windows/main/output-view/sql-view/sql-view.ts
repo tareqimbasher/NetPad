@@ -17,6 +17,11 @@ export class SqlView extends OutputViewBase {
         const self = this;
         this.toolbarActions = [
             {
+                label: "Clear",
+                icon: "clear-output-icon",
+                clicked: async () => this.clearOutput(),
+            },
+            {
                 label: "Color output (turn off for better 'Find Text (CTRL + F)' accuracy)",
                 get icon() {
                     return this.active ? "theme-icon text-orange" : "theme-icon";
@@ -42,7 +47,7 @@ export class SqlView extends OutputViewBase {
     public override bound() {
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
-            ".group.text, .sql-keyword, .query-time, .query-params, .not-special");
+            ".text, .sql-keyword, .query-time, .query-params, .not-special");
     }
 
     public attached() {
@@ -64,9 +69,14 @@ export class SqlView extends OutputViewBase {
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
         if (this.colorize) {
-            const groups = Array.from(documentFragment.querySelectorAll(".group.text"));
+            const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
 
             for (const group of groups) {
+                // Since we know each group is just text for SQL View, we want to add a new line at the end
+                // of each one so when base class combines this text with the previous displayed text it is
+                // separated by an extra empty line that makes output easier to read
+                group.append(document.createElement("br"));
+
                 const childNodes = Array.from(group.childNodes);
                 for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
                     const childNode = childNodes[iChildNode];
@@ -88,7 +98,7 @@ export class SqlView extends OutputViewBase {
     @watch<SqlView>(vm => vm.environment.status)
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
-            this.clearOutput();
+            this.clearOutput(true);
     }
 }
 

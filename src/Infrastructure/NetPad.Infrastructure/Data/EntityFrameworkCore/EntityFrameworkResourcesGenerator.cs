@@ -170,7 +170,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
                 {
                     if (!output.Contains(""Executing DbCommand"")) return;
 
-                    ScriptRuntimeServices.SqlWrite(output);
+                    ScriptRuntimeServices.SqlWrite(output + ""\n"");
                 },
                 new[] { Microsoft.EntityFrameworkCore.DbLoggerCategory.Database.Command.Name }
             );
