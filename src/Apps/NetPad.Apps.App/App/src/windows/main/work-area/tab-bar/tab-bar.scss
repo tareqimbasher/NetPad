@@ -12,7 +12,6 @@ tab-bar {
     .drag-drop-container {
         @extend %hide-scrollbar;
         flex-wrap: nowrap;
-        flex-grow: 1;
         display: flex;
         align-items: center;
         overflow-x: hidden;
@@ -90,8 +89,9 @@ tab-bar {
 
         &.new-tab {
             margin-left: 1px;
-            padding-left: 0.6rem;
-            padding-right: 0.6rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            background-color: transparent;
         }
     }
 }
@@ -116,6 +116,10 @@ tab-bar {
             .script-name {
                 @include theme(color, tabActiveTextColor);
             }
+        }
+
+        &.new-tab {
+            background-color: transparent;
         }
     }
 
