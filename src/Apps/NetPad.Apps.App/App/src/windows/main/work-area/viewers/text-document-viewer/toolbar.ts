@@ -95,6 +95,12 @@ export class Toolbar extends ViewModelBase {
         }
     }
 
+    public async stop() {
+        if (this.viewable instanceof ViewableAppScriptDocument) {
+            await this.viewable.stop();
+        }
+    }
+
     public async save() {
         await this.viewable.save();
     }
