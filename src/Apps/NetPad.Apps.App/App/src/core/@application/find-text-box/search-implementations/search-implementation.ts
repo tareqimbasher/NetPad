@@ -18,7 +18,9 @@ export abstract class SearchImplementation {
 
         // We need to check if search text is text that can be found in a special symbol.
         // Example: searching for 'b' might be found in special symbol '&nbsp;'
-        const searchHtmlMightBeFoundInSpecialSymbols = searchHtml.length < 4 || !(searchHtml.startsWith("&") && searchHtml.endsWith(";"))
+        const searchHtmlMightBeFoundInSpecialSymbols =
+            searchHtml.length < 4
+            || !(searchHtml.startsWith("&") && searchHtml.endsWith(";"))
 
         let index = -1;
         do {
@@ -36,7 +38,7 @@ export abstract class SearchImplementation {
     }
 
     private static hasSpecialAmpBefore(searchString: string, startIndex: number) {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 5; i++) {
             const iCharToCheck = startIndex - i;
             if (iCharToCheck < 0) return false;
 
