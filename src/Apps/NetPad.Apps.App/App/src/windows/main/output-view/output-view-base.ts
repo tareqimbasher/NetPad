@@ -81,7 +81,16 @@ export abstract class OutputViewBase extends ViewModelBase {
     protected beforeAppendOutputHtml(documentFragment: DocumentFragment) {
     }
 
-    protected clearOutput(reset: boolean = false) {
+    protected beforeClearOutput() {
+    }
+
+    /**
+     * Clears output.
+     * @param reset set to true if output order should be reset;
+     * if we're clearing in preparation for a new list/group of outputs
+     * @protected
+     */
+    protected clearOutput(reset = false) {
         this.beforeClearOutput();
         this.lastOutputElement = null;
         this.outputElement.innerHTML = "";
@@ -89,8 +98,5 @@ export abstract class OutputViewBase extends ViewModelBase {
         if (reset) {
             this.lastOutputOrder = 0;
         }
-    }
-
-    protected beforeClearOutput() {
     }
 }

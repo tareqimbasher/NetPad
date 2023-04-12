@@ -3,16 +3,31 @@ import {Pane, PaneAction} from "@application";
 export class ClipboardPane extends Pane {
     public history: Set<string>;
     public selected?: string;
-    private readonly maxHistorySize = 200;
+    public searchTerm = "";
+    public caseSensitiveSearch = false;
+    private readonly maxHistorySize = 100;
 
     constructor() {
         super("Clipboard", "clipboard-icon");
         this.history = new Set<string>();
         this._actions.push(new PaneAction(
-            "<i class=\"delete-icon\"></i> Clear all",
+            "<i class=\"clear-output-icon\"></i> Clear all",
             "Remove all entries",
             () => this.history.clear())
         );
+    }
+
+    public get viewableHistory(): Set<string> | Array<string> {
+        if (!this.searchTerm) return this.history;
+
+        const term = this.caseSensitiveSearch
+            ? this.searchTerm
+            : this.searchTerm.toLocaleLowerCase();
+
+        return !term
+            ? this.history
+            : Array.from(this.history)
+                .filter(x => (this.caseSensitiveSearch ? x : x.toLocaleLowerCase()).indexOf(term) >= 0);
     }
 
     public binding() {

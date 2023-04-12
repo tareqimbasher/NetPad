@@ -62,6 +62,10 @@ kbd {
         //     font-weight: bold !important;
         // }
     }
+
+    &.active {
+        @include theme(color, activeColor);
+    }
 }
 
 .text-truncate-1-line {

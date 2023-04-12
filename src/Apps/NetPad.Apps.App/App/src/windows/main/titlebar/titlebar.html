@@ -20,7 +20,7 @@
            title="Minimize"></i>
         <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
            click.trigger="maximize()"
-           title="Maximize"></i>
+           title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
         <i class="window-close-icon action-icon hover-bg-red"
            click.trigger="close()"
            title="Close"></i>

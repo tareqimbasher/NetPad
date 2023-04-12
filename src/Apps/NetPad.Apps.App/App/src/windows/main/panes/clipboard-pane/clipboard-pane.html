@@ -1,5 +1,15 @@
 <div if.bind="history.size" class="list-group flex-fill min-w-0">
-    <div repeat.for="entry of history"
+    <div class="d-flex align-items-center p-2">
+        <input type="text"
+               class="form-control"
+               placeholder="Search..."
+               value.bind="searchTerm"/>
+        <i class="action-icon case-sensitive-icon ms-3 me-3 ${caseSensitiveSearch ? 'active' : ''}"
+           click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
+            title="Match case"></i>
+    </div>
+
+    <div repeat.for="entry of viewableHistory"
          class="list-group-item list-group-item-action d-flex justify-content-between min-w-0 overflow-hidden"
          click.trigger="select(entry, $event)">
         <span class="text-truncate user-select-none" title.bind="entry.substr(0, 1000)">

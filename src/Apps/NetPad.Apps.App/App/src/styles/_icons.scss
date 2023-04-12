@@ -163,6 +163,11 @@ button > .icon-base {
     @extend .fa-square-arrow-up-right;
 }
 
+.case-sensitive-icon {
+    @extend %icon-base;
+    @extend .fa-a;
+}
+
 // CONTEXTUAL ICONS
 .window-close-icon {
     @extend %icon-base;
