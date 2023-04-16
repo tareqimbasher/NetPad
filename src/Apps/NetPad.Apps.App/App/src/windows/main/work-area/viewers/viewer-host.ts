@@ -47,7 +47,7 @@ export class ViewerHost {
 
         for (const viewable of viewables) {
             if (!this._viewables.has(viewable)) {
-                this.logger.debug(`Adding viewable ${viewable.toString()}`)
+                this.logger.debug(`Adding viewable: ${viewable.toString()}`)
                 this._viewables.add(viewable);
             }
         }
@@ -85,6 +85,7 @@ export class ViewerHost {
             return;
         }
 
+        this.logger.debug(`Activating viewable: ${viewable.toString()}`);
         viewer.open(viewable);
         this._activeViewable = viewable;
         this._activeViewer = viewer;

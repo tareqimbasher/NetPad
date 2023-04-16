@@ -49,7 +49,7 @@ export class TextDocumentViewer extends Viewer {
     }
 
     public attached() {
-        if (this.viewable) {
+        if (this.viewable && (!this.editor.active || this.editor.active.id !== this.viewable.id)) {
             this.open(this.viewable as ViewableTextDocument);
         }
     }

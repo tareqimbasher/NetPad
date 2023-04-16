@@ -8,6 +8,10 @@ export class ConsoleLogSink extends AureliaConsoleSink {
 
     constructor(@IPlatform p: IPlatform, logConfig: LogConfig) {
         super(p);
+
+        // Capture the handleEvent method on the base class then override
+        // that base method so that all calls to it get re-routed through
+        // our handler below.
         this.baseHandleEvent = this.handleEvent;
 
         this.handleEvent = (event) => {

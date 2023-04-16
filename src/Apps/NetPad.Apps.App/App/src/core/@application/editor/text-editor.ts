@@ -10,6 +10,7 @@ import {TextDocument} from "@application/editor/text-document";
 export interface ITextEditor extends IDisposable {
     monaco: monaco.editor.IStandaloneCodeEditor;
     position?: monaco.Position | null;
+    active?: TextDocument | null;
 
     open(document: TextDocument);
 
@@ -21,9 +22,9 @@ export interface ITextEditor extends IDisposable {
 export class TextEditor extends ViewModelBase implements ITextEditor {
     public monaco: monaco.editor.IStandaloneCodeEditor;
     public position?: monaco.Position | null;
+    public active?: TextDocument | null;
 
     private viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>();
-    private active?: TextDocument | null;
 
     constructor(
         readonly element: Element,
@@ -35,6 +36,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
 
     public async attached(): Promise<void> {
         this.ensureEditor();
+        this.addDisposable(() => this.active = null);
     }
 
     public open(document: TextDocument) {
