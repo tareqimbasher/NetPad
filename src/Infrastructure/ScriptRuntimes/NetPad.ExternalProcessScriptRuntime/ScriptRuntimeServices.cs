@@ -56,10 +56,16 @@ public static class Extensions
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static T? Dump<T>(this T? o, string? title = null)
     {
-        if (typeof(T) == typeof(string))
-            ScriptRuntimeServices.ResultWrite(o + "\n", title);
-        else
-            ScriptRuntimeServices.ResultWrite(o, title);
+        ScriptRuntimeServices.ResultWrite(o, title);
+
+        // When using Dump() its implied that a new line is added to the end of it when rendered
+        // When rendering objects or collections (ie. objects that are NOT rendered as strings)
+        // they are rendered in an HTML block element that automatically pushes elements after it
+        // to a new line. However when rendering strings (or objects that are rendered as strings)
+        // HTML renders them in-line. So here we detect that, add manually add a new line
+        if (title == null && HtmlSerializer.IsDotNetTypeWithStringRepresentation(typeof(T)))
+            ScriptRuntimeServices.ResultWrite("\n");
+
         return o;
     }
 }

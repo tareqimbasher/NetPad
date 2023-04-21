@@ -12,6 +12,8 @@ public static class HtmlSerializer
         MaxIQueryableSerializeLength = 1000
     };
 
+    public static bool IsDotNetTypeWithStringRepresentation(Type type) => O2Html.HtmlSerializer.IsDotNetTypeWithStringRepresentation(type);
+
     public static string Serialize(object? output, string? title = null)
     {
         bool titled = title != null;

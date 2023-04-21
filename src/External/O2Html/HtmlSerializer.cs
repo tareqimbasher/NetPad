@@ -15,6 +15,19 @@ public sealed class HtmlSerializer
     private readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
     private readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
 
+    private static readonly HashSet<Type> _typesThatShouldBeRepresentedAsString = new HashSet<Type>
+    {
+        typeof(string),
+        typeof(decimal),
+        typeof(DateTime),
+#if NET6_0_OR_GREATER
+        typeof(DateOnly),
+#endif
+        typeof(TimeSpan),
+        typeof(DateTimeOffset),
+        typeof(Guid)
+    };
+
     public HtmlSerializer(HtmlSerializerSettings? serializerSettings = null)
     {
         SerializerSettings = serializerSettings ?? new HtmlSerializerSettings();
@@ -137,32 +150,22 @@ public sealed class HtmlSerializer
         return serializationScope;
     }
 
-    private static bool IsDotNetTypeWithStringRepresentation(Type type)
+    public static bool IsDotNetTypeWithStringRepresentation(Type type)
     {
-        return type.IsPrimitive ||
-               type.IsEnum ||
-               typeof(Exception).IsAssignableFrom(type) ||
-               type.In(
-                   typeof(string),
-                   typeof(decimal),
-                   typeof(DateTime),
-#if NET6_0_OR_GREATER
-                   typeof(DateOnly),
-#endif
-                   typeof(TimeSpan),
-                   typeof(DateTimeOffset),
-                   typeof(Guid)
-               ) ||
-               typeof(Type).IsAssignableFrom(type) ||
-               Nullable.GetUnderlyingType(type) != null;
+        return type.IsPrimitive
+               || _typesThatShouldBeRepresentedAsString.Contains(type)
+               || type.IsEnum
+               || typeof(Exception).IsAssignableFrom(type)
+               || Nullable.GetUnderlyingType(type) != null
+               || typeof(Type).IsAssignableFrom(type);
     }
 
-    private static bool IsObjectType(Type type)
+    public static bool IsObjectType(Type type)
     {
         return !IsDotNetTypeWithStringRepresentation(type) && !IsCollectionType(type);
     }
 
-    private static bool IsCollectionType(Type type)
+    public static bool IsCollectionType(Type type)
     {
         return type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(type);
     }
