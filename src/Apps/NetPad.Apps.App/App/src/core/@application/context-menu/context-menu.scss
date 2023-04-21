@@ -37,7 +37,7 @@ context-menu {
             padding: 2px 5px;
 
             &:hover {
-                background-color: rgb(30 144 255 / 50%);
+                @include theme(background-color, contextMenuItemBackgroundColor);
             }
 
             .item-container {

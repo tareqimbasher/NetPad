@@ -27,6 +27,8 @@ $light: (
     windowBorderColor: #ccc,
     // HEADER
     headerBackground: #333,
+    // MAIN MENU
+    mainMenuDropdownItemBackgroundColor: rgb(30 144 255 / 50%),
     // STATUSBAR
     statusbarBackground: #e3e3e3,
     // PANES
@@ -37,6 +39,7 @@ $light: (
     resultsToolbarBackground: #ccc,
     // CONTEXT MENU
     contextMenuBackgroundColor: #f3f3f3,
+    contextMenuItemBackgroundColor: rgb(30 144 255 / 50%),
     // DIALOG
     dialogBackgroundColor: #f3f3f3,
 );

@@ -1,0 +1,66 @@
+@import "~styles/main";
+@import "~styles/themes";
+
+main-menu {
+    -webkit-app-region: no-drag;
+
+    .top-level-menu-item > .menu-item-label {
+        padding: 5px 8px;
+
+        &:hover {
+            @include theme(background-color, hoverColor);
+        }
+    }
+
+    .dropdown-menu {
+        min-width: 285px;
+        max-width: 600px;
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
+
+        .dropdown-item {
+            display: flex;
+
+            &:hover {
+                @include theme(background-color, mainMenuDropdownItemBackgroundColor);
+
+                .menu-item-shortcut {
+                    @include theme(color, textColor, null, !important);
+                }
+            }
+
+            &.view-only:hover {
+                background-color: transparent;
+            }
+        }
+    }
+
+    .menu-item-icon {
+        width: 25px;
+        text-align: center;
+    }
+
+    .menu-item-label {
+        flex-grow: 1;
+        padding-left: 0.25rem;
+    }
+
+    .menu-item-help-text {
+        text-align: right;
+        @extend .text-muted;
+    }
+
+    .expanded {
+        .dropdown.top-level-menu-item:hover > .dropdown-menu {
+            display: block;
+            margin-top: 0; /* remove the gap so it doesn't close */
+        }
+    }
+
+    .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
+        display: block;
+        margin-top: 0; /* remove the gap so it doesn't close */
+        top: 0;
+        right: -285px;
+    }
+}

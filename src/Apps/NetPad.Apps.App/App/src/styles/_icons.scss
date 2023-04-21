@@ -98,6 +98,11 @@ button > .icon-base {
     @extend .fa-arrow-down;
 }
 
+.search-icon {
+    @extend %icon-base;
+    @extend .fa-magnifying-glass;
+}
+
 .keyboard-icon {
     @extend %icon-base;
     @extend .fa-keyboard;
@@ -204,6 +209,41 @@ button > .icon-base {
 .attention-icon {
     @extend %icon-base;
     @extend .fa-circle-exclamation;
+}
+
+.undo-icon {
+    @extend %icon-base;
+    @extend .fa-rotate-left;
+}
+
+.redo-icon {
+    @extend %icon-base;
+    @extend .fa-rotate-right;
+}
+
+.cut-icon {
+    @extend %icon-base;
+    @extend .fa-scissors;
+}
+
+.copy-icon {
+    @extend %icon-base;
+    @extend .fa-copy;
+}
+
+.paste-icon {
+    @extend %icon-base;
+    @extend .fa-paste;
+}
+
+.zoom-in-icon {
+    @extend %icon-base;
+    @extend .fa-magnifying-glass-plus;
+}
+
+.zoom-out-icon {
+    @extend %icon-base;
+    @extend .fa-magnifying-glass-minus;
 }
 
 .explorer-icon {
@@ -368,3 +408,10 @@ button > .icon-base {
     @extend %icon-base;
     @extend .fa-bolt;
 }
+
+.github-icon {
+    @extend %icon-base;
+    @extend .fa-brands;
+    @extend .fa-github;
+}
+
