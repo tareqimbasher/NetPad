@@ -12,4 +12,5 @@ public interface IUiWindowService
     Task OpenSettingsWindowAsync(string? tab = null);
     Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
     Task OpenDataConnectionWindowAsync(Guid? dataConnectionId);
+    Task OpenDeveloperToolsAsync();
 }

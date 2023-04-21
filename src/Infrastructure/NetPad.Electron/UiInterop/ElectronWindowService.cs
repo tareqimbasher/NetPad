@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using ElectronNET.API;
 using ElectronNET.API.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,20 +10,19 @@ namespace NetPad.Electron.UiInterop;
 
 public class ElectronWindowService : IUiWindowService
 {
-    private static readonly ConcurrentDictionary<string, BrowserWindow> _singleInstanceWindows = new();
     private static bool _isMenuInitialized;
-    private readonly HostInfo _hostInfo;
+    private readonly WindowManager _windowManager;
     private readonly ISession _session;
     private readonly IMediator _mediator;
     private readonly ILogger<ElectronWindowService> _logger;
 
     public ElectronWindowService(
-        HostInfo hostInfo,
+        WindowManager windowManager,
         ISession session,
         IMediator mediator,
         ILogger<ElectronWindowService> logger)
     {
-        _hostInfo = hostInfo;
+        _windowManager = windowManager;
         _session = session;
         _mediator = mediator;
         _logger = logger;
@@ -35,77 +32,101 @@ public class ElectronWindowService : IUiWindowService
 
     public async Task<WindowState?> GetWindowStateAsync()
     {
-        var main = ElectronUtil.MainWindow;
+        try
+        {
+            var main = ElectronUtil.MainWindow;
 
-        WindowViewStatus viewStatus;
+            WindowViewStatus viewStatus;
 
-        if (await main.IsMaximizedAsync())
-            viewStatus = WindowViewStatus.Maximized;
-        else if (await main.IsMinimizedAsync())
-            viewStatus = WindowViewStatus.Minimized;
-        else
-            viewStatus = WindowViewStatus.UnMaximized;
+            if (await main.IsMaximizedAsync())
+                viewStatus = WindowViewStatus.Maximized;
+            else if (await main.IsMinimizedAsync())
+                viewStatus = WindowViewStatus.Minimized;
+            else
+                viewStatus = WindowViewStatus.UnMaximized;
 
-        bool isAlwaysOnTop = await main.IsAlwaysOnTopAsync();
-        return new WindowState(viewStatus, isAlwaysOnTop);
+            bool isAlwaysOnTop = await main.IsAlwaysOnTopAsync();
+            return new WindowState(viewStatus, isAlwaysOnTop);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting window state");
+            return new WindowState(WindowViewStatus.Unknown, false);
+        }
     }
 
     public async Task MaximizeMainWindowAsync()
     {
         var window = ElectronUtil.MainWindow;
 
-        if (await window.IsMaximizedAsync())
-            ElectronUtil.MainWindow.Unmaximize();
-        else
-            ElectronUtil.MainWindow.Maximize();
+        try
+        {
+            if (await window.IsMaximizedAsync())
+                ElectronUtil.MainWindow.Unmaximize();
+            else
+                ElectronUtil.MainWindow.Maximize();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error maximizing window");
+        }
     }
 
     public async Task MinimizeMainWindowAsync()
     {
-        var window = ElectronUtil.MainWindow;
+        try
+        {
+            var window = ElectronUtil.MainWindow;
 
-        if (await window.IsMinimizedAsync())
-            ElectronUtil.MainWindow.Restore();
-        else
-            ElectronUtil.MainWindow.Minimize();
+            if (await window.IsMinimizedAsync())
+                ElectronUtil.MainWindow.Restore();
+            else
+                ElectronUtil.MainWindow.Minimize();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error minimizing window");
+        }
     }
 
     public async Task ToggleAlwaysOnTopMainWindowAsync()
     {
-        var window = ElectronUtil.MainWindow;
+        try
+        {
+            var window = ElectronUtil.MainWindow;
 
-        if (await window.IsAlwaysOnTopAsync())
-            ElectronUtil.MainWindow.SetAlwaysOnTop(false);
-        else
-            ElectronUtil.MainWindow.SetAlwaysOnTop(true);
+            if (await window.IsAlwaysOnTopAsync())
+                ElectronUtil.MainWindow.SetAlwaysOnTop(false);
+            else
+                ElectronUtil.MainWindow.SetAlwaysOnTop(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error toggling always on top");
+        }
     }
 
 
     public async Task OpenMainWindowAsync()
     {
         var display = await PrimaryDisplay();
-        var window = await CreateWindowAsync("main", false, new BrowserWindowOptions
+        var window = await _windowManager.CreateWindowAsync("main", true, new BrowserWindowOptions
         {
             Show = false,
             Height = display.Bounds.Height * 2 / 3,
             Width = display.Bounds.Width * 2 / 3,
             X = display.Bounds.X,
             Y = display.Bounds.Y,
-            AutoHideMenuBar = true,
-            TitleBarStyle = TitleBarStyle.hidden,
             Frame = false
         });
 
         window.Show();
         window.Maximize();
 
-        lock (_singleInstanceWindows)
+        if (!_isMenuInitialized)
         {
-            if (!_isMenuInitialized)
-            {
-                InitializeMenu();
-                _isMenuInitialized = true;
-            }
+            InitializeMenu();
+            _isMenuInitialized = true;
         }
     }
 
@@ -113,7 +134,7 @@ public class ElectronWindowService : IUiWindowService
     {
         const string windowName = "settings";
 
-        if (FocusExistingWindowIfOpen(windowName))
+        if (_windowManager.FocusExistingWindowIfOpen(windowName))
         {
             return;
         }
@@ -123,7 +144,7 @@ public class ElectronWindowService : IUiWindowService
         var queryParams = new List<(string, object?)>();
         if (tab != null) queryParams.Add(("tab", tab));
 
-        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
+        var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = "Settings",
             Height = display.Bounds.Height * 2 / 3,
@@ -141,7 +162,7 @@ public class ElectronWindowService : IUiWindowService
     {
         const string windowName = "script-config";
 
-        if (FocusExistingWindowIfOpen(windowName))
+        if (_windowManager.FocusExistingWindowIfOpen(windowName))
         {
             return;
         }
@@ -152,7 +173,7 @@ public class ElectronWindowService : IUiWindowService
         queryParams.Add(("script-id", script.Id));
         if (tab != null) queryParams.Add(("tab", tab));
 
-        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
+        var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = script.Name,
             Height = display.Bounds.Height * 2 / 3,
@@ -170,7 +191,7 @@ public class ElectronWindowService : IUiWindowService
     {
         const string windowName = "data-connection";
 
-        if (FocusExistingWindowIfOpen(windowName))
+        if (_windowManager.FocusExistingWindowIfOpen(windowName))
         {
             return;
         }
@@ -180,7 +201,7 @@ public class ElectronWindowService : IUiWindowService
         var queryParams = new List<(string, object?)>();
         if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
 
-        var window = await CreateWindowAsync(windowName, true, new BrowserWindowOptions
+        var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
             Height = display.Bounds.Height * 4 / 10,
@@ -196,48 +217,10 @@ public class ElectronWindowService : IUiWindowService
         window.Center();
     }
 
-    private async Task<BrowserWindow> CreateWindowAsync(
-        string windowName,
-        bool singleInstance,
-        BrowserWindowOptions options,
-        params (string key, object? value)[] queryParams)
+    public Task OpenDeveloperToolsAsync()
     {
-        var url = $"{_hostInfo.HostUrl}?win={windowName}";
-
-        if (queryParams.Any())
-        {
-            url += "&" + string.Join("&", queryParams.Select(p => $"{p.key}={p.value}"));
-        }
-
-        if (options.MinHeight == 0) options.MinHeight = 100;
-        if (options.MinWidth == 0) options.MinWidth = 100;
-
-        options.Center = true;
-
-        var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
-
-        _logger.LogDebug("Created window with name: {WindowName} and ID: {ID}", windowName, window.Id);
-
-        if (singleInstance)
-        {
-            _singleInstanceWindows.TryAdd(windowName, window);
-            window.OnClosed += () => _singleInstanceWindows.TryRemove(windowName, out _);
-        }
-
-        await window.WebContents.Session.ClearCacheAsync();
-
-        return window;
-    }
-
-    private bool FocusExistingWindowIfOpen(string windowName)
-    {
-        if (_singleInstanceWindows.TryGetValue(windowName, out var window))
-        {
-            window.Focus();
-            return true;
-        }
-
-        return false;
+        ElectronUtil.MainWindow.WebContents.OpenDevTools();
+        return Task.CompletedTask;
     }
 
     private void InitializeMenu()

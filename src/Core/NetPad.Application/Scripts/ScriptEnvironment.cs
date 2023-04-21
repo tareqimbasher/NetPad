@@ -196,7 +196,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             }
 
             await _outputAdapter.ResultsChannel.WriteAsync(
-                new RawScriptOutput($"Script stopped on {DateTime.Now}"));
+                new RawScriptOutput($"\n# Script stopped on: {DateTime.Now}"));
             await SetStatusAsync(ScriptStatus.Ready);
         }
         catch (Exception ex)

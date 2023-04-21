@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using NetPad.Electron.BackgroundServices;
 using NetPad.Electron.UiInterop;
 using NetPad.UiInterop;
+using WindowManager = NetPad.Electron.UiInterop.WindowManager;
 
 namespace NetPad.Electron;
 
@@ -24,6 +25,7 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
             ApplicationType = ApplicationType.Electron
         });
 
+        services.AddSingleton<WindowManager>();
         services.AddTransient<IUiWindowService, ElectronWindowService>();
         services.AddTransient<IUiDialogService, ElectronDialogService>();
         services.AddTransient<IIpcService, ElectronIpcService>();

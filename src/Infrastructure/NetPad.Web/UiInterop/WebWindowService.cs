@@ -15,22 +15,22 @@ public class WebWindowService : IUiWindowService
 
     public Task<WindowState?> GetWindowStateAsync()
     {
-        return Task.FromResult<WindowState?>(null);
+        throw new PlatformNotSupportedException();
     }
 
     public Task MaximizeMainWindowAsync()
     {
-        return Task.CompletedTask;
+        throw new PlatformNotSupportedException();
     }
 
     public Task MinimizeMainWindowAsync()
     {
-        return Task.CompletedTask;
+        throw new PlatformNotSupportedException();
     }
 
     public Task ToggleAlwaysOnTopMainWindowAsync()
     {
-        return Task.CompletedTask;
+        throw new PlatformNotSupportedException();
     }
 
     public Task OpenMainWindowAsync()
@@ -70,5 +70,10 @@ public class WebWindowService : IUiWindowService
         if (dataConnectionId != null) command.Metadata.Add("data-connection-id", dataConnectionId);
 
         await _ipcService.SendAsync(command);
+    }
+
+    public Task OpenDeveloperToolsAsync()
+    {
+        throw new PlatformNotSupportedException();
     }
 }
