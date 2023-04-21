@@ -158,7 +158,23 @@ export class Shortcut {
         if (this.altKey) combo.push("Alt");
         if (this.ctrlKey) combo.push("Ctrl");
         if (this.shiftKey) combo.push("Shift");
-        if (this.key) combo.push(this.key.replace("Key", ""));
+        if (this.key)
+            combo.push(
+                this.key
+                    .replace("Key", "")
+                    .replace("Digit", "")
+                    .replace("Semicolon", ";")
+                    .replace("Equal", "=")
+                    .replace("Comma", ",")
+                    .replace("Minus", "-")
+                    .replace("Period", ".")
+                    .replace("Slash", "/")
+                    .replace("Backquote", "`")
+                    .replace("BracketLeft", "[")
+                    .replace("Backslash", "\\")
+                    .replace("BracketRight", "]")
+                    .replace("Quote", "\"")
+            );
         if (this.keyExpression) combo.push("Custom Expression");
 
         return combo.join(" + ").trim();

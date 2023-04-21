@@ -9,29 +9,34 @@ import {
 } from "@application";
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 import {Workbench} from "./workbench";
+import {IContainer} from "aurelia";
 
 export class Window {
+    private workbench: Workbench
     public leftPaneHost: PaneHost;
     public rightPaneHost: PaneHost;
     public bottomPaneHost: PaneHost;
 
     constructor(
-        private readonly workbench: Workbench,
         @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
+        @IContainer private readonly container: IContainer,
         private readonly settings: Settings,
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly editorSetup: EditorSetup) {
     }
 
-    public async binding() {
+    public hydrating() {
         this.shortcutManager.initialize();
         this.registerKeyboardShortcuts();
-        this.editorSetup.setup();
+    }
 
+    public async binding() {
+        this.editorSetup.setup();
         await this.session.initialize();
         await this.dataConnectionStore.initialize();
+        this.workbench = this.container.get(Workbench);
     }
 
     public attached() {

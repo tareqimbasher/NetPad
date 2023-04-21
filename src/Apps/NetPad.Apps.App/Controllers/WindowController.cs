@@ -38,4 +38,10 @@ public class WindowController : Controller
     {
         await _uiWindowService.ToggleAlwaysOnTopMainWindowAsync();
     }
+
+    [HttpPatch("open-developer-tools")]
+    public async Task OpenDeveloperTools()
+    {
+        await _uiWindowService.OpenDeveloperToolsAsync();
+    }
 }

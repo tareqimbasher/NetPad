@@ -25,6 +25,8 @@ $spacer:                            0.5rem;
 $nav-link-padding-y:                0.25rem;
 $input-btn-focus-width:             0.1rem;
 $form-select-indicator-color:       silver;
+$dropdown-padding-y:                .3rem;
+
 $tooltip-font-size:                 $font-size-base;
 $tooltip-padding-y:                 $spacer * .5;
 $tooltip-padding-x:                 $spacer * 1;
@@ -120,8 +122,9 @@ textarea.form-control {
 }
 
 .dropdown-menu {
-    @include theme(background-color, formControlBackground);
+    @include theme(background-color, listBackground);
     @include theme(color, textColor);
+    @include theme(border-color, borderColor);
 
     .dropdown-item {
         @include theme(color, textColor);
@@ -129,5 +132,9 @@ textarea.form-control {
 
     .dropdown-item:hover {
         @include theme(background-color, hoverColor);
+    }
+
+    .dropdown-divider {
+        @include theme(border-color, borderColor);
     }
 }
