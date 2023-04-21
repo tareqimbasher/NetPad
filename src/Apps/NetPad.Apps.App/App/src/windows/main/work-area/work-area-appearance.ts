@@ -1,8 +1,14 @@
-import {ILogger, IObserverLocator, singleton} from "aurelia";
+import {DI, ILogger, IObserverLocator} from "aurelia";
 import {LocalStorageBacked} from "@common";
 
-@singleton()
-export class WorkAreaAppearance extends LocalStorageBacked {
+export const IWorkAreaAppearance = DI.createInterface<IWorkAreaAppearance>();
+
+export interface IWorkAreaAppearance extends LocalStorageBacked {
+    style: "minimal" | "bold";
+    size: "comfy" | "compact";
+}
+
+export class WorkAreaAppearance extends LocalStorageBacked implements IWorkAreaAppearance {
     public style: "minimal" | "bold" = "minimal";
     public size: "comfy" | "compact" = "comfy";
 

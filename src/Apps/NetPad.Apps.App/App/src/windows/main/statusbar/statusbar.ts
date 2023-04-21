@@ -13,16 +13,15 @@ import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
 import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
-import {ITextEditor} from "@application/editor/text-editor";
 import {IDialogService} from "@aurelia/dialog";
-import {TextEditorFocusedEvent} from "@application/editor/events";
+import {Workbench} from "../workbench";
 
 export class Statusbar {
     public appStatusMessage: IAppStatusMessage | null;
     public lastPersistantPriorityMessage: IAppStatusMessage | null;
-    public activeEditor?: ITextEditor;
 
-    constructor(@ISession private readonly session: ISession,
+    constructor(private readonly workbench: Workbench,
+                @ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
                 @IDialogService private readonly dialogService: IDialogService,
@@ -35,10 +34,6 @@ export class Statusbar {
 
     public binding() {
         this.listenToAppStatusMessages();
-        this.eventBus.subscribe(TextEditorFocusedEvent, msg => {
-            // TODO need a way to set active editor to null when no active editors
-            this.activeEditor = msg.editor;
-        });
     }
 
     private async showAppDepsCheckDialog() {
@@ -47,11 +42,6 @@ export class Statusbar {
 
     private async showQuickTipsDialog() {
         await DialogBase.toggle(this.dialogService, QuickTipsDialog);
-    }
-
-    private goToEditorCursorPosition() {
-        this.activeEditor?.monaco.focus();
-        this.activeEditor?.monaco.trigger("", "editor.action.gotoLine", null);
     }
 
     private listenToAppStatusMessages() {

@@ -15,8 +15,14 @@ import {
     ShortcutManager,
 } from "@application";
 import {Window} from "./window";
-import {TextEditor} from "@application/editor/text-editor";
 import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
+import {Workbench} from "./workbench";
+import {IStatusbarService, StatusbarService} from "./statusbar/statusbar-service";
+import {IMainMenuService, MainMenuService} from "./titlebar/main-menu/main-menu-service";
+import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-appearance";
+import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
+import {ITextEditor, TextEditor} from "@application/editor/text-editor";
+import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -26,14 +32,20 @@ export class Bootstrapper implements IWindowBootstrapper {
 
     public registerServices(app: Aurelia): void {
         app.register(
-            Registration.singleton(IPaneManager, PaneManager),
-            Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IScriptService, ScriptService),
-            Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
+            Registration.singleton(ITextEditorService, TextEditorService),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
+            Registration.singleton(IWorkAreaService, WorkAreaService),
+            Registration.singleton(IMainMenuService, MainMenuService),
+            Registration.singleton(IStatusbarService, StatusbarService),
+            Registration.singleton(IWorkAreaAppearance, WorkAreaAppearance),
+            Registration.singleton(Workbench, Workbench),
+            Registration.transient(ITextEditor, TextEditor),
+            Registration.singleton(IPaneManager, PaneManager),
+            Registration.singleton(IShortcutManager, ShortcutManager),
+            Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
             PaneHost,
-            TextEditor,
             DataConnectionName,
             AppTask.activated(IContainer, async container => {
                 container.get(IAppService).notifyClientAppIsReady();

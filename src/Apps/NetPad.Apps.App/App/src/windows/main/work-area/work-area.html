@@ -1,11 +1,11 @@
-<template class="${appearance.size} ${appearance.style}">
+<template class="${workbench.workAreaService.appearance.size} ${workbench.workAreaService.appearance.style}">
     <import from="./tab-bar/tab-bar"></import>
 
-    <div repeat.for="host of viewerHosts"
+    <div repeat.for="host of workbench.workAreaService.viewerHosts"
          if.bind="host.viewables.size > 0"
-         class="viewer-host ${host === viewerHosts.active ? 'active' : ''}"
+         class="viewer-host ${host === workbench.workAreaService.viewerHosts.active ? 'active' : ''}"
          tabindex="${$index}"
-         click.trigger="viewerHosts.activate(host)">
+         click.trigger="workbench.workAreaService.viewerHosts.activate(host)">
 
         <div class="top-bar">
             <tab-bar viewer-host.bind="host"
@@ -20,15 +20,15 @@
                     <li><h6 class="dropdown-header">Style</h6></li>
                     <li>
                         <button class="dropdown-item"
-                                click.trigger="appearance.style = 'minimal'">
-                            <i class="fa fa-sm fa-check me-3 ${appearance.style === 'minimal' ? '' : 'invisible'}"></i>
+                                click.trigger="workbench.workAreaService.appearance.style = 'minimal'">
+                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.style === 'minimal' ? '' : 'invisible'}"></i>
                             Minimal
                         </button>
                     </li>
                     <li>
                         <button class="dropdown-item"
-                                click.trigger="appearance.style = 'bold'">
-                            <i class="fa fa-sm fa-check me-3 ${appearance.style === 'bold' ? '' : 'invisible'}"></i>
+                                click.trigger="workbench.workAreaService.appearance.style = 'bold'">
+                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.style === 'bold' ? '' : 'invisible'}"></i>
                             Bold
                         </button>
                     </li>
@@ -38,15 +38,15 @@
                     <li><h6 class="dropdown-header">Density</h6></li>
                     <li>
                         <button class="dropdown-item"
-                                click.trigger="appearance.size = 'comfy'">
-                            <i class="fa fa-sm fa-check me-3 ${appearance.size === 'comfy' ? '' : 'invisible'}"></i>
+                                click.trigger="workbench.workAreaService.appearance.size = 'comfy'">
+                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.size === 'comfy' ? '' : 'invisible'}"></i>
                             Comfy
                         </button>
                     </li>
                     <li>
                         <button class="dropdown-item"
-                                click.trigger="appearance.size = 'compact'">
-                            <i class="fa fa-sm fa-check me-3 ${appearance.size === 'compact' ? '' : 'invisible'}"></i>
+                                click.trigger="workbench.workAreaService.appearance.size = 'compact'">
+                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.size === 'compact' ? '' : 'invisible'}"></i>
                             Compact
                         </button>
                     </li>

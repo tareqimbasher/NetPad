@@ -35,15 +35,26 @@ statusbar {
         > * {
             padding-left: 0.5rem;
             padding-right: 0.5rem;
-            cursor: pointer;
-
-            &:hover {
-                @include theme(background-color, hoverColor);
-            }
         }
     }
 
     .active-app-status-message {
         max-width: 35rem;
+    }
+
+    .statusbar-item {
+        > i {
+            margin-right: 0.25rem;
+        }
+    }
+
+    .clickable,
+    .action-icon {
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+            @include theme(background-color, hoverColor);
+        }
     }
 }

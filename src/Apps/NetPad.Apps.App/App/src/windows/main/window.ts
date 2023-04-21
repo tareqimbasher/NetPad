@@ -8,6 +8,7 @@ import {
     PaneHostOrientation,
 } from "@application";
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
+import {Workbench} from "./workbench";
 
 export class Window {
     public leftPaneHost: PaneHost;
@@ -15,10 +16,11 @@ export class Window {
     public bottomPaneHost: PaneHost;
 
     constructor(
-        private readonly settings: Settings,
+        private readonly workbench: Workbench,
         @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
+        private readonly settings: Settings,
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly editorSetup: EditorSetup) {
     }

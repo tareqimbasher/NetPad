@@ -5,7 +5,7 @@ export interface IDisposable {
 export abstract class WithDisposables implements IDisposable {
     private disposables: (() => void)[] = [];
 
-    protected addDisposable(disposable: IDisposable | (() => void)) {
+    public addDisposable(disposable: IDisposable | (() => void)) {
         if (disposable instanceof Function) {
             this.disposables.push(disposable);
         } else {

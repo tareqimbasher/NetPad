@@ -4,34 +4,28 @@ import {IAppService, IEventBus, IScriptService, ISession, RunOptionsDto, ScriptE
 import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
-import {ViewerHostCollection} from "./viewers/viewer-host-collection";
-import {WorkAreaAppearance} from "./work-area-appearance";
 import {
     IViewableAppScriptDocumentCommands,
     ViewableAppScriptDocument
 } from "./viewers/text-document-viewer/viewable-text-document";
 import {RunScriptEvent} from "@application";
+import {Workbench} from "../workbench";
 
 export class WorkArea extends ViewModelBase {
-    public viewerHosts = new ViewerHostCollection();
-
     constructor(
+        private readonly workbench: Workbench,
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IScriptService private readonly scriptService: IScriptService,
         @IEventBus private readonly eventBus: IEventBus,
         @IContainer container: IContainer,
         @ILogger logger: ILogger,
-        private readonly appearance: WorkAreaAppearance,
     ) {
         super(logger);
 
         const viewHostFactory = container.getFactory(ViewerHost);
-        this.viewerHosts.push(viewHostFactory.construct(container));
-        //this.viewerHosts.push(viewHostFactory.construct(container));
-
-        this.appearance.load();
-        this.addDisposable(this.appearance);
+        this.workbench.workAreaService.viewerHosts.push(viewHostFactory.construct(container));
+        //this.workAreaService.viewerHosts.push(viewHostFactory.construct(container));
     }
 
     public override async attaching() {
@@ -39,29 +33,29 @@ export class WorkArea extends ViewModelBase {
 
         const scriptDocuments = this.session.environments.map(env => this.createViewableAppScriptDocument(env));
 
-        if (!this.viewerHosts.active) {
-            await this.viewerHosts.activate(this.viewerHosts[0]);
+        if (!this.workbench.workAreaService.viewerHosts.active) {
+            await this.workbench.workAreaService.viewerHosts.activate(this.workbench.workAreaService.viewerHosts[0]);
         }
 
-        this.viewerHosts[0].addViewables(...scriptDocuments);
+        this.workbench.workAreaService.viewerHosts[0].addViewables(...scriptDocuments);
 
         const activeScript = this.session.active && scriptDocuments.find(s => s.environment === this.session.active);
         if (activeScript) {
-            this.viewerHosts.activateViewable(activeScript);
+            this.workbench.workAreaService.viewerHosts.activateViewable(activeScript);
         }
 
-        for (const viewerHost of this.viewerHosts.filter(x => !x.activeViewable && x.viewables.size > 0)) {
+        for (const viewerHost of this.workbench.workAreaService.viewerHosts.filter(x => !x.activeViewable && x.viewables.size > 0)) {
             const [viewable] = viewerHost.viewables;
             viewerHost.activate(viewable);
         }
 
         this.addDisposable(
             this.eventBus.subscribe(RunScriptEvent, async msg => {
-                const scriptId = msg.scriptId ?? this.viewerHosts.active?.activeViewable?.id;
+                const scriptId = msg.scriptId ?? this.workbench.workAreaService.viewerHosts.active?.activeViewable?.id;
 
                 if (!scriptId) return;
 
-                const result = this.viewerHosts.findViewable(scriptId);
+                const result = this.workbench.workAreaService.viewerHosts.findViewable(scriptId);
                 if (result?.viewable instanceof ViewableAppScriptDocument)
                     await result.viewable.run();
             })
@@ -74,14 +68,14 @@ export class WorkArea extends ViewModelBase {
 
         // Additions
         for (const environment of environments) {
-            if (this.viewerHosts.some(vh => vh.find(environment.script.id)))
+            if (this.workbench.workAreaService.viewerHosts.some(vh => vh.find(environment.script.id)))
                 continue;
 
-            this.viewerHosts[0].addViewables(this.createViewableAppScriptDocument(environment));
+            this.workbench.workAreaService.viewerHosts[0].addViewables(this.createViewableAppScriptDocument(environment));
         }
 
         // Removals
-        for (const viewerHost of this.viewerHosts) {
+        for (const viewerHost of this.workbench.workAreaService.viewerHosts) {
             const removed: ViewableObject[] = [];
 
             for (const viewable of viewerHost.viewables) {
@@ -102,9 +96,9 @@ export class WorkArea extends ViewModelBase {
 
     @watch<WorkArea>(vm => vm.session.active)
     private activeEnvironmentChanged(newActive: ScriptEnvironment) {
-        const result = this.viewerHosts.findViewable(newActive.script.id);
+        const result = this.workbench.workAreaService.viewerHosts.findViewable(newActive.script.id);
         if (result) {
-            this.viewerHosts.activateViewable(result.viewable);
+            this.workbench.workAreaService.viewerHosts.activateViewable(result.viewable);
         }
     }
 
@@ -118,7 +112,7 @@ export class WorkArea extends ViewModelBase {
                 viewerHost.addViewables(viewable)
             },
             close: async (viewerHost) => {
-                const openInOtherViewerHosts = this.viewerHosts.find(x => x !== viewerHost && x.viewables.has(viewable));
+                const openInOtherViewerHosts = this.workbench.workAreaService.viewerHosts.find(x => x !== viewerHost && x.viewables.has(viewable));
 
                 if (openInOtherViewerHosts) {
                     viewerHost.removeViewables(viewable);

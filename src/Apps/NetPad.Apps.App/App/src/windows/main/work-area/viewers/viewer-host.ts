@@ -1,8 +1,9 @@
-﻿import {ILogger} from "aurelia";
+﻿import {IContainer, ILogger} from "aurelia";
 import {ViewableObject, ViewableObjectType} from "./viewable-object";
 import {Viewer} from "./viewer";
 import {IEventBus, IScriptService} from "@domain";
 import {Util} from "@common";
+import {Workbench} from "../../workbench";
 
 export class ViewerHost {
     public readonly id: string;
@@ -14,7 +15,7 @@ export class ViewerHost {
     private _activeViewer: Viewer;
 
     constructor(
-        @IScriptService private readonly scriptService: IScriptService,
+        @IContainer private readonly container: IContainer,
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger
     ) {
@@ -100,7 +101,12 @@ export class ViewerHost {
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
                 const TextDocumentViewer = require("./text-document-viewer/text-document-viewer").TextDocumentViewer;
 
-                viewer = new TextDocumentViewer(this, this.scriptService, this.eventBus, this.logger);
+                viewer = new TextDocumentViewer(
+                    this,
+                    this.container.get(Workbench),
+                    this.container.get(IScriptService),
+                    this.eventBus,
+                    this.logger);
 
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this._viewers.set(ViewableObjectType.Text, viewer!);

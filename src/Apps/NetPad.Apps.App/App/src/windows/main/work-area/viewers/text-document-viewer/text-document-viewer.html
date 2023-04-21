@@ -9,5 +9,7 @@
         PRODUCTION
     </div>
 
-    <text-editor view-model.ref="editor"></text-editor>
+    <au-compose component.bind="editor"
+                ref="editorHost"
+                class="flex-grow-height-restricted min-w-0"></au-compose>
 </div>

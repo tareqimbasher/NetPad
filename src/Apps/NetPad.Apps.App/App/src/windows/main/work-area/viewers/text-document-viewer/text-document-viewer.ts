@@ -5,17 +5,31 @@ import {ITextEditor} from "@application/editor/text-editor";
 import {ILogger} from "aurelia";
 import {ViewableTextDocument} from "./viewable-text-document";
 import {ViewerHost} from "../viewer-host";
+import {IStatusbarItem} from "../../../statusbar/istatusbar-item";
+import {Workbench} from "../../../workbench";
 
 export class TextDocumentViewer extends Viewer {
     public editor: ITextEditor;
+    public editorHost: HTMLElement;
 
     constructor(
         host: ViewerHost,
+        private readonly workbench: Workbench,
         @IScriptService private readonly scriptService: IScriptService,
         @IEventBus private readonly eventBus: IEventBus,
         logger: ILogger
     ) {
         super(host, logger);
+    }
+
+    public attached() {
+        this.editor = this.workbench.textEditorService.create(this.editorHost);
+
+        if (this.viewable && (!this.editor.active || this.editor.active.id !== this.viewable.id)) {
+            this.open(this.viewable as ViewableTextDocument);
+        }
+
+        this.workbench.statusbarService.addItem(new TextEditorCursorPositionStatusbarItem(this.editor));
     }
 
     public override canOpen(viewableDocument: ViewableObject): boolean {
@@ -47,10 +61,20 @@ export class TextDocumentViewer extends Viewer {
 
         this.editor.close(viewableDocument.textDocument.id);
     }
+}
 
-    public attached() {
-        if (this.viewable && (!this.editor.active || this.editor.active.id !== this.viewable.id)) {
-            this.open(this.viewable as ViewableTextDocument);
-        }
+class TextEditorCursorPositionStatusbarItem implements IStatusbarItem {
+    constructor(private readonly editor: ITextEditor) {
+    }
+
+    hoverText = "Go to Line/Column";
+
+    get text(): string {
+        return `Ln ${this.editor.position?.lineNumber}, Col ${this.editor.position?.column}`;
+    }
+
+    async click() {
+        this.editor.monaco.focus();
+        this.editor.monaco.trigger(null, "editor.action.gotoLine", null);
     }
 }

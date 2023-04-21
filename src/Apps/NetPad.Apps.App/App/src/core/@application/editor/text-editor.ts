@@ -1,46 +1,65 @@
-import {ILogger} from "aurelia";
+import {DI, ILogger} from "aurelia";
+import {IHydratedController, watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
+import {WithDisposables} from "@common";
 import {IEventBus, Settings} from "@domain";
-import {EditorSetup, ViewModelBase} from "@application";
-import {IDisposable} from "@common";
-import {watch} from "@aurelia/runtime-html";
-import {TextEditorFocusedEvent} from "@application/editor/events";
-import {TextDocument} from "@application/editor/text-document";
+import {ViewModelBase} from "@application";
+import {TextEditorFocusedEvent} from "./events";
+import {TextDocument} from "./text-document";
+import {EditorSetup} from "./editor-setup";
 
-export interface ITextEditor extends IDisposable {
+export const ITextEditor = DI.createInterface<ITextEditor>();
+
+export interface ITextEditor extends WithDisposables {
     monaco: monaco.editor.IStandaloneCodeEditor;
     position?: monaco.Position | null;
     active?: TextDocument | null;
 
-    open(document: TextDocument);
-
-    close(documentId: string);
-
-    focus();
+    bind(host: HTMLElement): void;
+    open(document: TextDocument): void;
+    close(documentId: string): void;
+    focus(): void;
 }
 
 export class TextEditor extends ViewModelBase implements ITextEditor {
     public monaco: monaco.editor.IStandaloneCodeEditor;
     public position?: monaco.Position | null;
     public active?: TextDocument | null;
+    private element: HTMLElement;
 
     private viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>();
 
     constructor(
-        readonly element: Element,
         readonly settings: Settings,
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
     }
 
-    public async attached(): Promise<void> {
-        this.ensureEditor();
+    binding(initiator: IHydratedController) {
+        if (!initiator.host) {
+            this.logger.error("Host is null or undefined");
+            throw new Error("Host is null or undefined");
+        }
+
+        this.element = initiator.host;
+    }
+
+    public bind(host: HTMLElement) {
+        if (this.element)
+            throw new Error("Host HTMLElement is already set");
+
+        if (!host)
+            throw new Error("Host HTMLElement is null or undefined");
+
+        this.element = host;
+
+        this.ensureEditorInitialized();
         this.addDisposable(() => this.active = null);
     }
 
     public open(document: TextDocument) {
-        this.ensureEditor();
+        this.ensureEditorInitialized();
 
         const currentOpen = this.active;
         if (currentOpen === document) {
@@ -60,7 +79,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
     }
 
     public close(documentId: string) {
-        this.ensureEditor();
+        this.ensureEditorInitialized();
 
         this.viewStates.delete(documentId);
         if (this.active && this.active.id === documentId) {
@@ -73,7 +92,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         setTimeout(() => this.monaco.focus(), 50);
     }
 
-    private ensureEditor() {
+    private ensureEditorInitialized() {
         if (this.monaco) return;
         this.initializeEditor();
     }
