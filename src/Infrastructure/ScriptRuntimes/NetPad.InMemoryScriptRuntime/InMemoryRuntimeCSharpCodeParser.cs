@@ -16,9 +16,13 @@ public class InMemoryRuntimeCSharpCodeParser : ICodeParser
         "NetPad.IO"
     };
 
-    public CodeParsingResult Parse(Script script, CodeParsingOptions? options = null)
+    public CodeParsingResult Parse(
+        string code,
+        ScriptKind scriptKind,
+        IEnumerable<string>? namespaces = null,
+        CodeParsingOptions? options = null)
     {
-        var userProgram = GetUserProgram(options?.IncludedCode ?? script.Code, script.Config.Kind);
+        var userProgram = GetUserProgram(code, scriptKind);
 
         var bootstrapperProgramTemplate = GetBootstrapperProgramTemplate();
         var bootstrapperProgram = string.Format(
@@ -29,7 +33,7 @@ public class InMemoryRuntimeCSharpCodeParser : ICodeParser
         var bootstrapperProgramSourceCode = new SourceCode(bootstrapperProgram, _usingsNeededByBaseProgram);
 
         return new CodeParsingResult(
-            new SourceCode(userProgram, script.Config.Namespaces),
+            new SourceCode(userProgram, namespaces),
             bootstrapperProgramSourceCode,
             options?.AdditionalCode,
             new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));

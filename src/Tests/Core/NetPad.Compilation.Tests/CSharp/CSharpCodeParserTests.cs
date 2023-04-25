@@ -29,7 +29,7 @@ public class CSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new CSharpCodeParser();
 
-        var parsingResult = parser.Parse(script);
+        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
 
         Assert.Equal(scriptNamespaces, parsingResult.UserProgram.Usings.Select(u => u.Value));
     }
@@ -47,7 +47,7 @@ public class CSharpCodeParserTests
         var script = GetScript();
         var parser = new CSharpCodeParser();
 
-        var parsingResult = parser.Parse(script, parseOptions);
+        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
 
         Assert.Equal(additionalNamespaces, parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value));
     }
@@ -72,7 +72,7 @@ public class CSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new CSharpCodeParser();
 
-        var parsingResult = parser.Parse(script, parseOptions);
+        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
 
         Assert.Equal(
             scriptNamespaces.Union(additionalNamespaces),
@@ -84,8 +84,9 @@ public class CSharpCodeParserTests
     public void BaseProgramTemplate_Has_Correct_Class_Declaration()
     {
         var parser = new CSharpCodeParser();
+        var script = GetScript();
 
-        var parsingResult = parser.Parse(GetScript());
+        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
 
         Assert.Contains($"class {CSharpCodeParser.BootstrapperClassName}", parsingResult.BootstrapperProgram.Code.Value!);
     }
@@ -94,8 +95,9 @@ public class CSharpCodeParserTests
     public void BaseProgramTemplate_Has_Correct_SetIO_Method()
     {
         var parser = new CSharpCodeParser();
+        var script = GetScript();
 
-        var parsingResult = parser.Parse(GetScript());
+        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
 
         Assert.Contains(CSharpCodeParser.BootstrapperSetIOMethodName, parsingResult.BootstrapperProgram.Code.Value!);
     }

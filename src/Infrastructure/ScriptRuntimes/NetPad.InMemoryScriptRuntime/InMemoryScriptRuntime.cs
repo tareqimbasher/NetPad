@@ -142,11 +142,14 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
             CodeParsingResult parsingResult)>
         CompileAndGetReferencesAsync(RunOptions runOptions)
     {
-        var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
-        {
-            IncludedCode = runOptions.SpecificCodeToRun,
-            AdditionalCode = runOptions.AdditionalCode
-        });
+        var parsingResult = _codeParser.Parse(
+            runOptions.SpecificCodeToRun ?? _script.Code,
+            _script.Config.Kind,
+            _script.Config.Namespaces,
+            new CodeParsingOptions
+            {
+                AdditionalCode = runOptions.AdditionalCode
+            });
 
         var referenceAssemblyImages = new HashSet<AssemblyImage>();
         foreach (var additionalReference in runOptions.AdditionalReferences)

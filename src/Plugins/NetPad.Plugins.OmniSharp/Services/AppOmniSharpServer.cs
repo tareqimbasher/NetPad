@@ -255,7 +255,8 @@ public class AppOmniSharpServer
         {
             if (ev.Script.Id != _environment.Script.Id) return;
 
-            var parsingResult = _codeParser.Parse(_environment.Script);
+            var script = _environment.Script;
+            var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
             await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         });
 
@@ -314,7 +315,8 @@ public class AppOmniSharpServer
 
     public async Task UpdateOmniSharpCodeBufferAsync()
     {
-        var parsingResult = _codeParser.Parse(_environment.Script);
+        var script = _environment.Script;
+        var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
     }

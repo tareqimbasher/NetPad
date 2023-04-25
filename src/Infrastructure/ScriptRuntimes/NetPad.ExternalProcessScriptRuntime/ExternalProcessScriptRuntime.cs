@@ -264,17 +264,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                                                      $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.Init(); }} }}"));
 
         /*
-         * Parse script code into the code that will be compiled
-         */
-        var parsingResult = _codeParser.Parse(_script, new CodeParsingOptions
-        {
-            IncludedCode = runOptions.SpecificCodeToRun,
-            AdditionalCode = runOptions.AdditionalCode
-        });
-
-        var fullProgram = parsingResult.GetFullProgram();
-
-        /*
          * Gather assembly references
          */
         // Images
@@ -301,19 +290,18 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
 
         /*
-         * Compile
+         * Parse Code & Compile
          */
-        var compilationResult = _codeCompiler.Compile(new CompilationInput(
-                fullProgram,
-                referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
-                referenceAssemblyPaths)
-            .WithOutputAssemblyNameTag(_script.Name));
+        var compilationResult = ParseAndCompile(
+            runOptions.SpecificCodeToRun ?? _script.Code,
+            referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
+            referenceAssemblyPaths,
+            runOptions.AdditionalCode);
 
         if (!compilationResult.Success)
         {
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(compilationResult.Diagnostics
-                .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .JoinToString("\n") + "\n"));
+            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(
+                compilationResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).JoinToString("\n") + "\n"));
 
             return null;
         }
@@ -326,7 +314,75 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         );
     }
 
-    private string? GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
+    private CompilationResult ParseAndCompile(
+        string code,
+        HashSet<byte[]> referenceAssemblyImages,
+        HashSet<string> referenceAssemblyPaths,
+        SourceCodeCollection additionalCode)
+    {
+        CompilationResult parseAndCompile(string targetCode)
+        {
+            var parsingResult = _codeParser.Parse(
+                targetCode,
+                _script.Config.Kind,
+                _script.Config.Namespaces,
+                new CodeParsingOptions
+                {
+                    AdditionalCode = additionalCode
+                });
+
+            var fullProgram = parsingResult.GetFullProgram();
+
+            return _codeCompiler.Compile(new CompilationInput(
+                    fullProgram,
+                    referenceAssemblyImages,
+                    referenceAssemblyPaths)
+                .WithOutputAssemblyNameTag(_script.Name));
+        }
+
+        // We want to try code as-is, but also try additional permutations of it if it fails to compile
+        var permutations = new List<Func<(bool shouldAttempt, string code)>>
+        {
+            () => (true, code),
+            () =>
+            {
+                var trimmedCode = code.Trim();
+                if (!trimmedCode.EndsWith(";") && !trimmedCode.EndsWith(".Dump()")) return (true, $"({trimmedCode}).Dump();");
+                return (false, code);
+            },
+            () =>
+            {
+                var trimmedCode = code.Trim();
+                return !trimmedCode.EndsWith(";") ? (true, trimmedCode + ";") : (false, code);
+            }
+        };
+
+        CompilationResult? firstCompilationResult = null;
+        CompilationResult? compilationResult;
+
+        for (var ixPerm = 0; ixPerm < permutations.Count; ixPerm++)
+        {
+            var permutationFunc = permutations[ixPerm];
+            var permutation = permutationFunc();
+            if (!permutation.shouldAttempt) continue;
+
+            compilationResult = parseAndCompile(permutation.code);
+
+            if (ixPerm == 0) firstCompilationResult = compilationResult;
+
+            if (compilationResult.Success)
+            {
+                return compilationResult;
+            }
+        }
+
+        // If we got here compilation failed
+        compilationResult = firstCompilationResult ?? throw new Exception($"Expected {nameof(firstCompilationResult)} to have a value");
+
+        return compilationResult;
+    }
+
+    private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
     {
         var latestDotNetSdkVersion = DotNetInfo.GetDotNetSdkVersionsOrThrow()
             .OrderBy(v => v.Version)
