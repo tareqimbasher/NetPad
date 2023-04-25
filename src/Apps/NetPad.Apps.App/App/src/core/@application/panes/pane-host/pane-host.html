@@ -1,4 +1,5 @@
 <template class="${orientation.toLowerCase()} overflow-hidden"
+          show.bind="panes.size"
           data-id.bind="id">
     <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}">
         <div repeat.for="pane of panes"
@@ -21,13 +22,13 @@
 
             <div class="justify-content-end ms-auto">
                 <span class="me-2" if.bind="active.actions.length">
-                    <i class="actions-dropdown-icon action-icon ps-3 pe-3"
+                    <i class="settings-icon action-icon pe-3"
                        title="Actions"
                        data-bs-toggle="dropdown"></i>
                     <ul class="dropdown-menu">
                         <li repeat.for="action of active.actions"
-                            title.bind="action.title"
-                            click.trigger="action.execute()">
+                            title.bind="action.hoverText"
+                            click.trigger="action.click()">
                             <button class="dropdown-item" innerHTML.bind="action.text"></button>
                         </li>
                     </ul>

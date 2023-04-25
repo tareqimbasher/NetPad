@@ -33,7 +33,7 @@ export class OutputView {
             []
         );
 
-        this.setToolbarActions((this.toolbar.options.tabs[0].view as { toolbarActions }).toolbarActions);
+        this.setToolbarActions(this.toolbar.options.tabs[0].view.toolbarActions);
     }
 
     private setToolbarActions(actions: IToolbarAction[]) {
@@ -41,9 +41,9 @@ export class OutputView {
         this.toolbar.options.actions.push(...actions);
     }
 
-    private initView<TView extends Constructable<ResultsView | SqlView>>(type: TView): TView {
+    private initView<TView extends Constructable<ResultsView | SqlView>>(type: TView): InstanceType<TView> {
         const view = this.container.get(type);
         view.environment = this.environment;
-        return view as TView;
+        return view as InstanceType<TView>;
     }
 }

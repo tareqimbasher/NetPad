@@ -23,6 +23,7 @@ import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-app
 import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
+import {AppWindows} from "@application/windows/app-windows";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -32,6 +33,7 @@ export class Bootstrapper implements IWindowBootstrapper {
 
     public registerServices(app: Aurelia): void {
         app.register(
+            Registration.singleton(AppWindows, AppWindows),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(ITextEditorService, TextEditorService),
             Registration.singleton(IDataConnectionService, DataConnectionService),

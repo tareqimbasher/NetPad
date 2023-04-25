@@ -72,7 +72,16 @@ public class WebWindowService : IUiWindowService
         await _ipcService.SendAsync(command);
     }
 
-    public Task OpenDeveloperToolsAsync()
+    public async Task OpenOutputWindowAsync()
+    {
+        var command = new OpenWindowCommand("output");
+        command.Options.Height = 2 / 3.0;
+        command.Options.Width = 4 / 5.0;
+
+        await _ipcService.SendAsync(command);
+    }
+
+    public Task OpenDeveloperToolsAsync(Guid windowId)
     {
         throw new PlatformNotSupportedException();
     }

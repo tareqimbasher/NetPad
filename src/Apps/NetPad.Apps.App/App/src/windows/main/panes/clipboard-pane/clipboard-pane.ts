@@ -11,7 +11,7 @@ export class ClipboardPane extends Pane {
         super("Clipboard", "clipboard-icon");
         this.history = new Set<string>();
         this._actions.push(new PaneAction(
-            "<i class=\"clear-output-icon\"></i> Clear all",
+            '<i class="clear-output-icon me-3"></i> Clear all',
             "Remove all entries",
             () => this.history.clear())
         );

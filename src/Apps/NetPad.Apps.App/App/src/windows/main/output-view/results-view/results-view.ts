@@ -4,12 +4,10 @@ import {ResultsPaneViewSettings} from "./results-view-settings";
 import {HtmlScriptOutput, IEventBus, ISession, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
 import {ResultControls} from "./result-controls";
 import {OutputViewBase} from "../output-view-base";
-import {IToolbarAction} from "../output-view-toolbar";
 
 export class ResultsView extends OutputViewBase {
     public resultsViewSettings: ResultsPaneViewSettings;
     private resultControls: ResultControls;
-    public toolbarActions: IToolbarAction[];
 
     constructor(private readonly settings: Settings,
                 @ISession private readonly session: ISession,

@@ -1,18 +1,28 @@
-﻿import {Pane} from "@application";
-import {ISession, Settings} from "@domain";
+﻿import {Pane, PaneAction} from "@application";
+import {ISession, IWindowService, Settings} from "@domain";
 import {watch} from "@aurelia/runtime-html";
 import {IContainer, PLATFORM} from "aurelia";
 import {OutputView} from "../../output-view/output-view";
+import {AppWindows} from "@application/windows/app-windows";
 
 export class OutputPane extends Pane {
     public toolbar: unknown | undefined;
     private _outputViews = new Map<string, OutputView>();
 
     constructor(@ISession public readonly session: ISession,
+                @IWindowService private readonly windowService: IWindowService,
                 @IContainer private readonly container: IContainer,
+                private readonly appWindows: AppWindows,
                 private readonly settings: Settings) {
         super("Output", "run-icon");
-        this.updateOutputViews();
+        this._actions.push(new PaneAction(
+            '<i class="pop-out-icon me-3"></i> Pop out',
+            "Pop out into a new window",
+            async () => {
+                this.hide();
+                await this.windowService.openOutputWindow();
+            }
+        ))
     }
 
     public get outputViews() {
@@ -20,7 +30,27 @@ export class OutputPane extends Pane {
     }
 
     public attached() {
+        this.updateOutputViews();
         PLATFORM.queueMicrotask(() => this.activateIfApplicable());
+
+        const bc = new BroadcastChannel("output");
+        bc.onmessage = (ev) => {
+            if (ev.data !== "send-outputs") return;
+
+            const outputs = this.outputViews.map(ov => {
+                return {
+                    scriptId: ov.environment.script.id,
+                    output: ov.toolbar.options.tabs.map(t => {
+                        return {
+                            name: t.view.constructor.name,
+                            html: t.view.getOutputHtml()
+                        };
+                    })
+                };
+            });
+
+            bc.postMessage(outputs);
+        };
     }
 
     @watch<OutputPane>(vm => vm.session.environments.length)
@@ -58,8 +88,22 @@ export class OutputPane extends Pane {
 
     @watch<OutputPane>(vm => vm.session.active?.status)
     private activateIfApplicable() {
-        if (this.settings.results.openOnRun && this.session.active?.status === "Running" && this.host) {
+        if (this.appWindows.items.find(x => x.name === "output")) return;
+
+        if (this.settings.results.openOnRun && this.session.active?.status === "Running") {
             this.activate();
+        }
+    }
+
+    @watch<OutputPane>(vm => vm.appWindows.items.map(x => x.name))
+    private activateIfPopoutWindowClosed(newValue, oldValue) {
+        const existedInOld = oldValue.indexOf("output") >= 0;
+        const existsInNew = newValue.indexOf("output") >= 0;
+
+        if (existedInOld && !existsInNew) {
+            this.activate();
+        } else if (existsInNew) {
+            this.hide();
         }
     }
 }

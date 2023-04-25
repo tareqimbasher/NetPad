@@ -55,12 +55,12 @@ const builder = Aurelia.register(
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
     LogConfig.register({
         colorOptions: ColorOptions.colors,
-        level: Env.Environment === "PRD" ? LogLevel.info : LogLevel.debug,
+        level: Env.isProduction ? LogLevel.info : LogLevel.debug,
         sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
         rules: [
             {
                 loggerRegex: new RegExp(/AppLifeCycle/),
-                logLevel: LogLevel.warn
+                logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
             },
             {
                 loggerRegex: new RegExp(/SignalRIpcGateway/),
@@ -140,8 +140,8 @@ const entryPoint = appTasks.configureAndGetAppEntryPoint(builder);
 
 const app = builder.app(entryPoint);
 
-logger.debug("Starting app...");
-
 await app.start();
+
+window.addEventListener("beforeunload", (e) => app.stop(true));
 
 logger.debug("App started");

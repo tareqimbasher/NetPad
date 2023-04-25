@@ -1,6 +1,7 @@
 import * as appTasks from "./main.tasks";
 import {IContainer, ILogger} from "aurelia";
 import {IIpcGateway} from "@domain";
+import {IAppLifecycleEvent} from "@application/windows/app-windows";
 
 /**
  * Actions that run at specific points in the app's lifecycle
@@ -10,7 +11,7 @@ export class AppLifeCycle {
     }
 
     public async creating(container: IContainer): Promise<void> {
-        this.logger.debug("App being created...");
+        this.logger.debug("App being created with options:", container.get(URLSearchParams).toString());
 
         await container.get(IIpcGateway).start();
     }
@@ -32,6 +33,13 @@ export class AppLifeCycle {
 
     public async activated(container: IContainer): Promise<void> {
         this.logger.debug("App activated");
+
+        const bc = new BroadcastChannel("windows");
+        bc.postMessage(<IAppLifecycleEvent>{
+            type: "app-activated",
+            appName: container.get(URLSearchParams).get("win")
+        });
+        bc.close();
     }
 
     public async deactivating(container: IContainer): Promise<void> {
@@ -43,5 +51,12 @@ export class AppLifeCycle {
 
     public async deactivated(container: IContainer): Promise<void> {
         this.logger.debug("App deactivated");
+
+        const bc = new BroadcastChannel("windows");
+        bc.postMessage(<IAppLifecycleEvent>{
+            type: "app-deactivated",
+            appName: container.get(URLSearchParams).get("win")
+        });
+        bc.close();
     }
 }

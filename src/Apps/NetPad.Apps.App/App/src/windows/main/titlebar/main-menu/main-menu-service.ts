@@ -175,7 +175,8 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         text: "Open Developer Tools",
-                        click: async() => this.windowService.openDeveloperTools()
+                        click: async() => this.windowService.openDeveloperTools(),
+                        helpText: "Ctrl + Shift + I",
                     },
                     {
                         isDivider: true

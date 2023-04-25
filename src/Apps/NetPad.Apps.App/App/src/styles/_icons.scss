@@ -173,6 +173,11 @@ button > .icon-base {
     @extend .fa-a;
 }
 
+.pop-out-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-up-right-from-square;
+}
+
 // CONTEXTUAL ICONS
 .window-close-icon {
     @extend %icon-base;
@@ -273,7 +278,7 @@ button > .icon-base {
 
 .open-folder-icon {
     @extend %icon-base;
-    @extend .fa-up-right-from-square;
+    @extend .fa-arrow-up-right-from-square;
 }
 
 .add-script-icon {
@@ -414,4 +419,3 @@ button > .icon-base {
     @extend .fa-brands;
     @extend .fa-github;
 }
-
