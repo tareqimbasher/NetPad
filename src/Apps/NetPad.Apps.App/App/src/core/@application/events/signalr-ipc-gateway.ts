@@ -27,7 +27,28 @@ export class SignalRIpcGateway implements IIpcGateway {
 
         this.connection = new HubConnectionBuilder()
             .withUrl("/ipc-hub")
-            .configureLogging(SignalRLogLevel.Information)
+            .configureLogging({
+                log: (logLevel: SignalRLogLevel, message: string)=> {
+                    if (logLevel === SignalRLogLevel.Warning && message.startsWith("No client method with the name"))
+                        logLevel = SignalRLogLevel.Debug;
+
+                    switch (logLevel) {
+                        case SignalRLogLevel.Critical:
+                        case SignalRLogLevel.Error:
+                            this.logger.error(message);
+                            break;
+                        case SignalRLogLevel.Warning:
+                            this.logger.warn(message);
+                            break;
+                        case SignalRLogLevel.Information:
+                            this.logger.info(message);
+                            break;
+                        default:
+                            this.logger.debug(message);
+                            break;
+                    }
+                }
+            })
             .withAutomaticReconnect({
                 nextRetryDelayInMilliseconds: retryContext => {
                     // If disposed or if we've been reconnecting for more than 20 seconds so far, stop reconnecting.
@@ -174,8 +195,7 @@ export class SignalRIpcGateway implements IIpcGateway {
 
         this.removeAllCallbacks();
 
-        // TODO Stop using IDisposable from aurelia package and copy it to be part of app code
-        //  also create an interface IAsyncDisposable and use it here
+        // TODO Create an interface IAsyncDisposable and use it here
         this.connection.stop();
     }
 }
