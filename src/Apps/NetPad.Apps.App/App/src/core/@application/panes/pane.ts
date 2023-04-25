@@ -34,6 +34,10 @@ export abstract class Pane {
         this.host?.expand(this);
     }
 
+    public hide() {
+        this.host?.collapse(this);
+    }
+
     public hasShortcut(shortcut: Shortcut) {
         this._shortcut = shortcut;
     }

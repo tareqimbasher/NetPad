@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.UiInterop;
 
@@ -39,9 +40,15 @@ public class WindowController : Controller
         await _uiWindowService.ToggleAlwaysOnTopMainWindowAsync();
     }
 
-    [HttpPatch("open-developer-tools")]
-    public async Task OpenDeveloperTools()
+    [HttpPatch("/{windowId:guid}/open-developer-tools")]
+    public async Task OpenDeveloperTools(Guid windowId)
     {
-        await _uiWindowService.OpenDeveloperToolsAsync();
+        await _uiWindowService.OpenDeveloperToolsAsync(windowId);
+    }
+
+    [HttpPatch("open-output-window")]
+    public async Task OpenOutputWindow()
+    {
+        await _uiWindowService.OpenOutputWindowAsync();
     }
 }

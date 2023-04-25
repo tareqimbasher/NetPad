@@ -61,8 +61,12 @@ export class PaneHost {
         }
     }
 
-    public collapse() {
-        if (this.viewMode === PaneHostViewMode.Collapsed) return;
+    public collapse(pane?: Pane) {
+        const shouldCollapse = this.viewMode !== PaneHostViewMode.Collapsed
+            && (!pane || this._active === pane);
+
+        if (!shouldCollapse) return;
+
         this.viewStateController.collapse(this);
         this.viewMode = PaneHostViewMode.Collapsed;
         this._active = undefined;

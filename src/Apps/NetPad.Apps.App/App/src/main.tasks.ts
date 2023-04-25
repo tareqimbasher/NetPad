@@ -39,7 +39,7 @@ export const startBackgroundServices = async (container: IContainer) => {
     const backgroundServices = container.getAll(IBackgroundService);
 
     const logger = container.get(ILogger);
-    logger.debug(`Starting ${backgroundServices.length} background services`);
+    logger.debug(`Starting ${backgroundServices.length} background services`, backgroundServices.map(x => x.constructor.name));
 
     for (const backgroundService of backgroundServices) {
         try {
@@ -54,7 +54,7 @@ export const stopBackgroundServices = async (container: IContainer) => {
     const backgroundServices = container.getAll(IBackgroundService);
 
     const logger = container.get(ILogger);
-    logger.debug(`Stopping ${backgroundServices.length} background services`);
+    logger.debug(`Stopping ${backgroundServices.length} background services`, backgroundServices.map(x => x.constructor.name));
 
     for (const backgroundService of backgroundServices) {
         try {
@@ -78,6 +78,8 @@ export const configureAndGetAppEntryPoint = (builder: IAurelia) => {
     /* eslint-disable @typescript-eslint/no-var-requires */
     if (windowName === "main")
         bootstrapperCtor = require("./windows/main/main").Bootstrapper;
+    else if (windowName === "output")
+        bootstrapperCtor = require("./windows/output/main").Bootstrapper;
     else if (windowName === "settings")
         bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
     else if (windowName === "script-config")

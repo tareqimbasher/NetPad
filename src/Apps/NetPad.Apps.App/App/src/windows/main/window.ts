@@ -66,13 +66,16 @@ export class Window {
         );
 
         this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);
-        this.paneManager.addPaneToHost(OutputPane, this.bottomPaneHost);
+        const outputPane = this.paneManager.addPaneToHost(OutputPane, this.bottomPaneHost);
 
 
         // Start explorer expanded by default
         if (!sideToSideController.hasSavedState()) {
             setTimeout(() => explorer.activate(), 1);
         }
+
+        // Always start output pane hidden when app starts
+        setTimeout(() => outputPane.hide(), 1);
     }
 
     private registerKeyboardShortcuts() {

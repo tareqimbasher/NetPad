@@ -3,12 +3,10 @@ import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {OutputViewBase} from "../output-view-base";
 import {FindTextBoxOptions} from "@application";
-import {IToolbarAction} from "../output-view-toolbar";
 
 export class SqlView extends OutputViewBase {
     private textWrap: boolean;
     private colorize: boolean;
-    public toolbarActions: IToolbarAction[];
 
     constructor(@IEventBus private readonly eventBus: IEventBus, @ILogger logger: ILogger) {
         super(logger);

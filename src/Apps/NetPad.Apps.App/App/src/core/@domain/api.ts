@@ -2073,7 +2073,9 @@ export interface IWindowApiClient {
 
     toggleAlwaysOnTop(signal?: AbortSignal | undefined): Promise<void>;
 
-    openDeveloperTools(signal?: AbortSignal | undefined): Promise<void>;
+    openDeveloperTools(windowId: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    openOutputWindow(signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
@@ -2215,8 +2217,11 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
         return Promise.resolve<void>(<any>null);
     }
 
-    openDeveloperTools(signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/window/open-developer-tools";
+    openDeveloperTools(windowId: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/{windowId}/open-developer-tools";
+        if (windowId === undefined || windowId === null)
+            throw new Error("The parameter 'windowId' must be defined.");
+        url_ = url_.replace("{windowId}", encodeURIComponent("" + windowId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -2232,6 +2237,37 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
     }
 
     protected processOpenDeveloperTools(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    openOutputWindow(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/window/open-output-window";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processOpenOutputWindow(_response);
+        });
+    }
+
+    protected processOpenOutputWindow(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {

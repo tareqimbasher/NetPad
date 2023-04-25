@@ -1,4 +1,5 @@
 import {bindable} from "aurelia";
+import {OutputViewBase} from "./output-view-base";
 
 export class ToolbarOptions {
     constructor(public readonly tabs: IToolbarTab[], public readonly actions: IToolbarAction[]) {
@@ -11,7 +12,7 @@ export interface IToolbarTab {
     active?: boolean;
     show?: () => boolean;
     clicked?: (event: MouseEvent) => Promise<void>;
-    [otherProp: string | number | symbol]: unknown;
+    view: OutputViewBase
 }
 
 export interface IToolbarAction {
@@ -20,7 +21,6 @@ export interface IToolbarAction {
     active?: boolean;
     show?: () => boolean;
     clicked?: (event: MouseEvent) => Promise<void>;
-    [otherProp: string | number | symbol]: unknown;
 }
 
 export class OutputViewToolbar {

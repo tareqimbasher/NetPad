@@ -5,31 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace NetPad.Electron.UiInterop;
 
-class BrowserWindowInfo
-{
-    public BrowserWindowInfo(
-        string id,
-        string windowName,
-        BrowserWindow window,
-        bool singleInstance
-        )
-    {
-        Id = id;
-        WindowName = windowName;
-        Window = window;
-        SingleInstance = singleInstance;
-    }
-
-    public string Id { get; }
-    public string WindowName { get; }
-    public BrowserWindow Window { get; }
-    public bool SingleInstance { get; }
-}
-
 public class WindowManager
 {
     private readonly ILogger<WindowManager> _logger;
-    private readonly ConcurrentDictionary<string, BrowserWindowInfo> _windows;
+    private readonly ConcurrentDictionary<Guid, BrowserWindowInfo> _windows;
 
     private readonly HostInfo _hostInfo;
 
@@ -40,7 +19,7 @@ public class WindowManager
         _windows = new();
     }
 
-    public BrowserWindow? FindWindowAsync(string id)
+    public BrowserWindow? FindWindowAsync(Guid id)
     {
         return _windows.TryGetValue(id, out var info) ? info.Window : null;
     }
@@ -58,8 +37,7 @@ public class WindowManager
             return existing.Window;
         }
 
-        var windowId = Guid.NewGuid().ToString();
-        var url = $"{_hostInfo.HostUrl}?win={windowName}"; //&winId={windowId}
+        var url = $"{_hostInfo.HostUrl}?win={windowName}";
 
         if (queryParams.Any())
         {
@@ -72,9 +50,20 @@ public class WindowManager
         options.Center = true;
 
         var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+
+        // We want to add the window ID after creating the window as a hack
+        // This hack is needed for when developing the app in watch mode. When making a change to .NET code
+        // ElectronNET will restart the app, but that will cause a new main window to be created while keeping the
+        // old/existing main window (before the app restart) opened resulting in 2 main windows. ElectronNET
+        // determines this new window is different than the old main window because the URL is different.
+        // Adding the window ID after creating the window in ElectronNET will stop this from happening.
+        var windowId = Guid.NewGuid();
+        url += $"&winId={windowId}";
+        window.LoadURL(url);
+
         _windows.TryAdd(windowId, new BrowserWindowInfo(windowId, windowName, window, singleInstance));
 
-        _logger.LogDebug("Created window with name: {WindowName} and ID: {ID}", windowName, window.Id);
+        _logger.LogDebug("Created window with name: {WindowName} and ID: {ID} and URL: {Url}", windowName, window.Id, url);
 
         window.OnClosed += () =>_windows.TryRemove(windowId, out _);
 

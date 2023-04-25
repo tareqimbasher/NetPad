@@ -1,10 +1,12 @@
 import {FindTextBoxOptions, ViewModelBase} from "@application";
 import {bindable, ILogger} from "aurelia";
 import {HtmlScriptOutput, ScriptEnvironment} from "@domain";
+import {IToolbarAction} from "./output-view-toolbar";
 
 export abstract class OutputViewBase extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
     @bindable public active: boolean;
+    public toolbarActions: IToolbarAction[];
     protected outputElement: HTMLElement;
     protected findTextBoxOptions: FindTextBoxOptions;
     private lastOutputOrder = 0;
@@ -19,6 +21,10 @@ export abstract class OutputViewBase extends ViewModelBase {
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
             ".null, .property-value, .property-name, .text");
+    }
+
+    public getOutputHtml() {
+        return this.outputElement.innerHTML;
     }
 
     protected appendOutput(output: HtmlScriptOutput) {
@@ -54,6 +60,9 @@ export abstract class OutputViewBase extends ViewModelBase {
         while (pendingOutputIx >= 0);
     }
 
+    protected beforeAppendOutputHtml(documentFragment: DocumentFragment) {
+    }
+
     private appendHtml(html: string | null | undefined) {
         if (html === undefined || html === null) return;
 
@@ -62,23 +71,27 @@ export abstract class OutputViewBase extends ViewModelBase {
 
         this.beforeAppendOutputHtml(template.content);
 
-        const newElement = template.content.firstElementChild;
-        if (!newElement)
+        const children = Array.from(template.content.children);
+        if (!children.length)
             throw new Error("Empty DocumentFragment");
 
-        if (this.lastOutputElement
-            && this.lastOutputElement.classList.contains("group")
-            && this.lastOutputElement.classList.contains("text")
-            && newElement.classList.contains("group")
-            && newElement.classList.contains("text")
-        ) {
-            this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + newElement.innerHTML;
-        } else {
-            this.lastOutputElement = this.outputElement.appendChild(newElement);
+        for (const child of children) {
+            if (this.lastOutputElement
+                && this.lastOutputElement.classList.contains("group")
+                && this.lastOutputElement.classList.contains("text")
+                && child.classList.contains("group")
+                && child.classList.contains("text")
+            ) {
+                this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + child.innerHTML;
+            } else {
+                this.lastOutputElement = this.outputElement.appendChild(child);
+            }
         }
     }
 
-    protected beforeAppendOutputHtml(documentFragment: DocumentFragment) {
+    public setHtml(html: string) {
+        this.clearOutput(true);
+        this.appendHtml(html);
     }
 
     protected beforeClearOutput() {
@@ -97,6 +110,7 @@ export abstract class OutputViewBase extends ViewModelBase {
 
         if (reset) {
             this.lastOutputOrder = 0;
+            this.pendingOutputQueue.splice(0);
         }
     }
 }

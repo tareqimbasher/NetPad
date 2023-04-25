@@ -217,9 +217,36 @@ public class ElectronWindowService : IUiWindowService
         window.Center();
     }
 
-    public Task OpenDeveloperToolsAsync()
+    public async Task OpenOutputWindowAsync()
     {
-        ElectronUtil.MainWindow.WebContents.OpenDevTools();
+        const string windowName = "output";
+
+        if (_windowManager.FocusExistingWindowIfOpen(windowName))
+        {
+            return;
+        }
+
+        var display = await PrimaryDisplay();
+
+        var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
+        {
+            Title = "Output",
+            Height = display.Bounds.Height * 2 / 3,
+            Width = display.Bounds.Width * 4 / 5,
+            AutoHideMenuBar = true,
+            Show = false
+        });
+
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
+        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+        window.Center();
+        window.Maximize();
+        window.Show();
+    }
+
+    public Task OpenDeveloperToolsAsync(Guid windowId)
+    {
+        _windowManager.FindWindowAsync(windowId)?.WebContents.OpenDevTools();
         return Task.CompletedTask;
     }
 
