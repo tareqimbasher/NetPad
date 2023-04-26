@@ -1,5 +1,7 @@
 import {bindable, ILogger} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
+import {Util} from "@common";
 import {CreateScriptDto, IScriptService, ISession, Script, Settings} from "@domain";
 import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
@@ -10,8 +12,9 @@ export class TabBar extends ViewModelBase {
     @bindable viewables: ReadonlySet<ViewableObject>;
     @bindable active?: ViewableObject | null;
     @bindable viewerHost: ViewerHost;
-
     public tabContextMenuOptions: ContextMenuOptions;
+    private viewablesOrder: string[];
+    private tabContainer: HTMLElement;
 
     constructor(
         private readonly element: Element,
@@ -22,6 +25,19 @@ export class TabBar extends ViewModelBase {
         private readonly settings: Settings,
     ) {
         super(logger);
+    }
+
+    public get orderedViewables() {
+        if (!this.viewablesOrder || !this.viewablesOrder.length) return this.viewables;
+
+        const sorted = [...this.viewables]
+            .sort((a, b) => {
+                const ixA = this.viewablesOrder.indexOf(a.id);
+                if (ixA < 0) return this.viewablesOrder.length;
+
+                return ixA - this.viewablesOrder.indexOf(b.id);
+            });
+        return new Set(sorted);
     }
 
     public binding() {
@@ -102,6 +118,7 @@ export class TabBar extends ViewModelBase {
     }
 
     public attached() {
+        this.loadViewablesOrder();
         this.initializeTabDragAndDrop();
     }
 
@@ -171,6 +188,7 @@ export class TabBar extends ViewModelBase {
         (drakeOptions as unknown as any).slideFactorY = 10;
 
         const drake = dragula([dndContainer], drakeOptions);
+        drake.on("drop", () => this.saveViewablesOrder());
 
         this.addDisposable(() => drake.destroy());
 
@@ -182,5 +200,33 @@ export class TabBar extends ViewModelBase {
         dndContainer.addEventListener("wheel", horizontalScroll);
 
         this.addDisposable(() => dndContainer.removeEventListener("wheel", horizontalScroll));
+    }
+
+    private loadViewablesOrder(): void {
+        try {
+            const key = `tab-bar.${this.viewerHost.order}.viewables-order`;
+            const json = localStorage.getItem(key);
+            if (!json) return;
+
+            this.viewablesOrder = JSON.parse(json) as string[];
+        } catch (ex) {
+            this.logger.error("Failed to load viewables order", ex);
+        } finally {
+            if (!this.viewablesOrder) this.viewablesOrder = [];
+        }
+    }
+
+    private saveViewablesOrder = Util.debounce(this, () => {
+        this.viewablesOrder = Array.from(this.tabContainer.children)
+            .map(e => e.getAttribute("data-viewable-id"))
+            .filter(id => id !== null) as string[];
+
+        const key = `tab-bar.${this.viewerHost.order}.viewables-order`;
+        localStorage.setItem(key, JSON.stringify(this.viewablesOrder ?? []));
+    }, 300, false);
+
+    @watch<TabBar>(vm => vm.viewables.size)
+    viewablesChanged() {
+        this.saveViewablesOrder();
     }
 }

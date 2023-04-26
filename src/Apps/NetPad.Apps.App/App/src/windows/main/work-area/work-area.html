@@ -1,10 +1,10 @@
 <template class="${workbench.workAreaService.appearance.size} ${workbench.workAreaService.appearance.style}">
     <import from="./tab-bar/tab-bar"></import>
 
-    <div repeat.for="host of workbench.workAreaService.viewerHosts"
+    <div repeat.for="host of workbench.workAreaService.viewerHosts.items"
          if.bind="host.viewables.size > 0"
          class="viewer-host ${host === workbench.workAreaService.viewerHosts.active ? 'active' : ''}"
-         tabindex="${$index}"
+         tabindex="${host.order}"
          click.trigger="workbench.workAreaService.viewerHosts.activate(host)">
 
         <div class="top-bar">

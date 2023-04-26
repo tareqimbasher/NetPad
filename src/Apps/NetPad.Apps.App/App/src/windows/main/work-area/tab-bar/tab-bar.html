@@ -1,6 +1,6 @@
-<div class="drag-drop-container">
-    <div class="view-tab ${viewable === active ? 'active' : ''}"
-         repeat.for="viewable of viewables"
+<div class="drag-drop-container" ref="tabContainer">
+    <div class="view-tab ${viewable.id === active.id ? 'active' : ''}"
+         repeat.for="viewable of orderedViewables"
          data-viewable-id.bind="viewable.id"
          title.bind="viewable.environment.script.path || (viewable.isDirty ? 'Unsaved' : '')">
         <div class="view-tab-content"
