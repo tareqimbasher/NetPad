@@ -42,9 +42,9 @@ export class Toolbar extends ViewModelBase {
     }
 
     public set kind(value) {
-        this.logger.debug("Setting script kind");
-
         if (!this.script || !value) return;
+
+        this.logger.debug("Setting script kind to:", value);
 
         this.scriptService.setScriptKind(this.script.id, value)
             .catch(err => {
@@ -65,9 +65,9 @@ export class Toolbar extends ViewModelBase {
     }
 
     public set dataConnection(value: DataConnection | undefined) {
-        this.logger.debug("Setting data connection");
-
         if (!this.script) return;
+
+        this.logger.debug("Setting data connection to:", value);
 
         this.scriptService.setDataConnection(this.script.id, value?.id)
             .catch(err => {

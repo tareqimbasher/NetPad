@@ -1,6 +1,6 @@
 ﻿<import from="./toolbar"></import>
 
-<toolbar viewable.bind="viewable"></toolbar>
+<toolbar viewable.bind="viewable" if.bind="viewable.environment"></toolbar>
 
 <div class="text-editor-container flex-grow-height-restricted d-flex">
     <div class="production-marker"
