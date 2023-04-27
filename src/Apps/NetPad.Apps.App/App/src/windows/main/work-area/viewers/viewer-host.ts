@@ -7,7 +7,7 @@ import {Workbench} from "../../workbench";
 
 export class ViewerHost {
     public readonly id: string;
-    public order: number = 0;
+    public order = 0;
 
     private readonly logger: ILogger;
     private _viewables = new Set<ViewableObject>();
