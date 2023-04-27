@@ -1,4 +1,5 @@
 import {bindable, ILogger} from "aurelia";
+import {Tooltip} from "bootstrap";
 import {ViewModelBase} from "@application";
 
 export class TooltipCustomAttribute extends ViewModelBase {
@@ -13,8 +14,6 @@ export class TooltipCustomAttribute extends ViewModelBase {
     }
 
     private async getOrInitTooltip() {
-        const Tooltip = (await import("bootstrap")).Tooltip;
-
         let tooltip = Tooltip.getInstance(this.element);
 
         if (!tooltip && this.text) {

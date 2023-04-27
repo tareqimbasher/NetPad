@@ -13,36 +13,38 @@
 </div>
 
 <div class="flex-grow-height-restricted d-flex flex-row" show.bind="references.length">
-    <table id="references-list" class="table table-hover">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Source</th>
-            <th class="text-center"><i class="actions-icon"></i></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr as-element="row"
-            class="${selectedReference === reference ? 'active' : ''}"
-            repeat.for="reference of references"
-            click.trigger="selectReference(reference)">
-            <td>
-                ${reference.title}
-                <span show.bind="reference.version">
+    <div id="references-list" >
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Source</th>
+                <th class="text-center"><i class="actions-icon"></i></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr as-element="row"
+                class="${selectedReference === reference ? 'active' : ''}"
+                repeat.for="reference of references"
+                click.trigger="selectReference(reference)">
+                <td>
+                    ${reference.title}
+                    <span show.bind="reference.version">
                     (${reference.version})
                 </span>
-            </td>
-            <td>
-                ${reference.version ? 'NuGet' : reference.assemblyPath}
-            </td>
-            <td class="text-center" style="width: 40px">
-                <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
-                    Remove
-                </button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+                </td>
+                <td>
+                    ${reference.version ? 'NuGet' : reference.assemblyPath}
+                </td>
+                <td class="text-center" style="width: 40px">
+                    <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
+                        Remove
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
     <div id="namespace-selection" class="ps-3 flex-grow-height-restricted d-flex flex-column">
         <div if.bind="!selectedReference"
              class="flex-grow-1 d-flex align-items-center justify-content-center">

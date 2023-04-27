@@ -1,5 +1,7 @@
 ﻿reference-management {
     #references-list {
+        overflow-y: auto;
+
         td {
             white-space: nowrap;
         }

@@ -1,6 +1,7 @@
 import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
 import {DialogDefaultConfiguration} from "@aurelia/dialog";
-import './styles/main.scss';
+import "bootstrap";
+import "./styles/main.scss";
 import {
     AppService,
     Env,
