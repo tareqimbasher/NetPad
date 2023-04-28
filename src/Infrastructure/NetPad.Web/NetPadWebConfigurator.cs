@@ -28,4 +28,9 @@ public class NetPadWebConfigurator : IApplicationConfigurator
     public void Configure(IApplicationBuilder app, IHostEnvironment env)
     {
     }
+
+    public void ShowErrorDialog(string title, string content)
+    {
+        // Do nothing. Not supported on this platform
+    }
 }

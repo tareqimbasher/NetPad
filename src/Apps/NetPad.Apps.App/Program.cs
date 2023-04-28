@@ -1,8 +1,10 @@
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.Electron;
 using NetPad.Web;
@@ -26,9 +28,17 @@ public static class Program
             CreateHostBuilder(args).Build().Run();
             return 0;
         }
+        catch (IOException ioException) when (ioException.Message.Contains("address already in use", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Another instance is already running. {ioException.Message}");
+            ApplicationConfigurator.ShowErrorDialog(
+                $"{AppIdentifier.AppName} Already Running",
+                $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
+            return 1;
+        }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
             Log.Fatal(ex, "Host terminated unexpectedly");
             return 1;
         }

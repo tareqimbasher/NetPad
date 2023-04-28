@@ -57,4 +57,9 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
             await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
         });
     }
+
+    public void ShowErrorDialog(string title, string content)
+    {
+        ElectronNET.API.Electron.Dialog.ShowErrorBox(title, content);
+    }
 }
