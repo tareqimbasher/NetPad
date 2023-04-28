@@ -75,13 +75,15 @@ export class MainMenuService implements IMainMenuService {
                         text: "Undo",
                         icon: "undo-icon",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "undo", null)
+                            .trigger(null, "undo", null),
+                        helpText: "Ctrl + Z"
                     },
                     {
                         text: "Redo",
                         icon: "redo-icon",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "redo", null)
+                            .trigger(null, "redo", null),
+                        helpText: "Ctrl + Shift + Z"
                     },
                     {
                         isDivider: true
@@ -116,12 +118,14 @@ export class MainMenuService implements IMainMenuService {
                         text: "Find",
                         icon: "search-icon",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "actions.findWithSelection", null)
+                            .trigger(null, "actions.findWithSelection", null),
+                        helpText: "Ctrl + F"
                     },
                     {
                         text: "Replace",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.startFindReplaceAction", null)
+                            .trigger(null, "editor.action.startFindReplaceAction", null),
+                        helpText: "Ctrl + H"
                     },
                     {
                         isDivider: true
@@ -157,12 +161,14 @@ export class MainMenuService implements IMainMenuService {
                     {
                         text: "Toggle Line Comment",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.commentLine", null)
+                            .trigger(null, "editor.action.commentLine", null),
+                        helpText: "Ctrl + /"
                     },
                     {
                         text: "Toggle Block Comment",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.blockComment", null)
+                            .trigger(null, "editor.action.blockComment", null),
+                        helpText: "Ctrl + Shift + A"
                     },
                 ]
             },
@@ -171,7 +177,8 @@ export class MainMenuService implements IMainMenuService {
                 menuItems: [
                     {
                         text: "Reload",
-                        click: async () => window.location.reload()
+                        click: async () => window.location.reload(),
+                        helpText: "Ctrl + R"
                     },
                     {
                         text: "Open Developer Tools",
