@@ -35,7 +35,7 @@ public class RestartOmniSharpServerCommand : OmniSharpScriptCommand<bool>
 
             try
             {
-                success = await _server.RestartAsync(progress => { _appStatusMessagePublisher.PublishAsync(scriptId, progress, persistant: true); });
+                success = await _server.RestartAsync(progress => { _appStatusMessagePublisher.PublishAsync(scriptId, progress); });
             }
             catch (Exception ex)
             {

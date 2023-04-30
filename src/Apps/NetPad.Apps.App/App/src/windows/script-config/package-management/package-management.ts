@@ -62,7 +62,8 @@ export class PackageManagement extends ViewModelBase {
         this.selectedVersion = undefined;
         this.showVersionPickerModal = true;
 
-        this.versionsToPickFrom = await this.packageService.getPackageVersions(pkg.packageId);
+        this.versionsToPickFrom = (await this.packageService.getPackageVersions(pkg.packageId)).reverse();
+
         if (!this.versionsToPickFrom || !this.versionsToPickFrom.length) {
             alert("Could not find any versions for package: " + pkg.packageId);
         }
@@ -73,15 +74,15 @@ export class PackageManagement extends ViewModelBase {
         this.versionsToPickFrom = undefined;
         this.showVersionPickerModal = false;
 
-        if (pkg.referenced)
-            return;
-
         if (!version)
             version = pkg.version;
 
         if (!version) throw new Error(`Version is null or undefined. Could not reference package.`);
 
-        if (pkg instanceof PackageSearchResult && !pkg.existsInLocalCache)
+        if (version == pkg.version && pkg.referenced)
+            return;
+
+        if (pkg instanceof PackageSearchResult)
             await this.installPackage(pkg, version);
 
         this.configStore.addReference(new PackageReference({
@@ -154,14 +155,15 @@ export class PackageManagement extends ViewModelBase {
     private markReferencedPackages() {
         for (const searchResult of this.searchResults) {
             searchResult.existsInLocalCache = !!this.cachedPackages
-                .find(p => p.packageId === searchResult.packageId);
+                .find(p => p.packageId === searchResult.packageId && p.version === searchResult.version);
+
             searchResult.referenced = !!this.configStore.references
-                .find(r => (r as PackageReference).packageId == searchResult.packageId);
+                .find(r => (r as PackageReference).packageId == searchResult.packageId && (r as PackageReference).version === searchResult.version);
         }
 
         for (const cachedPackage of this.cachedPackages) {
             cachedPackage.referenced = !!this.configStore.references
-                .find(r => (r as PackageReference).packageId == cachedPackage.packageId);
+                .find(r => (r as PackageReference).packageId == cachedPackage.packageId && (r as PackageReference).version === cachedPackage.version);
         }
     }
 }

@@ -69,7 +69,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
             using var archiveStream = new MemoryStream();
             await _httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(_appStatusMessagePublisher));
 
-            await _appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...", persistant: true);
+            await _appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...");
             var zipArchive = new ZipArchive(archiveStream);
             zipArchive.ExtractToDirectory(downloadDir.FullName);
 

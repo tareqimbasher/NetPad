@@ -219,6 +219,14 @@ public class NuGetPackageProvider : IPackageProvider
         await InstallPackagesAsync(packageIdentity, packagesToInstall, sourceCacheContext, logger, cancellationToken);
     }
 
+    public async Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
+    {
+        var installPath = GetInstallPath(new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion)));
+        if (installPath == null) return null;
+
+        return GetInstallInfo(installPath);
+    }
+
     public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
     {
         var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
@@ -389,7 +397,7 @@ public class NuGetPackageProvider : IPackageProvider
         CancellationToken cancellationToken)
     {
         await _appStatusMessagePublisher.PublishAsync(
-            $"Installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})...", persistant: true);
+            $"Installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})...");
 
         foreach (var packageToInstall in packagesToInstall)
         {
@@ -585,6 +593,37 @@ public class NuGetPackageProvider : IPackageProvider
         return new SourceRepositoryProvider(sourceProvider, Repository.Provider.GetCoreV3());
     }
 
+    private string GetNuGetCacheDirectoryPath()
+    {
+        var path = Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet");
+        return Directory.CreateDirectory(path).FullName;
+    }
+
+    private async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
+    {
+        packageMetadata.PackageId = searchMetadata.Identity.Id;
+        packageMetadata.Title = searchMetadata.Title;
+        packageMetadata.Authors = searchMetadata.Authors;
+        packageMetadata.Description = searchMetadata.Description;
+        packageMetadata.IconUrl = searchMetadata.IconUrl;
+        packageMetadata.ProjectUrl = searchMetadata.ProjectUrl;
+        packageMetadata.PackageDetailsUrl = searchMetadata.PackageDetailsUrl;
+        packageMetadata.LicenseUrl = searchMetadata.LicenseUrl;
+        packageMetadata.ReadmeUrl = searchMetadata.ReadmeUrl;
+        packageMetadata.ReportAbuseUrl = searchMetadata.ReportAbuseUrl;
+        packageMetadata.DownloadCount = searchMetadata.DownloadCount;
+        packageMetadata.PublishedDate = searchMetadata.Published?.UtcDateTime;
+        packageMetadata.RequireLicenseAcceptance = searchMetadata.RequireLicenseAcceptance;
+
+        packageMetadata.Dependencies = searchMetadata.DependencySets.Select(dg =>
+                $"{dg.TargetFramework}\n{dg.Packages.Select(p => $"{p.Id} {p.VersionRange}").JoinToString("\n")}")
+            .ToArray();
+
+        packageMetadata.Version ??= (await searchMetadata.GetVersionsAsync().ConfigureAwait(false))?
+            .LastOrDefault()?
+            .Version.ToString();
+    }
+
     private string? GetInstallPath(PackageIdentity packageIdentity)
     {
         bool TryGetPath(string? path, out string? newPath)
@@ -620,37 +659,6 @@ public class NuGetPackageProvider : IPackageProvider
             return installPath;
 
         return null;
-    }
-
-    private string GetNuGetCacheDirectoryPath()
-    {
-        var path = Path.Combine(_settings.PackageCacheDirectoryPath, "NuGet");
-        return Directory.CreateDirectory(path).FullName;
-    }
-
-    private async Task MapAsync(IPackageSearchMetadata searchMetadata, PackageMetadata packageMetadata)
-    {
-        packageMetadata.PackageId = searchMetadata.Identity.Id;
-        packageMetadata.Title = searchMetadata.Title;
-        packageMetadata.Authors = searchMetadata.Authors;
-        packageMetadata.Description = searchMetadata.Description;
-        packageMetadata.IconUrl = searchMetadata.IconUrl;
-        packageMetadata.ProjectUrl = searchMetadata.ProjectUrl;
-        packageMetadata.PackageDetailsUrl = searchMetadata.PackageDetailsUrl;
-        packageMetadata.LicenseUrl = searchMetadata.LicenseUrl;
-        packageMetadata.ReadmeUrl = searchMetadata.ReadmeUrl;
-        packageMetadata.ReportAbuseUrl = searchMetadata.ReportAbuseUrl;
-        packageMetadata.DownloadCount = searchMetadata.DownloadCount;
-        packageMetadata.PublishedDate = searchMetadata.Published?.UtcDateTime;
-        packageMetadata.RequireLicenseAcceptance = searchMetadata.RequireLicenseAcceptance;
-
-        packageMetadata.Dependencies = searchMetadata.DependencySets.Select(dg =>
-                $"{dg.TargetFramework}\n{dg.Packages.Select(p => $"{p.Id} {p.VersionRange}").JoinToString("\n")}")
-            .ToArray();
-
-        packageMetadata.Version ??= (await searchMetadata.GetVersionsAsync().ConfigureAwait(false))?
-            .LastOrDefault()?
-            .Version.ToString();
     }
 
     private PackageInstallInfo? GetInstallInfo(string installPath)

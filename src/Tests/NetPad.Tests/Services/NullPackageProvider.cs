@@ -54,6 +54,11 @@ public class NullPackageProvider : IPackageProvider
         return Task.CompletedTask;
     }
 
+    public Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
+    {
+        return Task.FromResult<PackageInstallInfo?>(null);
+    }
+
     public Task PurgePackageCacheAsync()
     {
         throw new NotImplementedException();

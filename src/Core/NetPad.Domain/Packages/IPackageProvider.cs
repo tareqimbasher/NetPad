@@ -80,4 +80,12 @@ public interface IPackageProvider
     /// <param name="packageId">Package ID</param>
     /// <param name="packageVersion">Package Version</param>
     Task InstallPackageAsync(string packageId, string packageVersion);
+
+    /// <summary>
+    /// Gets install info for a specific package ID and version if that package is installed.
+    /// </summary>
+    /// <param name="packageId">Package ID</param>
+    /// <param name="packageVersion">Package Version</param>
+    /// <returns>Install info for the specified package if it is installed, null otherwise.</returns>
+    Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion);
 }

@@ -72,7 +72,7 @@
                             title="Add to Script"
                             click.trigger="referencePackage(package)">
                         <i class="add-package-icon" show.bind="!package.referenced"></i>
-                        ${package.referenced ? 'Added' : 'Add'}
+                        ${package.referenced ? 'Referenced' : 'Reference'}
                     </button>
                     <button type="button"
                             class="btn btn-secondary dropdown-toggle"
@@ -120,7 +120,7 @@
                                 title="Add to Script"
                                 click.trigger="referencePackage(package)">
                             <i class="add-package-icon" show.bind="!package.referenced"></i>
-                            ${package.referenced ? 'Added' : 'Add'}
+                            ${package.referenced ? 'Referenced' : 'Reference'}
                         </button>
                         <button type="button"
                                 class="btn btn-secondary dropdown-toggle"

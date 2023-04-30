@@ -13,7 +13,7 @@ public static class SystemAssemblies
 
     public static HashSet<string> GetAssemblyLocations()
     {
-        return _systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot();
+        return (_systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot()).ToHashSet();
     }
 
     private static HashSet<string> GetImplementationAssemblyLocationsFromAppDomain()

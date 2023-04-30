@@ -79,6 +79,10 @@ public class PackagesController : Controller
         if (string.IsNullOrWhiteSpace(packageVersion))
             return BadRequest($"{nameof(packageVersion)} is required.");
 
+        var installInfo = await _packageProvider.GetPackageInstallInfoAsync(packageId, packageVersion);
+
+        if (installInfo?.InstallReason == PackageInstallReason.Explicit) return Ok();
+
         await _packageProvider.InstallPackageAsync(packageId, packageVersion);
         return Ok();
     }
