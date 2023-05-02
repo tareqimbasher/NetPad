@@ -29,7 +29,9 @@ export class TextDocumentViewer extends Viewer {
             this.open(this.viewable as ViewableTextDocument);
         }
 
-        this.workbench.statusbarService.addItem(new TextEditorCursorPositionStatusbarItem(this.editor));
+        const item = new TextEditorCursorPositionStatusbarItem(this.editor);
+        this.workbench.statusbarService.addItem(item);
+        this.addDisposable(() => this.workbench.statusbarService.removeItem(item));
     }
 
     public override canOpen(viewableDocument: ViewableObject): boolean {
