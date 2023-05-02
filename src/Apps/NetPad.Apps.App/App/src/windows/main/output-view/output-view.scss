@@ -87,8 +87,9 @@ output-view {
 
             thead th { position: sticky !important; top: 0; z-index: 1; }
 
-            &.collapsed > tbody {
-                visibility: collapse;
+            &.collapsed > tbody,
+            &.collapsed > thead > .table-data-header{
+                display: none;
             }
 
             table {

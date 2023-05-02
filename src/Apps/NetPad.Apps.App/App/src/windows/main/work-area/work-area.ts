@@ -95,7 +95,11 @@ export class WorkArea extends ViewModelBase {
     }
 
     @watch<WorkArea>(vm => vm.session.active)
-    private activeEnvironmentChanged(newActive: ScriptEnvironment) {
+    private activeEnvironmentChanged(newActive: ScriptEnvironment | null | undefined) {
+        if (!newActive) {
+            return;
+        }
+
         const result = this.workbench.workAreaService.viewerHosts.findViewable(newActive.script.id);
         if (result) {
             this.workbench.workAreaService.viewerHosts.activateViewable(result.viewable);

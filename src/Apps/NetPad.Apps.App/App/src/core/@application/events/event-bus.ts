@@ -16,7 +16,11 @@ export class EventBus extends EventAggregator implements IEventBus {
         const channelName = typeof channel === 'string' ? channel : channel.name;
 
         const proxyCallback = (message: InstanceType<TMessage>, channel: string) => {
-            callback(message, channel);
+            try {
+                callback(message, channel);
+            } catch (ex) {
+                this.logger.error(`An unhandled error occurred while processing a server-pushed message callback on channel: ${channel}`, ex, callback);
+            }
         };
 
         return this.ipcGateway.subscribe(channelName, proxyCallback);

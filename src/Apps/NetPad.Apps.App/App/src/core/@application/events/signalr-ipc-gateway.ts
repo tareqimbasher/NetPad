@@ -170,7 +170,11 @@ export class SignalRIpcGateway implements IIpcGateway {
             const arg = args.length > 0 ? args[0] : null;
 
             for (const callback of channelCallbacks) {
-                callback(arg, channelName);
+                try {
+                    callback(arg, channelName);
+                } catch (ex) {
+                    this.logger.error(`An unhandled error occurred while processing an IPC message callback on channel: ${channelName}`, ex, callback);
+                }
             }
         };
 

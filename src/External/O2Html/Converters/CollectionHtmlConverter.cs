@@ -127,7 +127,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
         var collectionTypeName = collectionType.GetReadableName();
 
-        if (collectionTypeName.StartsWith("IGrouping" + Consts.HtmlLessThan))
+        if (collectionTypeName.StartsWith("IGrouping<"))
         {
             var keyProp = collectionType.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public);
             if (keyProp != null)
@@ -148,12 +148,7 @@ public class CollectionHtmlConverter : HtmlConverter
                         ? keyValueStr
                         : keyValueStr.Substring(0, 50);
 
-                headerRowText += "Key = "
-                                 + keyValueStr
-                                 + Consts.HtmlSpace
-                                 + Consts.HtmlSpace
-                                 + Consts.HtmlSpace
-                                 + Consts.HtmlSpace;
+                headerRowText += $"Key = {keyValueStr}    ";
             }
         }
 

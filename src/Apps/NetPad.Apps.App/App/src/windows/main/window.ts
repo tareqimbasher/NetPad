@@ -1,4 +1,5 @@
-import {DataConnectionStore, ISession, Settings} from "@domain";
+import {IContainer} from "aurelia";
+import {CreateScriptDto, DataConnectionStore, IScriptService, ISession, Settings} from "@domain";
 import {
     BuiltinShortcuts,
     EditorSetup,
@@ -9,7 +10,7 @@ import {
 } from "@application";
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 import {Workbench} from "./workbench";
-import {IContainer} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 
 export class Window {
     private workbench: Workbench
@@ -21,6 +22,7 @@ export class Window {
         @ISession private readonly session: ISession,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
+        @IScriptService private readonly scriptService: IScriptService,
         @IContainer private readonly container: IContainer,
         private readonly settings: Settings,
         private readonly dataConnectionStore: DataConnectionStore,
@@ -37,6 +39,8 @@ export class Window {
         await this.session.initialize();
         await this.dataConnectionStore.initialize();
         this.workbench = this.container.get(Workbench);
+
+        await this.createNewScriptIfNoScriptsOpen();
     }
 
     public attached() {
@@ -81,6 +85,13 @@ export class Window {
     private registerKeyboardShortcuts() {
         for (const shortcut of BuiltinShortcuts) {
             this.shortcutManager.registerShortcut(shortcut);
+        }
+    }
+
+    @watch<Window>(vm => vm.session.environments.length)
+    private async createNewScriptIfNoScriptsOpen() {
+        if (this.session.environments.length === 0) {
+            await this.scriptService.create(new CreateScriptDto());
         }
     }
 }
