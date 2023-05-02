@@ -8,7 +8,6 @@ A cross-platform C# editor and playground.
 |                                                  Dark                                                   |                                                  Light                                                   |
 |:-------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------:|
 |    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-dark.png?raw=true)    |    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-light.png?raw=true)    |
-| ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-sql-output-dark.png?raw=true) | ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-sql-output-light.png?raw=true) |
 
 ## Motivation
 
@@ -19,6 +18,8 @@ open-source, web-enabled, cross-platform alternative.
 The goal isn't to reach 100% feature parity with LinqPad, but
 to offer an acceptable alternative that covers the most common features
 developers need, and if we're lucky, maybe a few useful new ones!
+
+#### If you like the project, please star it :star2:!
 
 ## Requirements
 
@@ -56,7 +57,7 @@ contributions are welcome!
     * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console
 * Add and use database connections (currently only supports Microsoft SQL Server
-  and PostgreSQL). **This feature is in early release.**
+  and PostgreSQL)
 * Auto-save: If you close NetPad, it will auto-save your changes and
   restore them the next time you fire it up
 * Add NuGet packages
@@ -83,10 +84,8 @@ contributions are welcome!
       images
     * Exporting results to different file formats, or to the clipboard
     * Change results styling
-    * Pop-out results into own window
     * Change max result set length when dumping Entity Framework IQueryable
       collections (default is 1000 items)
-    * Ability to use Console.Read() to ask for input
     * Workspaces/Sessions
 * More OmniSharp integrations:
     * Code fix suggestions

@@ -11,27 +11,27 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>NetPad</RootNamespace>
         <Nullable>enable</Nullable>
-        <AssemblyVersion>0.1.1</AssemblyVersion>
-        <FileVersion>0.1.1</FileVersion>
-        <InformationalVersion>0.1.1</InformationalVersion>
+        <AssemblyVersion>0.2.0</AssemblyVersion>
+        <FileVersion>0.2.0</FileVersion>
+        <InformationalVersion>0.2.0</InformationalVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1"/>
-        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5"/>
-        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5"/>
-        <PackageReference Include="Serilog.AspNetCore" Version="6.0.0"/>
-        <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2"/>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1"/>
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
+        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5" />
+        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5" />
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
         <!-- Don't publish the SPA source files, but do show them in the project files list -->
-        <Content Remove="$(SpaRoot)**"/>
-        <None Remove="$(SpaRoot)**"/>
-        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
-        <None Remove="App\dist\**"/>
-        <Content Remove="App\dist\**"/>
+        <Content Remove="$(SpaRoot)**" />
+        <None Remove="$(SpaRoot)**" />
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+        <None Remove="App\dist\**" />
+        <Content Remove="App\dist\**" />
         <Content Include="electron.manifest.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -42,33 +42,33 @@
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
         <!-- Ensure Node.js is installed -->
         <Exec Command="node --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
         </Exec>
-        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE."/>
-        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..."/>
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     </Target>
     <Target Name="UnixPostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Unix' AND '$(Configuration)'=='Debug'">
         <!-- Copy Microsoft.Data.SqlClient.dll for unix builds so that EF can make calls to MS SQL databases -->
         <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
-        <Exec Command="mkdir -p $(OutDir)Microsoft.Data.SqlClient; cp $(OutDir)runtimes/unix/lib/netcoreapp3.1/Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient/Microsoft.Data.SqlClient.dll"/>
+        <Exec Command="mkdir -p $(OutDir)Microsoft.Data.SqlClient; cp $(OutDir)runtimes/unix/lib/netcoreapp3.1/Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient/Microsoft.Data.SqlClient.dll" />
     </Target>
     <Target Name="WindowsPostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)'=='Windows_NT'">
         <!-- Copy Microsoft.Data.SqlClient.dll for windows builds so that EF can make calls to MS SQL databases. This Target is not meant to run when publishing app -->
         <!-- https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212 -->
         <!-- The 'if exist' check here is so this command does not run when dotnet publish is called as $(OutDir)runtimes doesn't exist then -->
-        <Exec Command="if exist $(OutDir)runtimes echo f | xcopy /F /Y $(OutDir)runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.dll"/>
-        <Exec Command="if exist $(OutDir)runtimes echo f | xcopy /F /Y $(OutDir)runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll $(OutDir)Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.SNI.dll"/>
+        <Exec Command="if exist $(OutDir)runtimes echo f | xcopy /F /Y $(OutDir)runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll $(OutDir)Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.dll" />
+        <Exec Command="if exist $(OutDir)runtimes echo f | xcopy /F /Y $(OutDir)runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll $(OutDir)Microsoft.Data.SqlClient\Microsoft.Data.SqlClient.SNI.dll" />
     </Target>
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build"/>
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' "/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' " />
         <!-- Include the newly-built files in the publish output -->
         <ItemGroup>
-            <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**"/>
-            <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'"/>
+            <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
+            <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'" />
             <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
                 <RelativePath>%(DistFiles.Identity)</RelativePath>
                 <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -77,24 +77,24 @@
         </ItemGroup>
     </Target>
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
-        <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj"/>
-        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj"/>
-        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj"/>
-        <ProjectReference Include="..\..\Infrastructure\NetPad.Electron\NetPad.Electron.csproj"/>
-        <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj"/>
-        <ProjectReference Include="..\..\Infrastructure\NetPad.Web\NetPad.Web.csproj"/>
-        <ProjectReference Include="..\..\Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj"/>
-        <ProjectReference Include="..\..\Infrastructure\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj"/>
-        <ProjectReference Include="..\..\Plugins\NetPad.Plugins.OmniSharp\NetPad.Plugins.OmniSharp.csproj"/>
+        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\NetPad.Electron\NetPad.Electron.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\NetPad.Infrastructure\NetPad.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\NetPad.Web\NetPad.Web.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj" />
+        <ProjectReference Include="..\..\Plugins\NetPad.Plugins.OmniSharp\NetPad.Plugins.OmniSharp.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="App\dist\**"/>
+        <Compile Remove="App\dist\**" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Remove="App\dist\**"/>
+        <EmbeddedResource Remove="App\dist\**" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="wwwroot\loading-screen"/>
+        <Folder Include="wwwroot\loading-screen" />
     </ItemGroup>
 </Project>
