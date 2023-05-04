@@ -8,6 +8,22 @@ export class ResultControls extends WithDisposables {
 
     public bind(content: DocumentFragment) {
 
+        for (const textGroup of Array.from(content.querySelectorAll(".group.titled.text"))) {
+            const title = textGroup.querySelector(".title");
+            if (!title) continue;
+
+            const clickHandler = (e) => {
+                const selection = document.getSelection();
+                if (selection && selection.toString() && e.target.contains(selection.anchorNode)) return;
+
+                if (textGroup.classList.contains("collapsed")) textGroup.classList.remove("collapsed");
+                else textGroup.classList.add("collapsed");
+            };
+
+            title.addEventListener("click", clickHandler);
+            this.addDisposable(() => title.removeEventListener("click", clickHandler));
+        }
+
         for (const table of Array.from(content.querySelectorAll("table"))) {
 
             table.classList.add("table", "table-sm", "table-bordered");
@@ -17,6 +33,9 @@ export class ResultControls extends WithDisposables {
             if (collapseTarget) {
                 collapseTarget.classList.add("collapse-actionable");
                 const clickHandler = (e) => {
+                    const selection = document.getSelection();
+                    if (selection && selection.toString() && e.target.contains(selection.anchorNode)) return;
+
                     if (e.target === collapseTarget) this.toggle(table);
                 };
                 collapseTarget.addEventListener("click", clickHandler);
@@ -79,12 +98,42 @@ export class ResultControls extends WithDisposables {
         return collapseTarget;
     }
 
-    public expandAllTables() {
-        this.querySelectorAll("table").forEach(t => this.expand(t as HTMLTableElement));
+    public expandAll(level?: number) {
+        if (!level) {
+            this.querySelectorAll("table").forEach(t => this.expand(t as HTMLTableElement));
+            this.querySelectorAll(".group.titled.text").forEach(t => t.classList.remove("collapsed"));
+            return;
+        }
+
+        let selector = "";
+
+        for (let iLevel = level; iLevel > 0; iLevel--) {
+            selector += (!selector ? "" : ", ") + ".group > table";
+
+            for (let iLevel2 = 1; iLevel2 < iLevel; iLevel2++) {
+                selector += " > tbody > tr > td > table";
+            }
+        }
+
+        this.resultsElement.querySelectorAll(selector).forEach(v => this.expand(v as HTMLTableElement));
     }
 
-    public collapseAllTables() {
-        this.querySelectorAll("table").forEach(t => this.collapse(t as HTMLTableElement));
+    public collapseAll(level?: number, root?: Element | DocumentFragment) {
+        if (!root) root = this.resultsElement;
+
+        if (!level) {
+            root.querySelectorAll("table").forEach(t => this.collapse(t as HTMLTableElement));
+            root.querySelectorAll(".group.titled.text").forEach(t => t.classList.add("collapsed"));
+            return;
+        }
+
+        let selector = ".group > table";
+        for (let iLevel = 1; iLevel <= level; iLevel++) {
+            selector += " > tbody > tr > td > table";
+        }
+
+        selector += `, ${selector} table`;
+        root.querySelectorAll(selector).forEach(v => this.collapse(v as HTMLTableElement));
     }
 
     private querySelectorAll(selectors: string) {

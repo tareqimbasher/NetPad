@@ -6,9 +6,27 @@
     </div>
 </div>
 <div class="actions pe-1">
-    <i repeat.for="action of options.actions"
-       class="ms-2 ${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'active' : ''}"
+    <div repeat.for="action of options.actions"
+       class="ms-2"
        show.bind="!action.show || action.show()"
-       title.bind="action.label"
-       click.trigger="actionClicked(action, $event)"></i>
+       title.bind="action.label">
+        <i class="${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'active' : ''}"
+           if.bind="!action.actions"
+           click.trigger="actionClicked(action, $event)"></i>
+        <div else class="p-2 ps-3 pe-3" data-bs-toggle="dropdown">
+            <span class="dropdown-toggle">
+                ${action.label}
+            </span>
+            <ul class="dropdown-menu">
+                <li repeat.for="subAction of action.actions"
+                    title.bind="subAction.label"
+                    click.trigger="actionClicked(subAction, $event)">
+                    <button class="dropdown-item">
+                        <i if.bind="subAction.icon" class="${subAction.icon}"></i>
+                        ${subAction.label}
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>

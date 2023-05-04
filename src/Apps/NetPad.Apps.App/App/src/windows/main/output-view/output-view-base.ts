@@ -79,8 +79,10 @@ export abstract class OutputViewBase extends ViewModelBase {
             if (this.lastOutputElement
                 && this.lastOutputElement.classList.contains("group")
                 && this.lastOutputElement.classList.contains("text")
+                && !this.lastOutputElement.classList.contains("titled")
                 && child.classList.contains("group")
                 && child.classList.contains("text")
+                && !child.classList.contains("titled")
             ) {
                 this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + child.innerHTML;
             } else {

@@ -20,19 +20,43 @@ export class ResultsView extends OutputViewBase {
         const rvs = this.resultsViewSettings;
         this.toolbarActions = [
             {
-                label: "Clear",
-                icon: "clear-output-icon",
-                clicked: async () => this.clearOutput(),
+                label: "Format",
+                actions: [
+                    {
+                        label: "Collapse to Level 1",
+                        clicked: async () => this.resultControls.collapseAll(1)
+                    },
+                    {
+                        label: "Collapse to Level 2",
+                        clicked: async () => this.resultControls.collapseAll(2)
+                    },
+                    {
+                        label: "Collapse to Level 3",
+                        clicked: async () => this.resultControls.collapseAll(3)
+                    },
+                    {
+                        label: "Expand to Level 1",
+                        clicked: async () => this.resultControls.expandAll(1)
+                    },
+                    {
+                        label: "Expand to Level 2",
+                        clicked: async () => this.resultControls.expandAll(2)
+                    },
+                    {
+                        label: "Expand to Level 3",
+                        clicked: async () => this.resultControls.expandAll(3)
+                    }
+                ]
             },
             {
                 label: "Collapse All",
                 icon: "tree-collapse-all-icon",
-                clicked: async () => this.resultControls.collapseAllTables()
+                clicked: async () => this.resultControls.collapseAll()
             },
             {
                 label: "Expand All",
                 icon: "tree-expand-all-icon",
-                clicked: async () => this.resultControls.expandAllTables()
+                clicked: async () => this.resultControls.expandAll()
             },
             {
                 label: "Text Wrap",
@@ -42,7 +66,12 @@ export class ResultsView extends OutputViewBase {
                     rvs.textWrap = !rvs.textWrap;
                     this.active = rvs.textWrap;
                 },
-            }
+            },
+            {
+                label: "Clear",
+                icon: "clear-output-icon",
+                clicked: async () => this.clearOutput(),
+            },
         ];
     }
 

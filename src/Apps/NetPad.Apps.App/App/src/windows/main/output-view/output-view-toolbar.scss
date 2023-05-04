@@ -44,5 +44,14 @@ output-view-toolbar {
         .action-icon {
             margin-right: 0.3rem;
         }
+
+        div[data-bs-toggle="dropdown"] {
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
+        }
     }
 }

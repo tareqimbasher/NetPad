@@ -67,6 +67,16 @@ output-view {
                 border-left: 2px orange solid;
                 margin-top: 0.5rem;
                 margin-bottom: 1rem;
+
+                &.collapsed {
+                    .title {
+                        border-bottom: 2px greenyellow dotted;
+                    }
+
+                    .text {
+                        display: none;
+                    }
+                }
             }
         }
 
@@ -85,10 +95,14 @@ output-view {
             margin: 5px 0;
             border-color: $table-outline-color;
 
-            thead th { position: sticky !important; top: 0; z-index: 1; }
+            thead tr {
+                position: sticky !important;
+                top: -3px;
+                z-index: 1;
+            }
 
             &.collapsed > tbody,
-            &.collapsed > thead > .table-data-header{
+            &.collapsed > thead > .table-data-header {
                 display: none;
             }
 
