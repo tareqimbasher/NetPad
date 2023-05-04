@@ -1,5 +1,4 @@
 @import "~styles/main";
-@import "~styles/themes";
 
 output-view {
     display: flex;
@@ -7,6 +6,12 @@ output-view {
     flex-grow: 1;
     min-height: 0;
     overflow: hidden;
+
+    &:hover {
+        .nav-controls {
+            display: flex;
+        }
+    }
 
     /*
     * CSS for the Container housing generated HTML

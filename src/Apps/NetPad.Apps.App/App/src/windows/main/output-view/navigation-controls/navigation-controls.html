@@ -1,0 +1,25 @@
+<div class="nav-controls" style="top: 0.5rem" show.bind="showNavigationControls && showTop">
+    <button class="btn"
+            click.trigger="navigateTop()"
+            title="Go to Top">
+        <i class="fa fa-angles-up"></i>
+    </button>
+    <button class="btn"
+            click.trigger="navigateUp()"
+            title="Previous">
+        <i class="up-icon"></i>
+    </button>
+</div>
+
+<div class="nav-controls" style="bottom: 1rem" show.bind="showNavigationControls && showBottom">
+    <button class="btn"
+            click.trigger="navigateDown()"
+            title="Next">
+        <i class="down-icon"></i>
+    </button>
+    <button class="btn"
+            click.trigger="navigateBottom()"
+            title="Go to Bottom">
+        <i class="fa fa-angles-down"></i>
+    </button>
+</div>

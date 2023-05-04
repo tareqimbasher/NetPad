@@ -1,0 +1,28 @@
+@import "~styles/themes";
+
+.nav-controls {
+    $borderRadius: 5px;
+
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    z-index: 1;
+    right: 1rem;
+    gap: 5px;
+    border-radius: $borderRadius;
+
+    &:hover {
+        @include theme(background-color, backgroundColor);
+    }
+
+    button {
+        //border-radius: 60px;
+        border-radius: $borderRadius;
+        height: 1.7rem;
+        width: 1.7rem;
+        text-align: center;
+        padding: 0.15rem 0.1rem;
+        font-size: 12px;
+        @include theme(color, textColor);
+    }
+}
