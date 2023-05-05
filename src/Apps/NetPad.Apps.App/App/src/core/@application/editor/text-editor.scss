@@ -16,4 +16,10 @@ text-editor {
         padding: 0 2px;
         border-radius: 4px;
     }
+
+    .monaco-inputbox input:active,
+    .monaco-inputbox input:focus{
+        outline-color: #0d6efd;
+        outline-style: solid;
+    }
 }

@@ -35,6 +35,35 @@ export const BuiltinShortcuts = [
         .configurable(false)
         .enabled(),
 
+    new Shortcut("Go to Script")
+        .withCtrlKey()
+        .withKey(KeyCode.KeyT)
+        .hasAction(ctx => {
+            const activeScriptId = ctx.session.active?.script.id;
+            if (!activeScriptId) {
+                return;
+            }
+
+            const editors = monaco.editor.getEditors();
+            if (!editors.length) {
+                return;
+            }
+
+            let editor = editors.find(e => {
+                const model = e.getModel();
+                return !model ? false : (EditorUtil.getScriptId(model) === activeScriptId);
+            })
+
+            if (!editor) {
+                editor = editors.find(e => e.hasTextFocus() || e.hasWidgetFocus()) || editors[0];
+            }
+
+            editor.focus();
+            editor.getAction("builtin.actions.go-to-script")?.run();
+        })
+        .configurable(false)
+        .enabled(),
+
     new Shortcut("New")
         .withCtrlKey()
         .withKey(KeyCode.KeyN)

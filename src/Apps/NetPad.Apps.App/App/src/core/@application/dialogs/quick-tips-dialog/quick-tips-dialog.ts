@@ -3,7 +3,7 @@ import {IDialogDom, IDialogService} from "@aurelia/dialog";
 import {DialogBase} from "@application/dialogs/dialog-base";
 
 export class QuickTipsDialog extends DialogBase {
-    private static currentVersion = "1"; // Increment this to retrigger this popup to show as first time
+    private static currentVersion = "2"; // Increment this to re-trigger this popup to show as first time
     private static lsKey_LastVisitedVersion = `Dialogs.${nameof(QuickTipsDialog)}.shownForFirstTime`;
     private readonly firstUserVisit;
 
