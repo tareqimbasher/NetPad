@@ -19,6 +19,7 @@ public class Settings : ISettingsOptions
     }
 
     [JsonInclude] public Version Version { get; private set; }
+    [JsonInclude] public bool? AutoCheckUpdates { get; private set; }
     [JsonInclude] public string ScriptsDirectoryPath { get; private set; }
     [JsonInclude] public string AutoSaveScriptsDirectoryPath { get; private set; }
     [JsonInclude] public string PackageCacheDirectoryPath { get; private set; }
@@ -26,6 +27,12 @@ public class Settings : ISettingsOptions
     [JsonInclude] public EditorOptions Editor { get; private set; }
     [JsonInclude] public ResultsOptions Results { get; private set; }
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; }
+
+    public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
+    {
+        AutoCheckUpdates = autoCheckUpdates;
+        return this;
+    }
 
     public Settings SetScriptsDirectoryPath(string scriptsDirectoryPath)
     {
@@ -105,6 +112,8 @@ public class Settings : ISettingsOptions
 
         if (Version == null)
             Version = Version.Parse(LatestSettingsVersion);
+
+        AutoCheckUpdates ??= true;
 
         if (string.IsNullOrWhiteSpace(ScriptsDirectoryPath))
             ScriptsDirectoryPath = AppDataProvider.Defaults.ScriptsDirectoryPath.Path;

@@ -1,0 +1,25 @@
+.app-update-dialog {
+    width: 400px;
+    padding: 2rem;
+
+    .main-header {
+        margin-bottom: 2rem;
+    }
+
+    .version-item {
+        display: flex;
+        justify-content: space-between;
+
+        &:not(:last-child) {
+            margin-bottom: 1rem;
+        }
+    }
+
+    .version-description {
+        display: inline-block;
+    }
+
+    .bottom-bar {
+        margin-top: 2rem !important;
+    }
+}

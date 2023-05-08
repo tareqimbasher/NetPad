@@ -11,6 +11,7 @@ import {
     ISession,
     Script,
     ScriptService,
+    Settings,
 } from "@domain";
 import {
     BuiltinCompletionProvider,
@@ -37,6 +38,7 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
 import {ExcelService, IExcelService} from "@application/data/excel-service";
+import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -66,8 +68,13 @@ export class Bootstrapper implements IWindowBootstrapper {
             PaneHost,
             DataConnectionName,
             AppTask.activated(IContainer, async container => {
-                container.get(IAppService).notifyClientAppIsReady();
+                await container.get(IAppService).notifyClientAppIsReady();
                 await QuickTipsDialog.showIfFirstVisit(container.get(IDialogService));
+
+                const settings = container.get(Settings);
+                if (settings.autoCheckUpdates) {
+                    await AppUpdateDialog.checkForUpdate(false, container);
+                }
             })
         );
 
@@ -128,6 +135,7 @@ class BuiltInActionProvider implements IActionProvider, ICommandProvider {
             }
         }];
     }
+
     public provideActions(): monaco.editor.IActionDescriptor[] {
         return [
             {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +16,7 @@ using NetPad.CQs;
 using NetPad.DotNet;
 using NetPad.Filters;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad.Controllers;
 
@@ -21,10 +24,61 @@ namespace NetPad.Controllers;
 [Route("app")]
 public class AppController : Controller
 {
+    private readonly ILogger<AppController> _logger;
+
+    public AppController(ILogger<AppController> logger)
+    {
+        _logger = logger;
+    }
+
     [HttpGet("identifier")]
     public AppIdentifier GetIdentifier([FromServices] AppIdentifier appIdentifier)
     {
         return appIdentifier;
+    }
+
+    [HttpGet("latest-version")]
+    public async Task<string?> GetLatestVersion([FromServices] HttpClient httpClient)
+    {
+        try
+        {
+            const string url = "https://github.com/tareqimbasher/NetPad/releases/latest";
+
+            var html = await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
+            {
+                var result = await httpClient.GetAsync(url);
+                return await result.Content.ReadAsStringAsync();
+            });
+
+            if (html == null)
+            {
+                return null;
+            }
+
+            var parts = html.Split("releases/tag/v").Skip(1);
+
+            var sb = new StringBuilder();
+            foreach (var part in parts)
+            {
+                sb.Clear();
+                foreach (var c in part)
+                {
+                    if (c == '.' || char.IsDigit(c)) sb.Append(c);
+                    else break;
+                }
+
+                var versionStr = sb.ToString();
+                if (string.IsNullOrWhiteSpace(versionStr) || !Version.TryParse(versionStr, out var version)) continue;
+
+                return version.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest version");
+        }
+
+        return null;
     }
 
     [HttpPost("client/ready")]

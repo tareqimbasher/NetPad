@@ -219,6 +219,11 @@ button > .icon-base {
     @extend .fa-file-excel;
 }
 
+.cloud-icon {
+    @extend %icon-base;
+    @extend .fa-cloud;
+}
+
 // CONTEXTUAL ICONS
 .window-close-icon {
     @extend %icon-base;

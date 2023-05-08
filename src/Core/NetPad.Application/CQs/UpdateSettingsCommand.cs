@@ -31,6 +31,7 @@ public class UpdateSettingsCommand : Command
             var incoming = request.Settings;
 
             _settings
+                .SetAutoCheckUpdates(incoming.AutoCheckUpdates ?? true)
                 .SetScriptsDirectoryPath(incoming.ScriptsDirectoryPath)
                 .SetPackageCacheDirectoryPath(incoming.PackageCacheDirectoryPath)
                 .SetAppearanceOptions(incoming.Appearance)
