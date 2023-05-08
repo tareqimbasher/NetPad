@@ -30,55 +30,14 @@ export class ResultsView extends OutputViewBase {
                 label: "Export",
                 actions: [
                     {
+                        icon: "excel-file-icon text-green",
                         label: "Export to Excel",
-                        clicked: async () => {
-                            const groups = Array.from(this.outputElement.querySelectorAll(".group"));
-
-                            if (!groups.length) {
-                                alert("There is no output to export.");
-                                return;
-                            }
-
-                            const result = await DialogBase.toggle(this.dialogService, ExcelExportDialog);
-                            if (result.status !== DialogDeactivationStatuses.Ok) return;
-                            const exportOptions = result.value as IExcelExportOptions;
-
-                            const elementsToExport: Element[] = [];
-                            for (const group of Array.from(this.outputElement.querySelectorAll(".group"))) {
-                                const table = group.querySelector(":scope > table");
-                                if (table) {
-                                    elementsToExport.push(table);
-                                    continue;
-                                }
-
-                                if (!exportOptions.includeNonTabularData) continue;
-
-                                const title = group.querySelector(":scope > .title");
-                                if (title && group.childElementCount > 1 && group.lastElementChild) {
-                                    elementsToExport.push(group.lastElementChild)
-                                } else if (!title) {
-                                    elementsToExport.push(group);
-                                }
-                            }
-
-                            const workbook = this.excelService.export(elementsToExport, exportOptions);
-
-                            if (exportOptions.includeCode) {
-                                const worksheet = workbook.addWorksheet("Code");
-                                worksheet.getRow(1).height = 2000;
-                                worksheet.getColumn(1).width = 300;
-                                const firstCell = worksheet.getCell(1, 1);
-                                firstCell.alignment = {vertical: "top", horizontal: "left"};
-                                firstCell.value = this.environment.script.code;
-                            }
-
-                            const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
-                            System.downloadFile(
-                                `${this.environment.script.name}_${Util.dateToString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
-                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                buffer.toString('base64')
-                            );
-                        }
+                        clicked: async () => await this.exportOutputToExcel()
+                    },
+                    {
+                        icon: "html-icon text-orange",
+                        label: "Export to HTML",
+                        clicked: async () => await this.exportOutputToHtml()
                     }
                 ]
             },
@@ -138,7 +97,9 @@ export class ResultsView extends OutputViewBase {
         ];
     }
 
-    public attached() {
+    public override attached() {
+        super.attached();
+
         this.resultControls = new ResultControls(this.outputElement);
         this.addDisposable(() => this.resultControls.dispose());
 
@@ -154,10 +115,12 @@ export class ResultsView extends OutputViewBase {
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
+        super.beforeAppendOutputHtml(documentFragment);
         this.resultControls.bind(documentFragment);
     }
 
     protected override beforeClearOutput() {
+        super.beforeClearOutput();
         this.resultControls.dispose();
     }
 
@@ -165,5 +128,85 @@ export class ResultsView extends OutputViewBase {
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
             this.clearOutput(true);
+    }
+
+    private async exportOutputToExcel() {
+        const groups = Array.from(this.outputElement.querySelectorAll(".group"));
+
+        if (!groups.length) {
+            alert("There is no output to export.");
+            return;
+        }
+
+        const result = await DialogBase.toggle(this.dialogService, ExcelExportDialog);
+        if (result.status !== DialogDeactivationStatuses.Ok) return;
+        const exportOptions = result.value as IExcelExportOptions;
+
+        const elementsToExport: Element[] = [];
+        for (const group of Array.from(this.outputElement.querySelectorAll(".group"))) {
+            const table = group.querySelector(":scope > table");
+            if (table) {
+                elementsToExport.push(table);
+                continue;
+            }
+
+            if (!exportOptions.includeNonTabularData) continue;
+
+            const title = group.querySelector(":scope > .title");
+            if (title && group.childElementCount > 1 && group.lastElementChild) {
+                elementsToExport.push(group.lastElementChild)
+            } else if (!title) {
+                elementsToExport.push(group);
+            }
+        }
+
+        const workbook = this.excelService.export(elementsToExport, exportOptions);
+
+        if (exportOptions.includeCode) {
+            const worksheet = workbook.addWorksheet("Code");
+            worksheet.getRow(1).height = 2000;
+            worksheet.getColumn(1).width = 300;
+            const firstCell = worksheet.getCell(1, 1);
+            firstCell.alignment = {vertical: "top", horizontal: "left"};
+            firstCell.value = this.environment.script.code;
+        }
+
+        const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
+        System.downloadFile(
+            `${this.environment.script.name}_${Util.dateToString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            buffer.toString('base64')
+        );
+    }
+
+    private async exportOutputToHtml() {
+        const name = `${this.environment.script.name}_${Util.dateToString(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
+
+        const metas = [...new Set<string>(
+            Array.from(document.head.querySelectorAll("meta"))
+                .map(s => s.outerHTML)
+        )].join("\n");
+
+        const styles = [...new Set(
+            Array.from(document.head.querySelectorAll("style"))
+                .map(s => s.outerHTML)
+                .filter(x => x.indexOf("output-view") >= 0)
+        )].join("\n");
+
+        const bodyContents = document.createRange().createContextualFragment(this.outputElement.outerHTML);
+        bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
+
+        let html = `<!DOCTYPE html>
+<html>
+<head>
+<title>${name}</title>
+${metas}
+${styles}
+</head>
+<body>
+<output-view>${bodyContents.firstElementChild?.outerHTML}</output-view>
+</body></html>`;
+
+        System.downloadTextAsFile(`${name}.html`, "text/html", html);
     }
 }

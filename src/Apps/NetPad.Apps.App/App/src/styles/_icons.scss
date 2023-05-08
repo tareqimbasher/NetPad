@@ -208,6 +208,12 @@ button > .icon-base {
     @extend .fa-arrow-up-right-from-square;
 }
 
+.html-icon {
+    @extend %icon-base;
+    @extend .fa-brands;
+    @extend .fa-html5;
+}
+
 .excel-file-icon {
     @extend %icon-base;
     @extend .fa-file-excel;

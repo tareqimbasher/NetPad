@@ -24,6 +24,18 @@ export class System {
         }
     }
 
+    public static downloadTextAsFile(fileName: string, mimeType = "text/plain", text: string) {
+        const downloadLink = document.createElement("A") as HTMLAnchorElement;
+        try {
+            downloadLink.download = fileName;
+            downloadLink.href = `data:${mimeType};charset=utf-8,${encodeURIComponent(text)}`;
+            downloadLink.target = '_blank';
+            downloadLink.click();
+        } finally {
+            downloadLink.remove();
+        }
+    }
+
     /**
      * Determines if app is running in Electron.
      */
