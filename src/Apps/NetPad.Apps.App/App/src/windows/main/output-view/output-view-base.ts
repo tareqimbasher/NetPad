@@ -89,6 +89,11 @@ export abstract class OutputViewBase extends ViewModelBase {
                 this.lastOutputElement = this.outputElement.appendChild(child);
             }
         }
+
+        this.afterAppendOutputHtml();
+    }
+
+    protected afterAppendOutputHtml() {
     }
 
     public setHtml(html: string) {

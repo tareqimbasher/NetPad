@@ -97,9 +97,7 @@ export class ResultsView extends OutputViewBase {
         ];
     }
 
-    public override attached() {
-        super.attached();
-
+    public attached() {
         this.resultControls = new ResultControls(this.outputElement);
         this.addDisposable(() => this.resultControls.dispose());
 
@@ -196,7 +194,7 @@ export class ResultsView extends OutputViewBase {
         const bodyContents = document.createRange().createContextualFragment(this.outputElement.outerHTML);
         bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
 
-        let html = `<!DOCTYPE html>
+        const html = `<!DOCTYPE html>
 <html>
 <head>
 <title>${name}</title>

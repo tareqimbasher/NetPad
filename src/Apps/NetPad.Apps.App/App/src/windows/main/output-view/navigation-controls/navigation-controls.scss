@@ -10,9 +10,11 @@
     right: 1rem;
     gap: 5px;
     border-radius: $borderRadius;
+    opacity: 0.65;
 
     &:hover {
         @include theme(background-color, backgroundColor);
+        opacity: 1;
     }
 
     button {
