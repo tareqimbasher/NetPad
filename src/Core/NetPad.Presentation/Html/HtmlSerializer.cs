@@ -52,7 +52,8 @@ public static class HtmlSerializer
                 node = new Element("span").WithAddClass("text").WithChild(node);
             }
         }
-        else if (outputIsAllText)
+
+        if (outputIsAllText)
         {
             group.WithAddClass("text");
         }

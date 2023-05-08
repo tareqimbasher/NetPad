@@ -12,6 +12,25 @@ export class Util {
         });
     }
 
+    public static dateToString(date: Date, format: string): string {
+        if (!date || !format) return "";
+
+        return format.replaceAll("yyyy", date.getFullYear().toString())
+            .replaceAll("MM", ("0" + date.getMonth()).slice(-2))
+            .replaceAll("M", date.getMonth().toString())
+            .replaceAll("dd", ("0" + date.getDate()).slice(-2))
+            .replaceAll("d", date.getDate().toString())
+            .replaceAll("HH", ("0" + date.getHours()).slice(-2))
+            .replaceAll("H", date.getHours().toString())
+            .replaceAll("mm", ("0" + date.getMinutes()).slice(-2))
+            .replaceAll("m", date.getMinutes().toString())
+            .replaceAll("ss", ("0" + date.getSeconds()).slice(-2))
+            .replaceAll("s", date.getSeconds().toString())
+            .replaceAll("fff", ("00" + date.getMilliseconds()).slice(-3))
+            .replaceAll("ff", ("0" + date.getMilliseconds()).slice(-2))
+            .replaceAll("f", date.getMilliseconds().toString());
+    }
+
     /**
      * Gets the difference of 2 dates in number of days.
      * @param a

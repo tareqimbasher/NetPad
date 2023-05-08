@@ -1,0 +1,108 @@
+<template class="excel-export-dialog">
+    <h4 class="main-header">
+        Export to Excel
+        <i class="fa-solid fa-file-excel text-green float-end"></i>
+    </h4>
+
+    <b>Options</b>
+    <div class="ms-3">
+        <div class="form-check" title="When checked, your code will be exported to a separate worksheet.">
+            <input class="form-check-input" type="checkbox" checked.bind="options.includeCode" id="chkExportCode">
+            <label class="form-check-label" for="chkExportCode">
+                Export code
+            </label>
+        </div>
+
+        <div class="form-check" title="Uncheck to export all output to a single worksheet.">
+            <input class="form-check-input" type="checkbox" checked.bind="options.sheetPerOutputItem"
+                   id="chkSheetPerOutputItem">
+            <label class="form-check-label" for="chkSheetPerOutputItem">
+                Export to multiple sheets
+            </label>
+        </div>
+
+        <div class="form-check" title="When checked, will attempt to freeze table header rows/columns.">
+            <input class="form-check-input" type="checkbox" checked.bind="options.freezeHeaders" id="chkFreezeHeaders">
+            <label class="form-check-label" for="chkFreezeHeaders">
+                Freeze headers
+            </label>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <div click.trigger="showAdvancedOptions = !showAdvancedOptions" class="fw-bold" style="cursor: pointer">
+            <i class="text-orange ${showAdvancedOptions ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'}"></i>
+            Advanced
+        </div>
+
+        <div class="ms-3" show.bind="showAdvancedOptions" style="padding: 0.5rem">
+            <div class="form-check mb-3"
+            title="Uncheck to export tables only.">
+                <input class="form-check-input" type="checkbox" checked.bind="options.includeNonTabularData"
+                       id="chkExportNonTabularData">
+                <label class="form-check-label" for="chkExportNonTabularData">
+                    Export non-tabular data
+                </label>
+            </div>
+
+            <b title="Background color for table headers">Header Background</b>
+            <div class="ms-3 d-flex align-items-center">
+                <div class="form-check form-check-inline d-flex align-items-center"
+                     repeat.for="option of headerBackgroundOptions.options">
+                    <input class="form-check-input mt-0"
+                           type="radio"
+                           name="chkHeaderBg"
+                           id="chkHeaderBg${$index}"
+                           model.bind="option"
+                           checked.bind="headerBackgroundOptions.selected">
+
+                    <label class="form-check-label ms-3" for="chkHeaderBg${$index}" if.bind="!option.isSelector">
+                        ${option.text}
+                    </label>
+
+                    <input else
+                           type="color"
+                           class="ms-3"
+                           style="width: 70px"
+                           value.bind="option.color"
+                           disabled.bind="headerBackgroundOptions.selected !== option">
+                </div>
+            </div>
+
+            <b title="Foreground color for table headers">Header Foreground</b>
+            <div class="ms-3 d-flex align-items-center">
+                <div class="form-check form-check-inline d-flex align-items-center"
+                     repeat.for="option of headerForegroundOptions.options">
+                    <input class="form-check-input mt-0"
+                           type="radio"
+                           name="chkHeaderFg"
+                           id="chkHeaderFg{$index}"
+                           model.bind="option"
+                           checked.bind="headerForegroundOptions.selected">
+
+                    <label class="form-check-label ms-3" for="chkHeaderFg{$index}" if.bind="!option.isSelector">
+                        ${option.text}
+                    </label>
+
+                    <input else
+                           type="color"
+                           class="ms-3"
+                           style="width: 70px"
+                           value.bind="option.color"
+                           disabled.bind="headerForegroundOptions.selected !== option">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="buttons">
+            <button class="btn btn-secondary" click.trigger="cancel()">
+                Cancel
+            </button>
+            <button class="btn btn-primary" click.trigger="export()">
+                Export
+            </button>
+        </div>
+    </div>
+</template>

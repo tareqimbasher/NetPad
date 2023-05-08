@@ -29,6 +29,7 @@ public class ObjectHtmlConverter : HtmlConverter
         var table = new Table();
 
         table.Head.AddAndGetElement("tr")
+            .WithAddClass("table-info-header")
             .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
             .AddText(type.GetReadableName(true));
 
@@ -42,10 +43,10 @@ public class ObjectHtmlConverter : HtmlConverter
             var tr = table.Body.AddAndGetElement("tr");
 
             // Add property name
-            tr.AddAndGetElement("td")
+            tr.AddAndGetElement("th")
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
                 .WithTitle($"[{property.PropertyType.GetReadableName(true)}] {name}")
-                .AddText($"{name}: ");
+                .AddText($"{name}");
 
             // Add property value
             tr.AddAndGetElement("td")

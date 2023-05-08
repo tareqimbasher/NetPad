@@ -94,17 +94,13 @@ output-view {
 
         /* TABLES */
         table.table {
-            $table-outline-color: #2e79a2;
+            $table-border-color: #3da3da; //#2e79a2
+            $table-info-header-bg-color: #2e79a2;
+            $table-data-header-bg-color: #525252;
 
             width: initial;
             margin: 5px 0;
-            border-color: $table-outline-color;
-
-            thead tr {
-                position: sticky !important;
-                top: -3px;
-                z-index: 1;
-            }
+            border-color: $table-border-color;
 
             &.collapsed > tbody,
             &.collapsed > thead > .table-data-header {
@@ -119,21 +115,26 @@ output-view {
                 line-height: 1;
                 padding: 3px 5px;
                 color: white;
-                background-color: $table-outline-color;
-
-                &:not(:last-of-type) {
-                    border-right: 1px #3da3da solid;
-                }
-
-                &.table-info-header {
-                    background-color: #525252;
-                    border-color: #525252;
-                    border-top-width: 1px;
-                }
+                background-color: $table-data-header-bg-color;
 
                 a {
                     color: white;
                 }
+            }
+
+            .table-info-header > th {
+                background-color: $table-info-header-bg-color;
+                border-color: $table-info-header-bg-color;
+                border-top-width: 1px;
+            }
+
+            .table-data-header {
+                position: sticky !important;
+                top: -3px;
+            }
+
+            .table-info-header + .table-data-header  {
+                top: -4px; // An extra -1 to account for border of info header
             }
 
             td {

@@ -13,7 +13,7 @@
         <i class="${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'active' : ''}"
            if.bind="!action.actions"
            click.trigger="actionClicked(action, $event)"></i>
-        <div else class="p-2 ps-3 pe-3" data-bs-toggle="dropdown">
+        <div else class="p-2 ps-3 pe-3 me-1" data-bs-toggle="dropdown">
             <span class="dropdown-toggle">
                 ${action.label}
             </span>

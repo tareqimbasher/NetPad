@@ -1,11 +1,14 @@
 import {IWindowBootstrapper} from "@application";
 import {Window} from "./window";
-import {Aurelia} from "aurelia";
+import {Aurelia, Registration} from "aurelia";
+import {ExcelService, IExcelService} from "@application/data/excel-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;
 
     public registerServices(app: Aurelia): void {
-        // nothing to register
+        app.register(
+            Registration.singleton(IExcelService, ExcelService)
+        );
     }
 }

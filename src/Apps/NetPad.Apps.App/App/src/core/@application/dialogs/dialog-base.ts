@@ -62,7 +62,17 @@ export abstract class DialogBase extends ViewModelBase {
         }
     }
 
-    public async close() {
+    public async ok(value?: unknown) {
+        const instance = DialogBase.instances.get((this as Record<string, unknown>).constructor.name);
+
+        if (!instance) {
+            return;
+        }
+
+        return instance.dialog.ok(value);
+    }
+
+    public async cancel() {
         const instance = DialogBase.instances.get((this as Record<string, unknown>).constructor.name);
 
         if (!instance) {

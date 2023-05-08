@@ -91,7 +91,7 @@ export class ResultControls extends WithDisposables {
     }
 
     private getTableCollapseTarget(table: HTMLTableElement): Element | null {
-        let collapseTarget = table.querySelector(":scope > thead > tr > th.table-info-header");
+        let collapseTarget = table.querySelector(":scope > thead > tr.table-info-header > th");
         if (!collapseTarget)
             collapseTarget = table.querySelector(":scope > thead > tr > th");
 

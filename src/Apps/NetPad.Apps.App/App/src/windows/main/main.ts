@@ -36,6 +36,7 @@ import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
+import {ExcelService, IExcelService} from "@application/data/excel-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -61,6 +62,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IActionProvider, BuiltInActionProvider),
             Registration.singleton(ICommandProvider, BuiltInActionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
+            Registration.singleton(IExcelService, ExcelService),
             PaneHost,
             DataConnectionName,
             AppTask.activated(IContainer, async container => {
