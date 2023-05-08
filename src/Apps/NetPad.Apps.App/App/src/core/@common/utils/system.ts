@@ -12,7 +12,7 @@ export class System {
             window.open(url, "_blank");
     }
 
-    public static downloadFile(fileName: string, mimeType: string = "text/plain", base64: string) {
+    public static downloadFile(fileName: string, mimeType = "text/plain", base64: string) {
         const downloadLink = document.createElement("A") as HTMLAnchorElement;
         try {
             downloadLink.download = fileName;

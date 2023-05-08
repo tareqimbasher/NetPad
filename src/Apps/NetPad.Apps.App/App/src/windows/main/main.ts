@@ -123,7 +123,7 @@ class BuiltInActionProvider implements IActionProvider, ICommandProvider {
         return [{
             id: "builtin.commands.quickInput",
             handler: async (accessor, func: (service: unknown) => Promise<void>) => {
-                let quickInputService = accessor.get(IQuickInputService)
+                const quickInputService = accessor.get(IQuickInputService)
                 await func(quickInputService);
             }
         }];

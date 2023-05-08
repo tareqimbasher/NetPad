@@ -74,13 +74,13 @@ export class ExcelService implements IExcelService {
             const wsRow = worksheet.getRow(position.row);
             let columnNumber = position.column;
 
-            for (let iCell = 0; iCell < table.tHead.rows[0].cells.length; iCell++) {
+            for (let iTableCell = 0; iTableCell < table.tHead.rows[0].cells.length; iTableCell++) {
 
-                const cell = table.tHead.rows[0].cells[iCell];
+                const cell = table.tHead.rows[0].cells[iTableCell];
                 const wsCell = wsRow.getCell(columnNumber);
                 wsCell.value = this.getTextContent(cell);
 
-                const column = widths[iCell];
+                const column = widths[iTableCell];
                 if (column.width > 1) {
                     worksheet.mergeCells(position.row, columnNumber, position.row, columnNumber + column.width - 1);
                     columnNumber = columnNumber + column.width;
@@ -120,7 +120,7 @@ export class ExcelService implements IExcelService {
                             } else {
                                 const innerTable = cell.firstElementChild as HTMLTableElement;
 
-                                let tmp: IWritePosition = {
+                                const tmp: IWritePosition = {
                                     row: position.row,
                                     column: columnNumber,
                                 };

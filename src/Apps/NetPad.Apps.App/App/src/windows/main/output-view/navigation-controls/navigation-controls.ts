@@ -90,7 +90,12 @@ export class NavigationControls extends ViewModelBase {
     }
 
     private elementIsVisibleInViewport(viewportElement: Element, el: Element, partiallyVisible = false) {
-        let {top, left, bottom, right} = el.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        let top = elRect.top;
+        let bottom = elRect.bottom;
+        const right = elRect.right;
+        const left = elRect.left;
+
         const viewport = viewportElement.getBoundingClientRect();
 
         const elStyle = window.getComputedStyle(el);
@@ -104,5 +109,5 @@ export class NavigationControls extends ViewModelBase {
         return partiallyVisible
             ? (isTopInView) || (isBottomInView) || isMiddleInView
             : top >= viewport.top && left >= viewport.left && bottom <= viewport.bottom && right <= viewport.right;
-    };
+    }
 }
