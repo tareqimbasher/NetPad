@@ -105,11 +105,11 @@ public class CollectionHtmlConverter : HtmlConverter
                 table.Head.ChildElements.Single().WithAddClass("table-data-header");
             }
 
-            var countHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
+            var infoHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
 
-            countHeaderRow
-                .AddAndGetElement("th")
+            infoHeaderRow
                 .WithAddClass("table-info-header")
+                .AddAndGetElement("th")
                 .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
                 .AddText(headerRowText);
         }
