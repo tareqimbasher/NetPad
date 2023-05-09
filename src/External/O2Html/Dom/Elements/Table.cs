@@ -2,39 +2,59 @@ using System.Linq;
 
 namespace O2Html.Dom.Elements;
 
+public abstract class ElementWithTableRows : Element
+{
+    protected ElementWithTableRows(string tagName) : base(tagName)
+    {
+    }
+
+    public Element AddAndGetRow()
+    {
+        return this.AddAndGetElement("tr");
+    }
+}
+
+public class THead : ElementWithTableRows
+{
+    public THead() : base("thead")
+    {
+    }
+
+    public THead WithHeading(string text, string? title = null)
+    {
+        AddAndGetHeading(text, title);
+        return this;
+    }
+
+    public Element AddAndGetHeading(string text, string? title = null)
+    {
+        var row = ChildElements.FirstOrDefault() ?? AddAndGetRow();
+
+        var heading = row.AddAndGetElement("th");
+
+        if (title != null)
+            heading.WithTitle(title);
+
+        return heading.WithText(text);
+    }
+}
+
+public class TBody : ElementWithTableRows
+{
+    public TBody() : base("tbody")
+    {
+    }
+}
+
 public class Table : Element
 {
     public Table() : base("table")
     {
-        Head = this.AddAndGetElement("thead");
-        Body = this.AddAndGetElement("tbody");
+        Head = this.AddAndGetChild(new THead());
+        Body = this.AddAndGetChild(new TBody());
     }
 
-    public Element Head { get; set; }
+    public THead Head { get; }
 
-    public Element Body { get; set; }
-
-    public void AddHeading(string headingText, string? title = null)
-    {
-        AddAndGetHeading(headingText, title);
-    }
-
-    public Element AddAndGetHeading(string headingText, string? title = null)
-    {
-        var tr = GetHeaderRow();
-        var th = tr.AddAndGetElement("th");
-
-        if (title != null)
-            th.WithTitle(title);
-
-        return th.WithText(headingText);
-    }
-
-    private Element GetHeaderRow()
-    {
-        if (!Head.Children.Any())
-            return Head.AddAndGetElement("tr");
-
-        return  Head.ChildElements.First();
-    }
+    public TBody Body { get; }
 }

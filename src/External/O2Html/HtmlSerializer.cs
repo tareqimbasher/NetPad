@@ -10,11 +10,10 @@ namespace O2Html;
 
 public sealed class HtmlSerializer
 {
-    private readonly Dictionary<Type, HtmlConverter?> _typeConverterCache = new();
-    private readonly Dictionary<Type, TypeCategory> _typeCategoryCache = new();
-    private readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
-    private readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
-
+    private static readonly Dictionary<Type, HtmlConverter?> _typeConverterCache = new();
+    private static readonly Dictionary<Type, TypeCategory> _typeCategoryCache = new();
+    private static readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
+    private static readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
     private static readonly HashSet<Type> _typesThatShouldBeRepresentedAsString = new HashSet<Type>
     {
         typeof(string),
@@ -45,6 +44,9 @@ public sealed class HtmlSerializer
         // Add default converters in this order, first converter in list
         // that can convert object takes precedence
         Converters.Add(new DotNetTypeWithStringRepresentationHtmlConverter());
+        Converters.Add(new TwoDimensionalArrayHtmlConverter());
+        Converters.Add(new DataSetHtmlConverter());
+        Converters.Add(new DataTableHtmlConverter());
         Converters.Add(new CollectionHtmlConverter());
         Converters.Add(new ObjectHtmlConverter());
     }
@@ -104,7 +106,7 @@ public sealed class HtmlSerializer
         return propertyInfos;
     }
 
-    public Type? GetElementType(Type collectionType)
+    public Type? GetCollectionElementType(Type collectionType)
     {
         if (_collectionElementTypeCache.TryGetValue(collectionType, out var elementType))
             return elementType;
@@ -118,17 +120,14 @@ public sealed class HtmlSerializer
 
     private HtmlConverter? GetConverter(Type type)
     {
-        if (_typeConverterCache.TryGetValue(type, out var converter))
-            return converter;
+        if (_typeConverterCache.TryGetValue(type, out var match))
+            return match;
 
-        for (int i = 0; i < Converters.Count; i++)
+        foreach (var converter in Converters)
         {
-            converter = Converters[i];
-            if (converter.CanConvert(this, type))
-            {
-                _typeConverterCache.Add(type, converter);
-                return converter;
-            }
+            if (!converter.CanConvert(this, type)) continue;
+            _typeConverterCache.Add(type, converter);
+            return converter;
         }
 
         _typeConverterCache.Add(type, null);

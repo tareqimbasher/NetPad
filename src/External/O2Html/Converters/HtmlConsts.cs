@@ -1,6 +1,6 @@
 ﻿namespace O2Html.Converters;
 
-public static class Consts
+public static class HtmlConsts
 {
     public const string HtmlAmpersand = "&amp;";
     public const string HtmlSpace = "&nbsp;";

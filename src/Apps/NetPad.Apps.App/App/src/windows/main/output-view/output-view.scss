@@ -1,5 +1,9 @@
 @import "~styles/main";
 
+$table-border-color: #3da3da; //#2e79a2
+$table-info-header-bg-color: #2e79a2;
+$table-data-header-bg-color: #525252;
+
 output-view {
     display: flex;
     flex-direction: column;
@@ -94,10 +98,6 @@ output-view {
 
         /* TABLES */
         table.table {
-            $table-border-color: #3da3da; //#2e79a2
-            $table-info-header-bg-color: #2e79a2;
-            $table-data-header-bg-color: #525252;
-
             width: initial;
             margin: 5px 0;
             border-color: $table-border-color;
@@ -120,6 +120,10 @@ output-view {
                 a {
                     color: white;
                 }
+            }
+
+            thead th {
+                white-space: nowrap;
             }
 
             .table-info-header > th {
@@ -164,4 +168,9 @@ output-view {
             }
         }
     }
+}
+
+.theme-light output-view table.table tr:not(.table-info-header) th {
+    color: black;
+    background-color: #dcdcdc;
 }

@@ -9,7 +9,7 @@ public static class HtmlSerializer
     {
         ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
         DoNotSerializeNonRootEmptyCollections = true,
-        MaxIQueryableSerializeLength = 1000
+        MaxCollectionSerializeLength = 1000
     };
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type) => O2Html.HtmlSerializer.IsDotNetTypeWithStringRepresentation(type);

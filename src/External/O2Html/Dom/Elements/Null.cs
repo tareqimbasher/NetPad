@@ -6,4 +6,9 @@ public class Null : Element
     {
         AddText("null");
     }
+
+    public Null(string cssClass) : this()
+    {
+        this.WithAddClass(cssClass);
+    }
 }
