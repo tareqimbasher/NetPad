@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2020 Tareq Imbasher",
-    buildVersion: "0.2.0",
+    buildVersion: "0.3.0",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -18,14 +18,7 @@ const electronBuilderConfig = {
             filter: [
                 "**/*"
             ]
-        },
-        // {
-        //     from: "../../../res",
-        //     to: "bin/res",
-        //     filter: [
-        //         "**/*"
-        //     ]
-        // },
+        }
     ],
     files: [
         {

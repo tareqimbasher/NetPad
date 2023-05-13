@@ -11,9 +11,9 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <RootNamespace>NetPad</RootNamespace>
         <Nullable>enable</Nullable>
-        <AssemblyVersion>0.2.0</AssemblyVersion>
-        <FileVersion>0.2.0</FileVersion>
-        <InformationalVersion>0.2.0</InformationalVersion>
+        <AssemblyVersion>0.3.0</AssemblyVersion>
+        <FileVersion>0.3.0</FileVersion>
+        <InformationalVersion>0.3.0</InformationalVersion>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />

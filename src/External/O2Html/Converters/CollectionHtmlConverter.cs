@@ -107,6 +107,7 @@ public class CollectionHtmlConverter : HtmlConverter
         else
         {
             table.Head.WithHeading(headerRowText);
+            table.Head.ChildElements.Single().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader);
         }
 
         return (table, enumerationResult.ElementsEnumerated);

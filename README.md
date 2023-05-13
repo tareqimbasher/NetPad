@@ -1,13 +1,13 @@
 # NetPad
 
-A cross-platform C# editor and playground.
+**A cross-platform C# editor and playground.**
 
 [![build](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml)
 [![CodeQL](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml)
 
-|                                                  Dark                                                   |                                                  Light                                                   |
-|:-------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------:|
-|    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-dark.png?raw=true)    |    ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-light.png?raw=true)    |
+|                                               Dark                                                |                                               Light                                                |
+|:-------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
+| ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-dark.png?raw=true) | ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-light.png?raw=true) |
 
 ## Motivation
 
@@ -16,8 +16,8 @@ utility when not working on Windows. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
 The goal isn't to reach 100% feature parity with LinqPad, but
-to offer an acceptable alternative that covers the most common features
-developers need, and if we're lucky, maybe a few useful new ones!
+to offer an acceptable alternative that covers the features
+developers most commonly need, and if we're lucky, a few new useful ones!
 
 #### If you like the project, please star it :star2:!
 
@@ -29,25 +29,26 @@ The following must be be installed to run NetPad:
     * The environment variable `DOTNET_ROOT` (or `DOTNET_INSTALL_DIR`) must be
       set and point to the directory where .NET is installed.
     * You can have additional .NET SDKs installed but you still need .NET 6 SDK
-      installed too.
+      installed too. (.NET 7 support coming very soon!)
 * [EF Core tools (.NET 6 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
 
-## [Download](https://github.com/tareqimbasher/NetPad/releases)
+## Download
 
-You can download the latest version on
-the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
+[Download](https://github.com/tareqimbasher/NetPad/releases/latest) the latest version or
+an older version from the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
 
 ## Updates
 
-NetPad does not have an auto-update feature yet, but it's in the works.
-The latest version can be downloaded on
-the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
+NetPad checks for updates on startup and will let you know when a new version is available.
+While it cannot _yet_ install the latest update automatically, that feature's in the works!
+
+The latest version can be downloaded from
+the [Releases](https://github.com/tareqimbasher/NetPad/releases/latest) page.
 
 ## Contribution
 
-This is a work in progress and still in alpha. All
-contributions are welcome!
+This is a work in progress and still in preview. All contributions are welcome!
 
 ## Features :tada:
 
@@ -56,14 +57,14 @@ contributions are welcome!
     * Manage namespaces
     * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console
+* Export results to Excel or HTML
 * Add and use database connections (currently only supports Microsoft SQL Server
-  and PostgreSQL)
+  and PostgreSQL, more coming soon!)
 * Auto-save: If you close NetPad, it will auto-save your changes and
   restore them the next time you fire it up
 * Add NuGet packages
 * Reference assemblies from disk
-* Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio
-  Code with these features:
+* Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
     * Code completion (Intellisense)
     * CodeLens
     * Semantic highlighting
@@ -76,16 +77,18 @@ contributions are welcome!
 
 ## Roadmap :construction:
 
-* Ability to use `Console.Read` methods to prompt for user input
-* Debugger
-* Add support for more database providers
+* .NET 7 support (coming very soon..!)
+* Debugging
+* Support for more database providers
+* Lazy-loading of results and a DataGrid view
+* Run T-SQL queries
+* Export a script as a "ready to run" .NET app
+* Ability to run a script from the command-line
 * Quality of Life:
-    * Support for more complex objects in the results console, ex: Dumping
+    * Support for even more complex objects in the results console, ex: Dumping
       images
-    * Exporting results to different file formats, or to the clipboard
-    * Change results styling
-    * Change max result set length when dumping Entity Framework IQueryable
-      collections (default is 1000 items)
+    * User-defined results styling
+    * Ability to change the max result set length when dumping collections (default is 1000 items)
     * Workspaces/Sessions
 * More OmniSharp integrations:
     * Code fix suggestions
