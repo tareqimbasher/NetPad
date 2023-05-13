@@ -19,6 +19,8 @@ public interface IScriptRuntime : IDisposable, IAsyncDisposable
 /// </summary>
 public interface IScriptRuntime<in TScriptOutputAdapter> : IScriptRuntime where TScriptOutputAdapter : IScriptOutputAdapter
 {
+    void AddInput(IInputReader<string> outputAdapter);
+    void RemoveInput(IInputReader<string> outputAdapter);
     void AddOutput(TScriptOutputAdapter outputAdapter);
     void RemoveOutput(TScriptOutputAdapter outputAdapter);
 }

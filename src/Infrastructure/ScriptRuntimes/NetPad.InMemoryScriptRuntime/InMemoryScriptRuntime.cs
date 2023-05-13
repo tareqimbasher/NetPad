@@ -29,6 +29,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly ILogger<InMemoryScriptRuntime> _logger;
+    private readonly HashSet<IInputReader<string>> _externalInputAdapters;
     private readonly MainScriptOutputAdapter _outputAdapter;
     private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
     private IServiceScope? _serviceScope;
@@ -47,6 +48,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _logger = logger;
+        _externalInputAdapters = new HashSet<IInputReader<string>>();
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
 
         void ForwardToExternalAdapters<TScriptOutput>(
@@ -122,6 +124,16 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
     public Task StopScriptAsync()
     {
         throw new InvalidOperationException("Cannot stop a script running in-memory.");
+    }
+
+    public void AddInput(IInputReader<string> inputReader)
+    {
+        _externalInputAdapters.Add(inputReader);
+    }
+
+    public void RemoveInput(IInputReader<string> inputReader)
+    {
+        _externalInputAdapters.Remove(inputReader);
     }
 
     public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)

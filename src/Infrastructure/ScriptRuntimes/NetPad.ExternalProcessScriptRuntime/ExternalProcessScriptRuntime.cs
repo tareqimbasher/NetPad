@@ -42,6 +42,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
+    private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly MainScriptOutputAdapter _outputAdapter;
     private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
     private readonly DirectoryInfo _externalProcessRootDirectory;
@@ -63,6 +64,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _logger = logger;
+        _externalInputReaders = new HashSet<IInputReader<string>>();
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
         _externalProcessRootDirectory = AppDataProvider.ExternalProcessesDirectoryPath
             .Combine(_script.Id.ToString())
@@ -126,14 +128,30 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
             // TODO optimize this section
-            _processHandler =
-                new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
+            _processHandler = new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async output =>
             {
-                _logger.LogDebug(
-                    "Script output received. Length: {OutputLength}",
-                    output?.Length.ToString() ?? "null");
+                if (output == "[INPUT_REQUEST]")
+                {
+                    _logger.LogDebug("Input Request received");
+
+                    // The first reader that returns a non-null input will be used
+                    string? input = null;
+                    foreach (var inputReader in _externalInputReaders)
+                    {
+                        input = await inputReader.ReadAsync();
+                        if (input != null)
+                        {
+                            break;
+                        }
+                    }
+
+                    await _processHandler.IO.StandardInput.WriteLineAsync(input);
+                    return;
+                }
+
+                _logger.LogDebug("Script output received. Length: {OutputLength}", output?.Length.ToString() ?? "null");
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
 
@@ -146,9 +164,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     }
                     catch
                     {
-                        _logger.LogDebug(
-                            "Script output is not JSON or could not be deserialized. Output: '{Output}'",
-                            output);
+                        _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{Output}'", output);
                     }
                 }
 
@@ -440,6 +456,16 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
             }
         }
+    }
+
+    public void AddInput(IInputReader<string> inputReader)
+    {
+        _externalInputReaders.Add(inputReader);
+    }
+
+    public void RemoveInput(IInputReader<string> inputReader)
+    {
+        _externalInputReaders.Remove(inputReader);
     }
 
     public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)

@@ -18,7 +18,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     private readonly ILogger<ScriptEnvironment> _logger;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IServiceScope _serviceScope;
-    private IInputReader _inputReader;
+    private IInputReader<string> _inputReader;
     private IScriptOutputAdapter<ScriptOutput, ScriptOutput> _outputAdapter;
     private ScriptStatus _status;
     private IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>? _runtime;
@@ -29,10 +29,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         Script = script;
         _serviceScope = serviceScope;
         _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
-        _dataConnectionResourcesCache =
-            _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
+        _dataConnectionResourcesCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
         _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
-        _inputReader = ActionInputReader.Null;
+        _inputReader = ActionInputReader<string>.Null;
         _outputAdapter = IScriptOutputAdapter<ScriptOutput, ScriptOutput>.Null;
         _status = ScriptStatus.Ready;
 
@@ -211,16 +210,16 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
-    public void SetIO(IInputReader inputReader, IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void SetIO(IInputReader<string> inputReader, IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
     {
         EnsureNotDisposed();
 
-        RemoveScriptRuntimeOutputHandlers();
+        RemoveScriptRuntimeIOHandlers();
 
         _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
         _outputAdapter = outputAdapter ?? throw new ArgumentNullException(nameof(outputAdapter));
 
-        AddScriptRuntimeOutputHandlers();
+        AddScriptRuntimeIOHandlers();
     }
 
     private void Initialize()
@@ -260,19 +259,21 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             var factory = _serviceScope.ServiceProvider.GetRequiredService<IScriptRuntimeFactory>();
             _runtime = await factory.CreateScriptRuntimeAsync(Script);
 
-            AddScriptRuntimeOutputHandlers();
+            AddScriptRuntimeIOHandlers();
         }
 
         return _runtime;
     }
 
-    private void AddScriptRuntimeOutputHandlers()
+    private void AddScriptRuntimeIOHandlers()
     {
+        _runtime?.AddInput(_inputReader);
         _runtime?.AddOutput(_outputAdapter);
     }
 
-    private void RemoveScriptRuntimeOutputHandlers()
+    private void RemoveScriptRuntimeIOHandlers()
     {
+        _runtime?.RemoveInput(_inputReader);
         _runtime?.RemoveOutput(_outputAdapter);
     }
 

@@ -4446,6 +4446,7 @@ export class Types implements ITypes {
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
+    promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
@@ -4486,6 +4487,7 @@ export class Types implements ITypes {
             this.alertUserCommand = _data["alertUserCommand"] ? AlertUserCommand.fromJS(_data["alertUserCommand"]) : <any>undefined;
             this.confirmWithUserCommand = _data["confirmWithUserCommand"] ? ConfirmWithUserCommand.fromJS(_data["confirmWithUserCommand"]) : <any>undefined;
             this.promptUserCommand = _data["promptUserCommand"] ? PromptUserCommand.fromJS(_data["promptUserCommand"]) : <any>undefined;
+            this.promptUserForInputCommand = _data["promptUserForInputCommand"] ? PromptUserForInputCommand.fromJS(_data["promptUserForInputCommand"]) : <any>undefined;
             this.alertUserAboutMissingAppDependencies = _data["alertUserAboutMissingAppDependencies"] ? AlertUserAboutMissingAppDependencies.fromJS(_data["alertUserAboutMissingAppDependencies"]) : <any>undefined;
             this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
             this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
@@ -4526,6 +4528,7 @@ export class Types implements ITypes {
         data["alertUserCommand"] = this.alertUserCommand ? this.alertUserCommand.toJSON() : <any>undefined;
         data["confirmWithUserCommand"] = this.confirmWithUserCommand ? this.confirmWithUserCommand.toJSON() : <any>undefined;
         data["promptUserCommand"] = this.promptUserCommand ? this.promptUserCommand.toJSON() : <any>undefined;
+        data["promptUserForInputCommand"] = this.promptUserForInputCommand ? this.promptUserForInputCommand.toJSON() : <any>undefined;
         data["alertUserAboutMissingAppDependencies"] = this.alertUserAboutMissingAppDependencies ? this.alertUserAboutMissingAppDependencies.toJSON() : <any>undefined;
         data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
         data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
@@ -4566,6 +4569,7 @@ export interface ITypes {
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
+    promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
@@ -5940,6 +5944,46 @@ export class PromptUserCommand extends CommandOfString implements IPromptUserCom
 export interface IPromptUserCommand extends ICommandOfString {
     message: string;
     prefillValue?: string | undefined;
+}
+
+export class PromptUserForInputCommand extends CommandOfString implements IPromptUserForInputCommand {
+    scriptId!: string;
+
+    constructor(data?: IPromptUserForInputCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): PromptUserForInputCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new PromptUserForInputCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PromptUserForInputCommand {
+        const json = this.toJSON();
+        let result = new PromptUserForInputCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPromptUserForInputCommand extends ICommandOfString {
+    scriptId: string;
 }
 
 export class AlertUserAboutMissingAppDependencies extends Command implements IAlertUserAboutMissingAppDependencies {

@@ -4,15 +4,18 @@ using NetPad.IO;
 
 public static class ScriptRuntimeServices
 {
+    private static TextReader _defaultConsoleInput;
     private static TextWriter _defaultConsoleOutput;
     private static IScriptOutputAdapter<object, object>? _output;
 
     public static void Init()
     {
-        // Capture default TextWriter used by system to write to the console
+        // Capture default IO used by system to read/write
+        _defaultConsoleInput = Console.In;
         _defaultConsoleOutput = Console.Out;
 
-        // Redirect standard console output
+        // Redirect standard console IO
+        Console.SetIn(new ActionTextReader(_defaultConsoleInput));
         Console.SetOut(new ActionTextWriter(new ActionOutputWriter<object>((o, _) => ResultWrite(o))));
     }
 
@@ -32,6 +35,11 @@ public static class ScriptRuntimeServices
     public static void SetIO(IScriptOutputAdapter<object, object>? output)
     {
         _output = output;
+    }
+
+    public static void RawConsoleWriteLine(string text)
+    {
+        _defaultConsoleOutput.WriteLine(text);
     }
 
     public static void ResultWrite(object? o = null, string? title = null)
@@ -124,5 +132,22 @@ internal class ActionTextWriter : TextWriter
     public override void WriteLine()
     {
         _outputWriter.WriteAsync("\n");
+    }
+}
+
+internal class ActionTextReader : TextReader
+{
+    private readonly TextReader _defaultConsoleInput;
+
+    public ActionTextReader(TextReader defaultConsoleInput)
+    {
+        _defaultConsoleInput = defaultConsoleInput;
+    }
+
+    public override string? ReadLine()
+    {
+        ScriptRuntimeServices.RawConsoleWriteLine("[INPUT_REQUEST]");
+        var input = _defaultConsoleInput.ReadLine();
+        return input;
     }
 }

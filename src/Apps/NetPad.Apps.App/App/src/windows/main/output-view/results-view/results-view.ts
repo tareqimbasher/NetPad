@@ -1,11 +1,20 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {ResultsPaneViewSettings} from "./results-view-settings";
-import {HtmlScriptOutput, IEventBus, ISession, ScriptOutputEmittedEvent, ScriptStatus, Settings} from "@domain";
+import {
+    HtmlScriptOutput,
+    IEventBus,
+    IIpcGateway,
+    ISession,
+    PromptUserForInputCommand,
+    ScriptOutputEmittedEvent,
+    ScriptStatus,
+    Settings
+} from "@domain";
 import {ResultControls} from "./result-controls";
 import {OutputViewBase} from "../output-view-base";
 import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
-import {System, Util} from "@common";
+import {KeyCode, System, Util} from "@common";
 import {DialogBase} from "@application/dialogs/dialog-base";
 import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";
 import {DialogDeactivationStatuses, IDialogService} from "@aurelia/dialog";
@@ -14,11 +23,16 @@ export class ResultsView extends OutputViewBase {
     public resultsViewSettings: ResultsPaneViewSettings;
     private resultControls: ResultControls;
 
+    private userInputVisible = false;
+    private txtUserInput: HTMLInputElement;
+    private userInputKeyHandler?: (ev: KeyboardEvent) => void;
+
     constructor(private readonly settings: Settings,
                 @ISession private readonly session: ISession,
                 @IExcelService private readonly excelService: IExcelService,
                 @IDialogService private readonly dialogService: IDialogService,
-                @IEventBus readonly eventBus: IEventBus,
+                @IEventBus private readonly eventBus: IEventBus,
+                @IIpcGateway private readonly ipcGateway: IIpcGateway,
                 @ILogger logger: ILogger
     ) {
         super(logger);
@@ -101,15 +115,26 @@ export class ResultsView extends OutputViewBase {
         this.resultControls = new ResultControls(this.outputElement);
         this.addDisposable(() => this.resultControls.dispose());
 
-        const token = this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
-            if (msg.scriptId === this.environment.script.id) {
-                if (!msg.output) return;
+        this.addDisposable(
+            this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
+                if (msg.scriptId !== this.environment.script.id || !msg.output)
+                    return;
 
                 const output = JSON.parse(msg.output) as HtmlScriptOutput;
                 this.appendOutput(output);
-            }
-        });
-        this.addDisposable(() => token.dispose());
+            })
+        );
+
+        this.addDisposable(
+            this.eventBus.subscribeToServer(PromptUserForInputCommand, cmd => {
+                if (cmd.scriptId !== this.environment.script.id)
+                    return;
+
+                this.showUserInput(cmd.id);
+            })
+        );
+
+        this.addDisposable(() => this.stopUserInput());
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
@@ -126,6 +151,34 @@ export class ResultsView extends OutputViewBase {
     private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
         if (oldStatus !== "Running" && newStatus === "Running")
             this.clearOutput(true);
+
+        if (newStatus !== "Running") {
+            this.stopUserInput();
+        }
+    }
+
+    private showUserInput(commandId: string) {
+        this.userInputKeyHandler = async (ev: KeyboardEvent) => {
+            if (ev.code === KeyCode.Enter) {
+                await this.ipcGateway.send("Respond", commandId, this.txtUserInput.value);
+                this.stopUserInput();
+            }
+        };
+
+        this.txtUserInput.value = "";
+        this.txtUserInput.addEventListener("keydown", this.userInputKeyHandler);
+        this.userInputVisible = true;
+        setTimeout(() => this.txtUserInput.focus(), 100);
+    }
+
+    private stopUserInput() {
+        this.userInputVisible = false;
+        this.txtUserInput.value = "";
+
+        if (this.userInputKeyHandler) {
+            this.txtUserInput.removeEventListener("keydown", this.userInputKeyHandler);
+            this.userInputKeyHandler = undefined;
+        }
     }
 
     private async exportOutputToExcel() {

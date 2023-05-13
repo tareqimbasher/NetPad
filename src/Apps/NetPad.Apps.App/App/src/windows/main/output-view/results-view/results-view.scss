@@ -4,4 +4,22 @@ results-view {
     flex-grow: 1;
     min-height: 0;
     overflow: hidden;
+    position: relative;
+
+    .user-input-container {
+        display: flex;
+        align-items: center;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        padding: 0.5rem;
+
+        label {
+            margin-right: 0.5rem;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+            line-height: 1rem;
+        }
+    }
 }

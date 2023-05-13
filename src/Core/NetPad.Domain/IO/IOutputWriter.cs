@@ -8,7 +8,7 @@ namespace NetPad.IO;
 public interface IOutputWriter<in TOutput>
 {
     /// <summary>
-    /// Writes output.
+    /// Write output.
     /// </summary>
     /// <param name="output">The output to write.</param>
     /// <param name="title">A title to associate with the output.</param>

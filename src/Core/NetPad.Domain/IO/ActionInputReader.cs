@@ -3,18 +3,18 @@ using System.Threading.Tasks;
 
 namespace NetPad.IO;
 
-public class ActionInputReader : IInputReader
+public class ActionInputReader<TInput> : IInputReader<TInput>
 {
-    private readonly Func<string?> _action;
+    private readonly Func<TInput?> _action;
 
-    public ActionInputReader(Func<string?> action)
+    public ActionInputReader(Func<TInput?> action)
     {
         _action = action;
     }
 
-    public static ActionInputReader Null => new(() => null);
+    public static ActionInputReader<TInput> Null => new(() => default);
 
-    public Task<string?> ReadAsync()
+    public Task<TInput?> ReadAsync()
     {
         return Task.FromResult(_action());
     }
