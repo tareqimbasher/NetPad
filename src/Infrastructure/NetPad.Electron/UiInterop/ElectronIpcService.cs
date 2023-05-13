@@ -38,6 +38,6 @@ public class ElectronIpcService : IIpcService
 
     public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message)
     {
-        throw new PlatformNotSupportedException();
+        throw new NotImplementedException();
     }
 }
