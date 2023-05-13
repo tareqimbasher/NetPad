@@ -99,6 +99,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
             infoHeaderRow
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader)
+                .WithTitle(type.GetReadableName(true))
                 .AddAndGetElement("th")
                 .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
                 .AddText(headerRowText);
