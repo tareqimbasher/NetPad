@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.CQs;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Scripts;
@@ -50,12 +51,17 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             {
                 AutoSaveScriptChanges(environment);
 
+                var inputReader = new AsyncActionInputReader<string>(
+                    // TODO There should be a way to cancel the wait when the environment stops
+                    // Possibly using a CancellationToken
+                    async () => await _ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
+
                 var outputAdapter = new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(
                     new IpcScriptResultOutputWriter(environment.Script.Id, _ipcService),
                     new IpcScriptSqlOutputWriter(environment.Script.Id, _ipcService)
                 );
 
-                environment.SetIO(ActionInputReader.Null, outputAdapter);
+                environment.SetIO(inputReader, outputAdapter);
             }
 
             return Task.CompletedTask;

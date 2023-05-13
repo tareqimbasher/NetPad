@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
+using System.Xml.Linq;
 using O2Html.Converters;
 using O2Html.Dom;
 
@@ -10,23 +12,10 @@ namespace O2Html;
 
 public sealed class HtmlSerializer
 {
-    private readonly Dictionary<Type, HtmlConverter?> _typeConverterCache = new();
-    private readonly Dictionary<Type, TypeCategory> _typeCategoryCache = new();
-    private readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
-    private readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
-
-    private static readonly HashSet<Type> _typesThatShouldBeRepresentedAsString = new HashSet<Type>
-    {
-        typeof(string),
-        typeof(decimal),
-        typeof(DateTime),
-#if NET6_0_OR_GREATER
-        typeof(DateOnly),
-#endif
-        typeof(TimeSpan),
-        typeof(DateTimeOffset),
-        typeof(Guid)
-    };
+    private static readonly Dictionary<Type, HtmlConverter?> _typeConverterCache = new();
+    private static readonly Dictionary<Type, TypeCategory> _typeCategoryCache = new();
+    private static readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
+    private static readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
 
     public HtmlSerializer(HtmlSerializerSettings? serializerSettings = null)
     {
@@ -44,7 +33,15 @@ public sealed class HtmlSerializer
 
         // Add default converters in this order, first converter in list
         // that can convert object takes precedence
+        Converters.Add(new TwoDimensionalArrayHtmlConverter());
+        Converters.Add(new DataSetHtmlConverter());
+        Converters.Add(new DataTableHtmlConverter());
+        Converters.Add(new XNodeHtmlConverter());
+        Converters.Add(new XmlNodeHtmlConverter());
         Converters.Add(new DotNetTypeWithStringRepresentationHtmlConverter());
+#if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
+        Converters.Add(new TupleHtmlConverter());
+#endif
         Converters.Add(new CollectionHtmlConverter());
         Converters.Add(new ObjectHtmlConverter());
     }
@@ -104,7 +101,7 @@ public sealed class HtmlSerializer
         return propertyInfos;
     }
 
-    public Type? GetElementType(Type collectionType)
+    public Type? GetCollectionElementType(Type collectionType)
     {
         if (_collectionElementTypeCache.TryGetValue(collectionType, out var elementType))
             return elementType;
@@ -118,17 +115,14 @@ public sealed class HtmlSerializer
 
     private HtmlConverter? GetConverter(Type type)
     {
-        if (_typeConverterCache.TryGetValue(type, out var converter))
-            return converter;
+        if (_typeConverterCache.TryGetValue(type, out var match))
+            return match;
 
-        for (int i = 0; i < Converters.Count; i++)
+        foreach (var converter in Converters)
         {
-            converter = Converters[i];
-            if (converter.CanConvert(this, type))
-            {
-                _typeConverterCache.Add(type, converter);
-                return converter;
-            }
+            if (!converter.CanConvert(this, type)) continue;
+            _typeConverterCache.Add(type, converter);
+            return converter;
         }
 
         _typeConverterCache.Add(type, null);
@@ -153,11 +147,15 @@ public sealed class HtmlSerializer
     public static bool IsDotNetTypeWithStringRepresentation(Type type)
     {
         return type.IsPrimitive
-               || _typesThatShouldBeRepresentedAsString.Contains(type)
                || type.IsEnum
+               || type == typeof(string)
+               || typeof(IFormattable).IsAssignableFrom(type)
                || typeof(Exception).IsAssignableFrom(type)
+               || typeof(Type).IsAssignableFrom(type)
                || Nullable.GetUnderlyingType(type) != null
-               || typeof(Type).IsAssignableFrom(type);
+               || typeof(XNode).IsAssignableFrom(type)
+               || typeof(XmlNode).IsAssignableFrom(type)
+            ;
     }
 
     public static bool IsObjectType(Type type)

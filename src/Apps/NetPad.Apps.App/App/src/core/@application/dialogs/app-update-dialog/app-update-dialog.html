@@ -1,0 +1,37 @@
+<template class="app-update-dialog">
+    <h4 class="main-header" if.bind="!loading">
+        <i class="cloud-icon text-yellow"></i>
+        ${newerVersionExists ? 'A new update is available!' : 'You have the latest version'}
+    </h4>
+    <h5 else>
+        <i class="cloud-icon text-yellow"></i>
+        Checking for updates...
+        <span class="spinner-border float-end text-orange"></span>
+    </h5>
+
+    <div class="versions" if.bind="!loading">
+        <div class="version-item">
+            <span class="version-description">Latest version:</span>
+            <b>v${versions.latest.toString()}</b>
+        </div>
+
+        <div class="version-item">
+            <span class="version-description">You are currently on:</span>
+            v${versions.current.toString()}
+        </div>
+    </div>
+
+    <div class="bottom-bar" if.bind="!loading">
+        <div class="buttons">
+            <button class="btn btn-secondary"
+                    click.trigger="cancel()">
+                Close
+            </button>
+            <button class="btn btn-primary"
+                    if.bind="newerVersionExists"
+                    click.trigger="openLatestVersionPage()">
+                Download v${versions.latest.toString()} Now!
+            </button>
+        </div>
+    </div>
+</template>

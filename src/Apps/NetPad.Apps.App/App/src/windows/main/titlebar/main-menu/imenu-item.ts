@@ -6,6 +6,6 @@ export interface IMenuItem {
     helpText?: string,
     shortcut?: Shortcut,
     isDivider?: boolean;
-    click?: () => Promise<void>,
+    click?: () => Promise<void | unknown>,
     menuItems?: IMenuItem[],
 }

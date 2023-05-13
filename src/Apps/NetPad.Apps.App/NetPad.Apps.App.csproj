@@ -94,7 +94,4 @@
     <ItemGroup>
         <EmbeddedResource Remove="App\dist\**" />
     </ItemGroup>
-    <ItemGroup>
-        <Folder Include="wwwroot\loading-screen" />
-    </ItemGroup>
 </Project>

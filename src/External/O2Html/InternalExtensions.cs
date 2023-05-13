@@ -55,25 +55,23 @@ internal static class InternalExtensions
 
     internal static Type? GetCollectionElementType(this Type collectionType)
     {
-        Type? elementType;
-
+        // Arrays
         if (collectionType.IsArray)
         {
-            elementType = collectionType.GetElementType();
+            return collectionType.GetElementType();
         }
-        else
+
+        // IEnumerable<T> collections
+        Type? iEnumerable = FindIEnumerable(collectionType);
+        if (iEnumerable != null)
         {
-            Type? iEnumerable = FindIEnumerable(collectionType);
-
-            if (iEnumerable == null)
-            {
-                return typeof(object);
-            }
-
-            elementType = iEnumerable.GetGenericArguments()[0];
+            return iEnumerable.GetGenericArguments()[0];
         }
 
-        return elementType;
+        // Collections that might have an indexer
+        var indexerItemType = collectionType.GetProperties().FirstOrDefault(p => p.GetIndexParameters().Length > 0 && p.PropertyType != typeof(object))?.PropertyType;
+
+        return indexerItemType ?? typeof(object);
     }
 
     private static Type? FindIEnumerable(Type collectionType)

@@ -15,6 +15,8 @@ export interface IAppApiClient {
 
     getIdentifier(signal?: AbortSignal | undefined): Promise<AppIdentifier>;
 
+    getLatestVersion(signal?: AbortSignal | undefined): Promise<string>;
+
     notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void>;
 
     checkDependencies(signal?: AbortSignal | undefined): Promise<AppDependencyCheckResult>;
@@ -72,6 +74,42 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             });
         }
         return Promise.resolve<AppIdentifier>(<any>null);
+    }
+
+    getLatestVersion(signal?: AbortSignal | undefined): Promise<string> {
+        let url_ = this.baseUrl + "/app/latest-version";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetLatestVersion(_response);
+        });
+    }
+
+    protected processGetLatestVersion(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(<any>null);
     }
 
     notifyClientAppIsReady(signal?: AbortSignal | undefined): Promise<void> {
@@ -3931,6 +3969,7 @@ export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 export class Settings implements ISettings {
     version!: string;
+    autoCheckUpdates?: boolean | undefined;
     scriptsDirectoryPath!: string;
     autoSaveScriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
@@ -3957,6 +3996,7 @@ export class Settings implements ISettings {
     init(_data?: any) {
         if (_data) {
             this.version = _data["version"];
+            this.autoCheckUpdates = _data["autoCheckUpdates"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
             this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
@@ -3977,6 +4017,7 @@ export class Settings implements ISettings {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["version"] = this.version;
+        data["autoCheckUpdates"] = this.autoCheckUpdates;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
@@ -3997,6 +4038,7 @@ export class Settings implements ISettings {
 
 export interface ISettings {
     version: string;
+    autoCheckUpdates?: boolean | undefined;
     scriptsDirectoryPath: string;
     autoSaveScriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;
@@ -4404,6 +4446,7 @@ export class Types implements ITypes {
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
+    promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
@@ -4444,6 +4487,7 @@ export class Types implements ITypes {
             this.alertUserCommand = _data["alertUserCommand"] ? AlertUserCommand.fromJS(_data["alertUserCommand"]) : <any>undefined;
             this.confirmWithUserCommand = _data["confirmWithUserCommand"] ? ConfirmWithUserCommand.fromJS(_data["confirmWithUserCommand"]) : <any>undefined;
             this.promptUserCommand = _data["promptUserCommand"] ? PromptUserCommand.fromJS(_data["promptUserCommand"]) : <any>undefined;
+            this.promptUserForInputCommand = _data["promptUserForInputCommand"] ? PromptUserForInputCommand.fromJS(_data["promptUserForInputCommand"]) : <any>undefined;
             this.alertUserAboutMissingAppDependencies = _data["alertUserAboutMissingAppDependencies"] ? AlertUserAboutMissingAppDependencies.fromJS(_data["alertUserAboutMissingAppDependencies"]) : <any>undefined;
             this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
             this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
@@ -4484,6 +4528,7 @@ export class Types implements ITypes {
         data["alertUserCommand"] = this.alertUserCommand ? this.alertUserCommand.toJSON() : <any>undefined;
         data["confirmWithUserCommand"] = this.confirmWithUserCommand ? this.confirmWithUserCommand.toJSON() : <any>undefined;
         data["promptUserCommand"] = this.promptUserCommand ? this.promptUserCommand.toJSON() : <any>undefined;
+        data["promptUserForInputCommand"] = this.promptUserForInputCommand ? this.promptUserForInputCommand.toJSON() : <any>undefined;
         data["alertUserAboutMissingAppDependencies"] = this.alertUserAboutMissingAppDependencies ? this.alertUserAboutMissingAppDependencies.toJSON() : <any>undefined;
         data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
         data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
@@ -4524,6 +4569,7 @@ export interface ITypes {
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
+    promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
@@ -5898,6 +5944,46 @@ export class PromptUserCommand extends CommandOfString implements IPromptUserCom
 export interface IPromptUserCommand extends ICommandOfString {
     message: string;
     prefillValue?: string | undefined;
+}
+
+export class PromptUserForInputCommand extends CommandOfString implements IPromptUserForInputCommand {
+    scriptId!: string;
+
+    constructor(data?: IPromptUserForInputCommand) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+        }
+    }
+
+    static fromJS(data: any): PromptUserForInputCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new PromptUserForInputCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PromptUserForInputCommand {
+        const json = this.toJSON();
+        let result = new PromptUserForInputCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPromptUserForInputCommand extends ICommandOfString {
+    scriptId: string;
 }
 
 export class AlertUserAboutMissingAppDependencies extends Command implements IAlertUserAboutMissingAppDependencies {

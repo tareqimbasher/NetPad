@@ -32,6 +32,11 @@ export class FindTextBox extends ViewModelBase {
         const ctrlFHandler = ev => {
             if (ev.ctrlKey && ev.code == KeyCode.KeyF) {
                 this.show = true;
+                const selectedText = window.getSelection()?.toString();
+                if (selectedText) {
+                    this.searchText = selectedText;
+                }
+
                 this.options.rootElement.classList.remove("hide-text-search-results");
                 setTimeout(() => this.txtSearch.focus(), 100);
             }

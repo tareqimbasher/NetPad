@@ -43,6 +43,8 @@ export class SqlView extends OutputViewBase {
     }
 
     public override bound() {
+        super.bound();
+
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
             ".text, .sql-keyword, .query-time, .query-params, .not-special");
@@ -66,6 +68,8 @@ export class SqlView extends OutputViewBase {
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
+        super.beforeAppendOutputHtml(documentFragment);
+
         if (this.colorize) {
             const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
 

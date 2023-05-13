@@ -1,6 +1,7 @@
 import * as monaco from "monaco-editor";
 import {all} from "aurelia";
 import {
+    IActionProvider,
     ICodeActionProvider,
     ICodeLensProvider,
     ICommandProvider,
@@ -19,6 +20,7 @@ import {Util} from "@common";
 export class EditorSetup {
     constructor(
         @all(ICommandProvider) private readonly commandProviders: ICommandProvider[],
+        @all(IActionProvider) private readonly actionProviders: IActionProvider[],
         @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: IDocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: IDocumentRangeSemanticTokensProvider[],
@@ -36,6 +38,7 @@ export class EditorSetup {
     public setup() {
         this.registerThemes();
         this.registerCommands();
+        this.registerActions();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
         this.registerImplementationProviders();
@@ -77,6 +80,30 @@ export class EditorSetup {
                 monaco.editor.registerCommand(command.id, command.handler);
             }
         }
+    }
+
+    private registerActions() {
+        monaco.editor.onDidCreateEditor(e => {
+            const editor = e as monaco.editor.IStandaloneCodeEditor;
+
+            // Check if editor is a IStandaloneCodeEditor
+            if (!editor.addAction) {
+                return;
+            }
+
+            setTimeout(() => {
+                for (const actionProvider of this.actionProviders) {
+                    for (const action of actionProvider.provideActions()) {
+                        // If action is already registered, don't register again
+                        if (editor.getAction(action.id)) {
+                            continue;
+                        }
+
+                        editor.addAction(action);
+                    }
+                }
+            }, 100);
+        });
     }
 
     private registerCompletionProviders() {

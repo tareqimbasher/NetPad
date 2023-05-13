@@ -12,6 +12,30 @@ export class System {
             window.open(url, "_blank");
     }
 
+    public static downloadFile(fileName: string, mimeType = "text/plain", base64: string) {
+        const downloadLink = document.createElement("A") as HTMLAnchorElement;
+        try {
+            downloadLink.download = fileName;
+            downloadLink.href = `data:${mimeType};base64,${base64}`;
+            downloadLink.target = '_blank';
+            downloadLink.click();
+        } finally {
+            downloadLink.remove();
+        }
+    }
+
+    public static downloadTextAsFile(fileName: string, mimeType = "text/plain", text: string) {
+        const downloadLink = document.createElement("A") as HTMLAnchorElement;
+        try {
+            downloadLink.download = fileName;
+            downloadLink.href = `data:${mimeType};charset=utf-8,${encodeURIComponent(text)}`;
+            downloadLink.target = '_blank';
+            downloadLink.click();
+        } finally {
+            downloadLink.remove();
+        }
+    }
+
     /**
      * Determines if app is running in Electron.
      */

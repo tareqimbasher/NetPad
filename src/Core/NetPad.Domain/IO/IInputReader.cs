@@ -5,7 +5,10 @@ namespace NetPad.IO;
 /// <summary>
 /// Reads input.
 /// </summary>
-public interface IInputReader
+public interface IInputReader<TInput>
 {
-    Task<string?> ReadAsync();
+    /// <summary>
+    /// Read input.
+    /// </summary>
+    Task<TInput?> ReadAsync();
 }

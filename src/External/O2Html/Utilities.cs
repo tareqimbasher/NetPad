@@ -6,7 +6,7 @@ using O2Html.Converters;
 
 namespace O2Html;
 
-public static class Utilities
+internal static class Utilities
 {
     /// <summary>
     /// Escapes special XHTML characters in a string.
@@ -21,16 +21,16 @@ public static class Utilities
         if (string.IsNullOrEmpty(str)) return str;
 
         return str
-            .ReplaceIfExists("&", Consts.HtmlAmpersand)
-            .ReplaceIfExists(" ", Consts.HtmlSpace)
-            .ReplaceIfExists("<", Consts.HtmlLessThan)
-            .ReplaceIfExists(">", Consts.HtmlGreaterThan)
-            .ReplaceIfExists("\"", Consts.HtmlQuote)
-            .ReplaceIfExists("'", Consts.HtmlApostrophe)
-            .ReplaceIfExists("\n", Consts.HtmlNewLine);
+            .ReplaceIfExists("&", HtmlConsts.HtmlAmpersand)
+            .ReplaceIfExists(" ", HtmlConsts.HtmlSpace)
+            .ReplaceIfExists("<", HtmlConsts.HtmlLessThan)
+            .ReplaceIfExists(">", HtmlConsts.HtmlGreaterThan)
+            .ReplaceIfExists("\"", HtmlConsts.HtmlQuote)
+            .ReplaceIfExists("'", HtmlConsts.HtmlApostrophe)
+            .ReplaceIfExists("\n", HtmlConsts.HtmlNewLine);
     }
 
-    internal static string ReadEmbeddedResource(Assembly assembly, string name)
+    public static string ReadEmbeddedResource(Assembly assembly, string name)
     {
         // Format: "{Namespace}.{Folder}.{filename}.{Extension}"
         string? resourcePath = assembly.GetManifestResourceNames()

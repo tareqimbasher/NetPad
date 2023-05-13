@@ -133,6 +133,36 @@ button > .icon-base {
     @extend .fa-caret-up;
 }
 
+.caret-right-icon {
+    @extend %icon-base;
+    @extend .fa-caret-right;
+}
+
+.caret-left-icon {
+    @extend %icon-base;
+    @extend .fa-caret-left;
+}
+
+.angles-down-icon {
+    @extend %icon-base;
+    @extend .fa-angles-down;
+}
+
+.angles-up-icon {
+    @extend %icon-base;
+    @extend .fa-angles-up;
+}
+
+.angles-right-icon {
+    @extend %icon-base;
+    @extend .fa-angles-right;
+}
+
+.angles-left-icon {
+    @extend %icon-base;
+    @extend .fa-angles-left;
+}
+
 .star-icon {
     @extend %icon-base;
     @extend .fa-star;
@@ -176,6 +206,22 @@ button > .icon-base {
 .pop-out-icon {
     @extend %icon-base;
     @extend .fa-arrow-up-right-from-square;
+}
+
+.html-icon {
+    @extend %icon-base;
+    @extend .fa-brands;
+    @extend .fa-html5;
+}
+
+.excel-file-icon {
+    @extend %icon-base;
+    @extend .fa-file-excel;
+}
+
+.cloud-icon {
+    @extend %icon-base;
+    @extend .fa-cloud;
 }
 
 // CONTEXTUAL ICONS

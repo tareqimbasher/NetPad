@@ -1,5 +1,6 @@
 ﻿<template class="app-dependencies-check-dialog">
-    <h4>NetPad Dependencies Check
+    <h4>
+        NetPad Dependencies Check
         <span class="spinner-border float-end" if.bind="loading"></span>
     </h4>
 
@@ -73,7 +74,7 @@
     <div class="bottom-bar" if.bind="loading">
         <span>Gathering requirements...</span>
         <div class="buttons">
-            <button class="btn btn-primary" click.trigger="close()">Cancel</button>
+            <button class="btn btn-primary" click.trigger="cancel()">Cancel</button>
         </div>
     </div>
     <div class="bottom-bar" else>
@@ -86,7 +87,7 @@
                external-link
                href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core
                 Tool</a>
-            <button class="btn btn-outline-secondary" click.trigger="close()">Close</button>
+            <button class="btn btn-outline-secondary" click.trigger="cancel()">Close</button>
         </div>
     </div>
 </template>

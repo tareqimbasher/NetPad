@@ -48,6 +48,7 @@ public class TypesController : Controller
         public AlertUserCommand? AlertUserCommand { get; set; }
         public ConfirmWithUserCommand? ConfirmWithUserCommand { get; set; }
         public PromptUserCommand? PromptUserCommand { get; set; }
+        public PromptUserForInputCommand? PromptUserForInputCommand { get; set; }
         public AlertUserAboutMissingAppDependencies? AlertUserAboutMissingAppDependencies { get; set; }
         public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }

@@ -23,9 +23,9 @@ public class HtmlSerializerSettings
     public bool DoNotSerializeNonRootEmptyCollections { get; set; }
 
     /// <summary>
-    /// If set, only this number of items will be serialized when serializing IQueryable collections.
+    /// If set, only this number of items will be serialized when serializing collections.
     /// </summary>
-    public int? MaxIQueryableSerializeLength { get; set; }
+    public int? MaxCollectionSerializeLength { get; set; }
 }
 
 public class CssClasses
@@ -35,29 +35,41 @@ public class CssClasses
     internal const string DefaultPropertyValueClass = "property-value";
     internal const string DefaultEmptyCollectionCssClass = "empty-collection";
     internal const string DefaultCyclicReferenceCssClass = "cyclic-reference";
+    internal const string DefaultTableInfoHeaderCssClass = "table-info-header";
+    internal const string DefaultTableDataHeaderCssClass = "table-data-header";
 
     /// <summary>
-    /// The CSS class that null values will have
+    /// The CSS class added to null values.
     /// </summary>
     public string Null { get; set; } = DefaultNullCssClass;
 
     /// <summary>
-    /// The CSS class that property names will have
+    /// The CSS class added to property names.
     /// </summary>
     public string PropertyName { get; set; } = DefaultPropertyNameClass;
 
     /// <summary>
-    /// The CSS class that property values will have
+    /// The CSS class added to property values.
     /// </summary>
     public string PropertyValue { get; set; } = DefaultPropertyValueClass;
 
     /// <summary>
-    /// The CSS class that empty collections will have
+    /// The CSS class added to empty collections.
     /// </summary>
     public string EmptyCollection { get; set; } = DefaultEmptyCollectionCssClass;
 
     /// <summary>
-    /// The CSS class that cyclic references will have
+    /// The CSS class added to cyclic references.
     /// </summary>
     public string CyclicReference { get; set; } = DefaultCyclicReferenceCssClass;
+
+    /// <summary>
+    /// The CSS class added to a table's info header.
+    /// </summary>
+    public string TableInfoHeader { get; set; } = DefaultTableInfoHeaderCssClass;
+
+    /// <summary>
+    /// The CSS class added to a table's data header.
+    /// </summary>
+    public string TableDataHeader { get; set; } = DefaultTableDataHeaderCssClass;
 }

@@ -20,14 +20,18 @@ public class SerializationScope
 
     public IReadOnlyCollection<object> SerializedObjects => _serializedObjects;
 
-    public bool CheckAddAddIsAlreadySerialized<T>(T obj)
+    public bool CheckAlreadySerializedOrAdd<T>(T obj)
     {
         if (obj == null)
             return false;
 
         bool alreadySerialized = _serializedObjects.Contains(obj);
+
         if (!alreadySerialized)
+        {
             _serializedObjects.Add(obj);
+        }
+
         return alreadySerialized;
     }
 }
