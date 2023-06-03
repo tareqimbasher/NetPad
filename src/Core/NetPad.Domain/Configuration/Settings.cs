@@ -20,6 +20,7 @@ public class Settings : ISettingsOptions
 
     [JsonInclude] public Version Version { get; private set; }
     [JsonInclude] public bool? AutoCheckUpdates { get; private set; }
+    [JsonInclude] public string? DotNetSdkDirectoryPath { get; private set; }
     [JsonInclude] public string ScriptsDirectoryPath { get; private set; }
     [JsonInclude] public string AutoSaveScriptsDirectoryPath { get; private set; }
     [JsonInclude] public string PackageCacheDirectoryPath { get; private set; }
@@ -31,6 +32,12 @@ public class Settings : ISettingsOptions
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
     {
         AutoCheckUpdates = autoCheckUpdates;
+        return this;
+    }
+
+    public Settings SetDotNetSdkDirectoryPath(string? dotNetSdkDirectoryPath)
+    {
+        DotNetSdkDirectoryPath = dotNetSdkDirectoryPath;
         return this;
     }
 
