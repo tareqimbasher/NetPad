@@ -72,11 +72,28 @@
 
     <div class="body">
         <div class="mb-3 row">
-            <label class="col-sm-2 col-form-label fw-bold">Scripts</label>
-            <div class="col-sm-8">
+            <label class="col-12 col-md-2 col-form-label fw-bold">.NET SDK</label>
+            <div class="col-10 col-md-8">
+                <input type="text"
+                       class="form-control"
+                       value.bind="settings.dotNetSdkDirectoryPath"
+                       placeholder="Keep empty to automatically locate .NET SDK directory (Restart required)">
+            </div>
+            <div class="col-2 col-md-2 text-end">
+                <button class="btn btn-secondary"
+                        show.bind="settings.dotNetSdkDirectoryPath != currentSettings.dotNetSdkDirectoryPath"
+                        click.trigger="settings.dotNetSdkDirectoryPath = currentSettings.dotNetSdkDirectoryPath">
+                    Undo
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-12 col-md-2 col-form-label fw-bold">Scripts</label>
+            <div class="col-10 col-md-8">
                 <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath">
             </div>
-            <div class="col-sm-2 text-end">
+            <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"
                         show.bind="settings.scriptsDirectoryPath != currentSettings.scriptsDirectoryPath"
                         click.trigger="settings.scriptsDirectoryPath = currentSettings.scriptsDirectoryPath">
@@ -86,11 +103,11 @@
         </div>
 
         <div class="mb-3 row">
-            <label class="col-sm-2 col-form-label fw-bold">Package Cache</label>
-            <div class="col-sm-8">
+            <label class="col-12 col-md-2 col-form-label fw-bold">Package Cache</label>
+            <div class="col-10 col-md-8">
                 <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath">
             </div>
-            <div class="col-sm-2 text-end">
+            <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"
                         show.bind="settings.packageCacheDirectoryPath != currentSettings.packageCacheDirectoryPath"
                         click.trigger="settings.packageCacheDirectoryPath = currentSettings.packageCacheDirectoryPath">

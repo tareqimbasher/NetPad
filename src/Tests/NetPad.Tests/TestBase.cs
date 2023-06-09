@@ -2,6 +2,8 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Configuration;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Tests.Logging;
 using Xunit.Abstractions;
@@ -29,6 +31,8 @@ public abstract class TestBase : IDisposable
             config.AddConfiguration(configuration.GetSection("Logging"));
         });
 
+        services.AddSingleton<Settings>();
+        services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<IEventBus, EventBus>();
 
         ConfigureServices(services);

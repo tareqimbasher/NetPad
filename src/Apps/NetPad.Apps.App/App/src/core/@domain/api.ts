@@ -3970,6 +3970,7 @@ export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 export class Settings implements ISettings {
     version!: string;
     autoCheckUpdates?: boolean | undefined;
+    dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath!: string;
     autoSaveScriptsDirectoryPath!: string;
     packageCacheDirectoryPath!: string;
@@ -3997,6 +3998,7 @@ export class Settings implements ISettings {
         if (_data) {
             this.version = _data["version"];
             this.autoCheckUpdates = _data["autoCheckUpdates"];
+            this.dotNetSdkDirectoryPath = _data["dotNetSdkDirectoryPath"];
             this.scriptsDirectoryPath = _data["scriptsDirectoryPath"];
             this.autoSaveScriptsDirectoryPath = _data["autoSaveScriptsDirectoryPath"];
             this.packageCacheDirectoryPath = _data["packageCacheDirectoryPath"];
@@ -4018,6 +4020,7 @@ export class Settings implements ISettings {
         data = typeof data === 'object' ? data : {};
         data["version"] = this.version;
         data["autoCheckUpdates"] = this.autoCheckUpdates;
+        data["dotNetSdkDirectoryPath"] = this.dotNetSdkDirectoryPath;
         data["scriptsDirectoryPath"] = this.scriptsDirectoryPath;
         data["autoSaveScriptsDirectoryPath"] = this.autoSaveScriptsDirectoryPath;
         data["packageCacheDirectoryPath"] = this.packageCacheDirectoryPath;
@@ -4039,6 +4042,7 @@ export class Settings implements ISettings {
 export interface ISettings {
     version: string;
     autoCheckUpdates?: boolean | undefined;
+    dotNetSdkDirectoryPath?: string | undefined;
     scriptsDirectoryPath: string;
     autoSaveScriptsDirectoryPath: string;
     packageCacheDirectoryPath: string;

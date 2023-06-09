@@ -66,6 +66,7 @@ public class Startup
         services.AddSingleton<IEventBus, EventBus>();
         services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddSingleton<ISession, Session>();
+        services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<HttpClient>();
         services.AddTransient<ILogoService, LogoService>();
 
@@ -189,7 +190,6 @@ public class Startup
         else
         {
             app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 
@@ -247,8 +247,7 @@ public class Startup
 
         app.UseSpa(spa =>
         {
-            // To learn more about options for serving an SPA from ASP.NET Core,
-            // see https://go.microsoft.com/fwlink/?linkid=864501
+            // More options for serving an SPA from ASP.NET Core: https://go.microsoft.com/fwlink/?linkid=864501
 
             spa.Options.SourcePath = "App";
 

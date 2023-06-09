@@ -1,47 +1,91 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NetPad.Common;
+using NetPad.Configuration;
 using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 
-public static class DotNetInfo
+public class DotNetInfo : IDotNetInfo
 {
-    private static readonly object _dotNetExeLocateLock = new();
-    private static readonly object _dotNetEfToolExeLocateLock = new();
-    private static string? _dotNetPath;
-    private static string? _dotNetEfToolPath;
+    private readonly Settings _settings;
+    private readonly object _dotNetRootDirLocateLock = new();
+    private readonly object _dotNetExeLocateLock = new();
+    private readonly object _dotNetEfToolExeLocateLock = new();
+    private string? _dotNetRootDirPath;
+    private string? _dotNetPath;
+    private string? _dotNetEfToolPath;
+
+    public DotNetInfo(Settings settings)
+    {
+        _settings = settings;
+    }
 
     /// <summary>
     /// Returns the version of the .NET runtime used in the current app domain.
     /// </summary>
-    public static Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
+    public Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
 
 
-    public static string LocateDotNetRootDirectoryOrThrow()
+    public string LocateDotNetRootDirectoryOrThrow()
     {
         return LocateDotNetRootDirectory() ?? throw new Exception("Could not find the dotnet ROOT directory.");
     }
 
-    public static string? LocateDotNetRootDirectory()
+    public string? LocateDotNetRootDirectory()
     {
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT")
-                         ?? Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR")
-                         ?? (PlatformUtil.IsWindowsPlatform() ? @"C:\Program Files\dotnet" : "/usr/local/share/dotnet");
+        if (!string.IsNullOrWhiteSpace(_settings.DotNetSdkDirectoryPath))
+        {
+            return IsValidDotNetSdkRootDirectory(_settings.DotNetSdkDirectoryPath)
+                ? _settings.DotNetSdkDirectoryPath
+                : null;
+        }
 
-        if (Directory.Exists(dotnetRoot)) return dotnetRoot;
+        if (_dotNetRootDirPath != null)
+        {
+            return _dotNetRootDirPath;
+        }
 
-        var dotnetExePath = LocateDotNetExecutable();
-        if (dotnetExePath != null)
-            dotnetRoot = Path.GetDirectoryName(dotnetExePath);
+        lock (_dotNetRootDirLocateLock)
+        {
+            if (_dotNetRootDirPath != null)
+            {
+                return _dotNetRootDirPath;
+            }
 
-        return !Directory.Exists(dotnetRoot) ? null : dotnetRoot;
+            string? rootDirPath = null;
+
+            var exePathFromShell = GetDotNetExePathFromShell();
+
+            if (exePathFromShell != null)
+            {
+                rootDirPath = Path.GetDirectoryName(exePathFromShell);
+                if (!IsValidDotNetSdkRootDirectory(rootDirPath))
+                {
+                    rootDirPath = null;
+                }
+            }
+
+            if (rootDirPath == null)
+            {
+                rootDirPath = SearchCommonLocationsForDotNetRootDirectory();
+                if (!IsValidDotNetSdkRootDirectory(rootDirPath))
+                {
+                    rootDirPath = null;
+                }
+            }
+
+            _dotNetRootDirPath = rootDirPath;
+        }
+
+        return _dotNetRootDirPath;
     }
 
 
-    public static string LocateDotNetExecutableOrThrow()
+    public string LocateDotNetExecutableOrThrow()
     {
         var path = LocateDotNetExecutable();
 
@@ -52,7 +96,7 @@ public static class DotNetInfo
                             $"Verify that '{exeName}' is in your PATH, or ensure the 'DOTNET_ROOT' environment variable is set.");
     }
 
-    public static string? LocateDotNetExecutable()
+    public string? LocateDotNetExecutable()
     {
         if (_dotNetPath != null)
         {
@@ -61,64 +105,29 @@ public static class DotNetInfo
 
         lock (_dotNetExeLocateLock)
         {
-            string? path = null;
-
             if (_dotNetPath != null)
             {
                 return _dotNetPath;
             }
 
-            var exeName = GetDotNetExeName();
+            string? exePath = null;
 
-            try
+            var rootDirPath = LocateDotNetRootDirectory();
+
+            if (IsValidDotNetSdkRootDirectory(rootDirPath))
             {
-                // Try getting path using ShellExecute
-                // Prioritize this over DOTNET_ROOT environment variable in case user defines a different path for dotnet for the execution of this app.
-                var process = Process.Start(new ProcessStartInfo
-                {
-                    UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    FileName = exeName,
-                    Arguments = "--version"
-                });
-
-                path = process?.MainModule?.FileName;
-
-                // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
-                if (path?.EndsWith(exeName) != true)
-                {
-                    path = null;
-                }
-            }
-            catch
-            {
-                // if it failed, it wasn't found
+                var exeName = GetDotNetExeName();
+                exePath = Path.Combine(rootDirPath!, exeName);
             }
 
-            if (string.IsNullOrEmpty(path))
-            {
-                // Try getting path from environment variable
-                var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-                if (dotnetRoot != null)
-                {
-                    var testPath = Path.Combine(dotnetRoot, exeName);
-
-                    if (File.Exists(testPath))
-                    {
-                        path = testPath;
-                    }
-                }
-            }
-
-            _dotNetPath = path;
+            _dotNetPath = exePath;
         }
 
         return _dotNetPath;
     }
 
 
-    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow()
+    public DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow()
     {
         var versions = GetDotNetRuntimeVersions();
 
@@ -127,7 +136,7 @@ public static class DotNetInfo
             : throw new Exception("Could not find any .NET runtimes");
     }
 
-    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersions()
+    public DotNetRuntimeVersion[] GetDotNetRuntimeVersions()
     {
         var dotNetExePath = LocateDotNetExecutable();
         if (dotNetExePath == null) return Array.Empty<DotNetRuntimeVersion>();
@@ -157,7 +166,7 @@ public static class DotNetInfo
     }
 
 
-    public static DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow()
+    public DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow()
     {
         var versions = GetDotNetSdkVersions();
 
@@ -166,7 +175,7 @@ public static class DotNetInfo
             : throw new Exception("Could not find any .NET SDKs");
     }
 
-    public static DotNetSdkVersion[] GetDotNetSdkVersions()
+    public DotNetSdkVersion[] GetDotNetSdkVersions()
     {
         var dotNetExePath = LocateDotNetExecutable();
         if (dotNetExePath == null) return Array.Empty<DotNetSdkVersion>();
@@ -196,7 +205,7 @@ public static class DotNetInfo
     }
 
 
-    public static string LocateDotNetEfToolExecutableOrThrow()
+    public string LocateDotNetEfToolExecutableOrThrow()
     {
         var path = LocateDotNetEfToolExecutable();
 
@@ -208,7 +217,7 @@ public static class DotNetInfo
                             "the dotnet global tools path under '{UserHomeDirectory}/.dotnet/tools'.");
     }
 
-    public static string? LocateDotNetEfToolExecutable()
+    public string? LocateDotNetEfToolExecutable()
     {
         if (_dotNetEfToolPath != null)
         {
@@ -275,7 +284,7 @@ public static class DotNetInfo
         return _dotNetEfToolPath;
     }
 
-    public static Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
+    public Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
     {
         var p = Process.Start(new ProcessStartInfo
         {
@@ -307,5 +316,84 @@ public static class DotNetInfo
     private static string GetDotNetEfToolExeName()
     {
         return PlatformUtil.IsWindowsPlatform() ? "dotnet-ef.exe" : "dotnet-ef";
+    }
+
+    private static bool IsValidDotNetSdkRootDirectory(string? path)
+    {
+        if (path == null || !Directory.Exists(path))
+        {
+            return false;
+        }
+
+        // Confirm the directory has the dotnet executable
+        var exeName = GetDotNetExeName();
+        var exePath = Path.Combine(path, exeName);
+        return File.Exists(exePath);
+    }
+
+    private static string? GetDotNetExePathFromShell()
+    {
+        try
+        {
+            var exeName = GetDotNetExeName();
+
+            // Try getting path using ShellExecute
+            var process = Process.Start(new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                FileName = exeName,
+                Arguments = "--version"
+            });
+
+            var path = process?.MainModule?.FileName;
+
+            // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
+            if (path?.EndsWith(exeName) != true)
+            {
+                return null;
+            }
+
+            return path;
+        }
+        catch
+        {
+            // If it failed, it wasn't found
+            return null;
+        }
+    }
+
+    private static string? SearchCommonLocationsForDotNetRootDirectory()
+    {
+        var possibleDirectories = new List<string?>();
+
+        // Give highest priority to env variables
+        possibleDirectories.Add(Environment.GetEnvironmentVariable("DOTNET_ROOT"));
+        possibleDirectories.Add(Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR"));
+
+        // Common installation paths in descending priority
+        if (PlatformUtil.IsWindowsPlatform())
+        {
+            possibleDirectories.Add(@"C:\Program Files\dotnet\x64");
+            possibleDirectories.Add(@"C:\Program Files\dotnet");
+        }
+        else
+        {
+            possibleDirectories.Add(@"/usr/local/share/dotnet"); // default for macOS
+            possibleDirectories.Add(@"/usr/share/dotnet");
+            possibleDirectories.Add(@"/usr/lib/dotnet");
+            possibleDirectories.Add(@"/opt/dotnet");
+        }
+
+        foreach (var directory in possibleDirectories)
+        {
+            if (IsValidDotNetSdkRootDirectory(directory))
+            {
+                return directory;
+            }
+        }
+
+        return null;
     }
 }

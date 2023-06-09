@@ -9,10 +9,12 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 {
     public class Handler : IRequestHandler<CheckAppDependenciesQuery, AppDependencyCheckResult>
     {
+        private readonly IDotNetInfo _dotNetInfo;
         private readonly ILogger<Handler> _logger;
 
-        public Handler(ILogger<Handler> logger)
+        public Handler(IDotNetInfo dotNetInfo, ILogger<Handler> logger)
         {
+            _dotNetInfo = dotNetInfo;
             _logger = logger;
         }
 
@@ -24,7 +26,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 
             try
             {
-                dotNetSdkVersions = DotNetInfo.GetDotNetSdkVersions();
+                dotNetSdkVersions = _dotNetInfo.GetDotNetSdkVersions();
             }
             catch (Exception ex)
             {
@@ -33,11 +35,11 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 
             try
             {
-                var dotNetEfToolExePath = DotNetInfo.LocateDotNetEfToolExecutable();
+                var dotNetEfToolExePath = _dotNetInfo.LocateDotNetEfToolExecutable();
 
                 dotNetEfToolVersion = dotNetEfToolExePath == null
                     ? null
-                    : DotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath)?.ToString();
+                    : _dotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath)?.ToString();
             }
             catch (Exception ex)
             {
@@ -45,7 +47,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
             }
 
             var result = new AppDependencyCheckResult(
-                DotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
+                _dotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
                 dotNetSdkVersions?.Select(v => v.Version.ToString()).ToArray() ?? Array.Empty<string>(),
                 dotNetEfToolVersion
             );

@@ -42,6 +42,7 @@ public class AppOmniSharpServer
         Settings settings,
         ICodeParser codeParser,
         IEventBus eventBus,
+        IDotNetInfo dotNetInfo,
         ILogger<AppOmniSharpServer> logger,
         // ReSharper disable once ContextualLoggerProblem
         ILogger<ScriptProject> scriptProjectLogger)
@@ -56,7 +57,7 @@ public class AppOmniSharpServer
         _logger = logger;
         _subscriptionTokens = new List<EventSubscriptionToken>();
 
-        Project = new ScriptProject(environment.Script, settings, scriptProjectLogger);
+        Project = new ScriptProject(environment.Script, dotNetInfo, settings, scriptProjectLogger);
     }
 
     public Guid ScriptId => _environment.Script.Id;
