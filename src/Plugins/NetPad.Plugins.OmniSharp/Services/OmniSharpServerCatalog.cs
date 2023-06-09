@@ -2,6 +2,7 @@ using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -63,6 +64,7 @@ public class OmniSharpServerCatalog
             serviceScope.ServiceProvider.GetRequiredService<Settings>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
+            serviceScope.ServiceProvider.GetRequiredService<IDotNetInfo>(),
             serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
             serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptProject>>()
         );

@@ -66,6 +66,7 @@ public class Startup
         services.AddSingleton<IEventBus, EventBus>();
         services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddSingleton<ISession, Session>();
+        services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<HttpClient>();
         services.AddTransient<ILogoService, LogoService>();
 
@@ -181,9 +182,6 @@ public class Startup
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         var services = app.ApplicationServices;
-
-        var settings = services.GetRequiredService<Settings>();
-        DotNetInfo.Initialize(settings);
 
         if (env.IsDevelopment())
         {

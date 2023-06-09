@@ -23,12 +23,14 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
+    private readonly IDotNetInfo _dotNetInfo;
 
     public EntityFrameworkResourcesGenerator(
         Lazy<IDataConnectionResourcesCache> dataConnectionResourcesCache,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         IDataConnectionPasswordProtector dataConnectionPasswordProtector,
+        IDotNetInfo dotNetInfo,
         Settings settings,
         ILoggerFactory loggerFactory)
     {
@@ -36,6 +38,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
+        _dotNetInfo = dotNetInfo;
         _settings = settings;
         _loggerFactory = loggerFactory;
     }
@@ -51,6 +54,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
             efDbConnection,
             _packageProvider,
             _dataConnectionPasswordProtector,
+            _dotNetInfo,
             _settings,
             _loggerFactory.CreateLogger<EntityFrameworkDatabaseScaffolder>());
 

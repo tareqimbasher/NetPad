@@ -16,18 +16,25 @@ namespace NetPad.DotNet;
 /// </summary>
 public class DotNetCSharpProject
 {
+    private readonly IDotNetInfo _dotNetInfo;
     private readonly HashSet<Reference> _references;
     private readonly SemaphoreSlim _projectFileLock;
 
     /// <summary>
     /// Creates an instance of <see cref="DotNetCSharpProject"/>.
     /// </summary>
+    /// <param name="dotNetInfo"></param>
     /// <param name="projectDirectoryPath">Project root directory path.</param>
     /// <param name="projectFileName">If name of the project file. '.csproj' extension will be added if not specified.</param>
     /// <param name="packageCacheDirectoryPath">The package cache directory to use when adding or removing packages.
     /// Only needed when adding or removing package references.</param>
-    public DotNetCSharpProject(string projectDirectoryPath, string projectFileName = "project.csproj", string? packageCacheDirectoryPath = null)
+    public DotNetCSharpProject(
+        IDotNetInfo dotNetInfo,
+        string projectDirectoryPath,
+        string projectFileName = "project.csproj",
+        string? packageCacheDirectoryPath = null)
     {
+        _dotNetInfo = dotNetInfo;
         _references = new HashSet<Reference>();
         _projectFileLock = new SemaphoreSlim(1, 1);
 
@@ -152,7 +159,7 @@ public class DotNetCSharpProject
         EnsurePackageCacheDirectoryExists();
 
         var process = Process.Start(new ProcessStartInfo(
-            DotNetInfo.LocateDotNetExecutableOrThrow(),
+            _dotNetInfo.LocateDotNetExecutableOrThrow(),
             $"restore \"{ProjectFilePath}\"")
         {
             UseShellExecute = false,
@@ -365,7 +372,7 @@ public class DotNetCSharpProject
             var packageId = reference.PackageId;
             var packageVersion = reference.Version;
 
-            var process = Process.Start(new ProcessStartInfo(DotNetInfo.LocateDotNetExecutableOrThrow(),
+            var process = Process.Start(new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(),
                 $"add \"{ProjectFilePath}\" package {packageId} " +
                 $"--version {packageVersion} " +
                 $"--package-directory \"{PackageCacheDirectoryPath}\"")
@@ -406,7 +413,7 @@ public class DotNetCSharpProject
 
             var packageId = reference.PackageId;
 
-            var dotnetExe = DotNetInfo.LocateDotNetExecutableOrThrow();
+            var dotnetExe = _dotNetInfo.LocateDotNetExecutableOrThrow();
 
             var process = Process.Start(new ProcessStartInfo(dotnetExe,
                 $"remove \"{ProjectFilePath}\" package {packageId}")

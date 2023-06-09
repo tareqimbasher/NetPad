@@ -9,17 +9,17 @@ using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 
-public static class DotNetInfo
+public class DotNetInfo : IDotNetInfo
 {
-    private static readonly object _dotNetRootDirLocateLock = new();
-    private static readonly object _dotNetExeLocateLock = new();
-    private static readonly object _dotNetEfToolExeLocateLock = new();
-    private static string? _dotNetRootDirPath;
-    private static string? _dotNetPath;
-    private static string? _dotNetEfToolPath;
-    private static Settings _settings = null!;
+    private readonly Settings _settings;
+    private readonly object _dotNetRootDirLocateLock = new();
+    private readonly object _dotNetExeLocateLock = new();
+    private readonly object _dotNetEfToolExeLocateLock = new();
+    private string? _dotNetRootDirPath;
+    private string? _dotNetPath;
+    private string? _dotNetEfToolPath;
 
-    public static void Initialize(Settings settings)
+    public DotNetInfo(Settings settings)
     {
         _settings = settings;
     }
@@ -27,15 +27,15 @@ public static class DotNetInfo
     /// <summary>
     /// Returns the version of the .NET runtime used in the current app domain.
     /// </summary>
-    public static Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
+    public Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
 
 
-    public static string LocateDotNetRootDirectoryOrThrow()
+    public string LocateDotNetRootDirectoryOrThrow()
     {
         return LocateDotNetRootDirectory() ?? throw new Exception("Could not find the dotnet ROOT directory.");
     }
 
-    public static string? LocateDotNetRootDirectory()
+    public string? LocateDotNetRootDirectory()
     {
         if (!string.IsNullOrWhiteSpace(_settings.DotNetSdkDirectoryPath))
         {
@@ -85,7 +85,7 @@ public static class DotNetInfo
     }
 
 
-    public static string LocateDotNetExecutableOrThrow()
+    public string LocateDotNetExecutableOrThrow()
     {
         var path = LocateDotNetExecutable();
 
@@ -96,7 +96,7 @@ public static class DotNetInfo
                             $"Verify that '{exeName}' is in your PATH, or ensure the 'DOTNET_ROOT' environment variable is set.");
     }
 
-    public static string? LocateDotNetExecutable()
+    public string? LocateDotNetExecutable()
     {
         if (_dotNetPath != null)
         {
@@ -127,7 +127,7 @@ public static class DotNetInfo
     }
 
 
-    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow()
+    public DotNetRuntimeVersion[] GetDotNetRuntimeVersionsOrThrow()
     {
         var versions = GetDotNetRuntimeVersions();
 
@@ -136,7 +136,7 @@ public static class DotNetInfo
             : throw new Exception("Could not find any .NET runtimes");
     }
 
-    public static DotNetRuntimeVersion[] GetDotNetRuntimeVersions()
+    public DotNetRuntimeVersion[] GetDotNetRuntimeVersions()
     {
         var dotNetExePath = LocateDotNetExecutable();
         if (dotNetExePath == null) return Array.Empty<DotNetRuntimeVersion>();
@@ -166,7 +166,7 @@ public static class DotNetInfo
     }
 
 
-    public static DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow()
+    public DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow()
     {
         var versions = GetDotNetSdkVersions();
 
@@ -175,7 +175,7 @@ public static class DotNetInfo
             : throw new Exception("Could not find any .NET SDKs");
     }
 
-    public static DotNetSdkVersion[] GetDotNetSdkVersions()
+    public DotNetSdkVersion[] GetDotNetSdkVersions()
     {
         var dotNetExePath = LocateDotNetExecutable();
         if (dotNetExePath == null) return Array.Empty<DotNetSdkVersion>();
@@ -205,7 +205,7 @@ public static class DotNetInfo
     }
 
 
-    public static string LocateDotNetEfToolExecutableOrThrow()
+    public string LocateDotNetEfToolExecutableOrThrow()
     {
         var path = LocateDotNetEfToolExecutable();
 
@@ -217,7 +217,7 @@ public static class DotNetInfo
                             "the dotnet global tools path under '{UserHomeDirectory}/.dotnet/tools'.");
     }
 
-    public static string? LocateDotNetEfToolExecutable()
+    public string? LocateDotNetEfToolExecutable()
     {
         if (_dotNetEfToolPath != null)
         {
@@ -284,7 +284,7 @@ public static class DotNetInfo
         return _dotNetEfToolPath;
     }
 
-    public static Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
+    public Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
     {
         var p = Process.Start(new ProcessStartInfo
         {

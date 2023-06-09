@@ -14,10 +14,13 @@ public class ScriptProject : DotNetCSharpProject
 
     public ScriptProject(
         Script script,
+        IDotNetInfo dotNetInfo,
         Settings settings,
         ILogger<ScriptProject> logger)
         : base(
-            Consts.OmniSharpServerProcessesDirectoryPath.Combine(script.Id.ToString()).Path,
+            dotNetInfo,
+            Consts.OmniSharpServerProcessesDirectoryPath.Combine(
+                script.Id.ToString()).Path,
             "script.csproj",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet")
         )

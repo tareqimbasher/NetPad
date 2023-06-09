@@ -1,6 +1,8 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using NetPad.Compilation.CSharp;
+using NetPad.Configuration;
+using NetPad.DotNet;
 using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,7 +23,7 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -31,7 +33,7 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("Console.WriteLine(\"Hello World\");");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -48,7 +50,7 @@ public class CSharpCodeCompilerTests
     {
         code = GetProgram(code);
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.False(result.Success);
     }
@@ -58,7 +60,7 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("foobar");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.False(result.Success);
         Assert.NotEmpty(result.Diagnostics);
@@ -71,7 +73,7 @@ public class CSharpCodeCompilerTests
     {
         code = GetProgram(code, @namespace);
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -79,7 +81,7 @@ public class CSharpCodeCompilerTests
     [Fact]
     public void Compiler_Uses_CSharp9_Features()
     {
-        var compiler = new CSharpCodeCompiler();
+        var compiler = CreateCSharpCodeCompiler();
 
         CSharpParseOptions parseOptions = compiler.GetParseOptions();
 
@@ -91,7 +93,7 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("using var stream = new MemoryStream();", "System.IO");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -101,7 +103,7 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("DateTime datetime = new();");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -111,9 +113,14 @@ public class CSharpCodeCompilerTests
     {
         var code = GetProgram("var point = (1, 2); int x = 0; (x, int y) = point;");
 
-        var result = new CSharpCodeCompiler().Compile(new CompilationInput(code));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code));
 
         Assert.True(result.Success);
+    }
+
+    private CSharpCodeCompiler CreateCSharpCodeCompiler()
+    {
+        return new CSharpCodeCompiler(new DotNetInfo(new Settings()));
     }
 
     private string GetProgram(string code, params string[] additionalNamespaces)

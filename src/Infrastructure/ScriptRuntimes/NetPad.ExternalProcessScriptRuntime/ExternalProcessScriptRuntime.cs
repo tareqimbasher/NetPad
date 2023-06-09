@@ -41,6 +41,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly ICodeParser _codeParser;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
+    private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly MainScriptOutputAdapter _outputAdapter;
@@ -56,6 +57,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
+        IDotNetInfo dotNetInfo,
         ILogger<ExternalProcessScriptRuntime> logger)
     {
         _script = script;
@@ -63,6 +65,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _codeParser = codeParser;
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
+        _dotNetInfo = dotNetInfo;
         _logger = logger;
         _externalInputReaders = new HashSet<IInputReader<string>>();
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
@@ -128,7 +131,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
             // TODO optimize this section
-            _processHandler = new ProcessHandler(DotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
+            _processHandler = new ProcessHandler(_dotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
             _processHandler.IO!.OnOutputReceivedHandlers.Add(async output =>
             {
@@ -400,12 +403,12 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
     {
-        var latestDotNetSdkVersion = DotNetInfo.GetDotNetSdkVersionsOrThrow()
+        var latestDotNetSdkVersion = _dotNetInfo.GetDotNetSdkVersionsOrThrow()
             .OrderBy(v => v.Version)
             .Last();
 
         var tfm = $"net{latestDotNetSdkVersion.Major}.0";
-        var runtimeVersion = DotNetInfo.GetDotNetRuntimeVersionsOrThrow()
+        var runtimeVersion = _dotNetInfo.GetDotNetRuntimeVersionsOrThrow()
             .Where(v =>
                 v.FrameworkName == "Microsoft.NETCore.App"
                 && v.Major == latestDotNetSdkVersion.Major)

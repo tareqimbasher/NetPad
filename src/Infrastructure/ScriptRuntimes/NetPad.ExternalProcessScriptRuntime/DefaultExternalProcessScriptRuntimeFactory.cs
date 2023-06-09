@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
+using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
@@ -24,6 +25,7 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
             _serviceProvider.GetRequiredService<ICodeParser>(),
             _serviceProvider.GetRequiredService<ICodeCompiler>(),
             _serviceProvider.GetRequiredService<IPackageProvider>(),
+            _serviceProvider.GetRequiredService<IDotNetInfo>(),
             _serviceProvider.GetRequiredService<ILogger<ExternalProcessScriptRuntime>>()
         );
 

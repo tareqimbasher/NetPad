@@ -6,12 +6,20 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using NetPad.DotNet;
 using NetPad.IO;
 
 namespace NetPad.Compilation.CSharp;
 
 public class CSharpCodeCompiler : ICodeCompiler
 {
+    private readonly IDotNetInfo _dotNetInfo;
+
+    public CSharpCodeCompiler(IDotNetInfo dotNetInfo)
+    {
+        _dotNetInfo = dotNetInfo;
+    }
+
     public CompilationResult Compile(CompilationInput input)
     {
         // TODO write a unit test to test assembly name
@@ -40,7 +48,7 @@ public class CSharpCodeCompiler : ICodeCompiler
         SyntaxTree parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
         // Build references
-        var assemblyLocations = SystemAssemblies.GetAssemblyLocations();
+        var assemblyLocations = SystemAssemblies.GetAssemblyLocations(_dotNetInfo);
 
         foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
             assemblyLocations.Add(assemblyReferenceLocation);

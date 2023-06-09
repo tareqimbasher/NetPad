@@ -22,6 +22,7 @@ public class EntityFrameworkDatabaseScaffolder
     private readonly EntityFrameworkDatabaseConnection _connection;
     private readonly IPackageProvider _packageProvider;
     private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
+    private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<EntityFrameworkDatabaseScaffolder> _logger;
     private readonly DotNetCSharpProject _project;
     private readonly string _dbModelOutputDirPath;
@@ -32,14 +33,17 @@ public class EntityFrameworkDatabaseScaffolder
         EntityFrameworkDatabaseConnection connection,
         IPackageProvider packageProvider,
         IDataConnectionPasswordProtector dataConnectionPasswordProtector,
+        IDotNetInfo dotNetInfo,
         Settings settings,
         ILogger<EntityFrameworkDatabaseScaffolder> logger)
     {
         _connection = connection;
         _packageProvider = packageProvider;
         _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
+        _dotNetInfo = dotNetInfo;
         _logger = logger;
         _project = new DotNetCSharpProject(
+            _dotNetInfo,
             AppDataProvider.TypedContextsDirectoryPath.Combine(connection.Id.ToString()).Path,
             "database",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
@@ -104,7 +108,7 @@ class Program
             $"--output-dir {(PlatformUtil.IsWindowsPlatform() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
         });
 
-        var dotnetEfToolExe = DotNetInfo.LocateDotNetEfToolExecutableOrThrow();
+        var dotnetEfToolExe = _dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
 
         _logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
 
@@ -119,7 +123,7 @@ class Program
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
         // it will fail as dotnet-ef depends on dotnet
-        var dotnetExeDir = Path.GetDirectoryName(DotNetInfo.LocateDotNetExecutableOrThrow());
+        var dotnetExeDir = Path.GetDirectoryName(_dotNetInfo.LocateDotNetExecutableOrThrow());
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
         startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
 

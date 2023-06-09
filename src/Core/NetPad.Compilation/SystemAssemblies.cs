@@ -11,9 +11,9 @@ public static class SystemAssemblies
 {
     private static HashSet<string>? _systemAssembliesLocations;
 
-    public static HashSet<string> GetAssemblyLocations()
+    public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo)
     {
-        return (_systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot()).ToHashSet();
+        return (_systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot(dotNetInfo)).ToHashSet();
     }
 
     private static HashSet<string> GetImplementationAssemblyLocationsFromAppDomain()
@@ -46,9 +46,9 @@ public static class SystemAssemblies
             .ToHashSet();
     }
 
-    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot()
+    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot(IDotNetInfo dotNetInfo)
     {
-        var dotnetRoot = DotNetInfo.LocateDotNetRootDirectoryOrThrow();
+        var dotnetRoot = dotNetInfo.LocateDotNetRootDirectoryOrThrow();
         var sdkReferenceAssemblyRoot =
             new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
         var dotnetVer = sdkReferenceAssemblyRoot.GetDirectories()
