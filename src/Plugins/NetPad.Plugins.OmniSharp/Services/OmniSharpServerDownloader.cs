@@ -43,14 +43,27 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         _configuration = configuration;
     }
 
+    private void EnsureArchIsSupported()
+    {
+        var supportedArchs = new[]
+        {
+            Architecture.X64,
+            Architecture.X86,
+            Architecture.Arm64,
+        };
+
+        if (!supportedArchs.Contains(RuntimeInformation.OSArchitecture))
+        {
+            throw new PlatformNotSupportedException(
+                $"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported. OS: ({RuntimeInformation.OSDescription})");
+        }
+    }
+
     public async Task<OmniSharpServerLocation> DownloadAsync(OSPlatform platform)
     {
         try
         {
-            if (RuntimeInformation.OSArchitecture != Architecture.X64 && RuntimeInformation.OSArchitecture != Architecture.X86)
-            {
-                throw new NotSupportedException($"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported");
-            }
+            EnsureArchIsSupported();
 
             var downloadUrl = GetDownloadUrl(platform);
 
@@ -130,8 +143,12 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
     private string GetDownloadUrl(OSPlatform platform)
     {
-        bool is64BitOS = Environment.Is64BitOperatingSystem;
-        string settingPath = $"OmniSharp:DownloadUrls:{platform}:{(is64BitOS ? "x64" : "x86")}";
+        // OmniSharp does not provide a FreeBSD-specific build
+        if (platform == OSPlatform.FreeBSD)
+            platform = OSPlatform.Linux;
+
+        string arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
+        string settingPath = $"OmniSharp:DownloadUrls:{platform}:{arch}";
 
         return _configuration.GetValue<string>(settingPath)
                ?? throw new Exception($"No configuration value for OmniSharp download url at setting path: '{settingPath}'");
@@ -139,25 +156,6 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
     private string GetExecutableFileName(OSPlatform platform)
     {
-        string executableName;
-
-        if (platform == OSPlatform.Linux)
-        {
-            executableName = "OmniSharp";
-        }
-        else if (platform == OSPlatform.OSX)
-        {
-            executableName = "OmniSharp";
-        }
-        else if (platform == OSPlatform.Windows)
-        {
-            executableName = "OmniSharp.exe";
-        }
-        else
-        {
-            throw new NotSupportedException($"Platform '{platform}' is not supported");
-        }
-
-        return executableName;
+        return platform == OSPlatform.Windows ? "OmniSharp.exe" : "OmniSharp";
     }
 }

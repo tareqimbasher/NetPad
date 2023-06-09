@@ -31,7 +31,7 @@ const electronBuilderConfig = {
         "**/*"
     ],
     linux: {
-        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         icon: "../../../wwwroot/logo/circle/",
         category: "Development;IDE;Building;Database;TextEditor;",
         desktop: {
@@ -62,7 +62,7 @@ const electronBuilderConfig = {
         ]
     },
     mac: {
-        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         category: "public.app-category.developer-tools",
         icon: "../../../wwwroot/logo/circle/logo.icns",
         darkModeSupport: true,
@@ -73,7 +73,7 @@ const electronBuilderConfig = {
         ]
     },
     win: {
-        artifactName: "${name}-${version}-${arch}-${os}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         icon: "../../../wwwroot/favicon.ico",
         target: [
             {

@@ -84,7 +84,7 @@ package() {
   if [[ $build == "true" ]]; then
     echo "- Building..."
     cd "$APP_DIR" || exit 1
-    electronize build /manifest electron.manifest.js /PublishSingleFile false /target "$os"
+    electronize build /manifest electron.manifest.js /PublishSingleFile false /target $os
   fi
 
   echo "- Distributing..."
@@ -111,6 +111,7 @@ fi
 if [[ -z $os ]] || [[ $os == "osx" ]]; then
   printf "%b" "${GREEN}\n# OSX packages\n${ENDCOLOR}"
   package osx
+  package "custom osx-arm64;mac /electron-arch arm64"
 fi
 
 if [[ -z $os ]] || [[ $os == "win" ]]; then
