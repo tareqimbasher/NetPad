@@ -48,7 +48,8 @@ namespace OmniSharp.Stdio
                 if (!string.IsNullOrWhiteSpace(dotNetSdkRootDirPath) && Directory.Exists(dotNetSdkRootDirPath))
                 {
                     environmentVariables["DOTNET_ROOT"] = dotNetSdkRootDirPath;
-                    environmentVariables["PATH"] = $"{dotNetSdkRootDirPath}:{environmentVariables["PATH"]}".Trim(':');
+                    environmentVariables.TryGetValue("PATH", out string? existingPath);
+                    environmentVariables["PATH"] = $"{dotNetSdkRootDirPath}:{existingPath}".Trim(':');
                 }
 
                 _processHandler = new ProcessHandler(exePath, exeArgs, environmentVariables);
