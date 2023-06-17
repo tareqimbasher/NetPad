@@ -21,11 +21,13 @@ namespace OmniSharp
         /// <param name="executablePath">Path to the OmniSharp executable.</param>
         /// <param name="projectPath">An absolute path to a directory containing a project or a solution file.</param>
         /// <param name="additionalArgs">Additional arguments to pass to the OmniSharp executable. Separated by spaces.</param>
+        /// <param name="dotNetSdkRootDirectoryPath">The root directory path for the .NET SDK installation.</param>
         /// <exception cref="ArgumentNullException">Thrown if required parameters are null.</exception>
         public IOmniSharpStdioServer CreateStdioServerFromNewProcess(
             string executablePath,
             string projectPath,
-            string? additionalArgs)
+            string? additionalArgs,
+            string? dotNetSdkRootDirectoryPath)
         {
             if (executablePath == null)
                 throw new ArgumentNullException(nameof(executablePath));
@@ -36,7 +38,7 @@ namespace OmniSharp
             if (!string.IsNullOrWhiteSpace(additionalArgs))
                 args += " " + additionalArgs;
 
-            var config = new OmniSharpStdioServerConfiguration(executablePath, args.Trim());
+            var config = new OmniSharpStdioServerConfiguration(executablePath, args.Trim(), dotNetSdkRootDirectoryPath);
 
             var accessor = new OmniSharpServerStdioProcessAccessor(config);
 

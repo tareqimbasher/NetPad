@@ -28,6 +28,7 @@ public class AppOmniSharpServer
     private readonly Settings _settings;
     private readonly ICodeParser _codeParser;
     private readonly IEventBus _eventBus;
+    private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger _logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens;
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
@@ -54,6 +55,7 @@ public class AppOmniSharpServer
         _settings = settings;
         _codeParser = codeParser;
         _eventBus = eventBus;
+        _dotNetInfo = dotNetInfo;
         _logger = logger;
         _subscriptionTokens = new List<EventSubscriptionToken>();
 
@@ -173,7 +175,11 @@ public class AppOmniSharpServer
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={_settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
         }.JoinToString(" ");
 
-        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(executablePath, Project.ProjectDirectoryPath, args);
+        var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(
+            executablePath,
+            Project.ProjectDirectoryPath,
+            args,
+            _dotNetInfo.LocateDotNetRootDirectory());
 
         _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args} and project dir: {ProjDirPath}",
             executablePath,

@@ -41,6 +41,21 @@ while getopts "bcht:" flag; do
   esac
 done
 
+if ! command -v dotnet &> /dev/null; then
+    echo "Could not find 'dotnet'."
+    exit 1
+fi
+
+if ! command -v npm &> /dev/null; then
+    echo "Could not find 'npm'."
+    exit 1
+fi
+
+if ! command -v electronize &> /dev/null; then
+    echo "Could not find 'electronize'."
+    exit 1
+fi
+
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 APP_DIR=$(cd "$SCRIPT_DIR/../src/Apps/NetPad.Apps.App" && pwd)
 PACKAGES_SOURCE_DIR="$APP_DIR/bin/Desktop"

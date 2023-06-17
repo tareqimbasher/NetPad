@@ -162,6 +162,9 @@ electronize start /watch /manifest electron.manifest.dev.js
 
 # OR without watch mode
 electronize start /manifest electron.manifest.dev.js /PublishSingleFile false
+
+# For macOS ARM, append the following to the 'electronize start' command
+/target custom "osx-arm64;mac" /electron-arch arm64
 ```
 
 ###### Note
@@ -200,9 +203,13 @@ Build the app for the desired platform from the root directory
 of the `NetPad.Apps.App` project:
 
 ```
+# For x64:
 electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
 electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
 electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+
+# For macOS ARM:
+electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 ```
 
 Packaged files can be found in the `bin/Desktop` folder.

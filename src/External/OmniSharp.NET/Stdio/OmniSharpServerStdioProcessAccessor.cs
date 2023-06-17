@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using OmniSharp.Utilities;
 
@@ -34,7 +36,22 @@ namespace OmniSharp.Stdio
                 var exePath = _configuration.ExecutablePath!;
                 var exeArgs = _configuration.ExecutableArgs!;
 
-                _processHandler = new ProcessHandler(exePath, exeArgs);
+                // Copy current env variables to new process
+                var environmentVariables = new Dictionary<string, string?>();
+                var currentEnvVars = Environment.GetEnvironmentVariables();
+                foreach (string key in currentEnvVars.Keys)
+                {
+                    environmentVariables.Add(key, currentEnvVars[key]?.ToString());
+                }
+
+                var dotNetSdkRootDirPath = _configuration.DotNetSdkRootDirectoryPath;
+                if (!string.IsNullOrWhiteSpace(dotNetSdkRootDirPath) && Directory.Exists(dotNetSdkRootDirPath))
+                {
+                    environmentVariables["DOTNET_ROOT"] = dotNetSdkRootDirPath;
+                    environmentVariables["PATH"] = $"{dotNetSdkRootDirPath}:{environmentVariables["PATH"]}".Trim(':');
+                }
+
+                _processHandler = new ProcessHandler(exePath, exeArgs, environmentVariables);
 
                 var startResult = _processHandler.StartProcess();
 

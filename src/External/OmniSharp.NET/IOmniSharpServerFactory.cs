@@ -15,10 +15,12 @@ namespace OmniSharp
         /// <param name="executablePath">The path to the OmniSharp executable.</param>
         /// <param name="projectPath">The path to the project file or directory.</param>
         /// <param name="additionalArgs">Additional arguments to be passed to the spawned OmniSharp process.</param>
+        /// <param name="dotNetSdkRootDirectoryPath">The root directory path for the .NET SDK installation.</param>
         IOmniSharpStdioServer CreateStdioServerFromNewProcess(
             string executablePath,
             string projectPath,
-            string? additionalArgs);
+            string? additionalArgs,
+            string? dotNetSdkRootDirectoryPath);
 
         /// <summary>
         /// Creates a stdio OmniSharp server from an existing process. Standard input and output must already be redirected.

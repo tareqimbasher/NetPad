@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -27,26 +28,18 @@ namespace OmniSharp.Utilities
     {
         private readonly string? _commandText;
         private readonly string? _args;
+        private readonly Dictionary<string, string?>? _environmentVariables;
         private Process? _process;
         private ProcessIO? _io;
         private ProcessStartInfo? _processStartInfo;
         private Task<int>? _processStartTask;
         private bool _isDisposed;
 
-        public ProcessHandler(string commandText) : this(commandText, null)
-        {
-            _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
-        }
-
-        public ProcessHandler(string commandText, string? args)
+        public ProcessHandler(string commandText, string? args, Dictionary<string, string?>? environmentVariables)
         {
             _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
             _args = args;
-        }
-
-        public ProcessHandler(ProcessStartInfo processStartInfo)
-        {
-            _processStartInfo = processStartInfo ?? throw new ArgumentNullException(nameof(processStartInfo));
+            _environmentVariables = environmentVariables;
         }
 
         public Process Process
@@ -162,11 +155,12 @@ namespace OmniSharp.Utilities
                 if (!string.IsNullOrWhiteSpace(_args))
                     _processStartInfo.Arguments = _args;
 
-                // Copy current env variables to new process
-                var envVars = Environment.GetEnvironmentVariables();
-                foreach (string key in envVars.Keys)
+                if (_environmentVariables != null)
                 {
-                    _processStartInfo.EnvironmentVariables[key] = envVars[key]?.ToString();
+                    foreach (var key in _environmentVariables.Keys)
+                    {
+                        _processStartInfo.EnvironmentVariables[key] = _environmentVariables[key];
+                    }
                 }
             }
 

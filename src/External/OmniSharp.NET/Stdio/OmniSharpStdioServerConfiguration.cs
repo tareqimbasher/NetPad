@@ -10,15 +10,17 @@ namespace OmniSharp.Stdio
             ProcessGetter = processGetter ?? throw new ArgumentNullException(nameof(processGetter));
         }
 
-        public OmniSharpStdioServerConfiguration(string executablePath, string args) : base(OmniSharpServerProtocolType.Stdio)
+        public OmniSharpStdioServerConfiguration(string executablePath, string args, string? dotNetSdkRootDirectoryPath) : base(OmniSharpServerProtocolType.Stdio)
         {
             ExecutablePath = executablePath ?? throw new ArgumentNullException(nameof(executablePath));
             ExecutableArgs = args ?? throw new ArgumentNullException(nameof(args));
+            DotNetSdkRootDirectoryPath = dotNetSdkRootDirectoryPath;
         }
 
         public Func<Process>? ProcessGetter { get; }
         public string? ExecutablePath { get; }
         public string? ExecutableArgs { get; }
         public bool ExternallyManagedProcess => ProcessGetter != null;
+        public string? DotNetSdkRootDirectoryPath { get; }
     }
 }
