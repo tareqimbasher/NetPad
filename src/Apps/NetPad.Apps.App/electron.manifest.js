@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2020 Tareq Imbasher",
-    buildVersion: "0.3.0",
+    buildVersion: "0.3.1",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -85,20 +85,20 @@ const electronBuilderConfig = {
         ]
     },
     pacman: {
-        artifactName: "${name}-${version}-${arch}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
     },
     appImage: {
-        artifactName: "${name}-${version}-${arch}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
     },
     deb: {
-        artifactName: "${name}-${version}-${arch}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         depends: ["libnotify4", "libxtst6", "libnss3"]
     },
     rpm: {
-        artifactName: "${name}-${version}-${arch}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
     },
     nsis: {
-        artifactName: "${name}-${version}-${arch}.${ext}",
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         oneClick: false,
         allowToChangeInstallationDirectory: true,
     }
