@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -42,36 +42,31 @@ public class AppController : Controller
     {
         try
         {
-            const string url = "https://github.com/tareqimbasher/NetPad/releases/latest";
+            const string url = "https://api.github.com/repos/tareqimbasher/netpad/releases/latest";
 
-            var html = await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
+            var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            httpMessage.Headers.Add("User-Agent", "NetPad");
+
+            var json = await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
             {
-                var result = await httpClient.GetAsync(url);
+                var result = await httpClient.SendAsync(httpMessage);
                 return await result.Content.ReadAsStringAsync();
             });
 
-            if (html == null)
+            if (json == null)
             {
                 return null;
             }
 
-            var parts = html.Split("releases/tag/v").Skip(1);
+            var jsonDocument = JsonDocument.Parse(json);
+            var latestVersion = jsonDocument.RootElement.GetProperty("tag_name").GetString();
 
-            var sb = new StringBuilder();
-            foreach (var part in parts)
+            if (latestVersion == null || !Version.TryParse(latestVersion.TrimStart('v'), out var version))
             {
-                sb.Clear();
-                foreach (var c in part)
-                {
-                    if (c == '.' || char.IsDigit(c)) sb.Append(c);
-                    else break;
-                }
-
-                var versionStr = sb.ToString();
-                if (string.IsNullOrWhiteSpace(versionStr) || !Version.TryParse(versionStr, out var version)) continue;
-
-                return version.ToString();
+                return null;
             }
+
+            return version.ToString();
         }
         catch (Exception ex)
         {

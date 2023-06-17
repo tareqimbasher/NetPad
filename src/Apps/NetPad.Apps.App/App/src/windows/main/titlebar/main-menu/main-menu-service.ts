@@ -5,6 +5,8 @@ import {ISettingService, IWindowService} from "@domain";
 import {IShortcutManager} from "@application";
 import {ITextEditorService} from "@application/editor/text-editor-service";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
+import {IDialogService} from "@aurelia/dialog";
+import {DialogBase} from "@application/dialogs/dialog-base";
 
 export const IMainMenuService = DI.createInterface<MainMenuService>();
 
@@ -216,8 +218,8 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         text: "Check for Updates",
-                        icon: "cloud-icon",
-                        click: async () => await AppUpdateDialog.checkForUpdate(true, this.container)
+                        icon: "app-update-icon",
+                        click: async () => await DialogBase.toggle(this.container.get(IDialogService), AppUpdateDialog)
                     },
                     {
                         text: "GitHub",

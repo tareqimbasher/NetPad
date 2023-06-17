@@ -68,12 +68,13 @@ export class Bootstrapper implements IWindowBootstrapper {
             PaneHost,
             DataConnectionName,
             AppTask.activated(IContainer, async container => {
-                await container.get(IAppService).notifyClientAppIsReady();
+                const appService = container.get(IAppService);
+                await appService.notifyClientAppIsReady();
                 await QuickTipsDialog.showIfFirstVisit(container.get(IDialogService));
 
                 const settings = container.get(Settings);
                 if (settings.autoCheckUpdates) {
-                    await AppUpdateDialog.checkForUpdate(false, container);
+                    appService.checkForUpdates();
                 }
             })
         );

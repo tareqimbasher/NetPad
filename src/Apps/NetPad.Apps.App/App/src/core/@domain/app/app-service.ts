@@ -1,12 +1,35 @@
 import {DI} from "aurelia";
 import {AppApiClient, AppDependencyCheckResult, IAppApiClient} from "@domain";
 import {Util} from "@common/utils/util";
+import {Version} from "@common/data/version";
 
-export interface IAppService extends IAppApiClient {}
+export interface IAppService extends IAppApiClient {
+    /**
+     * Returns true if there is a newer version than the version
+     * of the currently running app; otherwise, false.
+     */
+    get appHasUpdate(): boolean;
+
+
+    /**
+     * Checks if there is an update for the app.
+     */
+    checkForUpdates(): Promise<void>;
+
+    /**
+     * Gets the current version and latest available version of the app.
+     */
+    getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null>;
+}
 
 export const IAppService = DI.createInterface<IAppService>();
 
 export class AppService extends AppApiClient implements IAppService {
+    public get appHasUpdate() {
+        return this._appHasUpdate;
+    }
+
+    private _appHasUpdate = false;
     private lastDependencyCheckResult: Promise<AppDependencyCheckResult> | undefined;
     private debouncedNullifyLastDepCheckResult = Util.debounce(this, () => {
         this.lastDependencyCheckResult = undefined;
@@ -24,5 +47,34 @@ export class AppService extends AppApiClient implements IAppService {
         // to worry about, or take into account, other consumers also reading from the same
         // cached instance.
         return this.lastDependencyCheckResult.then(r => AppDependencyCheckResult.fromJS(r));
+    }
+
+    public async checkForUpdates(): Promise<void> {
+        const versions = await this.getCurrentAndLatestVersions();
+
+        if (versions == null) {
+            return;
+        }
+
+        this._appHasUpdate = versions.latest.greaterThan(versions.current);
+    }
+
+    public async getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null> {
+        const appId = await this.getIdentifier();
+        const current = new Version(appId.productVersion);
+
+        if (current.isEmpty) {
+            return null;
+        }
+
+        const latest = new Version(await this.getLatestVersion());
+        if (latest.isEmpty) {
+            return null;
+        }
+
+        return {
+            current: current,
+            latest: latest
+        };
     }
 }

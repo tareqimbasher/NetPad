@@ -23,14 +23,14 @@
 
     <div class="bottom-bar" if.bind="!loading">
         <div class="buttons">
-            <button class="btn btn-secondary"
-                    click.trigger="cancel()">
-                Close
-            </button>
             <button class="btn btn-primary"
                     if.bind="newerVersionExists"
                     click.trigger="openLatestVersionPage()">
                 Download v${versions.latest.toString()} Now!
+            </button>
+            <button class="btn btn-secondary"
+                    click.trigger="cancel()">
+                Close
             </button>
         </div>
     </div>

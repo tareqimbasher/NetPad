@@ -352,6 +352,11 @@ button > .icon-base {
     @extend .fa-gear;
 }
 
+.app-update-icon {
+    @extend %icon-base;
+    @extend .fa-cloud-arrow-down;
+}
+
 .pane-collapse-icon {
     @extend %icon-base;
     @extend .fa-minus;
@@ -417,7 +422,7 @@ button > .icon-base {
 
 .add-data-connection-icon {
     @extend %icon-base;
-    @extend .fa-cloud-arrow-up;
+    @extend .fa-database;
 }
 
 .script-folder-open-icon {

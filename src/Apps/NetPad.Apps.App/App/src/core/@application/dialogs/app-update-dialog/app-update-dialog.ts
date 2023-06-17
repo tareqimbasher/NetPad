@@ -24,25 +24,6 @@ export class AppUpdateDialog extends DialogBase {
         super(dialogDom, logger);
     }
 
-    public static async checkForUpdate(showIfNoNewUpdate: boolean, container: IContainer) {
-        // If we're always going to show dialog, just show the dialog and it will check versions
-        if (showIfNoNewUpdate) {
-            await super.toggle(container.get(IDialogService), AppUpdateDialog);
-            return;
-        }
-
-        const versions = await this.getVersions(container.get(IAppService));
-        if (!versions) return;
-
-        if (!versions.latest.greaterThan(versions.current))
-            return Promise.resolve();
-
-        return super.toggle(container.get(IDialogService), AppUpdateDialog, {
-            current: versions.current,
-            latest: versions.latest
-        });
-    }
-
     public activate(model: IAppUpdateDialogModel) {
         if (model) {
             this.versions = model;
@@ -50,7 +31,7 @@ export class AppUpdateDialog extends DialogBase {
         }
 
         this.loading = true;
-        AppUpdateDialog.getVersions(this.appService)
+        this.appService.getCurrentAndLatestVersions()
             .then(versions => {
                 if (versions) this.versions = versions;
             })
@@ -70,20 +51,5 @@ export class AppUpdateDialog extends DialogBase {
     public async openLatestVersionPage() {
         await System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/releases/latest");
         await this.ok();
-    }
-
-    private static async getVersions(appService: IAppService): Promise<IAppUpdateDialogModel | null> {
-        const appId = await appService.getIdentifier();
-
-        const current = new Version(appId.productVersion);
-        if (current.isEmpty) return null;
-
-        const latest = new Version(await appService.getLatestVersion());
-        if (latest.isEmpty) return null;
-
-        return {
-            current: current,
-            latest: latest
-        };
     }
 }

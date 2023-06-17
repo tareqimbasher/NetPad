@@ -5,6 +5,22 @@ data-connections-list {
     display: flex;
     flex-direction: column;
 
+    .add-data-connection-action-icon {
+        position: relative;
+
+        .fa-plus {
+            position: absolute;
+            top: -2px;
+            right: 4px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            line-height: 10px;
+            border-radius: 10px;
+            background-color: rgb(211 231 249 / 60%);
+            color: dodgerblue;
+        }
+    }
+
     .data-connection-structure-tree {
         > .list-group {
             padding: 0;

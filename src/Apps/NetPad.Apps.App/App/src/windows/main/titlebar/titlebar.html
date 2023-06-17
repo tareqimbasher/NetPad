@@ -9,6 +9,10 @@
 </div>
 <div class="right-column">
     <div class="actions">
+        <i class="app-update-icon action-icon text-blue"
+           click.trigger="openAppUpdateDialog()"
+           title="Update available"
+           if.bind="appService.appHasUpdate"></i>
         <i class="settings-icon action-icon"
            click.trigger="openSettingsWindow()"
            title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
