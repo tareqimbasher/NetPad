@@ -50,6 +50,8 @@ the [Releases](https://github.com/tareqimbasher/NetPad/releases/latest) page.
 
 This is a work in progress and still in preview. All contributions are welcome!
 
+Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
+
 ## Features :tada:
 
 * The basics:
