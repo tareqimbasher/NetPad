@@ -15,8 +15,8 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.7"/>
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.7"/>
-        <PackageReference Include="NuGet.Protocol" Version="6.4.0"/>
-        <PackageReference Include="NuGet.Resolver" Version="6.4.0"/>
+        <PackageReference Include="NuGet.Protocol" Version="6.6.1"/>
+        <PackageReference Include="NuGet.Resolver" Version="6.6.1"/>
     </ItemGroup>
 
 </Project>
