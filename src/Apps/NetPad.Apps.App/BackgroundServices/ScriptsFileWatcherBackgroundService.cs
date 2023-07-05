@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.UiInterop;
+using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices;
 
@@ -14,42 +16,50 @@ namespace NetPad.BackgroundServices;
 /// </summary>
 public class ScriptsFileWatcherBackgroundService : BackgroundService
 {
-    private readonly IScriptRepository _scriptRepository;
-    private readonly IIpcService _ipcService;
     private readonly Settings _settings;
     private FileSystemWatcher? _scriptDirWatcher;
+    private readonly Action PushDirectoryChanged;
 
     public ScriptsFileWatcherBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
         base(loggerFactory)
     {
-        _scriptRepository = scriptRepository;
-        _ipcService = ipcService;
         _settings = settings;
+
+        PushDirectoryChanged = new Func<Task>(async () =>
+        {
+            var scripts = await scriptRepository.GetAllAsync();
+            await ipcService.SendAsync(new ScriptDirectoryChangedEvent(scripts));
+        }).DebounceAsync();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        InitFileWatcher();
+
+        return Task.CompletedTask;
+    }
+
+    private void InitFileWatcher()
+    {
         _scriptDirWatcher = new FileSystemWatcher(_settings.ScriptsDirectoryPath)
         {
-            Filter = $"*.{Script.STANDARD_EXTENSION_WO_DOT}",
+            IncludeSubdirectories = true,
             NotifyFilter = NotifyFilters.LastWrite
                            | NotifyFilters.FileName
                            | NotifyFilters.DirectoryName
         };
 
-        _scriptDirWatcher.Created += async (_, ev) => await PushDirectoryChanged();
-        _scriptDirWatcher.Deleted += async (_, ev) => await PushDirectoryChanged();
-        _scriptDirWatcher.Renamed += async (_, ev) => await PushDirectoryChanged();
+        _scriptDirWatcher.Created += (_, ev) => PushDirectoryChanged();
+        _scriptDirWatcher.Deleted += (_, ev) => PushDirectoryChanged();
+        _scriptDirWatcher.Renamed += (_, ev) => PushDirectoryChanged();
+        _scriptDirWatcher.Error += delegate(object sender, ErrorEventArgs args)
+        {
+            _logger.LogError(args.GetException(), "Error in FileSystemWatcher. Will re-initialize watcher");
+            _scriptDirWatcher.Dispose();
+            PushDirectoryChanged();
+            InitFileWatcher();
+        };
 
-        _scriptDirWatcher.IncludeSubdirectories = true;
         _scriptDirWatcher.EnableRaisingEvents = true;
-
-        return Task.CompletedTask;
-    }
-
-    private async Task PushDirectoryChanged()
-    {
-        var scripts = await _scriptRepository.GetAllAsync();
-        await _ipcService.SendAsync(new ScriptDirectoryChangedEvent(scripts));
     }
 }

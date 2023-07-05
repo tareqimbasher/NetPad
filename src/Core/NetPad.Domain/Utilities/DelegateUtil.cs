@@ -26,6 +26,26 @@ public static class DelegateUtil
         };
     }
 
+    public static Action DebounceAsync(this Func<Task> func, int milliseconds = 300)
+    {
+        CancellationTokenSource? cancelTokenSource = null;
+
+        return () =>
+        {
+            cancelTokenSource?.Cancel();
+            cancelTokenSource = new CancellationTokenSource();
+
+            Task.Delay(milliseconds, cancelTokenSource.Token)
+                .ContinueWith(async t =>
+                {
+                    if (t.IsCompletedSuccessfully)
+                    {
+                        await func();
+                    }
+                }, TaskScheduler.Default);
+        };
+    }
+
     public static Action<T> DebounceAsync<T>(this Func<T, Task> func, int milliseconds = 300)
     {
         CancellationTokenSource? cancelTokenSource = null;
