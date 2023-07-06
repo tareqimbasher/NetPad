@@ -69,6 +69,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
             this.omnisharpService,
             codeLens.range.startLineNumber,
             codeLens.range.startColumn,
+            true,
             token);
 
         if (!references) {

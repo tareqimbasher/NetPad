@@ -22,4 +22,9 @@ text-editor {
         outline-color: #0d6efd;
         outline-style: solid;
     }
+
+    // Code action popup needs some more width so it doesn't truncate words
+    .action-widget {
+        min-width: calc(15cqw) !important;
+    }
 }

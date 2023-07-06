@@ -2647,6 +2647,7 @@ export class InlayHint implements IInlayHint {
     position!: Point;
     label!: string;
     tooltip?: string | undefined;
+    textEdits?: LinePositionSpanTextChange[] | undefined;
     data!: ValueTupleOfStringAndInteger;
 
     constructor(data?: IInlayHint) {
@@ -2667,6 +2668,11 @@ export class InlayHint implements IInlayHint {
             this.position = _data["position"] ? Point.fromJS(_data["position"]) : new Point();
             this.label = _data["label"];
             this.tooltip = _data["tooltip"];
+            if (Array.isArray(_data["textEdits"])) {
+                this.textEdits = [] as any;
+                for (let item of _data["textEdits"])
+                    this.textEdits!.push(LinePositionSpanTextChange.fromJS(item));
+            }
             this.data = _data["data"] ? ValueTupleOfStringAndInteger.fromJS(_data["data"]) : new ValueTupleOfStringAndInteger();
         }
     }
@@ -2683,6 +2689,11 @@ export class InlayHint implements IInlayHint {
         data["position"] = this.position ? this.position.toJSON() : <any>undefined;
         data["label"] = this.label;
         data["tooltip"] = this.tooltip;
+        if (Array.isArray(this.textEdits)) {
+            data["textEdits"] = [];
+            for (let item of this.textEdits)
+                data["textEdits"].push(item.toJSON());
+        }
         data["data"] = this.data ? this.data.toJSON() : <any>undefined;
         return data;
     }
@@ -2699,6 +2710,7 @@ export interface IInlayHint {
     position: Point;
     label: string;
     tooltip?: string | undefined;
+    textEdits?: LinePositionSpanTextChange[] | undefined;
     data: ValueTupleOfStringAndInteger;
 }
 
@@ -3091,6 +3103,7 @@ export interface IGetCodeActionsResponse {
 export class OmniSharpCodeAction implements IOmniSharpCodeAction {
     identifier?: string | undefined;
     name?: string | undefined;
+    codeActionKind?: string | undefined;
 
     constructor(data?: IOmniSharpCodeAction) {
         if (data) {
@@ -3105,6 +3118,7 @@ export class OmniSharpCodeAction implements IOmniSharpCodeAction {
         if (_data) {
             this.identifier = _data["identifier"];
             this.name = _data["name"];
+            this.codeActionKind = _data["codeActionKind"];
         }
     }
 
@@ -3119,6 +3133,7 @@ export class OmniSharpCodeAction implements IOmniSharpCodeAction {
         data = typeof data === 'object' ? data : {};
         data["identifier"] = this.identifier;
         data["name"] = this.name;
+        data["codeActionKind"] = this.codeActionKind;
         return data;
     }
 
@@ -3133,6 +3148,7 @@ export class OmniSharpCodeAction implements IOmniSharpCodeAction {
 export interface IOmniSharpCodeAction {
     identifier?: string | undefined;
     name?: string | undefined;
+    codeActionKind?: string | undefined;
 }
 
 export class GetCodeActionsRequest extends Request implements IGetCodeActionsRequest {

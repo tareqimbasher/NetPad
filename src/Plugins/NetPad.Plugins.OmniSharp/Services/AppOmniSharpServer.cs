@@ -181,10 +181,10 @@ public class AppOmniSharpServer
             args,
             _dotNetInfo.LocateDotNetRootDirectory());
 
-        _logger.LogDebug("Starting omnisharp server from path: {OmniSharpExePath} with args: {Args} and project dir: {ProjDirPath}",
+        _logger.LogDebug("Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
             executablePath,
-            args,
-            Project.ProjectDirectoryPath);
+            Project.ProjectDirectoryPath,
+            args);
 
         await omniSharpServer.StartAsync();
 

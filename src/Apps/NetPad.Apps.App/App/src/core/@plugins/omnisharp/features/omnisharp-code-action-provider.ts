@@ -70,6 +70,7 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
 
             codeActions.push({
                 title: codeActionName,
+                kind: this.convertToMonacoCodeCodeActionKind(codeAction.codeActionKind),
                 command: {
                     id: this.commandId,
                     title: codeActionName,
@@ -83,6 +84,21 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
             dispose: () => {
                 // do nothing
             }
+        }
+    }
+
+    private convertToMonacoCodeCodeActionKind(kind: string | undefined): string | undefined {
+        switch (kind) {
+            case "QuickFix":
+                return "quickfix";
+            case "Refactor":
+                return "refactor";
+            case "RefactorExtract":
+                return "refactor.extract";
+            case "RefactorInline":
+                return "refactor.inline";
+            default:
+                return undefined;
         }
     }
 

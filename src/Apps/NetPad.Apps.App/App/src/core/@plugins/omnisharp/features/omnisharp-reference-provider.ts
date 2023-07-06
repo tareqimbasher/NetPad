@@ -11,7 +11,7 @@ export class OmniSharpReferenceProvider implements IReferenceProvider {
     public async provideReferences(model: editor.ITextModel, position: Position, context: languages.ReferenceContext, token: CancellationToken)
         : Promise<languages.Location[]> {
 
-        return await OmniSharpReferenceProvider.findUsages(model, this.omnisharpService, position.lineNumber, position.column, token) || [];
+        return await OmniSharpReferenceProvider.findUsages(model, this.omnisharpService, position.lineNumber, position.column, true, token) || [];
     }
 
     public static async findUsages(
@@ -19,13 +19,14 @@ export class OmniSharpReferenceProvider implements IReferenceProvider {
         omnisharpService: IOmniSharpService,
         lineNumber: number,
         column: number,
+        excludeDefinition: boolean,
         token: CancellationToken): Promise<languages.Location[] | null> {
 
         const scriptId = EditorUtil.getScriptId(model);
 
         const response = await omnisharpService.findUsages(scriptId, new api.FindUsagesRequest({
             onlyThisFile: true,
-            excludeDefinition: true,
+            excludeDefinition: excludeDefinition,
             line: lineNumber,
             column: column,
             applyChangesTogether: false
