@@ -37,6 +37,11 @@ export interface IReferenceProvider extends languages.ReferenceProvider {
 
 export const IReferenceProvider = DI.createInterface<IReferenceProvider>();
 
+export interface IDocumentHighlightProvider extends languages.DocumentHighlightProvider {
+}
+
+export const IDocumentHighlightProvider = DI.createInterface<IDocumentHighlightProvider>();
+
 export interface ICodeLensProvider extends languages.CodeLensProvider {
 }
 

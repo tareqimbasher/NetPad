@@ -7,6 +7,7 @@ import {
     ICommandProvider,
     ICompletionItemProvider,
     IDiagnosticsProvider,
+    IDocumentHighlightProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IHoverProvider,
@@ -28,6 +29,7 @@ export class EditorSetup {
         @all(IHoverProvider) private readonly hoverProviders: IHoverProvider[],
         @all(ISignatureHelpProvider) private readonly signatureHelpProviders: ISignatureHelpProvider[],
         @all(IReferenceProvider) private readonly referenceProviders: IReferenceProvider[],
+        @all(IDocumentHighlightProvider) private readonly documentHighlightProviders: IDocumentHighlightProvider[],
         @all(ICodeLensProvider) private readonly codeLensProviders: ICodeLensProvider[],
         @all(IInlayHintsProvider) private readonly inlayHintsProviders: IInlayHintsProvider[],
         @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
@@ -45,6 +47,7 @@ export class EditorSetup {
         this.registerHoverProviders();
         this.registerSignatureHelpProviders();
         this.registerReferenceProviders();
+        this.registerDocumentHighlightProviders();
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
@@ -143,6 +146,12 @@ export class EditorSetup {
     private registerReferenceProviders() {
         for (const referenceProvider of this.referenceProviders) {
             monaco.languages.registerReferenceProvider("csharp", referenceProvider);
+        }
+    }
+
+    private registerDocumentHighlightProviders() {
+        for (const documentHighlightProvider of this.documentHighlightProviders) {
+            monaco.languages.registerDocumentHighlightProvider("csharp", documentHighlightProvider);
         }
     }
 

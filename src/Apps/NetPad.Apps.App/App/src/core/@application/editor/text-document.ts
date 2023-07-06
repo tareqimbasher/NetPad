@@ -10,11 +10,7 @@ export class TextDocument extends WithDisposables {
     private changeHandlers = new Set<(setter: unknown, newText: string) => Promise<void>>();
     private _textModel?: monaco.editor.ITextModel;
 
-    constructor(
-        public readonly id: string,
-        public readonly language: TextLanguage,
-        text: string
-    ) {
+    constructor(public readonly id: string, public readonly language: TextLanguage, text: string) {
         super();
         if (!id) throw new Error(`${nameof(TextDocument)} id cannot be empty.`);
         this._text = text ?? ""
