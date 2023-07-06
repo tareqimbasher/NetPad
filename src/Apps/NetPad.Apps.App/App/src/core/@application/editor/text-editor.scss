@@ -8,23 +8,45 @@ text-editor {
         text-decoration: wavy underline red;
     }
 
-    span[class*=" dyn-rule"],
-    span[class^="dyn-rule"] {
-        color: gray;
-        font-size: 80%;
-        margin-right: 2px;
-        padding: 0 2px;
-        border-radius: 4px;
-    }
-
     .monaco-inputbox input:active,
     .monaco-inputbox input:focus{
         outline-color: #0d6efd;
         outline-style: solid;
     }
 
+    // Inlay hint styling
+    span[class*=" dyn-rule"],
+    span[class^="dyn-rule"] {
+        color: #787878;
+        background-color: #2D2D2D;
+        font-size: 80%;
+        margin-right: 2px;
+        padding: 0 3px;
+        border-radius: 4px;
+    }
+
     // Code action popup needs some more width so it doesn't truncate words
     .action-widget {
         min-width: calc(15cqw) !important;
+    }
+
+    .rendered-markdown {
+        p {
+            margin-block-start: 0.8em;
+        }
+
+        .mtk1 {
+            color: #4ec9b0;
+        }
+    }
+
+    .monaco-sash.horizontal.hover:before,
+    .monaco-sash.horizontal.active:before {
+        height: 4px;
+    }
+
+    .monaco-sash.vertical.hover:before,
+    .monaco-sash.vertical.active:before {
+        width: 4px;
     }
 }
