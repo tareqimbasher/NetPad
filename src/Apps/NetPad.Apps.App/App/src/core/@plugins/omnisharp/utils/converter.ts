@@ -43,6 +43,13 @@ export class Converter {
         );
     }
 
+    public static apiLinePositionSpanTextChangeToMonacoTextEdit(textChange: api.LinePositionSpanTextChange): mco.languages.TextEdit {
+        return {
+            text: textChange.newText ?? "",
+            range: Converter.apiLinePositionSpanTextChangeToMonacoRange(textChange)
+        };
+    }
+
     public static apiSemanticHighlightSpanToMonacoRange(span: api.SemanticHighlightSpan): mco.Range {
         return new mco.Range(
             span.startLine,

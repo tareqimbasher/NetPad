@@ -101,6 +101,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
     private toMonacoInlayHint(inlayHint: api.InlayHint): languages.InlayHint {
         return {
             label: inlayHint.label?.trim(),
+            position: Converter.apiPointToMonacoIPosition(inlayHint.position),
             tooltip: {
                 value: inlayHint.tooltip || "",
                 supportHtml: true,
@@ -108,7 +109,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                 isTrusted: true
             },
             kind: languages.InlayHintKind.Type,
-            position: Converter.apiPointToMonacoIPosition(inlayHint.position)
+            textEdits: inlayHint.textEdits?.map(Converter.apiLinePositionSpanTextChangeToMonacoTextEdit)
         };
     }
 }
