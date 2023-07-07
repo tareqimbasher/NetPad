@@ -11,32 +11,40 @@
                 .NET Runtime
             </h5>
 
-            <span>
-            NetPad is running on .NET v${dependencyCheckResult.dotNetRuntimeVersion}
-            </span>
+            <div class="section-details">
+                NetPad is running on .NET v${dependencyCheckResult.dotNetRuntimeVersion}
+            </div>
         </div>
 
         <div class="section">
             <h5>
                 <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
-                .NET 6 SDK
+                .NET SDK
                 <small if.bind="dependencyCheckResult.dotNetSdkVersions.length">(latest installed:
                     v${latestDotnetSdkVersion})</small>
             </h5>
 
-            <div if.bind="dotnetSdkMissing">
-                <div class="mt-4">
-                    <span class="text-red mt-2">.NET 6 SDK could not be found.</span>
+            <div class="section-details">
+                <div if.bind="dotnetSdkMissing">
+                    <span class="text-red">.NET SDK could not be found.</span>
                     <br/>
-                    Make sure the .NET 6 SDK is installed and the <code>dotnet</code> executable is on your <i>PATH</i>.
+                    Make sure .NET SDK version 6 or 7 is installed and the <code>dotnet</code>
+                    executable is in your <code>PATH</code>.
                 </div>
-            </div>
-            <div else>
-                The .NET 6 SDK is installed.
-                The following .NET SDKs are installed:
-                <ul>
-                    <li repeat.for="version of dependencyCheckResult.dotNetSdkVersions">${version}</li>
-                </ul>
+                <div else>
+                    .NET SDK is installed.
+                    <br>
+                    The following SDK versions are installed:
+                    <ul class="sdk-versions-list">
+                        <li repeat.for="version of dependencyCheckResult.dotNetSdkVersions">
+                            ${version}
+                            <span class="badge text-green ms-3"
+                                  if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.indexOf(version) >= 0">
+                                Supported
+                            </span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -47,19 +55,19 @@
                 <small if.bind="!dotnetEfCoreToolMissing">(installed:
                     v${dependencyCheckResult.dotNetEfToolVersion})</small>
             </h5>
-            <div if.bind="dotnetEfCoreToolMissing">
-                <div class="mt-4 mt-2">
+
+            <div class="section-details">
+                <div if.bind="dotnetEfCoreToolMissing">
                     <span>Entity Framework Core .NET tool is not installed.</span>
                     <br/>
                     <b>This is optional</b>, but you will need to install version 6 (or higher) of the
-                    <code>dotnet-ef</code>
-                    tool and ensure it is on your <i>PATH</i> if you want to be able to add and use database
-                    connections.
+                    <code>dotnet-ef</code> tool and ensure it is in your <code>PATH</code> if you want to be
+                    able to add and use database connections.
+                </div>
+                <div else>
+                    Entity Framework Core .NET tool is installed.
                 </div>
             </div>
-            <span else>
-           Entity Framework Core .NET tool is installed.
-        </span>
         </div>
 
         <div class="section"
@@ -82,7 +90,7 @@
         <div class="buttons">
             <a class="btn btn-primary"
                external-link
-               href="https://dotnet.microsoft.com/en-us/download/dotnet/6.0">Download .NET 6 SDK</a>
+               href="https://dotnet.microsoft.com/en-us/download/dotnet">Download .NET SDK</a>
             <a class="btn btn-secondary"
                external-link
                href="https://learn.microsoft.com/en-us/ef/core/cli/dotnet#installing-the-tools">Download EF Core

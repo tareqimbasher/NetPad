@@ -40,14 +40,6 @@ public class Script : INotifyOnPropertyChanged
     {
     }
 
-    public Script(Guid id, string name) : this(id, name, new ScriptConfig(ScriptKind.Program))
-    {
-    }
-
-    public Script(string name) : this(Guid.NewGuid(), name)
-    {
-    }
-
     [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; }
 
     public Guid Id { get; private set; }

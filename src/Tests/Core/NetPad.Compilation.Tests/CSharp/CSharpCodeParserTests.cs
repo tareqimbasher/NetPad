@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using NetPad.Common;
 using NetPad.Compilation.CSharp;
 using NetPad.DotNet;
 using NetPad.Scripts;
@@ -113,5 +114,5 @@ public class CSharpCodeParserTests
         Assert.Throws<NotImplementedException>(() => parser.GetUserProgram(script.Code, script.Config.Kind));
     }
 
-    private Script GetScript() => new("Test Script");
+    private Script GetScript() => new(Guid.NewGuid(), "Test Script", new ScriptConfig(ScriptKind.Program, GlobalConsts.AppDotNetFrameworkVersion));
 }

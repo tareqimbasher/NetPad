@@ -10,10 +10,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
-using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.CQs;
-using NetPad.DotNet;
 using NetPad.Filters;
 using NetPad.UiInterop;
 using NetPad.Utilities;
@@ -81,7 +79,7 @@ public class AppController : Controller
     {
         var result = await CheckDependencies(mediator);
 
-        if (result.DotNetSdkVersions.Any(v => new DotNetSdkVersion(v).Major == BadGlobals.DotNetVersion.ToString())) return;
+        if (result.SupportedDotNetSdkVersionsInstalled.Any()) return;
 
         await uiDialogService.AlertUserAboutMissingDependencies(result);
     }

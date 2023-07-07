@@ -1,27 +1,18 @@
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using NetPad.Common;
-using NetPad.Packages;
+using NetPad.DotNet;
 
 namespace NetPad.Data.EntityFrameworkCore;
 
 public static class EntityFrameworkPackageUtils
 {
-    private static readonly ConcurrentDictionary<string, string?> _versionCache = new();
-
-    public static string GetEntityFrameworkCoreVersion()
+    public static Task<string?> GetEntityFrameworkProviderVersionAsync(DotNetFrameworkVersion dotNetFrameworkVersion, string providerName)
     {
-        return BadGlobals.EntityFrameworkLibVersion;
+        return Task.FromResult<string?>(GlobalConsts.EntityFrameworkLibVersion(dotNetFrameworkVersion, providerName));
     }
 
-    public static Task<string?> GetEntityFrameworkProviderVersionAsync(IPackageProvider packageProvider, string providerName)
+    public static Task<string?> GetEntityFrameworkDesignVersionAsync(DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        return Task.FromResult<string?>(BadGlobals.EntityFrameworkProviderLibVersion);
-    }
-
-    public static Task<string?> GetEntityFrameworkDesignVersionAsync(IPackageProvider packageProvider)
-    {
-        // So it depends on the same EF Core version the app is using
-        return Task.FromResult<string?>(BadGlobals.EntityFrameworkLibVersion);
+        return Task.FromResult<string?>(GlobalConsts.EntityFrameworkLibVersion(dotNetFrameworkVersion, "Microsoft.EntityFrameworkCore.Design"));
     }
 }

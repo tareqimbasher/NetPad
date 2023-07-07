@@ -1179,6 +1179,8 @@ export interface IScriptsApiClient {
 
     setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
+    setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
     setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
@@ -1555,6 +1557,46 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
     }
 
     protected processSetScriptKind(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/target-framework-version";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(targetFrameworkVersion);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSetTargetFrameworkVersion(_response);
+        });
+    }
+
+    protected processSetTargetFrameworkVersion(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -2376,6 +2418,8 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetRuntimeVersion!: string;
     dotNetSdkVersions!: string[];
     dotNetEfToolVersion?: string | undefined;
+    supportedDotNetSdkVersionsInstalled!: string[];
+    isSupportedDotNetEfToolInstalled!: boolean;
 
     constructor(data?: IAppDependencyCheckResult) {
         if (data) {
@@ -2386,6 +2430,7 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
         }
         if (!data) {
             this.dotNetSdkVersions = [];
+            this.supportedDotNetSdkVersionsInstalled = [];
         }
     }
 
@@ -2398,6 +2443,12 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
                     this.dotNetSdkVersions!.push(item);
             }
             this.dotNetEfToolVersion = _data["dotNetEfToolVersion"];
+            if (Array.isArray(_data["supportedDotNetSdkVersionsInstalled"])) {
+                this.supportedDotNetSdkVersionsInstalled = [] as any;
+                for (let item of _data["supportedDotNetSdkVersionsInstalled"])
+                    this.supportedDotNetSdkVersionsInstalled!.push(item);
+            }
+            this.isSupportedDotNetEfToolInstalled = _data["isSupportedDotNetEfToolInstalled"];
         }
     }
 
@@ -2417,6 +2468,12 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
                 data["dotNetSdkVersions"].push(item);
         }
         data["dotNetEfToolVersion"] = this.dotNetEfToolVersion;
+        if (Array.isArray(this.supportedDotNetSdkVersionsInstalled)) {
+            data["supportedDotNetSdkVersionsInstalled"] = [];
+            for (let item of this.supportedDotNetSdkVersionsInstalled)
+                data["supportedDotNetSdkVersionsInstalled"].push(item);
+        }
+        data["isSupportedDotNetEfToolInstalled"] = this.isSupportedDotNetEfToolInstalled;
         return data;
     }
 
@@ -2432,6 +2489,8 @@ export interface IAppDependencyCheckResult {
     dotNetRuntimeVersion: string;
     dotNetSdkVersions: string[];
     dotNetEfToolVersion?: string | undefined;
+    supportedDotNetSdkVersionsInstalled: string[];
+    isSupportedDotNetEfToolInstalled: boolean;
 }
 
 export type LogSource = "WebApp" | "ElectronApp";
@@ -3762,6 +3821,8 @@ export interface ISourceCodeDto {
 
 export type ScriptKind = "Expression" | "Program";
 
+export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
+
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
     status!: ScriptStatus;
@@ -3896,6 +3957,7 @@ export interface IScript {
 
 export class ScriptConfig implements IScriptConfig {
     kind!: ScriptKind;
+    targetFrameworkVersion!: DotNetFrameworkVersion;
     namespaces!: string[];
     references!: Reference[];
 
@@ -3915,6 +3977,7 @@ export class ScriptConfig implements IScriptConfig {
     init(_data?: any) {
         if (_data) {
             this.kind = _data["kind"];
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
             if (Array.isArray(_data["namespaces"])) {
                 this.namespaces = [] as any;
                 for (let item of _data["namespaces"])
@@ -3938,6 +4001,7 @@ export class ScriptConfig implements IScriptConfig {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["kind"] = this.kind;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
         if (Array.isArray(this.namespaces)) {
             data["namespaces"] = [];
             for (let item of this.namespaces)
@@ -3961,6 +4025,7 @@ export class ScriptConfig implements IScriptConfig {
 
 export interface IScriptConfig {
     kind: ScriptKind;
+    targetFrameworkVersion: DotNetFrameworkVersion;
     namespaces: string[];
     references: Reference[];
 }

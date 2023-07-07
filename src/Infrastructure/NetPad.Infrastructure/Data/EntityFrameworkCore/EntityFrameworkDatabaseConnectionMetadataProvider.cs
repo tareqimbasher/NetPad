@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Assemblies;
+using NetPad.Common;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
 
 namespace NetPad.Data.EntityFrameworkCore;
@@ -31,7 +32,7 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
             throw new InvalidOperationException("Cannot get structure except on Entity Framework database connections.");
         }
 
-        var assemblyImage = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection);
+        var assemblyImage = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection, GlobalConsts.AppDotNetFrameworkVersion);
         if (assemblyImage == null)
         {
             return new DatabaseStructure(dbConnection.DatabaseName ?? string.Empty);

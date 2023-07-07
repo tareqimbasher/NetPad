@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.DotNet;
 
 namespace NetPad.Scripts;
 
@@ -15,6 +16,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     private readonly IScriptRepository _scriptRepository;
     private readonly IScriptNameGenerator _scriptNameGenerator;
     private readonly IDataConnectionRepository _dataConnectionRepository;
+    private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<FileSystemAutoSaveScriptRepository> _logger;
     private static readonly object _indexLock = new();
 
@@ -23,12 +25,14 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         IScriptRepository scriptRepository,
         IScriptNameGenerator scriptNameGenerator,
         IDataConnectionRepository dataConnectionRepository,
+        IDotNetInfo dotNetInfo,
         ILogger<FileSystemAutoSaveScriptRepository> logger)
     {
         _settings = settings;
         _scriptRepository = scriptRepository;
         _scriptNameGenerator = scriptNameGenerator;
         _dataConnectionRepository = dataConnectionRepository;
+        _dotNetInfo = dotNetInfo;
         _logger = logger;
         Directory.CreateDirectory(_settings.AutoSaveScriptsDirectoryPath);
     }
@@ -51,7 +55,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         var data = await File.ReadAllTextAsync(autoSavedScriptPath).ConfigureAwait(false);
 
-        var script = await ScriptSerializer.DeserializeAsync(scriptName, data, _dataConnectionRepository);
+        var script = await ScriptSerializer.DeserializeAsync(scriptName, data, _dataConnectionRepository, _dotNetInfo);
         if (repoScript?.Path != null)
             script.SetPath(repoScript.Path);
 

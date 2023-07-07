@@ -84,7 +84,10 @@ public class AppOmniSharpServer
         }
 
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
-        await Project.CreateAsync(ProjectOutputType.Executable, true);
+        await Project.CreateAsync(
+            _environment.Script.Config.TargetFrameworkVersion,
+            ProjectOutputType.Executable,
+            true);
         await Project.RestoreAsync();
 
         InitializeEventHandlers();
@@ -201,7 +204,9 @@ public class AppOmniSharpServer
                 await Task.Delay(3000);
 
                 bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
-                                                            || _dataConnectionResourcesCache.HasCachedResources(_environment.Script.DataConnection.Id);
+                                                            || _dataConnectionResourcesCache.HasCachedResources(
+                                                                _environment.Script.DataConnection.Id,
+                                                                _environment.Script.Config.TargetFrameworkVersion);
                 if (shouldUpdateDataConnectionCodeBuffer)
                     await UpdateOmniSharpCodeBufferWithDataConnectionAsync(_environment.Script.DataConnection);
                 else
@@ -256,6 +261,14 @@ public class AppOmniSharpServer
             // TODO need to find a point where we can determine OmniSharp has fully started and is ready to update buffer and for it to register
             // var parsingResult = _codeParser.Parse(_environment.Script);
             // await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+        });
+
+        Subscribe<ScriptTargetFrameworkVersionUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            await Project.SetProjectPropertyAsync("TargetFramework", ev.NewVersion.GetTargetFrameworkMoniker());
+            await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 
         Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
@@ -350,9 +363,10 @@ public class AppOmniSharpServer
 
         if (dataConnection != null)
         {
-            references.AddRange(await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection));
+            references.AddRange(
+                await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection, _environment.Script.Config.TargetFrameworkVersion));
 
-            var assembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection);
+            var assembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection, _environment.Script.Config.TargetFrameworkVersion);
             if (assembly != null)
                 references.Add(new AssemblyImageReference(assembly));
         }
@@ -362,7 +376,7 @@ public class AppOmniSharpServer
 
         var sourceCode = dataConnection == null
             ? null
-            : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
+            : _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection, _environment.Script.Config.TargetFrameworkVersion);
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
 
         // Needed to trigger diagnostics and semantic highlighting for script file

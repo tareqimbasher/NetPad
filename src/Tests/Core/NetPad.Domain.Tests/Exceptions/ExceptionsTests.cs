@@ -1,7 +1,7 @@
 ﻿using System;
 using NetPad.DotNet;
 using NetPad.Exceptions;
-using NetPad.Scripts;
+using NetPad.Tests.Helpers;
 using Xunit;
 
 namespace NetPad.Domain.Tests.Exceptions;
@@ -24,7 +24,7 @@ public class ExceptionsTests
     public void InvalidScriptFormatException_Basic()
     {
         _ = new InvalidScriptFormatException("script name", "message");
-        _ = new InvalidScriptFormatException(new Script("Test"), "message");
+        _ = new InvalidScriptFormatException(ScriptTestHelper.CreateScript(), "message");
     }
 
     [Fact]

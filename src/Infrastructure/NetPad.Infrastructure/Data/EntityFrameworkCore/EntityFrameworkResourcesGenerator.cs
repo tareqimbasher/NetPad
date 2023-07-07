@@ -43,7 +43,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         _loggerFactory = loggerFactory;
     }
 
-    public async Task<DataConnectionSourceCode> GenerateSourceCodeAsync(DataConnection dataConnection)
+    public async Task<DataConnectionSourceCode> GenerateSourceCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
         if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
@@ -51,8 +51,8 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         }
 
         var scaffolder = new EntityFrameworkDatabaseScaffolder(
+            targetFrameworkVersion,
             efDbConnection,
-            _packageProvider,
             _dataConnectionPasswordProtector,
             _dotNetInfo,
             _settings,
@@ -69,21 +69,21 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         };
     }
 
-    public async Task<AssemblyImage?> GenerateAssemblyAsync(DataConnection dataConnection)
+    public async Task<AssemblyImage?> GenerateAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
         if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
         {
             return null;
         }
 
-        var sourceCode = await _dataConnectionResourcesCache.Value.GetSourceGeneratedCodeAsync(dataConnection);
+        var sourceCode = await _dataConnectionResourcesCache.Value.GetSourceGeneratedCodeAsync(dataConnection, targetFrameworkVersion);
 
         if (!sourceCode.DataAccessCode.Any())
         {
             return null;
         }
 
-        var result = await CompileNewAssemblyAsync(efDbConnection, sourceCode.DataAccessCode);
+        var result = await CompileNewAssemblyAsync(targetFrameworkVersion, efDbConnection, sourceCode.DataAccessCode);
 
         if (!result.Success)
         {
@@ -94,39 +94,38 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         return new AssemblyImage(result.AssemblyName, result.AssemblyBytes);
     }
 
-    public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
+    public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
         if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
             return Array.Empty<Reference>();
 
         var references = new List<Reference>();
 
-        // references.Add(new PackageReference(
-        //     "Microsoft.EntityFrameworkCore",
-        //     "Entity Framework Core",
-        //     EntityFrameworkPackageUtil.GetEntityFrameworkCoreVersion()));
-
         references.Add(new PackageReference(
             efDbConnection.EntityFrameworkProviderName,
             efDbConnection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_packageProvider, efDbConnection.EntityFrameworkProviderName)
+            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, efDbConnection.EntityFrameworkProviderName)
             ?? throw new Exception($"Could not find a version for entity framework provider: '{efDbConnection.EntityFrameworkProviderName}'")
         ));
 
         return references.ToArray();
     }
 
-    private async Task<CompilationResult> CompileNewAssemblyAsync(EntityFrameworkDatabaseConnection efConnection, SourceCodeCollection sourceCode)
+    private async Task<CompilationResult> CompileNewAssemblyAsync(
+        DotNetFrameworkVersion targetFrameworkVersion,
+        EntityFrameworkDatabaseConnection efConnection,
+        SourceCodeCollection sourceCode)
     {
         var locationReferences = new HashSet<string>();
 
-        var requiredReferences = await GetRequiredReferencesAsync(efConnection);
+        var requiredReferences = await GetRequiredReferencesAsync(efConnection, targetFrameworkVersion);
         locationReferences.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
 
         var code = sourceCode.ToCodeString();
 
         return _codeCompiler.Compile(new CompilationInput(
                 code,
+                targetFrameworkVersion,
                 null,
                 locationReferences)
             .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)

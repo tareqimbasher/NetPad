@@ -13,6 +13,8 @@ public interface IDotNetInfo
     DotNetRuntimeVersion[] GetDotNetRuntimeVersions();
     DotNetSdkVersion[] GetDotNetSdkVersionsOrThrow();
     DotNetSdkVersion[] GetDotNetSdkVersions();
+    DotNetSdkVersion GetLatestSupportedDotNetSdkVersionOrThrow();
+    DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion();
     string LocateDotNetEfToolExecutableOrThrow();
     string? LocateDotNetEfToolExecutable();
     Version? GetDotNetEfToolVersion(string dotNetEfToolExePath);

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Exceptions;
 
 namespace NetPad.Scripts;
@@ -13,11 +15,13 @@ public class FileSystemScriptRepository : IScriptRepository
 {
     private readonly Settings _settings;
     private readonly IDataConnectionRepository _dataConnectionRepository;
+    private readonly IDotNetInfo _dotNetInfo;
 
-    public FileSystemScriptRepository(Settings settings, IDataConnectionRepository dataConnectionRepository)
+    public FileSystemScriptRepository(Settings settings, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
     {
         _settings = settings;
         _dataConnectionRepository = dataConnectionRepository;
+        _dotNetInfo = dotNetInfo;
         Directory.CreateDirectory(GetRepositoryDirPath());
     }
 
@@ -49,7 +53,11 @@ public class FileSystemScriptRepository : IScriptRepository
 
     public Task<Script> CreateAsync(string name)
     {
-        var script = new Script(Guid.NewGuid(), name);
+        var script = new Script(
+            Guid.NewGuid(),
+            name,
+            new ScriptConfig(ScriptKind.Program, _dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion));
+
         return Task.FromResult(script);
     }
 
@@ -67,7 +75,7 @@ public class FileSystemScriptRepository : IScriptRepository
         var data = await File.ReadAllTextAsync(path).ConfigureAwait(false);
 
         var name = Script.GetNameFromPath(path);
-        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository);
+        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
         script.SetPath(path);
 
         return script;

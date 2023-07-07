@@ -1,19 +1,21 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NetPad.Common;
 using NetPad.DotNet;
 
 namespace NetPad.Compilation;
 
 public static class SystemAssemblies
 {
-    private static HashSet<string>? _systemAssembliesLocations;
+    private static readonly ConcurrentDictionary<DotNetFrameworkVersion, HashSet<string>> _systemAssembliesLocations = new();
 
-    public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo)
+    public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        return (_systemAssembliesLocations ??= GetReferenceAssemblyLocationsFromDotNetRoot(dotNetInfo)).ToHashSet();
+        return _systemAssembliesLocations.GetOrAdd(
+                dotNetFrameworkVersion, static (framework, dni) => GetReferenceAssemblyLocationsFromDotNetRoot(dni, framework), dotNetInfo)
+            .ToHashSet();
     }
 
     private static HashSet<string> GetImplementationAssemblyLocationsFromAppDomain()
@@ -46,25 +48,24 @@ public static class SystemAssemblies
             .ToHashSet();
     }
 
-    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot(IDotNetInfo dotNetInfo)
+    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
+        var targetMajorVersion = dotNetFrameworkVersion.GetMajorVersion();
+
         var dotnetRoot = dotNetInfo.LocateDotNetRootDirectoryOrThrow();
-        var sdkReferenceAssemblyRoot =
-            new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
+        var sdkReferenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
         var dotnetVer = sdkReferenceAssemblyRoot.GetDirectories()
             .Select(d => Version.TryParse(d.Name, out var version)
-                ? new
-                {
-                    Directory = d,
-                    Version = version
-                }
+                ? new { Directory = d, Version = version }
                 : null)
-            .Where(d => d != null)
-            // TODO this line should be removed when wanting to run under different .net frameworks
-            // removing it now causes compiling db connection assembly to fail
-            .Where(d => d!.Version.Major == BadGlobals.DotNetVersion)
+            .Where(d => d != null && d.Version.Major == targetMajorVersion)
             .MaxBy(d => d!.Version)?
             .Directory.Name;
+
+        if (dotnetVer == null)
+        {
+            throw new Exception($"No .NET {targetMajorVersion} SDK could be found.");
+        }
 
         var referenceAssembliesDir =
             Path.Combine(sdkReferenceAssemblyRoot.FullName, dotnetVer, "ref", $"net{dotnetVer[0]}.0");

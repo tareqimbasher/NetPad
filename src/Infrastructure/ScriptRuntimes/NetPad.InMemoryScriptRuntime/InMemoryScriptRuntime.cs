@@ -181,6 +181,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
 
         var compilationResult = _codeCompiler.Compile(new CompilationInput(
                 fullProgram,
+                _script.Config.TargetFrameworkVersion,
                 referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
                 referenceAssemblyPaths)
             .WithOutputAssemblyNameTag(_script.Name));

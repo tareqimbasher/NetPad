@@ -95,7 +95,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
     private async Task AppendDataConnectionResourcesAsync(RunOptions runOptions, DataConnection dataConnection)
     {
-        var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection);
+        var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection, Script.Config.TargetFrameworkVersion);
         if (connectionCode.ApplicationCode.Any())
         {
             runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
@@ -105,69 +105,47 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         {
             // Special case for MS SQL Server. When targeting a MS SQL server database, we must load the
             // os-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
-            // a specific dir (in app .csproj file). This behavior is an issue where nuget does not
-            // resolve the correct os-specific version of the assembly
+            // a specific dir (in app .csproj file). This behavior is an issue where .NET does not
+            // properly detect platform-specific version of the assembly
             // See:
-            // https://github.com/dotnet/SqlClient/issues/1631#issuecomment-1280103212
+            // https://github.com/dotnet/SqlClient/issues/1631
+            // https://github.com/dotnet/SqlClient/issues/1643
             var appExePath = Assembly.GetEntryAssembly()?.Location;
             if (appExePath != null && File.Exists(appExePath))
             {
-                FilePath sqlClientAssemblyToCopy;
-                FilePath subDirSqlClientAssemblyOverride = Path.Combine(
-                    Path.GetDirectoryName(appExePath)!,
-                    "Microsoft.Data.SqlClient",
-                    "Microsoft.Data.SqlClient.dll");
+                string sqlClientVersion = Script.Config.TargetFrameworkVersion == DotNetFrameworkVersion.DotNet6
+                    ? "2.1.4"
+                    : "5.0.1";
 
-                if (subDirSqlClientAssemblyOverride.Exists())
-                {
-                    // Used for DEBUG builds for both Unix and Windows
-                    // When building in DEBUG, MS Build will not copy the correct os-specific assembly to
-                    // the app's directory. So MS Build is configured to copy the correct version of the
-                    // assembly into a Microsoft.Data.SqlClient sub-directory (in app's .csproj file),
-                    // and here we need to copy this version of the assembly and overwrite the one that
-                    // is resolved using nuget when the script is ran..
-                    sqlClientAssemblyToCopy = subDirSqlClientAssemblyOverride;
+                string os = PlatformUtil.IsWindowsPlatform() ? "win" : "unix";
 
-                    // Used for Windows DEBUG builds. The Microsoft.Data.SqlClient.dll assembly that was
-                    // copied to the Microsoft.Data.SqlClient sub-directory in the statement above
-                    // requires it to run. MS Build is configured, like the assembly above, to copy the
-                    // os-specific version of the assembly to the output directory (in app's .csproj file).
-                    if (PlatformUtil.IsWindowsPlatform())
-                    {
-                        runOptions.Assets.Add(new RunAsset(
-                            Path.Combine(
-                                Path.GetDirectoryName(appExePath)!,
-                                "Microsoft.Data.SqlClient",
-                                "Microsoft.Data.SqlClient.SNI.dll"),
-                            "./Microsoft.Data.SqlClient.SNI.dll"));
-                    }
-                }
-                else
-                {
-                    // Used for RELEASE builds for both Unix and Windows.
-                    // When building the release version MS Build detects the correct os-specific version
-                    // of the assembly and packages it with the app. However when nuget is used to get
-                    // the Microsoft.Data.SqlClient.dll assembly file needed to run the script
-                    // (as defined by the MS SQL Server data connection dependencies) it resolves an
-                    // assembly that throws a PlatformNotSupported exception systems.
-                    // Here we need to copy the assembly that was shipped with the RELEASE
-                    // build of the app
-                    sqlClientAssemblyToCopy = Path.Combine(
+                runOptions.Assets.Add(new RunAsset(Path.Combine(
                         Path.GetDirectoryName(appExePath)!,
-                        "Microsoft.Data.SqlClient.dll");
-                }
+                        $"Assets/Assemblies/Microsoft.Data.SqlClient/{sqlClientVersion}/{os}/Microsoft.Data.SqlClient.dll"),
+                    "./Microsoft.Data.SqlClient.dll"));
 
-                runOptions.Assets.Add(new RunAsset(sqlClientAssemblyToCopy, "./Microsoft.Data.SqlClient.dll"));
+                // Windows also needs Microsoft.Data.SqlClient.SNI
+                if (PlatformUtil.IsWindowsPlatform())
+                {
+                    string sqlClientSniVersion = Script.Config.TargetFrameworkVersion == DotNetFrameworkVersion.DotNet6
+                        ? "2.1.1"
+                        : "5.0.1";
+
+                    runOptions.Assets.Add(new RunAsset(Path.Combine(
+                            Path.GetDirectoryName(appExePath)!,
+                            $"Assets/Assemblies/Microsoft.Data.SqlClient.SNI/{sqlClientSniVersion}/win-x64/Microsoft.Data.SqlClient.SNI.dll"),
+                        "./Microsoft.Data.SqlClient.SNI.dll"));
+                }
             }
         }
 
-        var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection);
+        var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection, Script.Config.TargetFrameworkVersion);
         if (connectionAssembly != null)
         {
             runOptions.AdditionalReferences.Add(new AssemblyImageReference(connectionAssembly));
         }
 
-        var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection);
+        var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection, Script.Config.TargetFrameworkVersion);
 
         if (requiredReferences.Any())
         {

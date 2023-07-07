@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NetPad.Common;
 using NetPad.Data;
+using NetPad.DotNet;
 using NetPad.Exceptions;
 
 namespace NetPad.Scripts;
@@ -37,7 +39,7 @@ public static class ScriptSerializer
             };
         }
 
-        var scriptData = new ScriptData(script.Config, serializedDataConnection);
+        var scriptData = new ScriptData(ScriptConfigData.From(script.Config), serializedDataConnection);
 
         return $"{script.Id}\n" +
                $"{JsonSerializer.Serialize(scriptData)}\n" +
@@ -45,7 +47,7 @@ public static class ScriptSerializer
                $"{script.Code}";
     }
 
-    public static async Task<Script> DeserializeAsync(string name, string data, IDataConnectionRepository dataConnectionRepository)
+    public static async Task<Script> DeserializeAsync(string name, string data, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
     {
         var lines = data.Split("\n").ToList();
 
@@ -65,7 +67,7 @@ public static class ScriptSerializer
         var scriptData = JsonSerializer.Deserialize<ScriptData>(scriptDataStr);
         if (scriptData == null || scriptData.Config == null!)
         {
-            var config = JsonSerializer.Deserialize<ScriptConfig>(scriptDataStr)
+            var config = JsonSerializer.Deserialize<ScriptConfigData>(scriptDataStr)
                          ?? throw new InvalidScriptFormatException(name, "Could not deserialize config data");
             scriptData = new ScriptData(config, null);
         }
@@ -73,7 +75,7 @@ public static class ScriptSerializer
         // Parse code
         var code = string.Join("\n", lines.Skip(ixCodeMarker + 1));
 
-        var script = new Script(id, name, scriptData.Config, code);
+        var script = new Script(id, name, scriptData.Config.ToScriptConfig(dotNetInfo), code);
 
         if (scriptData.DataConnection != null)
         {
@@ -94,14 +96,43 @@ public static class ScriptSerializer
 
     private class ScriptData
     {
-        public ScriptData(ScriptConfig config, SerializedDataConnection? dataConnection)
+        public ScriptData(ScriptConfigData config, SerializedDataConnection? dataConnection)
         {
             Config = config;
             DataConnection = dataConnection;
         }
 
-        public ScriptConfig Config { get; }
+        public ScriptConfigData Config { get; }
         public SerializedDataConnection? DataConnection { get; }
+    }
+
+    private class ScriptConfigData
+    {
+        public ScriptKind? Kind { get; set; }
+        public DotNetFrameworkVersion? TargetFrameworkVersion { get; set; }
+        public List<string>? Namespaces { get; set; }
+        public List<Reference>? References { get; set; }
+
+        public static ScriptConfigData From(ScriptConfig config)
+        {
+            return new ScriptConfigData()
+            {
+                Kind = config.Kind,
+                TargetFrameworkVersion = config.TargetFrameworkVersion,
+                Namespaces = config.Namespaces,
+                References = config.References
+            };
+        }
+
+        public ScriptConfig ToScriptConfig(IDotNetInfo dotNetInfo)
+        {
+            return new ScriptConfig(
+                Kind ?? ScriptKind.Program,
+                TargetFrameworkVersion ?? dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion,
+                Namespaces,
+                References
+            );
+        }
     }
 
     private class SerializedDataConnection
