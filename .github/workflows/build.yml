@@ -28,10 +28,15 @@ jobs:
       - name: 🚚 Checkout latest
         uses: actions/checkout@v2
 
-      - name: 🧲 Setup .NET
-        uses: actions/setup-dotnet@v1
+      - name: 🧲 Setup .NET 6
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+
+      - name: 🧲 Setup .NET 7
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
 
       - name: 📦 Install dependencies
         run: dotnet restore
