@@ -74,7 +74,7 @@ export class OmnisharpDiagnosticsProvider implements IDiagnosticsProvider {
             setMarkers(markers);
         });
 
-        await this.omnisharpService.startDiagnostics(scriptId);
+        await this.omnisharpService.startDiagnostics(scriptId, new AbortController().signalFromDefaultTimeout());
     }
 
     private getDisplay(quickFix: api.DiagnosticLocation, severity: MarkerSeverity | "hidden") {

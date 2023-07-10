@@ -106,7 +106,7 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
 
         const versionBeforeRequest = model.getVersionId();
 
-        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest);
+        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, new AbortController().signalFromDefaultTimeout());
 
         if (!response || !response.changes || versionBeforeRequest !== model.getVersionId()) {
             return true;
