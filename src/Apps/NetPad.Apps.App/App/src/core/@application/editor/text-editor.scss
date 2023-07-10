@@ -17,8 +17,7 @@ text-editor {
     // Inlay hint styling
     span[class*=" dyn-rule"],
     span[class^="dyn-rule"] {
-        color: #787878;
-        background-color: #2D2D2D;
+        color: gray;
         font-size: 80%;
         margin-right: 2px;
         padding: 0 3px;
@@ -48,5 +47,15 @@ text-editor {
     .monaco-sash.vertical.hover:before,
     .monaco-sash.vertical.active:before {
         width: 4px;
+    }
+}
+
+.theme-dark {
+    .monaco-editor {
+        // Inlay hint styling
+        span[class*=" dyn-rule"],
+        span[class^="dyn-rule"] {
+            background-color: #2D2D2D;
+        }
     }
 }
