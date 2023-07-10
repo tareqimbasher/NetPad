@@ -2,13 +2,18 @@ import * as monaco from "monaco-editor";
 import {languages, Range} from "monaco-editor";
 import {ICompletionItemProvider} from "./interfaces";
 import {snippets} from "./snippets/csharp";
+import {TextLanguage} from "../text-language";
 
-export class BuiltinCompletionProvider implements ICompletionItemProvider {
-    public triggerCharacters = undefined;
+export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider {
+    public triggerCharacters = [".", " "];
     private completionItems: languages.CompletionItem[] = [];
 
     constructor() {
         this.init();
+    }
+
+    public get language(): TextLanguage {
+        return "csharp";
     }
 
     public provideCompletionItems(model, position, ctx, token) {

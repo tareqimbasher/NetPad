@@ -14,7 +14,8 @@ public class EnumTests
         Assert.Equal(new[]
         {
             "Expression",
-            "Program"
+            "Program",
+            "SQL"
         }, values);
     }
 

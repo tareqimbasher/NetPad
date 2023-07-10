@@ -1,4 +1,5 @@
 using NetPad.Events;
+using NetPad.Scripts;
 using ISession = NetPad.Sessions.ISession;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
@@ -41,7 +42,7 @@ public class ServerManagementBackgroundService : IHostedService
             }
 
             var environment = _session.Get(activatedEnvironmentScriptId.Value);
-            if (environment != null)
+            if (environment != null && environment.Script.Config.Kind != ScriptKind.SQL)
             {
                 try
                 {
@@ -66,16 +67,52 @@ public class ServerManagementBackgroundService : IHostedService
         {
             foreach (var environment in ev.Environments)
             {
-                // We don't want to wait for this
+                if (environment.Script.Config.Kind != ScriptKind.SQL)
+                {
+                    // We don't want to wait for this
 #pragma warning disable CS4014
-                _serverCatalog.StopOmniSharpServerAsync(environment);
+                    _serverCatalog.StopOmniSharpServerAsync(environment);
 #pragma warning restore CS4014
+                }
             }
 
             return Task.CompletedTask;
         });
 
         _disposables.Add(envRemovedSubscription);
+
+        var scriptKindChangedSubscription = _eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(async ev =>
+        {
+            if (ev.PropertyName != nameof(ScriptConfig.Kind)) return;
+
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    var newKind = (ScriptKind)ev.NewValue!;
+
+                    var scriptEnvironment = _session.Get(ev.ScriptId) ?? throw new Exception($"No script environment for script ID: {ev.ScriptId}");
+
+                    if (newKind == ScriptKind.SQL)
+                    {
+                        if (_serverCatalog.HasOmniSharpServer(scriptEnvironment.Script.Id))
+                            await _serverCatalog.StopOmniSharpServerAsync(scriptEnvironment);
+                    }
+                    else
+                    {
+                        await _serverCatalog.StartOmniSharpServerAsync(scriptEnvironment);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error reacting to property change in ScriptConfig. Property: {PropertyName}. NewValue: {NewValue}",
+                        ev.PropertyName,
+                        ev.NewValue);
+                }
+            });
+        });
+
+        _disposables.Add(scriptKindChangedSubscription);
 
         return Task.CompletedTask;
     }

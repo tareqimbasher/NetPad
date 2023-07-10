@@ -1,8 +1,9 @@
 import {DI} from "aurelia";
 import {editor, languages} from "monaco-editor";
-import IActionDescriptor = editor.IActionDescriptor;
+import {TextLanguage} from "../text-language";
 
 export interface ICompletionItemProvider extends languages.CompletionItemProvider {
+    get language(): TextLanguage;
 }
 
 export const ICompletionItemProvider = DI.createInterface<ICompletionItemProvider>();
@@ -73,7 +74,7 @@ export interface ICommandProvider {
 export const ICommandProvider = DI.createInterface<ICommandProvider>();
 
 export interface IActionProvider {
-    provideActions(): IActionDescriptor[];
+    provideActions(): editor.IActionDescriptor[];
 }
 
 export const IActionProvider = DI.createInterface<IActionProvider>();

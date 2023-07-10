@@ -38,9 +38,8 @@
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"
                 disabled.bind="environment.status === 'Running'">
-            <!--FEATURE NOT READY YET-->
-            <!--<option value="Expression">C# Expression (Not supported yet)</option>-->
             <option value="Program">C# Program</option>
+            <option value="SQL">SQL</option>
         </select>
     </div>
     <div class="ms-5 me-3 d-flex flex-grow-1">

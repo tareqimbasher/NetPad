@@ -75,14 +75,6 @@ public class AppOmniSharpServer
     /// </summary>
     public async Task<bool> StartAsync()
     {
-        var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
-        var executablePath = omnisharpServerLocation?.ExecutablePath;
-
-        if (!IsValidServerExecutablePath(executablePath))
-        {
-            return false;
-        }
-
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
         await Project.CreateAsync(
             _environment.Script.Config.TargetFrameworkVersion,
@@ -92,7 +84,7 @@ public class AppOmniSharpServer
 
         InitializeEventHandlers();
 
-        await StartOmniSharpServerAsync(executablePath!);
+        await StartOmniSharpServerAsync();
 
         await _eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
 
@@ -127,24 +119,24 @@ public class AppOmniSharpServer
         progress?.Invoke("Stopping OmniSharp server...");
         await StopOmniSharpServerAsync();
 
-        var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
-        var executablePath = omnisharpServerLocation?.ExecutablePath;
-
-        if (!IsValidServerExecutablePath(executablePath))
-        {
-            return false;
-        }
-
         progress?.Invoke("Starting OmniSharp server...");
-        await StartOmniSharpServerAsync(executablePath!);
+        await StartOmniSharpServerAsync();
 
         await _eventBus.PublishAsync(new OmniSharpServerRestartedEvent(this));
 
         return true;
     }
 
-    private async Task StartOmniSharpServerAsync(string executablePath)
+    private async Task StartOmniSharpServerAsync()
     {
+        var omnisharpServerLocation = await _omniSharpServerLocator.GetServerLocationAsync();
+        var executablePath = omnisharpServerLocation?.ExecutablePath;
+
+        if (!IsValidServerExecutablePath(executablePath))
+        {
+            throw new Exception($"Server executable path: {executablePath} is not valid");
+        }
+
         string args = new[]
         {
             $"--hostPID {Environment.ProcessId}",

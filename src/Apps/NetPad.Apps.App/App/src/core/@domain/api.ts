@@ -3819,7 +3819,7 @@ export interface ISourceCodeDto {
     code?: string | undefined;
 }
 
-export type ScriptKind = "Expression" | "Program";
+export type ScriptKind = "Expression" | "Program" | "SQL";
 
 export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
 

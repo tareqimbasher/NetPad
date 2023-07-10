@@ -32,7 +32,7 @@ public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDat
             connectionString += $";Password={passwordProtector.Unprotect(Password)}";
         }
 
-        connectionString += ";Trust Server Certificate=True";
+        connectionString += ";Trust Server Certificate=True;MultipleActiveResultSets=True;";
 
         return connectionString;
     }

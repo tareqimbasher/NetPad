@@ -38,9 +38,11 @@ export * from "./shortcuts/shortcut-action-execution-context";
 export * from "./shortcuts/shortcut-manager";
 export * from "./shortcuts/builtin-shortcuts";
 
+export * from "./editor/text-language";
 export * from "./editor/providers/interfaces";
 export * from "./editor/editor-util";
-export * from "./editor/providers/builtin-completion-provider";
+export * from "./editor/providers/builtin-csharp-completion-provider";
+export * from "./editor/providers/builtin-sql-completion-provider";
 export * from "./editor/editor-setup";
 
 export * from "./context-menu/context-menu-options";

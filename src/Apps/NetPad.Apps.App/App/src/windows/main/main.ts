@@ -14,7 +14,8 @@ import {
     Settings,
 } from "@domain";
 import {
-    BuiltinCompletionProvider,
+    BuiltinCSharpCompletionProvider,
+    BuiltinSqlCompletionProvider,
     DataConnectionName,
     DialogBackgroundService,
     IActionProvider,
@@ -38,7 +39,6 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
 import {ExcelService, IExcelService} from "@application/data/excel-service";
-import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -63,7 +63,8 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IShortcutManager, ShortcutManager),
             Registration.singleton(IActionProvider, BuiltInActionProvider),
             Registration.singleton(ICommandProvider, BuiltInActionProvider),
-            Registration.singleton(ICompletionItemProvider, BuiltinCompletionProvider),
+            Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
+            Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
             Registration.singleton(IExcelService, ExcelService),
             PaneHost,
             DataConnectionName,
