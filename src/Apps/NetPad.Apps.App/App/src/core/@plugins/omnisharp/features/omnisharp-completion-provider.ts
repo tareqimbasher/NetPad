@@ -1,6 +1,6 @@
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil, ICommandProvider, ICompletionItemProvider} from "@application";
+import {EditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import {TextChangeUtil} from "../utils";
 import * as api from "../api";
@@ -18,6 +18,10 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         @IScriptService private readonly scriptService: IScriptService,
         @ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(OmniSharpCompletionProvider));
+    }
+
+    public get language(): TextLanguage {
+        return "csharp";
     }
 
     public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {

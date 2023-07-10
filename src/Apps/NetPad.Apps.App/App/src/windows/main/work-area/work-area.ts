@@ -149,7 +149,8 @@ export class WorkArea extends ViewModelBase {
 
         viewable = new ViewableAppScriptDocument(
             environment,
-            commands
+            commands,
+            this.eventBus
         );
 
         return viewable;

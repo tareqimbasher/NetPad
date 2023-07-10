@@ -13,16 +13,18 @@ public interface INotifyOnPropertyChanged
 
 public class PropertyChangedArgs
 {
-    public PropertyChangedArgs(object obj, string propertyName, object? newValue)
+    public PropertyChangedArgs(object obj, string propertyName, object? oldValue, object? newValue)
     {
         Object = obj;
         PropertyName = propertyName;
+        OldValue = oldValue;
         NewValue = newValue;
     }
 
-    public object Object { get; set; }
-    public string PropertyName { get; set; }
-    public object? NewValue { get; set; }
+    public object Object { get; }
+    public string PropertyName { get; }
+    public object? OldValue { get; }
+    public object? NewValue { get; }
 }
 
 public static class INotifyOnPropertyChangedExtensions
@@ -44,10 +46,12 @@ public static class INotifyOnPropertyChangedExtensions
             return newValue;
         }
 
+        TReturn oldValue = backingField;
+
         backingField = newValue;
         foreach (var handler in obj.OnPropertyChanged)
         {
-            AsyncUtil.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, newValue)));
+            AsyncUtil.RunSync(() => handler(new PropertyChangedArgs(obj, propertyName, oldValue, newValue)));
         }
 
         return newValue;

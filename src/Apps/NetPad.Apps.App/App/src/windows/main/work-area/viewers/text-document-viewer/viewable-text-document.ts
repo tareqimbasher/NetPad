@@ -1,6 +1,6 @@
 import {IViewableObjectCommands, ViewableObject, ViewableObjectType} from "../viewable-object";
-import {ScriptEnvironment} from "@domain";
-import {TextLanguage} from "@application/editor/text-editor";
+import {IEventBus, ScriptConfigPropertyChangedEvent, ScriptEnvironment, ScriptKind,} from "@domain";
+import {TextLanguage} from "@application/editor/text-language";
 import {TextDocument} from "@application/editor/text-document";
 
 export class ViewableTextDocument extends ViewableObject {
@@ -55,14 +55,32 @@ export class ViewableAppScriptDocument extends ViewableTextDocument {
     constructor(
         public readonly environment: ScriptEnvironment,
         protected override readonly commands: IViewableAppScriptDocumentCommands,
+        private readonly eventBus: IEventBus
     ) {
         super(
             environment.script.id,
             environment.script.name,
-            "csharp",
+            ViewableAppScriptDocument.getLanguageFromScriptKind(environment.script.config.kind),
             environment.script.code,
             commands,
         );
+
+        this.addDisposable(
+            eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, ev => {
+                if (ev.scriptId !== this.environment.script.id || ev.propertyName !== "Kind") {
+                    return;
+                }
+
+                if (ev.newValue == "Program") this.textDocument.changeLanguage("csharp");
+                else if (ev.newValue == "SQL") this.textDocument.changeLanguage("sql");
+            })
+        );
+    }
+
+    private static getLanguageFromScriptKind(kind: ScriptKind): TextLanguage {
+        if (kind == "Program") return "csharp";
+        else if (kind === "SQL") return "sql";
+        else throw new Error("Unhandled script kind: " + kind);
     }
 
     public override get name() {

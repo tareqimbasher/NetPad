@@ -204,28 +204,29 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         Script.OnPropertyChanged.Add(async args =>
         {
-            await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName,
-                args.NewValue));
+            await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.OldValue, args.NewValue));
         });
 
         Script.Config.OnPropertyChanged.Add(async args =>
         {
             await _eventBus.PublishAsync(
-                new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.NewValue));
+                new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.OldValue, args.NewValue));
         });
     }
 
     private async Task SetStatusAsync(ScriptStatus status)
     {
+        var oldValue = _status;
         _status = status;
-        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), status));
+        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), oldValue, status));
     }
 
     private async Task SetRunDurationAsync(double runDurationMs)
     {
+        var oldValue = RunDurationMilliseconds;
         RunDurationMilliseconds = runDurationMs;
         await _eventBus.PublishAsync(
-            new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), runDurationMs));
+            new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), oldValue, runDurationMs));
     }
 
     private async Task<IScriptRuntime> GetRuntimeAsync()

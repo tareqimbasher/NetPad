@@ -1,5 +1,5 @@
-import * as monaco from "monaco-editor";
 import {all} from "aurelia";
+import * as monaco from "monaco-editor";
 import {
     IActionProvider,
     ICodeActionProvider,
@@ -16,7 +16,6 @@ import {
     IReferenceProvider,
     ISignatureHelpProvider
 } from "./providers/interfaces";
-import {Util} from "@common";
 
 export class EditorSetup {
     constructor(
@@ -111,7 +110,7 @@ export class EditorSetup {
 
     private registerCompletionProviders() {
         for (const completionItemProvider of this.completionItemProviders) {
-            monaco.languages.registerCompletionItemProvider("csharp", completionItemProvider);
+            monaco.languages.registerCompletionItemProvider(completionItemProvider.language, completionItemProvider);
         }
     }
 
@@ -174,13 +173,27 @@ export class EditorSetup {
     }
 
     private registerDiagnosticsProviders() {
-        monaco.editor.onDidCreateModel(model => {
+        const provideDiagnostics = (model: monaco.editor.ITextModel) => {
             for (const diagnosticsProvider of this.diagnosticsProviders) {
-                const ownerId = Util.newGuid();
                 diagnosticsProvider.provideDiagnostics(model, markers => {
-                    monaco.editor.setModelMarkers(model, ownerId, markers);
+                    monaco.editor.setModelMarkers(model, model.uri.toString(), markers);
                 });
             }
+        };
+
+        monaco.editor.onDidCreateModel(model => {
+            if (model.getLanguageId() == "csharp") {
+                provideDiagnostics(model);
+            }
+
+            model.onDidChangeLanguage(ev => {
+                if (ev.newLanguage === "csharp") {
+                    provideDiagnostics(model);
+                }
+                else {
+                    monaco.editor.removeAllMarkers(model.uri.toString());
+                }
+            })
         });
     }
 

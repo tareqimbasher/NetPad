@@ -1,19 +1,24 @@
 import {SubscriptionToken, WithDisposables} from "@common";
 import * as monaco from "monaco-editor";
-import {EditorUtil} from "@application";
-import {TextLanguage} from "@application/editor/text-editor";
+import {EditorUtil, TextLanguage} from "@application";
 
 export class TextDocument extends WithDisposables {
     public selection: monaco.Selection | null | undefined;
 
+    private _language: TextLanguage;
     private _text: string;
     private changeHandlers = new Set<(setter: unknown, newText: string) => Promise<void>>();
     private _textModel?: monaco.editor.ITextModel;
 
-    constructor(public readonly id: string, public readonly language: TextLanguage, text: string) {
+    constructor(public readonly id: string, language: TextLanguage, text: string) {
         super();
         if (!id) throw new Error(`${nameof(TextDocument)} id cannot be empty.`);
+        this._language = language;
         this._text = text ?? ""
+    }
+
+    public get language(): TextLanguage {
+        return this._language;
     }
 
     public get textModel(): monaco.editor.ITextModel {
@@ -63,6 +68,11 @@ export class TextDocument extends WithDisposables {
         const wrappedHandler = (setter, newValue) => handler(setter, newValue);
         this.changeHandlers.add(wrappedHandler);
         return new SubscriptionToken(() => this.changeHandlers.delete(wrappedHandler));
+    }
+
+    public changeLanguage(language: TextLanguage) {
+        this._language = language;
+        monaco.editor.setModelLanguage(this.textModel, language);
     }
 
     public override toString() {

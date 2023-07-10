@@ -121,6 +121,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             if (runDependencies == null)
                 return RunResult.RunAttemptFailure();
 
+            // Create a new dir for each run
             _externalProcessRootDirectory.Refresh();
 
             if (_externalProcessRootDirectory.Exists)
