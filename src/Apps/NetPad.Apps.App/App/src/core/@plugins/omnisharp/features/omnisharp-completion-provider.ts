@@ -2,7 +2,7 @@ import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
-import {TextChangeUtil} from "../utils";
+import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 import {ILogger} from "aurelia";
 
@@ -131,11 +131,15 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
     private convertToMonacoCompletionItem(model: editor.ITextModel, range: IRange, apiCompletion: api.CompletionItem): languages.CompletionItem {
         const kind = languages.CompletionItemKind[apiCompletion.kind];
 
-        const newText = apiCompletion.textEdit?.newText ?? apiCompletion.label;
+        const insertRange = apiCompletion.textEdit
+            ? Converter.apiLinePositionSpanTextChangeToMonacoRange(apiCompletion.textEdit)
+            : range;
 
-        const insertText = apiCompletion.insertTextFormat === "Snippet"
-            ? newText // TODO might need to convert to a monaco compatible snippet
-            : newText;
+        const insertTextRules = apiCompletion.insertTextFormat == "Snippet"
+            ? languages.CompletionItemInsertTextRule.InsertAsSnippet
+            : languages.CompletionItemInsertTextRule.KeepWhitespace;
+
+        const insertText = apiCompletion.textEdit?.newText ?? apiCompletion.label;
 
         let sortText = apiCompletion.sortText;
         if (kind === languages.CompletionItemKind.Property)
@@ -183,7 +187,8 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
             preselect: apiCompletion.preselect,
             filterText: apiCompletion.filterText,
             insertText: insertText,
-            range: range,
+            insertTextRules: insertTextRules,
+            range: insertRange,
             tags: tags,
             sortText: sortText,
             additionalTextEdits: undefined,

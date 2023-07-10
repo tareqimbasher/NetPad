@@ -54,7 +54,7 @@ export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider 
                 insertText: snippet.body.join("\n"),
                 kind: monaco.languages.CompletionItemKind.Snippet,
                 insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                sortText: snippet.prefix,
+                sortText: "0" + snippet.prefix,
                 range: defaultRange
             });
         }
