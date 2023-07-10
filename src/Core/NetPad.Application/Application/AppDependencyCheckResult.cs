@@ -1,3 +1,11 @@
-﻿namespace NetPad.Application;
+﻿using NetPad.DotNet;
 
-public record AppDependencyCheckResult(string DotNetRuntimeVersion, string[] DotNetSdkVersions, string? DotNetEfToolVersion);
+namespace NetPad.Application;
+
+public record AppDependencyCheckResult(string DotNetRuntimeVersion, string[] DotNetSdkVersions, string? DotNetEfToolVersion)
+{
+    public IEnumerable<string> SupportedDotNetSdkVersionsInstalled => DotNetSdkVersions
+        .Where(v => DotNetFrameworkVersionUtil.IsSdkVersionSupported(Version.Parse(v)));
+
+    public bool IsSupportedDotNetEfToolInstalled => !string.IsNullOrWhiteSpace(DotNetEfToolVersion);
+}

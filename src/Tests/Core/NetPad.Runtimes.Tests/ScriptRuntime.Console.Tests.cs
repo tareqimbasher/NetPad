@@ -9,6 +9,7 @@ using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
 using NetPad.Tests;
+using NetPad.Tests.Helpers;
 using NetPad.Tests.Services;
 using Xunit;
 using Xunit.Abstractions;
@@ -42,7 +43,7 @@ public class ScriptRuntimeConsoleTests : TestBase
     [MemberData(nameof(ConsoleOutputTestData))]
     public async Task ScriptRuntime_Redirects_Console_Output(string code, string expectedOutput)
     {
-        var script = new Script("Test");
+        var script = ScriptTestHelper.CreateScript();
         script.Config.SetKind(ScriptKind.Program);
         script.UpdateCode($"Console.Write({code});");
 

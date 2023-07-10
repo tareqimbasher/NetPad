@@ -11,15 +11,18 @@ namespace NetPad.Scripts;
 public class ScriptConfig : INotifyOnPropertyChanged
 {
     private ScriptKind _kind;
+    private DotNetFrameworkVersion _targetFrameworkVersion;
     private List<string> _namespaces;
     private List<Reference> _references;
 
     public ScriptConfig(
         ScriptKind kind,
+        DotNetFrameworkVersion targetFrameworkVersion,
         List<string>? namespaces = null,
         List<Reference>? references = null)
     {
         _kind = kind;
+        _targetFrameworkVersion = targetFrameworkVersion;
         _namespaces = namespaces ?? new List<string>();
         _references = references ?? new List<Reference>();
         OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
@@ -31,6 +34,12 @@ public class ScriptConfig : INotifyOnPropertyChanged
     {
         get => _kind;
         private set => this.RaiseAndSetIfChanged(ref _kind, value);
+    }
+
+    public DotNetFrameworkVersion TargetFrameworkVersion
+    {
+        get => _targetFrameworkVersion;
+        private set => this.RaiseAndSetIfChanged(ref _targetFrameworkVersion, value);
     }
 
     public List<string> Namespaces
@@ -51,6 +60,14 @@ public class ScriptConfig : INotifyOnPropertyChanged
             return;
 
         Kind = kind;
+    }
+
+    public void SetTargetFrameworkVersion(DotNetFrameworkVersion targetFrameworkVersion)
+    {
+        if (targetFrameworkVersion == TargetFrameworkVersion)
+            return;
+
+        TargetFrameworkVersion = targetFrameworkVersion;
     }
 
     public void SetNamespaces(IEnumerable<string> namespaces)

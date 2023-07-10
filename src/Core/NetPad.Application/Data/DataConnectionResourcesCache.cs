@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using NetPad.DotNet;
 using NetPad.Events;
 
@@ -6,7 +7,7 @@ namespace NetPad.Data;
 
 public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 {
-    private readonly ConcurrentDictionary<Guid, DataConnectionResources> _cache;
+    private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>> _cache;
     private readonly IDataConnectionResourcesGeneratorFactory _dataConnectionResourcesGeneratorFactory;
     private readonly IEventBus _eventBus;
 
@@ -16,24 +17,47 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
 
     public DataConnectionResourcesCache(IDataConnectionResourcesGeneratorFactory dataConnectionResourcesGeneratorFactory, IEventBus eventBus)
     {
-        _cache = new ConcurrentDictionary<Guid, DataConnectionResources>();
+        _cache = new();
         _dataConnectionResourcesGeneratorFactory = dataConnectionResourcesGeneratorFactory;
         _eventBus = eventBus;
     }
 
-    public bool HasCachedResources(Guid dataConnectionId)
+    private bool TryGetCached(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion, [NotNullWhen(true)] out DataConnectionResources? resources)
     {
-        return _cache.ContainsKey(dataConnectionId);
+        if (_cache.TryGetValue(dataConnectionId, out var allFrameworkResources)
+            && allFrameworkResources.TryGetValue(targetFrameworkVersion, out var targetFrameworkResources))
+        {
+            resources = targetFrameworkResources;
+            return true;
+        }
+
+        resources = null;
+        return false;
     }
 
-    public void RemoveCachedResources(Guid dataConnectionId)
+    public Dictionary<DotNetFrameworkVersion, DataConnectionResources>? GetCached(Guid dataConnectionId)
     {
-        _cache.Remove(dataConnectionId, out _);
+        return _cache.TryGetValue(dataConnectionId, out var allFrameworkResources)
+            ? allFrameworkResources.ToDictionary(kv => kv.Key, kv => kv.Value)
+            : null;
     }
 
-    public Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection)
+    public bool HasCachedResources(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.SourceCode != null)
+        return TryGetCached(dataConnectionId, targetFrameworkVersion, out _);
+    }
+
+    public void RemoveCachedResources(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
+    {
+        if (HasCachedResources(dataConnectionId, targetFrameworkVersion) && _cache.Remove(dataConnectionId, out var frameworks))
+        {
+            frameworks.Remove(targetFrameworkVersion, out _);
+        }
+    }
+
+    public Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    {
+        if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out var resources) && resources.SourceCode != null)
         {
             return resources.SourceCode;
         }
@@ -41,19 +65,19 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         lock (_sourceCodeTaskLock)
         {
             // Double check after acquiring lock
-            if (_cache.TryGetValue(dataConnection.Id, out resources) && resources.SourceCode != null)
+            if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out resources) && resources.SourceCode != null)
             {
                 return resources.SourceCode;
             }
 
-            resources ??= CreateResources(dataConnection);
+            resources ??= CreateResources(dataConnection, targetFrameworkVersion);
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.SourceCode));
 
             resources.SourceCode = Task.Run(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GenerateSourceCodeAsync(dataConnection);
+                return await generator.GenerateSourceCodeAsync(dataConnection, targetFrameworkVersion);
             });
 
             resources.SourceCode.ContinueWith(task =>
@@ -77,9 +101,9 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         }
     }
 
-    public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection)
+    public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.Assembly != null)
+        if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out var resources) && resources.Assembly != null)
         {
             return resources.Assembly;
         }
@@ -87,19 +111,19 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         lock (_assemblyTaskLock)
         {
             // Double check after acquiring lock
-            if (_cache.TryGetValue(dataConnection.Id, out resources) && resources.Assembly != null)
+            if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out resources) && resources.Assembly != null)
             {
                 return resources.Assembly;
             }
 
-            resources ??= CreateResources(dataConnection);
+            resources ??= CreateResources(dataConnection, targetFrameworkVersion);
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.Assembly));
 
             resources.Assembly = Task.Run(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GenerateAssemblyAsync(dataConnection);
+                return await generator.GenerateAssemblyAsync(dataConnection, targetFrameworkVersion);
             });
 
             resources.Assembly.ContinueWith(task =>
@@ -123,9 +147,9 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         }
     }
 
-    public Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection)
+    public Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (_cache.TryGetValue(dataConnection.Id, out var resources) && resources.RequiredReferences != null)
+        if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out var resources) && resources.RequiredReferences != null)
         {
             return resources.RequiredReferences;
         }
@@ -133,19 +157,19 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         lock (_requiredReferencesLock)
         {
             // Double check after acquiring lock
-            if (_cache.TryGetValue(dataConnection.Id, out resources) && resources.RequiredReferences != null)
+            if (TryGetCached(dataConnection.Id, targetFrameworkVersion, out resources) && resources.RequiredReferences != null)
             {
                 return resources.RequiredReferences;
             }
 
-            resources ??= CreateResources(dataConnection);
+            resources ??= CreateResources(dataConnection, targetFrameworkVersion);
 
             _eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences));
 
             resources.RequiredReferences = Task.Run(async () =>
             {
                 var generator = _dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GetRequiredReferencesAsync(dataConnection);
+                return await generator.GetRequiredReferencesAsync(dataConnection, targetFrameworkVersion);
             });
 
             resources.RequiredReferences.ContinueWith(task =>
@@ -172,8 +196,10 @@ public class DataConnectionResourcesCache : IDataConnectionResourcesCache
         }
     }
 
-    private DataConnectionResources CreateResources(DataConnection dataConnection)
+    private DataConnectionResources CreateResources(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        return _cache.GetOrAdd(dataConnection.Id, static (key, dc) => new DataConnectionResources(dc), dataConnection);
+        return _cache
+            .GetOrAdd(dataConnection.Id, static (key) => new ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>())
+            .GetOrAdd(targetFrameworkVersion, static (key, dc) => new DataConnectionResources(dc), dataConnection);
     }
 }

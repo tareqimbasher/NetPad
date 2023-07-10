@@ -11,4 +11,15 @@
             margin-bottom: 2rem;
         }
     }
+
+    .section-details {
+        margin-left: 1.6rem;
+        margin-top: 0.5rem;
+    }
+
+    .sdk-versions-list {
+        margin-top: 0.5rem;
+        max-height: 30vh;
+        overflow: auto;
+    }
 }

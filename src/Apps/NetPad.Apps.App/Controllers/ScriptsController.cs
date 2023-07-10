@@ -117,6 +117,16 @@ public class ScriptsController : Controller
         return NoContent();
     }
 
+    [HttpPut("{id:guid}/target-framework-version")]
+    public async Task<IActionResult> SetTargetFrameworkVersion(Guid id, [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        await _mediator.Send(new UpdateScriptTargetFrameworkCommand(environment.Script, targetFrameworkVersion));
+
+        return NoContent();
+    }
+
     [HttpPut]
     [Route("{id:guid}/data-connection")]
     public async Task<IActionResult> SetDataConnection(

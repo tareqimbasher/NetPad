@@ -2,6 +2,7 @@ import {bindable, ILogger} from "aurelia";
 import {
     DataConnection,
     DataConnectionStore,
+    DotNetFrameworkVersion,
     IAppService,
     IEventBus,
     IScriptService,
@@ -14,7 +15,7 @@ import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-d
 
 export class Toolbar extends ViewModelBase {
     @bindable viewable: ViewableTextDocument;
-    public dotNetSdkVersion = "";
+    public availableFrameworkVersions: DotNetFrameworkVersion[] = [];
     private readonly baseLogger: ILogger;
 
     constructor(@IScriptService private readonly scriptService: IScriptService,
@@ -42,13 +43,28 @@ export class Toolbar extends ViewModelBase {
     }
 
     public set kind(value) {
-        if (!this.script || !value) return;
+        if (!this.script || !value || this.script.config.kind === value) return;
 
         this.logger.debug("Setting script kind to:", value);
 
         this.scriptService.setScriptKind(this.script.id, value)
             .catch(err => {
                 this.logger.error("Failed to set script kind", err);
+            });
+    }
+
+    public get targetFrameworkVersion(): DotNetFrameworkVersion | null | undefined {
+        return this.script?.config.targetFrameworkVersion;
+    }
+
+    public set targetFrameworkVersion(value) {
+        if (!this.script || !value || this.script.config.targetFrameworkVersion === value) return;
+
+        this.logger.debug("Setting targetFrameworkVersion kind to:", value);
+
+        this.scriptService.setTargetFrameworkVersion(this.script.id, value)
+            .catch(err => {
+                this.logger.error("Failed to set script targetFrameworkVersion", err);
             });
     }
 
@@ -65,7 +81,7 @@ export class Toolbar extends ViewModelBase {
     }
 
     public set dataConnection(value: DataConnection | undefined) {
-        if (!this.script) return;
+        if (!this.script || this.script.dataConnection?.id === value?.id) return;
 
         this.logger.debug("Setting data connection to:", value);
 
@@ -78,14 +94,22 @@ export class Toolbar extends ViewModelBase {
     public attached() {
         this.appService.checkDependencies().then(result => {
             if (!result?.dotNetSdkVersions.length) {
-                this.dotNetSdkVersion = "";
+                this.availableFrameworkVersions = [];
                 return;
             }
 
-            const latest = result.dotNetSdkVersions.sort((a, b) => -1 * a.localeCompare(b))[0];
-            const firstChar = latest[0];
+            const frameworks = new Set<DotNetFrameworkVersion>();
 
-            this.dotNetSdkVersion = isNaN(Number(firstChar)) ? "" : firstChar;
+            for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
+                const major = Number(sdkVersion[0]);
+                if (!major || isNaN(major)) continue;
+
+                if (major === 6) frameworks.add("DotNet6");
+                else if (major === 7) frameworks.add("DotNet7");
+                else if (major === 8) frameworks.add("DotNet8");
+            }
+
+            this.availableFrameworkVersions = [...frameworks].sort((a, b) => a.localeCompare(b));
         });
     }
 

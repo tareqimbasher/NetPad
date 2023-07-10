@@ -36,13 +36,13 @@ public class MsSqlServerDatabaseConnectionTests : CommonTests
 
     public static IEnumerable<object?[]> ConnectionStringTestData => new[]
     {
-        new[] { "host", "port", "db name", "user id", "password", "Data Source=host,port;Initial Catalog=db name;User Id=user id;Password=password" },
-        new[] { null, "port", "db name", "user id", "password", "Data Source=,port;Initial Catalog=db name;User Id=user id;Password=password" },
-        new[] { "host", null, "db name", "user id", "password", "Data Source=host;Initial Catalog=db name;User Id=user id;Password=password" },
-        new[] { "host", "port", null, "user id", "password", "Data Source=host,port;Initial Catalog=;User Id=user id;Password=password" },
-        new[] { "host", "port", "db name", null, "password", "Data Source=host,port;Initial Catalog=db name;Password=password" },
-        new[] { "host", "port", "db name", "user id", null, "Data Source=host,port;Initial Catalog=db name;User Id=user id" },
-        new[] { "host", "port", "db name", null, null, "Data Source=host,port;Initial Catalog=db name" }
+        new[] { "host", "port", "db name", "user id", "password", "Data Source=host,port;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True" },
+        new[] { null, "port", "db name", "user id", "password", "Data Source=,port;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True" },
+        new[] { "host", null, "db name", "user id", "password", "Data Source=host;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True" },
+        new[] { "host", "port", null, "user id", "password", "Data Source=host,port;Initial Catalog=;User Id=user id;Password=password;Trust Server Certificate=True" },
+        new[] { "host", "port", "db name", null, "password", "Data Source=host,port;Initial Catalog=db name;Password=password;Trust Server Certificate=True" },
+        new[] { "host", "port", "db name", "user id", null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;Trust Server Certificate=True" },
+        new[] { "host", "port", "db name", null, null, "Data Source=host,port;Initial Catalog=db name;Trust Server Certificate=True" }
     };
 
     protected override EntityFrameworkDatabaseConnection CreateConnection()

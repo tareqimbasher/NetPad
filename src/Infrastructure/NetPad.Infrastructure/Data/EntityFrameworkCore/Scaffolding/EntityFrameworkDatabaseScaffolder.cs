@@ -12,15 +12,14 @@ using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.DotNet;
 using NetPad.IO;
-using NetPad.Packages;
 using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 public class EntityFrameworkDatabaseScaffolder
 {
+    private readonly DotNetFrameworkVersion _targetFrameworkVersion;
     private readonly EntityFrameworkDatabaseConnection _connection;
-    private readonly IPackageProvider _packageProvider;
     private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<EntityFrameworkDatabaseScaffolder> _logger;
@@ -30,15 +29,15 @@ public class EntityFrameworkDatabaseScaffolder
     public const string DbContextName = "DatabaseContext";
 
     public EntityFrameworkDatabaseScaffolder(
+        DotNetFrameworkVersion targetFrameworkVersion,
         EntityFrameworkDatabaseConnection connection,
-        IPackageProvider packageProvider,
         IDataConnectionPasswordProtector dataConnectionPasswordProtector,
         IDotNetInfo dotNetInfo,
         Settings settings,
         ILogger<EntityFrameworkDatabaseScaffolder> logger)
     {
+        _targetFrameworkVersion = targetFrameworkVersion;
         _connection = connection;
-        _packageProvider = packageProvider;
         _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
         _dotNetInfo = dotNetInfo;
         _logger = logger;
@@ -53,7 +52,7 @@ public class EntityFrameworkDatabaseScaffolder
 
     public async Task<ScaffoldedDatabaseModel> ScaffoldAsync()
     {
-        await _project.CreateAsync(ProjectOutputType.Library, true);
+        await _project.CreateAsync(_targetFrameworkVersion, ProjectOutputType.Library, true);
 
         try
         {
@@ -84,14 +83,14 @@ class Program
         await _project.AddPackageAsync(new PackageReference(
             _connection.EntityFrameworkProviderName,
             _connection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_packageProvider, _connection.EntityFrameworkProviderName)
+            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_targetFrameworkVersion, _connection.EntityFrameworkProviderName)
             ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
         ));
 
         await _project.AddPackageAsync(new PackageReference(
             "Microsoft.EntityFrameworkCore.Design",
             "Microsoft.EntityFrameworkCore.Design",
-            await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_packageProvider)
+            await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_targetFrameworkVersion)
             ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
         ));
 

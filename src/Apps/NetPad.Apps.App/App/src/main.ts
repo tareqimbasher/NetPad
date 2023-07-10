@@ -65,7 +65,7 @@ const builder = Aurelia.register(
             },
             {
                 loggerRegex: new RegExp(/SignalRIpcGateway/),
-                logLevel: LogLevel.warn
+                logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
             },
             {
                 // Aurelia's own debug messages when evaluating HTML case expressions

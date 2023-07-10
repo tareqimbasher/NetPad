@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using NetPad.Common;
 
 namespace NetPad.DotNet;
 
@@ -71,9 +70,10 @@ public class DotNetCSharpProject
     /// <summary>
     /// Creates the project on disk.
     /// </summary>
+    /// <param name="targetDotNetFrameworkVersion">The .NET framework to target.</param>
     /// <param name="outputType">The output type of the project.</param>
     /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
-    public virtual async Task CreateAsync(ProjectOutputType outputType, bool deleteExisting = false)
+    public virtual async Task CreateAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion, ProjectOutputType outputType, bool deleteExisting = false)
     {
         if (deleteExisting)
         {
@@ -88,7 +88,7 @@ public class DotNetCSharpProject
 
     <PropertyGroup>
         <OutputType>{dotnetOutputType}</OutputType>
-        <TargetFramework>{BadGlobals.TargetFramework}</TargetFramework>
+        <TargetFramework>{targetDotNetFrameworkVersion.GetTargetFrameworkMoniker()}</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>

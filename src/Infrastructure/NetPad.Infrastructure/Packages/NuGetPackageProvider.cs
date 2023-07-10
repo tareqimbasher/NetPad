@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Common;
+using NetPad.DotNet;
 using NetPad.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -18,6 +19,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using INugetLogger = NuGet.Common.ILogger;
 using NuGetNullLogger = NuGet.Common.NullLogger;
+using PackageReference = NuGet.Packaging.PackageReference;
 using Settings = NetPad.Configuration.Settings;
 
 namespace NetPad.Packages;
@@ -36,7 +38,7 @@ public class NuGetPackageProvider : IPackageProvider
         _settings = settings;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
-        _nuGetFramework = NuGetFramework.ParseFolder(BadGlobals.TargetFramework);
+        _nuGetFramework = NuGetFramework.ParseFolder(GlobalConsts.AppDotNetFrameworkVersion.GetTargetFrameworkMoniker());
 
         // hostDependencyContext = DependencyContext.Load(hostAssembly);
         // FrameworkName = hostDependencyContext.Target.Framework;
@@ -131,6 +133,11 @@ public class NuGetPackageProvider : IPackageProvider
 
         foreach (var package in allPackages)
         {
+            if (!IsInstalled(package))
+            {
+                await InstallPackageAsync(package.Id, package.Version.ToString());
+            }
+
             var libAssemblies = await GetCachedPackageAssembliesAsync(package.Id, package.Version.ToString());
 
             foreach (var libAssembly in libAssemblies)

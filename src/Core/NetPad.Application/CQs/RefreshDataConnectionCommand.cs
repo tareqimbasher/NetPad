@@ -1,6 +1,7 @@
 using MediatR;
 using NetPad.Data;
-using NetPad.Events;
+using NetPad.DotNet;
+using NetPad.Sessions;
 
 namespace NetPad.CQs;
 
@@ -17,13 +18,19 @@ public class RefreshDataConnectionCommand : Command
     {
         private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
         private readonly IDataConnectionRepository _dataConnectionRepository;
-        private readonly IEventBus _eventBus;
+        private readonly ISession _session;
+        private readonly IDotNetInfo _dotNetInfo;
 
-        public Handler(IDataConnectionResourcesCache dataConnectionResourcesCache, IDataConnectionRepository dataConnectionRepository, IEventBus eventBus)
+        public Handler(
+            IDataConnectionResourcesCache dataConnectionResourcesCache,
+            IDataConnectionRepository dataConnectionRepository,
+            ISession session,
+            IDotNetInfo dotNetInfo)
         {
             _dataConnectionResourcesCache = dataConnectionResourcesCache;
             _dataConnectionRepository = dataConnectionRepository;
-            _eventBus = eventBus;
+            _session = session;
+            _dotNetInfo = dotNetInfo;
         }
 
         public async Task<Unit> Handle(RefreshDataConnectionCommand request, CancellationToken cancellationToken)
@@ -35,9 +42,20 @@ public class RefreshDataConnectionCommand : Command
                 return Unit.Value;
             }
 
-            _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId);
+            var cached = _dataConnectionResourcesCache.GetCached(request.ConnectionId);
 
-            await _dataConnectionResourcesCache.GetAssemblyAsync(connection);
+            if (cached != null)
+            {
+                foreach (var frameworkVersion in cached.Keys)
+                {
+                    _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId, frameworkVersion);
+                }
+            }
+
+            var targetFramework = _session.Active?.Script.Config.TargetFrameworkVersion
+                                  ?? _dotNetInfo.GetLatestSupportedDotNetSdkVersionOrThrow().FrameworkVersion();
+
+            await _dataConnectionResourcesCache.GetAssemblyAsync(connection, targetFramework);
 
             return Unit.Value;
         }

@@ -24,15 +24,14 @@ export class AppDependenciesCheckDialog extends DialogBase {
         promise.then(result => {
             this.dependencyCheckResult = result;
 
-            this.dotnetSdkMissing =
-                this.dependencyCheckResult.dotNetSdkVersions.length === 0
-                || !this.dependencyCheckResult.dotNetSdkVersions.some(v => v.startsWith("6"));
+            this.dotnetSdkMissing = this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length === 0;
 
-            this.latestDotnetSdkVersion = this.dependencyCheckResult.dotNetSdkVersions.length === 0
+            this.latestDotnetSdkVersion = this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length === 0
                 ? undefined
-                : [...this.dependencyCheckResult.dotNetSdkVersions].sort((a, b) => -1 * a.localeCompare(b))[0];
+                : [...this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled]
+                    .sort((a, b) => -1 * a.localeCompare(b))[0];
 
-            this.dotnetEfCoreToolMissing = !this.dependencyCheckResult.dotNetEfToolVersion;
+            this.dotnetEfCoreToolMissing = !this.dependencyCheckResult.isSupportedDotNetEfToolInstalled;
 
             this.loading = false;
         });

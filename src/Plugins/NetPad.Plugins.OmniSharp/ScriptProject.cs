@@ -40,9 +40,9 @@ public class ScriptProject : DotNetCSharpProject
     public string UserProgramFilePath { get; }
     public string DataConnectionProgramFilePath { get; }
 
-    public override async Task CreateAsync(ProjectOutputType outputType, bool deleteExisting = false)
+    public override async Task CreateAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion, ProjectOutputType outputType, bool deleteExisting = false)
     {
-        await base.CreateAsync(outputType, deleteExisting);
+        await base.CreateAsync(targetDotNetFrameworkVersion, outputType, deleteExisting);
 
         var domainAssembly = typeof(IOutputWriter<>).Assembly;
         await AddAssemblyFileReferenceAsync(new AssemblyFileReference(domainAssembly.Location));

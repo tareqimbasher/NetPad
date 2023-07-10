@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
@@ -119,6 +120,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             if (runDependencies == null)
                 return RunResult.RunAttemptFailure();
+
+            _externalProcessRootDirectory.Refresh();
 
             if (_externalProcessRootDirectory.Exists)
             {
@@ -293,10 +296,20 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
         }
 
-        // File paths
+        // Assembly paths
         var referenceAssemblyPaths = (await _script.Config.References
                 .Union(runOptions.AdditionalReferences)
                 .GetAssemblyPathsAsync(_packageProvider))
+
+            // Chose the highest version of duplicate assemblies
+            .Select(path => new
+            {
+                Path = path,
+                AssemblyName = AssemblyName.GetAssemblyName(path)
+            })
+            .GroupBy(a => a.AssemblyName.Name)
+            .Select(grp => grp.OrderBy(x => x.AssemblyName.Version).Last())
+            .Select(x => x.Path)
             .ToHashSet();
 
         /*
@@ -354,6 +367,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             return _codeCompiler.Compile(new CompilationInput(
                     fullProgram,
+                    _script.Config.TargetFrameworkVersion,
                     referenceAssemblyImages,
                     referenceAssemblyPaths)
                 .WithOutputAssemblyNameTag(_script.Name));
@@ -403,24 +417,19 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
     {
-        var latestDotNetSdkVersion = _dotNetInfo.GetDotNetSdkVersionsOrThrow()
-            .OrderBy(v => v.Version)
-            .Last();
-
-        var tfm = $"net{latestDotNetSdkVersion.Major}.0";
         var runtimeVersion = _dotNetInfo.GetDotNetRuntimeVersionsOrThrow()
             .Where(v =>
                 v.FrameworkName == "Microsoft.NETCore.App"
-                && v.Major == latestDotNetSdkVersion.Major)
+                && v.Version.Major == _script.Config.TargetFrameworkVersion.GetMajorVersion())
             .MaxBy(v => v.Version)?
             .Version;
 
         if (runtimeVersion == null)
-            throw new Exception($"Could not find a .NET {latestDotNetSdkVersion.Major} runtime");
+            throw new Exception($"Could not find a .NET {_script.Config.TargetFrameworkVersion.GetMajorVersion()} runtime");
 
         return string.Format(
             RuntimeConfigFileTemplate,
-            tfm,
+            _script.Config.TargetFrameworkVersion.GetTargetFrameworkMoniker(),
             runtimeVersion,
             JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).ToHashSet())
         );
@@ -446,16 +455,19 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 _logger.LogError(ex, "Error disposing process handler");
             }
 
+            _externalProcessRootDirectory.Refresh();
+
             if (_externalProcessRootDirectory.Exists)
             {
                 try
                 {
                     _externalProcessRootDirectory.Delete(true);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("Could not delete process root directory: {Path}",
-                        _externalProcessRootDirectory.FullName);
+                    _logger.LogWarning("Could not delete process root directory: {Path}. Error: {ErrorMessage}",
+                        _externalProcessRootDirectory.FullName,
+                        ex.Message);
                 }
             }
         }
