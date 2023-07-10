@@ -95,7 +95,7 @@
         "sass-loader": "^13.0.2",
         "start-server-and-test": "^1.14.0",
         "style-loader": "^3.3.1",
-        "stylelint": "^14.9.1",
+        "stylelint": "^15.10.1",
         "stylelint-config-standard-scss": "^5.0.0",
         "ts-loader": "^9.4.2",
         "ts-nameof": "^5.0.0",
