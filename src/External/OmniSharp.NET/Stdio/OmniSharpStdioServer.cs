@@ -295,8 +295,10 @@ namespace OmniSharp.Stdio
         {
             var @event = ((string?)eventPacket["Event"])?.ToLowerInvariant();
 
-            Logger.LogDebug("OmniSharpServer Log Output. Event type: {EventType}. Output: {Output}", @event,
-                eventPacket.ToString());
+            if (@event == "log")
+            {
+                LogEvent(eventPacket);
+            }
 
             if (@event is not null && _eventHandlers.TryGetValue(@event, out var handlers))
             {
@@ -314,6 +316,46 @@ namespace OmniSharp.Stdio
             }
 
             return Task.CompletedTask;
+        }
+
+        private void LogEvent(JsonNode eventPacket)
+        {
+            try
+            {
+                var omniSharpEvent = eventPacket["Body"].Deserialize<OmniSharpEvent>();
+
+                if (omniSharpEvent == null) return;
+
+                var logger = _loggerFactory.CreateLogger(omniSharpEvent.Name);
+
+                switch (omniSharpEvent.LogLevel.ToUpperInvariant())
+                {
+                    case "TRACE":
+                        logger.LogTrace(omniSharpEvent.Message);
+                        break;
+                    case "DEBUG":
+                        logger.LogDebug(omniSharpEvent.Message);
+                        break;
+                    case "INFORMATION":
+                        logger.LogInformation(omniSharpEvent.Message);
+                        break;
+                    case "WARNING":
+                        logger.LogWarning(omniSharpEvent.Message);
+                        break;
+                    case "ERROR":
+                        logger.LogError(omniSharpEvent.Message);
+                        break;
+                    case "CRITICAL":
+                        logger.LogCritical(omniSharpEvent.Message);
+                        break;
+                }
+
+                ;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Could not log OmniSharp event: {Event}", eventPacket.ToString());
+            }
         }
     }
 }

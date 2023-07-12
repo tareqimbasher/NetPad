@@ -9,10 +9,12 @@ namespace OmniSharp
     internal abstract class OmniSharpServer<TConfiguration> : IOmniSharpServer
         where TConfiguration : OmniSharpServerConfiguration
     {
+        protected readonly ILoggerFactory _loggerFactory;
         private int _sequence;
 
         protected OmniSharpServer(TConfiguration configuration, ILoggerFactory loggerFactory)
         {
+            _loggerFactory = loggerFactory;
             Configuration = configuration;
             Logger = loggerFactory.CreateLogger(GetType().FullName);
             _sequence = 100;
