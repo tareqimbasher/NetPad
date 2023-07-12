@@ -5,7 +5,8 @@ import {snippets} from "./snippets/csharp";
 import {TextLanguage} from "../text-language";
 
 export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider {
-    public triggerCharacters = [".", " "];
+    // This must remain as "undefined", otherwise it will interfere with suggestions provided by omnisharp
+    public triggerCharacters = undefined;
     private completionItems: languages.CompletionItem[] = [];
 
     constructor() {
@@ -54,7 +55,7 @@ export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider 
                 insertText: snippet.body.join("\n"),
                 kind: monaco.languages.CompletionItemKind.Snippet,
                 insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                sortText: "0" + snippet.prefix,
+                sortText: snippet.prefix,
                 range: defaultRange
             });
         }

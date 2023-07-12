@@ -8,7 +8,10 @@ import {ILogger} from "aurelia";
 
 export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
-    private lastCompletions?: Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>;
+    private lastCompletions?: Map<languages.CompletionItem, {
+        model: editor.ITextModel,
+        apiCompletionItem: api.CompletionItem
+    }>;
     private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
     private readonly logger: ILogger;
 
@@ -44,7 +47,10 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const results = await this.getCompletionItems(model, range, ctx, token);
 
-        const lastCompletions = new Map<languages.CompletionItem, { model: editor.ITextModel, apiCompletionItem: api.CompletionItem }>();
+        const lastCompletions = new Map<languages.CompletionItem, {
+            model: editor.ITextModel,
+            apiCompletionItem: api.CompletionItem
+        }>();
 
         for (let i = 0; i < results.monacoCompletions.length; i++) {
             lastCompletions.set(results.monacoCompletions[i], {
@@ -142,15 +148,13 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         const insertText = apiCompletion.textEdit?.newText ?? apiCompletion.label;
 
         let sortText = apiCompletion.sortText;
-        if (kind === languages.CompletionItemKind.Property)
-            sortText = "a" + sortText;
-        else if (kind === languages.CompletionItemKind.Method)
-            sortText = "b" + sortText;
-        else
-            sortText = "c" + sortText;
+
+        if (kind === languages.CompletionItemKind.Keyword && sortText?.startsWith("0"))
+            // Move the '0' to the end so that keyword suggestion falls after snippet with same name (if any)
+            sortText = sortText.substring(1) + "0";
 
         // We don't want space to be a commit character for the suggestion, its annoying when one is typing
-        // a variable name 'list' and hits space that the suggestion will be selected
+        // a variable name ex. 'list' and hits space, that the suggestion will be selected
         const commitCharacters = apiCompletion.commitCharacters?.filter(c => c != " ");
 
         const docs = apiCompletion.documentation ? {

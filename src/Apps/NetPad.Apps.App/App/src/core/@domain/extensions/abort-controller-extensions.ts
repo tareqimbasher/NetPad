@@ -3,6 +3,11 @@ import {CancellationToken, CancellationTokenSource} from "monaco-editor";
 declare global {
     interface AbortController {
         /**
+         * The default timeout.
+         */
+        defaultTimeout: number;
+
+        /**
          * Creates an abort signal from a Cancellation Token.
          * @param token The token to track. When this token is cancelled the signal is aborted.
          * @param timeout If specified, will abort signal after specified timeout (in milliseconds).
@@ -22,12 +27,17 @@ declare global {
     }
 }
 
+AbortController.prototype.defaultTimeout = 10000;
+
+AbortController.prototype.signalFromDefaultTimeout = function (this: AbortController) {
+    return this.signalFrom(this.defaultTimeout);
+}
 
 AbortController.prototype.signalFrom = function (this: AbortController, tokenOrTimeout: CancellationToken | number | undefined, timeout?: number) {
     let token: CancellationToken | undefined;
 
     if (!tokenOrTimeout) {
-        timeout = 10000;
+        timeout = this.defaultTimeout;
     }
     else if (typeof(tokenOrTimeout) === "number") {
         timeout = tokenOrTimeout;
@@ -35,7 +45,7 @@ AbortController.prototype.signalFrom = function (this: AbortController, tokenOrT
         token = tokenOrTimeout;
     }
 
-    if (!timeout) timeout = 10000;
+    if (!timeout) timeout = this.defaultTimeout;
 
     if (token) {
         const cts = new CancellationTokenSource(token);
