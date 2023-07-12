@@ -31,7 +31,7 @@ export class Window {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
-    public connectionString: string = "";
+    public connectionString = "";
     private nameField: HTMLInputElement;
     private unprotectedPassword?: string;
     private readonly logger: ILogger;
