@@ -54,7 +54,7 @@ try
 
     do
     {{
-        var dataTable = new DataTable();
+        var dataTable = new System.Data.DataTable();
         dataTable.Load(reader);
 
         if (dataTable.Rows.Count > 0)
