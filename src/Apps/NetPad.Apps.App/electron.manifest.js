@@ -120,7 +120,7 @@ const electronNetConfig = {
     },
     homepage: "https://github.com/tareqimbasher/NetPad#readme",
     splashscreen: {
-        imageFile: "./wwwroot/logo/square/256x256.png"
+        imageFile: "./wwwroot/logo/square/128x128.png"
     },
     singleInstance: true,
     electronPort: 57931,

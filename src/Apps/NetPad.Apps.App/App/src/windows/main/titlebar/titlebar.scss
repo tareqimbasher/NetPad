@@ -21,7 +21,7 @@ titlebar {
     }
 
     .left-column {
-        padding-left: 0.75rem;
+        padding-left: 0.5rem;
     }
 
     .middle-column {
@@ -55,24 +55,24 @@ titlebar {
                 }
             }
         }
+    }
 
-        .window-controls {
+    .window-controls {
+        display: flex;
+        align-items: stretch;
+        -webkit-app-region: no-drag;
+        z-index: 1000;
+
+        i {
             display: flex;
-            align-items: stretch;
-            -webkit-app-region: no-drag;
-            z-index: 1000;
+            align-items: center;
+            font-size: 1rem;
+            padding-right: 1rem;
+            padding-left: 1rem;
+            cursor: default;
 
-            i {
-                display: flex;
-                align-items: center;
-                font-size: 1rem;
-                padding-right: 1rem;
-                padding-left: 1rem;
-                cursor: default;
-
-                &:hover {
-                    @include theme(background-color, hoverColor);
-                }
+            &:hover {
+                @include theme(background-color, hoverColor);
             }
         }
     }
