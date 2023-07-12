@@ -71,7 +71,7 @@ export class TabBar extends ViewModelBase {
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
-                icon: "script-properties-icon",
+                icon: "properties-icon",
                 text: "Properties",
                 shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
                 show: (clickTarget) => this.getViewable(clickTarget) instanceof ViewableAppScriptDocument,

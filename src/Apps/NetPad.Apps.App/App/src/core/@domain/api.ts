@@ -393,6 +393,8 @@ export interface IDataConnectionsApiClient {
 
     refresh(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
+    getConnectionString(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string>;
+
     test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
 
     protectPassword(unprotectedPassword: string, signal?: AbortSignal | undefined): Promise<string | null>;
@@ -669,6 +671,46 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             });
         }
         return Promise.resolve<void>(<any>null);
+    }
+
+    getConnectionString(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string> {
+        let url_ = this.baseUrl + "/data-connections/connection-string";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dataConnection);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetConnectionString(_response);
+        });
+    }
+
+    protected processGetConnectionString(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(<any>null);
     }
 
     test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult> {
@@ -4883,6 +4925,7 @@ export type AppStatusMessagePriority = "Normal" | "High";
 
 export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     propertyName!: string;
+    oldValue?: any | undefined;
     newValue?: any | undefined;
 
     constructor(data?: IPropertyChangedEvent) {
@@ -4897,6 +4940,7 @@ export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     init(_data?: any) {
         if (_data) {
             this.propertyName = _data["propertyName"];
+            this.oldValue = _data["oldValue"];
             this.newValue = _data["newValue"];
         }
     }
@@ -4909,6 +4953,7 @@ export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["propertyName"] = this.propertyName;
+        data["oldValue"] = this.oldValue;
         data["newValue"] = this.newValue;
         return data;
     }
@@ -4920,6 +4965,7 @@ export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
 
 export interface IPropertyChangedEvent {
     propertyName: string;
+    oldValue?: any | undefined;
     newValue?: any | undefined;
 }
 

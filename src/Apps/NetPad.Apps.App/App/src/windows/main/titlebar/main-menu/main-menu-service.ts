@@ -50,7 +50,7 @@ export class MainMenuService implements IMainMenuService {
                     },
                     {
                         text: "Properties",
-                        icon: "script-properties-icon",
+                        icon: "properties-icon",
                         shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
                     },
                     {

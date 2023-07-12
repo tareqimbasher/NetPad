@@ -205,7 +205,7 @@ public class ElectronWindowService : IUiWindowService
         {
             Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
             Height = display.Bounds.Height * 4 / 10,
-            Width = 550,
+            Width = 750,
             AutoHideMenuBar = true,
             MinWidth = 550,
             MinHeight = 550

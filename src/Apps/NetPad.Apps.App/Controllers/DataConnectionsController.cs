@@ -68,6 +68,15 @@ public class DataConnectionsController : Controller
     [HttpDelete("{id:guid}")]
     public async Task Delete(Guid id) => await _mediator.Send(new DeleteDataConnectionCommand(id));
 
+    [HttpPost("connection-string")]
+    public string GetConnectionString(
+        [FromBody] DataConnection dataConnection)
+    {
+        return dataConnection is not DatabaseConnection dbConnection
+            ? string.Empty
+            : dbConnection.GetConnectionString(new FakeDataConnectionPasswordProtector());
+    }
+
     [HttpPatch("test")]
     public async Task<DataConnectionTestResult> Test(
         [FromBody] DataConnection dataConnection,

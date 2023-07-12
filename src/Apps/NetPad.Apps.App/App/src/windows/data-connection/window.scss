@@ -1,32 +1,55 @@
 @import "~styles/themes";
 
-.connection-details {
-    > .row,
-    fieldset > .row {
-        margin-bottom: 1rem;
-    }
-}
+.connection-window {
+    padding: 1rem;
 
-.connection-type-logo {
-    max-width: 1rem;
-
-    //max-height: 1rem;
-    margin-right: 0.25rem;
-}
-
-.connection-type-selector {
-    > button {
-        width: 100%;
-        display: flex;
-        align-items: center;
-
-        &::after {
-            margin-left: auto;
+    .connection-details {
+        > .row,
+        fieldset > .row {
+            margin-bottom: 1rem;
         }
     }
-}
 
-.required::after {
-    content: "*";
-    color: red;
+    .connection-type-logo {
+        max-width: 1rem;
+
+        //max-height: 1rem;
+        margin-right: 0.25rem;
+    }
+
+    .connection-type-selector {
+        > button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+
+            &::after {
+                margin-left: auto;
+            }
+        }
+    }
+
+    .required::after {
+        content: "*";
+        color: red;
+    }
+
+    .input-row {
+        display: flex;
+        margin-bottom: 1rem;
+    }
+
+    .label-column {
+        width: 150px;
+        min-width: 150px;
+        font-weight: bold;
+    }
+
+    .input-column {
+        flex-grow: 1;
+    }
+
+    .auth-input {
+        max-width: 230px;
+    }
 }

@@ -31,6 +31,7 @@ export class Window {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
+    public connectionString: string = "";
     private nameField: HTMLInputElement;
     private unprotectedPassword?: string;
     private readonly logger: ILogger;
@@ -44,18 +45,23 @@ export class Window {
         this.logger = logger.scopeTo(nameof(Window));
 
         const createNew = !this.startupOptions.get("data-connection-id");
-        document.title = createNew ? "New Connection" : "Edit Connection";
+        document.title = createNew ? "New Data Connection" : "Edit Data Connection";
     }
 
     public async binding() {
         const dataConnectionId = this.startupOptions.get("data-connection-id");
         if (dataConnectionId) {
             const connection = await this.dataConnectionService.get(dataConnectionId);
+
             this.connectionType = this.connectionTypes.find(c => c.type == connection.type);
+
             if (connection instanceof DatabaseConnection && (!!connection.userId || !!connection.password)) {
                 this.authType = "userAndPassword";
             }
+
             this.connection = connection;
+
+            this.updateConnectionString();
         }
 
         const existingNames = await this.dataConnectionService.getAllNames();
@@ -122,8 +128,11 @@ export class Window {
         }
 
         newConnection.id = this.connection?.id || Util.newGuid();
-
         newConnection.type = connectionType.type;
+
+        if (!newConnection.name) newConnection.name = "@localhost";
+        if (!newConnection.host) newConnection.host = "localhost";
+
         this.connection = newConnection;
     }
 
@@ -203,6 +212,34 @@ export class Window {
             this.nameField.classList.replace("is-invalid", "is-valid");
             this.nameField.setCustomValidity("");
         }
+    }
+
+    @watch<Window>(vm => vm.authType)
+    private async authTypeChanged() {
+        if (!this.connection || !(this.connection instanceof DatabaseConnection)) {
+            return;
+        }
+
+        if (this.authType == "none" ) {
+            this.connection.userId = undefined;
+            this.connection.password = undefined;
+            this.unprotectedPassword = undefined;
+        }
+    }
+
+    @watch<Window>(vm => vm.connection?.type)
+    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.host)
+    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.port)
+    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.userId)
+    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.password)
+    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.databaseName)
+    private async updateConnectionString() {
+        if (!this.connection) {
+            this.connectionString = "";
+            return;
+        }
+
+        this.connectionString = await this.dataConnectionService.getConnectionString(this.connection);
     }
 
     private async unprotectedPasswordEntered() {

@@ -109,7 +109,8 @@ export class Toolbar extends ViewModelBase {
                 else if (major === 8) frameworks.add("DotNet8");
             }
 
-            this.availableFrameworkVersions = [...frameworks].sort((a, b) => a.localeCompare(b));
+            this.availableFrameworkVersions = [...frameworks]
+                .sort((a, b) => a.localeCompare(b));
         });
     }
 

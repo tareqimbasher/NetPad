@@ -58,9 +58,9 @@ button > .icon-base {
     @extend .fa-rotate-right;
 }
 
-.configure-icon {
+.properties-icon {
     @extend %icon-base;
-    @extend .fa-sliders;
+    @extend .fa-wrench;
 }
 
 .backspace-icon {
@@ -317,11 +317,6 @@ button > .icon-base {
     @extend .fa-stop;
 }
 
-.script-properties-icon {
-    @extend %icon-base;
-    @extend .fa-wrench;
-}
-
 .open-folder-icon {
     @extend %icon-base;
     @extend .fa-arrow-up-right-from-square;
@@ -422,7 +417,7 @@ button > .icon-base {
 
 .add-data-connection-icon {
     @extend %icon-base;
-    @extend .fa-database;
+    @extend .fa-plus;
 }
 
 .script-folder-open-icon {

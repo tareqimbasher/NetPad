@@ -69,7 +69,7 @@ export class DataConnectionsList extends ViewModelBase {
                 isDivider: true
             },
             {
-                icon: "configure-icon",
+                icon: "properties-icon",
                 text: "Properties",
                 onSelected: async (target) => this.editConnection(this.getElementOrParentDataConnectionId(target))
             }
