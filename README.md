@@ -11,7 +11,7 @@
 
 ## Motivation
 
-We love [LinqPad](https://www.linqpad.net/), but we also miss its tremendous
+We love [LINQPad](https://www.linqpad.net/), but we also miss its tremendous
 utility when not working on Windows. This is an effort to develop an
 open-source, web-enabled, cross-platform alternative.
 
@@ -23,13 +23,9 @@ developers most commonly need, and if we're lucky, a few new useful ones!
 
 ## Requirements
 
-The following must be be installed to run NetPad:
+The following must be be installed to use NetPad:
 
-* [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0):
-    * The environment variable `DOTNET_ROOT` (or `DOTNET_INSTALL_DIR`) must be
-      set and point to the directory where .NET is installed.
-    * You can have additional .NET SDKs installed but you still need .NET 6 SDK
-      installed too. (.NET 7 support coming very soon!)
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet) (v6 or v7)
 * [EF Core tools (.NET 6 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
 
@@ -41,7 +37,7 @@ an older version from the [Releases](https://github.com/tareqimbasher/NetPad/rel
 ## Updates
 
 NetPad checks for updates on startup and will let you know when a new version is available.
-While it cannot _yet_ install the latest update automatically, that feature's in the works!
+While it cannot _yet_ install the latest update automatically, that feature is in the works!
 
 The latest version can be downloaded from
 the [Releases](https://github.com/tareqimbasher/NetPad/releases/latest) page.
@@ -58,34 +54,38 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
     * Write, save and run your own scripts
     * Manage namespaces
     * Standard code editor features powered by Monaco editor
-* Dump complex objects to the results console
-* Export results to Excel or HTML
-* Add and use database connections (currently only supports Microsoft SQL Server
-  and PostgreSQL, more coming soon!)
-* Auto-save: If you close NetPad, it will auto-save your changes and
-  restore them the next time you fire it up
+* Dump complex objects to the results console and export results to Excel or HTML
+* Choose the .NET SDK version you want to use per script
+* Add and use database connections (currently only supports Microsoft SQL Server and PostgreSQL, more coming soon!)
+* Run SQL queries
+* Auto-save: When you close NetPad, it will auto-save your changes and restore them the next time you fire it up
 * Add NuGet packages
 * Reference assemblies from disk
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
     * Code completion (Intellisense)
     * CodeLens
     * Semantic highlighting
+    * Inlay hits
     * Hover for documentation
     * Format document
     * Go-to implementation
     * Find references
     * Action suggestions
     * Diagnostics
+    * Document highlighting
 
 ## Roadmap :construction:
 
-* .NET 7 support (coming very soon..!)
 * Debugging
 * Support for more database providers
-* Lazy-loading of results and a DataGrid view
-* Run T-SQL queries
+* Hyperlink driven Lazy-loading of results, and a DataGrid view
+* Benchmark your code
+* Referencing other scripts
+* View your code's Syntax Tree
+* View your code as IL
 * Export a script as a "ready to run" .NET app
 * Ability to run a script from the command-line
+* Git tracking of script changes
 * Quality of Life:
     * Support for even more complex objects in the results console, ex: Dumping
       images
@@ -100,7 +100,7 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
     * Go-to symbol
     * Rename symbol
     * ...and more
-* Plugins
+* Plugins & Theming
 
 ---
 
@@ -128,9 +128,6 @@ accessed with a web browser.
 
 * Node v16+ (npm v8+)
 * .NET SDK 6.x
-* .NET SDK 5.x: if you plan on running the Electron app. This is not a
-  dependency of NetPad itself but a dependency of the `electronize` development
-  tool. It, currently, needs this to run.
 * EF Core tools 6.x (or higher)
 
 ### NetPad as an Electron desktop app
@@ -159,11 +156,8 @@ Start the app:
 ```
 cd Apps/NetPad.Apps.App
 
-# Start in watch mode
+# Start in watch mode (remove '/watch' to run without watch mode)
 electronize start /watch /manifest electron.manifest.dev.js
-
-# OR without watch mode
-electronize start /manifest electron.manifest.dev.js /PublishSingleFile false
 
 # For macOS ARM, append the following to the 'electronize start' command
 /target custom "osx-arm64;mac" /electron-arch arm64
@@ -171,7 +165,7 @@ electronize start /manifest electron.manifest.dev.js /PublishSingleFile false
 
 ###### Note
 
-> Only the first `electronize start` is slow. Later runs are much faster.
+> Only the very first `electronize start` is slow. Later runs are much faster.
 
 ### NetPad as a Web app (accessed from a browser)
 
@@ -198,11 +192,9 @@ and access the app via your web browser, ex: `http://localhost:57930`
 ## Packaging :package:
 
 The Electron app is built and packaged using
-[electron-builder](https://www.electron.build/). Configuration is in
-the `electron.manifest.js` file.
+[electron-builder](https://www.electron.build/). Configuration is in the `electron.manifest.js` file.
 
-Build the app for the desired platform from the root directory
-of the `NetPad.Apps.App` project:
+Build the app for the desired platform from the root directory of the `NetPad.Apps.App` project:
 
 ```
 # For x64:
