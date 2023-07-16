@@ -181,8 +181,7 @@ export class MainMenuService implements IMainMenuService {
                 menuItems: [
                     {
                         text: "Reload",
-                        click: async () => window.location.reload(),
-                        helpText: "Ctrl + R"
+                        shortcut: this.shortcutManager.getShortcutByName("Reload"),
                     },
                     {
                         text: "Open Developer Tools",

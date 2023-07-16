@@ -2,7 +2,7 @@ import {CreateScriptDto, IScriptService, ISettingService} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {EditorUtil} from "../editor/editor-util";
-import {Explorer, NamespacesPane} from "../../../windows/main/panes";
+import {Explorer, NamespacesPane, OutputPane} from "../../../windows/main/panes";
 import {RunScriptEvent, TogglePaneEvent} from "@application"
 import * as monaco from "monaco-editor";
 
@@ -116,9 +116,10 @@ export const BuiltinShortcuts = [
         .configurable()
         .enabled(),
 
-    new Shortcut("Settings")
-        .withKey(KeyCode.F12)
-        .hasAction((ctx) => ctx.container.get(ISettingService).openSettingsWindow(null))
+    new Shortcut("Output")
+        .withCtrlKey()
+        .withKey(KeyCode.KeyR)
+        .firesEvent(() => new TogglePaneEvent(OutputPane))
         .configurable()
         .enabled(),
 
@@ -129,6 +130,12 @@ export const BuiltinShortcuts = [
         .configurable()
         .enabled(),
 
+    new Shortcut("Settings")
+        .withKey(KeyCode.F12)
+        .hasAction((ctx) => ctx.container.get(ISettingService).openSettingsWindow(null))
+        .configurable()
+        .enabled(),
+
     new Shortcut("Explorer")
         .withAltKey()
         .withKey(KeyCode.KeyE)
@@ -136,10 +143,18 @@ export const BuiltinShortcuts = [
         .configurable()
         .enabled(),
 
-    new Shortcut("Namespaces Pane")
+    new Shortcut("Namespaces")
         .withAltKey()
         .withKey(KeyCode.KeyN)
         .firesEvent(() => new TogglePaneEvent(NamespacesPane))
+        .configurable()
+        .enabled(),
+
+    new Shortcut("Reload")
+        .withCtrlKey()
+        .withShiftKey()
+        .withKey(KeyCode.KeyR)
+        .hasAction(() => window.location.reload())
         .configurable()
         .enabled(),
 ];

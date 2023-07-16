@@ -38,7 +38,7 @@ export abstract class Pane {
         this.host?.collapse(this);
     }
 
-    public hasShortcut(shortcut: Shortcut) {
+    public hasShortcut(shortcut?: Shortcut) {
         this._shortcut = shortcut;
     }
 }
