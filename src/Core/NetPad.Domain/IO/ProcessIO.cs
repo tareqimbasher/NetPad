@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using NetPad.Utilities;
 
 namespace NetPad.IO;
 
@@ -31,7 +31,7 @@ public class ProcessIO : IDisposable
         if (ev.Data == null)
             return;
 
-        foreach (var handler in OnOutputReceivedHandlers.ToArray())
+        foreach (var handler in OnOutputReceivedHandlers)
         {
             Task.Run(async () => { await handler(ev.Data); });
         }
@@ -42,9 +42,9 @@ public class ProcessIO : IDisposable
         if (ev.Data == null)
             return;
 
-        foreach (var handler in OnErrorReceivedHandlers.ToArray())
+        foreach (var handler in OnErrorReceivedHandlers)
         {
-            Task.Run(async () => { await handler(ev.Data); });
+            AsyncUtil.RunSync(async () => await handler(ev.Data));
         }
     }
 

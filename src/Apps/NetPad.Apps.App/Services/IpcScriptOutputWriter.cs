@@ -14,7 +14,7 @@ public class IpcScriptResultOutputWriter : IpcScriptOutputWriter
     {
     }
 
-    protected override async Task IpcSendAsync(HtmlScriptOutput msg)
+    protected override async Task IpcSendAsync(ScriptOutput msg)
     {
         await _ipcService.SendAsync(new ScriptOutputEmittedEvent(_scriptId, JsonSerializer.Serialize(msg)));
     }
@@ -26,7 +26,7 @@ public class IpcScriptSqlOutputWriter : IpcScriptOutputWriter
     {
     }
 
-    protected override async Task IpcSendAsync(HtmlScriptOutput msg)
+    protected override async Task IpcSendAsync(ScriptOutput msg)
     {
         await _ipcService.SendAsync(new ScriptSqlOutputEmittedEvent(_scriptId, JsonSerializer.Serialize(msg)));
     }
@@ -43,13 +43,17 @@ public abstract class IpcScriptOutputWriter : IOutputWriter<ScriptOutput>
         _ipcService = ipcService;
     }
 
-    protected abstract Task IpcSendAsync(HtmlScriptOutput msg);
+    protected abstract Task IpcSendAsync(ScriptOutput msg);
 
     public async Task WriteAsync(ScriptOutput? output, string? title = null)
     {
         if (output is HtmlScriptOutput htmlScriptOutput)
         {
             await IpcSendAsync(htmlScriptOutput);
+        }
+        else if (output is ErrorScriptOutput errorScriptOutput)
+        {
+            await IpcSendAsync(new HtmlScriptOutput(errorScriptOutput.Order, HtmlSerializer.Serialize(errorScriptOutput.Body, title, true)));
         }
         else if (output is RawScriptOutput rawScriptOutput)
         {

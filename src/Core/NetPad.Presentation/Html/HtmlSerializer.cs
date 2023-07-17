@@ -14,10 +14,14 @@ public static class HtmlSerializer
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type) => O2Html.HtmlSerializer.IsDotNetTypeWithStringRepresentation(type);
 
-    public static string Serialize(object? output, string? title = null)
+    public static string Serialize(object? output, string? title = null, bool isError = false)
     {
         bool titled = title != null;
-        bool outputIsException = output is Exception;
+
+        if (!isError && output is Exception)
+        {
+            isError = true;
+        }
 
         Node node;
 
@@ -28,14 +32,14 @@ public static class HtmlSerializer
         catch (Exception ex)
         {
             node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
-            outputIsException = true;
+            isError = true;
         }
 
         bool outputIsAllText = node is TextNode || (node is Element element && element.Children.All(c => c.Type == NodeType.Text));
 
         var group = new Element("div").WithAddClass("group");
 
-        if (outputIsException)
+        if (isError)
         {
             group.WithAddClass("error");
         }

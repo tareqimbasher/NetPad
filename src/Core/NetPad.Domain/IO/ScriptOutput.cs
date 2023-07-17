@@ -41,3 +41,19 @@ public record HtmlScriptOutput : ScriptOutput
 
     public new string? Body => base.Body as string;
 }
+
+public record ErrorScriptOutput : ScriptOutput
+{
+    public ErrorScriptOutput() : this(0, null)
+    {
+    }
+
+    public ErrorScriptOutput(object? body) : base(body)
+    {
+    }
+
+    [JsonConstructor]
+    public ErrorScriptOutput(uint order, string? body) : base(order, body)
+    {
+    }
+}
