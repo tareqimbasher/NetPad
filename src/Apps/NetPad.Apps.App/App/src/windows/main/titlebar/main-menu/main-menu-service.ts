@@ -36,6 +36,10 @@ export class MainMenuService implements IMainMenuService {
                         shortcut: this.shortcutManager.getShortcutByName("New"),
                     },
                     {
+                        text: "Go to Script",
+                        shortcut: this.shortcutManager.getShortcutByName("Go to Script"),
+                    },
+                    {
                         isDivider: true
                     },
                     {
@@ -135,6 +139,12 @@ export class MainMenuService implements IMainMenuService {
                         isDivider: true
                     },
                     {
+                        text: "Transform to Upper/Lower Case",
+                        click: async () => this.textEditorService.active?.monaco
+                            .trigger(null, "builtin.actions.transformToUpperOrLowercase", null),
+                        helpText: "Ctrl + Shift + Y"
+                    },
+                    {
                         text: "Transform to Upper Case",
                         click: async () => this.textEditorService.active?.monaco
                             .trigger(null, "editor.action.transformToUppercase", null)
@@ -174,11 +184,37 @@ export class MainMenuService implements IMainMenuService {
                             .trigger(null, "editor.action.blockComment", null),
                         helpText: "Ctrl + Shift + A"
                     },
+                    {
+                        isDivider: true
+                    },
+                    {
+                        text: "Settings",
+                        icon: "settings-icon",
+                        shortcut: this.shortcutManager.getShortcutByName("Settings"),
+                    },
                 ]
             },
             {
                 text: "View",
                 menuItems: [
+                    {
+                        text: "Output",
+                        icon: "output-icon",
+                        shortcut: this.shortcutManager.getShortcutByName("Output"),
+                    },
+                    {
+                        text: "Explorer",
+                        icon: "explorer-icon",
+                        shortcut: this.shortcutManager.getShortcutByName("Explorer"),
+                    },
+                    {
+                        text: "Namespaces",
+                        icon: "namespaces-icon",
+                        shortcut: this.shortcutManager.getShortcutByName("Namespaces"),
+                    },
+                    {
+                        isDivider: true
+                    },
                     {
                         text: "Reload",
                         shortcut: this.shortcutManager.getShortcutByName("Reload"),

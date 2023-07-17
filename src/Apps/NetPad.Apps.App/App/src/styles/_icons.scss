@@ -302,6 +302,11 @@ button > .icon-base {
     @extend .fa-folder;
 }
 
+.output-icon {
+    @extend %icon-base;
+    @extend .fa-terminal;
+}
+
 .script-icon {
     @extend %icon-base;
     @extend .fa-code;

@@ -15,7 +15,7 @@ export class OutputPane extends Pane {
                 private readonly appWindows: AppWindows,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
                 private readonly settings: Settings) {
-        super("Output", "run-icon");
+        super("Output", "output-icon");
 
         this.hasShortcut(shortcutManager.getShortcutByName("Output"));
 

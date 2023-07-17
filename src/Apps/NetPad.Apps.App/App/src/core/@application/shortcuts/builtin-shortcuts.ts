@@ -2,6 +2,7 @@ import {CreateScriptDto, IScriptService, ISettingService} from "@domain";
 import {KeyCode} from "@common";
 import {Shortcut} from "./shortcut";
 import {EditorUtil} from "../editor/editor-util";
+import {ITextEditorService} from "../editor/text-editor-service";
 import {Explorer, NamespacesPane, OutputPane} from "../../../windows/main/panes";
 import {RunScriptEvent, TogglePaneEvent} from "@application"
 import * as monaco from "monaco-editor";
@@ -10,24 +11,9 @@ export const BuiltinShortcuts = [
     new Shortcut("Command Palette")
         .withKey(KeyCode.F1)
         .hasAction(ctx => {
-            const activeScriptId = ctx.session.active?.script.id;
-            if (!activeScriptId) {
-                return;
-            }
+            const editor = ctx.container.get(ITextEditorService).active?.monaco;
 
-            const editors = monaco.editor.getEditors();
-            if (!editors.length) {
-                return;
-            }
-
-            let editor = editors.find(e => {
-                const model = e.getModel();
-                return !model ? false : (EditorUtil.getScriptId(model) === activeScriptId);
-            })
-
-            if (!editor) {
-                editor = editors.find(e => e.hasTextFocus() || e.hasWidgetFocus()) || editors[0];
-            }
+            if (!editor) return;
 
             editor.focus();
             editor.trigger("", "editor.action.quickCommand", null);
@@ -59,7 +45,7 @@ export const BuiltinShortcuts = [
             }
 
             editor.focus();
-            editor.getAction("builtin.actions.go-to-script")?.run();
+            editor.getAction("builtin.actions.goToScript")?.run();
         })
         .configurable(false)
         .enabled(),

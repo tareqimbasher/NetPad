@@ -28,4 +28,15 @@ export class KeyboardShortcutSettings {
     //     this.keyCombo = combo.join(" + ").trim();
     //     return false;
     // }
+
+    // private monacoBuiltinKeybindings() {
+    //     for (const defaultKeybinding of EditorUtil.getKeybindingService()._getResolver()._defaultKeybindings) {
+    //         this.builtinShortcuts.push({
+    //             name: defaultKeybinding.command,
+    //             keyComboString: defaultKeybinding.chords.join(" ")
+    //         });
+    //     }
+    //
+    //     console.warn(EditorUtil.getKeybindingService()._getResolver()._defaultKeybindings);
+    // }
 }
