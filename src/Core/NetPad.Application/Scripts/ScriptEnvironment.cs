@@ -11,13 +11,12 @@ using NetPad.Utilities;
 
 namespace NetPad.Scripts;
 
-// If this class is sealed, IDisposable and IAsyncDisposable implementations should be revised
 public class ScriptEnvironment : IDisposable, IAsyncDisposable
 {
     private readonly IEventBus _eventBus;
     private readonly ILogger<ScriptEnvironment> _logger;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
-    private readonly IServiceScope _serviceScope;
+    private IServiceScope _serviceScope;
     private IInputReader<string> _inputReader;
     private IScriptOutputAdapter<ScriptOutput, ScriptOutput> _outputAdapter;
     private ScriptStatus _status;
@@ -160,7 +159,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         _logger.LogTrace($"{nameof(StopAsync)} start");
 
         if (Status != ScriptStatus.Running)
-            throw new InvalidOperationException("Script is not running.");
+        {
+            return;
+        }
 
         await SetStatusAsync(ScriptStatus.Stopping);
 
@@ -172,8 +173,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 await _runtime.StopScriptAsync();
             }
 
-            await _outputAdapter.ResultsChannel.WriteAsync(
-                new RawScriptOutput($"\n# Script stopped on: {DateTime.Now}"));
+            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput($"\n# Script stopped on: {DateTime.Now}"));
             await SetStatusAsync(ScriptStatus.Ready);
         }
         catch (Exception ex)
@@ -281,35 +281,39 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         await DisposeAsyncCore().ConfigureAwait(false);
 
         Dispose(false);
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
         GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 
         _isDisposed = true;
 
         _logger.LogTrace($"{nameof(DisposeAsync)} end");
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected void Dispose(bool disposing)
     {
         if (disposing)
         {
-            _runtime?.Dispose();
-            _runtime = null;
-
-            _serviceScope.Dispose(); // won't this dispose the runtime anyways?
+            AsyncUtil.RunSync(async () => await StopAsync());
 
             Script.RemoveAllPropertyChangedHandlers();
             Script.Config.RemoveAllPropertyChangedHandlers();
+
+            _runtime?.Dispose();
+            _runtime = null;
+
+            _serviceScope.Dispose();
+            _serviceScope = null!;
         }
     }
 
-    protected virtual async ValueTask DisposeAsyncCore()
+    protected async ValueTask DisposeAsyncCore()
     {
-        if (_runtime != null)
-        {
-            await _runtime.DisposeAsync().ConfigureAwait(false);
-        }
+        await StopAsync();
+
+        Script.RemoveAllPropertyChangedHandlers();
+        Script.Config.RemoveAllPropertyChangedHandlers();
+
+        _runtime?.Dispose();
+        _runtime = null;
 
         if (_serviceScope is IAsyncDisposable asyncDisposable)
         {
@@ -319,7 +323,5 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         {
             _serviceScope.Dispose();
         }
-
-        _runtime = null;
     }
 }

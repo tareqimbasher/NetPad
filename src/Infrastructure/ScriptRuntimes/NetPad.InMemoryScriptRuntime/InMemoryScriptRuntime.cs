@@ -278,21 +278,6 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         _logger.LogTrace("Dispose end");
     }
 
-    public ValueTask DisposeAsync()
-    {
-        _logger.LogTrace("DisposeAsync start");
-
-        _externalOutputAdapters.Clear();
-        if (_serviceScope != null)
-        {
-            _serviceScope.Dispose();
-            _serviceScope = null;
-        }
-
-        _logger.LogTrace("DisposeAsync end");
-        return ValueTask.CompletedTask;
-    }
-
     private double GetElapsedMilliseconds(DateTime start)
     {
         return (DateTime.Now - start).TotalMilliseconds;

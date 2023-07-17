@@ -7,7 +7,7 @@ namespace NetPad.Runtimes;
 /// <summary>
 /// Handles all operations related to running a <see cref="Scripts.Script"/>.
 /// </summary>
-public interface IScriptRuntime : IDisposable, IAsyncDisposable
+public interface IScriptRuntime : IDisposable
 {
     Task<RunResult> RunScriptAsync(RunOptions runOptions);
     Task StopScriptAsync();

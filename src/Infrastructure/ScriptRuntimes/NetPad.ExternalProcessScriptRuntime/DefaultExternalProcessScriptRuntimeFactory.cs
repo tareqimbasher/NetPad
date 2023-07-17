@@ -21,7 +21,6 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
     {
         var runtime = new ExternalProcessScriptRuntime(
             script,
-            _serviceProvider.CreateScope(),
             _serviceProvider.GetRequiredService<ICodeParser>(),
             _serviceProvider.GetRequiredService<ICodeCompiler>(),
             _serviceProvider.GetRequiredService<IPackageProvider>(),

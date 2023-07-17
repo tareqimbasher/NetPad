@@ -54,7 +54,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     public ExternalProcessScriptRuntime(
         Script script,
-        IServiceScope serviceScope,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
@@ -62,7 +61,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         ILogger<ExternalProcessScriptRuntime> logger)
     {
         _script = script;
-        _serviceScope = serviceScope;
         _codeParser = codeParser;
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
@@ -500,29 +498,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         _processHandler?.Dispose();
         _externalOutputAdapters.Clear();
-        if (_serviceScope != null)
-        {
-            _serviceScope.Dispose();
-            _serviceScope = null;
-        }
 
         _logger.LogTrace("Dispose end");
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _logger.LogTrace("DisposeAsync start");
-
-        _processHandler?.Dispose();
-        _externalOutputAdapters.Clear();
-        if (_serviceScope != null)
-        {
-            _serviceScope.Dispose();
-            _serviceScope = null;
-        }
-
-        _logger.LogTrace("DisposeAsync end");
-        return ValueTask.CompletedTask;
     }
 
     private record RunDependencies(
