@@ -4,8 +4,7 @@ import {IShortcutManager, Pane} from "@application";
 export class Explorer extends Pane {
     constructor(@IShortcutManager private readonly shortcutManager: IShortcutManager) {
         super("Explorer", "explorer-icon");
-        const shortcut = shortcutManager.getShortcutByName("Explorer");
-        if (shortcut) this.hasShortcut(shortcut);
+        this.hasShortcut(shortcutManager.getShortcutByName("Explorer"));
     }
 
     public async attached() {

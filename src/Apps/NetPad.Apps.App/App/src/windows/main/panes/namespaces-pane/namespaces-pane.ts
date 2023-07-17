@@ -14,8 +14,7 @@ export class NamespacesPane extends Pane {
         @IShortcutManager private readonly shortcutManager: IShortcutManager
     ) {
         super("Namespaces", "namespaces-icon");
-        const shortcut = shortcutManager.getShortcutByName("Namespaces Pane");
-        if (shortcut) this.hasShortcut(shortcut);
+        this.hasShortcut(shortcutManager.getShortcutByName("Namespaces"));
     }
 
     public override get name() {
