@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,10 +13,10 @@ namespace O2Html;
 
 public sealed class HtmlSerializer
 {
-    private static readonly Dictionary<Type, HtmlConverter?> _typeConverterCache = new();
-    private static readonly Dictionary<Type, TypeCategory> _typeCategoryCache = new();
-    private static readonly Dictionary<Type, PropertyInfo[]> _typePropertyCache = new();
-    private static readonly Dictionary<Type, Type?> _collectionElementTypeCache = new();
+    private static readonly ConcurrentDictionary<Type, HtmlConverter?> _typeConverterCache = new();
+    private static readonly ConcurrentDictionary<Type, TypeCategory> _typeCategoryCache = new();
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertyCache = new();
+    private static readonly ConcurrentDictionary<Type, Type?> _collectionElementTypeCache = new();
 
     public HtmlSerializer(HtmlSerializerSettings? serializerSettings = null)
     {
@@ -84,7 +85,7 @@ public sealed class HtmlSerializer
         else
             category = TypeCategory.SingleObject;
 
-        _typeCategoryCache.Add(type, category);
+        _typeCategoryCache.TryAdd(type, category);
         return category;
     }
 
@@ -97,7 +98,7 @@ public sealed class HtmlSerializer
             .Where(p => p.CanRead)
             .ToArray();
 
-        _typePropertyCache.Add(type, propertyInfos);
+        _typePropertyCache.TryAdd(type, propertyInfos);
         return propertyInfos;
     }
 
@@ -108,7 +109,7 @@ public sealed class HtmlSerializer
 
         elementType = collectionType.GetCollectionElementType();
 
-        _collectionElementTypeCache.Add(collectionType, elementType);
+        _collectionElementTypeCache.TryAdd(collectionType, elementType);
 
         return elementType;
     }
@@ -121,11 +122,11 @@ public sealed class HtmlSerializer
         foreach (var converter in Converters)
         {
             if (!converter.CanConvert(this, type)) continue;
-            _typeConverterCache.Add(type, converter);
+            _typeConverterCache.TryAdd(type, converter);
             return converter;
         }
 
-        _typeConverterCache.Add(type, null);
+        _typeConverterCache.TryAdd(type, null);
         return null;
     }
 
