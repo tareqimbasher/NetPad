@@ -9,6 +9,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     public toolbarActions: IToolbarAction[];
     protected outputElement: HTMLElement;
     protected findTextBoxOptions: FindTextBoxOptions;
+    protected scrollOnOutput = false;
     private lastOutputOrder = 0;
     private lastOutputElement?: Element | null;
     private pendingOutputQueue: HtmlScriptOutput[] = [];
@@ -75,6 +76,8 @@ export abstract class OutputViewBase extends ViewModelBase {
         if (!children.length)
             throw new Error("Empty DocumentFragment");
 
+        let lastChildAppendedToLastElement = false;
+
         for (const child of children) {
             if (this.lastOutputElement
                 && this.lastOutputElement.classList.contains("group")
@@ -85,8 +88,18 @@ export abstract class OutputViewBase extends ViewModelBase {
                 && !child.classList.contains("titled")
             ) {
                 this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + child.innerHTML;
+                lastChildAppendedToLastElement = true;
             } else {
                 this.lastOutputElement = this.outputElement.appendChild(child);
+                lastChildAppendedToLastElement = false;
+            }
+        }
+
+        if (this.scrollOnOutput) {
+            if (this.lastOutputElement) {
+                this.lastOutputElement.scrollIntoView({block: lastChildAppendedToLastElement ? "end" : "start"});
+            } else {
+                this.outputElement.scrollTop = this.outputElement.scrollHeight;
             }
         }
 

@@ -39,6 +39,8 @@ export class ResultsView extends OutputViewBase {
         this.resultsViewSettings = new ResultsPaneViewSettings(this.settings.results.textWrap);
 
         const rvs = this.resultsViewSettings;
+        const self = this;
+
         this.toolbarActions = [
             {
                 label: "Export",
@@ -101,6 +103,15 @@ export class ResultsView extends OutputViewBase {
                 clicked: async function () {
                     rvs.textWrap = !rvs.textWrap;
                     this.active = rvs.textWrap;
+                },
+            },
+            {
+                label: "Scroll on Output",
+                icon: "scroll-on-output-icon",
+                active: this.scrollOnOutput,
+                clicked: async function (){
+                    self.scrollOnOutput = !self.scrollOnOutput;
+                    this.active = self.scrollOnOutput;
                 },
             },
             {

@@ -41,8 +41,12 @@ output-view-toolbar {
         align-items: center;
         justify-content: flex-end;
 
-        .action-icon {
-            margin-right: 0.3rem;
+        .action:not(:last-child) {
+            margin-right: 0.75rem;
+        }
+
+        .action.has-actions {
+            margin-right: 0.25rem;
         }
 
         div[data-bs-toggle="dropdown"] {
