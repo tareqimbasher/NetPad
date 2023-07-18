@@ -48,13 +48,12 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly MainScriptOutputAdapter _outputAdapter;
     private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
     private readonly DirectoryInfo _externalProcessRootDirectory;
-    private IServiceScope? _serviceScope;
+    private uint _rawOutputOrder;
 
     private ProcessHandler? _processHandler;
 
     public ExternalProcessScriptRuntime(
         Script script,
-        IServiceScope serviceScope,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
@@ -62,7 +61,6 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         ILogger<ExternalProcessScriptRuntime> logger)
     {
         _script = script;
-        _serviceScope = serviceScope;
         _codeParser = codeParser;
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
@@ -131,13 +129,15 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
             _externalProcessRootDirectory.Create();
 
-            var scriptAssemblyFilePath =
-                await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
+            var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
+
+            // Reset raw output order
+            _rawOutputOrder = 0;
 
             // TODO optimize this section
             _processHandler = new ProcessHandler(_dotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
-            _processHandler.IO!.OnOutputReceivedHandlers.Add(async output =>
+            _processHandler.IO.OnOutputReceivedHandlers.Add(async output =>
             {
                 if (output == "[INPUT_REQUEST]")
                 {
@@ -166,8 +166,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 {
                     try
                     {
-                        externalProcessOutput =
-                            JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                        externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
                     }
                     catch
                     {
@@ -177,24 +176,24 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
                 if (externalProcessOutput?.Output == null)
                 {
-                    await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output));
+                    await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(Interlocked.Increment(ref _rawOutputOrder) - 1, output + "\n"));
                 }
                 else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Results)
                 {
                     await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql
-                         && _outputAdapter.SqlChannel != null)
+                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql && _outputAdapter.SqlChannel != null)
                 {
                     await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
                 }
             });
 
-            _processHandler.IO!.OnErrorReceivedHandlers.Add(async output => { await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(output)); });
+            _processHandler.IO.OnErrorReceivedHandlers.Add(async output =>
+            {
+                await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(Interlocked.Increment(ref _rawOutputOrder) - 1, output + "\n"));
+            });
 
             var start = DateTime.Now;
-
-            int exitCode;
 
             var startResult = _processHandler.StartProcess();
 
@@ -203,7 +202,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 return RunResult.RunAttemptFailure();
             }
 
-            exitCode = await startResult.WaitForExitTask;
+            var exitCode = await startResult.WaitForExitTask;
 
             var elapsed = (DateTime.Now - start).TotalMilliseconds;
 
@@ -219,7 +218,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
+            await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(ex));
             return RunResult.RunAttemptFailure();
         }
         finally
@@ -500,29 +499,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         _processHandler?.Dispose();
         _externalOutputAdapters.Clear();
-        if (_serviceScope != null)
-        {
-            _serviceScope.Dispose();
-            _serviceScope = null;
-        }
 
         _logger.LogTrace("Dispose end");
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _logger.LogTrace("DisposeAsync start");
-
-        _processHandler?.Dispose();
-        _externalOutputAdapters.Clear();
-        if (_serviceScope != null)
-        {
-            _serviceScope.Dispose();
-            _serviceScope = null;
-        }
-
-        _logger.LogTrace("DisposeAsync end");
-        return ValueTask.CompletedTask;
     }
 
     private record RunDependencies(

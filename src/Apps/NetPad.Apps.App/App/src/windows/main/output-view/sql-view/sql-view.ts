@@ -15,12 +15,7 @@ export class SqlView extends OutputViewBase {
         const self = this;
         this.toolbarActions = [
             {
-                label: "Clear",
-                icon: "clear-output-icon",
-                clicked: async () => this.clearOutput(),
-            },
-            {
-                label: "Color output (turn off for better 'Find Text (CTRL + F)' accuracy)",
+                label: "Color output - turn off for better 'Find Text' (CTRL + F) accuracy",
                 get icon() {
                     return this.active ? "theme-icon text-orange" : "theme-icon";
                 },
@@ -38,7 +33,21 @@ export class SqlView extends OutputViewBase {
                     self.textWrap = !self.textWrap;
                     this.active = self.textWrap;
                 },
-            }
+            },
+            {
+                label: "Scroll on Output",
+                icon: "scroll-on-output-icon",
+                active: this.scrollOnOutput,
+                clicked: async function (){
+                    self.scrollOnOutput = !self.scrollOnOutput;
+                    this.active = self.scrollOnOutput;
+                },
+            },
+            {
+                label: "Clear",
+                icon: "clear-output-icon",
+                clicked: async () => this.clearOutput(),
+            },
         ];
     }
 

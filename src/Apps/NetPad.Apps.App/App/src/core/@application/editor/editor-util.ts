@@ -1,7 +1,7 @@
 import * as monaco from "monaco-editor";
-import {IQuickInputService} from 'monaco-editor/esm/vs/platform/quickinput/common/quickInput';
-import {IKeybindingService} from 'monaco-editor/esm/vs/platform/keybinding/common/keybinding';
-import {StandaloneServices} from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices';
+import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput";
+import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/common/keybinding";
+import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 
 export class EditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {

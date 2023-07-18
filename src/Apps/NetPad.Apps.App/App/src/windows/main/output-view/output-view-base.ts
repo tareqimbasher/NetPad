@@ -9,6 +9,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     public toolbarActions: IToolbarAction[];
     protected outputElement: HTMLElement;
     protected findTextBoxOptions: FindTextBoxOptions;
+    protected scrollOnOutput = false;
     private lastOutputOrder = 0;
     private lastOutputElement?: Element | null;
     private pendingOutputQueue: HtmlScriptOutput[] = [];
@@ -75,18 +76,23 @@ export abstract class OutputViewBase extends ViewModelBase {
         if (!children.length)
             throw new Error("Empty DocumentFragment");
 
+        let lastChildAppendedToLastElement = false;
+
         for (const child of children) {
-            if (this.lastOutputElement
-                && this.lastOutputElement.classList.contains("group")
-                && this.lastOutputElement.classList.contains("text")
-                && !this.lastOutputElement.classList.contains("titled")
-                && child.classList.contains("group")
-                && child.classList.contains("text")
-                && !child.classList.contains("titled")
-            ) {
+            if (this.lastOutputElement && this.shouldAppendOutputChildToLastOutputElement(child, this.lastOutputElement)) {
                 this.lastOutputElement.innerHTML = this.lastOutputElement.innerHTML + child.innerHTML;
+                lastChildAppendedToLastElement = true;
             } else {
                 this.lastOutputElement = this.outputElement.appendChild(child);
+                lastChildAppendedToLastElement = false;
+            }
+        }
+
+        if (this.scrollOnOutput) {
+            if (this.lastOutputElement) {
+                this.lastOutputElement.scrollIntoView({block: lastChildAppendedToLastElement ? "end" : "start"});
+            } else {
+                this.outputElement.scrollTop = this.outputElement.scrollHeight;
             }
         }
 
@@ -119,5 +125,21 @@ export abstract class OutputViewBase extends ViewModelBase {
             this.lastOutputOrder = 0;
             this.pendingOutputQueue.splice(0);
         }
+    }
+
+    private shouldAppendOutputChildToLastOutputElement(child: Element, lastOutputElement: Element) {
+        if (!lastOutputElement || child.classList.contains("titled")) return false;
+
+        const lastOutputIsGroupText = lastOutputElement.classList.contains("group") && lastOutputElement.classList.contains("text");
+        const childIsGroupText = child.classList.contains("group") && child.classList.contains("text");
+
+        if (!(lastOutputIsGroupText && childIsGroupText)) return false;
+
+        if ((lastOutputElement.classList.contains("error") && !child.classList.contains("error"))
+            || (!lastOutputElement.classList.contains("error") && child.classList.contains("error"))) {
+            return false;
+        }
+
+        return true;
     }
 }

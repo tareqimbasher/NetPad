@@ -390,6 +390,11 @@ button > .icon-base {
     @extend .fa-broom;
 }
 
+.scroll-on-output-icon {
+    @extend %icon-base;
+    @extend .fa-arrows-down-to-line;
+}
+
 .add-package-icon {
     @extend %icon-base;
     @extend .fa-plus;

@@ -1,5 +1,4 @@
-@import "~styles/main";
-@import "~styles/themes";
+@import "~styles/common";
 
 tab-bar {
     display: flex;
@@ -19,7 +18,7 @@ tab-bar {
     }
 
     .view-tab {
-        height: 1.8rem;
+        height: 2rem;
         display: flex;
         align-items: center;
         white-space: nowrap;

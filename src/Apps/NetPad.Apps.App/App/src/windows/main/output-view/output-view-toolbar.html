@@ -7,7 +7,7 @@
 </div>
 <div class="actions pe-1">
     <div repeat.for="action of options.actions"
-       class="ms-2"
+       class="action ${action.actions ? 'has-actions': ''}"
        show.bind="!action.show || action.show()"
        title.bind="action.label">
         <i class="${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'active' : ''}"
