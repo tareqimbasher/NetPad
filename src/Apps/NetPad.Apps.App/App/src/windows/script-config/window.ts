@@ -1,15 +1,16 @@
 import {IScriptService, ISession, Reference, Script, Settings} from "@domain";
 import {ConfigStore} from "./config-store";
+import {WindowBase} from "@application/windows/window-base";
 
-export class Window {
+export class Window extends WindowBase {
     public script: Script;
 
     constructor(
         readonly startupOptions: URLSearchParams,
-        readonly settings: Settings,
         readonly configStore: ConfigStore,
         @ISession readonly session: ISession,
         @IScriptService readonly scriptService: IScriptService) {
+        super();
 
         let tabIndex = this.configStore.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
         if (tabIndex < 0)

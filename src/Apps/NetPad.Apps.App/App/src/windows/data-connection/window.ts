@@ -4,14 +4,14 @@ import {
     DataConnectionType,
     IDataConnectionService,
     MsSqlServerDatabaseConnection,
-    PostgreSqlDatabaseConnection,
-    Settings
+    PostgreSqlDatabaseConnection
 } from "@domain";
 import {Util} from "@common";
 import {Constructable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {WindowBase} from "@application/windows/window-base";
 
-export class Window {
+export class Window extends WindowBase {
     public connection?: DataConnection;
     public connectionType?: ConnectionType;
     public connectionTypes: ConnectionType[] = [
@@ -38,10 +38,10 @@ export class Window {
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        private readonly settings: Settings,
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @ILogger logger: ILogger
     ) {
+        super();
         this.logger = logger.scopeTo(nameof(Window));
 
         const createNew = !this.startupOptions.get("data-connection-id");

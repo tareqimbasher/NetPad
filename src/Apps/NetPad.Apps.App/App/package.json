@@ -52,7 +52,7 @@
         "@fortawesome/fontawesome-free": "^6.4.0",
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
-        "aurelia": "^2.0.0-beta.4",
+        "aurelia": "^2.0.0-beta.7",
         "bootstrap": "^5.2.0",
         "dragula": "^3.7.3",
         "electron": "^23.2.3",
@@ -63,10 +63,10 @@
         "split.js": "^1.6.5"
     },
     "devDependencies": {
-        "@aurelia/dialog": "^2.0.0-beta.4",
-        "@aurelia/testing": "^2.0.0-beta.4",
-        "@aurelia/ts-jest": "^2.0.0-beta.4",
-        "@aurelia/webpack-loader": "^2.0.0-beta.4",
+        "@aurelia/dialog": "^2.0.0-beta.7",
+        "@aurelia/testing": "^2.0.0-beta.7",
+        "@aurelia/ts-jest": "^2.0.0-beta.7",
+        "@aurelia/webpack-loader": "^2.0.0-beta.7",
         "@types/bootstrap": "^5.2.6",
         "@types/dragula": "^3.7.1",
         "@types/jest": "^28.1.6",

@@ -2,7 +2,8 @@
     <b>${activeEnvironment.status}</b>
 
     <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds"
-          title="The time it took to run the script. This includes time overhead of starting a the process that the script runs in.">
+          title="The time it took to run the script (in milliseconds).
+This includes the time it took to start the host process.">
             (Took: ${activeEnvironment.runDurationMilliseconds} ms)
         </span>
 </div>
@@ -21,10 +22,10 @@
         <span innerHTML.bind="item.text"></span>
     </div>
 
-    <i class="info-icon action-icon"
+    <i class="quick-tips-icon action-icon"
        click.trigger="showQuickTipsDialog()"
        title="Quick Tips"></i>
-    <i class="check-circle-icon action-icon"
+    <i class="app-deps-check-icon action-icon"
        click.trigger="showAppDepsCheckDialog()"
        title="App Dependencies Check"
        platforms="Electron"></i>

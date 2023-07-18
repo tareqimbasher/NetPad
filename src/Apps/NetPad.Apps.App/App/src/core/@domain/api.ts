@@ -4161,6 +4161,7 @@ export interface ISettings {
 
 export class AppearanceOptions implements IAppearanceOptions {
     theme!: Theme;
+    iconTheme!: IconTheme;
     showScriptRunStatusIndicatorInTab!: boolean;
     showScriptRunStatusIndicatorInScriptsList!: boolean;
     showScriptRunningIndicatorInScriptsList!: boolean;
@@ -4177,6 +4178,7 @@ export class AppearanceOptions implements IAppearanceOptions {
     init(_data?: any) {
         if (_data) {
             this.theme = _data["theme"];
+            this.iconTheme = _data["iconTheme"];
             this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
             this.showScriptRunStatusIndicatorInScriptsList = _data["showScriptRunStatusIndicatorInScriptsList"];
             this.showScriptRunningIndicatorInScriptsList = _data["showScriptRunningIndicatorInScriptsList"];
@@ -4193,6 +4195,7 @@ export class AppearanceOptions implements IAppearanceOptions {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["theme"] = this.theme;
+        data["iconTheme"] = this.iconTheme;
         data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
         data["showScriptRunStatusIndicatorInScriptsList"] = this.showScriptRunStatusIndicatorInScriptsList;
         data["showScriptRunningIndicatorInScriptsList"] = this.showScriptRunningIndicatorInScriptsList;
@@ -4209,12 +4212,15 @@ export class AppearanceOptions implements IAppearanceOptions {
 
 export interface IAppearanceOptions {
     theme: Theme;
+    iconTheme: IconTheme;
     showScriptRunStatusIndicatorInTab: boolean;
     showScriptRunStatusIndicatorInScriptsList: boolean;
     showScriptRunningIndicatorInScriptsList: boolean;
 }
 
 export type Theme = "Dark" | "Light";
+
+export type IconTheme = "Default" | "Colorful";
 
 export class EditorOptions implements IEditorOptions {
     backgroundColor?: string | undefined;

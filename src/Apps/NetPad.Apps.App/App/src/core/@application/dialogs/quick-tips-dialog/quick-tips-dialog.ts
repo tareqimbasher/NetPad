@@ -34,30 +34,27 @@ export class QuickTipsDialog extends DialogBase {
 
         localStorage.setItem(QuickTipsDialog.lsKey_LastVisitedVersion, QuickTipsDialog.currentVersion);
 
-        const divToMove = this.dialogDom.contentHost.querySelector('.fa-star') as HTMLElement;
-        const destinationElement = (document.querySelector("statusbar .info-icon.action-icon") as HTMLElement);
+        const divToMove = this.dialogDom.contentHost.querySelector(".quick-tips-icon") as HTMLElement;
+        const destinationElement = (document.querySelector("statusbar .quick-tips-icon") as HTMLElement);
 
         if (!divToMove || !destinationElement) {
             await this.cancel();
             return;
         }
 
-        const movementDurationMs = 650;
-        const fadeOutDurationMs = 2000;
-
         // Calculate the destination position relative to the viewport
         const divToMoveRect = divToMove.getBoundingClientRect();
         const destinationRect = destinationElement.getBoundingClientRect();
 
-        const destinationTop = destinationRect.top + window.scrollY - divToMoveRect.top - 4;
-        const destinationLeft = destinationRect.left + window.scrollX - divToMoveRect.left;
+        const destinationTop = destinationRect.top + window.scrollY - divToMoveRect.top + divToMoveRect.height - destinationRect.height;
+        const destinationLeft = destinationRect.left + window.scrollX - divToMoveRect.left - divToMoveRect.width + destinationRect.width;
 
-        // Change the icon
-        setTimeout(() => {
-            divToMove.classList.remove("text-yellow");
-            divToMove.classList.remove("fa-star");
-            divToMove.classList.add("info-icon");
-        }, movementDurationMs - (movementDurationMs * 0.33));
+        // Move out of document flow and set to current x/y coordinates
+        divToMove.style.position = "fixed";
+        divToMove.style.left = divToMoveRect.x + "px";
+        divToMove.style.top = divToMoveRect.y + "px";
+
+        const movementDurationMs = 650;
 
         // Animate the shrinking in icon size
         divToMove.animate([
@@ -65,34 +62,30 @@ export class QuickTipsDialog extends DialogBase {
             { fontSize: "1rem" }
         ], {
             duration: movementDurationMs,
-            easing: "ease-out"
-        }).onfinish = () => {
-            divToMove.style.fontSize = "1rem";
-        };
+            easing: "ease-out",
+            fill: "forwards"
+        });
 
         // Animate the icon movement to the destination position
         divToMove.animate([
-            {transform: `translate(${divToMove.offsetLeft}px, ${divToMove.offsetTop}px)`},
             {transform: `translate(${destinationLeft}px, ${destinationTop}px)`}
         ], {
             duration: movementDurationMs,
-            easing: "ease-out"
-        }).onfinish = () => {
-            // Set the icon's position to the destination position
-            divToMove.style.transform = `translate(${destinationLeft}px, ${destinationTop}px)`;
+            easing: "ease-out",
+            fill: "forwards"
+        });
 
-            // Fade out the icon
-            divToMove.animate([
-                {opacity: 1},
-                {opacity: 0}
-            ], {
-                duration: fadeOutDurationMs,
-                easing: "linear"
-            }).onfinish = () => {
-                // Hide the icon and then close the window
-                divToMove.style.display = "none";
-                this.cancel();
-            };
+        // Fade out the icon
+        divToMove.animate([
+            {opacity: 1},
+            {opacity: 0.3}
+        ], {
+            duration: movementDurationMs,
+            easing: "linear"
+        }).onfinish = () => {
+            // Hide the icon and then close the window
+            divToMove.remove();
+            this.cancel();
         };
     }
 }

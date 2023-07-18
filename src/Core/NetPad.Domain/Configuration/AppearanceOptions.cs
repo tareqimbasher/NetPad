@@ -7,6 +7,7 @@ public class AppearanceOptions : ISettingsOptions
     public AppearanceOptions()
     {
         Theme = Theme.Dark;
+        IconTheme = IconTheme.Default;
         ShowScriptRunStatusIndicatorInTab = true;
         ShowScriptRunStatusIndicatorInScriptsList = false;
         ShowScriptRunningIndicatorInScriptsList = false;
@@ -14,6 +15,7 @@ public class AppearanceOptions : ISettingsOptions
     }
 
     [JsonInclude] public Theme Theme { get; private set; }
+    [JsonInclude] public IconTheme IconTheme { get; private set; }
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInTab { get; private set; }
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInScriptsList { get; private set; }
     [JsonInclude] public bool ShowScriptRunningIndicatorInScriptsList { get; private set; }
@@ -21,6 +23,12 @@ public class AppearanceOptions : ISettingsOptions
     public AppearanceOptions SetTheme(Theme theme)
     {
         Theme = theme;
+        return this;
+    }
+
+    public AppearanceOptions SetIconTheme(IconTheme iconTheme)
+    {
+        IconTheme = iconTheme;
         return this;
     }
 

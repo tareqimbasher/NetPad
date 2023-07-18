@@ -73,18 +73,11 @@ textarea.form-control {
 
     &.active {
         @include theme(background-color, activeColor);
-
-        * {
-            @include theme(color, textColor);
-        }
+        @include theme(color, textHighestContrastColor);
     }
 
     &.active:hover {
         @include theme(background-color, activeColor);
-
-        * {
-            @include theme(color, textColor);
-        }
     }
 }
 

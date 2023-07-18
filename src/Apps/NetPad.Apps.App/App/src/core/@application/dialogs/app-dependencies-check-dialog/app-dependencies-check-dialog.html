@@ -1,7 +1,10 @@
 ﻿<template class="app-dependencies-check-dialog">
-    <h4>
-        NetPad Dependencies Check
-        <span class="spinner-border float-end" if.bind="loading"></span>
+    <h4 class="d-flex justify-content-between">
+        <div>
+            App Dependencies Check
+            <span class="spinner-border float-end" if.bind="loading"></span>
+        </div>
+        <i class="app-deps-check-icon"></i>
     </h4>
 
     <div if.bind="!loading">

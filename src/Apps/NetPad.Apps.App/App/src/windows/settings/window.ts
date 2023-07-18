@@ -1,8 +1,8 @@
 import {ISettingService, Settings} from "@domain";
+import {WindowBase} from "@application/windows/window-base";
 
-export class Window {
-    public currentSettings: Readonly<Settings>;
-    public settings: Settings;
+export class Window extends WindowBase {
+    public editableSettings: Settings;
     public selectedTab;
     public tabs = [
         {route: "general", text: "General"},
@@ -15,8 +15,8 @@ export class Window {
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        currentSettings: Settings,
         @ISettingService readonly settingService: ISettingService) {
+        super();
 
         document.title = "Settings";
 
@@ -25,12 +25,11 @@ export class Window {
             tabIndex = 0;
 
         this.selectedTab = this.tabs[tabIndex];
-        this.currentSettings = currentSettings;
-        this.settings = this.currentSettings.clone();
+        this.editableSettings = this.settings.clone();
     }
 
     public async save() {
-        await this.settingService.update(this.settings);
+        await this.settingService.update(this.editableSettings);
         window.close();
     }
 
