@@ -1,4 +1,4 @@
-@import "~styles/main";
+@import "~styles/colors";
 @import "~styles/themes";
 
 main-menu {
@@ -48,7 +48,7 @@ main-menu {
     .menu-item-help-text {
         text-align: right;
         margin-left: 4rem;
-        @extend .text-muted;
+        color: $text-muted;
     }
 
     .expanded {
