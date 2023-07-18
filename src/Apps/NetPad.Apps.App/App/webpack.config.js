@@ -72,6 +72,13 @@ module.exports = function (env, {analyze}) {
             fallback: {
                 "fs": false,
                 "path": require.resolve("path-browserify"),
+            },
+            alias: {
+                // Re-route all 'import from "monaco-editor"' to this so that MonacoWebpackPlugin
+                // can do its job and only bundle the parts of monaco editor that we need and not
+                // all of it. The '$' here is so we allow more specific imports like:
+                // import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput"
+                "monaco-editor$": "monaco-editor/esm/vs/editor/editor.api.js",
             }
         },
         devServer: {
@@ -123,10 +130,7 @@ module.exports = function (env, {analyze}) {
             new MonacoWebpackPlugin({
                 languages: [
                     "csharp",
-                    //"sql",
-                    //"mysql",
-                    //"pgsql",
-                    //"json",
+                    "sql",
                 ]
             }),
             analyze && new BundleAnalyzerPlugin()
