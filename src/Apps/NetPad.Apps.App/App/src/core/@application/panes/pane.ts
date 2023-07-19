@@ -6,7 +6,7 @@ export abstract class Pane {
     protected _shortcut?: Shortcut;
     protected _actions: PaneAction[] = [];
 
-    protected constructor(name: string, protected readonly icon?: string) {
+    protected constructor(name: string, public readonly icon?: string, public readonly showNameInHeader: boolean = true) {
         this._name = name;
     }
 

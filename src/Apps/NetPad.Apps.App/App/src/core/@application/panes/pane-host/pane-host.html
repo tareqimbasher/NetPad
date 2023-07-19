@@ -12,8 +12,8 @@
     </div>
     <div class="content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
         <div class="pane-toolbar d-flex align-items-center p-2">
-            <div class="text-truncate">
-                ${active.name | truncate:30}${active.toolbar ? ':' : ''}
+            <div class="text-truncate me-2" style="font-weight: 600" if.bind="orientation != 'Bottom'">
+                ${active.name | truncate:30}
             </div>
 
             <div class="flex-grow-1 pane-toolbar-composed" if.bind="active.toolbar">
