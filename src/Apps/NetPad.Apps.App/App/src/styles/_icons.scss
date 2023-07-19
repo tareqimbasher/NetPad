@@ -1,5 +1,13 @@
 /* stylelint-disable scss/at-extend-no-missing-placeholder -- font-awesome doesn't provide placeholders */
 
+%fa-regular {
+    @extend .fa-regular;
+}
+
+%fa-brands {
+    @extend .fa-brands;
+}
+
 %icon-base {
     @extend .fa;
     line-height: inherit;
@@ -105,6 +113,7 @@ button > .icon-base {
 
 .keyboard-icon {
     @extend %icon-base;
+    @extend %fa-regular;
     @extend .fa-keyboard;
 }
 
@@ -210,7 +219,7 @@ button > .icon-base {
 
 .html-icon {
     @extend %icon-base;
-    @extend .fa-brands;
+    @extend %fa-brands;
     @extend .fa-html5;
 }
 
@@ -233,13 +242,13 @@ button > .icon-base {
 .window-maximize-icon {
     @extend %icon-base;
     @extend .fa-square;
-    @extend .fa-regular;
+    @extend %fa-regular;
 }
 
 .window-restore-icon {
     @extend %icon-base;
     @extend .fa-window-restore;
-    @extend .fa-regular;
+    @extend %fa-regular;
 }
 
 .window-minimize-icon {
@@ -300,6 +309,7 @@ button > .icon-base {
 .explorer-icon {
     @extend %icon-base;
     @extend .fa-folder;
+    @extend %fa-regular;
 }
 
 .output-icon {
@@ -335,6 +345,7 @@ button > .icon-base {
 .clipboard-icon {
     @extend %icon-base;
     @extend .fa-clipboard;
+    @extend %fa-regular;
 }
 
 .namespaces-icon {
@@ -350,6 +361,17 @@ button > .icon-base {
 .settings-icon {
     @extend %icon-base;
     @extend .fa-gear;
+}
+
+.quick-tips-icon {
+    @extend %icon-base;
+    @extend .fa-lightbulb;
+    @extend %fa-regular;
+}
+
+.app-deps-check-icon {
+    @extend %icon-base;
+    @extend .fa-desktop;
 }
 
 .app-update-icon {
@@ -432,7 +454,7 @@ button > .icon-base {
 
 .script-folder-open-icon {
     @extend %icon-base;
-    @extend .fa-arrow-up-right-from-square;
+    @extend .fa-folder-open;
 }
 
 .db-primary-key-icon {
@@ -472,6 +494,196 @@ button > .icon-base {
 
 .github-icon {
     @extend %icon-base;
-    @extend .fa-brands;
+    @extend %fa-brands;
     @extend .fa-github;
+}
+
+.uncolored-icons [class*="-icon"] {
+    color: unset !important;
+}
+
+.theme-dark.icon-theme-colorful,
+.theme-dark .colored-icons {
+    .case-sensitive-icon {
+        color: #78909c;
+    }
+
+    .run-icon {
+        color: #91b859;
+    }
+
+    .close-icon,
+    .delete-icon,
+    .backspace-icon {
+        color: #fe5370;
+    }
+
+    .save-icon {
+        color: #82aaff;
+    }
+
+    .properties-icon {
+        color: #ffd782;
+    }
+
+    .settings-icon,
+    .window-always-on-top-icon {
+        color: #93a3af;
+    }
+
+    .undo-icon,
+    .redo-icon,
+    .refresh-icon {
+        color: #99b89d;
+    }
+
+    .cut-icon {
+        color: #c792ea;
+    }
+
+    .copy-icon {
+        color: #bce388;
+    }
+
+    .add-script-icon,
+    .add-data-connection-icon,
+    .use-data-connection-new-script-icon,
+    .use-data-connection-current-script-icon,
+    .add-package-specific-icon {
+        color: #06c7e0;
+    }
+
+    .add-package-icon {
+        color: #4fc3f7;
+    }
+
+    .download-package-icon {
+        color: #ffcb6b;
+    }
+
+    .search-icon {
+        color: #80cbc4;
+    }
+
+    .explorer-icon {
+        color: #ffc107;
+    }
+
+    .clipboard-icon {
+        color: #ffcb6b;
+    }
+
+    .output-icon {
+        color: #4fc3f7;
+    }
+
+    .star-icon {
+        color: gold;
+    }
+
+    .tree-collapse-all-icon,
+    .tree-expand-all-icon {
+        color: #f8bbd0;
+    }
+
+    .quick-tips-icon {
+        color: #ffcc00;
+    }
+
+    .app-deps-check-icon {
+        color: #8d8d8d;
+    }
+}
+
+.theme-light.icon-theme-colorful,
+.theme-light .colored-icons {
+    .case-sensitive-icon {
+        color: #5f7682;
+    }
+
+    .run-icon {
+        color: #65ad4a;
+    }
+
+    .close-icon,
+    .delete-icon,
+    .backspace-icon {
+        color: #fe5370;
+    }
+
+    .save-icon {
+        color: #3676ff;
+    }
+
+    .properties-icon {
+        color: #ffb71d;
+    }
+
+    .settings-icon,
+    .window-always-on-top-icon {
+        color: #68818e;
+    }
+
+    .undo-icon,
+    .redo-icon,
+    .refresh-icon {
+        color: #6c9972;
+    }
+
+    .cut-icon {
+        color: #a652de;
+    }
+
+    .copy-icon {
+        color: #99d44a;
+    }
+
+    .add-script-icon,
+    .add-data-connection-icon,
+    .use-data-connection-new-script-icon,
+    .use-data-connection-current-script-icon,
+    .add-package-specific-icon {
+        color: #059bae;
+    }
+
+    .add-package-icon {
+        color: #80d4f9;
+    }
+
+    .download-package-icon {
+        color: #ffcb6b;
+    }
+
+    .search-icon {
+        color: #4ab5ab;
+    }
+
+    .explorer-icon {
+        color: #ffac07;
+    }
+
+    .clipboard-icon {
+        color: #ffb938;
+    }
+
+    .output-icon {
+        color: #1eb2f5;
+    }
+
+    .star-icon {
+        color: gold;
+    }
+
+    .tree-collapse-all-icon,
+    .tree-expand-all-icon {
+        color: #f176a0;
+    }
+
+    .quick-tips-icon {
+        color: #e99f00;
+    }
+
+    .app-deps-check-icon {
+        color: #808080;
+    }
 }

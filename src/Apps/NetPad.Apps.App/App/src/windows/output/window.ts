@@ -1,21 +1,22 @@
-import {IContainer, ILogger, PLATFORM} from "aurelia";
+import {IContainer, ILogger} from "aurelia";
 import {ISession, Settings} from "@domain";
 import {watch} from "@aurelia/runtime-html";
 import {OutputView} from "../main/output-view/output-view";
 import {ResultsView} from "../main/output-view/results-view/results-view";
 import {SqlView} from "../main/output-view/sql-view/sql-view";
+import {WindowBase} from "@application/windows/window-base";
 
-export class Window {
+export class Window extends WindowBase {
     private readonly logger: ILogger;
     private _outputViews = new Map<string, OutputView>();
     private active?: OutputView;
 
     constructor(
-        private readonly settings: Settings,
         @ISession private readonly session: ISession,
         @IContainer private readonly container: IContainer,
         @ILogger logger: ILogger
     ) {
+        super();
         this.logger = logger.scopeTo(nameof(Window));
 
         document.title = "Output";

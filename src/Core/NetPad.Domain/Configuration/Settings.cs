@@ -62,6 +62,7 @@ public class Settings : ISettingsOptions
 
         Appearance
             .SetTheme(options.Theme)
+            .SetIconTheme(options.IconTheme)
             .SetShowScriptRunStatusIndicatorInTab(options.ShowScriptRunStatusIndicatorInTab)
             .SetShowScriptRunStatusIndicatorInScriptsList(options.ShowScriptRunStatusIndicatorInScriptsList)
             .SetShowScriptRunningIndicatorInScriptsList(options.ShowScriptRunningIndicatorInScriptsList);

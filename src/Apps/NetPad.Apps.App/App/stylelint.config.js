@@ -5,6 +5,7 @@ module.exports = {
         "at-rule-empty-line-before": null,
         "declaration-empty-line-before": null,
         "value-no-vendor-prefix": null,
+        "color-hex-length": null,
         "scss/at-extend-no-missing-placeholder": [
             true,
             {

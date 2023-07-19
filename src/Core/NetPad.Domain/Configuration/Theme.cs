@@ -5,3 +5,9 @@ public enum Theme
     Dark,
     Light
 }
+
+public enum IconTheme
+{
+    Default,
+    Colorful
+}

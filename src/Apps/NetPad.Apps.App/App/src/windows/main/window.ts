@@ -11,8 +11,9 @@ import {
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 import {Workbench} from "./workbench";
 import {watch} from "@aurelia/runtime-html";
+import {WindowBase} from "@application/windows/window-base";
 
-export class Window {
+export class Window extends WindowBase {
     private workbench: Workbench
     public leftPaneHost: PaneHost;
     public rightPaneHost: PaneHost;
@@ -24,9 +25,9 @@ export class Window {
         @IPaneManager private readonly paneManager: IPaneManager,
         @IScriptService private readonly scriptService: IScriptService,
         @IContainer private readonly container: IContainer,
-        private readonly settings: Settings,
         private readonly dataConnectionStore: DataConnectionStore,
         private readonly editorSetup: EditorSetup) {
+        super();
     }
 
     public hydrating() {
