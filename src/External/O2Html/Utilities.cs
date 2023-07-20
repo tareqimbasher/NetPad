@@ -13,7 +13,7 @@ internal static class Utilities
     /// </summary>
     /// <param name="str">The string to escape.</param>
     /// <returns>The escaped string.</returns>
-#if NET6_0_OR_GREATER
+#if NETCOREAPP3_0_OR_GREATER
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("str")]
 #endif
     public static string? EscapeStringForHtml(string? str)

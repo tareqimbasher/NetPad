@@ -34,6 +34,7 @@ public sealed class HtmlSerializer
 
         // Add default converters in this order, first converter in list
         // that can convert object takes precedence
+        Converters.Add(new FileSystemInfoHtmlConverter());
         Converters.Add(new TwoDimensionalArrayHtmlConverter());
         Converters.Add(new DataSetHtmlConverter());
         Converters.Add(new DataTableHtmlConverter());

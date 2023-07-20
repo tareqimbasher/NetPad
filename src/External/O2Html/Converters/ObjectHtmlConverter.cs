@@ -31,7 +31,7 @@ public class ObjectHtmlConverter : HtmlConverter
             .WithText(type.GetReadableName())
             .WithTitle(type.GetReadableName(true));
 
-        var properties = htmlSerializer.GetReadableProperties(type);
+        PropertyInfo[] properties = GetReadableProperties(htmlSerializer, type);
 
         foreach (var property in properties)
         {
@@ -82,6 +82,11 @@ public class ObjectHtmlConverter : HtmlConverter
                 .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
                 .AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
         }
+    }
+
+    protected virtual PropertyInfo[] GetReadableProperties(HtmlSerializer htmlSerializer, Type type)
+    {
+        return htmlSerializer.GetReadableProperties(type);
     }
 
     private object? GetPropertyValue<T>(PropertyInfo property, ref T? obj)
