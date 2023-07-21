@@ -13,6 +13,7 @@ namespace O2Html;
 
 public sealed class HtmlSerializer
 {
+    private static readonly HtmlSerializerSettings _htmlSerializerSettings = new();
     private static readonly ConcurrentDictionary<Type, HtmlConverter?> _typeConverterCache = new();
     private static readonly ConcurrentDictionary<Type, TypeCategory> _typeCategoryCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertyCache = new();
@@ -20,17 +21,11 @@ public sealed class HtmlSerializer
 
     public HtmlSerializer(HtmlSerializerSettings? serializerSettings = null)
     {
-        SerializerSettings = serializerSettings ?? new HtmlSerializerSettings();
+        SerializerSettings = serializerSettings ?? _htmlSerializerSettings;
         Converters = new List<HtmlConverter>();
 
-        if (SerializerSettings.Converters?.Any() == true)
-        {
-            // Insert settings converters at the beginning so they take precedence
-            foreach (var converter in SerializerSettings.Converters)
-            {
-                Converters.Add(converter);
-            }
-        }
+        // Insert settings converters at the beginning so they take precedence
+        Converters.AddRange(SerializerSettings.Converters);
 
         // Add default converters in this order, first converter in list
         // that can convert object takes precedence
