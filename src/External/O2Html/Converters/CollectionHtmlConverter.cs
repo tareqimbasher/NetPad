@@ -69,7 +69,10 @@ public class CollectionHtmlConverter : HtmlConverter
         var enumerationResult = LazyEnumerable.Enumerate(enumerable, htmlSerializer.SerializerSettings.MaxCollectionSerializeLength, (element, _) =>
         {
             var tr = table.Body.AddAndGetElement("tr");
+
             htmlSerializer.SerializeWithinTableRow(tr, element, elementType, serializationScope);
+
+            if (!tr.Children.Any()) table.Body.RemoveChild(tr);
         });
 
         string headerRowText = GetHeaderRowText(

@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Linq;
 using O2Html.Converters;
 using O2Html.Dom;
+using O2Html.Dom.Elements;
 
 namespace O2Html;
 
@@ -56,6 +57,15 @@ public sealed class HtmlSerializer
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
 
+        var isSimpleType = obj == null || GetTypeCategory(type) == TypeCategory.DotNetTypeWithStringRepresentation;
+
+        if ((!isSimpleType && serializationScope?.Depth > SerializerSettings.MaxDepth) ||
+            // Let's serialize values with string representations at the last depth level
+            (isSimpleType && serializationScope?.Depth > SerializerSettings.MaxDepth + 1))
+        {
+            return new MaxDepthReached(SerializerSettings.CssClasses.MaxDepthReached);
+        }
+
         serializationScope = GetSerializationScope(type, obj, serializationScope);
 
         return converter.WriteHtml(obj, type, serializationScope, this);
@@ -66,6 +76,11 @@ public sealed class HtmlSerializer
         var converter = GetConverter(type);
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
+
+        if (serializationScope?.Depth > SerializerSettings.MaxDepth)
+        {
+            return;
+        }
 
         serializationScope = GetSerializationScope(type, obj, serializationScope);
 
@@ -131,17 +146,9 @@ public sealed class HtmlSerializer
 
     private SerializationScope GetSerializationScope<T>(Type type, T? obj, SerializationScope? serializationScope)
     {
-        if (serializationScope == null)
-            serializationScope = new SerializationScope();
-        else
-        {
-            bool createNewScope = obj != null && GetTypeCategory(type) == TypeCategory.SingleObject;
-
-            if (createNewScope)
-                serializationScope = new SerializationScope(serializationScope);
-        }
-
-        return serializationScope;
+        return serializationScope == null
+            ? new SerializationScope(0)
+            : new SerializationScope(serializationScope.Depth + 1, serializationScope);
     }
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type)

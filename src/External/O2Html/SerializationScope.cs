@@ -7,16 +7,19 @@ public class SerializationScope
 {
     private readonly HashSet<object> _serializedObjects;
 
-    public SerializationScope()
+    public SerializationScope(int depth)
     {
+        Depth = depth;
         _serializedObjects  = new HashSet<object>();
     }
 
-    public SerializationScope(SerializationScope parentScope)
+    public SerializationScope(int depth, SerializationScope parentScope) : this(depth)
     {
         _serializedObjects  = new HashSet<object>(parentScope.SerializedObjects
                                                   ?? throw new ArgumentNullException(nameof(parentScope)));
     }
+
+    public int Depth { get; }
 
     public IReadOnlyCollection<object> SerializedObjects => _serializedObjects;
 
