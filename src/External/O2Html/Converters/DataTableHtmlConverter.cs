@@ -36,11 +36,13 @@ public class DataTableHtmlConverter : HtmlConverter
         {
             var tr = table.Body.AddAndGetRow();
 
+            int ixItem = 0;
+
             foreach (var item in row!.ItemArray)
             {
                 var td = tr.AddAndGetElement("td");
 
-                var itemType = item?.GetType() ?? typeof(object);
+                var itemType = item?.GetType() ?? dataTable.Columns[ixItem].DataType;
 
                 if (item == null || itemType == typeof(DBNull))
                 {
@@ -50,6 +52,8 @@ public class DataTableHtmlConverter : HtmlConverter
                 {
                     td.AddChild(htmlSerializer.Serialize(item, itemType, serializationScope));
                 }
+
+                ixItem++;
             }
         });
 
