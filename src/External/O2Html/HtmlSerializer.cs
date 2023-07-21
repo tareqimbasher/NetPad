@@ -44,6 +44,9 @@ public sealed class HtmlSerializer
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         Converters.Add(new TupleHtmlConverter());
 #endif
+#if NETSTANDARD2_1 || NETCOREAPP2_1_OR_GREATER
+        Converters.Add(new MemoryHtmlConverter());
+#endif
         Converters.Add(new CollectionHtmlConverter());
         Converters.Add(new ObjectHtmlConverter());
     }
