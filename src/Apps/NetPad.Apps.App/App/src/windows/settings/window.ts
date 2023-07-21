@@ -29,11 +29,31 @@ export class Window extends WindowBase {
     }
 
     public async save() {
+        if (!this.validate()) {
+            return;
+        }
+
         await this.settingService.update(this.editableSettings);
         window.close();
     }
 
     public cancel() {
         window.close();
+    }
+
+    private validate(): boolean {
+        let userValue: unknown = this.editableSettings.results.maxSerializationDepth;
+        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
+            alert("Results > Serialization > Max Depth is required.");
+            return false;
+        }
+
+        userValue = this.editableSettings.results.maxCollectionSerializeLength;
+        if ((userValue !== 0 && !userValue) || isNaN(Number(userValue))) {
+            alert("Results > Serialization > Max Collection Length is required.");
+            return false;
+        }
+
+        return true;
     }
 }

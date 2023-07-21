@@ -43,6 +43,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly Settings _settings;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly MainScriptOutputAdapter _outputAdapter;
@@ -58,6 +59,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         IDotNetInfo dotNetInfo,
+        Settings settings,
         ILogger<ExternalProcessScriptRuntime> logger)
     {
         _script = script;
@@ -65,6 +67,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _dotNetInfo = dotNetInfo;
+        _settings = settings;
         _logger = logger;
         _externalInputReaders = new HashSet<IInputReader<string>>();
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
@@ -243,6 +246,15 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
             GenerateRuntimeConfigFileContents(runDependencies)
         );
+
+        await File.WriteAllTextAsync(
+            Path.Combine(processRootFolder.FullName, "scriptconfig.json"),
+            $@"{{
+    ""output"": {{
+        ""maxDepth"": {_settings.Results.MaxSerializationDepth},
+        ""maxCollectionSerializeLength"": {_settings.Results.MaxCollectionSerializeLength}
+    }}
+}}");
 
         foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
         {

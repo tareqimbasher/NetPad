@@ -27,6 +27,58 @@
 
 <div class="section">
     <div class="header">
+        <i class="results-serialization-settings-icon"></i>
+        Serialization
+    </div>
+
+    <div class="body">
+        <div class="row">
+            <label class="col-3 col-form-label fw-bold"
+                   for="max-depth-input"
+                   title="The maximum depth to serialize.">
+                Max Depth
+            </label>
+            <div class="col-9">
+                <input type="number"
+                       id="max-depth-input"
+                       class="form-control d-inline-block"
+                       value.bind="settings.results.maxSerializationDepth"
+                       placeholder="Default: 64"
+                       min="0"
+                       max="1000"
+                       oninput="validity.valid||(value='');"
+                       style="max-width: 130px">
+                <span class="text-muted">
+                    (max: 1000)
+                </span>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <label class="col-3 col-form-label fw-bold"
+                   for="max-collection-length"
+                   title="The maximum number of collection items to serialize.">
+                Max Collection Length
+            </label>
+            <div class="col-9">
+                <input type="number"
+                       id="max-collection-length"
+                       class="form-control d-inline-block"
+                       value.bind="settings.results.maxCollectionSerializeLength"
+                       placeholder="Default: 1000"
+                       min="0"
+                       max="100000"
+                       oninput="validity.valid||(value='');"
+                       style="max-width: 130px">
+                <span class="text-muted">
+                    (max: 100,000 | Recommended: 1000)
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header">
         <i class="theme-icon"></i>
         Appearance
     </div>
