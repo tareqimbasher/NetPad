@@ -190,6 +190,6 @@ public class CollectionHtmlConverter : HtmlConverter
     private IEnumerable ToEnumerable<T>(T obj)
     {
         return obj as IEnumerable ??
-               throw new InvalidCastException($"Cannot cast {nameof(obj)} to {nameof(IEnumerable)}");
+               throw new InvalidCastException($"Cannot cast {nameof(obj)} of type {obj!.GetType()} to {nameof(IEnumerable)}");
     }
 }

@@ -51,7 +51,7 @@ public sealed class HtmlSerializer
         Converters.Add(new ObjectHtmlConverter());
     }
 
-    public HtmlSerializerSettings SerializerSettings { get; }
+    internal HtmlSerializerSettings SerializerSettings { get; }
 
     public List<HtmlConverter> Converters { get; }
 
@@ -77,7 +77,7 @@ public sealed class HtmlSerializer
         converter.WriteHtmlWithinTableRow(tr, obj, type, serializationScope, this);
     }
 
-    public TypeCategory GetTypeCategory(Type type)
+    internal TypeCategory GetTypeCategory(Type type)
     {
         if (_typeCategoryCache.TryGetValue(type, out var category))
             return category;
@@ -93,7 +93,7 @@ public sealed class HtmlSerializer
         return category;
     }
 
-    public PropertyInfo[] GetReadableProperties(Type type)
+    internal PropertyInfo[] GetReadableProperties(Type type)
     {
         if (_typePropertyCache.TryGetValue(type, out var propertyInfos))
             return propertyInfos;
@@ -118,7 +118,7 @@ public sealed class HtmlSerializer
         return elementType;
     }
 
-    private HtmlConverter? GetConverter(Type type)
+    internal HtmlConverter? GetConverter(Type type)
     {
         if (_typeConverterCache.TryGetValue(type, out var match))
             return match;

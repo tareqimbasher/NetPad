@@ -24,4 +24,8 @@
         <ProjectReference Include="..\O2Html\O2Html.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Extensions.cs" />
+    </ItemGroup>
+
 </Project>
