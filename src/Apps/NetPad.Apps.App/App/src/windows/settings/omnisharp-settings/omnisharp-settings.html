@@ -1,7 +1,10 @@
-<p class="ps-3 text-muted">
-    <span class="warning-icon text-yellow"></span> Except where otherwise stated, changes to these settings
-    require restarting the OmniSharp server, per script, to take effect (ie. use the "Restart OmniSharp Server" command)
-</p>
+<div class="section text-muted d-flex">
+    <span class="warning-icon text-yellow me-3"></span>
+    <p class="flex-grow-1 m-0">
+        Except where otherwise stated, changes to these settings require restarting the OmniSharp server, per script,
+        to take effect (ie. execute <code>Restart OmniSharp Server</code> from the command palette). Alternatively, you can restart NetPad.
+    </p>
+</div>
 
 <div class="section">
     <div class="header">
@@ -30,9 +33,7 @@
                     <input type="text"
                            class="form-control"
                            id="omnisharpExePath"
-                           placeholder="/absolute/path/to/omnisharp/executable"
-                           value.bind="settings.editor.codeCompletion.provider.executablePath"
-                           disabled.bind="!settings.editor.codeCompletion.enabled">
+                           placeholder="/absolute/path/to/omnisharp/executable">
                     <div class="form-text">
                         If specified, the executable at the given path will be used. If left blank,
                         NetPad will download OmniSharp automatically.
