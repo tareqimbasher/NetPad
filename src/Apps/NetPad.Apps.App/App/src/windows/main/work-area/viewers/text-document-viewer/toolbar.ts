@@ -101,8 +101,7 @@ export class Toolbar extends ViewModelBase {
             const frameworks = new Set<DotNetFrameworkVersion>();
 
             for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
-                const major = Number(sdkVersion[0]);
-                if (!major || isNaN(major)) continue;
+                const major = sdkVersion.major;
 
                 if (major === 6) frameworks.add("DotNet6");
                 else if (major === 7) frameworks.add("DotNet7");
