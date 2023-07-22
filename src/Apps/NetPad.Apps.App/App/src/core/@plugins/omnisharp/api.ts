@@ -46,6 +46,8 @@ export interface IOmniSharpApiClient {
     codeCheck(scriptId: string, request: CodeCheckRequest, signal?: AbortSignal | undefined): Promise<QuickFixResponse>;
 
     startDiagnostics(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    getBlockStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<BlockStructureResponse>;
 }
 
 export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiClient {
@@ -756,6 +758,44 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             });
         }
         return Promise.resolve<void>(<any>null);
+    }
+
+    getBlockStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<BlockStructureResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/block-structure";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetBlockStructure(_response);
+        });
+    }
+
+    protected processGetBlockStructure(response: Response): Promise<BlockStructureResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = BlockStructureResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<BlockStructureResponse>(<any>null);
     }
 }
 
@@ -3525,6 +3565,110 @@ export class CodeCheckRequest extends Request implements ICodeCheckRequest {
 }
 
 export interface ICodeCheckRequest extends IRequest {
+}
+
+export class BlockStructureResponse implements IBlockStructureResponse {
+    spans!: CodeFoldingBlock[];
+
+    constructor(data?: IBlockStructureResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.spans = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["spans"])) {
+                this.spans = [] as any;
+                for (let item of _data["spans"])
+                    this.spans!.push(CodeFoldingBlock.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BlockStructureResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new BlockStructureResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.spans)) {
+            data["spans"] = [];
+            for (let item of this.spans)
+                data["spans"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): BlockStructureResponse {
+        const json = this.toJSON();
+        let result = new BlockStructureResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IBlockStructureResponse {
+    spans: CodeFoldingBlock[];
+}
+
+export class CodeFoldingBlock implements ICodeFoldingBlock {
+    range!: Range;
+    kind?: string | undefined;
+
+    constructor(data?: ICodeFoldingBlock) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.range = new Range();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.range = _data["range"] ? Range.fromJS(_data["range"]) : new Range();
+            this.kind = _data["kind"];
+        }
+    }
+
+    static fromJS(data: any): CodeFoldingBlock {
+        data = typeof data === 'object' ? data : {};
+        let result = new CodeFoldingBlock();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["range"] = this.range ? this.range.toJSON() : <any>undefined;
+        data["kind"] = this.kind;
+        return data;
+    }
+
+    clone(): CodeFoldingBlock {
+        const json = this.toJSON();
+        let result = new CodeFoldingBlock();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICodeFoldingBlock {
+    range: Range;
+    kind?: string | undefined;
 }
 
 export class Types implements ITypes {

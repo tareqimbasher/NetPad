@@ -63,6 +63,11 @@ export interface ICodeActionProvider extends languages.CodeActionProvider {
 
 export const ICodeActionProvider = DI.createInterface<ICodeActionProvider>();
 
+export interface IFoldingRangeProvider extends languages.FoldingRangeProvider {
+}
+
+export const IFoldingRangeProvider = DI.createInterface<IFoldingRangeProvider>();
+
 export interface IDiagnosticsProvider {
     provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
 }

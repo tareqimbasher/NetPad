@@ -11,6 +11,7 @@ import {
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IDocumentSymbolProvider,
+    IFoldingRangeProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
@@ -29,8 +30,9 @@ import {OmniSharpCodeLensProvider} from "./features/omnisharp-code-lens-provider
 import {OmniSharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provider";
 import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
 import {OmnisharpDiagnosticsProvider} from "./features/omnisharp-diagnostics-provider";
-import {OmnisharpDocumentHighlightProvider} from "@plugins/omnisharp/features/omnisharp-document-highlight-provider";
-import {OmnisharpDocumentSymbolProvider} from "@plugins/omnisharp/features/omnisharp-document-symbol-provider";
+import {OmnisharpDocumentHighlightProvider} from "./features/omnisharp-document-highlight-provider";
+import {OmnisharpDocumentSymbolProvider} from "./features/omnisharp-document-symbol-provider";
+import {OmnisharpFoldingProvider} from "./features/omnisharp-folding-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -46,6 +48,7 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(IDocumentHighlightProvider, OmnisharpDocumentHighlightProvider));
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
     container.register(Registration.singleton(IDocumentSymbolProvider, OmnisharpDocumentSymbolProvider));
+    container.register(Registration.singleton(IFoldingRangeProvider, OmnisharpFoldingProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));

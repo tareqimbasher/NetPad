@@ -71,24 +71,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
 
         const versionBeforeRequest = model.getVersionId();
 
-        let response: api.SemanticHighlightResponse;
-        let tries = 0;
-
-        // Sometimes OmniSharp will return no semantic highlights immediately after it is started.
-        // It seems that it needs a bit more time to initialize once it starts before it has the
-        // semantic highlights to return.
-        do {
-            if (++tries > 1) {
-                await Util.delay(1000);
-            }
-
-            response = await this.omnisharpService.getSemanticHighlights(scriptId, request, new AbortController().signalFrom(cancellationToken));
-        }
-        while (
-            (!response || !response.spans || !response.spans.length)
-            && tries < 3
-            && !cancellationToken.isCancellationRequested
-            && versionBeforeRequest === model.getVersionId())
+        const response = await this.omnisharpService.getSemanticHighlights(scriptId, request, new AbortController().signalFrom(cancellationToken));
 
         const versionAfterRequest = model.getVersionId();
 

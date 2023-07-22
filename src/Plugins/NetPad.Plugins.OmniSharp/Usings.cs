@@ -35,3 +35,5 @@ global using OmniSharpRunCodeActionRequest = OmniSharp.Models.V2.CodeActions.Run
 global using OmniSharpBackgroundDiagnostic = OmniSharp.Models.Events.BackgroundDiagnosticStatusMessage;
 global using OmniSharpDiagnosticRequest = OmniSharp.Models.Diagnostics.DiagnosticsRequest;
 global using OmniSharpDiagnosticMessage = OmniSharp.Models.Diagnostics.DiagnosticMessage;
+global using OmniSharpBlockStructureRequest = OmniSharp.Models.V2.BlockStructureRequest;
+global using OmniSharpBlockStructureResponse = OmniSharp.Models.V2.BlockStructureResponse;

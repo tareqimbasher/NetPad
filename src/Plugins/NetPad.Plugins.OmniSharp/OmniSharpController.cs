@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Plugins.OmniSharp.Features.BlockStructure;
 using NetPad.Plugins.OmniSharp.Features.CodeActions;
 using NetPad.Plugins.OmniSharp.Features.CodeChecking;
 using NetPad.Plugins.OmniSharp.Features.CodeFormatting;
@@ -121,4 +122,8 @@ public class OmniSharpController : Controller
 
     [HttpPatch("diagnostics/start")]
     public async Task StartDiagnostics(Guid scriptId) => await _mediator.Send(new StartDiagnosticsCommand(scriptId), HttpContext.RequestAborted);
+
+    [HttpPost("block-structure")]
+    public async Task<BlockStructureResponse?> GetBlockStructure(Guid scriptId) =>
+        await _mediator.Send(new GetBlockStructureQuery(scriptId), HttpContext.RequestAborted);
 }

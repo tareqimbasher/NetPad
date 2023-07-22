@@ -11,6 +11,7 @@ import {
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IDocumentSymbolProvider,
+    IFoldingRangeProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
@@ -35,6 +36,7 @@ export class EditorSetup {
         @all(IInlayHintsProvider) private readonly inlayHintsProviders: IInlayHintsProvider[],
         @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
         @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
+        @all(IFoldingRangeProvider) private readonly foldingRangeProviders: IFoldingRangeProvider[],
     ) {
     }
 
@@ -53,6 +55,7 @@ export class EditorSetup {
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
+        this.registerFoldingRangeProviders();
         this.registerDiagnosticsProviders();
     }
 
@@ -181,6 +184,12 @@ export class EditorSetup {
         }
     }
 
+    private registerFoldingRangeProviders() {
+        for (const foldingRangeProvider of this.foldingRangeProviders) {
+            monaco.languages.registerFoldingRangeProvider("csharp", foldingRangeProvider);
+        }
+    }
+
     private registerDiagnosticsProviders() {
         const provideDiagnostics = (model: monaco.editor.ITextModel) => {
             for (const diagnosticsProvider of this.diagnosticsProviders) {
@@ -198,8 +207,7 @@ export class EditorSetup {
             model.onDidChangeLanguage(ev => {
                 if (ev.newLanguage === "csharp") {
                     provideDiagnostics(model);
-                }
-                else {
+                } else {
                     monaco.editor.removeAllMarkers(model.uri.toString());
                 }
             })
