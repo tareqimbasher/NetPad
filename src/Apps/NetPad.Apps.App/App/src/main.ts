@@ -23,6 +23,7 @@ import {
     EventBus,
     ExternalLinkCustomAttribute,
     FindTextBox,
+    LangLogoValueConverter,
     LogConfig,
     PlatformsCustomAttribute,
     RemoteLogSink,
@@ -104,6 +105,7 @@ const builder = Aurelia.register(
     SanitizeHtmlValueConverter,
     YesNoValueConverter,
     TruncateValueConverter,
+    LangLogoValueConverter,
 
     // Global Custom Elements
     ContextMenu,

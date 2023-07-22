@@ -64,13 +64,7 @@ public static class ScriptSerializer
         if (string.IsNullOrWhiteSpace(scriptDataStr))
             throw new InvalidScriptFormatException(name, "The script is missing its config data.");
 
-        var scriptData = JsonSerializer.Deserialize<ScriptData>(scriptDataStr);
-        if (scriptData == null || scriptData.Config == null!)
-        {
-            var config = JsonSerializer.Deserialize<ScriptConfigData>(scriptDataStr)
-                         ?? throw new InvalidScriptFormatException(name, "Could not deserialize config data");
-            scriptData = new ScriptData(config, null);
-        }
+        var scriptData = DeserializeScriptData(scriptDataStr) ?? throw new InvalidScriptFormatException(name, "Could not deserialize config data");
 
         // Parse code
         var code = string.Join("\n", lines.Skip(ixCodeMarker + 1));
@@ -93,8 +87,24 @@ public static class ScriptSerializer
         return script;
     }
 
+    public static ScriptData? DeserializeScriptData(string json)
+    {
+        var scriptData = JsonSerializer.Deserialize<ScriptData>(json);
 
-    private class ScriptData
+        if (scriptData == null || scriptData.Config == null!)
+        {
+            var config = JsonSerializer.Deserialize<ScriptConfigData>(json);
+
+            if (config == null) return null;
+
+            scriptData = new ScriptData(config, null);
+        }
+
+        return scriptData;
+    }
+
+
+    public class ScriptData
     {
         public ScriptData(ScriptConfigData config, SerializedDataConnection? dataConnection)
         {
@@ -106,7 +116,7 @@ public static class ScriptSerializer
         public SerializedDataConnection? DataConnection { get; }
     }
 
-    private class ScriptConfigData
+    public class ScriptConfigData
     {
         public ScriptKind? Kind { get; set; }
         public DotNetFrameworkVersion? TargetFrameworkVersion { get; set; }
@@ -135,14 +145,14 @@ public static class ScriptSerializer
         }
     }
 
-    private class SerializedDataConnection
+    public class SerializedDataConnection
     {
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public DataConnectionType Type { get; set; }
     }
 
-    private class SerializedDatabaseConnection : SerializedDataConnection
+    public class SerializedDatabaseConnection : SerializedDataConnection
     {
         public string? Host { get; set; }
         public string? Port { get; set; }

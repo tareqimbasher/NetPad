@@ -518,7 +518,7 @@ button > .icon-base {
         color: #91b859;
     }
 
-    .close-icon,
+    .close-icon:not(.action-icon),
     .delete-icon,
     .backspace-icon {
         color: #fe5370;
@@ -612,7 +612,7 @@ button > .icon-base {
         color: #65ad4a;
     }
 
-    .close-icon,
+    .close-icon:not(.action-icon),
     .delete-icon,
     .backspace-icon {
         color: #fe5370;

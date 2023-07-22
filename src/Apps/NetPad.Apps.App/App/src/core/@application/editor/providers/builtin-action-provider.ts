@@ -1,7 +1,7 @@
 import {IContainer} from "aurelia";
 import * as monaco from "monaco-editor";
 import {EditorUtil, IActionProvider} from "@application";
-import {IScriptService, ISession, Script} from "@domain";
+import {IScriptService, ISession, Script, ScriptKind} from "@domain";
 
 export class BuiltinActionProvider implements IActionProvider {
     constructor(@IContainer private readonly container: IContainer) {
@@ -42,18 +42,6 @@ export class BuiltinActionProvider implements IActionProvider {
                         const session = scope.get(ISession);
                         const opened = [...session.environments];
 
-                        const toPick = (script: Script, isOpen: boolean) => {
-                            return {
-                                type: 'item',
-                                id: script.id,
-                                label: (isOpen ? "$(circle-filled)" : "$(code)") + script.name,
-                                description: !script.path ? "(New)" : ((script.isDirty ? "(Modified) " : "") + script.path),
-                                //detail: "test detail"
-                                //meta: "test meta",
-                                script: script
-                            }
-                        };
-
                         const open = (script: Script) => {
                             if (script.path) session.openByPath(script.path);
                             else session.activate(script.id);
@@ -68,7 +56,7 @@ export class BuiltinActionProvider implements IActionProvider {
                             detail: string
                         }>[] =
                             opened
-                                .map(env => toPick(env.script, true))
+                                .map(env => this.toPick(env.script))
                                 .sort((a) => a.id === session.active?.script.id ? -1 : 1);
 
                         quickInput.pick(picks, {placeholder: "Go to script"}).then((selected) => {
@@ -90,7 +78,7 @@ export class BuiltinActionProvider implements IActionProvider {
 
                             picks.push(...scripts
                                 .filter(s => picks.every(p => p.id !== s.id))
-                                .map(script => toPick(script as Script, false))
+                                .map(script => this.toPick(script))
                                 .sort((a, b) => a.label > b.label ? 1 : -1)
                             );
 
@@ -109,5 +97,27 @@ export class BuiltinActionProvider implements IActionProvider {
                 }
             }
         ];
+    }
+
+    private toPick(script: Partial<{
+        id: string,
+        name: string,
+        path: string,
+        isDirty: boolean,
+        kind: ScriptKind
+    }>) {
+        const icon = script.kind === "SQL"
+            ? "$(sql)"
+            : "$(csharp)";
+
+        return {
+            type: 'item',
+            id: script.id,
+            label: `${icon} ${script.name}`,
+            description: !script.path ? "(New)" : ((script.isDirty ? "(Modified) " : "") + script.path),
+            // detail: "test detail",
+            // meta: "test meta",
+            script: script
+        }
     }
 }

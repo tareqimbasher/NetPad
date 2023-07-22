@@ -27,7 +27,7 @@
                             <div class="script-content text-truncate"
                                  title.bind="script.path">
                                 <i class="tree-expand-node-icon" style="visibility: hidden"></i>
-                                <i class="script-icon icon-fw"></i>
+                                <img src.bind="script.kind | langLogo" alt="" style="max-height: 1rem"/>
                                 <span class="script-name">${script.name}</span>
                             </div>
                             <div class="script-metadata">

@@ -14,6 +14,7 @@ export * from "./value-converters/text-to-html-value-converter";
 export * from "./value-converters/truncate-value-converter";
 export * from "./value-converters/sanitize-html-value-converter";
 export * from "./value-converters/yes-no-value-converter";
+export * from "./value-converters/lang-logo-value-converter";
 
 export * from "./events/action-events";
 export * from "./events/event-bus";

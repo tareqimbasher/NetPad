@@ -8,7 +8,9 @@
              auxclick.trigger="tabWheelButtonClicked(viewable, $event)">
 
             <div class="script-name">
-                <img src="img/csharp-logo.png" alt="" style="max-height: 1rem" class="me-3"/>
+                <img src.bind="viewable.environment.script.config.kind | langLogo"
+                     alt=""
+                     style="max-height: 1rem" class="me-3"/>
                 ${viewable.name}
             </div>
 

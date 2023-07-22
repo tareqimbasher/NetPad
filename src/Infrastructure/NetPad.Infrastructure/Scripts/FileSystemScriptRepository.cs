@@ -35,17 +35,43 @@ public class FileSystemScriptRepository : IScriptRepository
 
         foreach (var scriptFile in scriptFiles)
         {
-            var firstLine = File.ReadLines(scriptFile).FirstOrDefault();
+            var scriptName = Path.GetFileNameWithoutExtension(scriptFile);
+            Guid? scriptIdFromFile = null;
+            ScriptKind? scriptKind = null;
 
-            if (firstLine == null || !Guid.TryParse(firstLine, out var scriptIdFromFile))
+            using (StreamReader sr = File.OpenText(scriptFile))
+            {
+                int lineNumber = 0;
+                while (sr.ReadLine() is { } line)
+                {
+                    ++lineNumber;
+
+                    if (lineNumber == 1)
+                    {
+                        if (Guid.TryParse(line, out var id))
+                            scriptIdFromFile = id;
+                        else
+                            break;
+                    }
+                    else if (lineNumber == 2)
+                    {
+                        var scriptData = ScriptSerializer.DeserializeScriptData(line);
+                        scriptKind = scriptData?.Config.Kind;
+                        break;
+                    }
+                }
+            }
+
+            if (scriptIdFromFile == null)
             {
                 continue;
             }
 
             summaries.Add(new ScriptSummary(
-                scriptIdFromFile,
-                Path.GetFileNameWithoutExtension(scriptFile),
-                scriptFile.Replace(Path.PathSeparator, '/')));
+                scriptIdFromFile.Value,
+                scriptName,
+                scriptFile.Replace(Path.PathSeparator, '/'),
+                scriptKind ?? ScriptKind.Program));
         }
 
         return Task.FromResult<IEnumerable<ScriptSummary>>(summaries);
@@ -56,7 +82,8 @@ public class FileSystemScriptRepository : IScriptRepository
         var script = new Script(
             Guid.NewGuid(),
             name,
-            new ScriptConfig(ScriptKind.Program, _dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion));
+            new ScriptConfig(ScriptKind.Program,
+                _dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion));
 
         return Task.FromResult(script);
     }

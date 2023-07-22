@@ -3716,6 +3716,7 @@ export class ScriptSummary implements IScriptSummary {
     id!: string;
     name!: string;
     path!: string;
+    kind!: ScriptKind;
 
     constructor(data?: IScriptSummary) {
         if (data) {
@@ -3731,6 +3732,7 @@ export class ScriptSummary implements IScriptSummary {
             this.id = _data["id"];
             this.name = _data["name"];
             this.path = _data["path"];
+            this.kind = _data["kind"];
         }
     }
 
@@ -3746,6 +3748,7 @@ export class ScriptSummary implements IScriptSummary {
         data["id"] = this.id;
         data["name"] = this.name;
         data["path"] = this.path;
+        data["kind"] = this.kind;
         return data;
     }
 
@@ -3761,7 +3764,10 @@ export interface IScriptSummary {
     id: string;
     name: string;
     path: string;
+    kind: ScriptKind;
 }
+
+export type ScriptKind = "Expression" | "Program" | "SQL";
 
 export class CreateScriptDto implements ICreateScriptDto {
     code?: string | undefined;
@@ -3923,8 +3929,6 @@ export interface ISourceCodeDto {
     usings?: string[] | undefined;
     code?: string | undefined;
 }
-
-export type ScriptKind = "Expression" | "Program" | "SQL";
 
 export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
 
