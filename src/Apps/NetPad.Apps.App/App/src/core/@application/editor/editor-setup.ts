@@ -10,6 +10,7 @@ import {
     IDocumentHighlightProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
+    IDocumentSymbolProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
@@ -24,6 +25,7 @@ export class EditorSetup {
         @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: IDocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: IDocumentRangeSemanticTokensProvider[],
+        @all(IDocumentSymbolProvider) private readonly documentSymbolProviders: IDocumentSymbolProvider[],
         @all(IImplementationProvider) private readonly implementationProviders: IImplementationProvider[],
         @all(IHoverProvider) private readonly hoverProviders: IHoverProvider[],
         @all(ISignatureHelpProvider) private readonly signatureHelpProviders: ISignatureHelpProvider[],
@@ -42,6 +44,7 @@ export class EditorSetup {
         this.registerActions();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
+        this.registerDocumentSymbolProviders();
         this.registerImplementationProviders();
         this.registerHoverProviders();
         this.registerSignatureHelpProviders();
@@ -121,6 +124,12 @@ export class EditorSetup {
 
         for (const documentRangeSemanticTokensProvider of this.documentRangeSemanticTokensProviders) {
             monaco.languages.registerDocumentRangeSemanticTokensProvider("csharp", documentRangeSemanticTokensProvider);
+        }
+    }
+
+    private registerDocumentSymbolProviders() {
+        for (const documentSymbolProvider of this.documentSymbolProviders) {
+            monaco.languages.registerDocumentSymbolProvider("csharp", documentSymbolProvider);
         }
     }
 

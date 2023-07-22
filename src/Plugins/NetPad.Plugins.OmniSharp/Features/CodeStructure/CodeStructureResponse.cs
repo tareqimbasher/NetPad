@@ -33,7 +33,6 @@ public class CodeStructureResponse
         public Dictionary<string, OmniSharpRange> Ranges { get; }
         public IReadOnlyDictionary<string, object> Properties { get; }
 
-        public override string ToString()
-            => $"{Kind} {Name}";
+        public override string ToString() => $"{Kind} {Name}";
     }
 }

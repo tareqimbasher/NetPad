@@ -10,6 +10,7 @@ import {
     IDocumentHighlightProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
+    IDocumentSymbolProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
@@ -29,6 +30,7 @@ import {OmniSharpInlayHintProvider} from "./features/omnisharp-inlay-hint-provid
 import {OmniSharpCodeActionProvider} from "./features/omnisharp-code-action-provider";
 import {OmnisharpDiagnosticsProvider} from "./features/omnisharp-diagnostics-provider";
 import {OmnisharpDocumentHighlightProvider} from "@plugins/omnisharp/features/omnisharp-document-highlight-provider";
+import {OmnisharpDocumentSymbolProvider} from "@plugins/omnisharp/features/omnisharp-document-symbol-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -43,6 +45,7 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(IReferenceProvider, OmniSharpReferenceProvider));
     container.register(Registration.singleton(IDocumentHighlightProvider, OmnisharpDocumentHighlightProvider));
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
+    container.register(Registration.singleton(IDocumentSymbolProvider, OmnisharpDocumentSymbolProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));

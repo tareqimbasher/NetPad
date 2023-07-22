@@ -21,6 +21,11 @@ export const IDocumentRangeSemanticTokensProvider = DI.createInterface<IDocument
 export interface IImplementationProvider extends languages.ImplementationProvider {
 }
 
+export const IDocumentSymbolProvider = DI.createInterface<IDocumentSymbolProvider>();
+
+export interface IDocumentSymbolProvider extends languages.DocumentSymbolProvider {
+}
+
 export const IImplementationProvider = DI.createInterface<IImplementationProvider>();
 
 export interface IHoverProvider extends languages.HoverProvider {
