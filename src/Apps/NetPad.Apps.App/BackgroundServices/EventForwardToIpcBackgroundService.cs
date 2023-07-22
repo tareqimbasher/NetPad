@@ -61,11 +61,11 @@ public class EventForwardToIpcBackgroundService : BackgroundService
                          // HACK: Script code could potentially be large (ex. a large base 64 string is used in code)
                          // which could cause race conditions where 2 subsequent push notifications could be sent
                          // and received on clients' out of order. While we can solve this with verifying message
-                         // order, since this is the only case currently where we need to worry about, opting to
+                         // order, since this is the only case currently where we need to worry about it, opting to
                          // just have the FE handle notifying itself when script code changes.
                          //
                          // This also means that if a script's code is changed outside of that client, the client will
-                         // know about that. This is a area we'd want to change to support of live code changes from
+                         // not know about it. This is an area we'd want to change to support of live code changes from
                          // multiple sources (ex. multiple users working on the same script)
                          && e.PropertyName != nameof(Script.Code)
                 );

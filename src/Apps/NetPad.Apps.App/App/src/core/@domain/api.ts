@@ -4273,6 +4273,8 @@ export class ResultsOptions implements IResultsOptions {
     openOnRun!: boolean;
     textWrap!: boolean;
     font?: string | undefined;
+    maxSerializationDepth!: number;
+    maxCollectionSerializeLength!: number;
 
     constructor(data?: IResultsOptions) {
         if (data) {
@@ -4288,6 +4290,8 @@ export class ResultsOptions implements IResultsOptions {
             this.openOnRun = _data["openOnRun"];
             this.textWrap = _data["textWrap"];
             this.font = _data["font"];
+            this.maxSerializationDepth = _data["maxSerializationDepth"];
+            this.maxCollectionSerializeLength = _data["maxCollectionSerializeLength"];
         }
     }
 
@@ -4303,6 +4307,8 @@ export class ResultsOptions implements IResultsOptions {
         data["openOnRun"] = this.openOnRun;
         data["textWrap"] = this.textWrap;
         data["font"] = this.font;
+        data["maxSerializationDepth"] = this.maxSerializationDepth;
+        data["maxCollectionSerializeLength"] = this.maxCollectionSerializeLength;
         return data;
     }
 
@@ -4318,6 +4324,8 @@ export interface IResultsOptions {
     openOnRun: boolean;
     textWrap: boolean;
     font?: string | undefined;
+    maxSerializationDepth: number;
+    maxCollectionSerializeLength: number;
 }
 
 export class OmniSharpOptions implements IOmniSharpOptions {

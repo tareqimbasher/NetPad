@@ -58,7 +58,7 @@ public static class Extensions
     /// <summary>
     /// Dumps this object to the results view.
     /// </summary>
-    /// <param name="o">The object being dumped.</param>
+    /// <param name="o">The object to dump.</param>
     /// <param name="title">An optional title for the result.</param>
     /// <returns>The object being dumped.</returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
@@ -75,6 +75,30 @@ public static class Extensions
             ScriptRuntimeServices.ResultWrite("\n");
 
         return o;
+    }
+
+    /// <summary>
+    /// Dumps this <see cref="Span{T}"/> to the results view.
+    /// </summary>
+    /// <param name="span">The <see cref="Span{T}"/> to dump.</param>
+    /// <param name="title">An optional title for the result.</param>
+    /// <returns>The <see cref="Span{T}"/> being dumped.</returns>
+    public static Span<T> Dump<T>(this Span<T> span, string? title = null)
+    {
+        ScriptRuntimeServices.ResultWrite(span.ToArray(), title);
+        return span;
+    }
+
+    /// <summary>
+    /// Dumps this <see cref="ReadOnlySpan{T}"/> to the results view.
+    /// </summary>
+    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to dump.</param>
+    /// <param name="title">An optional title for the result.</param>
+    /// <returns>The <see cref="ReadOnlySpan{T}"/> being dumped.</returns>
+    public static ReadOnlySpan<T> Dump<T>(this ReadOnlySpan<T> span, string? title = null)
+    {
+        ScriptRuntimeServices.ResultWrite(span.ToArray(), title);
+        return span;
     }
 }
 

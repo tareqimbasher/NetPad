@@ -7,16 +7,22 @@ public class SerializationScope
 {
     private readonly HashSet<object> _serializedObjects;
 
-    public SerializationScope()
+    public SerializationScope(int depth)
     {
-        _serializedObjects  = new HashSet<object>();
+        Depth = depth;
+        _serializedObjects  = new HashSet<object>(Common.ReferenceEqualityComparer.Instance);
     }
 
-    public SerializationScope(SerializationScope parentScope)
+    public SerializationScope(int depth, SerializationScope parentScope)
     {
-        _serializedObjects  = new HashSet<object>(parentScope.SerializedObjects
-                                                  ?? throw new ArgumentNullException(nameof(parentScope)));
+        Depth = depth;
+        _serializedObjects  = new HashSet<object>(
+            parentScope.SerializedObjects ?? throw new ArgumentNullException(nameof(parentScope)),
+            Common.ReferenceEqualityComparer.Instance
+        );
     }
+
+    public int Depth { get; }
 
     public IReadOnlyCollection<object> SerializedObjects => _serializedObjects;
 

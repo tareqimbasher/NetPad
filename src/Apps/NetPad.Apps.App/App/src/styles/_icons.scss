@@ -442,6 +442,11 @@ button > .icon-base {
     @extend .fa-align-left;
 }
 
+.results-serialization-settings-icon {
+    @extend %icon-base;
+    @extend .fa-cube;
+}
+
 .monaco-settings-icon {
     @extend %icon-base;
     @extend .fa-align-left;
@@ -508,7 +513,8 @@ button > .icon-base {
         color: #78909c;
     }
 
-    .run-icon {
+    .run-icon,
+    .results-serialization-settings-icon {
         color: #91b859;
     }
 
@@ -601,7 +607,8 @@ button > .icon-base {
         color: #5f7682;
     }
 
-    .run-icon {
+    .run-icon,
+    .results-serialization-settings-icon {
         color: #65ad4a;
     }
 

@@ -90,7 +90,9 @@ public class Settings : ISettingsOptions
         Results
             .SetOpenOnRun(options.OpenOnRun)
             .SetTextWrap(options.TextWrap)
-            .SetFont(options.Font);
+            .SetFont(options.Font)
+            .SetMaxSerializationDepth(options.MaxSerializationDepth)
+            .SetMaxCollectionSerializeLengthDepth(options.MaxCollectionSerializeLength);
 
         return this;
     }

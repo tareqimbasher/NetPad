@@ -8,11 +8,13 @@ using System.Xml;
 using System.Xml.Linq;
 using O2Html.Converters;
 using O2Html.Dom;
+using O2Html.Dom.Elements;
 
 namespace O2Html;
 
 public sealed class HtmlSerializer
 {
+    private static readonly HtmlSerializerSettings _htmlSerializerSettings = new();
     private static readonly ConcurrentDictionary<Type, HtmlConverter?> _typeConverterCache = new();
     private static readonly ConcurrentDictionary<Type, TypeCategory> _typeCategoryCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertyCache = new();
@@ -20,20 +22,15 @@ public sealed class HtmlSerializer
 
     public HtmlSerializer(HtmlSerializerSettings? serializerSettings = null)
     {
-        SerializerSettings = serializerSettings ?? new HtmlSerializerSettings();
+        SerializerSettings = serializerSettings ?? _htmlSerializerSettings;
         Converters = new List<HtmlConverter>();
 
-        if (SerializerSettings.Converters?.Any() == true)
-        {
-            // Insert settings converters at the beginning so they take precedence
-            foreach (var converter in SerializerSettings.Converters)
-            {
-                Converters.Add(converter);
-            }
-        }
+        // Insert settings converters at the beginning so they take precedence
+        Converters.AddRange(SerializerSettings.Converters);
 
         // Add default converters in this order, first converter in list
         // that can convert object takes precedence
+        Converters.Add(new FileSystemInfoHtmlConverter());
         Converters.Add(new TwoDimensionalArrayHtmlConverter());
         Converters.Add(new DataSetHtmlConverter());
         Converters.Add(new DataTableHtmlConverter());
@@ -43,11 +40,14 @@ public sealed class HtmlSerializer
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
         Converters.Add(new TupleHtmlConverter());
 #endif
+#if NETSTANDARD2_1 || NETCOREAPP2_1_OR_GREATER
+        Converters.Add(new MemoryHtmlConverter());
+#endif
         Converters.Add(new CollectionHtmlConverter());
         Converters.Add(new ObjectHtmlConverter());
     }
 
-    public HtmlSerializerSettings SerializerSettings { get; }
+    internal HtmlSerializerSettings SerializerSettings { get; }
 
     public List<HtmlConverter> Converters { get; }
 
@@ -56,6 +56,15 @@ public sealed class HtmlSerializer
         var converter = GetConverter(type);
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
+
+        var isSimpleType = obj == null || GetTypeCategory(type) == TypeCategory.DotNetTypeWithStringRepresentation;
+
+        if ((!isSimpleType && serializationScope?.Depth > SerializerSettings.MaxDepth) ||
+            // Let's serialize values with string representations at the last depth level
+            (isSimpleType && serializationScope?.Depth > SerializerSettings.MaxDepth + 1))
+        {
+            return new MaxDepthReached(SerializerSettings.CssClasses.MaxDepthReached);
+        }
 
         serializationScope = GetSerializationScope(type, obj, serializationScope);
 
@@ -68,12 +77,17 @@ public sealed class HtmlSerializer
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
 
+        if (serializationScope?.Depth > SerializerSettings.MaxDepth)
+        {
+            return;
+        }
+
         serializationScope = GetSerializationScope(type, obj, serializationScope);
 
         converter.WriteHtmlWithinTableRow(tr, obj, type, serializationScope, this);
     }
 
-    public TypeCategory GetTypeCategory(Type type)
+    internal TypeCategory GetTypeCategory(Type type)
     {
         if (_typeCategoryCache.TryGetValue(type, out var category))
             return category;
@@ -89,7 +103,7 @@ public sealed class HtmlSerializer
         return category;
     }
 
-    public PropertyInfo[] GetReadableProperties(Type type)
+    internal PropertyInfo[] GetReadableProperties(Type type)
     {
         if (_typePropertyCache.TryGetValue(type, out var propertyInfos))
             return propertyInfos;
@@ -114,7 +128,7 @@ public sealed class HtmlSerializer
         return elementType;
     }
 
-    private HtmlConverter? GetConverter(Type type)
+    internal HtmlConverter? GetConverter(Type type)
     {
         if (_typeConverterCache.TryGetValue(type, out var match))
             return match;
@@ -132,17 +146,9 @@ public sealed class HtmlSerializer
 
     private SerializationScope GetSerializationScope<T>(Type type, T? obj, SerializationScope? serializationScope)
     {
-        if (serializationScope == null)
-            serializationScope = new SerializationScope();
-        else
-        {
-            bool createNewScope = obj != null && GetTypeCategory(type) == TypeCategory.SingleObject;
-
-            if (createNewScope)
-                serializationScope = new SerializationScope(serializationScope);
-        }
-
-        return serializationScope;
+        return serializationScope == null
+            ? new SerializationScope(0)
+            : new SerializationScope(serializationScope.Depth + 1, serializationScope);
     }
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type)

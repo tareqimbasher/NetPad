@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Text.Json;
 using O2Html;
 using O2Html.Dom;
 
@@ -5,12 +7,20 @@ namespace NetPad.Html;
 
 public static class HtmlSerializer
 {
-    private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
+    public static HtmlSerializerSettings _htmlSerializerSettings;
+
+    static HtmlSerializer()
     {
-        ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
-        DoNotSerializeNonRootEmptyCollections = true,
-        MaxCollectionSerializeLength = 1000
-    };
+        var configFileValues = GetConfigFileValues();
+
+        _htmlSerializerSettings = new()
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+            DoNotSerializeNonRootEmptyCollections = true,
+            MaxDepth = configFileValues.maxDepth ?? 64,
+            MaxCollectionSerializeLength = configFileValues.maxCollectionSerializeLength ?? 1000
+        };
+    }
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type) => O2Html.HtmlSerializer.IsDotNetTypeWithStringRepresentation(type);
 
@@ -65,5 +75,47 @@ public static class HtmlSerializer
         group.AddChild(node);
 
         return group.ToHtml();
+    }
+
+    public static void UpdateHtmlSerializerSettings(uint maxDepth, uint maxCollectionSerializeLength)
+    {
+        _htmlSerializerSettings.MaxDepth = maxDepth;
+        _htmlSerializerSettings.MaxCollectionSerializeLength = maxCollectionSerializeLength;
+    }
+
+    public static (uint? maxDepth, uint? maxCollectionSerializeLength) GetConfigFileValues()
+    {
+        var scriptConfigFilePath  = Path.Combine(
+            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+            "scriptconfig.json"
+        );
+
+        if (!File.Exists(scriptConfigFilePath)) return (null, null);
+
+        uint? maxDepth = null;
+        uint? maxCollectionSerializeLength = null;
+
+        try
+        {
+            var json = JsonDocument.Parse(File.ReadAllText(scriptConfigFilePath));
+
+            if (!json.RootElement.TryGetProperty("output", out var outputSettings)) return (null, null);
+
+            if (outputSettings.TryGetProperty("maxDepth", out var prop) && prop.TryGetUInt32(out var md))
+            {
+                maxDepth = md;
+            }
+
+            if (outputSettings.TryGetProperty("maxCollectionSerializeLength", out prop) && prop.TryGetUInt32(out md))
+            {
+                maxCollectionSerializeLength = md;
+            }
+
+            return (maxDepth, maxCollectionSerializeLength);
+        }
+        catch
+        {
+            return (null, null);
+        }
     }
 }

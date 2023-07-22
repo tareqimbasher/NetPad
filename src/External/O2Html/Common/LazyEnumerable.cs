@@ -12,15 +12,14 @@ internal class LazyEnumerationResult
 
 internal static class LazyEnumerable
 {
-    public static LazyEnumerationResult Enumerate<T>(IEnumerable<T> collection, int? maxItemsToEnumerate, Action<T?, int> action)
+    public static LazyEnumerationResult Enumerate<T>(IEnumerable<T> collection, uint? maxItemsToEnumerate, Action<T?, uint> action)
     {
         var result = new LazyEnumerationResult();
 
-        int currentElementIndex = -1;
+        uint currentElementIndex = 0;
 
         foreach (T element in collection)
         {
-            ++currentElementIndex;
             if (result.ElementsEnumerated + 1 > maxItemsToEnumerate)
             {
                 result.CollectionLengthExceedsMax = true;
@@ -29,25 +28,25 @@ internal static class LazyEnumerable
 
             action(element, currentElementIndex);
             ++result.ElementsEnumerated;
+            ++currentElementIndex;
         }
 
         return result;
     }
 
-    public static LazyEnumerationResult Enumerate(IEnumerable collection, int? maxItemsToEnumerate, Action<object?, int> action)
+    public static LazyEnumerationResult Enumerate(IEnumerable collection, uint? maxItemsToEnumerate, Action<object?, uint> action)
     {
         return Enumerate<object>(collection, maxItemsToEnumerate, action);
     }
 
-    public static LazyEnumerationResult Enumerate<T>(IEnumerable collection, int? maxItemsToEnumerate, Action<T?, int> action)
+    public static LazyEnumerationResult Enumerate<T>(IEnumerable collection, uint? maxItemsToEnumerate, Action<T?, uint> action)
     {
         var result = new LazyEnumerationResult();
 
-        int currentElementIndex = -1;
+        uint currentElementIndex = 0;
 
         foreach (T element in collection)
         {
-            ++currentElementIndex;
             if (result.ElementsEnumerated + 1 > maxItemsToEnumerate)
             {
                 result.CollectionLengthExceedsMax = true;
@@ -57,6 +56,7 @@ internal static class LazyEnumerable
 
             action(element, currentElementIndex);
             ++result.ElementsEnumerated;
+            ++currentElementIndex;
         }
 
         return result;

@@ -57,6 +57,12 @@ output-view {
             color: red;
         }
 
+        .max-depth-reached {
+            font-style: italic;
+            font-size: $font-size - 1;
+            color: orange;
+        }
+
         .empty-collection {
             @extend %null;
         }

@@ -108,6 +108,7 @@ public class Startup
         services.AddSingleton(pluginManager);
 
         // Hosted services
+        services.AddHostedService<EventHandlerBackgroundService>();
         services.AddHostedService<EventForwardToIpcBackgroundService>();
         services.AddHostedService<ScriptEnvironmentBackgroundService>();
         services.AddHostedService<ScriptsFileWatcherBackgroundService>();

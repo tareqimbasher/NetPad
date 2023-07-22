@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Compilation;
@@ -43,12 +42,13 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly Settings _settings;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly MainScriptOutputAdapter _outputAdapter;
     private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
     private readonly DirectoryInfo _externalProcessRootDirectory;
-    private uint _rawOutputOrder;
+    private readonly RawOutputHandler _rawOutputHandler;
 
     private ProcessHandler? _processHandler;
 
@@ -58,6 +58,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         IDotNetInfo dotNetInfo,
+        Settings settings,
         ILogger<ExternalProcessScriptRuntime> logger)
     {
         _script = script;
@@ -65,6 +66,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _dotNetInfo = dotNetInfo;
+        _settings = settings;
         _logger = logger;
         _externalInputReaders = new HashSet<IInputReader<string>>();
         _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
@@ -106,6 +108,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 obj,
                 title))
         );
+
+        _rawOutputHandler = new RawOutputHandler(_outputAdapter);
     }
 
     public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
@@ -132,7 +136,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
             // Reset raw output order
-            _rawOutputOrder = 0;
+            _rawOutputHandler.Reset();
 
             // TODO optimize this section
             _processHandler = new ProcessHandler(_dotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
@@ -158,25 +162,22 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     return;
                 }
 
-                _logger.LogDebug("Script output received. Length: {OutputLength}", output?.Length.ToString() ?? "null");
+                _logger.LogDebug("Script output received. Length: {OutputLength}", output.Length.ToString());
 
                 ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
 
-                if (output != null)
+                try
                 {
-                    try
-                    {
-                        externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
-                    }
-                    catch
-                    {
-                        _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{Output}'", output);
-                    }
+                    externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                }
+                catch
+                {
+                    _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{Output}'", output);
                 }
 
                 if (externalProcessOutput?.Output == null)
                 {
-                    await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(Interlocked.Increment(ref _rawOutputOrder) - 1, output + "\n"));
+                    _rawOutputHandler.RawErrorOutputReceived(output);
                 }
                 else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Results)
                 {
@@ -188,9 +189,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 }
             });
 
-            _processHandler.IO.OnErrorReceivedHandlers.Add(async output =>
+            _processHandler.IO.OnErrorReceivedHandlers.Add(output =>
             {
-                await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(Interlocked.Increment(ref _rawOutputOrder) - 1, output + "\n"));
+                _rawOutputHandler.RawErrorOutputReceived(output);
+                return Task.CompletedTask;
             });
 
             var start = DateTime.Now;
@@ -243,6 +245,15 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             Path.Combine(processRootFolder.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
             GenerateRuntimeConfigFileContents(runDependencies)
         );
+
+        await File.WriteAllTextAsync(
+            Path.Combine(processRootFolder.FullName, "scriptconfig.json"),
+            $@"{{
+    ""output"": {{
+        ""maxDepth"": {_settings.Results.MaxSerializationDepth},
+        ""maxCollectionSerializeLength"": {_settings.Results.MaxCollectionSerializeLength}
+    }}
+}}");
 
         foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
         {
@@ -443,32 +454,31 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private void StopAndCleanup()
     {
-        if (_processHandler != null)
+        if (_processHandler == null) return;
+
+        try
+        {
+            _processHandler.Dispose();
+            _processHandler = null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disposing process handler");
+        }
+
+        _externalProcessRootDirectory.Refresh();
+
+        if (_externalProcessRootDirectory.Exists)
         {
             try
             {
-                _processHandler.Dispose();
-                _processHandler = null;
+                _externalProcessRootDirectory.Delete(true);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error disposing process handler");
-            }
-
-            _externalProcessRootDirectory.Refresh();
-
-            if (_externalProcessRootDirectory.Exists)
-            {
-                try
-                {
-                    _externalProcessRootDirectory.Delete(true);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning("Could not delete process root directory: {Path}. Error: {ErrorMessage}",
-                        _externalProcessRootDirectory.FullName,
-                        ex.Message);
-                }
+                _logger.LogWarning("Could not delete process root directory: {Path}. Error: {ErrorMessage}",
+                    _externalProcessRootDirectory.FullName,
+                    ex.Message);
             }
         }
     }
