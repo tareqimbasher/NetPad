@@ -1,8 +1,6 @@
-using System;
-
 namespace NetPad.DotNet;
 
-public record DotNetRuntimeVersion(string FrameworkName, Version Version)
+public record DotNetRuntimeVersion(string FrameworkName, SemanticVersion Version)
 {
     public override string ToString() => $"{FrameworkName} {Version}";
 }

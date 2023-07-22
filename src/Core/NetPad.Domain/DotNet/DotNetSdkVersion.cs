@@ -1,8 +1,6 @@
-using System;
-
 namespace NetPad.DotNet;
 
-public record DotNetSdkVersion(Version Version)
+public record DotNetSdkVersion(SemanticVersion Version)
 {
     public override string ToString() => Version.ToString();
 }

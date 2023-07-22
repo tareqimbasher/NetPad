@@ -4,7 +4,7 @@ namespace NetPad.DotNet;
 
 public interface IDotNetInfo
 {
-    Version GetCurrentDotNetRuntimeVersion();
+    SemanticVersion GetCurrentDotNetRuntimeVersion();
     string LocateDotNetRootDirectoryOrThrow();
     string? LocateDotNetRootDirectory();
     string LocateDotNetExecutableOrThrow();
@@ -17,5 +17,5 @@ public interface IDotNetInfo
     DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion();
     string LocateDotNetEfToolExecutableOrThrow();
     string? LocateDotNetEfToolExecutable();
-    Version? GetDotNetEfToolVersion(string dotNetEfToolExePath);
+    SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath);
 }

@@ -22,7 +22,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
             CancellationToken cancellationToken)
         {
             DotNetSdkVersion[]? dotNetSdkVersions = null;
-            string? dotNetEfToolVersion = null;
+            SemanticVersion? dotNetEfToolVersion = null;
 
             try
             {
@@ -39,7 +39,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 
                 dotNetEfToolVersion = dotNetEfToolExePath == null
                     ? null
-                    : _dotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath)?.ToString();
+                    : _dotNetInfo.GetDotNetEfToolVersion(dotNetEfToolExePath);
             }
             catch (Exception ex)
             {
@@ -48,7 +48,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 
             var result = new AppDependencyCheckResult(
                 _dotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
-                dotNetSdkVersions?.Select(v => v.Version.ToString()).ToArray() ?? Array.Empty<string>(),
+                dotNetSdkVersions?.Select(v => v.Version).ToArray() ?? Array.Empty<SemanticVersion>(),
                 dotNetEfToolVersion
             );
 

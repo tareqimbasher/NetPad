@@ -1,12 +1,12 @@
 ﻿import {DialogBase} from "@application/dialogs/dialog-base";
 import {IDialogDom} from "@aurelia/dialog";
 import {ILogger} from "aurelia";
-import {AppDependencyCheckResult, IAppService} from "@domain";
+import {AppDependencyCheckResult, IAppService, SemanticVersion} from "@domain";
 
 export class AppDependenciesCheckDialog extends DialogBase {
     public dotnetSdkMissing = false;
     public dotnetEfCoreToolMissing = false;
-    public latestDotnetSdkVersion?: string;
+    public latestDotnetSdkVersion?: SemanticVersion;
     public dependencyCheckResult?: AppDependencyCheckResult;
     public loading = true;
 
@@ -29,7 +29,7 @@ export class AppDependenciesCheckDialog extends DialogBase {
             this.latestDotnetSdkVersion = this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length === 0
                 ? undefined
                 : [...this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled]
-                    .sort((a, b) => -1 * a.localeCompare(b))[0];
+                    .sort((a, b) => b.major - a.major)[0];
 
             this.dotnetEfCoreToolMissing = !this.dependencyCheckResult.isSupportedDotNetEfToolInstalled;
 

@@ -15,7 +15,7 @@
             </h5>
 
             <div class="section-details">
-                NetPad is running on .NET v${dependencyCheckResult.dotNetRuntimeVersion}
+                NetPad is running on .NET <code>${dependencyCheckResult.dotNetRuntimeVersion}</code>.
             </div>
         </div>
 
@@ -23,26 +23,28 @@
             <h5>
                 <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
                 .NET SDK
-                <small if.bind="dependencyCheckResult.dotNetSdkVersions.length">(latest installed:
-                    v${latestDotnetSdkVersion})</small>
+                <small if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length">
+                    (latest: <code>v${latestDotnetSdkVersion.string}</code>)
+                </small>
             </h5>
 
             <div class="section-details">
                 <div if.bind="dotnetSdkMissing">
-                    <span class="text-red">.NET SDK could not be found.</span>
+                    <span class="text-red">No supported .NET SDK could be found.</span>
                     <br/>
-                    Make sure .NET SDK version 6 or 7 is installed and the <code>dotnet</code>
-                    executable is in your <code>PATH</code>.
+                    Make sure the .NET SDK version 6 and/or 7 is installed and the <code>dotnet</code>
+                    executable is in your <code>PATH</code>. All installed SDKs:
                 </div>
                 <div else>
-                    .NET SDK is installed.
-                    <br>
-                    The following SDK versions are installed:
+                    <b>${dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
+                    installed. All installed SDKs:
+                </div>
+                <div if.bind="dependencyCheckResult.dotNetSdkVersions">
                     <ul class="sdk-versions-list">
                         <li repeat.for="version of dependencyCheckResult.dotNetSdkVersions">
-                            ${version}
+                            <code>${version.string}</code>
                             <span class="badge text-green ms-3"
-                                  if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.indexOf(version) >= 0">
+                                  if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
                                 Supported
                             </span>
                         </li>
@@ -55,15 +57,16 @@
             <h5>
                 <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
                 Entity Framework Core .NET Tool
-                <small if.bind="!dotnetEfCoreToolMissing">(installed:
-                    v${dependencyCheckResult.dotNetEfToolVersion})</small>
+                <small if.bind="!dotnetEfCoreToolMissing">
+                    (installed: <code>v${dependencyCheckResult.dotNetEfToolVersion.string}</code>)
+                </small>
             </h5>
 
             <div class="section-details">
                 <div if.bind="dotnetEfCoreToolMissing">
                     <span>Entity Framework Core .NET tool is not installed.</span>
                     <br/>
-                    <b>This is optional</b>, but you will need to install version 6 (or higher) of the
+                    <b>This is optional</b>, but you will need to install version 5 (or higher) of the
                     <code>dotnet-ef</code> tool and ensure it is in your <code>PATH</code> if you want to be
                     able to add and use database connections.
                 </div>
