@@ -2458,9 +2458,9 @@ export interface IAppIdentifier {
 
 export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     dotNetRuntimeVersion!: string;
-    dotNetSdkVersions!: string[];
-    dotNetEfToolVersion?: string | undefined;
-    supportedDotNetSdkVersionsInstalled!: string[];
+    dotNetSdkVersions!: SemanticVersion[];
+    dotNetEfToolVersion?: SemanticVersion | undefined;
+    supportedDotNetSdkVersionsInstalled!: SemanticVersion[];
     isSupportedDotNetEfToolInstalled!: boolean;
 
     constructor(data?: IAppDependencyCheckResult) {
@@ -2482,13 +2482,13 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
             if (Array.isArray(_data["dotNetSdkVersions"])) {
                 this.dotNetSdkVersions = [] as any;
                 for (let item of _data["dotNetSdkVersions"])
-                    this.dotNetSdkVersions!.push(item);
+                    this.dotNetSdkVersions!.push(SemanticVersion.fromJS(item));
             }
-            this.dotNetEfToolVersion = _data["dotNetEfToolVersion"];
+            this.dotNetEfToolVersion = _data["dotNetEfToolVersion"] ? SemanticVersion.fromJS(_data["dotNetEfToolVersion"]) : <any>undefined;
             if (Array.isArray(_data["supportedDotNetSdkVersionsInstalled"])) {
                 this.supportedDotNetSdkVersionsInstalled = [] as any;
                 for (let item of _data["supportedDotNetSdkVersionsInstalled"])
-                    this.supportedDotNetSdkVersionsInstalled!.push(item);
+                    this.supportedDotNetSdkVersionsInstalled!.push(SemanticVersion.fromJS(item));
             }
             this.isSupportedDotNetEfToolInstalled = _data["isSupportedDotNetEfToolInstalled"];
         }
@@ -2507,13 +2507,13 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
         if (Array.isArray(this.dotNetSdkVersions)) {
             data["dotNetSdkVersions"] = [];
             for (let item of this.dotNetSdkVersions)
-                data["dotNetSdkVersions"].push(item);
+                data["dotNetSdkVersions"].push(item.toJSON());
         }
-        data["dotNetEfToolVersion"] = this.dotNetEfToolVersion;
+        data["dotNetEfToolVersion"] = this.dotNetEfToolVersion ? this.dotNetEfToolVersion.toJSON() : <any>undefined;
         if (Array.isArray(this.supportedDotNetSdkVersionsInstalled)) {
             data["supportedDotNetSdkVersionsInstalled"] = [];
             for (let item of this.supportedDotNetSdkVersionsInstalled)
-                data["supportedDotNetSdkVersionsInstalled"].push(item);
+                data["supportedDotNetSdkVersionsInstalled"].push(item.toJSON());
         }
         data["isSupportedDotNetEfToolInstalled"] = this.isSupportedDotNetEfToolInstalled;
         return data;
@@ -2529,10 +2529,73 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
 
 export interface IAppDependencyCheckResult {
     dotNetRuntimeVersion: string;
-    dotNetSdkVersions: string[];
-    dotNetEfToolVersion?: string | undefined;
-    supportedDotNetSdkVersionsInstalled: string[];
+    dotNetSdkVersions: SemanticVersion[];
+    dotNetEfToolVersion?: SemanticVersion | undefined;
+    supportedDotNetSdkVersionsInstalled: SemanticVersion[];
     isSupportedDotNetEfToolInstalled: boolean;
+}
+
+export class SemanticVersion implements ISemanticVersion {
+    major!: number;
+    minor!: number;
+    patch!: number;
+    preReleaseLabel?: string | undefined;
+    buildLabel?: string | undefined;
+    string!: string;
+
+    constructor(data?: ISemanticVersion) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.major = _data["major"];
+            this.minor = _data["minor"];
+            this.patch = _data["patch"];
+            this.preReleaseLabel = _data["preReleaseLabel"];
+            this.buildLabel = _data["buildLabel"];
+            this.string = _data["string"];
+        }
+    }
+
+    static fromJS(data: any): SemanticVersion {
+        data = typeof data === 'object' ? data : {};
+        let result = new SemanticVersion();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["major"] = this.major;
+        data["minor"] = this.minor;
+        data["patch"] = this.patch;
+        data["preReleaseLabel"] = this.preReleaseLabel;
+        data["buildLabel"] = this.buildLabel;
+        data["string"] = this.string;
+        return data;
+    }
+
+    clone(): SemanticVersion {
+        const json = this.toJSON();
+        let result = new SemanticVersion();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISemanticVersion {
+    major: number;
+    minor: number;
+    patch: number;
+    preReleaseLabel?: string | undefined;
+    buildLabel?: string | undefined;
+    string: string;
 }
 
 export type LogSource = "WebApp" | "ElectronApp";

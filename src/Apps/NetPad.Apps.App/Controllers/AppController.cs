@@ -59,7 +59,7 @@ public class AppController : Controller
             var jsonDocument = JsonDocument.Parse(json);
             var latestVersion = jsonDocument.RootElement.GetProperty("tag_name").GetString();
 
-            if (latestVersion == null || !Version.TryParse(latestVersion.TrimStart('v'), out var version))
+            if (latestVersion == null || !SemanticVersion.TryParse(latestVersion.TrimStart('v'), out var version))
             {
                 return null;
             }

@@ -10,6 +10,7 @@ namespace NetPad.DotNet;
 
 public class DotNetInfo : IDotNetInfo
 {
+    private static readonly SemanticVersion _environmentVersion = new(Environment.Version);
     private readonly Settings _settings;
 
     private readonly object _dotNetRootDirLocateLock = new();
@@ -35,7 +36,7 @@ public class DotNetInfo : IDotNetInfo
     /// <summary>
     /// Returns the version of the .NET runtime used in the current app domain.
     /// </summary>
-    public Version GetCurrentDotNetRuntimeVersion() => Environment.Version;
+    public SemanticVersion GetCurrentDotNetRuntimeVersion() => _environmentVersion;
 
 
     public string LocateDotNetRootDirectoryOrThrow()
@@ -180,7 +181,7 @@ public class DotNetInfo : IDotNetInfo
             _dotNetRuntimeVersions = output.Split(Environment.NewLine)
                 .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x.Trim()).ToArray())
                 .Where(a => a.Length == 2 && a.All(x => x.Any()))
-                .Select(a => Version.TryParse(a[1], out var version) ? new DotNetRuntimeVersion(a[0], version) : null)
+                .Select(a => SemanticVersion.TryParse(a[1], out var version) ? new DotNetRuntimeVersion(a[0], version) : null)
                 .Where(v => v != null)
                 .ToArray()!;
         }
@@ -234,7 +235,7 @@ public class DotNetInfo : IDotNetInfo
             _dotNetSdkVersions = output.Split(Environment.NewLine)
                 .Select(l => l.Split(" ")[0].Trim())
                 .Where(v => !string.IsNullOrWhiteSpace(v))
-                .Select(v => Version.TryParse(v, out var version) ? new DotNetSdkVersion(version) : null)
+                .Select(v => SemanticVersion.TryParse(v, out var version) ? new DotNetSdkVersion(version) : null)
                 .Where(x => x is not null)
                 .ToArray()!;
         }
@@ -335,7 +336,7 @@ public class DotNetInfo : IDotNetInfo
         return _dotNetEfToolPath;
     }
 
-    public Version? GetDotNetEfToolVersion(string dotNetEfToolExePath)
+    public SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath)
     {
         var p = Process.Start(new ProcessStartInfo
         {
@@ -353,7 +354,7 @@ public class DotNetInfo : IDotNetInfo
         string output = p.StandardOutput.ReadToEnd();
         p.WaitForExit();
 
-        return Version.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
+        return SemanticVersion.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
             ? version
             : null;
     }

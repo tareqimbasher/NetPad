@@ -27,7 +27,7 @@ public static class DotNetFrameworkVersionUtil
         };
     }
 
-    public static bool IsSdkVersionSupported(Version sdkVersion)
+    public static bool IsSdkVersionSupported(SemanticVersion sdkVersion)
     {
         return sdkVersion.Major is 6 or 7;
     }
@@ -35,6 +35,11 @@ public static class DotNetFrameworkVersionUtil
     public static bool IsSupported(this DotNetSdkVersion sdkVersion)
     {
         return IsSdkVersionSupported(sdkVersion.Version);
+    }
+
+    public static bool IsEfToolVersionSupported(SemanticVersion efToolVersion)
+    {
+        return efToolVersion.Major > 5;
     }
 
     public static DotNetFrameworkVersion FrameworkVersion(this DotNetRuntimeVersion runtimeVersion)
