@@ -63,9 +63,13 @@ public class OmniSharpController : Controller
     public async Task<OmniSharpCompletionAfterInsertResponse?> GetCompletionAfterInsert(Guid scriptId, [FromBody] CompletionItem completionItem) =>
         await _mediator.Send(new GetCompletionAfterInsertQuery(scriptId, completionItem), HttpContext.RequestAborted);
 
-    [HttpPost("format-code")]
-    public async Task<OmniSharpCodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] OmniSharpCodeFormatRequest request) =>
-        await _mediator.Send(new CodeFormatQuery(scriptId, request), HttpContext.RequestAborted);
+    [HttpPost("format/range")]
+    public async Task<OmniSharpFormatRangeResponse?> FormatRange(Guid scriptId, [FromBody] OmniSharpFormatRangeRequest request) =>
+        await _mediator.Send(new FormatRangeQuery(scriptId, request), HttpContext.RequestAborted);
+
+    [HttpPost("format/after-keystroke")]
+    public async Task<OmniSharpFormatRangeResponse?> FormatAfterKeystroke(Guid scriptId, [FromBody] OmniSharpFormatAfterKeystrokeRequest request) =>
+        await _mediator.Send(new FormatAfterKeystrokeQuery(scriptId, request), HttpContext.RequestAborted);
 
     [HttpPost("semantic-highlights")]
     public async Task<OmniSharpSemanticHighlightResponse?> GetSemanticHighlights(Guid scriptId, [FromBody] OmniSharpSemanticHighlightRequest request) =>

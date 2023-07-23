@@ -21,7 +21,9 @@ export interface IOmniSharpApiClient {
 
     getCompletionAfterInsert(scriptId: string, completionItem: CompletionItem2, signal?: AbortSignal | undefined): Promise<CompletionAfterInsertResponse>;
 
-    formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse>;
+    formatRange(scriptId: string, request: FormatRangeRequest, signal?: AbortSignal | undefined): Promise<FormatRangeResponse>;
+
+    formatAfterKeystroke(scriptId: string, request: FormatAfterKeystrokeRequest, signal?: AbortSignal | undefined): Promise<FormatRangeResponse>;
 
     getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest, signal?: AbortSignal | undefined): Promise<SemanticHighlightResponse>;
 
@@ -226,8 +228,8 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
         return Promise.resolve<CompletionAfterInsertResponse>(<any>null);
     }
 
-    formatCode(scriptId: string, request: CodeFormatRequest, signal?: AbortSignal | undefined): Promise<CodeFormatResponse> {
-        let url_ = this.baseUrl + "/omnisharp/{scriptId}/format-code";
+    formatRange(scriptId: string, request: FormatRangeRequest, signal?: AbortSignal | undefined): Promise<FormatRangeResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/format/range";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
@@ -246,18 +248,18 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
         };
 
         return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processFormatCode(_response);
+            return this.processFormatRange(_response);
         });
     }
 
-    protected processFormatCode(response: Response): Promise<CodeFormatResponse> {
+    protected processFormatRange(response: Response): Promise<FormatRangeResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = CodeFormatResponse.fromJS(resultData200);
+            result200 = FormatRangeResponse.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -265,7 +267,49 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<CodeFormatResponse>(<any>null);
+        return Promise.resolve<FormatRangeResponse>(<any>null);
+    }
+
+    formatAfterKeystroke(scriptId: string, request: FormatAfterKeystrokeRequest, signal?: AbortSignal | undefined): Promise<FormatRangeResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/format/after-keystroke";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processFormatAfterKeystroke(_response);
+        });
+    }
+
+    protected processFormatAfterKeystroke(response: Response): Promise<FormatRangeResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FormatRangeResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FormatRangeResponse>(<any>null);
     }
 
     getSemanticHighlights(scriptId: string, request: SemanticHighlightRequest, signal?: AbortSignal | undefined): Promise<SemanticHighlightResponse> {
@@ -1485,11 +1529,10 @@ export interface ICompletionAfterInsertResponse {
     column?: number | undefined;
 }
 
-export class CodeFormatResponse implements ICodeFormatResponse {
-    buffer?: string | undefined;
+export class FormatRangeResponse implements IFormatRangeResponse {
     changes?: LinePositionSpanTextChange[] | undefined;
 
-    constructor(data?: ICodeFormatResponse) {
+    constructor(data?: IFormatRangeResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1500,7 +1543,6 @@ export class CodeFormatResponse implements ICodeFormatResponse {
 
     init(_data?: any) {
         if (_data) {
-            this.buffer = _data["buffer"];
             if (Array.isArray(_data["changes"])) {
                 this.changes = [] as any;
                 for (let item of _data["changes"])
@@ -1509,16 +1551,15 @@ export class CodeFormatResponse implements ICodeFormatResponse {
         }
     }
 
-    static fromJS(data: any): CodeFormatResponse {
+    static fromJS(data: any): FormatRangeResponse {
         data = typeof data === 'object' ? data : {};
-        let result = new CodeFormatResponse();
+        let result = new FormatRangeResponse();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["buffer"] = this.buffer;
         if (Array.isArray(this.changes)) {
             data["changes"] = [];
             for (let item of this.changes)
@@ -1527,57 +1568,104 @@ export class CodeFormatResponse implements ICodeFormatResponse {
         return data;
     }
 
-    clone(): CodeFormatResponse {
+    clone(): FormatRangeResponse {
         const json = this.toJSON();
-        let result = new CodeFormatResponse();
+        let result = new FormatRangeResponse();
         result.init(json);
         return result;
     }
 }
 
-export interface ICodeFormatResponse {
-    buffer?: string | undefined;
+export interface IFormatRangeResponse {
     changes?: LinePositionSpanTextChange[] | undefined;
 }
 
-export class CodeFormatRequest extends Request implements ICodeFormatRequest {
-    wantsTextChanges!: boolean;
+export class FormatRangeRequest extends Request implements IFormatRangeRequest {
+    endLine!: number;
+    endColumn!: number;
 
-    constructor(data?: ICodeFormatRequest) {
+    constructor(data?: IFormatRangeRequest) {
         super(data);
     }
 
     init(_data?: any) {
         super.init(_data);
         if (_data) {
-            this.wantsTextChanges = _data["wantsTextChanges"];
+            this.endLine = _data["endLine"];
+            this.endColumn = _data["endColumn"];
         }
     }
 
-    static fromJS(data: any): CodeFormatRequest {
+    static fromJS(data: any): FormatRangeRequest {
         data = typeof data === 'object' ? data : {};
-        let result = new CodeFormatRequest();
+        let result = new FormatRangeRequest();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["wantsTextChanges"] = this.wantsTextChanges;
+        data["endLine"] = this.endLine;
+        data["endColumn"] = this.endColumn;
         super.toJSON(data);
         return data;
     }
 
-    clone(): CodeFormatRequest {
+    clone(): FormatRangeRequest {
         const json = this.toJSON();
-        let result = new CodeFormatRequest();
+        let result = new FormatRangeRequest();
         result.init(json);
         return result;
     }
 }
 
-export interface ICodeFormatRequest extends IRequest {
-    wantsTextChanges: boolean;
+export interface IFormatRangeRequest extends IRequest {
+    endLine: number;
+    endColumn: number;
+}
+
+export class FormatAfterKeystrokeRequest extends Request implements IFormatAfterKeystrokeRequest {
+    character?: string | undefined;
+    char!: string;
+
+    constructor(data?: IFormatAfterKeystrokeRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.character = _data["character"];
+            this.char = _data["char"];
+        }
+    }
+
+    static fromJS(data: any): FormatAfterKeystrokeRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new FormatAfterKeystrokeRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["character"] = this.character;
+        data["char"] = this.char;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): FormatAfterKeystrokeRequest {
+        const json = this.toJSON();
+        let result = new FormatAfterKeystrokeRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IFormatAfterKeystrokeRequest extends IRequest {
+    character?: string | undefined;
+    char: string;
 }
 
 export class SemanticHighlightResponse implements ISemanticHighlightResponse {

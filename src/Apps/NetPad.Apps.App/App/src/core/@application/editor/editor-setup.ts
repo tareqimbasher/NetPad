@@ -8,6 +8,7 @@ import {
     ICompletionItemProvider,
     IDiagnosticsProvider,
     IDocumentHighlightProvider,
+    IDocumentRangeFormattingEditProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IDocumentSymbolProvider,
@@ -15,6 +16,7 @@ import {
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
+    IOnTypeFormattingEditProvider,
     IReferenceProvider,
     ISignatureHelpProvider
 } from "./providers/interfaces";
@@ -37,6 +39,8 @@ export class EditorSetup {
         @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
         @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
         @all(IFoldingRangeProvider) private readonly foldingRangeProviders: IFoldingRangeProvider[],
+        @all(IDocumentRangeFormattingEditProvider) private readonly documentRangeFormattingEditProviders: IDocumentRangeFormattingEditProvider[],
+        @all(IOnTypeFormattingEditProvider) private readonly onTypeFormattingEditProviders: IOnTypeFormattingEditProvider[],
     ) {
     }
 
@@ -56,6 +60,8 @@ export class EditorSetup {
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
         this.registerFoldingRangeProviders();
+        this.registerDocumentRangeFormattingEditProviders();
+        this.registerOnTypeFormattingEditProviders();
         this.registerDiagnosticsProviders();
     }
 
@@ -187,6 +193,18 @@ export class EditorSetup {
     private registerFoldingRangeProviders() {
         for (const foldingRangeProvider of this.foldingRangeProviders) {
             monaco.languages.registerFoldingRangeProvider("csharp", foldingRangeProvider);
+        }
+    }
+
+    private registerDocumentRangeFormattingEditProviders() {
+        for (const documentRangeFormattingEditProvider of this.documentRangeFormattingEditProviders) {
+            monaco.languages.registerDocumentRangeFormattingEditProvider("csharp", documentRangeFormattingEditProvider);
+        }
+    }
+
+    private registerOnTypeFormattingEditProviders() {
+        for (const onTypeFormattingEditProvider of this.onTypeFormattingEditProviders) {
+            monaco.languages.registerOnTypeFormattingEditProvider("csharp", onTypeFormattingEditProvider);
         }
     }
 

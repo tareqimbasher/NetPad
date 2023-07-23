@@ -2,6 +2,7 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeFormatting;
 
+[Obsolete($"Use {nameof(FormatRangeQuery)} and {nameof(FormatAfterKeystrokeQuery)} instead")]
 public class CodeFormatQuery : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, OmniSharpCodeFormatResponse?>
 {
     public CodeFormatQuery(Guid scriptId, OmniSharpCodeFormatRequest omniSharpRequest) : base(scriptId, omniSharpRequest)

@@ -68,6 +68,16 @@ export interface IFoldingRangeProvider extends languages.FoldingRangeProvider {
 
 export const IFoldingRangeProvider = DI.createInterface<IFoldingRangeProvider>();
 
+export interface IDocumentRangeFormattingEditProvider extends languages.DocumentRangeFormattingEditProvider {
+}
+
+export const IDocumentRangeFormattingEditProvider = DI.createInterface<IDocumentRangeFormattingEditProvider>();
+
+export interface IOnTypeFormattingEditProvider extends languages.OnTypeFormattingEditProvider {
+}
+
+export const IOnTypeFormattingEditProvider = DI.createInterface<IOnTypeFormattingEditProvider>();
+
 export interface IDiagnosticsProvider {
     provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
 }

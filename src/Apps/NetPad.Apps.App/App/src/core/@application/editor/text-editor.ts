@@ -102,7 +102,9 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
 
         this.monaco = monaco.editor.create(this.element as HTMLElement, {
             model: null,
-            "semanticHighlighting.enabled": true
+            "semanticHighlighting.enabled": true,
+            formatOnType: true,
+            formatOnPaste: true,
         });
 
         this.updateEditorSettings();

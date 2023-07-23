@@ -8,6 +8,7 @@ import {
     ICompletionItemProvider,
     IDiagnosticsProvider,
     IDocumentHighlightProvider,
+    IDocumentRangeFormattingEditProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
     IDocumentSymbolProvider,
@@ -15,6 +16,7 @@ import {
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
+    IOnTypeFormattingEditProvider,
     IReferenceProvider,
     ISignatureHelpProvider
 } from "@application";
@@ -33,6 +35,10 @@ import {OmnisharpDiagnosticsProvider} from "./features/omnisharp-diagnostics-pro
 import {OmnisharpDocumentHighlightProvider} from "./features/omnisharp-document-highlight-provider";
 import {OmnisharpDocumentSymbolProvider} from "./features/omnisharp-document-symbol-provider";
 import {OmnisharpFoldingProvider} from "./features/omnisharp-folding-provider";
+import {
+    OmnisharpDocumentRangeFormattingEditProvider
+} from "./features/omnisharp-document-range-formatting-edit-provider";
+import {OmnisharpOnTypeFormattingEditProvider} from "./features/omnisharp-on-type-formatting-edit-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -49,6 +55,8 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(IInlayHintsProvider, OmniSharpInlayHintProvider));
     container.register(Registration.singleton(IDocumentSymbolProvider, OmnisharpDocumentSymbolProvider));
     container.register(Registration.singleton(IFoldingRangeProvider, OmnisharpFoldingProvider));
+    container.register(Registration.singleton(IDocumentRangeFormattingEditProvider, OmnisharpDocumentRangeFormattingEditProvider));
+    container.register(Registration.singleton(IOnTypeFormattingEditProvider, OmnisharpOnTypeFormattingEditProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));
@@ -87,7 +95,6 @@ export function configure(container: IContainer) {
         // the actions on the model of the editor when its first created does not seem to work.
         editor.onDidChangeModel(ev => {
             registerActions(editor, [
-                actions.codeFormatAction,
                 actions.restartOmniSharpServerAction,
             ]);
         });
