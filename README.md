@@ -1,4 +1,4 @@
-# NetPad
+# <div style="display: flex; align-items: center; gap: 7px"><img src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true" /> NetPad</div>
 
 **A cross-platform C# editor and playground.**
 
@@ -11,13 +11,11 @@
 
 ## Motivation
 
-We love [LINQPad](https://www.linqpad.net/), but we also miss its tremendous
-utility when not working on Windows. This is an effort to develop an
-open-source, web-enabled, cross-platform alternative.
+We love [LINQPad](https://www.linqpad.net/), but we also miss its tremendous utility when not working on Windows. This
+is an effort to develop an open-source, web-enabled, cross-platform alternative.
 
-The goal isn't to reach 100% feature parity with LinqPad, but
-to offer an acceptable alternative that covers the features
-developers most commonly need, and if we're lucky, a few new useful ones!
+The goal isn't to reach 100% feature parity with LinqPad, but to offer an acceptable alternative that covers the
+features developers most commonly need, and if we're lucky, a few new useful ones!
 
 #### If you like the project, please star it :star2:!
 
@@ -26,7 +24,7 @@ developers most commonly need, and if we're lucky, a few new useful ones!
 The following must be be installed to use NetPad:
 
 * [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet) (v6 or v7)
-* [EF Core tools (.NET 6 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
+* [EF Core tools (.NET 5 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
   (*optional*) needed to create and use database connections.
 
 ## Download
@@ -46,9 +44,12 @@ the [Releases](https://github.com/tareqimbasher/NetPad/releases/latest) page.
 
 This is a work in progress and still in preview. All contributions are welcome!
 
+If you like NetPad, please consider [sponsoring](https://github.com/sponsors/tareqimbasher) it with a cup of coffee ($5)
+a month, every bit helps me maintain this project and deliver more features. Thank you :heart:
+
 Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
 
-## Features :tada:
+## Features :rocket:
 
 * The basics:
     * Write, save and run your own scripts
@@ -56,15 +57,15 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
     * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console and export results to Excel or HTML
 * Choose the .NET SDK version you want to use per script
-* Add and use database connections (currently only supports Microsoft SQL Server and PostgreSQL, more coming soon!)
+* Add and use database connections (supports Microsoft SQL Server and PostgreSQL, more coming soon!)
 * Run SQL queries
 * Auto-save: When you close NetPad, it will auto-save your changes and restore them the next time you fire it up
 * Add NuGet packages
 * Reference assemblies from disk
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
     * Code completion (Intellisense)
-    * CodeLens
     * Semantic highlighting
+    * CodeLens
     * Inlay hits
     * Hover for documentation
     * Format document
@@ -84,13 +85,15 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
 * View your code's Syntax Tree
 * View your code as IL
 * Export a script as a "ready to run" .NET app
+* Export a script as a C# project
 * Ability to run a script from the command-line
 * Git tracking of script changes
+* More advanced `Dump()` capabilities:
+  * Dump HTML controls and interact with them
+  * Dump images, SVGs, and bitmaps
+  * Dump code with syntax highlighting
 * Quality of Life:
-    * Support for even more complex objects in the results console, ex: Dumping
-      images
     * User-defined results styling
-    * Ability to change the max result set length when dumping collections (default is 1000 items)
     * Workspaces/Sessions
 * More OmniSharp integrations:
     * Code fix suggestions
