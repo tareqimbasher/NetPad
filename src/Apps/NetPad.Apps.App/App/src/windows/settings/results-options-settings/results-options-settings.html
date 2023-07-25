@@ -44,7 +44,7 @@
                        class="form-control d-inline-block"
                        value.bind="settings.results.maxSerializationDepth"
                        placeholder="Default: 64"
-                       min="0"
+                       min="1"
                        max="1000"
                        oninput="validity.valid||(value='');"
                        style="max-width: 130px">
@@ -65,8 +65,8 @@
                        class="form-control d-inline-block"
                        value.bind="settings.results.maxCollectionSerializeLength"
                        placeholder="Default: 1000"
-                       min="0"
-                       max="100000"
+                       min="1"
+                       max="10000"
                        oninput="validity.valid||(value='');"
                        style="max-width: 130px">
                 <span class="text-muted">

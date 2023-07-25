@@ -37,7 +37,11 @@ public class ResultsOptions : ISettingsOptions
 
     public ResultsOptions SetMaxSerializationDepth(uint maxSerializationDepth)
     {
-        if (maxSerializationDepth > 1000)
+        if (maxSerializationDepth == 0)
+        {
+            maxSerializationDepth = 64;
+        }
+        else if (maxSerializationDepth > 1000)
         {
             maxSerializationDepth = 1000;
         }
@@ -48,9 +52,13 @@ public class ResultsOptions : ISettingsOptions
 
     public ResultsOptions SetMaxCollectionSerializeLengthDepth(uint maxCollectionSerializeLength)
     {
-        if (maxCollectionSerializeLength > 100000)
+        if (maxCollectionSerializeLength == 0)
         {
-            maxCollectionSerializeLength = 100000;
+            maxCollectionSerializeLength = 1000;
+        }
+        else if (maxCollectionSerializeLength > 10000)
+        {
+            maxCollectionSerializeLength = 10000;
         }
 
         MaxCollectionSerializeLength = maxCollectionSerializeLength;
@@ -59,7 +67,10 @@ public class ResultsOptions : ISettingsOptions
 
     public void DefaultMissingValues()
     {
-        if (MaxSerializationDepth > 1000) MaxSerializationDepth = 1000;
-        if (MaxCollectionSerializeLength > 100000) MaxCollectionSerializeLength = 100000;
+        if (MaxSerializationDepth == 0) MaxSerializationDepth = 64;
+        else if (MaxSerializationDepth > 1000) MaxSerializationDepth = 1000;
+
+        if (MaxCollectionSerializeLength == 0) MaxCollectionSerializeLength = 1000;
+        else if (MaxCollectionSerializeLength > 10000) MaxCollectionSerializeLength = 10000;
     }
 }
