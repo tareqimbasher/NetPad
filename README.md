@@ -32,6 +32,12 @@ The following must be be installed to use NetPad:
 [Download](https://github.com/tareqimbasher/NetPad/releases/latest) the latest version or
 an older version from the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
 
+**Note:** NetPad is not a signed application. On macOS when you run NetPad the first time you will prompted with a message saying the app is damaged and can't be opened. To resolve this run this in a terminal:
+
+```shell
+sudo xattr -cr /path/to/NetPad.app
+```
+
 ## Updates
 
 NetPad checks for updates on startup and will let you know when a new version is available.
