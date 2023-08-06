@@ -30,6 +30,11 @@ public class SetScriptDataConnectionCommand : Command
             var script = request.Script;
             var connection = request.Connection;
 
+            if (script.DataConnection?.Id == connection?.Id)
+            {
+                return Unit.Value;
+            }
+
             script.SetDataConnection(connection);
 
             await _eventBus.PublishAsync(new ScriptDataConnectionChangedEvent(script, connection));
