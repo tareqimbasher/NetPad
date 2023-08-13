@@ -8,6 +8,7 @@ statusbar {
     padding: 0 0.5rem;
     display: flex;
     line-height: $statusbar-height;
+    overflow: hidden;
 
     .left-column,
     .middle-column,
