@@ -24,10 +24,10 @@
 
             <div class="list-group">
                 <div class="list-group-item d-flex align-items-center justify-content-between data-connection">
-                    <div class="d-flex align-items-center text-truncate">
+                    <div class="d-flex align-items-center text-truncate flex-grow-1">
                         <i class="${connectionViewModel.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                            click.trigger="connectionViewModel.toggleExpand()"></i>
-                        <data-connection-name connection.bind="connectionViewModel.connection"></data-connection-name>
+                        <data-connection-name connection.bind="connectionViewModel.connection" class="flex-grow-1"></data-connection-name>
                     </div>
                     <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
                         ${connectionViewModel.loadingMessage}...

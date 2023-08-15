@@ -50,7 +50,11 @@ export class ContextMenu extends ViewModelBase {
             && clickTarget;
 
         if (showContextMenu) {
+            this.unstyleActiveClickTarget();
+
             this.activeClickTarget = clickTarget;
+
+            this.styleActiveClickTarget();
 
             // Evaluate which items should show
             for (const item of this.options.items) {
@@ -97,6 +101,7 @@ export class ContextMenu extends ViewModelBase {
 
     private hideContextMenu() {
         this.isVisible = false;
+        this.unstyleActiveClickTarget();
     }
 
     private trackContextClickTargets() {
@@ -121,5 +126,13 @@ export class ContextMenu extends ViewModelBase {
 
         const mutationObserverSubscriptionToken = this.mutationObserver.subscribe(mutationHandler);
         this.addDisposable(mutationObserverSubscriptionToken);
+    }
+
+    private styleActiveClickTarget() {
+        this.activeClickTarget?.classList.add("active-context-menu-target");
+    }
+
+    private unstyleActiveClickTarget() {
+        this.activeClickTarget?.classList.remove("active-context-menu-target");
     }
 }

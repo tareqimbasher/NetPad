@@ -68,6 +68,10 @@ kbd {
     }
 }
 
+.active-context-menu-target {
+    @include theme(background-color, hoverColor);
+}
+
 .text-truncate-1-line {
     white-space: nowrap;
     overflow: hidden;
