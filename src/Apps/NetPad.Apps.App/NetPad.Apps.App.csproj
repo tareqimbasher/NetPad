@@ -46,7 +46,7 @@
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
-    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' Or '$(RuntimeIdentifier)' == ''">
+    <ItemGroup Condition="'$(RuntimeIdentifier)' != 'win-x64' Or '$(RuntimeIdentifier)' == ''">
         <None Update="Assets\Assemblies\Microsoft.Data.SqlClient\2.1.4\unix\Microsoft.Data.SqlClient.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
