@@ -237,7 +237,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
     public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
 
             // Rename property on DbContext
-            dbContextCodeLines[iLine] = line.Replace(propertyName, dbContextPropertyName);
+            dbContextCodeLines[iLine] = line.Replace($" {propertyName} ", $" {dbContextPropertyName} ");
         }
 
         // Replace the DbContext code since we modified it above when renaming properties
