@@ -6,7 +6,7 @@ import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 
 export class OmniSharpCodeActionProvider implements ICodeActionProvider, ICommandProvider {
-    private readonly commandId = "omnisharp.runCodeAction";
+    private readonly commandId = "netpad.command.omnisharp.runCodeAction";
     private readonly excludedCodeActionIdentifiers: (string | ((str: string) => boolean))[] = [
         "Convert_to_Program_Main_style_program",
         "Remove Unnecessary Usings",

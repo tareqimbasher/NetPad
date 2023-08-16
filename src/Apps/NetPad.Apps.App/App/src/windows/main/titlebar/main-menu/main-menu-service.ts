@@ -141,7 +141,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         text: "Transform to Upper/Lower Case",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "builtin.actions.transformToUpperOrLowercase", null),
+                            .trigger(null, "netpad.action.transformToUpperOrLowercase", null),
                         helpText: "Ctrl + Shift + Y"
                     },
                     {

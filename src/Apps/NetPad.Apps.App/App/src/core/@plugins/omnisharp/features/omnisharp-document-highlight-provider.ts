@@ -1,7 +1,7 @@
-import {IDocumentHighlightProvider} from "@application";
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {OmniSharpReferenceProvider} from "@plugins/omnisharp/features/omnisharp-reference-provider";
-import {IOmniSharpService} from "@plugins/omnisharp/omnisharp-service";
+import {IDocumentHighlightProvider} from "@application";
+import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
+import {IOmniSharpService} from "../omnisharp-service";
 
 export class OmnisharpDocumentHighlightProvider implements IDocumentHighlightProvider {
     constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {

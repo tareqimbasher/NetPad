@@ -8,7 +8,7 @@ export class Actions {
     }
 
     public restartOmniSharpServerAction: monaco.editor.IActionDescriptor = {
-        id: "netpad-omnisharp-restart-server",
+        id: "netpad.action.omnisharp.restartOmniSharpServer",
         label: "Developer: Restart OmniSharp Server",
         run: async (editor) => {
             const model = editor.getModel();

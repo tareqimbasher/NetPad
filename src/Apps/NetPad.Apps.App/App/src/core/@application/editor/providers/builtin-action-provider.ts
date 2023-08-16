@@ -10,7 +10,7 @@ export class BuiltinActionProvider implements IActionProvider {
     public provideActions(): monaco.editor.IActionDescriptor[] {
         return [
             {
-                id: "builtin.actions.transformToUpperOrLowercase",
+                id: "netpad.action.transformToUpperOrLowercase",
                 label: "Transform to Upper/Lower Case",
                 keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyY],
                 run: (editor) => {
@@ -31,7 +31,7 @@ export class BuiltinActionProvider implements IActionProvider {
                 }
             },
             {
-                id: "builtin.actions.goToScript",
+                id: "netpad.action.goToScript",
                 label: "Go to Script",
                 keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT],
                 run: async () => {

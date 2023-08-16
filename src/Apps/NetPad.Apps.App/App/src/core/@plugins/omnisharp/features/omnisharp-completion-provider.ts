@@ -12,7 +12,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
         model: editor.ITextModel,
         apiCompletionItem: api.CompletionItem
     }>;
-    private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
+    private readonly insertAdditionalTextEditsCommandId = "netpad.command.omnisharp.insertAdditionalTextEdits";
     private readonly logger: ILogger;
 
     constructor(
