@@ -1,13 +1,10 @@
 import {CancellationToken, editor, IMarkdownString, languages, Position} from "monaco-editor";
 import {EditorUtil, ISignatureHelpProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
+export class OmniSharpSignatureHelpProvider extends FeatureProvider implements ISignatureHelpProvider {
     public signatureHelpTriggerCharacters = ["(", ","];
-
-    constructor(@IOmniSharpService private omnisharpService: IOmniSharpService) {
-    }
 
     public async provideSignatureHelp(model: editor.ITextModel, position: Position, token: CancellationToken, context: languages.SignatureHelpContext)
         : Promise<languages.SignatureHelpResult> {
@@ -17,7 +14,7 @@ export class OmniSharpSignatureHelpProvider implements ISignatureHelpProvider {
             line: position.lineNumber,
             column: position.column,
             applyChangesTogether: false
-        }), new AbortController().signalFrom(token));
+        }), this.getAbortSignal(token));
 
         if (!response || !response.signatures) {
             // Interface does not allow returning of undefined, but it is allowed.

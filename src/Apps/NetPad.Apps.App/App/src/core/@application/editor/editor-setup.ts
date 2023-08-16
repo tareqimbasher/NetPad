@@ -8,12 +8,17 @@ import {
     ICompletionItemProvider,
     IDiagnosticsProvider,
     IDocumentHighlightProvider,
+    IDocumentRangeFormattingEditProvider,
     IDocumentRangeSemanticTokensProvider,
     IDocumentSemanticTokensProvider,
+    IDocumentSymbolProvider,
+    IFoldingRangeProvider,
     IHoverProvider,
     IImplementationProvider,
     IInlayHintsProvider,
+    IOnTypeFormattingEditProvider,
     IReferenceProvider,
+    IRenameProvider,
     ISignatureHelpProvider
 } from "./providers/interfaces";
 
@@ -24,6 +29,7 @@ export class EditorSetup {
         @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
         @all(IDocumentSemanticTokensProvider) private readonly documentSemanticTokensProviders: IDocumentSemanticTokensProvider[],
         @all(IDocumentRangeSemanticTokensProvider) private readonly documentRangeSemanticTokensProviders: IDocumentRangeSemanticTokensProvider[],
+        @all(IDocumentSymbolProvider) private readonly documentSymbolProviders: IDocumentSymbolProvider[],
         @all(IImplementationProvider) private readonly implementationProviders: IImplementationProvider[],
         @all(IHoverProvider) private readonly hoverProviders: IHoverProvider[],
         @all(ISignatureHelpProvider) private readonly signatureHelpProviders: ISignatureHelpProvider[],
@@ -33,6 +39,10 @@ export class EditorSetup {
         @all(IInlayHintsProvider) private readonly inlayHintsProviders: IInlayHintsProvider[],
         @all(ICodeActionProvider) private readonly codeActionProviders: ICodeActionProvider[],
         @all(IDiagnosticsProvider) private readonly diagnosticsProviders: IDiagnosticsProvider[],
+        @all(IFoldingRangeProvider) private readonly foldingRangeProviders: IFoldingRangeProvider[],
+        @all(IDocumentRangeFormattingEditProvider) private readonly documentRangeFormattingEditProviders: IDocumentRangeFormattingEditProvider[],
+        @all(IOnTypeFormattingEditProvider) private readonly onTypeFormattingEditProviders: IOnTypeFormattingEditProvider[],
+        @all(IRenameProvider) private readonly renameProviders: IRenameProvider[],
     ) {
     }
 
@@ -42,6 +52,7 @@ export class EditorSetup {
         this.registerActions();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
+        this.registerDocumentSymbolProviders();
         this.registerImplementationProviders();
         this.registerHoverProviders();
         this.registerSignatureHelpProviders();
@@ -50,6 +61,10 @@ export class EditorSetup {
         this.registerCodeLensProviders();
         this.registerInlayHintsProviders();
         this.registerCodeActionProviders();
+        this.registerFoldingRangeProviders();
+        this.registerDocumentRangeFormattingEditProviders();
+        this.registerOnTypeFormattingEditProviders();
+        this.registerRenameProviders();
         this.registerDiagnosticsProviders();
     }
 
@@ -124,6 +139,12 @@ export class EditorSetup {
         }
     }
 
+    private registerDocumentSymbolProviders() {
+        for (const documentSymbolProvider of this.documentSymbolProviders) {
+            monaco.languages.registerDocumentSymbolProvider("csharp", documentSymbolProvider);
+        }
+    }
+
     private registerImplementationProviders() {
         for (const implementationProvider of this.implementationProviders) {
             monaco.languages.registerImplementationProvider("csharp", implementationProvider);
@@ -172,6 +193,30 @@ export class EditorSetup {
         }
     }
 
+    private registerFoldingRangeProviders() {
+        for (const foldingRangeProvider of this.foldingRangeProviders) {
+            monaco.languages.registerFoldingRangeProvider("csharp", foldingRangeProvider);
+        }
+    }
+
+    private registerDocumentRangeFormattingEditProviders() {
+        for (const documentRangeFormattingEditProvider of this.documentRangeFormattingEditProviders) {
+            monaco.languages.registerDocumentRangeFormattingEditProvider("csharp", documentRangeFormattingEditProvider);
+        }
+    }
+
+    private registerOnTypeFormattingEditProviders() {
+        for (const onTypeFormattingEditProvider of this.onTypeFormattingEditProviders) {
+            monaco.languages.registerOnTypeFormattingEditProvider("csharp", onTypeFormattingEditProvider);
+        }
+    }
+
+    private registerRenameProviders() {
+        for (const renameProvider of this.renameProviders) {
+            monaco.languages.registerRenameProvider("csharp", renameProvider);
+        }
+    }
+
     private registerDiagnosticsProviders() {
         const provideDiagnostics = (model: monaco.editor.ITextModel) => {
             for (const diagnosticsProvider of this.diagnosticsProviders) {
@@ -189,8 +234,7 @@ export class EditorSetup {
             model.onDidChangeLanguage(ev => {
                 if (ev.newLanguage === "csharp") {
                     provideDiagnostics(model);
-                }
-                else {
+                } else {
                     monaco.editor.removeAllMarkers(model.uri.toString());
                 }
             })

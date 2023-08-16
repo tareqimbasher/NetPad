@@ -1,10 +1,10 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
 import {EditorUtil, IInlayHintsProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
+export class OmniSharpInlayHintProvider extends FeatureProvider implements IInlayHintsProvider {
     private inlayHintsMap?: Map<languages.InlayHint, { model: editor.ITextModel, omnisharpHint: api.InlayHint }>;
     private _onDidChangeInlayHints: Emitter<void>;
 
@@ -12,7 +12,8 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
     public onDidChangeInlayHints: IEvent<void>;
 
 
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+    constructor() {
+        super();
         this.displayName = "OmniSharp InlayHint Provider";
         this._onDidChangeInlayHints = new Emitter<void>();
         this.onDidChangeInlayHints = this._onDidChangeInlayHints.event;
@@ -30,7 +31,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                 fileName: "",
                 range: Converter.monacoRangeToApiRange(range)
             })
-        }), new AbortController().signalFrom(token));
+        }), this.getAbortSignal(token));
 
         if (!response || !response.inlayHints) {
             return {
@@ -82,7 +83,7 @@ export class OmniSharpInlayHintProvider implements IInlayHintsProvider {
                     item2: omnisharpHint.data.item2
                 })
             })
-        }), new AbortController().signalFrom(token));
+        }), this.getAbortSignal(token));
 
         if (!response) {
             return hint;

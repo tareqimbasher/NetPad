@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Plugins.OmniSharp.Features.BlockStructure;
 using NetPad.Plugins.OmniSharp.Features.CodeActions;
 using NetPad.Plugins.OmniSharp.Features.CodeChecking;
 using NetPad.Plugins.OmniSharp.Features.CodeFormatting;
@@ -11,6 +12,7 @@ using NetPad.Plugins.OmniSharp.Features.FindImplementations;
 using NetPad.Plugins.OmniSharp.Features.FindUsages;
 using NetPad.Plugins.OmniSharp.Features.InlayHinting;
 using NetPad.Plugins.OmniSharp.Features.QuickInfo;
+using NetPad.Plugins.OmniSharp.Features.Rename;
 using NetPad.Plugins.OmniSharp.Features.SemanticHighlighting;
 using NetPad.Plugins.OmniSharp.Features.ServerManagement;
 using NetPad.Plugins.OmniSharp.Features.SignatureHelp;
@@ -62,9 +64,13 @@ public class OmniSharpController : Controller
     public async Task<OmniSharpCompletionAfterInsertResponse?> GetCompletionAfterInsert(Guid scriptId, [FromBody] CompletionItem completionItem) =>
         await _mediator.Send(new GetCompletionAfterInsertQuery(scriptId, completionItem), HttpContext.RequestAborted);
 
-    [HttpPost("format-code")]
-    public async Task<OmniSharpCodeFormatResponse?> FormatCode(Guid scriptId, [FromBody] OmniSharpCodeFormatRequest request) =>
-        await _mediator.Send(new CodeFormatQuery(scriptId, request), HttpContext.RequestAborted);
+    [HttpPost("format/range")]
+    public async Task<OmniSharpFormatRangeResponse?> FormatRange(Guid scriptId, [FromBody] OmniSharpFormatRangeRequest request) =>
+        await _mediator.Send(new FormatRangeQuery(scriptId, request), HttpContext.RequestAborted);
+
+    [HttpPost("format/after-keystroke")]
+    public async Task<OmniSharpFormatRangeResponse?> FormatAfterKeystroke(Guid scriptId, [FromBody] OmniSharpFormatAfterKeystrokeRequest request) =>
+        await _mediator.Send(new FormatAfterKeystrokeQuery(scriptId, request), HttpContext.RequestAborted);
 
     [HttpPost("semantic-highlights")]
     public async Task<OmniSharpSemanticHighlightResponse?> GetSemanticHighlights(Guid scriptId, [FromBody] OmniSharpSemanticHighlightRequest request) =>
@@ -121,4 +127,12 @@ public class OmniSharpController : Controller
 
     [HttpPatch("diagnostics/start")]
     public async Task StartDiagnostics(Guid scriptId) => await _mediator.Send(new StartDiagnosticsCommand(scriptId), HttpContext.RequestAborted);
+
+    [HttpPost("block-structure")]
+    public async Task<BlockStructureResponse?> GetBlockStructure(Guid scriptId) =>
+        await _mediator.Send(new GetBlockStructureQuery(scriptId), HttpContext.RequestAborted);
+
+    [HttpPost("rename")]
+    public async Task<RenameResponse?> Rename(Guid scriptId, [FromBody] OmniSharpRenameRequest request) =>
+        await _mediator.Send(new RenameQuery(scriptId, request), HttpContext.RequestAborted);
 }

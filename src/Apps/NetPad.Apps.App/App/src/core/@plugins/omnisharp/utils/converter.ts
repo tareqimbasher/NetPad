@@ -1,5 +1,6 @@
 import * as api from "../api";
 import * as mco from "monaco-editor";
+import {Symbols} from "../types";
 
 export class Converter {
     public static monacoIPositionToApiPoint(position: mco.IPosition): api.Point {
@@ -60,5 +61,15 @@ export class Converter {
 
     public static apiQuickFixToMonacoRange(quickFix: api.QuickFix): mco.Range {
         return new mco.Range(quickFix.line, quickFix.column, quickFix.endLine, quickFix.endColumn);
+    }
+
+    public static apiSymbolKindToMonacoSymbolKind(kind: string): mco.languages.SymbolKind {
+        // Note: 'constructor' is a special property name for JavaScript objects.
+        // So, we need to handle it specifically.
+        if (kind === 'constructor') {
+            return mco.languages.SymbolKind.Constructor;
+        }
+
+        return Symbols.kindsMap[kind];
     }
 }

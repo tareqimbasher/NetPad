@@ -1,26 +1,22 @@
 import {CancellationToken, editor, IRange, languages} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
-import {ILogger} from "aurelia";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICommandProvider {
+export class OmniSharpCompletionProvider extends FeatureProvider implements ICompletionItemProvider, ICommandProvider {
     public triggerCharacters = [".", " "];
     private lastCompletions?: Map<languages.CompletionItem, {
         model: editor.ITextModel,
         apiCompletionItem: api.CompletionItem
     }>;
-    private readonly insertAdditionalTextEditsCommandId = "omnisharp.insertAdditionalTextEdits";
-    private readonly logger: ILogger;
+    private readonly insertAdditionalTextEditsCommandId = "netpad.command.omnisharp.insertAdditionalTextEdits";
 
     constructor(
-        @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
         @ISession private readonly session: ISession,
-        @IScriptService private readonly scriptService: IScriptService,
-        @ILogger logger: ILogger) {
-        this.logger = logger.scopeTo(nameof(OmniSharpCompletionProvider));
+        @IScriptService private readonly scriptService: IScriptService) {
+        super();
     }
 
     public get language(): TextLanguage {
@@ -79,7 +75,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             const scriptId = EditorUtil.getScriptId(completion.model);
 
-            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, new AbortController().signalFrom(token));
+            const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, this.getAbortSignal(token));
 
             if (!resolution || !resolution.item) {
                 return item;
@@ -87,7 +83,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
-            this.logger.error("Error resolving CompletionItem", item, ex);
+            console.error("Error resolving CompletionItem", item, ex);
         }
     }
 
@@ -109,7 +105,7 @@ export class OmniSharpCompletionProvider implements ICompletionItemProvider, ICo
 
         const scriptId = EditorUtil.getScriptId(model);
 
-        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, new AbortController().signalFrom(token));
+        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, this.getAbortSignal(token));
 
         if (token.isCancellationRequested || !omnisharpCompletions || !omnisharpCompletions.items) {
             return new CompletionResults();

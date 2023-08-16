@@ -45,7 +45,7 @@ export const BuiltinShortcuts = [
             }
 
             editor.focus();
-            editor.getAction("builtin.actions.goToScript")?.run();
+            editor.getAction("netpad.action.goToScript")?.run();
         })
         .configurable(false)
         .enabled(),

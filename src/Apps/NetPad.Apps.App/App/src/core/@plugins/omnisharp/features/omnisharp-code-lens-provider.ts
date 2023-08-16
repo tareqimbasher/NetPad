@@ -1,11 +1,11 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Position} from "monaco-editor";
 import {EditorUtil, ICodeLensProvider} from "@application";
-import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
+import {FeatureProvider} from "./feature-provider";
+import {findUsages} from "./common";
 
-export class OmniSharpCodeLensProvider implements ICodeLensProvider {
+export class OmniSharpCodeLensProvider extends FeatureProvider implements ICodeLensProvider {
     private methodNamesToExclude = [
         "Equals",
         "Finalize",
@@ -18,7 +18,8 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
 
     public onDidChange: IEvent<this>;
 
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
+    constructor() {
+        super();
         this._onDidChange = new Emitter<this>();
         this.onDidChange = this._onDidChange.event;
     }
@@ -26,7 +27,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getCodeStructure(scriptId, new AbortController().signalFrom(token));
+        const response = await this.omnisharpService.getCodeStructure(scriptId, this.getAbortSignal(token));
 
         if (!response || !response.elements) {
             return {
@@ -64,7 +65,7 @@ export class OmniSharpCodeLensProvider implements ICodeLensProvider {
     }
 
     public async resolveCodeLens(model: editor.ITextModel, codeLens: languages.CodeLens, token: CancellationToken): Promise<languages.CodeLens> {
-        const references = await OmniSharpReferenceProvider.findUsages(
+        const references = await findUsages(
             model,
             this.omnisharpService,
             codeLens.range.startLineNumber,

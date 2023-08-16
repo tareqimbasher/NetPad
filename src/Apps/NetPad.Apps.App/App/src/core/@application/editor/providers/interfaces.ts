@@ -21,6 +21,11 @@ export const IDocumentRangeSemanticTokensProvider = DI.createInterface<IDocument
 export interface IImplementationProvider extends languages.ImplementationProvider {
 }
 
+export const IDocumentSymbolProvider = DI.createInterface<IDocumentSymbolProvider>();
+
+export interface IDocumentSymbolProvider extends languages.DocumentSymbolProvider {
+}
+
 export const IImplementationProvider = DI.createInterface<IImplementationProvider>();
 
 export interface IHoverProvider extends languages.HoverProvider {
@@ -57,6 +62,26 @@ export interface ICodeActionProvider extends languages.CodeActionProvider {
 }
 
 export const ICodeActionProvider = DI.createInterface<ICodeActionProvider>();
+
+export interface IFoldingRangeProvider extends languages.FoldingRangeProvider {
+}
+
+export const IFoldingRangeProvider = DI.createInterface<IFoldingRangeProvider>();
+
+export interface IDocumentRangeFormattingEditProvider extends languages.DocumentRangeFormattingEditProvider {
+}
+
+export const IDocumentRangeFormattingEditProvider = DI.createInterface<IDocumentRangeFormattingEditProvider>();
+
+export interface IOnTypeFormattingEditProvider extends languages.OnTypeFormattingEditProvider {
+}
+
+export const IOnTypeFormattingEditProvider = DI.createInterface<IOnTypeFormattingEditProvider>();
+
+export interface IRenameProvider extends languages.RenameProvider {
+}
+
+export const IRenameProvider = DI.createInterface<IRenameProvider>();
 
 export interface IDiagnosticsProvider {
     provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);

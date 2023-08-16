@@ -1,25 +1,24 @@
 import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICodeActionProvider, ICommandProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmniSharpCodeActionProvider implements ICodeActionProvider, ICommandProvider {
-    private readonly commandId = "omnisharp.runCodeAction";
+export class OmniSharpCodeActionProvider extends FeatureProvider implements ICodeActionProvider, ICommandProvider {
+    private readonly commandId = "netpad.command.omnisharp.runCodeAction";
     private readonly excludedCodeActionIdentifiers: (string | ((str: string) => boolean))[] = [
         "Convert_to_Program_Main_style_program",
         "Remove Unnecessary Usings",
-        "Convert_to_Program_Main_style_program",
         id => id.indexOf("in new file") >= 0,
         id => id.indexOf("Move type ") >= 0,
         id => id.indexOf("Rename file ") >= 0,
     ];
 
     constructor(
-        @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
         @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService) {
+        super();
     }
 
     public provideCommands(): { id: string; handler: (accessor: unknown, ...args: unknown[]) => void; }[] {
@@ -41,7 +40,7 @@ export class OmniSharpCodeActionProvider implements ICodeActionProvider, IComman
             selection: !range ? undefined : Converter.monacoRangeToApiRange(range)
         });
 
-        const response = await this.omnisharpService.getCodeActions(scriptId, request, new AbortController().signalFrom(token));
+        const response = await this.omnisharpService.getCodeActions(scriptId, request, this.getAbortSignal(token));
 
         if (!response || !response.codeActions) {
             return {
