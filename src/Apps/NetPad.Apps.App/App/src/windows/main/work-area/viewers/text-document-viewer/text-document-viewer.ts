@@ -3,10 +3,13 @@ import {ViewableObject} from "../viewable-object";
 import {IEventBus, IScriptService} from "@domain";
 import {ITextEditor} from "@application/editor/text-editor";
 import {ILogger} from "aurelia";
-import {ViewableTextDocument} from "./viewable-text-document";
+import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-document";
 import {ViewerHost} from "../viewer-host";
 import {IStatusbarItem} from "../../../statusbar/istatusbar-item";
 import {Workbench} from "../../../workbench";
+import {DndType} from "@application/dnd/dnd-type";
+import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
+import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 
 export class TextDocumentViewer extends Viewer {
     public editor: ITextEditor;
@@ -62,6 +65,14 @@ export class TextDocumentViewer extends Viewer {
         logger.debug(`Closing app script, looking in cache...`);
 
         this.editor.close(viewableDocument.textDocument.id);
+    }
+
+    public itemDropped(event: DragEvent) {
+        const dnd = DragAndDropBase.getFromEventData(event);
+
+        if (dnd?.type == DndType.DataConnection && this.viewable instanceof ViewableAppScriptDocument) {
+            this.scriptService.setDataConnection(this.viewable.environment.script.id, (dnd as DataConnectionDnd).dataConnectionId);
+        }
     }
 }
 

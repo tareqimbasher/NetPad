@@ -1,15 +1,17 @@
-﻿<import from="./toolbar"></import>
+﻿<template drop.trigger="itemDropped($event)">
+    <import from="./toolbar"></import>
 
-<toolbar viewable.bind="viewable" if.bind="viewable.environment"></toolbar>
+    <toolbar viewable.bind="viewable" if.bind="viewable.environment"></toolbar>
 
-<div class="text-editor-container flex-grow-height-restricted d-flex">
-    <div class="production-marker"
-         if.bind="viewable.environment.script.dataConnection.containsProductionData"
-         title="This scripts targets a data connection that contains Production data. Be careful!">
-        PRODUCTION
+    <div class="text-editor-container flex-grow-height-restricted d-flex">
+        <div class="production-marker"
+             if.bind="viewable.environment.script.dataConnection.containsProductionData"
+             title="This scripts targets a data connection that contains Production data. Be careful!">
+            PRODUCTION
+        </div>
+
+        <au-compose component.bind="editor"
+                    ref="editorHost"
+                    class="flex-grow-height-restricted min-w-0"></au-compose>
     </div>
-
-    <au-compose component.bind="editor"
-                ref="editorHost"
-                class="flex-grow-height-restricted min-w-0"></au-compose>
-</div>
+</template>

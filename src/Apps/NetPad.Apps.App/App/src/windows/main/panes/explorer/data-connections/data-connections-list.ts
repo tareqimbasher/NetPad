@@ -13,6 +13,7 @@ import {
 } from "@domain";
 import {ContextMenuOptions, ViewModelBase} from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
+import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 
 export class DataConnectionsList extends ViewModelBase {
     public dataConnectionViewModels: DataConnectionViewModel[] = [];
@@ -259,5 +260,15 @@ export class DataConnectionsList extends ViewModelBase {
             displayText: displayText,
             abbr: abbr
         };
+    }
+
+    private connectionDragged(event: DragEvent) {
+        const connectionId = (event.target as HTMLElement).getAttribute("data-connection-id");
+
+        if (!connectionId) return false;
+
+        new DataConnectionDnd(connectionId).transferDataToEvent(event);
+
+        return true;
     }
 }
