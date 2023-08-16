@@ -78,6 +78,11 @@ export interface IOnTypeFormattingEditProvider extends languages.OnTypeFormattin
 
 export const IOnTypeFormattingEditProvider = DI.createInterface<IOnTypeFormattingEditProvider>();
 
+export interface IRenameProvider extends languages.RenameProvider {
+}
+
+export const IRenameProvider = DI.createInterface<IRenameProvider>();
+
 export interface IDiagnosticsProvider {
     provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
 }

@@ -1,3 +1,5 @@
+@import "~styles/themes";
+
 text-editor {
     width: 100%;
     height: 100%;
@@ -61,6 +63,10 @@ text-editor {
         width: 16px;
         background: url("../../../../../wwwroot/img/sql-logo.svg");
         background-size: 16px 16px;
+    }
+
+    input.rename-input {
+        @include theme(color, textColor);
     }
 }
 

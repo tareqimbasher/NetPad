@@ -40,3 +40,5 @@ global using OmniSharpDiagnosticRequest = OmniSharp.Models.Diagnostics.Diagnosti
 global using OmniSharpDiagnosticMessage = OmniSharp.Models.Diagnostics.DiagnosticMessage;
 global using OmniSharpBlockStructureRequest = OmniSharp.Models.V2.BlockStructureRequest;
 global using OmniSharpBlockStructureResponse = OmniSharp.Models.V2.BlockStructureResponse;
+global using OmniSharpRenameRequest = OmniSharp.Models.Rename.RenameRequest;
+global using OmniSharpRenameResponse = OmniSharp.Models.Rename.RenameResponse;

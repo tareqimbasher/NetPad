@@ -18,6 +18,7 @@ import {
     IInlayHintsProvider,
     IOnTypeFormattingEditProvider,
     IReferenceProvider,
+    IRenameProvider,
     ISignatureHelpProvider
 } from "@application";
 import {Actions} from "./actions";
@@ -39,6 +40,7 @@ import {
     OmnisharpDocumentRangeFormattingEditProvider
 } from "./features/omnisharp-document-range-formatting-edit-provider";
 import {OmnisharpOnTypeFormattingEditProvider} from "./features/omnisharp-on-type-formatting-edit-provider";
+import {OmnisharpRenameProvider} from "./features/omnisharp-rename-provider";
 
 /**
  * Encapsulates all OmniSharp functionality.
@@ -57,6 +59,7 @@ export function configure(container: IContainer) {
     container.register(Registration.singleton(IFoldingRangeProvider, OmnisharpFoldingProvider));
     container.register(Registration.singleton(IDocumentRangeFormattingEditProvider, OmnisharpDocumentRangeFormattingEditProvider));
     container.register(Registration.singleton(IOnTypeFormattingEditProvider, OmnisharpOnTypeFormattingEditProvider));
+    container.register(Registration.singleton(IRenameProvider, OmnisharpRenameProvider));
 
     container.register(Registration.singleton(OmniSharpCompletionProvider, OmniSharpCompletionProvider));
     container.register(Registration.cachedCallback(ICompletionItemProvider, c => c.get(OmniSharpCompletionProvider)));

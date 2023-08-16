@@ -50,6 +50,8 @@ export interface IOmniSharpApiClient {
     startDiagnostics(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
 
     getBlockStructure(scriptId: string, signal?: AbortSignal | undefined): Promise<BlockStructureResponse>;
+
+    rename(scriptId: string, request: RenameRequest, signal?: AbortSignal | undefined): Promise<RenameResponse>;
 }
 
 export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiClient {
@@ -840,6 +842,48 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             });
         }
         return Promise.resolve<BlockStructureResponse>(<any>null);
+    }
+
+    rename(scriptId: string, request: RenameRequest, signal?: AbortSignal | undefined): Promise<RenameResponse> {
+        let url_ = this.baseUrl + "/omnisharp/{scriptId}/rename";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRename(_response);
+        });
+    }
+
+    protected processRename(response: Response): Promise<RenameResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RenameResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RenameResponse>(<any>null);
     }
 }
 
@@ -3757,6 +3801,109 @@ export class CodeFoldingBlock implements ICodeFoldingBlock {
 export interface ICodeFoldingBlock {
     range: Range;
     kind?: string | undefined;
+}
+
+export class RenameResponse implements IRenameResponse {
+    changes?: ModifiedFileResponse[] | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IRenameResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["changes"])) {
+                this.changes = [] as any;
+                for (let item of _data["changes"])
+                    this.changes!.push(ModifiedFileResponse.fromJS(item));
+            }
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): RenameResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RenameResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.changes)) {
+            data["changes"] = [];
+            for (let item of this.changes)
+                data["changes"].push(item.toJSON());
+        }
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+
+    clone(): RenameResponse {
+        const json = this.toJSON();
+        let result = new RenameResponse();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRenameResponse {
+    changes?: ModifiedFileResponse[] | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class RenameRequest extends Request implements IRenameRequest {
+    wantsTextChanges!: boolean;
+    applyTextChanges!: boolean;
+    renameTo?: string | undefined;
+
+    constructor(data?: IRenameRequest) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.wantsTextChanges = _data["wantsTextChanges"];
+            this.applyTextChanges = _data["applyTextChanges"];
+            this.renameTo = _data["renameTo"];
+        }
+    }
+
+    static fromJS(data: any): RenameRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new RenameRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["wantsTextChanges"] = this.wantsTextChanges;
+        data["applyTextChanges"] = this.applyTextChanges;
+        data["renameTo"] = this.renameTo;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): RenameRequest {
+        const json = this.toJSON();
+        let result = new RenameRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRenameRequest extends IRequest {
+    wantsTextChanges: boolean;
+    applyTextChanges: boolean;
+    renameTo?: string | undefined;
 }
 
 export class Types implements ITypes {

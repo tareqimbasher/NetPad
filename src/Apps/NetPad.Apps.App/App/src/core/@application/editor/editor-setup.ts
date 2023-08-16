@@ -18,6 +18,7 @@ import {
     IInlayHintsProvider,
     IOnTypeFormattingEditProvider,
     IReferenceProvider,
+    IRenameProvider,
     ISignatureHelpProvider
 } from "./providers/interfaces";
 
@@ -41,6 +42,7 @@ export class EditorSetup {
         @all(IFoldingRangeProvider) private readonly foldingRangeProviders: IFoldingRangeProvider[],
         @all(IDocumentRangeFormattingEditProvider) private readonly documentRangeFormattingEditProviders: IDocumentRangeFormattingEditProvider[],
         @all(IOnTypeFormattingEditProvider) private readonly onTypeFormattingEditProviders: IOnTypeFormattingEditProvider[],
+        @all(IRenameProvider) private readonly renameProviders: IRenameProvider[],
     ) {
     }
 
@@ -62,6 +64,7 @@ export class EditorSetup {
         this.registerFoldingRangeProviders();
         this.registerDocumentRangeFormattingEditProviders();
         this.registerOnTypeFormattingEditProviders();
+        this.registerRenameProviders();
         this.registerDiagnosticsProviders();
     }
 
@@ -205,6 +208,12 @@ export class EditorSetup {
     private registerOnTypeFormattingEditProviders() {
         for (const onTypeFormattingEditProvider of this.onTypeFormattingEditProviders) {
             monaco.languages.registerOnTypeFormattingEditProvider("csharp", onTypeFormattingEditProvider);
+        }
+    }
+
+    private registerRenameProviders() {
+        for (const renameProvider of this.renameProviders) {
+            monaco.languages.registerRenameProvider("csharp", renameProvider);
         }
     }
 

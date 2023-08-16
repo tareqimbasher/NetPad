@@ -12,6 +12,7 @@ using NetPad.Plugins.OmniSharp.Features.FindImplementations;
 using NetPad.Plugins.OmniSharp.Features.FindUsages;
 using NetPad.Plugins.OmniSharp.Features.InlayHinting;
 using NetPad.Plugins.OmniSharp.Features.QuickInfo;
+using NetPad.Plugins.OmniSharp.Features.Rename;
 using NetPad.Plugins.OmniSharp.Features.SemanticHighlighting;
 using NetPad.Plugins.OmniSharp.Features.ServerManagement;
 using NetPad.Plugins.OmniSharp.Features.SignatureHelp;
@@ -130,4 +131,8 @@ public class OmniSharpController : Controller
     [HttpPost("block-structure")]
     public async Task<BlockStructureResponse?> GetBlockStructure(Guid scriptId) =>
         await _mediator.Send(new GetBlockStructureQuery(scriptId), HttpContext.RequestAborted);
+
+    [HttpPost("rename")]
+    public async Task<RenameResponse?> Rename(Guid scriptId, [FromBody] OmniSharpRenameRequest request) =>
+        await _mediator.Send(new RenameQuery(scriptId, request), HttpContext.RequestAborted);
 }
