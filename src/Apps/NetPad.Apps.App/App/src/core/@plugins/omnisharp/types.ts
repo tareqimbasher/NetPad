@@ -1,7 +1,8 @@
 import {languages} from "monaco-editor";
 
-export module Symbols {
-    export module OmniSharpKinds {
+/* eslint-disable @typescript-eslint/no-namespace */
+export namespace Symbols {
+    export namespace OmniSharpKinds {
         // types
         export const Class = 'class';
         export const Delegate = 'delegate';
@@ -27,7 +28,7 @@ export module Symbols {
     }
 
 
-    export module RangeNames {
+    export namespace RangeNames {
         export const Attributes = 'attributes';
         export const Full = 'full';
         export const Name = 'name';
@@ -55,7 +56,7 @@ export module Symbols {
     kindsMap[OmniSharpKinds.Unknown] = languages.SymbolKind.Class;
 }
 
-export module SemanticTokens {
+export namespace SemanticTokens {
     // The default TokenTypes defined by VS Code https://github.com/microsoft/vscode/blob/master/src/vs/platform/theme/common/tokenClassificationRegistry.ts#L393
     enum DefaultTokenType {
         comment,

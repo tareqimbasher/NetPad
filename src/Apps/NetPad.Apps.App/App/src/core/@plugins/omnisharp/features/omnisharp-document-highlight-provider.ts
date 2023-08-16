@@ -1,15 +1,12 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
 import {IDocumentHighlightProvider} from "@application";
-import {OmniSharpReferenceProvider} from "./omnisharp-reference-provider";
-import {IOmniSharpService} from "../omnisharp-service";
+import {FeatureProvider} from "./feature-provider";
+import {findUsages} from "./common";
 
-export class OmnisharpDocumentHighlightProvider implements IDocumentHighlightProvider {
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
-    }
-
+export class OmnisharpDocumentHighlightProvider extends FeatureProvider implements IDocumentHighlightProvider {
     public async provideDocumentHighlights(model: editor.ITextModel, position: Position, token: CancellationToken) {
 
-        const references = await OmniSharpReferenceProvider.findUsages(
+        const references = await findUsages(
             model,
             this.omnisharpService,
             position.lineNumber,

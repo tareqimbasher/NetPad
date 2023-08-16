@@ -1,21 +1,19 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
-import {Util} from "@common";
 import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
 import {EditorUtil, IDocumentRangeSemanticTokensProvider, IDocumentSemanticTokensProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {SemanticTokens} from "../types";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensProvider, IDocumentRangeSemanticTokensProvider {
+export class OmniSharpSemanticTokensProvider extends FeatureProvider implements IDocumentSemanticTokensProvider, IDocumentRangeSemanticTokensProvider {
     private readonly legend: languages.SemanticTokensLegend;
     private _onDidChange: Emitter<void>;
 
     public onDidChange: IEvent<void>;
 
-    constructor(
-        @IOmniSharpService private readonly omnisharpService: IOmniSharpService,
-        @IEventBus private readonly eventBus: IEventBus) {
+    constructor(@IEventBus private readonly eventBus: IEventBus) {
+        super();
         this.legend = {
             tokenTypes: SemanticTokens.tokenTypes,
             tokenModifiers: SemanticTokens.tokenModifiers
@@ -51,7 +49,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
         // do nothing
     }
 
-    private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, cancellationToken: CancellationToken) {
+    private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, token: CancellationToken) {
 
         const scriptId = EditorUtil.getScriptId(model);
 
@@ -60,7 +58,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
             request.range = Converter.monacoRangeToApiRange(range);
         }
 
-        if (cancellationToken.isCancellationRequested) {
+        if (token.isCancellationRequested) {
             return null;
         }
 
@@ -71,7 +69,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
 
         const versionBeforeRequest = model.getVersionId();
 
-        const response = await this.omnisharpService.getSemanticHighlights(scriptId, request, new AbortController().signalFrom(cancellationToken));
+        const response = await this.omnisharpService.getSemanticHighlights(scriptId, request, this.getAbortSignal(token));
 
         const versionAfterRequest = model.getVersionId();
 
@@ -84,7 +82,7 @@ export class OmniSharpSemanticTokensProvider implements IDocumentSemanticTokensP
             throw new Error("busy");
         }
 
-        if (cancellationToken.isCancellationRequested || !response || !response.spans) {
+        if (token.isCancellationRequested || !response || !response.spans) {
             return null;
         }
 

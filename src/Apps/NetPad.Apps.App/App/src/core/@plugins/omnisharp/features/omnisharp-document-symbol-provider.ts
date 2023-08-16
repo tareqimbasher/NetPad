@@ -1,18 +1,15 @@
 import {CancellationToken, editor, languages} from "monaco-editor";
 import {EditorUtil, IDocumentSymbolProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {Symbols} from "../types";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmnisharpDocumentSymbolProvider implements IDocumentSymbolProvider {
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
-    }
-
+export class OmnisharpDocumentSymbolProvider extends FeatureProvider implements IDocumentSymbolProvider {
     public async provideDocumentSymbols(model: editor.ITextModel, token: CancellationToken): Promise<languages.DocumentSymbol[]> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getCodeStructure(scriptId, new AbortController().signalFrom(token));
+        const response = await this.omnisharpService.getCodeStructure(scriptId, this.getAbortSignal(token));
 
         if (!response || !response.elements) {
             return [];
@@ -22,10 +19,10 @@ export class OmnisharpDocumentSymbolProvider implements IDocumentSymbolProvider 
     }
 
     private createSymbols(elements: api.CodeElement[], parentElement?: api.CodeElement): languages.DocumentSymbol[] {
-        let results: languages.DocumentSymbol[] = [];
+        const results: languages.DocumentSymbol[] = [];
 
         elements.forEach(element => {
-            let symbol = this.createSymbol(element, parentElement);
+            const symbol = this.createSymbol(element, parentElement);
             if (element.children) {
                 symbol.children = this.createSymbols(element.children, element);
             }

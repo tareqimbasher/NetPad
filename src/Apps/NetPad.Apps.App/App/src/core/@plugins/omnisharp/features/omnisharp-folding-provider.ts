@@ -1,16 +1,16 @@
 import {CancellationToken, editor, Emitter, IEvent, languages} from "monaco-editor";
 import {EditorUtil, IFoldingRangeProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {IEventBus} from "@domain";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmnisharpFoldingProvider implements IFoldingRangeProvider {
+export class OmnisharpFoldingProvider extends FeatureProvider implements IFoldingRangeProvider {
     private _onDidChange: Emitter<this>;
 
     public onDidChange: IEvent<this>;
 
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService,
-                @IEventBus private readonly eventBus: IEventBus) {
+    constructor(@IEventBus private readonly eventBus: IEventBus) {
+        super();
         this._onDidChange = new Emitter<this>();
         this.onDidChange = this._onDidChange.event;
 
@@ -22,7 +22,7 @@ export class OmnisharpFoldingProvider implements IFoldingRangeProvider {
     public async provideFoldingRanges(model: editor.ITextModel, context: languages.FoldingContext, token: CancellationToken): Promise<languages.FoldingRange[]> {
         const scriptId = EditorUtil.getScriptId(model);
 
-        const response = await this.omnisharpService.getBlockStructure(scriptId, new AbortController().signalFrom(token));
+        const response = await this.omnisharpService.getBlockStructure(scriptId, this.getAbortSignal(token));
 
         if (!response || !response.spans || !response.spans.length) {
             return [];

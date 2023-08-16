@@ -1,14 +1,10 @@
 import {CancellationToken, editor, languages, Range as MonacoRange} from "monaco-editor";
 import {EditorUtil, IDocumentRangeFormattingEditProvider} from "@application";
-import {IOmniSharpService} from "../omnisharp-service";
 import {FormatRangeRequest} from "../api";
 import {Converter} from "../utils";
+import {FeatureProvider} from "./feature-provider";
 
-export class OmnisharpDocumentRangeFormattingEditProvider implements IDocumentRangeFormattingEditProvider
-{
-    constructor(@IOmniSharpService private readonly omnisharpService: IOmniSharpService) {
-    }
-
+export class OmnisharpDocumentRangeFormattingEditProvider extends FeatureProvider implements IDocumentRangeFormattingEditProvider {
     public async provideDocumentRangeFormattingEdits(model: editor.ITextModel, range: MonacoRange, options: languages.FormattingOptions, token: CancellationToken): Promise<languages.TextEdit[]> {
         const scriptId = EditorUtil.getScriptId(model);
 
