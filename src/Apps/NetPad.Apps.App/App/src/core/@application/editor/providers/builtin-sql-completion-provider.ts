@@ -1,5 +1,5 @@
 import {ICompletionItemProvider, TextLanguage} from "@application";
-import {editor, languages} from "monaco-editor";
+import {CancellationToken, editor, languages, Position} from "monaco-editor";
 
 export class BuiltinSqlCompletionProvider implements ICompletionItemProvider {
     public triggerCharacters = [" "];
@@ -52,7 +52,7 @@ export class BuiltinSqlCompletionProvider implements ICompletionItemProvider {
         return "sql";
     }
 
-    public provideCompletionItems(model: editor.ITextModel, position, ctx, token) {
+    public provideCompletionItems(model: editor.ITextModel, position: Position, ctx: languages.CompletionContext, token: CancellationToken) {
         const word = model.getWordUntilPosition(position);
         const range = {
             startLineNumber: position.lineNumber,
@@ -71,8 +71,7 @@ export class BuiltinSqlCompletionProvider implements ICompletionItemProvider {
                     sortText: x
                 }
             });
-        }
-        else {
+        } else {
             BuiltinSqlCompletionProvider.completionItems.forEach(item => item.range = range);
         }
 

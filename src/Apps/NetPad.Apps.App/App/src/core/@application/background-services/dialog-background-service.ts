@@ -20,7 +20,7 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
 
     constructor(@IEventBus private readonly eventBus: IEventBus,
                 @IIpcGateway private readonly ipcGateway: IIpcGateway,
-                @IDialogService private readonly dialogService,
+                @IDialogService private readonly dialogService: IDialogService,
                 @ILogger logger: ILogger
     ) {
         super();

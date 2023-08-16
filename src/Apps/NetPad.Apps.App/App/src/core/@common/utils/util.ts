@@ -246,7 +246,7 @@ export class Util {
      */
     public delay = (ms: number) => new Promise((resolve) => PLATFORM.setTimeout(resolve, ms));
 
-    private static hasSubstringAt(str, substr, pos) {
+    private static hasSubstringAt(str: string, substr: string, pos: number) {
         const len = substr.length;
         let idx = 0;
 

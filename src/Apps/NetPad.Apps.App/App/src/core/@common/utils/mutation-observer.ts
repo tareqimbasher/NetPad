@@ -6,7 +6,7 @@ export class AppMutationObserver {
     private readonly listeners: MutationCallback[];
     private readonly logger: ILogger;
 
-    constructor(@ILogger logger) {
+    constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(AppMutationObserver));
         this.listeners = [];
     }

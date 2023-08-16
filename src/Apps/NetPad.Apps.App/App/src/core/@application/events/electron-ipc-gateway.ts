@@ -19,7 +19,7 @@ export class ElectronIpcGateway implements IIpcGateway {
         return Promise.resolve(undefined);
     }
 
-    public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
+    public subscribe<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void): SubscriptionToken {
         const handler = (event: IpcRendererEvent, ...args: unknown[]) => {
             this.logger.debug(`ElectronIpcGateway: Got server message`, event, ...args);
             const json = args.length > 0 ? args[0] as string : null;

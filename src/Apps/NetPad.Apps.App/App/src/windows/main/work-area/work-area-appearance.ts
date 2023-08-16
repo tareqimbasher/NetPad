@@ -16,7 +16,7 @@ export class WorkAreaAppearance extends LocalStorageBacked implements IWorkAreaA
 
     constructor(
         @IObserverLocator observerLocator: IObserverLocator,
-        @ILogger logger
+        @ILogger logger: ILogger
     ) {
         super("work-area.appearance");
         this.logger = logger.scopeTo(nameof(WorkAreaAppearance));

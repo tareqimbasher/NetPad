@@ -31,7 +31,7 @@ export class SortValueConverter {
         if (!propertyName)
             return array.sort((a, b) => comparer(a, b) * directionFactor);
 
-        return array.sort((a, b) => comparer(a[propertyName], b[propertyName]) * directionFactor);
+        return array.sort((a, b) => comparer(a[propertyName as keyof typeof a], b[propertyName as keyof typeof b]) * directionFactor);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

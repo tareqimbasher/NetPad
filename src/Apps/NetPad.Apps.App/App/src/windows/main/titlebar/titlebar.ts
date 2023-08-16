@@ -16,7 +16,7 @@ export class Titlebar extends ViewModelBase {
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
                 @IDialogService private readonly dialogService: IDialogService,
-                @ILogger logger
+                @ILogger logger: ILogger
     ) {
         super(logger);
 

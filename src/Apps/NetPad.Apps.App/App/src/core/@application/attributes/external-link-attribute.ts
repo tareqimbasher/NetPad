@@ -15,7 +15,7 @@ export class ExternalLinkCustomAttribute extends ViewModelBase {
     public attached() {
         const handler = async (event: Event) => {
             if (this.element.tagName !== "A" || !this.element.getAttribute("href"))
-                return;
+                return true;
 
             await this.openLinkExternally(event);
             return false;

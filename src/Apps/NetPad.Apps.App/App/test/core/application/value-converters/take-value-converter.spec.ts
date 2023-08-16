@@ -41,7 +41,7 @@ describe("Take Value Converter", () => {
     });
 
     it("should return the same array instance if array is empty", () => {
-        const array = [];
+        const array: unknown[] = [];
         const converter = getConverter();
         const result = converter.toView(array, 1);
         expect(result).toBe(array);

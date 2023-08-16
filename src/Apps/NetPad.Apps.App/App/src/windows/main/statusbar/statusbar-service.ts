@@ -5,8 +5,8 @@ export const IStatusbarService = DI.createInterface<IStatusbarService>();
 
 export interface IStatusbarService {
     items: ReadonlyArray<IStatusbarItem>;
-    addItem(item: IStatusbarItem);
-    removeItem(item: IStatusbarItem);
+    addItem(item: IStatusbarItem): void;
+    removeItem(item: IStatusbarItem): void;
 }
 
 export class StatusbarService implements IStatusbarService {

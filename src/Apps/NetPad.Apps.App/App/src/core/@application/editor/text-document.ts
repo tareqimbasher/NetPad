@@ -65,7 +65,7 @@ export class TextDocument extends WithDisposables {
     }
 
     public onChange(handler: (setter: unknown, newValue: string) => Promise<void>): SubscriptionToken {
-        const wrappedHandler = (setter, newValue) => handler(setter, newValue);
+        const wrappedHandler = (setter: unknown, newValue: string) => handler(setter, newValue);
         this.changeHandlers.add(wrappedHandler);
         return new SubscriptionToken(() => this.changeHandlers.delete(wrappedHandler));
     }

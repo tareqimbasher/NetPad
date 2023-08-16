@@ -100,7 +100,7 @@ export class OutputPane extends Pane {
     }
 
     @watch<OutputPane>(vm => vm.appWindows.items.map(x => x.name))
-    private activateIfPopoutWindowClosed(newValue, oldValue) {
+    private activateIfPopoutWindowClosed(newValue: string, oldValue: string) {
         const existedInOld = oldValue.indexOf("output") >= 0;
         const existsInNew = newValue.indexOf("output") >= 0;
 

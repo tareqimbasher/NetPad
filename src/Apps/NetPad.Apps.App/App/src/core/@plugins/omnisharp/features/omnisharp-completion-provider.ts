@@ -1,4 +1,4 @@
-import {CancellationToken, editor, IRange, languages} from "monaco-editor";
+import {CancellationToken, editor, IRange, languages, Position} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
 import {EditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
 import {Converter, TextChangeUtil} from "../utils";
@@ -32,7 +32,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
         }];
     }
 
-    public async provideCompletionItems(model, position, ctx, token) {
+    public async provideCompletionItems(model: editor.ITextModel, position: Position, ctx: languages.CompletionContext, token: CancellationToken) {
         const word = model.getWordUntilPosition(position);
         const range = {
             startLineNumber: position.lineNumber,
@@ -84,6 +84,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
             return this.convertToMonacoCompletionItem(completion.model, item.range as IRange, resolution.item);
         } catch (ex) {
             console.error("Error resolving CompletionItem", item, ex);
+            return item;
         }
     }
 
@@ -160,7 +161,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
             supportThemeIcons: true
         } : undefined;
 
-        const tags = apiCompletion.tags && apiCompletion.tags[0] === "Deprecated" ? 1 : [];
+        const tags = apiCompletion.tags && apiCompletion.tags[0] === "Deprecated" ? [1] : [];
 
         let command: languages.Command | undefined = undefined;
 

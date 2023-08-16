@@ -12,6 +12,6 @@ export abstract class Viewer extends ViewModelBase {
     }
 
     public abstract canOpen(viewable: ViewableObject): boolean;
-    public abstract open(viewable: ViewableObject);
-    public abstract close(viewable: ViewableObject);
+    public abstract open(viewable: ViewableObject): void;
+    public abstract close(viewable: ViewableObject): void;
 }

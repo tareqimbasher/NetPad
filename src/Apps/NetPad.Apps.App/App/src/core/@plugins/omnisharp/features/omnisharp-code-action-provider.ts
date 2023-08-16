@@ -108,7 +108,7 @@ export class OmniSharpCodeActionProvider extends FeatureProvider implements ICod
         const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, new AbortController().signalFromDefaultTimeout());
 
         if (!response || !response.changes || versionBeforeRequest !== model.getVersionId()) {
-            return true;
+            return;
         }
 
         const modifications: api.LinePositionSpanTextChange[] = [];
