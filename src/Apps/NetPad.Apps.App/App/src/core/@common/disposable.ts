@@ -3,7 +3,7 @@ export interface IDisposable {
 }
 
 export abstract class WithDisposables implements IDisposable {
-    private disposables: (() => void)[] = [];
+    private readonly disposables: (() => void)[] = [];
 
     public addDisposable(disposable: IDisposable | (() => void)) {
         if (disposable instanceof Function) {
@@ -14,16 +14,16 @@ export abstract class WithDisposables implements IDisposable {
     }
 
     public dispose() {
-        let disposable = this.disposables.pop();
+        while (this.disposables.length > 0) {
+            const disposable = this.disposables.shift();
 
-        while (disposable) {
             try {
-                disposable();
+                if (disposable !== undefined) {
+                    disposable();
+                }
             } catch (ex) {
                 console.error("Error while disposing", disposable, ex);
             }
-
-            disposable = this.disposables.pop();
         }
     }
 }

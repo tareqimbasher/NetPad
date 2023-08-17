@@ -1,18 +1,3 @@
-export class KeyCodeUtil {
-    public static isDigit(keyCode: string | KeyCode): boolean {
-        return keyCode.startsWith("Digit");
-    }
-
-    public static parseDigit(keyCode: string): number {
-        if (!this.isDigit(keyCode)) throw new Error(`Key code '${keyCode}' is not a digit.`);
-
-        const digit = parseInt(keyCode.replace("Digit", ""));
-        if (isNaN(digit)) throw new Error(`Key code '${keyCode}' is not a digit.`);
-
-        return digit;
-    }
-}
-
 export enum KeyCode {
     Backspace = "Backspace",
     Tab = "Tab",
