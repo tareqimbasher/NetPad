@@ -5,7 +5,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
-const tsNameof = require("ts-nameof");
 
 const cssLoader = 'css-loader';
 
@@ -100,16 +99,7 @@ module.exports = function (env, {analyze}) {
                     test: /\.ts$/i,
                     use: [
                         {
-                            loader: 'ts-loader',
-                            options: {
-                                getCustomTransformers: () => ({before: [tsNameof]}),
-                                compilerOptions: {
-                                    // For some reason ts-loader emits the following error while tsc does not
-                                    // TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
-                                    // Set this to false here
-                                    strictNullChecks: false
-                                }
-                            },
+                            loader: 'ts-loader'
                         },
                         '@aurelia/webpack-loader'
                     ],

@@ -24,8 +24,8 @@ export class WorkAreaAppearance extends LocalStorageBacked implements IWorkAreaA
         this.migrateOlderVersions();
 
         super.autoSave(observerLocator, [
-            nameof(this.style),
-            nameof(this.size),
+            nameof(this, "style"),
+            nameof(this, "size"),
         ]);
     }
 
