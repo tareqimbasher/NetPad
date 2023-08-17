@@ -6,8 +6,8 @@ export abstract class DialogBase extends ViewModelBase {
     private static instances = new Map<string, DialogOpenResult>();
 
     protected constructor(
-        @IDialogDom protected readonly dialogDom: IDialogDom,
-        @ILogger logger: ILogger
+        protected readonly dialogDom: IDialogDom,
+        logger: ILogger
     ) {
         super(logger);
         dialogDom.contentHost.classList.add("dialog");
