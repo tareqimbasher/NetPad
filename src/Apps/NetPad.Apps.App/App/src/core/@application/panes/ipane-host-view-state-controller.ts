@@ -1,7 +1,7 @@
 import {PaneHost} from "@application";
 
 export interface IPaneHostViewStateController {
-    expand(paneHost: PaneHost);
+    expand(paneHost: PaneHost): void;
 
-    collapse(paneHost: PaneHost);
+    collapse(paneHost: PaneHost): void;
 }

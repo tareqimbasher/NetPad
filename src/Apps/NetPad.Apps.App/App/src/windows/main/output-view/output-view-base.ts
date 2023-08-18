@@ -14,7 +14,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     private lastOutputElement?: Element | null;
     private pendingOutputQueue: HtmlScriptOutput[] = [];
 
-    protected constructor(@ILogger logger: ILogger) {
+    protected constructor(logger: ILogger) {
         super(logger);
     }
 

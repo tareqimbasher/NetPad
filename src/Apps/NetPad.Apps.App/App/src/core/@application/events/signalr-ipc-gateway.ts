@@ -106,7 +106,7 @@ export class SignalRIpcGateway implements IIpcGateway {
         }
     }
 
-    public subscribe(channelName: string, callback: (message: unknown, channel: string) => void): SubscriptionToken {
+    public subscribe<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void): SubscriptionToken {
         this.addCallback(channelName, callback);
 
         return new SubscriptionToken(() => {
@@ -118,7 +118,7 @@ export class SignalRIpcGateway implements IIpcGateway {
         return await this.connection.invoke(channelName, ...params);
     }
 
-    private addCallback(channelName: string, callback: (message: unknown, channel: string) => void) {
+    private addCallback<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void) {
         this.ensureOrRegisterNewSignalrHandler(channelName);
 
         let channelCallbacks = this.callbacks.get(channelName);
@@ -128,14 +128,14 @@ export class SignalRIpcGateway implements IIpcGateway {
             this.callbacks.set(channelName, channelCallbacks);
         }
 
-        channelCallbacks.push(callback);
+        channelCallbacks.push(callback as (message: unknown, channel: string) => void);
     }
 
-    private removeCallback(channelName: string, callback: (message: unknown, channel: string) => void) {
+    private removeCallback<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void) {
         const channelCallbacks = this.callbacks.get(channelName);
 
         if (!!channelCallbacks && channelCallbacks.length > 0) {
-            const ix = channelCallbacks.indexOf(callback);
+            const ix = channelCallbacks.indexOf(callback as (message: unknown, channel: string) => void);
             if (ix >= 0) {
                 channelCallbacks.splice(ix, 1);
             }

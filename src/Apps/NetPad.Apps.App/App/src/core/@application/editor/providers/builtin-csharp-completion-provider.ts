@@ -1,12 +1,12 @@
 import * as monaco from "monaco-editor";
-import {languages, Range} from "monaco-editor";
+import {CancellationToken, editor, languages, Position, Range} from "monaco-editor";
 import {ICompletionItemProvider} from "./interfaces";
 import {snippets} from "./snippets/csharp";
 import {TextLanguage} from "../text-language";
 
 export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider {
     // This must remain as "undefined", otherwise it will interfere with suggestions provided by omnisharp
-    public triggerCharacters = undefined;
+    public triggerCharacters: string[] | undefined = undefined;
     private completionItems: languages.CompletionItem[] = [];
 
     constructor() {
@@ -17,7 +17,7 @@ export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider 
         return "csharp";
     }
 
-    public provideCompletionItems(model, position, ctx, token) {
+    public provideCompletionItems(model: editor.ITextModel, position: Position, context: languages.CompletionContext, token: CancellationToken): languages.ProviderResult<languages.CompletionList> {
         const word = model.getWordUntilPosition(position);
         const range = {
             startLineNumber: position.lineNumber,
@@ -42,7 +42,7 @@ export class BuiltinCSharpCompletionProvider implements ICompletionItemProvider 
         const defaultRange = new Range(0, 0, 0, 0);
 
         for (const key in snippets) {
-            const snippet = snippets[key];
+            const snippet = snippets[key as keyof typeof snippets];
 
             completionItems.push({
                 label: snippet.prefix,

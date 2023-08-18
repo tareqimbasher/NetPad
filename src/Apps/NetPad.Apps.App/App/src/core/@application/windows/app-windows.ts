@@ -2,7 +2,7 @@ import {IDisposable} from "@common";
 import {ILogger} from "aurelia";
 
 class AppWindow {
-    constructor(public readonly name) {
+    constructor(public readonly name: string) {
     }
 }
 

@@ -59,7 +59,7 @@ export class BuiltinActionProvider implements IActionProvider {
                                 .map(env => this.toPick(env.script))
                                 .sort((a) => a.id === session.active?.script.id ? -1 : 1);
 
-                        quickInput.pick(picks, {placeholder: "Go to script"}).then((selected) => {
+                        quickInput.pick(picks, {placeholder: "Go to script"}).then((selected: IScriptPick) => {
                             if (!selected) {
                                 // Cancelled
                                 return;
@@ -82,7 +82,7 @@ export class BuiltinActionProvider implements IActionProvider {
                                 .sort((a, b) => a.label > b.label ? 1 : -1)
                             );
 
-                            quickInput.pick(picks, {placeholder: "Go to script"}).then((selected) => {
+                            quickInput.pick(picks, {placeholder: "Go to script"}).then((selected: IScriptPick) => {
                                 if (!selected) {
                                     // Cancelled
                                     return;
@@ -99,13 +99,7 @@ export class BuiltinActionProvider implements IActionProvider {
         ];
     }
 
-    private toPick(script: Partial<{
-        id: string,
-        name: string,
-        path: string,
-        isDirty: boolean,
-        kind: ScriptKind
-    }>) {
+    private toPick(script: Partial<IScriptPick>) {
         const icon = script.kind === "SQL"
             ? "$(sql)"
             : "$(csharp)";
@@ -118,6 +112,18 @@ export class BuiltinActionProvider implements IActionProvider {
             // detail: "test detail",
             // meta: "test meta",
             script: script
-        }
+        };
     }
+}
+
+interface IScriptPick {
+    type: string;
+    id: string;
+    label: string;
+    description: string;
+    script: Script;
+    kind: ScriptKind;
+    isDirty: boolean;
+    path: string;
+    name: string;
 }

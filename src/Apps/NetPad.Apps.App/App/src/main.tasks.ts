@@ -45,7 +45,8 @@ export const startBackgroundServices = async (container: IContainer) => {
         try {
             await backgroundService.start();
         } catch (ex) {
-            logger.error(`Error starting background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+            if (ex instanceof Error)
+                logger.error(`Error starting background service ${backgroundService.constructor.name}. ${ex.toString()}`);
         }
     }
 }
@@ -60,7 +61,8 @@ export const stopBackgroundServices = async (container: IContainer) => {
         try {
             await backgroundService.stop();
         } catch (ex) {
-            logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+            if (ex instanceof Error)
+                logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
         }
     }
 };

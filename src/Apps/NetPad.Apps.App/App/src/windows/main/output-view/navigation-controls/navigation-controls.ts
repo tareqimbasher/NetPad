@@ -13,7 +13,7 @@ export class NavigationControls extends ViewModelBase {
         resizeObserver.observe(this.outputElement);
         this.addDisposable(() => resizeObserver.disconnect());
 
-        const scrollHandler = Util.debounce(this, (event: Event) => this.showOrHideNavigationControls(), 100, false);
+        const scrollHandler = () => this.showOrHideNavigationControls();
         this.outputElement.addEventListener("scroll", scrollHandler);
         this.addDisposable(() => this.outputElement.removeEventListener("scroll", scrollHandler));
     }

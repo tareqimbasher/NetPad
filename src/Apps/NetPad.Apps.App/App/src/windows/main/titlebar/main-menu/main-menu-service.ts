@@ -12,8 +12,8 @@ export const IMainMenuService = DI.createInterface<MainMenuService>();
 
 export interface IMainMenuService {
     items: ReadonlyArray<IMenuItem>;
-    addItem(item: IMenuItem);
-    removeItem(item: IMenuItem);
+    addItem(item: IMenuItem): void;
+    removeItem(item: IMenuItem): void;
 }
 
 export class MainMenuService implements IMainMenuService {

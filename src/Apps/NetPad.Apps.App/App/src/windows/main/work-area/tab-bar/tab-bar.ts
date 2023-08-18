@@ -21,7 +21,7 @@ export class TabBar extends ViewModelBase {
         @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
-        @ILogger logger,
+        @ILogger logger: ILogger,
         private readonly settings: Settings,
     ) {
         super(logger);
@@ -167,7 +167,7 @@ export class TabBar extends ViewModelBase {
 
     private initializeTabDragAndDrop() {
         const selector = ".drag-drop-container";
-        const dndContainer = this.element.querySelector(selector);
+        const dndContainer = this.element.querySelector(selector) as HTMLElement | null;
         if (!dndContainer) {
             this.logger.error(`Could not find elements with selector: '${selector}'. Tab drag and drop will not be initialized.`);
             return;

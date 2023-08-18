@@ -44,7 +44,7 @@ export class LocalStorageBacked extends WithDisposables {
 
                 const newObj = { };
                 for (const property of propertiesThatTriggerAutoSave) {
-                    newObj[property] = this[property];
+                    newObj[property as keyof typeof newObj] = this[property as keyof typeof newObj];
                 }
 
                 this.save(newObj);

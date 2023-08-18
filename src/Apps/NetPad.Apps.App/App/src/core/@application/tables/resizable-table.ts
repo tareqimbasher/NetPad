@@ -32,7 +32,10 @@ export class ResizableTable extends WithDisposables {
     }
 
     private setListeners(table: HTMLTableElement, resizer: HTMLElement) {
-        let pageX, curCol, curColWidth, tableWidth;
+        let pageX: number | undefined,
+            curCol: HTMLElement | null | undefined,
+            curColWidth: number | undefined,
+            tableWidth: number;
 
         const setResizerHeight = () => {
             const tableRect = this.table.getBoundingClientRect();
@@ -47,28 +50,32 @@ export class ResizableTable extends WithDisposables {
             setResizerHeight();
         };
 
-        const mouseDownHandler = (e) => {
+        const mouseDownHandler = (e: MouseEvent) => {
             tableWidth = table.offsetWidth;
-            curCol = e.target.parentElement;
+            curCol = (e.target as HTMLElement).parentElement;
             pageX = e.pageX;
+
+            if (!curCol) {
+                return;
+            }
 
             const padding = this.paddingDiff(curCol);
 
             curColWidth = curCol.offsetWidth - padding;
         };
 
-        const mouseOverHandler = (e) => {
-            e.target.style.borderLeft = '2px solid dodgerblue';
+        const mouseOverHandler = (e: MouseEvent) => {
+            (e.target as HTMLElement).style.borderLeft = '2px solid dodgerblue';
             // We set the height of the resizer here because table height might change
             setResizerHeight();
         };
 
-        const mouseOutHandler = (e) => {
-            e.target.style.borderLeft = '';
+        const mouseOutHandler = (e: MouseEvent) => {
+            (e.target as HTMLElement).style.borderLeft = '';
         };
 
-        const mouseMoveHandler = (e) => {
-            if (curCol) {
+        const mouseMoveHandler = (e: MouseEvent) => {
+            if (curCol && pageX !== undefined && curColWidth !== undefined) {
                 const diffX = e.pageX - pageX;
                 curCol.style.width = (curColWidth + diffX) + 'px';
                 table.style.width = tableWidth + diffX + "px"
@@ -98,7 +105,7 @@ export class ResizableTable extends WithDisposables {
         });
     }
 
-    private paddingDiff(col) {
+    private paddingDiff(col: Element) {
         if (this.getStyleVal(col, 'box-sizing') == 'border-box') {
             return 0;
         }
@@ -109,7 +116,7 @@ export class ResizableTable extends WithDisposables {
 
     }
 
-    private getStyleVal(el, css) {
+    private getStyleVal(el: Element, css: string) {
         return (window.getComputedStyle(el, null).getPropertyValue(css))
     }
 }

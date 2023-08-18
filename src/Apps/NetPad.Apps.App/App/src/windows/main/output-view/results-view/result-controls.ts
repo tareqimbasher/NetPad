@@ -12,9 +12,9 @@ export class ResultControls extends WithDisposables {
             const title = textGroup.querySelector(".title");
             if (!title) continue;
 
-            const clickHandler = (e) => {
+            const clickHandler = (e: Event) => {
                 const selection = document.getSelection();
-                if (selection && selection.toString() && e.target.contains(selection.anchorNode)) return;
+                if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
                 if (textGroup.classList.contains("collapsed")) textGroup.classList.remove("collapsed");
                 else textGroup.classList.add("collapsed");
@@ -32,9 +32,9 @@ export class ResultControls extends WithDisposables {
             const collapseTarget = this.getTableCollapseTarget(table);
             if (collapseTarget) {
                 collapseTarget.classList.add("collapse-actionable");
-                const clickHandler = (e) => {
+                const clickHandler = (e: Event) => {
                     const selection = document.getSelection();
-                    if (selection && selection.toString() && e.target.contains(selection.anchorNode)) return;
+                    if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
                     if (e.target === collapseTarget) this.toggle(table);
                 };

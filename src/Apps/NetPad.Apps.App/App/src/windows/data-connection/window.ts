@@ -174,7 +174,8 @@ export class Window extends WindowBase {
             this.testingConnectionFailureMessage = result.message;
         } catch (ex) {
             this.testingConnectionStatus = "fail";
-            this.testingConnectionFailureMessage = ex.toString();
+            if (ex instanceof Error)
+                this.testingConnectionFailureMessage = ex.toString();
             this.logger.error("Error while testing connection", ex);
         }
     }
@@ -192,7 +193,8 @@ export class Window extends WindowBase {
             await this.dataConnectionService.save(this.connection);
             window.close();
         } catch (ex) {
-            alert("Could not save the connection: " + ex.toString());
+            const errorMsg = ex instanceof Error ? ex.toString() : "Unknown error";
+            alert("Could not save the connection: " + errorMsg);
             this.logger.error("Error while saving connection", ex);
         }
     }
@@ -220,7 +222,7 @@ export class Window extends WindowBase {
             return;
         }
 
-        if (this.authType == "none" ) {
+        if (this.authType == "none") {
             this.connection.userId = undefined;
             this.connection.password = undefined;
             this.unprotectedPassword = undefined;

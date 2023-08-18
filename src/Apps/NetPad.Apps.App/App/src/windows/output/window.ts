@@ -33,6 +33,8 @@ export class Window extends WindowBase {
     public attached() {
         this.updateOutputViews();
 
+        type OutputBroadcastMessage = {name: string, html: string};
+
         // Get outputs from main window
         const bc = new BroadcastChannel("output");
         bc.onmessage = (ev) => {
@@ -41,8 +43,8 @@ export class Window extends WindowBase {
 
             for (const item of data) {
                 const scriptId = item.scriptId;
-                const resultsOutputHtml = item.output.find(x => x.name === nameof(ResultsView)).html;
-                const sqlOutputHtml = item.output.find(x => x.name === nameof(SqlView)).html;
+                const resultsOutputHtml = item.output.find((x: OutputBroadcastMessage) => x.name === nameof(ResultsView)).html;
+                const sqlOutputHtml = item.output.find((x: OutputBroadcastMessage) => x.name === nameof(SqlView)).html;
 
                 if (!scriptId) return;
 

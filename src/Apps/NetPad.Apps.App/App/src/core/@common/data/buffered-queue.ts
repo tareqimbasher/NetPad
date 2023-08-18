@@ -27,7 +27,7 @@ export class BufferedQueue<T> {
 
     constructor(private options: IBufferedQueueOptions<T>) {
         if (!options.onFlush) {
-            throw new Error(`Option ${nameof(options.onFlush)} is not defined. This function must be defined.`);
+            throw new Error(`Option ${nameof(options, "onFlush")} is not defined. This function must be defined.`);
         }
 
         this.items = [];

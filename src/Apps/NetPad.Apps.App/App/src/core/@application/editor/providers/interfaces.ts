@@ -84,7 +84,7 @@ export interface IRenameProvider extends languages.RenameProvider {
 export const IRenameProvider = DI.createInterface<IRenameProvider>();
 
 export interface IDiagnosticsProvider {
-    provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void);
+    provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void): void | Promise<void>;
 }
 
 export const IDiagnosticsProvider = DI.createInterface<IDiagnosticsProvider>();

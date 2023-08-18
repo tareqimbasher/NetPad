@@ -29,7 +29,7 @@ export class FindTextBox extends ViewModelBase {
         // Needed so keydown event is tracked on root element
         this.options.rootElement.tabIndex = 1;
 
-        const ctrlFHandler = ev => {
+        const ctrlFHandler = (ev: KeyboardEvent) => {
             if (ev.ctrlKey && ev.code == KeyCode.KeyF) {
                 this.show = true;
                 const selectedText = window.getSelection()?.toString();
@@ -42,7 +42,7 @@ export class FindTextBox extends ViewModelBase {
             }
         };
 
-        const searchTextBoxKeyHandler = ev => {
+        const searchTextBoxKeyHandler = (ev: KeyboardEvent) => {
             if (ev.code === KeyCode.Enter) {
                 ev.shiftKey ? this.goToPreviousResult() : this.goToNextResult();
             }

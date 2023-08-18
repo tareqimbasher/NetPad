@@ -32,7 +32,7 @@ export class PaneHostViewStateController implements IPaneHostViewStateController
         this._elementsAndPaneHosts = new Lazy(orderedElementsAndPaneHostsGetter);
         this._viewStates = new Lazy(() => this._elementsAndPaneHosts.value
             .filter(x => x instanceof PaneHost)
-            .map((ph: PaneHost) => new PaneHostViewState(ph, this.defaultPaneHostSizePercent)));
+            .map(ph => new PaneHostViewState(ph as PaneHost, this.defaultPaneHostSizePercent)));
     }
 
     public expand(target: PaneHost) {
@@ -134,7 +134,7 @@ export class PaneHostViewStateController implements IPaneHostViewStateController
         const state = this.getSavedState();
 
         for (const viewState of this._viewStates.value) {
-            const savedState = state[viewState.paneHost.orientation.toLowerCase()] as IPaneHostState;
+            const savedState = state[viewState.paneHost.orientation.toLowerCase() as keyof typeof state] as IPaneHostState;
             if (savedState) {
                 viewState.lastExpandedSize = savedState.lastExpandedSize;
                 if (savedState.expanded) {
@@ -148,7 +148,7 @@ export class PaneHostViewStateController implements IPaneHostViewStateController
         const state = this.getSavedState();
 
         for (const viewState of this._viewStates.value) {
-            state[viewState.paneHost.orientation.toLowerCase()] = {
+            state[viewState.paneHost.orientation.toLowerCase() as keyof typeof state] = {
                 expanded: viewState.shouldBeExpanded,
                 lastExpandedSize: viewState.lastExpandedSize
             }

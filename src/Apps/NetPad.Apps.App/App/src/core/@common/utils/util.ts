@@ -16,8 +16,8 @@ export class Util {
         if (!date || !format) return "";
 
         return format.replaceAll("yyyy", date.getFullYear().toString())
-            .replaceAll("MM", ("0" + date.getMonth()).slice(-2))
-            .replaceAll("M", date.getMonth().toString())
+            .replaceAll("MM", ("0" + (date.getMonth() + 1)).slice(-2))
+            .replaceAll("M", (date.getMonth() + 1).toString())
             .replaceAll("dd", ("0" + date.getDate()).slice(-2))
             .replaceAll("d", date.getDate().toString())
             .replaceAll("HH", ("0" + date.getHours()).slice(-2))
@@ -26,9 +26,9 @@ export class Util {
             .replaceAll("m", date.getMinutes().toString())
             .replaceAll("ss", ("0" + date.getSeconds()).slice(-2))
             .replaceAll("s", date.getSeconds().toString())
-            .replaceAll("fff", ("00" + date.getMilliseconds()).slice(-3))
-            .replaceAll("ff", ("0" + date.getMilliseconds()).slice(-2))
-            .replaceAll("f", date.getMilliseconds().toString());
+            .replaceAll("fff", ("000" + date.getMilliseconds()).slice(-3))
+            .replaceAll("ff", ("00" + date.getMilliseconds().toString().slice(0, 2)).slice(-2))
+            .replaceAll("f", date.getMilliseconds().toString().slice(0, 1));
     }
 
     /**
@@ -61,9 +61,9 @@ export class Util {
      * @param maxLength The length after which the target string will be truncated.
      */
     public static truncate(str: string, maxLength: number): string {
-        if (!str || maxLength < 0 || str.length <= maxLength) return str;
+        if (typeof str !== "string" || !str || maxLength <= 0 || str.length <= maxLength) return str;
 
-        return str.substr(0, maxLength - 3) + "...";
+        return str.substring(0, maxLength) + "...";
     }
 
     /**
@@ -246,7 +246,7 @@ export class Util {
      */
     public delay = (ms: number) => new Promise((resolve) => PLATFORM.setTimeout(resolve, ms));
 
-    private static hasSubstringAt(str, substr, pos) {
+    private static hasSubstringAt(str: string, substr: string, pos: number) {
         const len = substr.length;
         let idx = 0;
 

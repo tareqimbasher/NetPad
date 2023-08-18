@@ -72,7 +72,7 @@ export class TextChangeUtil {
     private static isAddUsingChange(textChange: LinePositionSpanTextChange) {
         const newText = textChange.newText;
 
-        if (!newText) return;
+        if (!newText) return false;
 
         return (
             // For when we get the normal/expected text format, ex: "using System.Text.Json;\n\n"

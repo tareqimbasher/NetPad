@@ -1,7 +1,12 @@
 import * as monaco from "monaco-editor";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-ignore
 import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput";
+// @ts-ignore
 import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/common/keybinding";
+// @ts-ignore
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
+/* eslint-enable @typescript-eslint/ban-ts-comment */
 
 export class EditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {

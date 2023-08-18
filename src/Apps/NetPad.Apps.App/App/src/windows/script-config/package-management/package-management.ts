@@ -98,7 +98,9 @@ export class PackageManagement extends ViewModelBase {
             await this.packageService.install(pkg.packageId, version || pkg.version);
             await this.refreshCachedPackages();
         } catch (ex) {
-            alert(`Download failed. ${ex.message}`);
+            if (ex instanceof Error) {
+                alert(`Download failed. ${ex.message}`);
+            }
         } finally {
             pkg.isInstalling = false;
         }

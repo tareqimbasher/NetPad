@@ -9,6 +9,11 @@ export class ViewModelBase extends WithDisposables {
 
     constructor(@ILogger logger: ILogger) {
         super();
+
+        if (logger === undefined || logger === null) {
+            throw new Error("logger is null or undefined");
+        }
+
         this.logger = logger.scopeTo((this as Record<string, unknown>).constructor.name)
     }
 

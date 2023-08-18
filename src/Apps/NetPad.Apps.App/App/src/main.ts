@@ -2,6 +2,8 @@ import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registrat
 import {DialogDefaultConfiguration} from "@aurelia/dialog";
 import "bootstrap";
 import "./styles/main.scss";
+import "@common/globals";
+import {AppMutationObserver, IBackgroundService} from "@common";
 import {
     AppService,
     Env,
@@ -37,7 +39,6 @@ import {
     TruncateValueConverter,
     YesNoValueConverter
 } from "@application";
-import {AppMutationObserver, IBackgroundService} from "@common";
 import * as appTasks from "./main.tasks";
 import {AppLifeCycle} from "./main.app-lifecycle";
 import {IPlatform} from "@application/platforms/iplatform";

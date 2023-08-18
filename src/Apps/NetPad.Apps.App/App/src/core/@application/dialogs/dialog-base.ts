@@ -6,8 +6,8 @@ export abstract class DialogBase extends ViewModelBase {
     private static instances = new Map<string, DialogOpenResult>();
 
     protected constructor(
-        @IDialogDom protected readonly dialogDom: IDialogDom,
-        @ILogger logger: ILogger
+        protected readonly dialogDom: IDialogDom,
+        logger: ILogger
     ) {
         super(logger);
         dialogDom.contentHost.classList.add("dialog");
@@ -66,7 +66,7 @@ export abstract class DialogBase extends ViewModelBase {
         const instance = DialogBase.instances.get((this as Record<string, unknown>).constructor.name);
 
         if (!instance) {
-            return;
+            return undefined;
         }
 
         return instance.dialog.ok(value);
@@ -76,7 +76,7 @@ export abstract class DialogBase extends ViewModelBase {
         const instance = DialogBase.instances.get((this as Record<string, unknown>).constructor.name);
 
         if (!instance) {
-            return;
+            return undefined;
         }
 
         return instance.dialog.cancel();

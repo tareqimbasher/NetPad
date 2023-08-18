@@ -105,6 +105,7 @@ export class Session extends SessionApiClient implements ISession {
             }
         });
 
+
         this.eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, message => {
             const environment = this.environments.find(e => e.script.id == message.scriptId);
 
@@ -114,7 +115,7 @@ export class Session extends SessionApiClient implements ISession {
             }
 
             const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
-            environment[propName] = message.newValue;
+            environment[propName as keyof typeof environment] = message.newValue as never;
         });
 
         this.eventBus.subscribeToServer(ScriptPropertyChangedEvent, message => {
@@ -127,7 +128,7 @@ export class Session extends SessionApiClient implements ISession {
 
             const script = environment.script;
             const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
-            script[propName] = message.newValue;
+            script[propName as keyof typeof script] = message.newValue as never;
         });
 
         this.eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, message => {
@@ -140,7 +141,7 @@ export class Session extends SessionApiClient implements ISession {
 
             const script = environment.script;
             const propName = message.propertyName.charAt(0).toLowerCase() + message.propertyName.slice(1);
-            script.config[propName] = message.newValue;
+            script.config[propName as keyof typeof script.config] = message.newValue as never;
         });
     }
 }

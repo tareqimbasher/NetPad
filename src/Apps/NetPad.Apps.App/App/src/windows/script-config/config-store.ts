@@ -1,11 +1,16 @@
 import {Reference, Script} from "@domain";
 
+interface ITab {
+    route: string;
+    text: string;
+}
+
 export class ConfigStore {
     private _namespaces: string[] = [];
     private _references: Reference[] = [];
 
-    public selectedTab;
-    public tabs = [
+    public selectedTab: ITab;
+    public tabs: ITab[] = [
         {route: "references", text: "References"},
         {route: "packages", text: "Packages"},
         {route: "namespaces", text: "Namespaces"},

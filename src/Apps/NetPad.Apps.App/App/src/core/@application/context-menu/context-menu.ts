@@ -27,7 +27,7 @@ export class ContextMenu extends ViewModelBase {
         if (!this.options || !this.options.selector)
             return;
 
-        const mouseClickHandler = ev => this.handleClickEvent(ev);
+        const mouseClickHandler = (ev: MouseEvent) => this.handleClickEvent(ev);
         document.addEventListener("mousedown", mouseClickHandler);
         this.addDisposable(() => document.removeEventListener("mousedown", mouseClickHandler));
 

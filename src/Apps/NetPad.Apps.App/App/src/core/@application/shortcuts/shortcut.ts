@@ -55,10 +55,10 @@ export class Shortcut {
         return this;
     }
 
-    public firesEvent(eventGetter: () => unknown);
-    public firesEvent<TEventType extends Constructable>(eventType: TEventType);
+    public firesEvent(eventGetter: () => unknown): Shortcut;
+    public firesEvent<TEventType extends Constructable>(eventType: TEventType): Shortcut;
 
-    public firesEvent<TEventType extends Constructable>(eventTypeOrGetter: TEventType | (() => unknown)) {
+    public firesEvent<TEventType extends Constructable>(eventTypeOrGetter: TEventType | (() => unknown)): Shortcut {
         this.event = eventTypeOrGetter;
         return this;
     }
