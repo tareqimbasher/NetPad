@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
+using NetPad.Common;
 using NetPad.DotNet;
 using NetPad.Packages;
 
@@ -34,15 +35,16 @@ public class AssembliesController : Controller
 
         if (reference is PackageReference packageReference)
         {
-            var assemblies = await _packageProvider.GetCachedPackageAssembliesAsync(
+            var assets = await _packageProvider.GetCachedPackageAssetsAsync(
                 packageReference.PackageId,
-                packageReference.Version);
+                packageReference.Version,
+                GlobalConsts.AppDotNetFrameworkVersion);
 
             var namespaces = new HashSet<string>();
 
-            foreach (var assembly in assemblies)
+            foreach (var asset in assets)
             {
-                foreach (var ns in _assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assembly)))
+                foreach (var ns in _assemblyInfoReader.GetNamespaces(await asset.ReadAllBytesAsync()))
                 {
                     namespaces.Add(ns);
                 }

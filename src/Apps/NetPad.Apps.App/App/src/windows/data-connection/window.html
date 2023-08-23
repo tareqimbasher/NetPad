@@ -31,76 +31,20 @@
                             <label class="col-form-label">Name:</label>
                         </div>
                         <div class="input-column">
-                            <input ref="nameField" type="text" class="form-control" value.bind="connection.name"/>
+                            <input ref="nameField" type="text" class="form-control"
+                                   value.bind="connectionView.connection.name"/>
                             <div class="invalid-feedback">
                                 Name already exists. Please choose a unique name.
                             </div>
                         </div>
                     </div>
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label">Host:</label>
-                        </div>
-                        <div class="input-column d-flex">
-                            <input type="text" class="form-control" value.bind="connection.host"/>
-                            <label class="col-form-label ms-5 me-3">Port:</label>
-                            <input type="number" class="form-control" value.bind="connection.port"
-                                   style="max-width: 7rem"/>
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label">Authentication:</label>
-                        </div>
-                        <div class="input-column auth-input">
-                            <select class="form-select" value.bind="authType">
-                                <option value="userAndPassword">User &amp; Password</option>
-                                <option value="none">No auth</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="input-row" if.bind="authType === 'userAndPassword'">
-                        <div class="label-column">
-                            <label class="col-form-label">User:</label>
-                        </div>
-                        <div class="input-column auth-input">
-                            <input type="text" class="form-control" value.bind="connection.userId"/>
-                        </div>
-                    </div>
-                    <div class="input-row" if.bind="authType === 'userAndPassword'">
-                        <div class="label-column">
-                            <label class="col-form-label">Password:</label>
-                        </div>
-                        <div class="input-column auth-input">
-                            <input type="password"
-                                   class="form-control"
-                                   value.bind="unprotectedPassword"
-                                   blur.trigger="unprotectedPasswordEntered()"
-                                   placeholder="<hidden>"/>
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label">Database:</label>
-                        </div>
-                        <div class="input-column d-flex align-items-center">
-                            <input class="form-control"
-                                   list="datalistOptions"
-                                   value.bind="connection.databaseName"
-                                   placeholder="Type to search, or click to select..."
-                                   focus.trigger="loadDatabases()">
-                            <datalist id="datalistOptions">
-                                <option repeat.for="dbName of databasesOnServer">${dbName}</option>
-                            </datalist>
-                            <span if.bind="loadingDatabases"
-                                  class="spinner-border spinner-border-sm text-yellow ms-3"
-                                  title="Loading databases..."></span>
-                        </div>
-                    </div>
+
+                    <au-compose component.bind="connectionView"></au-compose>
+
                     <div class="input-row">
                         <div class="label-column">
                             <label class="col-form-label"
-                                   title="Check if this connection is used for production data.">
+                                   title="Select if this connection is used for production data.">
                                 Production Data?
                             </label>
                         </div>
@@ -108,7 +52,7 @@
                             <div class="form-check">
                                 <input class="form-check-input"
                                        type="checkbox"
-                                       checked.bind="connection.containsProductionData">
+                                       checked.bind="connectionView.connection.containsProductionData">
                             </div>
                         </div>
                     </div>
@@ -155,7 +99,12 @@
         </div>
 
         <div class="bottom-buttons-bar">
-            <div class="ms-auto">
+            <div class="me-auto text-orange">
+                <span class="production-marker rounded-pill badge bg-orange"
+                      show.bind="connectionView.connection.containsProductionData"
+                      title="Be extra careful, this connection contains production data!">Production</span>
+            </div>
+            <div>
                 <button class="btn btn-primary" click.trigger="save()" disabled.bind="!isConnectionValid">Save</button>
                 <button class="btn btn-outline-secondary" click.trigger="cancel()">Cancel</button>
             </div>

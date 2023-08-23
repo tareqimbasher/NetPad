@@ -1,10 +1,18 @@
 using System;
+using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 
 namespace NetPad.Utilities;
 
 public static class PlatformUtil
 {
+    public static ImmutableArray<Architecture> SupportedArchitectures = new[]
+    {
+        Architecture.X64,
+        Architecture.X86,
+        Architecture.Arm64,
+    }.ToImmutableArray();
+
     public static OSPlatform GetOSPlatform()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -20,4 +28,17 @@ public static class PlatformUtil
     }
 
     public static bool IsWindowsPlatform() => GetOSPlatform() == OSPlatform.Windows;
+
+    public static bool IsOsArchitectureSupported(bool throwIfNotSupported = false)
+    {
+        bool supported = SupportedArchitectures.Contains(RuntimeInformation.OSArchitecture);
+
+        if (throwIfNotSupported)
+        {
+            throw new PlatformNotSupportedException(
+                $"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported. OS: ({RuntimeInformation.OSDescription})");
+        }
+
+        return supported;
+    }
 }

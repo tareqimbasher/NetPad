@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 
 namespace NetPad.Utilities;
 
@@ -22,5 +24,35 @@ public static class AssemblyUtil
 
         using StreamReader reader = new(resourceStream);
         return reader.ReadToEnd();
+    }
+
+    /// <summary>
+    /// Determines if a file is an assembly.
+    /// </summary>
+    /// <param name="path">File path.</param>
+    /// <remarks>
+    /// See: https://learn.microsoft.com/en-us/dotnet/standard/assembly/identify
+    /// </remarks>
+    public static bool IsAssembly(string path)
+    {
+        try
+        {
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+            using var peReader = new PEReader(fs);
+
+            if (!peReader.HasMetadata)
+            {
+                return false;
+            }
+
+            // Check that file has an assembly manifest.
+            MetadataReader reader = peReader.GetMetadataReader();
+            return reader.IsAssembly;
+        }
+        catch (BadImageFormatException)
+        {
+            return false;
+        }
     }
 }

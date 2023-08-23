@@ -116,10 +116,12 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         EntityFrameworkDatabaseConnection efConnection,
         SourceCodeCollection sourceCode)
     {
-        var locationReferences = new HashSet<string>();
+        var assemblyFileReferences = new HashSet<string>();
 
         var requiredReferences = await GetRequiredReferencesAsync(efConnection, targetFrameworkVersion);
-        locationReferences.AddRange(await requiredReferences.GetAssemblyPathsAsync(_packageProvider));
+        assemblyFileReferences.AddRange((await requiredReferences.GetAssetsAsync(targetFrameworkVersion, _packageProvider))
+            .Where(a => a.IsAssembly())
+            .Select(a => a.Path));
 
         var code = sourceCode.ToCodeString();
 
@@ -127,7 +129,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
                 code,
                 targetFrameworkVersion,
                 null,
-                locationReferences)
+                assemblyFileReferences)
             .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
             .WithOutputAssemblyNameTag($"data-connection_{efConnection.Id}")
         );

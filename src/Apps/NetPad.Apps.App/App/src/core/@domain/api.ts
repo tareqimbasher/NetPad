@@ -891,7 +891,7 @@ export interface IPackagesApiClient {
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
-    install(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class PackagesApiClient extends ApiClientBase implements IPackagesApiClient {
@@ -1161,12 +1161,14 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         return Promise.resolve<PackageMetadata[]>(<any>null);
     }
 
-    install(packageId: string | null | undefined, packageVersion: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    install(packageId: string | null | undefined, packageVersion: string | null | undefined, dotNetFrameworkVersion: DotNetFrameworkVersion | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/packages/install?";
         if (packageId !== undefined && packageId !== null)
             url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
         if (packageVersion !== undefined && packageVersion !== null)
             url_ += "packageVersion=" + encodeURIComponent("" + packageVersion) + "&";
+        if (dotNetFrameworkVersion !== undefined && dotNetFrameworkVersion !== null)
+            url_ += "dotNetFrameworkVersion=" + encodeURIComponent("" + dotNetFrameworkVersion) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -3096,6 +3098,11 @@ export abstract class DataConnection implements IDataConnection {
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "SQLiteDatabaseConnection") {
+            let result = new SQLiteDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
     }
 
@@ -3119,7 +3126,7 @@ export interface IDataConnection {
     type: DataConnectionType;
 }
 
-export type DataConnectionType = "MSSQLServer" | "PostgreSQL";
+export type DataConnectionType = "MSSQLServer" | "PostgreSQL" | "SQLite";
 
 export class DataConnectionTestResult implements IDataConnectionTestResult {
     success!: boolean;
@@ -3712,6 +3719,8 @@ export interface ICachedPackage extends IPackageMetadata {
 
 export type PackageInstallReason = "Explicit" | "Dependency";
 
+export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
+
 export class ScriptSummary implements IScriptSummary {
     id!: string;
     name!: string;
@@ -3929,8 +3938,6 @@ export interface ISourceCodeDto {
     usings?: string[] | undefined;
     code?: string | undefined;
 }
-
-export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
 
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
@@ -4642,6 +4649,7 @@ export class Types implements ITypes {
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
+    sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -4683,6 +4691,7 @@ export class Types implements ITypes {
             this.alertUserAboutMissingAppDependencies = _data["alertUserAboutMissingAppDependencies"] ? AlertUserAboutMissingAppDependencies.fromJS(_data["alertUserAboutMissingAppDependencies"]) : <any>undefined;
             this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
             this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
+            this.sqLiteDatabaseConnection = _data["sqLiteDatabaseConnection"] ? SQLiteDatabaseConnection.fromJS(_data["sqLiteDatabaseConnection"]) : <any>undefined;
         }
     }
 
@@ -4724,6 +4733,7 @@ export class Types implements ITypes {
         data["alertUserAboutMissingAppDependencies"] = this.alertUserAboutMissingAppDependencies ? this.alertUserAboutMissingAppDependencies.toJSON() : <any>undefined;
         data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
         data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
+        data["sqLiteDatabaseConnection"] = this.sqLiteDatabaseConnection ? this.sqLiteDatabaseConnection.toJSON() : <any>undefined;
         return data;
     }
 
@@ -4765,6 +4775,7 @@ export interface ITypes {
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
+    sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
@@ -6268,6 +6279,11 @@ export abstract class DatabaseConnection extends DataConnection implements IData
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "SQLiteDatabaseConnection") {
+            let result = new SQLiteDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
     }
 
@@ -6327,6 +6343,11 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "SQLiteDatabaseConnection") {
+            let result = new SQLiteDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
     }
 
@@ -6366,6 +6387,11 @@ export abstract class EntityFrameworkRelationalDatabaseConnection extends Entity
         }
         if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
             let result = new PostgreSqlDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "SQLiteDatabaseConnection") {
+            let result = new SQLiteDatabaseConnection();
             result.init(data);
             return result;
         }
@@ -6454,6 +6480,41 @@ export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatab
 }
 
 export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class SQLiteDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements ISQLiteDatabaseConnection {
+
+    constructor(data?: ISQLiteDatabaseConnection) {
+        super(data);
+        this._discriminator = "SQLiteDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): SQLiteDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new SQLiteDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): SQLiteDatabaseConnection {
+        const json = this.toJSON();
+        let result = new SQLiteDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISQLiteDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
 export class WindowState implements IWindowState {

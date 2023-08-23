@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Common;
+using NetPad.DotNet;
 using NetPad.Packages;
 
 namespace NetPad.Controllers;
@@ -72,7 +74,10 @@ public class PackagesController : Controller
     }
 
     [HttpPatch("install")]
-    public async Task<IActionResult> Install([FromQuery] string packageId, [FromQuery] string packageVersion)
+    public async Task<IActionResult> Install(
+        [FromQuery] string packageId,
+        [FromQuery] string packageVersion,
+        [FromQuery] DotNetFrameworkVersion? dotNetFrameworkVersion = null)
     {
         if (string.IsNullOrWhiteSpace(packageId))
             return BadRequest($"{nameof(packageId)} is required.");
@@ -83,7 +88,7 @@ public class PackagesController : Controller
 
         if (installInfo?.InstallReason == PackageInstallReason.Explicit) return Ok();
 
-        await _packageProvider.InstallPackageAsync(packageId, packageVersion);
+        await _packageProvider.InstallPackageAsync(packageId, packageVersion, dotNetFrameworkVersion ?? GlobalConsts.AppDotNetFrameworkVersion);
         return Ok();
     }
 }

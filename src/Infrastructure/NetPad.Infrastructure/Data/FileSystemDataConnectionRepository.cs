@@ -10,14 +10,7 @@ namespace NetPad.Data;
 
 public class FileSystemDataConnectionRepository : IDataConnectionRepository
 {
-    private readonly Settings _settings;
-    private readonly FilePath _connectionsFilePath;
-
-    public FileSystemDataConnectionRepository(Settings settings)
-    {
-        _settings = settings;
-        _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
-    }
+    private readonly FilePath _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
 
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
     {

@@ -1,6 +1,8 @@
 <template title="${connection.name}">
     <div class="d-flex align-items-center">
-        <img src.bind="iconUrl" style="max-height: 1.2rem; margin-right: 0.35rem;"/>
+        <span style="width: 16px; margin-right: 0.3rem;">
+            <img src.bind="iconUrl" style="max-height: 1.2rem;"/>
+        </span>
         ${connection.name}
         <span class="production-marker rounded-pill badge"
               show.bind="connection.containsProductionData">Production</span>

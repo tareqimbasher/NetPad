@@ -10,6 +10,8 @@ export class DataConnectionName {
                 return "/img/mssql.png";
             case "PostgreSQL":
                 return "/img/postgresql2.png";
+            case "SQLite":
+                return "/img/sqlite.png";
             default:
                 return "";
         }

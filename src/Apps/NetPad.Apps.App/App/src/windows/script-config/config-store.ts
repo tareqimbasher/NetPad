@@ -6,6 +6,7 @@ interface ITab {
 }
 
 export class ConfigStore {
+    private _script: Script;
     private _namespaces: string[] = [];
     private _references: Reference[] = [];
 
@@ -16,6 +17,10 @@ export class ConfigStore {
         {route: "namespaces", text: "Namespaces"},
     ];
 
+    public get script(): Script {
+        return this._script;
+    }
+
     public get namespaces(): ReadonlyArray<string> {
         return this._namespaces;
     }
@@ -25,6 +30,7 @@ export class ConfigStore {
     }
 
     public init(script: Script) {
+        this._script = script;
         this._namespaces = [...script.config.namespaces];
         this.updateNamespaceCount();
 

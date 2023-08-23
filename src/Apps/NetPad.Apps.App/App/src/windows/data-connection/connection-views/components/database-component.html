@@ -1,0 +1,24 @@
+<div class="input-row">
+    <div class="label-column">
+        <label class="col-form-label">Database:</label>
+    </div>
+    <div class="input-column d-flex align-items-center">
+        <input class="form-control"
+               list="datalistOptions"
+               value.bind="connection.databaseName"
+               placeholder="${dbLoadingOptions.enabled ? 'Type to search, or click to select...' : 'Path to data file...'}"
+               focus.trigger="loadDatabases()">
+
+        <button class="btn btn-sm btn-secondary ms-3 btn-basic" click.trigger="browseInput.click()">...</button>
+        <input ref="browseInput" type="file" files.bind="browsedFile" class="d-none">
+
+        <span if.bind="dbLoadingOptions.enabled">
+            <datalist id="datalistOptions">
+                <option repeat.for="dbName of databasesOnServer">${dbName}</option>
+            </datalist>
+            <span if.bind="loadingDatabases"
+                  class="spinner-border spinner-border-sm text-yellow ms-3"
+                  title="Loading databases..."></span>
+        </span>
+    </div>
+</div>

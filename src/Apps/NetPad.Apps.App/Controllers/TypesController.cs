@@ -52,5 +52,6 @@ public class TypesController : Controller
         public AlertUserAboutMissingAppDependencies? AlertUserAboutMissingAppDependencies { get; set; }
         public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
+        public SQLiteDatabaseConnection? SQLiteDatabaseConnection { get; set; }
     }
 }

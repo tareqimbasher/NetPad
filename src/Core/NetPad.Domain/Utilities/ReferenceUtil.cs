@@ -8,26 +8,29 @@ namespace NetPad.Utilities;
 
 public static class ReferenceUtil
 {
-    public static async Task<HashSet<string>> GetAssemblyPathsAsync(this IEnumerable<Reference> references, IPackageProvider packageProvider)
+    public static async Task<HashSet<ReferenceAsset>> GetAssetsAsync(
+        this IEnumerable<Reference> references,
+        DotNetFrameworkVersion dotNetFrameworkVersion,
+        IPackageProvider packageProvider)
     {
-        var assemblyPaths = new HashSet<string>();
+        var assets = new HashSet<ReferenceAsset>();
 
         foreach (var reference in references.Distinct())
         {
             if (reference is AssemblyFileReference assemblyFileReference && assemblyFileReference.AssemblyPath != null)
             {
-                assemblyPaths.Add(assemblyFileReference.AssemblyPath);
+                assets.Add(new ReferenceAsset(assemblyFileReference.AssemblyPath));
             }
             else if (reference is PackageReference packageReference)
             {
-                var packageAndDependanciesAssemblies = await packageProvider
-                    .GetPackageAndDependanciesAssembliesAsync(packageReference.PackageId, packageReference.Version)
+                var packageAssets = await packageProvider
+                    .GetPackageAndDependencyAssetsAsync(packageReference.PackageId, packageReference.Version, dotNetFrameworkVersion)
                     .ConfigureAwait(false);
 
-                assemblyPaths.AddRange(packageAndDependanciesAssemblies);
+                assets.AddRange(packageAssets);
             }
         }
 
-        return assemblyPaths;
+        return assets;
     }
 }

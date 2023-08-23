@@ -43,27 +43,11 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         _configuration = configuration;
     }
 
-    private void EnsureArchIsSupported()
-    {
-        var supportedArchs = new[]
-        {
-            Architecture.X64,
-            Architecture.X86,
-            Architecture.Arm64,
-        };
-
-        if (!supportedArchs.Contains(RuntimeInformation.OSArchitecture))
-        {
-            throw new PlatformNotSupportedException(
-                $"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported. OS: ({RuntimeInformation.OSDescription})");
-        }
-    }
-
     public async Task<OmniSharpServerLocation> DownloadAsync(OSPlatform platform)
     {
         try
         {
-            EnsureArchIsSupported();
+            PlatformUtil.IsOsArchitectureSupported(throwIfNotSupported: true);
 
             var downloadUrl = GetDownloadUrl(platform);
 

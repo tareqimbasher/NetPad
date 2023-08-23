@@ -25,8 +25,9 @@ public abstract class EntityFrameworkDatabaseConnection : DatabaseConnection
 
         try
         {
-            await dbContext.Database.GetDbConnection().OpenAsync();
-            await dbContext.Database.GetDbConnection().CloseAsync();
+            var connection = dbContext.Database.GetDbConnection();
+            await connection.OpenAsync();
+            await connection.CloseAsync();
             return new DataConnectionTestResult(true);
         }
         catch (Exception ex)

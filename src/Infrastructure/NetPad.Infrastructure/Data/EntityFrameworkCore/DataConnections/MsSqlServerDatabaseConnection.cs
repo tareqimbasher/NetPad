@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,27 +15,27 @@ public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDat
 
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        var connectionString = $"Data Source={Host}";
+        var connectionString = new StringBuilder($"Data Source={Host}");
         if (!string.IsNullOrWhiteSpace(Port))
         {
-            connectionString += $",{Port}";
+            connectionString.Append($",{Port}");
         }
 
-        connectionString += $";Initial Catalog={DatabaseName}";
+        connectionString.Append($";Initial Catalog={DatabaseName}");
 
         if (UserId != null)
         {
-            connectionString += $";User Id={UserId}";
+            connectionString.Append($";User Id={UserId}");
         }
 
         if (Password != null)
         {
-            connectionString += $";Password={passwordProtector.Unprotect(Password)}";
+            connectionString.Append($";Password={passwordProtector.Unprotect(Password)}");
         }
 
-        connectionString += ";Trust Server Certificate=True;MultipleActiveResultSets=True;";
+        connectionString.Append(";Trust Server Certificate=True;MultipleActiveResultSets=True;");
 
-        return connectionString;
+        return connectionString.ToString();
     }
 
     public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
