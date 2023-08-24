@@ -7,11 +7,6 @@ namespace NetPad.Utilities;
 
 public static class AsyncUtil
 {
-    public static void FireAndForget(Func<Task> func)
-    {
-        func();
-    }
-
     /// <summary>
     /// Executes an async Task which has a void return value synchronously
     /// </summary>

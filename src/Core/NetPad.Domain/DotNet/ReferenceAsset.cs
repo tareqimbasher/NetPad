@@ -1,5 +1,4 @@
-using System.IO;
-using System.Threading.Tasks;
+using NetPad.Assemblies;
 
 namespace NetPad.DotNet;
 
@@ -9,7 +8,12 @@ namespace NetPad.DotNet;
 /// <param name="Path">The absolute path to the asset.</param>
 public record ReferenceAsset(string Path)
 {
-    public bool IsAssembly() => AssemblyUtil.IsAssembly(Path);
-    public byte[] ReadAllBytes() => File.ReadAllBytes(Path);
-    public async Task<byte[]> ReadAllBytesAsync() => await File.ReadAllBytesAsync(Path);
+    private bool? _isAssembly;
+
+    public bool IsAssembly()
+    {
+        _isAssembly ??= AssemblyInfoReader.IsManaged(Path);
+
+        return _isAssembly.Value;
+    }
 }

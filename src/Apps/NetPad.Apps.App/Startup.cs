@@ -81,7 +81,6 @@ public class Startup
         services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
         services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-        services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
 
         // Select how we will run scripts, using an external process or in-memory
         // NOTE: A different app, ex. a CLI version of NetPad, could use in-memory

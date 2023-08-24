@@ -13,12 +13,10 @@ namespace NetPad.Controllers;
 [Route("assemblies")]
 public class AssembliesController : Controller
 {
-    private readonly IAssemblyInfoReader _assemblyInfoReader;
     private readonly IPackageProvider _packageProvider;
 
-    public AssembliesController(IAssemblyInfoReader assemblyInfoReader, IPackageProvider packageProvider)
+    public AssembliesController(IPackageProvider packageProvider)
     {
-        _assemblyInfoReader = assemblyInfoReader;
         _packageProvider = packageProvider;
     }
 
@@ -30,7 +28,9 @@ public class AssembliesController : Controller
             if (assemblyFileReference.AssemblyPath == null)
                 throw new Exception("Assembly path is null.");
 
-            return Ok(_assemblyInfoReader.GetNamespaces(await System.IO.File.ReadAllBytesAsync(assemblyFileReference.AssemblyPath)));
+            using var assemblyInfoReader = new AssemblyInfoReader(assemblyFileReference.AssemblyPath);
+
+            return Ok(assemblyInfoReader.GetNamespaces());
         }
 
         if (reference is PackageReference packageReference)
@@ -44,7 +44,9 @@ public class AssembliesController : Controller
 
             foreach (var asset in assets)
             {
-                foreach (var ns in _assemblyInfoReader.GetNamespaces(await asset.ReadAllBytesAsync()))
+                using var assemblyInfoReader = new AssemblyInfoReader(asset.Path);
+
+                foreach (var ns in assemblyInfoReader.GetNamespaces())
                 {
                     namespaces.Add(ns);
                 }

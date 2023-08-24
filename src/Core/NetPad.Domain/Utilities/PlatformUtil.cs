@@ -6,7 +6,7 @@ namespace NetPad.Utilities;
 
 public static class PlatformUtil
 {
-    public static ImmutableArray<Architecture> SupportedArchitectures = new[]
+    public static ImmutableArray<Architecture> SupportedArchitectures { get; } = new[]
     {
         Architecture.X64,
         Architecture.X86,
@@ -27,7 +27,7 @@ public static class PlatformUtil
         throw new Exception($"Could not determine OS platform. OS: {RuntimeInformation.OSDescription}");
     }
 
-    public static bool IsWindowsPlatform() => GetOSPlatform() == OSPlatform.Windows;
+    public static bool IsWindowsPlatform() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     public static bool IsOsArchitectureSupported(bool throwIfNotSupported = false)
     {
