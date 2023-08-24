@@ -11,7 +11,6 @@ using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.DotNet;
 using NetPad.Packages;
-using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore;
 

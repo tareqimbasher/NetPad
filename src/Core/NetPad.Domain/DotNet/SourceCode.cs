@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 

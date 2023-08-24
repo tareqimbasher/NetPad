@@ -1,4 +1,4 @@
-import {IScriptService, ISession, Reference, Script, Settings} from "@domain";
+import {IScriptService, ISession, Reference, Script} from "@domain";
 import {ConfigStore} from "./config-store";
 import {WindowBase} from "@application/windows/window-base";
 

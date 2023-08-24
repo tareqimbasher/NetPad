@@ -1,5 +1,5 @@
+import {DI} from "aurelia";
 import {IOmniSharpApiClient, OmniSharpApiClient} from "./api";
-import {DI, IHttpClient} from "aurelia";
 import {Semaphore} from "@common";
 
 export interface IOmniSharpService extends IOmniSharpApiClient {

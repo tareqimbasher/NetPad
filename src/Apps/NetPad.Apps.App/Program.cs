@@ -21,14 +21,14 @@ public static class Program
         try
         {
             // Configure as an Electron app or a web app
-            ApplicationConfigurator = args.Any(a => a.Contains("/ELECTRONPORT", StringComparison.OrdinalIgnoreCase))
+            ApplicationConfigurator = args.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT"))
                 ? new NetPadElectronConfigurator()
                 : new NetPadWebConfigurator();
 
             CreateHostBuilder(args).Build().Run();
             return 0;
         }
-        catch (IOException ioException) when (ioException.Message.Contains("address already in use", StringComparison.OrdinalIgnoreCase))
+        catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
         {
             Console.WriteLine($"Another instance is already running. {ioException.Message}");
             ApplicationConfigurator.ShowErrorDialog(

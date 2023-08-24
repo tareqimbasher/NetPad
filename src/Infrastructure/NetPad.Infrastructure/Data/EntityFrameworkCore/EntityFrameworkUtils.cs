@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
-using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore;
 

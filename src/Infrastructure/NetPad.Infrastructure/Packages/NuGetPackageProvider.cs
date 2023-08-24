@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Common;
 using NetPad.DotNet;
-using NetPad.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -183,7 +182,7 @@ public class NuGetPackageProvider : IPackageProvider
         using var packageReader = new PackageFolderReader(installPath);
 
         var libItems = GetNearestItems(packageReader.GetLibItems())
-            .Where(i => i.EndsWith(".dll", StringComparison.OrdinalIgnoreCase));
+            .Where(i => i.EndsWithIgnoreCase(".dll"));
 
         return Task.FromResult(
             libItems
@@ -570,7 +569,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         // For SQLite, we want to get least specific RID
         var platformRIDs =
-            GetCurrentPlatformRIDs(mostSpecificFirst: !packageIdentity.Id.Equals("SQLitePCLRaw.lib.e_sqlite3", StringComparison.OrdinalIgnoreCase));
+            GetCurrentPlatformRIDs(mostSpecificFirst: !packageIdentity.Id.EqualsIgnoreCase("SQLitePCLRaw.lib.e_sqlite3"));
 
         var ridDirs = runtimesDirectory.GetDirectories()
             .Where(d => platformRIDs.Contains(d.Name))
@@ -636,9 +635,9 @@ public class NuGetPackageProvider : IPackageProvider
     {
         var fileName = Path.GetFileName(filePath);
 
-        return fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
-               || fileName.EndsWith(".so", StringComparison.OrdinalIgnoreCase)
-               || fileName.EndsWith(".dylib", StringComparison.OrdinalIgnoreCase);
+        return fileName.EndsWithIgnoreCase(".dll")
+               || fileName.EndsWithIgnoreCase(".so")
+               || fileName.EndsWithIgnoreCase(".dylib");
     }
 
     private static string[] GetCurrentPlatformRIDs(bool mostSpecificFirst = true)
@@ -725,7 +724,7 @@ public class NuGetPackageProvider : IPackageProvider
                 rids.AddRange(new[] { "unix", "linux", "linux-s390x" });
             }
 
-            if (!RuntimeInformation.OSDescription.Contains("musl", StringComparison.OrdinalIgnoreCase))
+            if (!RuntimeInformation.OSDescription.ContainsIgnoreCase("musl"))
             {
                 rids.RemoveAll(r => r.Contains("-musl-"));
             }

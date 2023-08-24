@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NetPad.Configuration;
-using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 

@@ -1,5 +1,5 @@
-import {IContainer, ILogger} from "aurelia";
-import {IDialogDom, IDialogService} from "@aurelia/dialog";
+import {ILogger} from "aurelia";
+import {IDialogDom} from "@aurelia/dialog";
 import {Version} from "@common/data/version";
 import {DialogBase} from "@application/dialogs/dialog-base";
 import {IAppService} from "@domain";

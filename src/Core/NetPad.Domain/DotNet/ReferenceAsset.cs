@@ -1,5 +1,5 @@
+using System.IO;
 using System.Threading.Tasks;
-using NetPad.Utilities;
 
 namespace NetPad.DotNet;
 
@@ -10,6 +10,6 @@ namespace NetPad.DotNet;
 public record ReferenceAsset(string Path)
 {
     public bool IsAssembly() => AssemblyUtil.IsAssembly(Path);
-    public byte[] ReadAllBytes() => System.IO.File.ReadAllBytes(Path);
-    public async Task<byte[]> ReadAllBytesAsync() => await System.IO.File.ReadAllBytesAsync(Path);
+    public byte[] ReadAllBytes() => File.ReadAllBytes(Path);
+    public async Task<byte[]> ReadAllBytesAsync() => await File.ReadAllBytesAsync(Path);
 }

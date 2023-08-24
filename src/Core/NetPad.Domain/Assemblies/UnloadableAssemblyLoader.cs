@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.Extensions.Logging;
 using NetPad.DotNet;
-using NetPad.Utilities;
 
 namespace NetPad.Assemblies;
 

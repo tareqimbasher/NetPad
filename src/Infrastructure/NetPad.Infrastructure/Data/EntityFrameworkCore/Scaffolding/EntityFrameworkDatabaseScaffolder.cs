@@ -12,7 +12,6 @@ using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.DotNet;
 using NetPad.IO;
-using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 

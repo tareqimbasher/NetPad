@@ -7,7 +7,6 @@ using NetPad.Configuration;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.UiInterop;
-using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices;
 

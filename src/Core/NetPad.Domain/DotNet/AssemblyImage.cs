@@ -32,7 +32,7 @@ public record AssemblyImage
 
         fileName = fileName.Trim();
 
-        if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+        if (!fileName.EndsWithIgnoreCase(".dll"))
             fileName += ".dll";
 
         return fileName;

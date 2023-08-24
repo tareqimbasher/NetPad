@@ -1,5 +1,5 @@
 import {IContainer, ILogger} from "aurelia";
-import {ISession, Settings} from "@domain";
+import {ISession} from "@domain";
 import {watch} from "@aurelia/runtime-html";
 import {OutputView} from "../main/output-view/output-view";
 import {ResultsView} from "../main/output-view/results-view/results-view";

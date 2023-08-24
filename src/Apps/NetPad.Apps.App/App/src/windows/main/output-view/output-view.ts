@@ -1,6 +1,6 @@
 import {bindable, Constructable, IContainer} from "aurelia";
 import {ScriptEnvironment} from "@domain";
-import {OutputViewToolbar, IToolbarAction, ToolbarOptions} from "./output-view-toolbar";
+import {IToolbarAction, OutputViewToolbar, ToolbarOptions} from "./output-view-toolbar";
 import {ResultsView} from "./results-view/results-view";
 import {SqlView} from "./sql-view/sql-view";
 
