@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
-using NetPad.Common;
+using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
 using NetPad.IO;
+using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Data;
 
 public class FileSystemDataConnectionRepository : IDataConnectionRepository
 {
-    private readonly FilePath _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
+    private readonly ILogger<FileSystemDataConnectionRepository> _logger;
+    private readonly FilePath _connectionsFilePath;
+
+    public FileSystemDataConnectionRepository(ILogger<FileSystemDataConnectionRepository> logger)
+    {
+        _logger = logger;
+        _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
+    }
 
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
     {
@@ -60,9 +69,61 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
             return new Dictionary<Guid, DataConnection>();
         }
 
-        var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
-        return JsonSerializer.Deserialize<Dictionary<Guid, DataConnection>>(json)
-               ?? new Dictionary<Guid, DataConnection>();
+        var connections = new Dictionary<Guid, DataConnection>();
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
+
+            var jsonDocument = JsonDocument.Parse(json);
+
+            int itemIndex = -1;
+            foreach (var o in jsonDocument.RootElement.EnumerateObject())
+            {
+                itemIndex++;
+                Guid? connectionId = null;
+
+                try
+                {
+                    if (!Guid.TryParse(o.Name, out var id))
+                    {
+                        _logger.LogError("Could not deserialize data connection ID at index: {Index}. Data connections file: {Path}",
+                            itemIndex,
+                            _connectionsFilePath.Path);
+                        continue;
+                    }
+
+                    connectionId = id;
+
+                    var connection = o.Value.Deserialize<DataConnection>(JsonSerializer.DefaultOptions);
+
+                    if (connection == null)
+                    {
+                        _logger.LogError("Could not deserialize data connection at index: {Index}. Connection ID: {ConnectionId}. Data connections file: {Path}",
+                            itemIndex,
+                            connectionId,
+                            _connectionsFilePath.Path);
+                        continue;
+                    }
+
+                    connections.Add(connectionId.Value, connection);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Could not deserialize data connection at index: {Index}. Connection ID: {ConnectionId}. Data connections file: {Path}",
+                        itemIndex,
+                        connectionId,
+                        _connectionsFilePath.Path);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while deserializing data connections file at: {Path}", _connectionsFilePath.Path);
+        }
+
+        return connections;
     }
 
     private async Task SaveToFileAsync(Dictionary<Guid, DataConnection> connections)
