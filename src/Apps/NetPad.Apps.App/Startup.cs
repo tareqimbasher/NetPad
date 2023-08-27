@@ -97,8 +97,9 @@ public class Startup
         services.AddSingleton(sp => new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
         services.AddTransient<IDataConnectionPasswordProtector>(s =>
             new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
-        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MsSqlServerDatabaseSchemaChangeDetectionStrategy>();
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategyFactory, DataConnectionSchemaChangeDetectionStrategyFactory>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, SQLiteDatabaseSchemaChangeDetectionStrategy>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MsSqlServerDatabaseSchemaChangeDetectionStrategy>();
 
         // Package management
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
