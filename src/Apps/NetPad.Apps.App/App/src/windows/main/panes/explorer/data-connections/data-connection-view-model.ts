@@ -7,23 +7,29 @@ import {
 } from "@domain";
 
 export class DataConnectionViewModel {
-    private resourceLoading = new Set<DataConnectionResourceComponent>();
+    private resourcesBeingLoaded = new Set<DataConnectionResourceComponent>();
 
+    public loadingStructure = false
     public expanded = false;
     public structure?: DatabaseStructure;
     public error: string | undefined | null;
-    public loadingStructure = false
+
+    private schemaValidationRunning = false;
 
     constructor(public connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
     }
 
     public get loadingMessage(): string | null {
-        if (this.resourceLoading.size > 0) {
-            const onlyLoadingAssembly = this.resourceLoading.size == 1 && Array.from(this.resourceLoading)[0] === "Assembly";
+        if (this.resourcesBeingLoaded.size > 0) {
+            const onlyLoadingAssembly = this.resourcesBeingLoaded.size == 1 && Array.from(this.resourcesBeingLoaded)[0] === "Assembly";
             return onlyLoadingAssembly ? "Compiling" : "Scaffolding";
         }
 
-        return this.loadingStructure ? "Loading" : null
+        return this.schemaValidationRunning
+            ? "Validating schema"
+            : this.loadingStructure
+                ? "Loading"
+                : null
     }
 
     public toggleExpand() {
@@ -65,16 +71,24 @@ export class DataConnectionViewModel {
     }
 
     public resourceBeingLoaded(component: DataConnectionResourceComponent) {
-        this.resourceLoading.add(component);
+        this.resourcesBeingLoaded.add(component);
     }
 
     public resourceCompletedLoading(component: DataConnectionResourceComponent) {
-        this.resourceLoading.delete(component);
+        this.resourcesBeingLoaded.delete(component);
         this.error = null;
     }
 
     public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | undefined) {
-        this.resourceLoading.delete(component);
+        this.resourcesBeingLoaded.delete(component);
         this.error = error || "Error";
+    }
+
+    public schemaValidationStarted() {
+        this.schemaValidationRunning = true;
+    }
+
+    public schemaValidationCompleted() {
+        this.schemaValidationRunning = false;
     }
 }

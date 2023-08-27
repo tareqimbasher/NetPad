@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.DotNet;
@@ -140,9 +141,19 @@ public partial class FileSystemDataConnectionResourcesCache
 
     private async Task<bool?> DidSchemaChangeAsync(DataConnection dataConnection)
     {
+        bool strategiesExist = false;
+
         try
         {
-            foreach (var schemaChangeDetectionStrategy in _dataConnectionSchemaChangeDetectionStrategyFactory.GetStrategies(dataConnection))
+            var strategies = _dataConnectionSchemaChangeDetectionStrategyFactory.GetStrategies(dataConnection);
+
+            if (strategies.Any())
+            {
+                strategiesExist = true;
+                _ = _eventBus.PublishAsync(new DataConnectionSchemaValidationStartedEvent(dataConnection.Id));
+            }
+
+            foreach (var schemaChangeDetectionStrategy in strategies)
             {
                 var schemaChanged = await schemaChangeDetectionStrategy.DidSchemaChangeAsync(dataConnection);
 
@@ -157,6 +168,13 @@ public partial class FileSystemDataConnectionResourcesCache
         {
             _logger.LogError(ex, "Error checking if data connection {DataConnectionId} schema changed", dataConnection.Id);
             return null;
+        }
+        finally
+        {
+            if (strategiesExist)
+            {
+                _ = _eventBus.PublishAsync(new DataConnectionSchemaValidationCompletedEvent(dataConnection.Id));
+            }
         }
     }
 

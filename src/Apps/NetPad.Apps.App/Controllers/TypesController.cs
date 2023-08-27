@@ -42,6 +42,8 @@ public class TypesController : Controller
         public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
         public DataConnectionResourcesUpdatedEvent? DataConnectionResourcesUpdatedEvent { get; set; }
         public DataConnectionResourcesUpdateFailedEvent? DataConnectionResourcesUpdateFailedEvent { get; set; }
+        public DataConnectionSchemaValidationStartedEvent? DataConnectionSchemaValidationStartedEvent { get; set; }
+        public DataConnectionSchemaValidationCompletedEvent? DataConnectionSchemaValidationCompletedEvent { get; set; }
         public OpenWindowCommand? OpenWindowCommand { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
         public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }

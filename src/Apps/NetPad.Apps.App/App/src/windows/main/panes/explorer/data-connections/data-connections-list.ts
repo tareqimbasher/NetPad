@@ -5,6 +5,8 @@ import {
     DataConnectionResourcesUpdatedEvent,
     DataConnectionResourcesUpdateFailedEvent,
     DataConnectionResourcesUpdatingEvent,
+    DataConnectionSchemaValidationCompletedEvent,
+    DataConnectionSchemaValidationStartedEvent,
     DataConnectionStore,
     IDataConnectionService,
     IEventBus,
@@ -163,6 +165,20 @@ export class DataConnectionsList extends ViewModelBase {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
                 vm.resourceFailedLoading(msg.failedComponent, msg.error);
+            }
+        });
+
+        this.eventBus.subscribeToServer(DataConnectionSchemaValidationStartedEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnectionId);
+            if (vm) {
+                vm.schemaValidationStarted();
+            }
+        });
+
+        this.eventBus.subscribeToServer(DataConnectionSchemaValidationCompletedEvent, msg => {
+            const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnectionId);
+            if (vm) {
+                vm.schemaValidationCompleted();
             }
         });
     }
