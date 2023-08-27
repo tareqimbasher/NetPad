@@ -10,7 +10,7 @@ import {ILogger} from "aurelia";
 export class DataConnectionStore {
     private readonly logger: ILogger;
 
-    public connections: DataConnection[];
+    public connections: DataConnection[] = [];
 
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,

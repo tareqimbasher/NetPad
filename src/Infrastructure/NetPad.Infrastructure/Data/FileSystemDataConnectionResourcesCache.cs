@@ -38,22 +38,49 @@ public partial class FileSystemDataConnectionResourcesCache : IDataConnectionRes
 
     public async Task<bool> HasCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        bool hasMemCachedResources = _memoryCache.TryGetValue(dataConnectionId, out var frameworks)
-                                     && frameworks.ContainsKey(targetFrameworkVersion);
+        try
+        {
+            bool hasMemCachedResources = _memoryCache.TryGetValue(dataConnectionId, out var frameworks)
+                                         && frameworks.ContainsKey(targetFrameworkVersion);
 
-        return hasMemCachedResources || await _dataConnectionResourcesRepository.HasResourcesAsync(dataConnectionId, targetFrameworkVersion);
+            return hasMemCachedResources || await _dataConnectionResourcesRepository.HasResourcesAsync(dataConnectionId, targetFrameworkVersion);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking if data connection {DataConnectionId} has resources for .NET framework version {DotNetFramework}",
+                dataConnectionId,
+                targetFrameworkVersion);
+            return false;
+        }
     }
 
     public async Task RemoveCachedResourcesAsync(Guid dataConnectionId)
     {
-        await _dataConnectionResourcesRepository.DeleteAsync(dataConnectionId);
+        try
+        {
+            await _dataConnectionResourcesRepository.DeleteAsync(dataConnectionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing data connection {DataConnectionId} resources from repository", dataConnectionId);
+        }
+
 
         _memoryCache.TryRemove(dataConnectionId, out _);
     }
 
     public async Task RemoveCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        await _dataConnectionResourcesRepository.DeleteAsync(dataConnectionId, targetFrameworkVersion);
+        try
+        {
+            await _dataConnectionResourcesRepository.DeleteAsync(dataConnectionId, targetFrameworkVersion);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing data connection {DataConnectionId} resources for .NET framework version {DotNetFramework} from repository",
+                dataConnectionId,
+                targetFrameworkVersion);
+        }
 
         if (_memoryCache.TryGetValue(dataConnectionId, out var frameworks))
         {
@@ -95,19 +122,9 @@ public partial class FileSystemDataConnectionResourcesCache : IDataConnectionRes
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    resources.UpdateRecentAsOf(DateTime.UtcNow);
-
-                    await Try.RunAsync(async () =>
-                    {
-                        await _dataConnectionResourcesRepository.SaveAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.SourceCode);
-
-                        _ = _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(
-                            dataConnection,
-                            resources,
-                            DataConnectionResourceComponent.SourceCode));
-                    });
+                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.SourceCode);
                 }
-                else if (task.Status == TaskStatus.Faulted)
+                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
                 {
                     // If an error occurred, null the task so the next time its called we try again
                     resources.SourceCode = null;
@@ -161,24 +178,9 @@ public partial class FileSystemDataConnectionResourcesCache : IDataConnectionRes
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    resources.UpdateRecentAsOf(DateTime.UtcNow);
-
-                    await Try.RunAsync(async () =>
-                    {
-                        if (!await TryUpdateSchemaCompareInfoAsync(dataConnection))
-                        {
-                            await _dataConnectionResourcesRepository.DeleteSchemaCompareInfoAsync(dataConnection.Id);
-                        }
-
-
-                        await _dataConnectionResourcesRepository.SaveAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.Assembly);
-                        _ = _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(
-                            dataConnection,
-                            resources,
-                            DataConnectionResourceComponent.Assembly));
-                    });
+                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.Assembly);
                 }
-                else if (task.Status == TaskStatus.Faulted)
+                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
                 {
                     // If an error occurred, null the task so the next time its called we try again
                     resources.Assembly = null;
@@ -232,22 +234,9 @@ public partial class FileSystemDataConnectionResourcesCache : IDataConnectionRes
             {
                 if (task.Status == TaskStatus.RanToCompletion)
                 {
-                    resources.UpdateRecentAsOf(DateTime.UtcNow);
-
-                    await Try.RunAsync(async () =>
-                    {
-                        await _dataConnectionResourcesRepository.SaveAsync(
-                            resources,
-                            targetFrameworkVersion,
-                            DataConnectionResourceComponent.RequiredReferences);
-
-                        _ = _eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(
-                            dataConnection,
-                            resources,
-                            DataConnectionResourceComponent.RequiredReferences));
-                    });
+                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.RequiredReferences);
                 }
-                else if (task.Status == TaskStatus.Faulted)
+                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
                 {
                     // If an error occurred, null the task so the next time its called we try again
                     resources.RequiredReferences = null;
