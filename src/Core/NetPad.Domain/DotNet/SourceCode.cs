@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -10,7 +11,7 @@ namespace NetPad.DotNet;
 public class SourceCode
 {
     private readonly HashSet<Using> _usings;
-    private bool _changed;
+    private bool _valueChanged;
 
     public SourceCode() : this(null, Array.Empty<Using>())
     {
@@ -40,28 +41,29 @@ public class SourceCode
     {
     }
 
+    [JsonConstructor]
     public SourceCode(Code? code, IEnumerable<Using>? usings = null)
     {
         Code = code ?? new Code(null, null);
         _usings = usings?.ToHashSet() ?? new HashSet<Using>();
     }
 
-    public IReadOnlySet<Using> Usings => _usings;
+    public IEnumerable<Using> Usings => _usings;
     public Code Code { get; }
-    public bool Changed => _changed || Code.Changed || _usings.Any(u => u.Changed);
+    public bool ValueChanged() => _valueChanged || Code.ValueChanged() || _usings.Any(u => u.ValueChanged());
 
     public void AddUsing(string @using)
     {
         bool added = _usings.Add(@using);
 
-        if (added) _changed = true;
+        if (added) _valueChanged = true;
     }
 
     public void RemoveUsing(string @using)
     {
         bool removed = _usings.Remove(@using);
 
-        if (removed) _changed = true;
+        if (removed) _valueChanged = true;
     }
 
     public string ToCodeString(bool useGlobalNotation = false)

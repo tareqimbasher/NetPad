@@ -29,13 +29,26 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
     {
         if (databaseConnection is not EntityFrameworkDatabaseConnection dbConnection)
         {
-            throw new InvalidOperationException("Cannot get structure except on Entity Framework database connections.");
+            throw new ArgumentException("Cannot get structure except on Entity Framework database connections", nameof(databaseConnection));
         }
 
-        var assemblyImage = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection, GlobalConsts.AppDotNetFrameworkVersion);
-        if (assemblyImage == null)
+        await using var dbContext = await CreateDbContextAsync(dbConnection);
+
+        if (dbContext == null)
         {
             return new DatabaseStructure(dbConnection.DatabaseName ?? string.Empty);
+        }
+
+        return dbContext.GetDatabaseStructure();
+    }
+
+    private async Task<DbContext?> CreateDbContextAsync(EntityFrameworkDatabaseConnection dbConnection)
+    {
+        var assemblyImage = await _dataConnectionResourcesCache.GetAssemblyAsync(dbConnection, GlobalConsts.AppDotNetFrameworkVersion);
+
+        if (assemblyImage == null)
+        {
+            return null;
         }
 
         var assembly = _assemblyLoader.LoadFrom(assemblyImage.Image);
@@ -63,13 +76,13 @@ public class EntityFrameworkDatabaseConnectionMetadataProvider : IDatabaseConnec
             throw new Exception($"Could not create find the right constructor on DbContext of type {dbContextType.FullName}.");
         }
 
-        await using var dbContext = ctor.Invoke(new object?[] { dbContextOptionsBuilder.Options }) as DbContext;
+        var dbContext = ctor.Invoke(new object?[] { dbContextOptionsBuilder.Options }) as DbContext;
 
         if (dbContext == null)
         {
             throw new Exception($"Could not create a DbContext of type {dbContextType.FullName}.");
         }
 
-        return dbContext.GetDatabaseStructure();
+        return dbContext;
     }
 }

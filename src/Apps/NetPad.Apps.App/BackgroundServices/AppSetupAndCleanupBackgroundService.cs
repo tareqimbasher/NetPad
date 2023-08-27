@@ -46,7 +46,7 @@ public class AppSetupAndCleanupBackgroundService : BackgroundService
         await _session.CloseAsync(environments.Select(e => e.Script.Id).ToArray());
 
         AppDataProvider.ExternalProcessesDirectoryPath.DeleteIfExists();
-        AppDataProvider.TypedContextsDirectoryPath.DeleteIfExists();
+        AppDataProvider.TypedDataContextTempDirectoryPath.DeleteIfExists();
 
         foreach (var registration in _pluginManager.PluginRegistrations)
         {

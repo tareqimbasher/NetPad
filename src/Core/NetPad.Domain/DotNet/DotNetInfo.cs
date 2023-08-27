@@ -246,9 +246,7 @@ public class DotNetInfo : IDotNetInfo
     {
         var latestSupported = GetLatestSupportedDotNetSdkVersion();
 
-        return latestSupported != null
-            ? latestSupported
-            : throw new Exception("Could not find any supported .NET SDKs");
+        return latestSupported ?? throw new Exception("Could not find any supported .NET SDKs");
     }
 
     public DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion()

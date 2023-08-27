@@ -196,7 +196,7 @@ public class AppOmniSharpServer
                 await Task.Delay(3000);
 
                 bool shouldUpdateDataConnectionCodeBuffer = _environment.Script.DataConnection == null
-                                                            || _dataConnectionResourcesCache.HasCachedResources(
+                                                            || await _dataConnectionResourcesCache.HasCachedResourcesAsync(
                                                                 _environment.Script.DataConnection.Id,
                                                                 _environment.Script.Config.TargetFrameworkVersion);
                 if (shouldUpdateDataConnectionCodeBuffer)
