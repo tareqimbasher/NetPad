@@ -186,7 +186,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         return Task.FromResult(
             libItems
-                .Concat(GetRuntimeItems(packageIdentity, installPath, nugetFramework))
+                .Concat(GetRuntimeItems(installPath, nugetFramework))
                 .Where(IsLib)
                 .Select(itemPath => new PackageAsset(itemPath))
                 .ToHashSet());
@@ -558,7 +558,7 @@ public class NuGetPackageProvider : IPackageProvider
         }
     }
 
-    private IEnumerable<string> GetRuntimeItems(PackageIdentity packageIdentity, string packageDirectory, NuGetFramework framework)
+    private IEnumerable<string> GetRuntimeItems(string packageDirectory, NuGetFramework framework)
     {
         var runtimesDirectory = new DirectoryInfo(Path.Combine(packageDirectory, "runtimes"));
 
@@ -567,9 +567,7 @@ public class NuGetPackageProvider : IPackageProvider
             return Array.Empty<string>();
         }
 
-        // For SQLite, we want to get least specific RID
-        var platformRIDs =
-            GetCurrentPlatformRIDs(mostSpecificFirst: !packageIdentity.Id.EqualsIgnoreCase("SQLitePCLRaw.lib.e_sqlite3"));
+        var platformRIDs = GetCurrentPlatformRIDs();
 
         var ridDirs = runtimesDirectory.GetDirectories()
             .Where(d => platformRIDs.Contains(d.Name))
@@ -640,7 +638,7 @@ public class NuGetPackageProvider : IPackageProvider
                || fileName.EndsWithIgnoreCase(".dylib");
     }
 
-    private static string[] GetCurrentPlatformRIDs(bool mostSpecificFirst = true)
+    private static string[] GetCurrentPlatformRIDs()
     {
         var rids = new List<string>();
 
@@ -739,11 +737,10 @@ public class NuGetPackageProvider : IPackageProvider
             rids.AddRange(new[] { "wasm", "browser-wasm" });
         }
 
-        var result = rids.Where(rid => !string.IsNullOrWhiteSpace(rid)).Distinct();
-
-        if (mostSpecificFirst) result = result.Reverse();
-
-        return result.ToArray();
+        return rids
+            .Where(rid => !string.IsNullOrWhiteSpace(rid))
+            .Distinct()
+            .ToArray();
     }
 
     private bool DependencySuppliedByHost(DependencyContext hostDependencies, PackageDependency dep)
