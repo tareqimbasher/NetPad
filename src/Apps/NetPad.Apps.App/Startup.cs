@@ -98,8 +98,8 @@ public class Startup
         services.AddTransient<IDataConnectionPasswordProtector>(s =>
             new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategyFactory, DataConnectionSchemaChangeDetectionStrategyFactory>();
-        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, SQLiteDatabaseSchemaChangeDetectionStrategy>();
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MsSqlServerDatabaseSchemaChangeDetectionStrategy>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, SQLiteDatabaseSchemaChangeDetectionStrategy>();
 
         // Package management
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
