@@ -127,6 +127,8 @@ export class WorkArea extends ViewModelBase {
             },
             activate: async (viewerHost) => await this.session.activate(environment.script.id),
             save: async () => await this.scriptService.save(environment.script.id),
+            rename: async () => await this.scriptService.rename(environment.script.id),
+            duplicate: async () => await this.scriptService.duplicate(environment.script.id),
             openContainingFolder: async () => environment.script.path
                 ? await this.appService.openFolderContainingScript(environment.script.path)
                 : Promise.reject("Script has not been saved yet"),

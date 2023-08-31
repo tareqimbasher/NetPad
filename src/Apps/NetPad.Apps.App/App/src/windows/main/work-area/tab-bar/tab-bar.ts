@@ -65,6 +65,16 @@ export class TabBar extends ViewModelBase {
                 onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).stop()
             },
             {
+                icon: "rename-icon",
+                text: "Rename",
+                onSelected: async (clickTarget) => await this.getViewable(clickTarget).rename()
+            },
+            {
+                icon: "duplicate-icon",
+                text: "Duplicate",
+                onSelected: async (clickTarget) => await this.getViewable(clickTarget).duplicate()
+            },
+            {
                 icon: "save-icon",
                 text: "Save",
                 shortcut: this.shortcutManager.getShortcutByName("Save"),

@@ -57,7 +57,7 @@ public class Script : INotifyOnPropertyChanged
     }
 
 
-    public ScriptConfig Config { get; }
+    public ScriptConfig Config { get; private set; }
 
     public DataConnection? DataConnection
     {
@@ -80,6 +80,11 @@ public class Script : INotifyOnPropertyChanged
     public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
 
     public bool IsNew => Path == null;
+
+    public void SetConfig(ScriptConfig config)
+    {
+        Config = config;
+    }
 
     public void SetPath(string path)
     {
