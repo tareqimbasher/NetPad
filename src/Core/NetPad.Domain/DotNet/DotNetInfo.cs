@@ -86,6 +86,11 @@ public class DotNetInfo : IDotNetInfo
                 }
             }
 
+            if (rootDirPath != null)
+            {
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", rootDirPath);
+            }
+
             _dotNetRootDirPath = rootDirPath;
         }
 
@@ -295,7 +300,7 @@ public class DotNetInfo : IDotNetInfo
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = exeName,
                     Arguments = "--version"
-                });
+                }.CopyCurrentEnvironmentVariables());
 
                 path = process?.MainModule?.FileName;
 
@@ -310,7 +315,7 @@ public class DotNetInfo : IDotNetInfo
                 // if it failed, it wasn't found
             }
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 // Try getting path from global tool install path
                 var globalToolInstallPath = Path.Combine(
@@ -343,7 +348,7 @@ public class DotNetInfo : IDotNetInfo
             FileName = dotNetEfToolExePath,
             Arguments = "--version",
             RedirectStandardOutput = true
-        });
+        }.CopyCurrentEnvironmentVariables());
 
         if (p == null)
             throw new Exception("Could not start EF dotnet tool executable");
@@ -394,7 +399,7 @@ public class DotNetInfo : IDotNetInfo
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = exeName,
                 Arguments = "--version"
-            });
+            }.CopyCurrentEnvironmentVariables());
 
             var path = process?.MainModule?.FileName;
 
@@ -429,11 +434,13 @@ public class DotNetInfo : IDotNetInfo
         }
         else
         {
-            possibleDirectories.Add(@"/usr/local/share/dotnet"); // default for macOS
-            possibleDirectories.Add(@"/usr/share/dotnet");
-            possibleDirectories.Add(@"/usr/lib/dotnet");
-            possibleDirectories.Add(@"/opt/dotnet");
+            possibleDirectories.Add("/usr/local/share/dotnet"); // default for macOS
+            possibleDirectories.Add("/usr/share/dotnet");
+            possibleDirectories.Add("/usr/lib/dotnet");
+            possibleDirectories.Add("/opt/dotnet");
         }
+
+        possibleDirectories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet"));
 
         foreach (var directory in possibleDirectories)
         {

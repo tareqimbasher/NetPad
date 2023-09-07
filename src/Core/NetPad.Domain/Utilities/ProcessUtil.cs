@@ -31,4 +31,18 @@ public static class ProcessUtil
             UseShellExecute = true
         });
     }
+
+    public static ProcessStartInfo CopyCurrentEnvironmentVariables(this ProcessStartInfo processStartInfo, bool overwrite = true)
+    {
+        var envVars = Environment.GetEnvironmentVariables();
+
+        foreach (string key in envVars.Keys)
+        {
+            if (!overwrite && processStartInfo.EnvironmentVariables.ContainsKey(key)) continue;
+
+            processStartInfo.EnvironmentVariables[key] = envVars[key]?.ToString();
+        }
+
+        return processStartInfo;
+    }
 }
