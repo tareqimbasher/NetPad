@@ -121,9 +121,10 @@ class Program
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
         // it will fail as dotnet-ef depends on dotnet
-        var dotnetExeDir = Path.GetDirectoryName(_dotNetInfo.LocateDotNetExecutableOrThrow());
+        var dotnetExeDir = _dotNetInfo.LocateDotNetRootDirectory();
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
         startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
+        startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var process = Process.Start(startInfo);
 

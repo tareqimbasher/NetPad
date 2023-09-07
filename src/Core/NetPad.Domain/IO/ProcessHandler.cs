@@ -162,12 +162,7 @@ public sealed class ProcessHandler : IDisposable
             if (!string.IsNullOrWhiteSpace(_args))
                 _processStartInfo.Arguments = _args;
 
-            // Copy current env variables to new process
-            var envVars = Environment.GetEnvironmentVariables();
-            foreach (string key in envVars.Keys)
-            {
-                _processStartInfo.EnvironmentVariables[key] = envVars[key]?.ToString();
-            }
+            _processStartInfo.CopyCurrentEnvironmentVariables();
         }
 
         if (_process == null)
