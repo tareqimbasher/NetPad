@@ -7,6 +7,7 @@ public interface IUiWindowService
     Task<WindowState?> GetWindowStateAsync();
     Task MaximizeMainWindowAsync();
     Task MinimizeMainWindowAsync();
+    Task ToggleFullScreenAsync();
     Task ToggleAlwaysOnTopMainWindowAsync();
     Task OpenMainWindowAsync();
     Task OpenSettingsWindowAsync(string? tab = null);

@@ -34,6 +34,12 @@ public class WindowController : Controller
         await _uiWindowService.MinimizeMainWindowAsync();
     }
 
+    [HttpPatch("toggle-full-screen")]
+    public async Task ToggleFullScreen()
+    {
+        await _uiWindowService.ToggleFullScreenAsync();
+    }
+
     [HttpPatch("always-on-top/toggle")]
     public async Task ToggleAlwaysOnTop()
     {
