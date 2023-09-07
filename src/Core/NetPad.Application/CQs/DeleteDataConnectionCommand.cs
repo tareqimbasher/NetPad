@@ -16,11 +16,13 @@ public class DeleteDataConnectionCommand : Command
     public class Handler : IRequestHandler<DeleteDataConnectionCommand, Unit>
     {
         private readonly IDataConnectionRepository _dataConnectionRepository;
+        private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
         private readonly IEventBus _eventBus;
 
-        public Handler(IDataConnectionRepository dataConnectionRepository, IEventBus eventBus)
+        public Handler(IDataConnectionRepository dataConnectionRepository, IDataConnectionResourcesCache dataConnectionResourcesCache, IEventBus eventBus)
         {
             _dataConnectionRepository = dataConnectionRepository;
+            _dataConnectionResourcesCache = dataConnectionResourcesCache;
             _eventBus = eventBus;
         }
 
@@ -31,6 +33,8 @@ public class DeleteDataConnectionCommand : Command
                 throw new InvalidOperationException($"No data connection with ID '{request.ConnectionId}' was found.");
 
             await _dataConnectionRepository.DeleteAsync(connection.Id);
+
+            await _dataConnectionResourcesCache.RemoveCachedResourcesAsync(connection.Id);
 
             await _eventBus.PublishAsync(new DataConnectionDeletedEvent(connection));
 

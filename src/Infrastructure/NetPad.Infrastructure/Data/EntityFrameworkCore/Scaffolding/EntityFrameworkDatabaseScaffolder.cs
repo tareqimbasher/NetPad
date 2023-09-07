@@ -12,7 +12,6 @@ using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.DotNet;
 using NetPad.IO;
-using NetPad.Utilities;
 
 namespace NetPad.Data.EntityFrameworkCore.Scaffolding;
 
@@ -43,7 +42,7 @@ public class EntityFrameworkDatabaseScaffolder
         _logger = logger;
         _project = new DotNetCSharpProject(
             _dotNetInfo,
-            AppDataProvider.TypedContextsDirectoryPath.Combine(connection.Id.ToString()).Path,
+            AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString()).Path,
             "database",
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
 

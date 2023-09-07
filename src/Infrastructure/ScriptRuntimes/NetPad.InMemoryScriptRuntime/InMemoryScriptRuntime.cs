@@ -170,9 +170,11 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
                 referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
         }
 
-        var referenceAssemblyPaths = await _script.Config.References
+        var assets = await _script.Config.References
             .Union(runOptions.AdditionalReferences)
-            .GetAssemblyPathsAsync(_packageProvider);
+            .GetAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider);
+
+        var referenceAssemblyPaths = assets.Where(a => a.IsAssembly()).Select(a => a.Path).ToHashSet();
 
         var fullProgram = parsingResult.GetFullProgram()
             .Replace("Console.WriteLine",

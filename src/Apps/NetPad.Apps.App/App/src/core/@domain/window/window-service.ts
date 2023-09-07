@@ -1,5 +1,5 @@
 import {DI, IHttpClient} from "aurelia";
-import {WindowApiClient, IWindowApiClient} from "@domain";
+import {IWindowApiClient, WindowApiClient} from "@domain";
 
 export interface IWindowService extends IWindowApiClient {
     openDeveloperTools(windowId?: string, signal?: AbortSignal | undefined): Promise<void>;

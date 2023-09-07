@@ -1,5 +1,5 @@
 import {IContainer} from "aurelia";
-import {CreateScriptDto, DataConnectionStore, IScriptService, ISession, Settings} from "@domain";
+import {CreateScriptDto, DataConnectionStore, IScriptService, ISession} from "@domain";
 import {
     BuiltinShortcuts,
     EditorSetup,

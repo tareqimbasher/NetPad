@@ -9,7 +9,6 @@ using NetPad.IO;
 using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.UiInterop;
-using NetPad.Utilities;
 
 namespace NetPad.BackgroundServices;
 

@@ -53,32 +53,65 @@ public static class SystemAssemblies
         var targetMajorVersion = dotNetFrameworkVersion.GetMajorVersion();
 
         var dotnetRoot = dotNetInfo.LocateDotNetRootDirectoryOrThrow();
+
+        var assembliesDirectory = GetReferenceAssembliesDirectory(dotnetRoot, targetMajorVersion)
+                                  ?? GetImplementationAssembliesDirectory(dotnetRoot, targetMajorVersion);
+
+        if (assembliesDirectory == null)
+        {
+            throw new Exception($".NET {targetMajorVersion} SDK could not be found.");
+        }
+
+        return Directory.GetFiles(assembliesDirectory, "*.dll")
+            .Where(a => !a.Contains("VisualBasic"))
+            .ToHashSet();
+    }
+
+    private static string? GetReferenceAssembliesDirectory(string dotnetRoot, int targetMajorVersion)
+    {
         var sdkReferenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
-        var dotnetVer = sdkReferenceAssemblyRoot.GetDirectories()
+
+        var latestVersionDir = GetLatestVersionDir(sdkReferenceAssemblyRoot, targetMajorVersion)?.Name;
+
+        if (latestVersionDir == null)
+        {
+            return null;
+        }
+
+        var referenceAssembliesDir = Path.Combine(sdkReferenceAssemblyRoot.FullName, latestVersionDir, "ref", $"net{targetMajorVersion}.0");
+
+        return !Directory.Exists(referenceAssembliesDir) ? null : referenceAssembliesDir;
+    }
+
+    private static string? GetImplementationAssembliesDirectory(string dotnetRoot, int targetMajorVersion)
+    {
+        var runtimeImplementationAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App"));
+
+        var latestApplicableDirName = GetLatestVersionDir(runtimeImplementationAssemblyRoot, targetMajorVersion)?.Name;
+
+        if (latestApplicableDirName == null)
+        {
+            return null;
+        }
+
+        var implementationAssembliesDir = Path.Combine(runtimeImplementationAssemblyRoot.FullName, latestApplicableDirName);
+
+        return !Directory.Exists(implementationAssembliesDir) ? null : implementationAssembliesDir;
+    }
+
+    private static DirectoryInfo? GetLatestVersionDir(DirectoryInfo directory, int targetMajorVersion)
+    {
+        if (!directory.Exists)
+        {
+            return null;
+        }
+
+        return directory.GetDirectories()
             .Select(d => Version.TryParse(d.Name, out var version)
                 ? new { Directory = d, Version = version }
                 : null)
             .Where(d => d != null && d.Version.Major == targetMajorVersion)
             .MaxBy(d => d!.Version)?
-            .Directory.Name;
-
-        if (dotnetVer == null)
-        {
-            throw new Exception($"No .NET {targetMajorVersion} SDK could be found.");
-        }
-
-        var referenceAssembliesDir =
-            Path.Combine(sdkReferenceAssemblyRoot.FullName, dotnetVer, "ref", $"net{dotnetVer[0]}.0");
-
-        if (!Directory.Exists(referenceAssembliesDir))
-        {
-            throw new Exception($"Could not find reference assemblies directory at {referenceAssembliesDir}." +
-                                $" dotnetVer: {dotnetVer}." +
-                                $" sdkReferenceAssemblyRoot: {sdkReferenceAssemblyRoot}");
-        }
-
-        return Directory.GetFiles(referenceAssembliesDir, "*.dll")
-            .Where(a => !a.Contains("VisualBasic"))
-            .ToHashSet();
+            .Directory;
     }
 }

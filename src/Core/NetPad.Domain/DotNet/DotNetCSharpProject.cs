@@ -40,7 +40,7 @@ public class DotNetCSharpProject
         ProjectDirectoryPath = projectDirectoryPath;
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
 
-        if (!projectFileName.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+        if (!projectFileName.EndsWithIgnoreCase(".csproj"))
             projectFileName += ".csproj";
 
         ProjectFilePath = Path.Combine(projectDirectoryPath, projectFileName);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NetPad.DotNet;
 
 namespace NetPad.Packages;
 
@@ -9,53 +10,6 @@ namespace NetPad.Packages;
 /// </summary>
 public interface IPackageProvider
 {
-    /// <summary>
-    /// Gets a listing of all cached (installed) packages.
-    /// </summary>
-    /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
-    /// still be loaded from installed package.</param>
-    Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false);
-
-    /// <summary>
-    /// Gets a listing cached (installed) packages that were explicitly installed.
-    /// </summary>
-    /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
-    /// still be loaded from installed package.</param>
-    /// <returns></returns>
-    Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false);
-
-    /// <summary>
-    /// Deletes all cached packages.
-    /// </summary>
-    Task PurgePackageCacheAsync();
-
-    /// <summary>
-    /// Gets package assemblies.
-    /// </summary>
-    /// <param name="packageId">Package ID</param>
-    /// <param name="packageVersion">Package Version</param>
-    Task<HashSet<string>> GetCachedPackageAssembliesAsync(string packageId, string packageVersion);
-
-    /// <summary>
-    /// Gets package assemblies including any dependant assemblies.
-    /// </summary>
-    /// <param name="packageId">Package ID</param>
-    /// <param name="packageVersion">Package Version</param>
-    Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion);
-
-    /// <summary>
-    /// Gets all versions of a package.
-    /// </summary>
-    /// <param name="packageId">Package ID</param>
-    Task<string[]> GetPackageVersionsAsync(string packageId);
-
-    /// <summary>
-    /// Deletes a package from the cache.
-    /// </summary>
-    /// <param name="packageId">Package ID</param>
-    /// <param name="packageVersion">Package Version</param>
-    Task DeleteCachedPackageAsync(string packageId, string packageVersion);
-
     /// <summary>
     /// Searches for packages.
     /// </summary>
@@ -75,11 +29,18 @@ public interface IPackageProvider
         CancellationToken? cancellationToken = null);
 
     /// <summary>
+    /// Gets all versions of a package.
+    /// </summary>
+    /// <param name="packageId">Package ID</param>
+    Task<string[]> GetPackageVersionsAsync(string packageId);
+
+    /// <summary>
     /// Installs a package and adds it to cache.
     /// </summary>
     /// <param name="packageId">Package ID</param>
     /// <param name="packageVersion">Package Version</param>
-    Task InstallPackageAsync(string packageId, string packageVersion);
+    /// <param name="dotNetFrameworkVersion">The .NET framework version to target.</param>
+    Task InstallPackageAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion);
 
     /// <summary>
     /// Gets install info for a specific package ID and version if that package is installed.
@@ -88,4 +49,48 @@ public interface IPackageProvider
     /// <param name="packageVersion">Package Version</param>
     /// <returns>Install info for the specified package if it is installed, null otherwise.</returns>
     Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion);
+
+    /// <summary>
+    /// Gets a listing of all cached (installed) packages.
+    /// </summary>
+    /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
+    /// still be loaded from installed package.</param>
+    Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false);
+
+    /// <summary>
+    /// Gets a listing cached (installed) packages that were explicitly installed.
+    /// </summary>
+    /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
+    /// still be loaded from installed package.</param>
+    /// <returns></returns>
+    Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false);
+
+    /// <summary>
+    /// Gets package asset files.
+    /// </summary>
+    /// <param name="packageId">Package ID</param>
+    /// <param name="packageVersion">Package Version</param>
+    /// <param name="dotNetFrameworkVersion">The .NET framework version to target.</param>
+    Task<HashSet<PackageAsset>> GetCachedPackageAssetsAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion);
+
+    /// <summary>
+    /// Gets package assets including any assets of package dependencies.
+    /// </summary>
+    /// <param name="packageId">Package ID</param>
+    /// <param name="packageVersion">Package Version</param>
+    /// <param name="dotNetFrameworkVersion">The .NET framework version to target.</param>
+    Task<HashSet<PackageAsset>> GetPackageAndDependencyAssetsAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion);
+
+
+    /// <summary>
+    /// Deletes a package from the cache.
+    /// </summary>
+    /// <param name="packageId">Package ID</param>
+    /// <param name="packageVersion">Package Version</param>
+    Task DeleteCachedPackageAsync(string packageId, string packageVersion);
+
+    /// <summary>
+    /// Deletes all cached packages.
+    /// </summary>
+    Task PurgePackageCacheAsync();
 }

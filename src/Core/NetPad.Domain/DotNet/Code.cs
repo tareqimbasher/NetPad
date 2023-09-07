@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace NetPad.DotNet;
 
 public class Code : SourceCodeElement<string?>
 {
-    private bool _changed;
-
     public Code(string? value) : this(null, value)
     {
     }
 
+    [JsonConstructor]
     public Code(Namespace? @namespace, string? value) : base(value)
     {
         Namespace = @namespace;
@@ -18,10 +18,9 @@ public class Code : SourceCodeElement<string?>
 
     public Namespace? Namespace { get; }
 
-    public override bool Changed
+    public override bool ValueChanged()
     {
-        get => _changed || (Namespace != null && Namespace.Changed);
-        protected set => _changed = value;
+        return _valueChanged || (Namespace != null && Namespace.ValueChanged());
     }
 
     public override string ToCodeString()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace NetPad.DotNet;
@@ -25,6 +26,19 @@ public static class DotNetFrameworkVersionUtil
             DotNetFrameworkVersion.DotNet8 => "net8.0",
             _ => throw new ArgumentOutOfRangeException(nameof(frameworkVersion), frameworkVersion, $"Unknown framework version: {frameworkVersion}")
         };
+    }
+
+    public static bool TryGetDotNetFrameworkVersion(string targetFrameworkMoniker, [NotNullWhen(true)] out DotNetFrameworkVersion? dotNetFrameworkVersion)
+    {
+        dotNetFrameworkVersion = targetFrameworkMoniker switch
+        {
+            "net6.0" => DotNetFrameworkVersion.DotNet6,
+            "net7.0" => DotNetFrameworkVersion.DotNet7,
+            "net8.0" => DotNetFrameworkVersion.DotNet8,
+            _ => null
+        };
+
+        return dotNetFrameworkVersion != null;
     }
 
     public static bool IsSdkVersionSupported(SemanticVersion sdkVersion)

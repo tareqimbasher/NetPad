@@ -91,7 +91,7 @@ public class FileSystemScriptRepository : IScriptRepository
     public async Task<Script> GetAsync(string path)
     {
         // Basic protection against malicious calls
-        if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+        if (!path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
             throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
         var fileInfo = new FileInfo(path);
@@ -113,7 +113,7 @@ public class FileSystemScriptRepository : IScriptRepository
         var scriptFiles = new DirectoryInfo(GetRepositoryDirPath()).EnumerateFiles(
                 $"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
             // Basic protection against malicious calls
-            .Where(f => f.Name.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase));
+            .Where(f => f.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION));
 
         foreach (var scriptFile in scriptFiles)
         {
@@ -135,7 +135,7 @@ public class FileSystemScriptRepository : IScriptRepository
             throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
 
         // Basic protection against malicious calls
-        if (!script.Path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+        if (!script.Path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
             throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
         await File.WriteAllTextAsync(script.Path, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
@@ -150,7 +150,7 @@ public class FileSystemScriptRepository : IScriptRepository
             throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot delete script.");
 
         // Basic protection against malicious calls
-        if (!script.Path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+        if (!script.Path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
             throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
 
         if (!File.Exists(script.Path))

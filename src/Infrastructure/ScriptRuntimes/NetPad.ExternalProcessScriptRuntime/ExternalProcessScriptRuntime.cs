@@ -290,15 +290,15 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
     private async Task<RunDependencies?> GetRunDependencies(RunOptions runOptions)
     {
-        /*
-         * Add code that initializes runtime services
-         */
+        //
+        // Add code that initializes runtime services
+        //
         runOptions.AdditionalCode.Add(new SourceCode("public partial class Program " +
                                                      $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.Init(); }} }}"));
 
-        /*
-         * Gather assembly references
-         */
+        //
+        // Gather assembly references
+        //
         // Images
         var referenceAssemblyImages = new HashSet<AssemblyImage>();
         foreach (var additionalReference in runOptions.AdditionalReferences)
@@ -307,34 +307,42 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 referenceAssemblyImages.Add(assemblyImageReference.AssemblyImage);
         }
 
-        // Assembly paths
-        var referenceAssemblyPaths = (await _script.Config.References
+        // Files
+        var referenceAssets = (await _script.Config.References
                 .Union(runOptions.AdditionalReferences)
-                .GetAssemblyPathsAsync(_packageProvider))
-
-            // Chose the highest version of duplicate assemblies
-            .Select(path => new
+                .GetAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider))
+            .Select(asset => new
             {
-                Path = path,
-                AssemblyName = AssemblyName.GetAssemblyName(path)
+                Path = asset.Path,
+                IsAssembly = asset.IsAssembly()
             })
+            .ToArray();
+
+        var referenceAssemblyPaths = referenceAssets
+            .Where(x => x.IsAssembly)
+            .Select(x => new
+            {
+                x.Path,
+                AssemblyName = AssemblyName.GetAssemblyName(x.Path)
+            })
+            // Choose the highest version of duplicate assemblies
             .GroupBy(a => a.AssemblyName.Name)
             .Select(grp => grp.OrderBy(x => x.AssemblyName.Version).Last())
             .Select(x => x.Path)
             .ToHashSet();
 
-        /*
-         * Add custom assemblies
-         */
+        //
+        // Add custom assemblies
+        //
         referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
         // Needed to serialize output in external process to HTML
         referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
         referenceAssemblyPaths.Add(typeof(HtmlSerializer).Assembly.Location);
 
 
-        /*
-         * Parse Code & Compile
-         */
+        //
+        // Parse Code & Compile
+        //
         var compilationResult = ParseAndCompile(
             runOptions.SpecificCodeToRun ?? _script.Code,
             referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
@@ -343,17 +351,24 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         if (!compilationResult.Success)
         {
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(
+            await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(
                 compilationResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).JoinToString("\n") + "\n"));
 
             return null;
+        }
+
+        var runAssets = new HashSet<RunAsset>(runOptions.Assets);
+
+        foreach (var asset in referenceAssets.Where(x => !x.IsAssembly))
+        {
+            runAssets.Add(new RunAsset(asset.Path, $"./{Path.GetFileName(asset.Path)}"));
         }
 
         return new RunDependencies(
             compilationResult.AssemblyBytes,
             referenceAssemblyImages,
             referenceAssemblyPaths,
-            runOptions.Assets
+            runAssets
         );
     }
 

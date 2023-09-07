@@ -42,6 +42,8 @@ public class TypesController : Controller
         public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
         public DataConnectionResourcesUpdatedEvent? DataConnectionResourcesUpdatedEvent { get; set; }
         public DataConnectionResourcesUpdateFailedEvent? DataConnectionResourcesUpdateFailedEvent { get; set; }
+        public DataConnectionSchemaValidationStartedEvent? DataConnectionSchemaValidationStartedEvent { get; set; }
+        public DataConnectionSchemaValidationCompletedEvent? DataConnectionSchemaValidationCompletedEvent { get; set; }
         public OpenWindowCommand? OpenWindowCommand { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
         public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }
@@ -52,5 +54,6 @@ public class TypesController : Controller
         public AlertUserAboutMissingAppDependencies? AlertUserAboutMissingAppDependencies { get; set; }
         public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
+        public SQLiteDatabaseConnection? SQLiteDatabaseConnection { get; set; }
     }
 }

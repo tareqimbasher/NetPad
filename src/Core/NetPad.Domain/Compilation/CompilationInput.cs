@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using NetPad.Common;
 using NetPad.DotNet;
 
 namespace NetPad.Compilation;

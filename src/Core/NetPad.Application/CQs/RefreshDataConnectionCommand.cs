@@ -35,6 +35,8 @@ public class RefreshDataConnectionCommand : Command
 
         public async Task<Unit> Handle(RefreshDataConnectionCommand request, CancellationToken cancellationToken)
         {
+            var currentActiveScriptTargetFrameworkVersion = _session.Active?.Script.Config.TargetFrameworkVersion;
+
             var connection = await _dataConnectionRepository.GetAsync(request.ConnectionId);
 
             if (connection == null)
@@ -42,17 +44,9 @@ public class RefreshDataConnectionCommand : Command
                 return Unit.Value;
             }
 
-            var cached = _dataConnectionResourcesCache.GetCached(request.ConnectionId);
+            await _dataConnectionResourcesCache.RemoveCachedResourcesAsync(request.ConnectionId);
 
-            if (cached != null)
-            {
-                foreach (var frameworkVersion in cached.Keys)
-                {
-                    _dataConnectionResourcesCache.RemoveCachedResources(request.ConnectionId, frameworkVersion);
-                }
-            }
-
-            var targetFramework = _session.Active?.Script.Config.TargetFrameworkVersion
+            var targetFramework = currentActiveScriptTargetFrameworkVersion
                                   ?? _dotNetInfo.GetLatestSupportedDotNetSdkVersionOrThrow().FrameworkVersion();
 
             await _dataConnectionResourcesCache.GetAssemblyAsync(connection, targetFramework);

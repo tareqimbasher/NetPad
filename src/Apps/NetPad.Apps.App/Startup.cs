@@ -21,6 +21,7 @@ using NetPad.Configuration;
 using NetPad.CQs;
 using NetPad.Data;
 using NetPad.Data.EntityFrameworkCore;
+using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Middlewares;
@@ -62,26 +63,23 @@ public class Startup
     {
         services.AddSingleton<AppIdentifier>();
         services.AddSingleton<HostInfo>();
-        services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
-        services.AddSingleton<IEventBus, EventBus>();
-        services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
-        services.AddSingleton<ISession, Session>();
-        services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<HttpClient>();
-        services.AddTransient<ILogoService, LogoService>();
-
-        // Repositories
         services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-        services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
-        services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
-        services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
-
-        // Script execution
-        services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
-        services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
+        services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
+        services.AddSingleton<ISession, Session>();
+        services.AddSingleton<IEventBus, EventBus>();
+        services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
-        services.AddTransient<IAssemblyInfoReader, AssemblyInfoReader>();
+        services.AddTransient<ILogoService, LogoService>();
+        services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
+
+        // Scripts
+        services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
+        services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
+        services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
+        services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
+
 
         // Select how we will run scripts, using an external process or in-memory
         // NOTE: A different app, ex. a CLI version of NetPad, could use in-memory
@@ -89,14 +87,20 @@ public class Startup
         // services.AddInMemoryScriptRuntime();
 
         // Data connections
+        services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
         services.AddTransient<IDataConnectionResourcesGeneratorFactory, DataConnectionResourcesGeneratorFactory>();
         services.AddTransient<EntityFrameworkResourcesGenerator>();
         services.AddTransient<IDatabaseConnectionMetadataProviderFactory, DatabaseConnectionMetadataProviderFactory>();
         services.AddTransient<EntityFrameworkDatabaseConnectionMetadataProvider>();
-        services.AddSingleton<IDataConnectionResourcesCache, DataConnectionResourcesCache>();
+        services.AddTransient<IDataConnectionResourcesRepository, FileSystemDataConnectionResourcesRepository>();
+        services.AddSingleton<IDataConnectionResourcesCache, FileSystemDataConnectionResourcesCache>();
         services.AddSingleton(sp => new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
         services.AddTransient<IDataConnectionPasswordProtector>(s =>
             new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategyFactory, DataConnectionSchemaChangeDetectionStrategyFactory>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MsSqlServerDatabaseSchemaChangeDetectionStrategy>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, PostgreSqlDatabaseSchemaChangeDetectionStrategy>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, SQLiteDatabaseSchemaChangeDetectionStrategy>();
 
         // Package management
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();

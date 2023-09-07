@@ -46,6 +46,8 @@ public class EventForwardToIpcBackgroundService : BackgroundService
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatingEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatedEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdateFailedEvent>();
+        SubscribeAndForwardToIpc<DataConnectionSchemaValidationStartedEvent>();
+        SubscribeAndForwardToIpc<DataConnectionSchemaValidationCompletedEvent>();
     }
 
     private void ForwardEnvironmentLevelEvents()

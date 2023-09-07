@@ -16,6 +16,7 @@ html {
         @extend .p-3;
         @include theme(border-top, borderColor, 1px solid);
         display: flex;
+        align-items: center;
 
         button:not(:last-of-type) {
             margin-right: 0.375rem;

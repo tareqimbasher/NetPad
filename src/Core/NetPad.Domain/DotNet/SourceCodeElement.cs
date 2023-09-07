@@ -4,7 +4,9 @@ namespace NetPad.DotNet;
 
 public abstract class SourceCodeElement : ValueObject
 {
-    public virtual bool Changed { get; protected set; }
+    protected bool _valueChanged;
+
+    public virtual bool ValueChanged() => _valueChanged;
 
     public abstract string ToCodeString();
 }
@@ -21,7 +23,7 @@ public abstract class SourceCodeElement<TValue> : SourceCodeElement
     public void Update(TValue value)
     {
         Value = value;
-        Changed = true;
+        _valueChanged = true;
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

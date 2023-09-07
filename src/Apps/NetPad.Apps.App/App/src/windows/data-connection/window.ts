@@ -1,39 +1,23 @@
-import {
-    DatabaseConnection,
-    DataConnection,
-    DataConnectionType,
-    IDataConnectionService,
-    MsSqlServerDatabaseConnection,
-    PostgreSqlDatabaseConnection
-} from "@domain";
-import {Util} from "@common";
-import {Constructable, ILogger} from "aurelia";
+import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
+import {System} from "@common";
+import {IDataConnectionView} from "./connection-views/idata-connection-view";
+import {MssqlView} from "./connection-views/mssql/mssql-view";
+import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
+import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 
 export class Window extends WindowBase {
-    public connection?: DataConnection;
+    public connectionView?: IDataConnectionView;
     public connectionType?: ConnectionType;
-    public connectionTypes: ConnectionType[] = [
-        {
-            label: '<img src="/img/mssql.png" class="connection-type-logo"/> Microsoft SQL Server',
-            type: "MSSQLServer"
-        },
-        {
-            label: '<img src="/img/postgresql2.png" class="connection-type-logo"/> PostgreSQL',
-            type: "PostgreSQL"
-        },
-    ];
+    public connectionTypes: ConnectionType[];
 
-    public authType: "none" | "userAndPassword" = "userAndPassword";
     public testingConnectionStatus?: undefined | "testing" | "success" | "fail";
     public testingConnectionFailureMessage?: string;
-    public loadingDatabases = false;
-    public databasesOnServer?: string[];
     public prohibitedNames: string[] = [];
     public connectionString = "";
     private nameField: HTMLInputElement;
-    private unprotectedPassword?: string;
     private readonly logger: ILogger;
 
     constructor(
@@ -46,6 +30,25 @@ export class Window extends WindowBase {
 
         const createNew = !this.startupOptions.get("data-connection-id");
         document.title = createNew ? "New Data Connection" : "Edit Data Connection";
+
+        this.connectionTypes = [
+            {
+                label: '<img src="/img/mssql.png" class="connection-type-logo"/> Microsoft SQL Server',
+                type: "MSSQLServer"
+            },
+            {
+                label: '<img src="/img/postgresql2.png" class="connection-type-logo"/> PostgreSQL',
+                type: "PostgreSQL"
+            },
+        ];
+
+        // Until we implement a way to add a SQLite file in the browser, this option will only be available in Electron app
+        if (System.isRunningInElectron()) {
+            this.connectionTypes.push({
+                label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
+                type: "SQLite"
+            });
+        }
     }
 
     public async binding() {
@@ -55,11 +58,7 @@ export class Window extends WindowBase {
 
             this.connectionType = this.connectionTypes.find(c => c.type == connection.type);
 
-            if (connection instanceof DatabaseConnection && (!!connection.userId || !!connection.password)) {
-                this.authType = "userAndPassword";
-            }
-
-            this.connection = connection;
+            this.connectionView = this.createNewConnectionView(this.connectionType?.type, connection);
 
             this.updateConnectionString();
         }
@@ -67,8 +66,8 @@ export class Window extends WindowBase {
         const existingNames = await this.dataConnectionService.getAllNames();
 
         // Remove the name of the connection being edited
-        if (this.connection?.name) {
-            const ix = existingNames.indexOf(this.connection.name);
+        if (this.connectionView?.connection.name) {
+            const ix = existingNames.indexOf(this.connectionView.connection.name);
             if (ix >= 0) {
                 existingNames.splice(ix, 1);
             }
@@ -79,24 +78,18 @@ export class Window extends WindowBase {
 
     public get isConnectionValid() {
         const genericChecks = !!this.connectionType
-            && !!this.connection
+            && !!this.connectionView
             && this.isNameValid();
 
-        if (genericChecks && this.connection instanceof DatabaseConnection) {
-            return !!this.connection.host
-                && !!this.connection.databaseName
-                && (this.authType !== "userAndPassword" || (!!this.connection.userId && !!this.connection.password));
-        }
-
-        return genericChecks;
+        return genericChecks && this.connectionView && !this.connectionView.validationError;
     }
 
     public isNameValid() {
-        if (!this.connection?.name) {
-            return true;
+        if (!this.connectionView || !this.connectionView.connection.name) {
+            return false;
         }
 
-        return this.prohibitedNames.indexOf(this.connection.name) < 0;
+        return this.prohibitedNames.indexOf(this.connectionView.connection.name) < 0;
     }
 
     public setConnectionType(connectionType: ConnectionType) {
@@ -104,72 +97,52 @@ export class Window extends WindowBase {
             return;
         }
 
-        if (this.connection?.type === connectionType.type) {
+        if (this.connectionView?.connection.type === connectionType.type) {
             return;
         }
 
         this.connectionType = connectionType;
 
-        let concereteType: Constructable;
 
-        if (connectionType.type === "MSSQLServer") {
-            concereteType = MsSqlServerDatabaseConnection;
-        } else if (connectionType.type === "PostgreSQL") {
-            concereteType = PostgreSqlDatabaseConnection;
-        } else {
-            this.connection = undefined;
-            return;
+        this.connectionView = this.createNewConnectionView(this.connectionType.type, this.connectionView?.connection);
+    }
+
+    private createNewConnectionView(connectionType: DataConnectionType | undefined, connection: DataConnection | undefined): IDataConnectionView | undefined {
+        if (!connectionType) {
+            return undefined;
         }
 
-        const newConnection = new concereteType() as DatabaseConnection;
-
-        if (this.connection) {
-            newConnection.init(this.connection);
+        if (connectionType === "MSSQLServer") {
+            return new MssqlView(connection, this.dataConnectionService);
         }
 
-        newConnection.id = this.connection?.id || Util.newGuid();
-        newConnection.type = connectionType.type;
+        if (connectionType === "PostgreSQL") {
+            return new PostgresqlView(connection, this.dataConnectionService);
+        }
 
-        if (!newConnection.name) newConnection.name = "@localhost";
-        if (!newConnection.host) newConnection.host = "localhost";
+        if (connectionType === "SQLite") {
+            return new SqliteView(connection, this.dataConnectionService);
+        }
 
-        this.connection = newConnection;
+        return undefined;
     }
 
     public async testConnection() {
-        if (!this.connectionType || !this.connection) {
+        if (!this.connectionType || !this.connectionView) {
             alert("Configure the connection first.");
             return;
         }
 
-        if (this.connection instanceof DatabaseConnection) {
-            if (!this.connection.host) {
-                alert("The Host is required.");
-                return;
-            }
-
-            if (!this.connection.databaseName) {
-                alert("The Database is required.");
-                return;
-            }
-
-            if (this.authType === "userAndPassword") {
-                if (!this.connection.userId) {
-                    alert("The User is required.");
-                    return;
-                }
-
-                if (!this.connection.password) {
-                    alert("The Password is required.");
-                    return;
-                }
-            }
+        const validationError = this.connectionView.validationError;
+        if (validationError) {
+            alert(validationError);
+            return;
         }
 
         this.testingConnectionStatus = "testing";
 
         try {
-            const result = await this.dataConnectionService.test(this.connection);
+            const result = await this.dataConnectionService.test(this.connectionView.connection);
             this.testingConnectionStatus = result.success ? "success" : "fail";
             this.testingConnectionFailureMessage = result.message;
         } catch (ex) {
@@ -181,16 +154,18 @@ export class Window extends WindowBase {
     }
 
     public async save() {
-        if (!this.isConnectionValid || !this.connection) {
+        if (!this.isConnectionValid || !this.connectionView) {
             return;
         }
 
+        const connection = this.connectionView.connection;
+
         try {
-            if (this.connection instanceof DatabaseConnection && this.connection.port?.trim() === "") {
-                this.connection.port = undefined;
+            if (connection instanceof DatabaseConnection && connection.port?.trim() === "") {
+                connection.port = undefined;
             }
 
-            await this.dataConnectionService.save(this.connection);
+            await this.dataConnectionService.save(connection);
             window.close();
         } catch (ex) {
             const errorMsg = ex instanceof Error ? ex.toString() : "Unknown error";
@@ -203,8 +178,13 @@ export class Window extends WindowBase {
         window.close();
     }
 
-    @watch<Window>(vm => vm.connection?.name)
+    @watch<Window>(vm => vm.connectionView?.connection.name)
     private connectionNameChanged() {
+        if (!this.connectionView?.connection.name) {
+            this.nameField.parentElement?.classList.remove("was-validated");
+            return;
+        }
+
         this.nameField.parentElement?.classList.add("was-validated");
 
         if (!this.isNameValid()) {
@@ -216,66 +196,19 @@ export class Window extends WindowBase {
         }
     }
 
-    @watch<Window>(vm => vm.authType)
-    private async authTypeChanged() {
-        if (!this.connection || !(this.connection instanceof DatabaseConnection)) {
-            return;
-        }
-
-        if (this.authType == "none") {
-            this.connection.userId = undefined;
-            this.connection.password = undefined;
-            this.unprotectedPassword = undefined;
-        }
-    }
-
-    @watch<Window>(vm => vm.connection?.type)
-    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.host)
-    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.port)
-    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.userId)
-    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.password)
-    @watch<Window>(vm => (vm.connection as DatabaseConnection)?.databaseName)
+    @watch<Window>(vm => vm.connectionView?.connection.type)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.host)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.port)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.userId)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.password)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.databaseName)
     private async updateConnectionString() {
-        if (!this.connection) {
+        if (!this.connectionView) {
             this.connectionString = "";
             return;
         }
 
-        this.connectionString = await this.dataConnectionService.getConnectionString(this.connection);
-    }
-
-    private async unprotectedPasswordEntered() {
-        const dbConnection = this.connection as DatabaseConnection;
-        if (!this.unprotectedPassword) dbConnection.password = this.unprotectedPassword;
-        else {
-            dbConnection.password = await this.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;
-        }
-    }
-
-    private async loadDatabases() {
-        if (this.loadingDatabases || !(this.connection instanceof DatabaseConnection)) {
-            return;
-        }
-
-        const canLoad = !!this.connectionType
-            && !!this.connection
-            && !!this.connection.host
-            && (this.authType !== "userAndPassword" || (!!this.connection.userId && !!this.connection.password));
-
-        if (!canLoad) {
-            this.databasesOnServer = undefined;
-            return;
-        }
-
-        if (!this.databasesOnServer || !this.databasesOnServer.length) {
-            this.loadingDatabases = true;
-
-            try {
-                this.databasesOnServer = await this.dataConnectionService.getDatabases(this.connection);
-            } finally {
-                this.loadingDatabases = false;
-            }
-        }
+        this.connectionString = await this.dataConnectionService.getConnectionString(this.connectionView.connection);
     }
 }
 

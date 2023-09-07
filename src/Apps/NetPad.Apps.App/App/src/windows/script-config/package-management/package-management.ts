@@ -95,7 +95,7 @@ export class PackageManagement extends ViewModelBase {
     public async installPackage(pkg: PackageSearchResult, version?: string) {
         try {
             pkg.isInstalling = true;
-            await this.packageService.install(pkg.packageId, version || pkg.version);
+            await this.packageService.install(pkg.packageId, version || pkg.version, this.configStore.script.config.targetFrameworkVersion);
             await this.refreshCachedPackages();
         } catch (ex) {
             if (ex instanceof Error) {

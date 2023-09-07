@@ -10,6 +10,10 @@ public static class StringUtil
 {
     private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
+    public static bool EqualsIgnoreCase(this string source, string value) => source.Equals(value, StringComparison.OrdinalIgnoreCase);
+    public static bool ContainsIgnoreCase(this string source, string value) => source.Contains(value, StringComparison.OrdinalIgnoreCase);
+    public static bool EndsWithIgnoreCase(this string source, string value) => source.EndsWith(value, StringComparison.OrdinalIgnoreCase);
+
     public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
         string.Join(separator, collection);
 

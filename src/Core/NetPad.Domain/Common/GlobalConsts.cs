@@ -35,6 +35,17 @@ public static class GlobalConsts
             };
         }
 
+        if (providerName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            return dotNetFrameworkVersion switch
+            {
+                DotNetFrameworkVersion.DotNet6 => "6.0.21",
+                DotNetFrameworkVersion.DotNet7 => "7.0.10",
+                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion,
+                    $"Unsupported framework version: {dotNetFrameworkVersion}")
+            };
+        }
+
         throw new InvalidOperationException($"Could not determine version for provider: '{providerName}' and .NET version: '{dotNetFrameworkVersion}'");
     }
 }

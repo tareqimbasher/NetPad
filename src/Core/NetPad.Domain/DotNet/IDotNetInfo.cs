@@ -1,5 +1,3 @@
-using System;
-
 namespace NetPad.DotNet;
 
 public interface IDotNetInfo

@@ -7,7 +7,6 @@ using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Runtimes;
-using NetPad.Utilities;
 
 namespace NetPad.Scripts;
 

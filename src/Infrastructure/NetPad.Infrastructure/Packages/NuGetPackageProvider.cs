@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyModel;
@@ -9,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Common;
 using NetPad.DotNet;
-using NetPad.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -29,7 +29,6 @@ public class NuGetPackageProvider : IPackageProvider
     private readonly Settings _settings;
     private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly ILogger<NuGetPackageProvider> _logger;
-    private readonly NuGetFramework _nuGetFramework;
     private const string NugetApiUri = "https://api.nuget.org/v3/index.json";
     private const string PackageInstallInfoFileName = "netpad.json";
 
@@ -38,115 +37,10 @@ public class NuGetPackageProvider : IPackageProvider
         _settings = settings;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
-        _nuGetFramework = NuGetFramework.ParseFolder(GlobalConsts.AppDotNetFrameworkVersion.GetTargetFrameworkMoniker());
 
         // hostDependencyContext = DependencyContext.Load(hostAssembly);
         // FrameworkName = hostDependencyContext.Target.Framework;
         // TargetFramework = NuGetFramework.ParseFrameworkName(FrameworkName, DefaultFrameworkNameProvider.Instance);
-    }
-
-    public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
-    {
-        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
-
-        return await GetCachedPackagesAsync(nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories), loadMetadata);
-    }
-
-    public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
-    {
-        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
-
-        var packageInstallInfoFiles = nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories)
-            .Where(f => GetInstallInfo(f)?.InstallReason == PackageInstallReason.Explicit);
-
-        return await GetCachedPackagesAsync(packageInstallInfoFiles, loadMetadata);
-    }
-
-    public Task PurgePackageCacheAsync()
-    {
-        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
-
-        foreach (var directory in nuGetCacheDir.GetDirectories())
-        {
-            directory.Delete(true);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    public async Task<HashSet<string>> GetCachedPackageAssembliesAsync(string packageId, string packageVersion)
-    {
-        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
-        return (await GetLibItemsAsync(packageIdentity, _nuGetFramework))
-            .Where(i => i.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            .ToHashSet();
-    }
-
-    public async Task<string[]> GetPackageVersionsAsync(string packageId)
-    {
-        using var sourceCacheContext = new SourceCacheContext();
-
-        foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
-        {
-            var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
-            var versions = await resource.GetAllVersionsAsync(
-                packageId,
-                sourceCacheContext,
-                NuGetNullLogger.Instance,
-                CancellationToken.None);
-
-            if (versions.Any())
-            {
-                return versions.Select(v => v.ToString()).ToArray();
-            }
-        }
-
-        return Array.Empty<string>();
-    }
-
-    public async Task<HashSet<string>> GetPackageAndDependanciesAssembliesAsync(string packageId, string packageVersion)
-    {
-        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
-
-        if (!IsInstalled(packageIdentity))
-        {
-            await InstallPackageAsync(packageId, packageVersion);
-        }
-
-        using var sourceCacheContext = new SourceCacheContext();
-        var logger = new NuGetNullLogger();
-        var cancellationToken = CancellationToken.None;
-        var dependencyContext = DependencyContext.Default;
-
-        var packageDependencyTree = await GetPackageDependencyTreeAsync(
-            packageIdentity,
-            _nuGetFramework,
-            GetSourceRepositoryProvider().GetRepositories(),
-            dependencyContext,
-            sourceCacheContext,
-            logger,
-            cancellationToken
-        );
-
-        var allPackages = packageDependencyTree.GetAllPackages();
-        var allLibAssemblies = new HashSet<string>();
-
-        foreach (var package in allPackages)
-        {
-            if (!IsInstalled(package))
-            {
-                await InstallPackageAsync(package.Id, package.Version.ToString());
-            }
-
-            var libAssemblies = await GetCachedPackageAssembliesAsync(package.Id, package.Version.ToString());
-
-            foreach (var libAssembly in libAssemblies)
-            {
-                allLibAssemblies.Add(libAssembly);
-            }
-        }
-
-        return allLibAssemblies;
     }
 
     public async Task<PackageMetadata[]> SearchPackagesAsync(
@@ -196,7 +90,29 @@ public class NuGetPackageProvider : IPackageProvider
         return packages.ToArray();
     }
 
-    public async Task InstallPackageAsync(string packageId, string packageVersion)
+    public async Task<string[]> GetPackageVersionsAsync(string packageId)
+    {
+        using var sourceCacheContext = new SourceCacheContext();
+
+        foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
+        {
+            var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
+            var versions = await resource.GetAllVersionsAsync(
+                packageId,
+                sourceCacheContext,
+                NuGetNullLogger.Instance,
+                CancellationToken.None);
+
+            if (versions.Any())
+            {
+                return versions.Select(v => v.ToString()).ToArray();
+            }
+        }
+
+        return Array.Empty<string>();
+    }
+
+    public async Task InstallPackageAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         var packageIdentity = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
 
@@ -210,7 +126,7 @@ public class NuGetPackageProvider : IPackageProvider
 
         var packageDependencyTree = await GetPackageDependencyTreeAsync(
             packageIdentity,
-            _nuGetFramework,
+            NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker()),
             repositories,
             dependencyContext,
             sourceCacheContext,
@@ -226,13 +142,113 @@ public class NuGetPackageProvider : IPackageProvider
         await InstallPackagesAsync(packageIdentity, packagesToInstall, sourceCacheContext, logger, cancellationToken);
     }
 
-    public async Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
+    public Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
     {
-        var installPath = GetInstallPath(new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion)));
-        if (installPath == null) return null;
+        PackageInstallInfo? installInfo = null;
 
-        return GetInstallInfo(installPath);
+        var installPath = GetInstallPath(new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion)));
+        if (installPath != null) installInfo = GetInstallInfo(installPath);
+
+        return Task.FromResult(installInfo);
     }
+
+    public async Task<CachedPackage[]> GetCachedPackagesAsync(bool loadMetadata = false)
+    {
+        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
+
+        return await GetCachedPackagesAsync(nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories), loadMetadata);
+    }
+
+    public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
+    {
+        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
+
+        var packageInstallInfoFiles = nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories)
+            .Where(f => GetInstallInfo(f)?.InstallReason == PackageInstallReason.Explicit);
+
+        return await GetCachedPackagesAsync(packageInstallInfoFiles, loadMetadata);
+    }
+
+    public Task<HashSet<PackageAsset>> GetCachedPackageAssetsAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion)
+    {
+        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
+
+        var installPath = GetInstallPath(packageIdentity);
+        if (installPath == null)
+            throw new Exception($"Package {packageIdentity} is not installed.");
+
+        var nugetFramework = NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker());
+        var frameworkReducer = new FrameworkReducer();
+        using var packageReader = new PackageFolderReader(installPath);
+
+        var libItems = GetNearestItems(packageReader.GetLibItems())
+            .Where(i => i.EndsWithIgnoreCase(".dll"));
+
+        return Task.FromResult(
+            libItems
+                .Concat(GetRuntimeItems(installPath, nugetFramework))
+                .Where(IsLib)
+                .Select(itemPath => new PackageAsset(itemPath))
+                .ToHashSet());
+
+        IEnumerable<string> GetNearestItems(IEnumerable<FrameworkSpecificGroup> items)
+        {
+            var nearestLibItemsFramework = frameworkReducer.GetNearest(nugetFramework, items.Select(x => x.TargetFramework));
+            return items.Where(x => x.TargetFramework.Equals(nearestLibItemsFramework))
+                .SelectMany(x => x.Items)
+                .Select(i => Path.Combine(installPath, i));
+        }
+    }
+
+    public async Task<HashSet<PackageAsset>> GetPackageAndDependencyAssetsAsync(
+        string packageId,
+        string packageVersion,
+        DotNetFrameworkVersion dotNetFrameworkVersion)
+    {
+        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
+
+        if (!IsInstalled(packageIdentity))
+        {
+            await InstallPackageAsync(packageId, packageVersion, dotNetFrameworkVersion);
+        }
+
+        var nugetFramework = NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker());
+        using var sourceCacheContext = new SourceCacheContext();
+        var logger = new NuGetNullLogger();
+        var cancellationToken = CancellationToken.None;
+        var dependencyContext = DependencyContext.Default;
+
+        var packageDependencyTree = await GetPackageDependencyTreeAsync(
+            packageIdentity,
+            nugetFramework,
+            GetSourceRepositoryProvider().GetRepositories(),
+            dependencyContext,
+            sourceCacheContext,
+            logger,
+            cancellationToken
+        );
+
+        var allPackages = packageDependencyTree.GetAllPackages();
+        var assets = new HashSet<PackageAsset>();
+
+        foreach (var package in allPackages)
+        {
+            if (!IsInstalled(package))
+            {
+                await InstallPackageAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
+            }
+
+            var packageAssets = await GetCachedPackageAssetsAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
+
+            foreach (var asset in packageAssets)
+            {
+                assets.Add(asset);
+            }
+        }
+
+        return assets;
+    }
+
 
     public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
     {
@@ -245,6 +261,19 @@ public class NuGetPackageProvider : IPackageProvider
 
         return Task.CompletedTask;
     }
+
+    public Task PurgePackageCacheAsync()
+    {
+        var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
+
+        foreach (var directory in nuGetCacheDir.GetDirectories())
+        {
+            directory.Delete(true);
+        }
+
+        return Task.CompletedTask;
+    }
+
 
     private async Task<CachedPackage[]> GetCachedPackagesAsync(IEnumerable<FileInfo> packageInstallInfoFiles, bool loadMetadata = false)
     {
@@ -420,7 +449,7 @@ public class NuGetPackageProvider : IPackageProvider
                     var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
 
                     // Download the package.
-                    var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
+                    _ = await downloadResource.GetDownloadResourceResultAsync(
                         packageToInstall,
                         new PackageDownloadContext(sourceCacheContext),
                         GetNuGetCacheDirectoryPath(),
@@ -529,32 +558,189 @@ public class NuGetPackageProvider : IPackageProvider
         }
     }
 
-    private async Task<HashSet<string>> GetLibItemsAsync(PackageIdentity packageIdentity, NuGetFramework framework)
+    private IEnumerable<string> GetRuntimeItems(string packageDirectory, NuGetFramework framework)
     {
-        var installPath = GetInstallPath(packageIdentity);
-        if (installPath == null)
-            throw new Exception($"Package {packageIdentity} is not installed.");
+        var runtimesDirectory = new DirectoryInfo(Path.Combine(packageDirectory, "runtimes"));
 
-        var frameworkReducer = new FrameworkReducer();
-        using var packageReader = new PackageFolderReader(installPath);
+        if (!runtimesDirectory.Exists)
+        {
+            return Array.Empty<string>();
+        }
 
-        var libItems = await packageReader.GetLibItemsAsync(CancellationToken.None).ConfigureAwait(false);
-        var nearestLibItemsFramework = frameworkReducer.GetNearest(framework, libItems.Select(x => x.TargetFramework));
-        var nearestLibItems = libItems
-            .Where(x => x.TargetFramework.Equals(nearestLibItemsFramework))
-            .SelectMany(x => x.Items)
+        var platformRIDs = GetCurrentPlatformRIDs();
+
+        var ridDirs = runtimesDirectory.GetDirectories()
+            .Where(d => platformRIDs.Contains(d.Name))
+            .OrderBy(d => Array.IndexOf(platformRIDs, d.Name));
+
+        var interestingRuntimeSubDirs = new HashSet<string>(new[] { "native", "nativeassets", "lib" });
+
+        foreach (var ridDir in ridDirs)
+        {
+            var nativeOrLibDirs = ridDir.GetDirectories().Where(d => interestingRuntimeSubDirs.Contains(d.Name));
+
+            foreach (var nativeOrLibDir in nativeOrLibDirs)
+            {
+                var frameworkDirs = nativeOrLibDir.GetDirectories();
+
+                var compatibleFrameworkDirs = frameworkDirs
+                    .Where(d =>
+                    {
+                        var fw = NuGetFramework.Parse(d.Name);
+                        return !fw.IsUnsupported && DefaultCompatibilityProvider.Instance.IsCompatible(framework, fw);
+                    })
+                    .Select(d => new
+                    {
+                        Dir = d,
+                        Framework = NuGetFramework.Parse(d.Name)
+                    })
+                    .ToList();
+
+                var fwReducer = new FrameworkReducer();
+                while (compatibleFrameworkDirs.Any())
+                {
+                    var nearest = fwReducer.GetNearest(framework, compatibleFrameworkDirs.Select(x => x.Framework));
+
+                    if (nearest == null)
+                    {
+                        break;
+                    }
+
+                    var frameworkDir = compatibleFrameworkDirs.First(x => x.Framework == nearest);
+
+                    var files = frameworkDir.Dir.GetFiles();
+                    if (files.Any(f => IsLib(f.FullName)))
+                    {
+                        return files.Where(f => f.Name != "_._").Select(x => x.FullName);
+                    }
+
+                    compatibleFrameworkDirs.Remove(frameworkDir);
+                }
+
+                var directFiles = nativeOrLibDir.GetFiles();
+
+                if (directFiles.Any(f => IsLib(f.FullName)))
+                {
+                    return directFiles.Where(f => f.Name != "_._").Select(x => x.FullName);
+                }
+            }
+        }
+
+        return Array.Empty<string>();
+    }
+
+    private static bool IsLib(string filePath)
+    {
+        var fileName = Path.GetFileName(filePath);
+
+        return fileName.EndsWithIgnoreCase(".dll")
+               || fileName.EndsWithIgnoreCase(".so")
+               || fileName.EndsWithIgnoreCase(".dylib");
+    }
+
+    private static string[] GetCurrentPlatformRIDs()
+    {
+        var rids = new List<string>();
+
+        var platform = PlatformUtil.GetOSPlatform();
+        var arch = RuntimeInformation.OSArchitecture;
+
+        // RIDs are in increasing specificity (last item in RID array is most specific)
+        if (platform == OSPlatform.Windows)
+        {
+            if (arch == Architecture.X64)
+            {
+                rids.AddRange(new[] { "amd64", "win", "x64", "win-x64", "win7", "win7-x64", "win8", "win8-x64", "win81", "win81-x64", "win10", "win10-x64" });
+            }
+            else if (arch == Architecture.X86)
+            {
+                rids.AddRange(new[] { "win", "x86", "win-x86", " win7", " win7-x86", " win8", " win8-x86", " win81", " win81-x86", " win10", " win10-x86" });
+            }
+            else if (arch == Architecture.Arm64)
+            {
+                rids.AddRange(new[]
+                    { "win", "arm64", "win-arm64", "win7", "win7-arm64", "win8", "win8-arm64", "win81", "win81-arm64", "win10", "win10-arm64" });
+            }
+            else if (arch == Architecture.Arm)
+            {
+                rids.AddRange(new[] { "win", "arm", "win-arm", "win7", "win7-arm", "win8", "win8-arm", "win81", "win81-arm", "win10", "win10-arm" });
+            }
+
+            var osVersion = Environment.OSVersion.Version;
+
+            // If older than Windows 10
+            if (osVersion.Major < 10)
+            {
+                rids = rids.Where(r => !r.StartsWith("win10")).ToList();
+
+                // If older than Windows 8.1
+                if (osVersion.Major < 6 || osVersion is { Major: 6, Minor: < 3 })
+                {
+                    rids.RemoveAll(r => r.StartsWith("win81"));
+                }
+
+                // If older than Windows 8
+                if (osVersion.Major < 6 || osVersion is { Major: 6, Minor: < 2 })
+                {
+                    rids.RemoveAll(r => r.StartsWith("win8"));
+                }
+            }
+        }
+        else if (platform == OSPlatform.OSX)
+        {
+            if (arch == Architecture.X64)
+            {
+                rids.AddRange(new[] { "unix", "osx", "osx-x64" });
+                if (OperatingSystem.IsMacCatalyst()) rids.Add("maccatalyst-x64");
+            }
+            else if (arch == Architecture.Arm64)
+            {
+                rids.AddRange(new[] { "unix", "osx", "osx-x64", "osx-arm64" });
+                if (OperatingSystem.IsMacCatalyst()) rids.Add("maccatalyst-arm64");
+            }
+        }
+        else
+        {
+            if (arch == Architecture.X64)
+            {
+                rids.AddRange(new[] { "unix", "linux", "linux-x64", "linux-musl-x64" });
+            }
+            else if (arch == Architecture.X86)
+            {
+                rids.AddRange(new[] { "unix", "linux", "linux-x86" });
+            }
+            else if (arch == Architecture.Arm64)
+            {
+                rids.AddRange(new[] { "unix", "linux", "linux-arm64", "linux-musl-arm64" });
+            }
+            else if (arch == Architecture.Arm)
+            {
+                rids.AddRange(new[] { "unix", "linux", "linux-arm", "linux-musl-arm" });
+            }
+            else if (arch == Architecture.S390x)
+            {
+                rids.AddRange(new[] { "unix", "linux", "linux-s390x" });
+            }
+
+            if (!RuntimeInformation.OSDescription.ContainsIgnoreCase("musl"))
+            {
+                rids.RemoveAll(r => r.Contains("-musl-"));
+            }
+        }
+
+        // Add current system RID as most specific so far
+        rids.Add(RuntimeInformation.RuntimeIdentifier);
+
+        // Add WASM as most specific
+        if (arch == Architecture.Wasm)
+        {
+            rids.AddRange(new[] { "wasm", "browser-wasm" });
+        }
+
+        return rids
+            .Where(rid => !string.IsNullOrWhiteSpace(rid))
+            .Distinct()
             .ToArray();
-
-        return nearestLibItems
-            .Select(i => Path.Combine(installPath, i))
-            .ToHashSet();
-
-        // var frameworkItems = await packageReader.GetFrameworkItemsAsync(cancellationToken).ConfigureAwait(false);
-        // var nearestFrameworkItemsFramework = frameworkReducer.GetNearest(framework, frameworkItems.Select(x => x.TargetFramework));
-        // var nearestFrameworkItems = frameworkItems
-        //     .Where(x => x.TargetFramework.Equals(nearestFrameworkItemsFramework))
-        //     .SelectMany(x => x.Items)
-        //     .ToArray();
     }
 
     private bool DependencySuppliedByHost(DependencyContext hostDependencies, PackageDependency dep)

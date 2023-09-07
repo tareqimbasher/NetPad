@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using NetPad.Data;
 using NetPad.DotNet;
@@ -8,18 +7,19 @@ namespace NetPad.Tests.Services;
 
 public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
 {
-    public Dictionary<DotNetFrameworkVersion, DataConnectionResources>? GetCached(Guid dataConnectionId)
+    public Task<bool> HasCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        return null;
+        return Task.FromResult(false);
     }
 
-    public bool HasCachedResources(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
+    public Task RemoveCachedResourcesAsync(Guid dataConnectionId)
     {
-        return false;
+        return Task.CompletedTask;
     }
 
-    public void RemoveCachedResources(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
+    public Task RemoveCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
+        return Task.CompletedTask;
     }
 
     public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
