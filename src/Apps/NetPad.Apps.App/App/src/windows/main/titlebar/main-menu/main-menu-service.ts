@@ -241,6 +241,11 @@ export class MainMenuService implements IMainMenuService {
                         text: "Reset Zoom",
                         helpText: "Ctrl + 0",
                     },
+                    {
+                        text: "Full Screen",
+                        click: async() => this.windowService.toggleFullScreen(),
+                        helpText: "F11",
+                    },
                 ]
             },
             {

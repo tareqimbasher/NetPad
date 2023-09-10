@@ -57,14 +57,14 @@ public class ElectronWindowService : IUiWindowService
 
     public async Task MaximizeMainWindowAsync()
     {
-        var window = ElectronUtil.MainWindow;
-
         try
         {
+            var window = ElectronUtil.MainWindow;
+
             if (await window.IsMaximizedAsync())
-                ElectronUtil.MainWindow.Unmaximize();
+                window.Unmaximize();
             else
-                ElectronUtil.MainWindow.Maximize();
+                window.Maximize();
         }
         catch (Exception ex)
         {
@@ -79,13 +79,30 @@ public class ElectronWindowService : IUiWindowService
             var window = ElectronUtil.MainWindow;
 
             if (await window.IsMinimizedAsync())
-                ElectronUtil.MainWindow.Restore();
+                window.Restore();
             else
-                ElectronUtil.MainWindow.Minimize();
+                window.Minimize();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error minimizing window");
+        }
+    }
+
+    public async Task ToggleFullScreenAsync()
+    {
+        try
+        {
+            var window = ElectronUtil.MainWindow;
+
+            if (await window.IsFullScreenAsync())
+                window.SetFullScreen(false);
+            else
+                window.SetFullScreen(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error toggling full screen mode");
         }
     }
 
@@ -96,9 +113,9 @@ public class ElectronWindowService : IUiWindowService
             var window = ElectronUtil.MainWindow;
 
             if (await window.IsAlwaysOnTopAsync())
-                ElectronUtil.MainWindow.SetAlwaysOnTop(false);
+                window.SetAlwaysOnTop(false);
             else
-                ElectronUtil.MainWindow.SetAlwaysOnTop(true);
+                window.SetAlwaysOnTop(true);
         }
         catch (Exception ex)
         {
@@ -117,7 +134,8 @@ public class ElectronWindowService : IUiWindowService
             Width = display.Bounds.Width * 2 / 3,
             X = display.Bounds.X,
             Y = display.Bounds.Y,
-            Frame = false
+            Frame = false,
+            Fullscreenable = true,
         });
 
         window.Show();
@@ -369,7 +387,7 @@ public class ElectronWindowService : IUiWindowService
                             }
                         }
                     },
-                    new MenuItem { Label = "Quit", Accelerator = "CmdOrCtrl+Q", Role = MenuRole.quit },
+                    new MenuItem { Label = "Exit", Accelerator = "CmdOrCtrl+Q", Role = MenuRole.quit },
                 }
             },
             new MenuItem
@@ -424,7 +442,8 @@ public class ElectronWindowService : IUiWindowService
                     },
                     new MenuItem
                     {
-                        Label = "Open Developer Tools", Accelerator = "CmdOrCtrl+Shift+I",
+                        Label = "Open Developer Tools",
+                        Accelerator = "CmdOrCtrl+Shift+I",
                         Role = MenuRole.toggledevtools
                     },
                     new MenuItem { Type = MenuType.separator },
@@ -436,20 +455,6 @@ public class ElectronWindowService : IUiWindowService
                     {
                         Label = "Toggle Full Screen",
                         Accelerator = "F11",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                bool isFullScreen = await ElectronNET.API.Electron.WindowManager.BrowserWindows.First()
-                                    .IsFullScreenAsync();
-                                ElectronNET.API.Electron.WindowManager.BrowserWindows.First()
-                                    .SetFullScreen(!isFullScreen);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while toggling full screen");
-                            }
-                        },
                         Role = MenuRole.togglefullscreen
                     }
                 }

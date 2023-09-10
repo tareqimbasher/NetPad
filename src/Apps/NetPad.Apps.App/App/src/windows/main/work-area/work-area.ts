@@ -39,9 +39,8 @@ export class WorkArea extends ViewModelBase {
 
         this.workbench.workAreaService.viewerHosts.items[0].addViewables(...scriptDocuments);
 
-        const activeScript = this.session.active && scriptDocuments.find(s => s.environment === this.session.active);
-        if (activeScript) {
-            this.workbench.workAreaService.viewerHosts.activateViewable(activeScript);
+        if (this.session.active) {
+            this.activeEnvironmentChanged(this.session.active);
         }
 
         for (const viewerHost of this.workbench.workAreaService.viewerHosts.items.filter(x => !x.activeViewable && x.viewables.size > 0)) {
@@ -96,13 +95,20 @@ export class WorkArea extends ViewModelBase {
 
     @watch<WorkArea>(vm => vm.session.active)
     private activeEnvironmentChanged(newActive: ScriptEnvironment | null | undefined) {
-        if (!newActive) {
-            return;
-        }
+        let documentTitle: string | undefined;
 
-        const result = this.workbench.workAreaService.viewerHosts.findViewable(newActive.script.id);
-        if (result) {
-            this.workbench.workAreaService.viewerHosts.activateViewable(result.viewable);
+        try {
+            if (!newActive) {
+                return;
+            }
+
+            const result = this.workbench.workAreaService.viewerHosts.findViewable(newActive.script.id);
+            if (result) {
+                this.workbench.workAreaService.viewerHosts.activateViewable(result.viewable);
+                documentTitle = result.viewable.name;
+            }
+        } finally {
+            document.title = documentTitle ? `${documentTitle} - NetPad` : "NetPad";
         }
     }
 

@@ -28,6 +28,11 @@ public class WebWindowService : IUiWindowService
         throw new PlatformNotSupportedException();
     }
 
+    public Task ToggleFullScreenAsync()
+    {
+        throw new PlatformNotSupportedException();
+    }
+
     public Task ToggleAlwaysOnTopMainWindowAsync()
     {
         throw new PlatformNotSupportedException();
