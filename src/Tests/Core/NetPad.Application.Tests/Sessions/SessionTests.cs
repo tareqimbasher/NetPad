@@ -131,7 +131,7 @@ public class SessionTests : TestBase
     }
 
     [Fact]
-    public async Task OpeningAScript_AddsItToEnviornmentsCollection()
+    public async Task OpeningAScript_AddsItToEnvironmentsCollection()
     {
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var script = ScriptTestHelper.CreateScript();
@@ -141,7 +141,7 @@ public class SessionTests : TestBase
     }
 
     [Fact]
-    public async Task ClosingScript_RemovesItFromEnviornmentsCollection()
+    public async Task ClosingScript_RemovesItFromEnvironmentsCollection()
     {
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var script = ScriptTestHelper.CreateScript();
