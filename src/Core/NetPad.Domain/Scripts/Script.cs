@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using NetPad.Common;
@@ -57,7 +58,7 @@ public class Script : INotifyOnPropertyChanged
     }
 
 
-    public ScriptConfig Config { get; private set; }
+    public ScriptConfig Config { get; }
 
     public DataConnection? DataConnection
     {
@@ -81,9 +82,12 @@ public class Script : INotifyOnPropertyChanged
 
     public bool IsNew => Path == null;
 
-    public void SetConfig(ScriptConfig config)
+    public void UpdateConfig(ScriptConfig config)
     {
-        Config = config;
+        Config.SetKind(config.Kind);
+        Config.SetTargetFrameworkVersion(config.TargetFrameworkVersion);
+        Config.SetReferences(config.References);
+        Config.SetNamespaces(config.Namespaces);
     }
 
     public void SetPath(string path)

@@ -45,13 +45,8 @@ public class DuplicateScriptCommand : Command<Script>
             await _eventBus.PublishAsync(new ScriptCreatedEvent(script));
 
             script.SetDataConnection(request.Script.DataConnection);
-            script.SetConfig(request.Script.Config);
+            script.UpdateConfig(request.Script.Config);
             script.UpdateCode(request.Script.Code);
-
-            if (!request.Script.IsNew)
-            {
-                script.SetPath(Path.Combine(request.Script.DirectoryPath!, script.Name));
-            }
 
             return script;
         }
