@@ -30,100 +30,6 @@ public class ElectronWindowService : IUiWindowService
 
     private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
 
-    public async Task<WindowState?> GetWindowStateAsync()
-    {
-        try
-        {
-            var main = ElectronUtil.MainWindow;
-
-            WindowViewStatus viewStatus;
-
-            if (await main.IsMaximizedAsync())
-                viewStatus = WindowViewStatus.Maximized;
-            else if (await main.IsMinimizedAsync())
-                viewStatus = WindowViewStatus.Minimized;
-            else
-                viewStatus = WindowViewStatus.UnMaximized;
-
-            bool isAlwaysOnTop = await main.IsAlwaysOnTopAsync();
-            return new WindowState(viewStatus, isAlwaysOnTop);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting window state");
-            return new WindowState(WindowViewStatus.Unknown, false);
-        }
-    }
-
-    public async Task MaximizeMainWindowAsync()
-    {
-        try
-        {
-            var window = ElectronUtil.MainWindow;
-
-            if (await window.IsMaximizedAsync())
-                window.Unmaximize();
-            else
-                window.Maximize();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error maximizing window");
-        }
-    }
-
-    public async Task MinimizeMainWindowAsync()
-    {
-        try
-        {
-            var window = ElectronUtil.MainWindow;
-
-            if (await window.IsMinimizedAsync())
-                window.Restore();
-            else
-                window.Minimize();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error minimizing window");
-        }
-    }
-
-    public async Task ToggleFullScreenAsync()
-    {
-        try
-        {
-            var window = ElectronUtil.MainWindow;
-
-            if (await window.IsFullScreenAsync())
-                window.SetFullScreen(false);
-            else
-                window.SetFullScreen(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error toggling full screen mode");
-        }
-    }
-
-    public async Task ToggleAlwaysOnTopMainWindowAsync()
-    {
-        try
-        {
-            var window = ElectronUtil.MainWindow;
-
-            if (await window.IsAlwaysOnTopAsync())
-                window.SetAlwaysOnTop(false);
-            else
-                window.SetAlwaysOnTop(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error toggling always on top");
-        }
-    }
-
-
     public async Task OpenMainWindowAsync()
     {
         var display = await PrimaryDisplay();
@@ -260,12 +166,6 @@ public class ElectronWindowService : IUiWindowService
         window.Center();
         window.Maximize();
         window.Show();
-    }
-
-    public Task OpenDeveloperToolsAsync(Guid windowId)
-    {
-        _windowManager.FindWindowAsync(windowId)?.WebContents.OpenDevTools();
-        return Task.CompletedTask;
     }
 
     private void InitializeMenu()

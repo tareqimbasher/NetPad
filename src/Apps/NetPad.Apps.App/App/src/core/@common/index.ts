@@ -1,5 +1,7 @@
 export * from "./disposable";
 
+export * from "./exceptions/platform-not-supported-error";
+
 export * from "./data/buffered-queue";
 export * from "./data/semaphore";
 export * from "./data/local-storage-backed";

@@ -17,7 +17,7 @@ public class NetPadWebConfigurator : IApplicationConfigurator
     {
         services.AddSingleton(new ApplicationInfo
         {
-            ApplicationType = ApplicationType.Electron
+            ApplicationType = ApplicationType.Web
         });
 
         services.AddTransient<IUiWindowService, WebWindowService>();

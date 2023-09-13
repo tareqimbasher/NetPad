@@ -2,8 +2,8 @@ import {bindable} from "aurelia";
 import {Env} from "@domain";
 
 /**
- * Used to mark an element to show only if the current running platform is supported.
- * Usage: <div platforms="Electron"></a> will only show this div when the platform is Electron.
+ * A custom attribute that removes the element it's applied on from the DOM on unsupported platforms.
+ * Usage: <div platforms="Electron"></a> will only keep this element in the DOM when the platform is Electron.
  *
  * The value of the platforms attribute must be a comma delimited string.
  * Possible values (case-sensitive):
@@ -21,10 +21,12 @@ export class PlatformsCustomAttribute {
 
         const runningInElectron = Env.isRunningInElectron();
 
-        if (runningInElectron && this.supportedPlatforms.indexOf("Electron") < 0)
+        const supported = this.supportedPlatforms.split(",").map(x => x.trim());
+
+        if (runningInElectron && supported.indexOf("Electron") < 0)
             this.element.remove();
 
-        if (!runningInElectron && this.supportedPlatforms.indexOf("Web") < 0)
+        if (!runningInElectron && supported.indexOf("Browser") < 0)
             this.element.remove();
     }
 }

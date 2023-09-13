@@ -59,7 +59,7 @@ export const stopBackgroundServices = async (container: IContainer) => {
 
     for (const backgroundService of backgroundServices) {
         try {
-            await backgroundService.stop();
+            backgroundService.stop();
         } catch (ex) {
             if (ex instanceof Error)
                 logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
