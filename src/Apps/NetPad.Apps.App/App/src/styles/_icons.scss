@@ -56,6 +56,16 @@ button > .icon-base {
     @extend .fa-floppy-disk;
 }
 
+.duplicate-icon {
+    @extend %icon-base;
+    @extend .fa-clone;
+}
+
+.rename-icon {
+    @extend %icon-base;
+    @extend .fa-pen-to-square;
+}
+
 .delete-icon {
     @extend %icon-base;
     @extend .fa-trash;

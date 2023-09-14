@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using NetPad.Common;
@@ -80,6 +81,14 @@ public class Script : INotifyOnPropertyChanged
     public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
 
     public bool IsNew => Path == null;
+
+    public void UpdateConfig(ScriptConfig config)
+    {
+        Config.SetKind(config.Kind);
+        Config.SetTargetFrameworkVersion(config.TargetFrameworkVersion);
+        Config.SetReferences(config.References);
+        Config.SetNamespaces(config.Namespaces);
+    }
 
     public void SetPath(string path)
     {

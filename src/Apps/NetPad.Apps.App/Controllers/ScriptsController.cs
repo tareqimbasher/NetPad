@@ -55,6 +55,21 @@ public class ScriptsController : Controller
         }
     }
 
+    [HttpPatch("{id:guid}/rename")]
+    public async Task Rename(Guid id)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        await _mediator.Send(new RenameScriptCommand(environment.Script));
+    }
+
+    [HttpPatch("{id:guid}/duplicate")]
+    public async Task Duplicate(Guid id)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        var script = await _mediator.Send(new DuplicateScriptCommand(environment.Script));
+        await _mediator.Send(new OpenScriptCommand(script));
+    }
+
     [HttpPatch("{id:guid}/save")]
     public async Task Save(Guid id)
     {

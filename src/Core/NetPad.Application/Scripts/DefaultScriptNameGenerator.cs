@@ -11,10 +11,8 @@ public class DefaultScriptNameGenerator : IScriptNameGenerator
         _session = session;
     }
 
-    public string Generate()
+    public string Generate(string baseName = "Script")
     {
-        const string baseName = "Script";
-
         var lastNumber = _session.Environments
             .Select(e =>
             {

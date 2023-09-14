@@ -144,6 +144,27 @@ public class FileSystemScriptRepository : IScriptRepository
         return script;
     }
 
+    public void Rename(Script script, string newPath)
+    {
+        if (newPath == null)
+            throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
+
+        // Basic protection against malicious calls
+        if (!newPath.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
+
+        if (!script.IsNew)
+        {
+            if (script.Path == null)
+                throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
+
+            // overwrite: true since the OS will ask the user to confirm the overwrite
+            File.Move(script.Path, newPath, overwrite: true);
+        }
+
+        script.SetPath(newPath);
+    }
+
     public Task DeleteAsync(Script script)
     {
         if (script.Path == null)
