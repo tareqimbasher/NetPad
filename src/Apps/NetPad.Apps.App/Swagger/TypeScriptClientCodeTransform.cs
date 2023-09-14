@@ -31,11 +31,34 @@ internal static class TypeScriptClientCodeTransform
         lines.Insert(0, "// @ts-nocheck");
 
         // Add the imports we want
-        lines.InsertRange(9,new[]
+        lines.InsertRange(9, new[]
         {
             "import {IHttpClient} from \"aurelia\";",
             "import {ApiClientBase} from \"@domain/api-client-base\";",
         });
+
+        InsertAfterLine(lines,
+            "protected isApiException = true;",
+            """
+                private _errorResponse: ErrorResult | undefined | null;
+                public get errorResponse(): ErrorResult | undefined {
+                    if (this._errorResponse !== undefined)
+                        return this._errorResponse || undefined;
+
+                    if (!this.response) {
+                        this._errorResponse = null;
+                        return undefined;
+                    }
+
+                    try {
+                        this._errorResponse = JSON.parse(this.response) as ErrorResult;
+                        return this._errorResponse;
+                    } catch {
+                        this._errorResponse = null;
+                        return undefined;
+                    }
+                }
+            """);
 
         // Other transforms
         AddAbortSignalParametersToApiClientInterfaces(lines);
@@ -81,6 +104,26 @@ internal static class TypeScriptClientCodeTransform
             text += "signal?: AbortSignal | undefined";
 
             lines[iLine] = line.Insert(insertIndex, text);
+        }
+    }
+
+    private static void InsertAfterLine(List<string> lines, string marker, string newCode, bool insertEmptyLineBeforeNewCode = true)
+    {
+        for (int iLine = 0; iLine < lines.Count; iLine++)
+        {
+            if (lines[iLine].Contains(marker))
+            {
+                int index = iLine + 1;
+
+                if (insertEmptyLineBeforeNewCode)
+                {
+                    lines.Insert(index++, string.Empty);
+                }
+
+                lines.Insert(index, newCode);
+
+                return;
+            }
         }
     }
 }

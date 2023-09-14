@@ -1,6 +1,14 @@
 import {IContainer, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {IAppService, IEventBus, IScriptService, ISession, RunOptionsDto, ScriptEnvironment} from "@domain";
+import {
+    ApiException,
+    IAppService,
+    IEventBus,
+    IScriptService,
+    ISession,
+    RunOptionsDto,
+    ScriptEnvironment
+} from "@domain";
 import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
@@ -146,7 +154,12 @@ export class WorkArea extends ViewModelBase {
                 const newName = prompt.value as string | undefined;
                 if (!newName || newName.trim() === environment.script.name) return;
 
-                await this.scriptService.rename(environment.script.id, prompt.value as string);
+                this.scriptService.rename(environment.script.id, prompt.value as string)
+                    .catch(err => {
+                        if (err instanceof ApiException) {
+                            alert(err.errorResponse?.message || "An error occurred during rename.");
+                        }
+                    });
             },
             duplicate: async () => await this.scriptService.duplicate(environment.script.id),
             openContainingFolder: async () => environment.script.path

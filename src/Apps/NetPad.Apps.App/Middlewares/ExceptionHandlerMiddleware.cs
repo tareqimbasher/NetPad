@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
+using NetPad.Dtos;
 
 namespace NetPad.Middlewares;
 
@@ -38,17 +39,5 @@ public class ExceptionHandlerMiddleware
             httpContext.Response.ContentType = "application/json";
             await httpContext.Response.WriteAsync(JsonSerializer.Serialize(result));
         }
-    }
-
-    private class ErrorResult
-    {
-        public ErrorResult(string message, string? details = null)
-        {
-            Message = message;
-            Details = details;
-        }
-
-        public string Message { get; }
-        public string? Details { get; }
     }
 }

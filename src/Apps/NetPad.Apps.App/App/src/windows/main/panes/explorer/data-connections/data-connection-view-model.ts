@@ -55,12 +55,9 @@ export class DataConnectionViewModel {
             .then(structure => {
                 this.structure = structure;
             })
-            .catch((err: ApiException) => {
-                if (err.response) {
-                    const serverResponse = JSON.parse(err.response);
-                    if (serverResponse?.message) {
-                        this.error = serverResponse.message;
-                    }
+            .catch((err) => {
+                if (err instanceof ApiException) {
+                    this.error = err.errorResponse?.message;
                 }
 
                 if (!this.error) {

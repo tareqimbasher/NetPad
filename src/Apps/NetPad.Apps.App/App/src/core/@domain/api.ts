@@ -4730,6 +4730,7 @@ export interface IOmniSharpInlayHintsOptions {
 
 export class Types implements ITypes {
     yesNoCancel!: YesNoCancel;
+    errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
     htmlScriptOutput?: HtmlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
@@ -4774,6 +4775,7 @@ export class Types implements ITypes {
     init(_data?: any) {
         if (_data) {
             this.yesNoCancel = _data["yesNoCancel"];
+            this.errorResult = _data["errorResult"] ? ErrorResult.fromJS(_data["errorResult"]) : <any>undefined;
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
             this.htmlScriptOutput = _data["htmlScriptOutput"] ? HtmlScriptOutput.fromJS(_data["htmlScriptOutput"]) : <any>undefined;
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdatedEvent.fromJS(_data["settingsUpdated"]) : <any>undefined;
@@ -4818,6 +4820,7 @@ export class Types implements ITypes {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["yesNoCancel"] = this.yesNoCancel;
+        data["errorResult"] = this.errorResult ? this.errorResult.toJSON() : <any>undefined;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
         data["htmlScriptOutput"] = this.htmlScriptOutput ? this.htmlScriptOutput.toJSON() : <any>undefined;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
@@ -4862,6 +4865,7 @@ export class Types implements ITypes {
 
 export interface ITypes {
     yesNoCancel: YesNoCancel;
+    errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
     htmlScriptOutput?: HtmlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
@@ -4896,6 +4900,53 @@ export interface ITypes {
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
+
+export class ErrorResult implements IErrorResult {
+    message!: string;
+    details?: string | undefined;
+
+    constructor(data?: IErrorResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.message = _data["message"];
+            this.details = _data["details"];
+        }
+    }
+
+    static fromJS(data: any): ErrorResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new ErrorResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        data["details"] = this.details;
+        return data;
+    }
+
+    clone(): ErrorResult {
+        const json = this.toJSON();
+        let result = new ErrorResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IErrorResult {
+    message: string;
+    details?: string | undefined;
+}
 
 export abstract class ScriptOutput implements IScriptOutput {
     body?: any | undefined;
@@ -6802,6 +6853,25 @@ export class ApiException extends Error {
     }
 
     protected isApiException = true;
+
+    private _errorResponse: ErrorResult | undefined | null;
+    public get errorResponse(): ErrorResult | undefined {
+        if (this._errorResponse !== undefined)
+            return this._errorResponse || undefined;
+
+        if (!this.response) {
+            this._errorResponse = null;
+            return undefined;
+        }
+
+        try {
+            this._errorResponse = JSON.parse(this.response) as ErrorResult;
+            return this._errorResponse;
+        } catch {
+            this._errorResponse = null;
+            return undefined;
+        }
+    }
 
     static isApiException(obj: any): obj is ApiException {
         return obj.isApiException === true;

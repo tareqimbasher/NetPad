@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CQs;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Dtos;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Scripts;
@@ -24,6 +25,7 @@ public class TypesController : Controller
     {
         public YesNoCancel YesNoCancel { get; set; }
 
+        public ErrorResult? ErrorResult { get; set; }
         public Script? Script { get; set; }
         public HtmlScriptOutput? HtmlScriptOutput { get; set; }
         public SettingsUpdatedEvent? SettingsUpdated { get; set; }
