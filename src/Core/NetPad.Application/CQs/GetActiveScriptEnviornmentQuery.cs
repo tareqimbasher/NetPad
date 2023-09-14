@@ -4,9 +4,9 @@ using NetPad.Sessions;
 
 namespace NetPad.CQs;
 
-public class GetActiveScriptEnviornmentQuery : Query<ScriptEnvironment?>
+public class GetActiveScriptEnvironmentQuery : Query<ScriptEnvironment?>
 {
-    public class Handler : IRequestHandler<GetActiveScriptEnviornmentQuery, ScriptEnvironment?>
+    public class Handler : IRequestHandler<GetActiveScriptEnvironmentQuery, ScriptEnvironment?>
     {
         private readonly ISession _session;
 
@@ -15,7 +15,7 @@ public class GetActiveScriptEnviornmentQuery : Query<ScriptEnvironment?>
             _session = session;
         }
 
-        public Task<ScriptEnvironment?> Handle(GetActiveScriptEnviornmentQuery request, CancellationToken cancellationToken)
+        public Task<ScriptEnvironment?> Handle(GetActiveScriptEnvironmentQuery request, CancellationToken cancellationToken)
         {
             return Task.FromResult(_session.Active);
         }

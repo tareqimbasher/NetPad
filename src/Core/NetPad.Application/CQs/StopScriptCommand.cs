@@ -25,7 +25,7 @@ public class StopScriptCommand : Command
 
         public async Task<Unit> Handle(StopScriptCommand request, CancellationToken cancellationToken)
         {
-            var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(request.ScriptId, true));
+            var environment = await _mediator.Send(new GetOpenedScriptEnvironmentQuery(request.ScriptId, true));
 
             await environment!.StopAsync();
 

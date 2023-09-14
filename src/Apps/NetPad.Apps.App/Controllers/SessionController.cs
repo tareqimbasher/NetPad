@@ -23,14 +23,14 @@ public class SessionController : Controller
     [HttpGet("environments/{scriptId:guid}")]
     public async Task<ScriptEnvironment> GetEnvironment(Guid scriptId)
     {
-        return await _mediator.Send(new GetOpenedScriptEnviornmentQuery(scriptId))
+        return await _mediator.Send(new GetOpenedScriptEnvironmentQuery(scriptId))
                ?? throw new EnvironmentNotFoundException(scriptId);
     }
 
     [HttpGet("environments")]
     public async Task<IEnumerable<ScriptEnvironment>> GetEnvironments()
     {
-        return await _mediator.Send(new GetOpenedScriptEnviornmentsQuery());
+        return await _mediator.Send(new GetOpenedScriptEnvironmentsQuery());
     }
 
     [HttpPatch("open/path")]
@@ -48,7 +48,7 @@ public class SessionController : Controller
     [HttpGet("active")]
     public async Task<Guid?> GetActive()
     {
-        var active = await _mediator.Send(new GetActiveScriptEnviornmentQuery());
+        var active = await _mediator.Send(new GetActiveScriptEnvironmentQuery());
         return active?.Script.Id;
     }
 

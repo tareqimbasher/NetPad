@@ -163,7 +163,7 @@ public class ScriptsController : Controller
 
     private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
     {
-        var environment = await _mediator.Send(new GetOpenedScriptEnviornmentQuery(id, true));
+        var environment = await _mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true));
         return environment!;
     }
 }
