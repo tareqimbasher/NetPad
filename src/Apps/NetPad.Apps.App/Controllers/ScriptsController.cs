@@ -56,10 +56,10 @@ public class ScriptsController : Controller
     }
 
     [HttpPatch("{id:guid}/rename")]
-    public async Task Rename(Guid id)
+    public async Task Rename(Guid id, [FromBody] string newName)
     {
         var environment = await GetScriptEnvironmentAsync(id);
-        await _mediator.Send(new RenameScriptCommand(environment.Script));
+        await _mediator.Send(new RenameScriptCommand(environment.Script, newName));
     }
 
     [HttpPatch("{id:guid}/duplicate")]

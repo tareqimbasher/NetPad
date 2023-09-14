@@ -6,18 +6,20 @@ using NetPad.UiInterop;
 namespace NetPad.CQs;
 
 /// <summary>
-/// Renames a script. Returns true if script was renamed, false otherwise.
+/// Renames a script.
 /// </summary>
-public class RenameScriptCommand : Command<bool>
+public class RenameScriptCommand : Command
 {
     public Script Script { get; }
+    public string NewName { get; }
 
-    public RenameScriptCommand(Script script)
+    public RenameScriptCommand(Script script, string newName)
     {
         Script = script;
+        NewName = newName;
     }
 
-    public class Handler : IRequestHandler<RenameScriptCommand, bool>
+    public class Handler : IRequestHandler<RenameScriptCommand>
     {
         private readonly IUiDialogService _uiDialogService;
         private readonly IScriptRepository _scriptRepository;
@@ -37,26 +39,20 @@ public class RenameScriptCommand : Command<bool>
             _eventBus = eventBus;
         }
 
-        public async Task<bool> Handle(RenameScriptCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(RenameScriptCommand request, CancellationToken cancellationToken)
         {
             var script = request.Script;
+            var newName = request.NewName;
 
-            var path = await _uiDialogService.AskUserForSaveLocation(script);
+            _scriptRepository.Rename(script, newName);
 
-            if (string.IsNullOrWhiteSpace(path))
+            if (script.IsDirty)
             {
-                return false;
+                await _autoSaveScriptRepository.DeleteAsync(script);
+                await _autoSaveScriptRepository.SaveAsync(script);
             }
 
-            _scriptRepository.Rename(script, path);
-
-            await _scriptRepository.SaveAsync(script);
-
-            await _autoSaveScriptRepository.DeleteAsync(script);
-
-            await _eventBus.PublishAsync(new ScriptSavedEvent(script));
-
-            return true;
+            return Unit.Value;
         }
     }
 }

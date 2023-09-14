@@ -1,0 +1,16 @@
+<template class="prompt-dialog">
+    <h6 class="message">${model.message}</h6>
+
+    <form submit.trigger="ok(value)">
+        <input type="text"
+               ref="textBox"
+               class="form-control form-control"
+               value.bind="value"
+               placeholder.bind="model.placeholder" />
+    </form>
+
+    <div class="buttons">
+        <button class="btn btn-secondary" click.trigger="cancel()">Cancel</button>
+        <button class="btn btn-primary" click.trigger="ok(value)">OK</button>
+    </div>
+</template>

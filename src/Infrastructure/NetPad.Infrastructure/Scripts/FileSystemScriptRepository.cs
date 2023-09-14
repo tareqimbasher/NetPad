@@ -144,25 +144,35 @@ public class FileSystemScriptRepository : IScriptRepository
         return script;
     }
 
-    public void Rename(Script script, string newPath)
+    public void Rename(Script script, string newName)
     {
-        if (newPath == null)
-            throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new ArgumentException("Name cannot be empty", nameof(newName));
 
         // Basic protection against malicious calls
-        if (!newPath.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
+        if (newName.Contains('/') || newName.Contains('\\'))
+            throw new InvalidOperationException($"Script name must not contain a path separator");
 
-        if (!script.IsNew)
+        if (script.IsNew)
         {
-            if (script.Path == null)
-                throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
-
-            // overwrite: true since the OS will ask the user to confirm the overwrite
-            File.Move(script.Path, newPath, overwrite: true);
+            script.SetName(newName);
         }
+        else
+        {
+            var oldName = script.Name;
+            var oldPath = script.Path;
 
-        script.SetPath(newPath);
+            script.SetName(newName);
+            var newPath = script.Path;
+
+            if (File.Exists(newPath))
+            {
+                script.SetName(oldName);
+                throw new Exception($"A file already exists at path: {newPath}. Renaming script will overwrite that file");
+            }
+
+            File.Move(oldPath!, newPath!, overwrite: false);
+        }
     }
 
     public Task DeleteAsync(Script script)

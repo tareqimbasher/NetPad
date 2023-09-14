@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using NetPad.Common;
@@ -48,7 +47,7 @@ public class Script : INotifyOnPropertyChanged
     public string Name
     {
         get => _name;
-        set => this.RaiseAndSetIfChanged(ref _name, value);
+        private set => this.RaiseAndSetIfChanged(ref _name, value);
     }
 
     public string? Path
@@ -82,12 +81,22 @@ public class Script : INotifyOnPropertyChanged
 
     public bool IsNew => Path == null;
 
-    public void UpdateConfig(ScriptConfig config)
+    public void SetName(string newName)
     {
-        Config.SetKind(config.Kind);
-        Config.SetTargetFrameworkVersion(config.TargetFrameworkVersion);
-        Config.SetReferences(config.References);
-        Config.SetNamespaces(config.Namespaces);
+        if (_name == newName)
+            return;
+
+        if (newName == null)
+            throw new ArgumentNullException(nameof(newName));
+
+        if (Path != null)
+        {
+            SetPath(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path)!, newName + STANDARD_EXTENSION));
+        }
+        else
+        {
+            Name = newName;
+        }
     }
 
     public void SetPath(string path)
@@ -116,6 +125,14 @@ public class Script : INotifyOnPropertyChanged
     public void SetDataConnection(DataConnection? dataConnection)
     {
         DataConnection = dataConnection;
+    }
+
+    public void UpdateConfig(ScriptConfig config)
+    {
+        Config.SetKind(config.Kind);
+        Config.SetTargetFrameworkVersion(config.TargetFrameworkVersion);
+        Config.SetReferences(config.References);
+        Config.SetNamespaces(config.Namespaces);
     }
 
     public override string ToString()

@@ -10,6 +10,8 @@ import {
 } from "./viewers/text-document-viewer/viewable-text-document";
 import {RunScriptEvent} from "@application";
 import {Workbench} from "../workbench";
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {IDialogService} from "@aurelia/dialog";
 
 export class WorkArea extends ViewModelBase {
     constructor(
@@ -17,6 +19,7 @@ export class WorkArea extends ViewModelBase {
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IScriptService private readonly scriptService: IScriptService,
+        @IDialogService private readonly dialogService: IDialogService,
         @IEventBus private readonly eventBus: IEventBus,
         @IContainer container: IContainer,
         @ILogger logger: ILogger,
@@ -133,7 +136,18 @@ export class WorkArea extends ViewModelBase {
             },
             activate: async (viewerHost) => await this.session.activate(environment.script.id),
             save: async () => await this.scriptService.save(environment.script.id),
-            rename: async () => await this.scriptService.rename(environment.script.id),
+            rename: async () => {
+                const prompt = await DialogUtil.prompt(this.dialogService, {
+                    message: "New name:",
+                    defaultValue: environment.script.name,
+                    placeholder: "Type a new name for script..."
+                });
+
+                const newName = prompt.value as string | undefined;
+                if (!newName || newName.trim() === environment.script.name) return;
+
+                await this.scriptService.rename(environment.script.id, prompt.value as string);
+            },
             duplicate: async () => await this.scriptService.duplicate(environment.script.id),
             openContainingFolder: async () => environment.script.path
                 ? await this.appService.openFolderContainingScript(environment.script.path)

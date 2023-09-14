@@ -101,7 +101,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -702,7 +702,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -781,7 +781,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1207,11 +1207,11 @@ export interface IScriptsApiClient {
 
     create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void>;
 
-    save(id: string, signal?: AbortSignal | undefined): Promise<void>;
-
-    rename(id: string, signal?: AbortSignal | undefined): Promise<void>;
+    rename(id: string, newName: string, signal?: AbortSignal | undefined): Promise<void>;
 
     duplicate(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
     run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1320,51 +1320,21 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(<any>null);
     }
 
-    save(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/save";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ = <RequestInit>{
-            method: "PATCH",
-            signal,
-            headers: {
-            }
-        };
-
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processSave(_response);
-        });
-    }
-
-    protected processSave(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-                return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(<any>null);
-    }
-
-    rename(id: string, signal?: AbortSignal | undefined): Promise<void> {
+    rename(id: string, newName: string, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/rename";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(newName);
+
         let options_ = <RequestInit>{
+            body: content_,
             method: "PATCH",
             signal,
             headers: {
+                "Content-Type": "application/json",
             }
         };
 
@@ -1375,14 +1345,14 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
 
     protected processRename(response: Response): Promise<void> {
         const status = response.status;
-        let _headers: any = { }; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-                return;
+            return;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
-                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
         return Promise.resolve<void>(<any>null);
@@ -1409,14 +1379,48 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
 
     protected processDuplicate(response: Response): Promise<void> {
         const status = response.status;
-        let _headers: any = { }; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-                return;
+            return;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
-                return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    save(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/save";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSave(_response);
+        });
+    }
+
+    protected processSave(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
         return Promise.resolve<void>(<any>null);
@@ -1969,7 +1973,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
