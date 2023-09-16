@@ -145,7 +145,10 @@ accessed with a web browser.
 
 ```
 # Install dependencies
-cd Apps/NetPad.Apps.App/App
+cd Apps/NetPad.Apps.App/ElectronHostHook
+npm install
+
+cd ../App
 npm install
 
 # Start the development web server

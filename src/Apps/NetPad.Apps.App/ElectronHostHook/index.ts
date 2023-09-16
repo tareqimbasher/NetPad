@@ -1,7 +1,7 @@
 import {Socket} from "socket.io";
 import {Connector} from "./connector";
 import {IpcEventNames, WindowState, WindowViewStatus} from "./models";
-const {BrowserWindow, ipcMain} = require("electron");
+import {BrowserWindow, ipcMain} from "electron";
 
 export class HookService extends Connector {
     constructor(socket: Socket, app: Electron.App) {

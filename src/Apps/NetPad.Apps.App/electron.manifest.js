@@ -21,13 +21,6 @@ const electronBuilderConfig = {
         }
     ],
     files: [
-        {
-            from: "./ElectronHostHook/node_modules",
-            to: "ElectronHostHook/node_modules",
-            filter: [
-                "**/*"
-            ]
-        },
         "**/*"
     ],
     linux: {

@@ -1,10 +1,8 @@
-// @ts-ignore
-/// <reference path="../App/node_modules/electron/electron.d.ts" />
-
+import {App} from "electron";
 import { Socket } from 'socket.io';
 
 export class Connector {
-    constructor(private socket: Socket, protected app: Electron.App) { }
+    constructor(private socket: Socket, protected app: App) { }
 
     protected on(key: string, javaScriptCode: Function): void {
         this.socket.on(key, (...args: any[]) => {
