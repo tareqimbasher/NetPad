@@ -8,13 +8,12 @@ import {
 } from "@domain";
 import {PLATFORM} from "aurelia";
 import {IShortcutManager} from "@application";
-import {DialogBase} from "@application/dialogs/dialog-base";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
 import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
-import {IDialogService} from "@aurelia/dialog";
 import {Workbench} from "../workbench";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Statusbar {
     public appStatusMessage: IAppStatusMessage | null;
@@ -24,7 +23,7 @@ export class Statusbar {
                 @ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
-                @IDialogService private readonly dialogService: IDialogService,
+                private readonly dialogUtil: DialogUtil,
                 @IEventBus private readonly eventBus: IEventBus) {
     }
 
@@ -37,11 +36,11 @@ export class Statusbar {
     }
 
     private async showAppDepsCheckDialog() {
-        await DialogBase.toggle(this.dialogService, AppDependenciesCheckDialog);
+        await this.dialogUtil.toggle(AppDependenciesCheckDialog);
     }
 
     private async showQuickTipsDialog() {
-        await DialogBase.toggle(this.dialogService, QuickTipsDialog);
+        await this.dialogUtil.toggle(QuickTipsDialog);
     }
 
     private listenToAppStatusMessages() {

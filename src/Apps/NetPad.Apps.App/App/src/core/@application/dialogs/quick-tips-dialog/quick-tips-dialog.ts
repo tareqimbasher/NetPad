@@ -1,8 +1,7 @@
-﻿import {ILogger} from "aurelia";
-import {IDialogDom, IDialogService} from "@aurelia/dialog";
-import {DialogBase} from "@application/dialogs/dialog-base";
+﻿import {Dialog} from "../dialog";
+import {DialogUtil} from "../dialog-util";
 
-export class QuickTipsDialog extends DialogBase {
+export class QuickTipsDialog extends Dialog<void> {
     private static currentVersion = "2"; // Increment this to re-trigger this popup to show as first time
     private static lsKey_LastVisitedVersion = `Dialogs.${nameof(QuickTipsDialog)}.shownForFirstTime`;
     private readonly firstUserVisit;
@@ -11,18 +10,16 @@ export class QuickTipsDialog extends DialogBase {
         return localStorage.getItem(QuickTipsDialog.lsKey_LastVisitedVersion) === this.currentVersion;
     }
 
-    public static showIfFirstVisit(dialogService: IDialogService) {
+    public static showIfFirstVisit(dialogUtil: DialogUtil) {
         if (!this.didUserVisitLatestVersion()) {
-            return super.toggle(dialogService, QuickTipsDialog);
+            return dialogUtil.toggle(QuickTipsDialog);
         }
 
         return Promise.resolve();
     }
 
-    constructor(@IDialogDom dialogDom: IDialogDom,
-                @ILogger logger: ILogger) {
-        super(dialogDom, logger);
-
+    constructor() {
+        super();
         this.firstUserVisit = !QuickTipsDialog.didUserVisitLatestVersion();
     }
 

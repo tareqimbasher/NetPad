@@ -1,5 +1,4 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
-import {IDialogService} from "@aurelia/dialog";
 import {IBackgroundService} from "@common";
 import {
     DataConnectionService,
@@ -35,6 +34,7 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
 import {ExcelService, IExcelService} from "@application/data/excel-service";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -66,7 +66,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             AppTask.activated(IContainer, async container => {
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();
-                await QuickTipsDialog.showIfFirstVisit(container.get(IDialogService));
+                await QuickTipsDialog.showIfFirstVisit(container.get(DialogUtil));
 
                 const settings = container.get(Settings);
                 if (settings.autoCheckUpdates) {

@@ -1,6 +1,4 @@
-import {DialogBase} from "@application/dialogs/dialog-base";
-import {IDialogDom} from "@aurelia/dialog";
-import {ILogger} from "aurelia";
+import {Dialog} from "@application/dialogs/dialog";
 import {IExcelExportOptions} from "@application/data/excel-service";
 
 interface IColorOption {
@@ -14,7 +12,7 @@ interface IColorOptions {
     options: IColorOption[]
 }
 
-export class ExcelExportDialog extends DialogBase {
+export class ExcelExportDialog extends Dialog<void> {
     public showAdvancedOptions = false
     public options: IExcelExportOptions = {
         includeCode: true,
@@ -38,9 +36,8 @@ export class ExcelExportDialog extends DialogBase {
         ]
     }
 
-    constructor(@IDialogDom dialogDom: IDialogDom,
-                @ILogger logger: ILogger) {
-        super(dialogDom, logger);
+    constructor() {
+        super();
 
         this.headerBackgroundOptions.selected = this.headerBackgroundOptions.options[1];
         this.headerForegroundOptions.selected = this.headerForegroundOptions.options[1];

@@ -17,11 +17,11 @@ export class ViewModelBase extends WithDisposables {
         this.logger = logger.scopeTo((this as Record<string, unknown>).constructor.name)
     }
 
-    public attaching() {
+    protected attaching() {
         this.logComponentLifecycle("attaching...");
     }
 
-    public detaching() {
+    protected detaching() {
         this.logComponentLifecycle("detaching...");
         this.dispose();
     }

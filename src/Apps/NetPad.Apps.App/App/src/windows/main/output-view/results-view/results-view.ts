@@ -1,5 +1,6 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {DialogDeactivationStatuses} from "@aurelia/dialog";
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {
     HtmlScriptOutput,
@@ -15,9 +16,8 @@ import {ResultControls} from "./result-controls";
 import {OutputViewBase} from "../output-view-base";
 import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
 import {KeyCode, System, Util} from "@common";
-import {DialogBase} from "@application/dialogs/dialog-base";
 import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";
-import {DialogDeactivationStatuses, IDialogService} from "@aurelia/dialog";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class ResultsView extends OutputViewBase {
     public resultsViewSettings: ResultsPaneViewSettings;
@@ -30,7 +30,7 @@ export class ResultsView extends OutputViewBase {
     constructor(private readonly settings: Settings,
                 @ISession private readonly session: ISession,
                 @IExcelService private readonly excelService: IExcelService,
-                @IDialogService private readonly dialogService: IDialogService,
+                private readonly dialogUtil: DialogUtil,
                 @IEventBus private readonly eventBus: IEventBus,
                 @IIpcGateway private readonly ipcGateway: IIpcGateway,
                 @ILogger logger: ILogger
@@ -109,7 +109,7 @@ export class ResultsView extends OutputViewBase {
                 label: "Scroll on Output",
                 icon: "scroll-on-output-icon",
                 active: this.scrollOnOutput,
-                clicked: async function (){
+                clicked: async function () {
                     self.scrollOnOutput = !self.scrollOnOutput;
                     this.active = self.scrollOnOutput;
                 },
@@ -200,7 +200,7 @@ export class ResultsView extends OutputViewBase {
             return;
         }
 
-        const result = await DialogBase.toggle(this.dialogService, ExcelExportDialog);
+        const result = await this.dialogUtil.toggle(ExcelExportDialog);
         if (result.status !== DialogDeactivationStatuses.Ok) return;
         const exportOptions = result.value as IExcelExportOptions;
 

@@ -1,5 +1,4 @@
 ﻿import {ILogger} from "aurelia";
-import {IDialogService} from "@aurelia/dialog";
 import {
     AlertUserAboutMissingAppDependencies,
     AlertUserCommand,
@@ -10,17 +9,17 @@ import {
     YesNoCancel
 } from "@domain";
 import {IBackgroundService, WithDisposables} from "@common";
-import {DialogBase} from "@application/dialogs/dialog-base";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class DialogBackgroundService extends WithDisposables implements IBackgroundService {
     private logger: ILogger;
 
     constructor(@IEventBus private readonly eventBus: IEventBus,
                 @IIpcGateway private readonly ipcGateway: IIpcGateway,
-                @IDialogService private readonly dialogService: IDialogService,
+                private readonly dialogUtil: DialogUtil,
                 @ILogger logger: ILogger
     ) {
         super();
@@ -68,6 +67,6 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     }
 
     private async alertUserAboutMissingAppDependencies(command: AlertUserAboutMissingAppDependencies) {
-        await DialogBase.toggle(this.dialogService, AppDependenciesCheckDialog, command.dependencyCheckResult);
+        await this.dialogUtil.toggle(AppDependenciesCheckDialog, command.dependencyCheckResult);
     }
 }

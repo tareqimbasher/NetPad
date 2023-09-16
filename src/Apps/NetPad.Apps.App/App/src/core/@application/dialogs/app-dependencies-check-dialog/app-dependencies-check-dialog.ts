@@ -1,37 +1,32 @@
-﻿import {DialogBase} from "@application/dialogs/dialog-base";
-import {IDialogDom} from "@aurelia/dialog";
-import {ILogger} from "aurelia";
+﻿import {Dialog} from "../dialog";
 import {AppDependencyCheckResult, IAppService, SemanticVersion} from "@domain";
 
-export class AppDependenciesCheckDialog extends DialogBase {
+export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;
     public dotnetEfCoreToolMissing = false;
     public latestDotnetSdkVersion?: SemanticVersion;
-    public dependencyCheckResult?: AppDependencyCheckResult;
     public loading = true;
 
-    constructor(@IDialogDom dialogDom: IDialogDom,
-                @ILogger logger: ILogger,
-                @IAppService private readonly appService: IAppService) {
-        super(dialogDom, logger);
+    constructor(@IAppService private readonly appService: IAppService) {
+        super();
     }
 
-    public activate(dependencyCheckResult?: AppDependencyCheckResult) {
-        const promise: Promise<AppDependencyCheckResult> = dependencyCheckResult
-            ? Promise.resolve(dependencyCheckResult)
+    public bound() {
+        const promise: Promise<AppDependencyCheckResult> = this.input
+            ? Promise.resolve(this.input)
             : this.appService.checkDependencies();
 
         promise.then(result => {
-            this.dependencyCheckResult = result;
+            this.input = result;
 
-            this.dotnetSdkMissing = this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length === 0;
+            this.dotnetSdkMissing = this.input.supportedDotNetSdkVersionsInstalled.length === 0;
 
-            this.latestDotnetSdkVersion = this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length === 0
+            this.latestDotnetSdkVersion = this.input.supportedDotNetSdkVersionsInstalled.length === 0
                 ? undefined
-                : [...this.dependencyCheckResult.supportedDotNetSdkVersionsInstalled]
+                : [...this.input.supportedDotNetSdkVersionsInstalled]
                     .sort((a, b) => b.major - a.major)[0];
 
-            this.dotnetEfCoreToolMissing = !this.dependencyCheckResult.isSupportedDotNetEfToolInstalled;
+            this.dotnetEfCoreToolMissing = !this.input.isSupportedDotNetEfToolInstalled;
 
             this.loading = false;
         });

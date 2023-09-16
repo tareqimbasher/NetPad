@@ -1,7 +1,5 @@
-import {ILogger} from "aurelia";
-import {IDialogDom} from "@aurelia/dialog";
 import {Version} from "@common/data/version";
-import {DialogBase} from "@application/dialogs/dialog-base";
+import {Dialog} from "../dialog";
 import {IAppService} from "@domain";
 import {System} from "@common";
 
@@ -10,36 +8,32 @@ export interface IAppUpdateDialogModel {
     latest: Version
 }
 
-export class AppUpdateDialog extends DialogBase {
-    public versions?: IAppUpdateDialogModel;
+export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
     public loading = false;
 
     public get newerVersionExists() {
-        return this.versions && this.versions.latest.greaterThan(this.versions.current);
+        return this.input && this.input.latest.greaterThan(this.input.current);
     }
 
-    constructor(@IAppService private readonly appService: IAppService,
-                @IDialogDom dialogDom: IDialogDom,
-                @ILogger logger: ILogger) {
-        super(dialogDom, logger);
+    constructor(@IAppService private readonly appService: IAppService) {
+        super();
     }
 
-    public activate(model: IAppUpdateDialogModel) {
-        if (model) {
-            this.versions = model;
+    public bound() {
+        if (this.input) {
             return;
         }
 
         this.loading = true;
         this.appService.getCurrentAndLatestVersions()
             .then(versions => {
-                if (versions) this.versions = versions;
+                if (versions) this.input = versions;
             })
             .catch(err => {
                 this.logger.error("Error while getting versions", err);
             })
             .finally(() => {
-                if (!this.versions) {
+                if (!this.input) {
                     alert("Failed to check for updates. Please try again later.");
                     this.cancel();
                 }

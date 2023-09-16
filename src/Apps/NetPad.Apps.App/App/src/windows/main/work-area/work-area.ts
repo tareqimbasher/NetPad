@@ -19,7 +19,6 @@ import {
 import {RunScriptEvent} from "@application";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
-import {IDialogService} from "@aurelia/dialog";
 
 export class WorkArea extends ViewModelBase {
     constructor(
@@ -27,7 +26,7 @@ export class WorkArea extends ViewModelBase {
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IScriptService private readonly scriptService: IScriptService,
-        @IDialogService private readonly dialogService: IDialogService,
+        private readonly dialogUtil: DialogUtil,
         @IEventBus private readonly eventBus: IEventBus,
         @IContainer container: IContainer,
         @ILogger logger: ILogger,
@@ -39,7 +38,7 @@ export class WorkArea extends ViewModelBase {
         //this.workAreaService.viewerHosts.push(viewHostFactory.construct(container));
     }
 
-    public override async attaching() {
+    protected override async attaching() {
         super.attaching();
 
         const scriptDocuments = this.session.environments.map(env => this.createViewableAppScriptDocument(env));
@@ -145,7 +144,7 @@ export class WorkArea extends ViewModelBase {
             activate: async (viewerHost) => await this.session.activate(environment.script.id),
             save: async () => await this.scriptService.save(environment.script.id),
             rename: async () => {
-                const prompt = await DialogUtil.prompt(this.dialogService, {
+                const prompt = await this.dialogUtil.prompt({
                     message: "New name:",
                     defaultValue: environment.script.name,
                     placeholder: "Type a new name for script..."

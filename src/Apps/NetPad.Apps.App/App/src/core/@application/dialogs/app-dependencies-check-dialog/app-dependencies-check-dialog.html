@@ -15,7 +15,7 @@
             </h5>
 
             <div class="section-details">
-                NetPad is running on .NET <code>${dependencyCheckResult.dotNetRuntimeVersion}</code>.
+                NetPad is running on .NET <code>${input.dotNetRuntimeVersion}</code>.
             </div>
         </div>
 
@@ -23,7 +23,7 @@
             <h5>
                 <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
                 .NET SDK
-                <small if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length">
+                <small if.bind="input.supportedDotNetSdkVersionsInstalled.length">
                     (latest: <code>v${latestDotnetSdkVersion.string}</code>)
                 </small>
             </h5>
@@ -36,15 +36,15 @@
                     executable is in your <code>PATH</code>. All installed SDKs:
                 </div>
                 <div else>
-                    <b>${dependencyCheckResult.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
+                    <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
                     installed. All installed SDKs:
                 </div>
-                <div if.bind="dependencyCheckResult.dotNetSdkVersions">
+                <div if.bind="input.dotNetSdkVersions">
                     <ul class="sdk-versions-list">
-                        <li repeat.for="version of dependencyCheckResult.dotNetSdkVersions">
+                        <li repeat.for="version of input.dotNetSdkVersions">
                             <code>${version.string}</code>
                             <span class="badge text-green ms-3"
-                                  if.bind="dependencyCheckResult.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
+                                  if.bind="input.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
                                 Supported
                             </span>
                         </li>
@@ -58,7 +58,7 @@
                 <i class="${dotnetEfCoreToolMissing ? 'warning-icon text-yellow' : 'check-circle-icon text-green'}"></i>
                 Entity Framework Core .NET Tool
                 <small if.bind="!dotnetEfCoreToolMissing">
-                    (installed: <code>v${dependencyCheckResult.dotNetEfToolVersion.string}</code>)
+                    (installed: <code>v${input.dotNetEfToolVersion.string}</code>)
                 </small>
             </h5>
 

@@ -2,9 +2,8 @@ import {IAppService, ISession, ISettingService, IWindowService, WindowState} fro
 import {IShortcutManager, ViewModelBase} from "@application";
 import {Util} from "@common";
 import {ILogger} from "aurelia";
-import {DialogBase} from "@application/dialogs/dialog-base";
-import {IDialogService} from "@aurelia/dialog";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Titlebar extends ViewModelBase {
     public windowState: WindowState;
@@ -15,7 +14,7 @@ export class Titlebar extends ViewModelBase {
                 @IAppService private readonly appService: IAppService,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
-                @IDialogService private readonly dialogService: IDialogService,
+                private readonly dialogUtil: DialogUtil,
                 @ILogger logger: ILogger
     ) {
         super(logger);
@@ -66,6 +65,6 @@ export class Titlebar extends ViewModelBase {
     }
 
     public async openAppUpdateDialog() {
-        await DialogBase.toggle(this.dialogService, AppUpdateDialog);
+        await this.dialogUtil.toggle(AppUpdateDialog);
     }
 }

@@ -12,12 +12,12 @@
     <div class="versions" if.bind="!loading">
         <div class="version-item">
             <span class="version-description">Latest version:</span>
-            <b>v${versions.latest.toString()}</b>
+            <b>v${input.latest.toString()}</b>
         </div>
 
         <div class="version-item">
             <span class="version-description">You are currently on:</span>
-            v${versions.current.toString()}
+            v${input.current.toString()}
         </div>
     </div>
 
@@ -26,7 +26,7 @@
             <button class="btn btn-primary"
                     if.bind="newerVersionExists"
                     click.trigger="openLatestVersionPage()">
-                Download v${versions.latest.toString()} Now!
+                Download v${input.latest.toString()} Now!
             </button>
             <button class="btn btn-secondary"
                     click.trigger="cancel()">

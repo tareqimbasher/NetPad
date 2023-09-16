@@ -1,12 +1,12 @@
 <template class="prompt-dialog">
-    <h6 class="message">${model.message}</h6>
+    <h6 class="message">${input.message}</h6>
 
     <form submit.trigger="ok(value)">
         <input type="text"
                ref="textBox"
                class="form-control form-control"
                value.bind="value"
-               placeholder.bind="model.placeholder" />
+               placeholder.bind="input.placeholder" />
     </form>
 
     <div class="buttons">
