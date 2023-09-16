@@ -2,10 +2,10 @@ import {IBackgroundService, IDisposable} from "@common";
 import {IEventBus, OpenWindowCommand} from "@domain";
 
 /**
- * This is utilized for the Web app, not the Electron app
- * This enables the ability to open new windows when running the web app.
+ * This is utilized for the Browser app, not the Electron app
+ * This enables the ability to open new windows when running the browser app.
  */
-export class WebWindowBackgroundService implements IBackgroundService {
+export class BrowserWindowBackgroundService implements IBackgroundService {
     private openWindowCommandToken: IDisposable;
 
     constructor(@IEventBus readonly eventBus: IEventBus) {

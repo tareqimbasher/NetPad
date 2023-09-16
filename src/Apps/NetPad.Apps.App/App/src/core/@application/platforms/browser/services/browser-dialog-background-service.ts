@@ -2,10 +2,10 @@ import {IBackgroundService, WithDisposables} from "@common";
 import {ConfirmSaveCommand, IEventBus, IIpcGateway, RequestNewScriptNameCommand, YesNoCancel} from "@domain";
 
 /**
- * This is utilized for the Web app, not the Electron app.
- * This enables opening specific dialog windows when running the web app.
+ * This is utilized for the Browser app, not the Electron app.
+ * This enables opening specific dialog windows when running the browser app.
  */
-export class WebDialogBackgroundService extends WithDisposables implements IBackgroundService {
+export class BrowserDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,
                 @IIpcGateway readonly ipcGateway: IIpcGateway
     ) {

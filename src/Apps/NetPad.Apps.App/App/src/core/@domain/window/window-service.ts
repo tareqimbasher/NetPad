@@ -1,22 +1,19 @@
-import {DI, IHttpClient} from "aurelia";
-import {IWindowApiClient, WindowApiClient} from "@domain";
+import {DI} from "aurelia";
+import {IWindowApiClient} from "@domain";
+import {WindowState} from "./window-state";
 
 export interface IWindowService extends IWindowApiClient {
-    openDeveloperTools(windowId?: string, signal?: AbortSignal | undefined): Promise<void>;
+    getState(): Promise<WindowState>;
+
+    maximize(): Promise<void>;
+
+    minimize(): Promise<void>;
+
+    toggleFullScreen(): Promise<void>;
+
+    toggleAlwaysOnTop(): Promise<void>;
+
+    toggleDeveloperTools(): Promise<void>;
 }
 
 export const IWindowService = DI.createInterface<IWindowService>();
-
-export class WindowService extends WindowApiClient implements IWindowService {
-    constructor(
-        private readonly startupOptions: URLSearchParams,
-        baseUrl?: string,
-        @IHttpClient http?: IHttpClient
-    ) {
-        super(baseUrl, http);
-    }
-
-    public override openDeveloperTools(windowId?: string, signal?: AbortSignal | undefined): Promise<void> {
-        return super.openDeveloperTools(windowId ?? this.startupOptions.get("winId") ?? "", signal);
-    }
-}

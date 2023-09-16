@@ -108,8 +108,9 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="App\dist\**" />
-    </ItemGroup>
-    <ItemGroup>
-        <EmbeddedResource Remove="App\dist\**" />
+        <EmbeddedResource Remove="App\dist\**"/>
+        <Content Update="ElectronHostHook\**\*.*">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
     </ItemGroup>
 </Project>

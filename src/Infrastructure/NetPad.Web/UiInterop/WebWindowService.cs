@@ -13,31 +13,6 @@ public class WebWindowService : IUiWindowService
         _ipcService = ipcService;
     }
 
-    public Task<WindowState?> GetWindowStateAsync()
-    {
-        throw new PlatformNotSupportedException();
-    }
-
-    public Task MaximizeMainWindowAsync()
-    {
-        throw new PlatformNotSupportedException();
-    }
-
-    public Task MinimizeMainWindowAsync()
-    {
-        throw new PlatformNotSupportedException();
-    }
-
-    public Task ToggleFullScreenAsync()
-    {
-        throw new PlatformNotSupportedException();
-    }
-
-    public Task ToggleAlwaysOnTopMainWindowAsync()
-    {
-        throw new PlatformNotSupportedException();
-    }
-
     public Task OpenMainWindowAsync()
     {
         throw new PlatformNotSupportedException();
@@ -84,10 +59,5 @@ public class WebWindowService : IUiWindowService
         command.Options.Width = 4 / 5.0;
 
         await _ipcService.SendAsync(command);
-    }
-
-    public Task OpenDeveloperToolsAsync(Guid windowId)
-    {
-        throw new PlatformNotSupportedException();
     }
 }

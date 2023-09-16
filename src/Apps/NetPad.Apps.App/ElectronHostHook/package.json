@@ -1,0 +1,13 @@
+{
+    "name": "netpad-electron-host-hook",
+    "version": "1.0.0",
+    "description": "Connector for NetPad Electron app; hook into Electron's main process.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "devDependencies": {
+        "socket.io": "^4.6.1",
+        "typescript": "^5.1.6"
+    }
+}

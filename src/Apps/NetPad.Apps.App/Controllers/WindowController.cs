@@ -16,42 +16,6 @@ public class WindowController : Controller
         _uiWindowService = uiWindowService;
     }
 
-    [HttpGet("state")]
-    public async Task<WindowState?> GetState()
-    {
-        return await _uiWindowService.GetWindowStateAsync();
-    }
-
-    [HttpPatch("maximize")]
-    public async Task Maximize()
-    {
-        await _uiWindowService.MaximizeMainWindowAsync();
-    }
-
-    [HttpPatch("minimize")]
-    public async Task Minimize()
-    {
-        await _uiWindowService.MinimizeMainWindowAsync();
-    }
-
-    [HttpPatch("toggle-full-screen")]
-    public async Task ToggleFullScreen()
-    {
-        await _uiWindowService.ToggleFullScreenAsync();
-    }
-
-    [HttpPatch("always-on-top/toggle")]
-    public async Task ToggleAlwaysOnTop()
-    {
-        await _uiWindowService.ToggleAlwaysOnTopMainWindowAsync();
-    }
-
-    [HttpPatch("/{windowId:guid}/open-developer-tools")]
-    public async Task OpenDeveloperTools(Guid windowId)
-    {
-        await _uiWindowService.OpenDeveloperToolsAsync(windowId);
-    }
-
     [HttpPatch("open-output-window")]
     public async Task OpenOutputWindow()
     {

@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "module": "commonjs",
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "target": "ES2017",
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

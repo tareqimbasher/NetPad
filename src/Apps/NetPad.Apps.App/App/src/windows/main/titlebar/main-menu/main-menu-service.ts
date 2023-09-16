@@ -219,8 +219,8 @@ export class MainMenuService implements IMainMenuService {
                         shortcut: this.shortcutManager.getShortcutByName("Reload"),
                     },
                     {
-                        text: "Open Developer Tools",
-                        click: async() => this.windowService.openDeveloperTools(),
+                        text: "Toggle Developer Tools",
+                        click: async() => this.windowService.toggleDeveloperTools(),
                         helpText: "Ctrl + Shift + I",
                     },
                     {
@@ -241,7 +241,7 @@ export class MainMenuService implements IMainMenuService {
                         helpText: "Ctrl + 0",
                     },
                     {
-                        text: "Full Screen",
+                        text: "Toggle Full Screen",
                         click: async() => this.windowService.toggleFullScreen(),
                         helpText: "F11",
                     },

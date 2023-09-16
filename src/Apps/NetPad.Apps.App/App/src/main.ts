@@ -12,11 +12,9 @@ import {
     IIpcGateway,
     ISession,
     ISettingService,
-    IWindowService,
     Session,
     Settings,
     SettingService,
-    WindowService
 } from "@domain";
 import {
     ConsoleLogSink,
@@ -49,7 +47,6 @@ const builder = Aurelia.register(
     Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
-    Registration.singleton(IWindowService, WindowService),
     Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
@@ -129,8 +126,8 @@ builder.register(
 
 // Configure the proper platform
 const platformType = Env.isRunningInElectron()
-    ? (await import("@application/platforms/electron-platform")).ElectronPlatform
-    : (await import("@application/platforms/web-platform")).WebPlatform;
+    ? (await import("@application/platforms/electron/electron-platform")).ElectronPlatform
+    : (await import("@application/platforms/browser/browser-platform")).BrowserPlatform;
 
 const platform = new platformType() as IPlatform;
 platform.configure(builder);
