@@ -1,6 +1,6 @@
 # <div style="display: flex; align-items: center; gap: 7px"><img src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true" /> NetPad</div>
 
-**A cross-platform C# editor and playground.**
+A cross-platform C# editor and playground.
 
 [![build](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml)
 [![CodeQL](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml)
@@ -41,6 +41,19 @@ While it cannot _yet_ install the latest update automatically, that feature will
 
 The latest version can be downloaded from the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
 
+## Contribution
+
+Maintenance of this project is made possible by all the <a href="https://github.com/tareqimbasher/NetPad/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/tareqimbasher">sponsors</a>. A special thanks to all of you!
+
+<a href="https://github.com/hamedwiz"><img src="https://github.com/hamedwiz.png" width="50px" alt="hamedwiz" /></a>&nbsp;&nbsp;
+<a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>&nbsp;&nbsp;
+<a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>&nbsp;&nbsp;
+
+If you like NetPad, please consider [sponsoring](https://github.com/sponsors/tareqimbasher) it with a cup of coffee ($5)
+a month, every bit helps me maintain this project and deliver more features. Thank you :heart:
+
+Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
+
 ## Wiki
 
 The [Wiki](https://github.com/tareqimbasher/NetPad/wiki) is a great place to find more information about
@@ -49,15 +62,6 @@ NetPad.
 ## Troubleshooting
 
 See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting) section of the Wiki.
-
-## Contribution
-
-This is a work in progress and still in preview. All contributions are welcome!
-
-If you like NetPad, please consider [sponsoring](https://github.com/sponsors/tareqimbasher) it with a cup of coffee ($5)
-a month, every bit helps me maintain this project and deliver more features. Thank you :heart:
-
-Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
 
 ## Features :rocket:
 
