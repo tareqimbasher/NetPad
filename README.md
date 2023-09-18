@@ -11,10 +11,10 @@
 
 ## Motivation
 
-We love [LINQPad](https://www.linqpad.net/), but we also miss its tremendous utility when not working on Windows. This
+We love LINQPad, but we also miss its tremendous utility when not working on Windows. This
 is an effort to develop an open-source, web-enabled, cross-platform alternative.
 
-The goal isn't to reach 100% feature parity with LinqPad, but to offer an acceptable alternative that covers the
+The goal isn't to reach 100% feature parity with LINQPad, but to offer an acceptable alternative that covers the
 features developers most commonly need, and if we're lucky, a few new useful ones!
 
 #### If you like the project, please star it :star2:!
@@ -23,28 +23,32 @@ features developers most commonly need, and if we're lucky, a few new useful one
 
 The following must be be installed to use NetPad:
 
-* [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet) (v6 or v7)
-* [EF Core tools (.NET 5 or higher)](https://learn.microsoft.com/en-us/ef/core/cli/dotnet):
-  (*optional*) needed to create and use database connections.
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or v7)
+
+Additional requirements only if you plan to create and use database connections:
+
+* [.NET 6 Runtime](https://dotnet.microsoft.com/en-us/download) (not needed if .NET 6 SDK is installed)
+* [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
 
 ## Download
 
-[Download](https://github.com/tareqimbasher/NetPad/releases/latest) the latest version or
-an older version from the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
-
-**Note:** NetPad is not a signed application. On macOS when you run NetPad the first time you will prompted with a message saying the app is damaged and can't be opened. To resolve this run this in a terminal:
-
-```shell
-sudo xattr -cr /path/to/NetPad.app
-```
+[Download](https://github.com/tareqimbasher/NetPad/releases) the latest version for free!
 
 ## Updates
 
 NetPad checks for updates on startup and will let you know when a new version is available.
-While it cannot _yet_ install the latest update automatically, that feature is in the works!
+While it cannot _yet_ install the latest update automatically, that feature will be introduced.
 
-The latest version can be downloaded from
-the [Releases](https://github.com/tareqimbasher/NetPad/releases/latest) page.
+The latest version can be downloaded from the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
+
+## Wiki
+
+The [Wiki](https://github.com/tareqimbasher/NetPad/wiki) is a great place to find more information about
+NetPad.
+
+## Troubleshooting
+
+See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting) section of the Wiki.
 
 ## Contribution
 
@@ -63,23 +67,26 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
     * Standard code editor features powered by Monaco editor
 * Dump complex objects to the results console and export results to Excel or HTML
 * Choose the .NET SDK version you want to use per script
-* Add and use database connections (supports Microsoft SQL Server and PostgreSQL, more coming soon!)
+* Add and use database connections
 * Run SQL queries
 * Auto-save: When you close NetPad, it will auto-save your changes and restore them the next time you fire it up
 * Add NuGet packages
 * Reference assemblies from disk
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
-    * Code completion (Intellisense)
-    * Semantic highlighting
+    * Code Completion (Intellisense)
+    * Semantic Highlighting
     * CodeLens
-    * Inlay hits
-    * Hover for documentation
-    * Format document
+    * Inlay Hints
+    * Hover for Documentation
     * Go-to implementation
-    * Find references
-    * Action suggestions
+    * Find References
+    * Find Symbol
+    * Rename Symbol
+    * Action Suggestions
     * Diagnostics
-    * Document highlighting
+    * Document Highlighting
+    * Contextual code folding
+    * Format document/selection/on-type
 
 ## Roadmap :construction:
 
@@ -95,27 +102,19 @@ Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with
 * Ability to run a script from the command-line
 * Git tracking of script changes
 * More advanced `Dump()` capabilities:
-  * Dump HTML controls and interact with them
-  * Dump images, SVGs, and bitmaps
-  * Dump code with syntax highlighting
+    * Dump HTML controls and interact with them
+    * Dump images, SVGs, and bitmaps
+    * Dump code with syntax highlighting
 * Quality of Life:
     * User-defined results styling
     * Workspaces/Sessions
-* More OmniSharp integrations:
-    * Code fix suggestions
-    * Format selection
-    * Format as you type
-    * Go-to definition
-    * Go-to symbol
-    * Rename symbol
-    * ...and more
 * Plugins & Theming
 
 ---
 
 ## Tech Stack :computer:
 
-* .NET Core
+* .NET
 * Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
 * Aurelia 2 ([docs](https://docs.aurelia.io/))
 
@@ -125,7 +124,7 @@ NetPad runs an ASP.NET web app that hosts a web-based user interface. It can be
 packaged as an Electron desktop app or served and accessed on any browser.
 
 Communication between the user interface and the ASP.NET backend occurs via HTTP
-calls and SignalR.
+and SignalR.
 
 ## Development
 
@@ -136,8 +135,8 @@ accessed with a web browser.
 ### Requirements
 
 * Node v16+ (npm v8+)
-* .NET SDK 6.x
-* EF Core tools 6.x (or higher)
+* .NET SDK 7.x
+* EF Core tools 5.x or later
 
 ### NetPad as an Electron desktop app
 
