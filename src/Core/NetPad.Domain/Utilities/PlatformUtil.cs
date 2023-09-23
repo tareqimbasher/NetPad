@@ -33,7 +33,7 @@ public static class PlatformUtil
     {
         bool supported = SupportedArchitectures.Contains(RuntimeInformation.OSArchitecture);
 
-        if (throwIfNotSupported)
+        if (!supported && throwIfNotSupported)
         {
             throw new PlatformNotSupportedException(
                 $"OS Architecture '{RuntimeInformation.OSArchitecture}' is not supported. OS: ({RuntimeInformation.OSDescription})");
