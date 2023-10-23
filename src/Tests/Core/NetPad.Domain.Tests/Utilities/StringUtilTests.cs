@@ -36,4 +36,32 @@ public class StringUtilTests
 
         Assert.Equal(strWithBOM, result);
     }
+
+    [Theory]
+    [InlineData("<foo>", "<", ">", false, "foo")]
+    [InlineData("bar<foo>bar", "<", ">", false, "foo")]
+    [InlineData("bar <foo> bar", "<", ">", false, "foo")]
+    [InlineData("bar <foo>bar", "<", ">", false, "foo")]
+    [InlineData("bar <foo>bar", "<", ">", true, "foo")]
+    [InlineData("Some <foo>> words", "<", ">", false, "foo")]
+    [InlineData("Some <foo>> words", "<", ">", true, "foo>")]
+    [InlineData("Some <<foo>> words", "<", ">", false, "<foo")]
+    [InlineData("Some <<foo>> words", "<", ">", true, "<foo>")]
+    [InlineData("Somefoobars", "Some", "bar", false, "foo")]
+    [InlineData("Somefoobarbars", "Some", "bar", true, "foobar")]
+    public void SubstringBetween_ExtractsSubstringCorrectly(
+        string str,
+        string startDelimiter,
+        string endDelimiter,
+        bool useLastEndDelimiterOccurrence,
+        string expectedResult)
+    {
+        var result = StringUtil.SubstringBetween(
+            str,
+            startDelimiter,
+            endDelimiter,
+            useLastEndDelimiterOccurrence);
+
+        Assert.Equal(expectedResult, result);
+    }
 }

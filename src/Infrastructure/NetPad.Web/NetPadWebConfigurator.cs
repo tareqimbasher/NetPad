@@ -15,10 +15,7 @@ public class NetPadWebConfigurator : IApplicationConfigurator
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton(new ApplicationInfo
-        {
-            ApplicationType = ApplicationType.Web
-        });
+        services.AddSingleton(new ApplicationInfo(ApplicationType.Web));
 
         services.AddTransient<IUiWindowService, WebWindowService>();
         services.AddTransient<IUiDialogService, WebDialogService>();

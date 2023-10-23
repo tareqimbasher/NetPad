@@ -20,10 +20,7 @@ public class NetPadElectronConfigurator : IApplicationConfigurator
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton(new ApplicationInfo
-        {
-            ApplicationType = ApplicationType.Electron
-        });
+        services.AddSingleton(new ApplicationInfo(ApplicationType.Electron));
 
         services.AddSingleton<WindowManager>();
         services.AddTransient<IUiWindowService, ElectronWindowService>();
