@@ -62,7 +62,6 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
             var start = DateTime.Now;
 
-            _httpClient.Timeout = TimeSpan.FromMinutes(1);
             using var archiveStream = new MemoryStream();
             await _httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(_appStatusMessagePublisher));
 

@@ -63,7 +63,12 @@ public class Startup
     {
         services.AddSingleton<AppIdentifier>();
         services.AddSingleton<HostInfo>();
-        services.AddSingleton<HttpClient>();
+        services.AddSingleton<HttpClient>(_ =>
+        {
+            var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(1);
+            return httpClient;
+        });
         services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
         services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
         services.AddSingleton<ISession, Session>();
