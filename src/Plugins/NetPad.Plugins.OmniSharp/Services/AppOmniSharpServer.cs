@@ -76,10 +76,14 @@ public class AppOmniSharpServer
     public async Task<bool> StartAsync()
     {
         _logger.LogDebug("Initializing script project for script: {Script}", _environment.Script);
+
         await Project.CreateAsync(
             _environment.Script.Config.TargetFrameworkVersion,
             ProjectOutputType.Executable,
             true);
+
+        await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
+
         await Project.RestoreAsync();
 
         InitializeEventHandlers();

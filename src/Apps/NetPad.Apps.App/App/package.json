@@ -87,7 +87,7 @@
         "jest-environment-jsdom": "^29.6.2",
         "jest-transform-stub": "^2.0.0",
         "monaco-editor-webpack-plugin": "^7.0.1",
-        "postcss": "^8.4.14",
+        "postcss": "^8.4.31",
         "postcss-loader": "^7.0.1",
         "rimraf": "^3.0.2",
         "sass": "^1.54.0",

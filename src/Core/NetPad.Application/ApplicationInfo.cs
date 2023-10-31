@@ -1,6 +1,3 @@
 namespace NetPad;
 
-public class ApplicationInfo
-{
-    public ApplicationType ApplicationType { get; set; }
-}
+public record ApplicationInfo(ApplicationType Type);

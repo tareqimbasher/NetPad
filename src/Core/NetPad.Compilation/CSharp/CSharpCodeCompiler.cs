@@ -22,7 +22,6 @@ public class CSharpCodeCompiler : ICodeCompiler
 
     public CompilationResult Compile(CompilationInput input)
     {
-        // TODO write a unit test to test assembly name
         string assemblyName = "NetPad_CompiledAssembly";
 
         if (input.OutputAssemblyNameTag != null)
@@ -60,7 +59,8 @@ public class CSharpCodeCompiler : ICodeCompiler
         var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
             .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
             .WithOptimizationLevel(OptimizationLevel.Debug)
-            .WithOverflowChecks(true);
+            .WithOverflowChecks(true)
+            .WithAllowUnsafe(true);
 
         return CSharpCompilation.Create(assemblyName,
             new[] { parsedSyntaxTree },

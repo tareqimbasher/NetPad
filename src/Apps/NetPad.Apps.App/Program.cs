@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetPad.Application;
 using NetPad.Configuration;
@@ -25,7 +26,11 @@ public static class Program
                 ? new NetPadElectronConfigurator()
                 : new NetPadWebConfigurator();
 
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            Console.WriteLine($"Starting NetPad. App type: {host.Services.GetRequiredService<ApplicationInfo>().Type}");
+
+            host.Run();
             return 0;
         }
         catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))

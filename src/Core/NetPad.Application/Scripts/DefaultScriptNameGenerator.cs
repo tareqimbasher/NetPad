@@ -13,20 +13,15 @@ public class DefaultScriptNameGenerator : IScriptNameGenerator
 
     public string Generate(string baseName = "Script")
     {
-        var lastNumber = _session.Environments
-            .Select(e =>
-            {
-                var nameParts = e.Script.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (nameParts.Length != 2 || nameParts[0] != baseName || !int.TryParse(nameParts[1], out int lastNumber))
-                    return null;
+        var existingScriptNames = _session.Environments.Select(e => e.Script.Name).ToHashSet();
+        string newName;
+        var num = 0;
 
-                return (int?)lastNumber;
-            })
-            .Where(i => i > 0)
-            .MaxBy(i => i);
+        do
+        {
+            newName = $"{baseName} {++num}";
+        } while (existingScriptNames.Contains(newName));
 
-        int number = lastNumber == null ? 1 : (lastNumber.Value + 1);
-
-        return $"{baseName} {number}";
+        return newName;
     }
 }
