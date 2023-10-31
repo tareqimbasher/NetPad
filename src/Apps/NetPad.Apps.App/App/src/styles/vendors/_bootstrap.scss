@@ -32,6 +32,7 @@ $tooltip-padding-y:                 $spacer * .5;
 $tooltip-padding-x:                 $spacer * 1;
 
 $info:                              #6f42c1;
+$body-secondary-color:              #808080;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
@@ -39,6 +40,10 @@ $info:                              #6f42c1;
 
 a.btn-link:hover {
     cursor: pointer;
+}
+
+.text-muted { // This is deprecated in v5.3, but we still want to use this class
+    color: $body-secondary-color;
 }
 
 .form-control {

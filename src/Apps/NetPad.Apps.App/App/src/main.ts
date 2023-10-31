@@ -28,7 +28,6 @@ import {
     PlatformsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
-    SettingsBackgroundService,
     SignalRIpcGateway,
     SortValueConverter,
     TakeValueConverter,
@@ -40,6 +39,7 @@ import {
 import * as appTasks from "./main.tasks";
 import {AppLifeCycle} from "./main.app-lifecycle";
 import {IPlatform} from "@application/platforms/iplatform";
+import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 
 // Register common dependencies shared for all windows
 const builder = Aurelia.register(
@@ -62,27 +62,45 @@ const builder = Aurelia.register(
                 loggerRegex: new RegExp(/AppLifeCycle/),
                 logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
             },
-            {
-                loggerRegex: new RegExp(/SignalRIpcGateway/),
-                logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
-            },
-            {
-                // Aurelia's own debug messages when evaluating HTML case expressions
-                loggerRegex: new RegExp(/^Case-#/),
-                logLevel: LogLevel.warn
-            },
-            {
-                loggerRegex: new RegExp(/.\.ComponentLifecycle/),
-                logLevel: LogLevel.warn
-            },
-            {
-                loggerRegex: new RegExp(/ShortcutManager/),
-                logLevel: LogLevel.warn
-            },
-            {
-                loggerRegex: new RegExp(/ContextMenu/),
-                logLevel: LogLevel.warn
-            },
+            ...(Env.isDebug
+                // These guys can get a bit chatty at debug level. Should move to .env
+                ? [
+                    {
+                        // Aurelia's own debug messages when evaluating HTML case expressions
+                        loggerRegex: new RegExp(/^Case-#/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/.\.ComponentLifecycle/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/ShortcutManager/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/ViewerHost/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/ContextMenu/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/SignalRIpcGateway/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/ElectronIpcGateway/),
+                        logLevel: LogLevel.warn
+                    },
+                    {
+                        loggerRegex: new RegExp(/ElectronEventSync/),
+                        logLevel: LogLevel.warn
+                    },
+                ]
+                : []),
+
         ]
     }),
     DialogDefaultConfiguration.customize((config) => {
@@ -113,7 +131,7 @@ const builder = Aurelia.register(
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
 
 // Configure app lifecycle actions
-const appLifeCycle = new AppLifeCycle(logger);
+const appLifeCycle = new AppLifeCycle(logger, builder.container.get(IEventBus));
 builder.register(
     AppTask.creating(IContainer, async (container) => appLifeCycle.creating(container)),
     AppTask.hydrating(IContainer, async (container) => appLifeCycle.hydrating(container)),
@@ -130,6 +148,7 @@ const platformType = Env.isRunningInElectron()
     : (await import("@application/platforms/browser/browser-platform")).BrowserPlatform;
 
 const platform = new platformType() as IPlatform;
+logger.debug(`Configuring platform: ${platform.constructor.name}`);
 platform.configure(builder);
 
 // Load app settings

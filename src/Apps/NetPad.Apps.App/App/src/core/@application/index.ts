@@ -3,6 +3,8 @@ export * from "./logging/console-log-sink";
 export * from "./logging/remote-log-sink";
 export * from "./logging/log-config";
 
+export * from "./app/app-lifecycle-events";
+
 export * from "./attributes/external-link-attribute";
 export * from "./attributes/platforms-attribute";
 export * from "./attributes/tooltip-attribute";
@@ -19,9 +21,6 @@ export * from "./value-converters/lang-logo-value-converter";
 export * from "./events/action-events";
 export * from "./events/event-bus";
 export * from "./events/signalr-ipc-gateway";
-
-export * from "./background-services/settings-background-service";
-export * from "./background-services/dialog-background-service";
 
 export * from "./windows/iwindow-bootstrapper";
 export * from "./panes/pane-manager";

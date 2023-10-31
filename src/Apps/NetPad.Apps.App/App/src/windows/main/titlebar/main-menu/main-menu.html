@@ -1,36 +1,12 @@
-<template as-custom-element="menu-item">
-    <bindable property="item"></bindable>
-    <bindable property="click"></bindable>
-    <let has-submenu.bind="item.menuItems && item.menuItems.length > 0"></let>
-    <let has-click-action.bind="item.click || item.shortcut"></let>
+<template class="d-flex ${isOpen ? 'open' : ''}">
+    <i class="main-menu-icon action-icon"
+       click.trigger="openMenu()"
+       title="Open Menu"
+       show.bind="!visible"></i>
 
-    <div class="${item.isDivider ? 'dropdown-divider' : 'dropdown-item'} ${hasSubmenu ? 'dropdown' : ''} ${hasClickAction ? '' : 'view-only'}"
-         click.trigger="hasSubmenu ? $event.stopPropagation() : click(item)">
-
-        <div class="menu-item-icon">
-            <i class="${item.icon}" if.bind="item.icon"></i>
-        </div>
-        <div class="menu-item-label">
-            ${item.text}
-        </div>
-        <div class="menu-item-help-text" if.bind="!hasSubmenu && (item.shortcut || item.helpText)">
-            ${item.helpText ? item.helpText : item.shortcut.keyComboString}
-        </div>
-        <div class="menu-item-submenu-indicator" if.bind="hasSubmenu">
-            <i class="caret-right-icon"></i>
-        </div>
-
-        <div class="dropdown-menu" if.bind="hasSubmenu">
-            <menu-item repeat.for="subItem of item.menuItems"
-                       item.bind="subItem"
-                       click.bind="(i) => click(i)"></menu-item>
-        </div>
-    </div>
-</template>
-
-<div class="d-flex ${isExpanded ? 'expanded' : ''}">
     <div repeat.for="item of workbench.mainMenuService.items"
-         class="top-level-menu-item dropdown">
+         class="top-level-menu-item dropdown"
+         show.bind="visible">
 
         <div class="menu-item-label"
              data-bs-toggle="dropdown">
@@ -40,7 +16,37 @@
         <div class="dropdown-menu" if.bind="item.menuItems && item.menuItems.length > 0">
             <menu-item repeat.for="item of item.menuItems"
                        item.bind="item"
-                       click.bind="(i) => menuItemClicked(i)"></menu-item>
+                       click.bind="(i) => clickMenuItem(i)"></menu-item>
         </div>
     </div>
-</div>
+
+    <template as-custom-element="menu-item">
+        <bindable property="item"></bindable>
+        <bindable property="click"></bindable>
+        <let has-submenu.bind="item.menuItems && item.menuItems.length > 0"></let>
+        <let has-click-action.bind="item.click || item.shortcut"></let>
+
+        <div class="${item.isDivider ? 'dropdown-divider' : 'dropdown-item'} ${hasSubmenu ? 'dropdown' : ''} ${hasClickAction ? '' : 'view-only'}"
+             click.trigger="hasSubmenu ? $event.stopPropagation() : click(item)">
+
+            <div class="menu-item-icon">
+                <i class="${item.icon}" if.bind="item.icon"></i>
+            </div>
+            <div class="menu-item-label">
+                ${item.text}
+            </div>
+            <div class="menu-item-help-text" if.bind="!hasSubmenu && (item.shortcut || item.helpText)">
+                ${item.helpText ? item.helpText : item.shortcut.keyComboString}
+            </div>
+            <div class="menu-item-submenu-indicator" if.bind="hasSubmenu">
+                <i class="caret-right-icon"></i>
+            </div>
+
+            <div class="dropdown-menu" if.bind="hasSubmenu">
+                <menu-item repeat.for="subItem of item.menuItems"
+                           item.bind="subItem"
+                           click.bind="(i) => click(i)"></menu-item>
+            </div>
+        </div>
+    </template>
+</template>

@@ -271,6 +271,11 @@ button > .icon-base {
     @extend .fa-thumb-tack;
 }
 
+.main-menu-icon {
+    @extend %icon-base;
+    @extend .fa-bars;
+}
+
 .info-icon {
     @extend %icon-base;
     @extend .fa-circle-info;

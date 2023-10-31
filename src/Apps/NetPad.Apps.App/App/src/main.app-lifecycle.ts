@@ -1,17 +1,27 @@
 import * as appTasks from "./main.tasks";
 import {IContainer, ILogger} from "aurelia";
-import {IIpcGateway} from "@domain";
+import {IEventBus, IIpcGateway} from "@domain";
 import {IAppLifecycleEvent} from "@application/windows/app-windows";
+import {
+    AppActivatedEvent,
+    AppActivatingEvent,
+    AppCreatedEvent,
+    AppCreatingEvent,
+    AppDeactivatedEvent,
+    AppDeactivatingEvent
+} from "@application";
 
 /**
  * Actions that run at specific points in the app's lifecycle
  */
 export class AppLifeCycle {
-    constructor(private readonly logger: ILogger) {
+    constructor(private readonly logger: ILogger,
+                private readonly eventBus: IEventBus) {
     }
 
     public async creating(container: IContainer): Promise<void> {
         this.logger.debug("App being created with options:", container.get(URLSearchParams).toString());
+        this.eventBus.publish(new AppCreatingEvent());
 
         await container.get(IIpcGateway).start();
     }
@@ -22,6 +32,7 @@ export class AppLifeCycle {
 
     public async hydrated(container: IContainer): Promise<void> {
         this.logger.debug("App hydrated");
+        this.eventBus.publish(new AppCreatedEvent());
     }
 
     public async activating(container: IContainer): Promise<void> {
@@ -29,6 +40,8 @@ export class AppLifeCycle {
 
         await appTasks.configureFetchClient(container);
         await appTasks.startBackgroundServices(container);
+
+        this.eventBus.publish(new AppActivatingEvent());
     }
 
     public async activated(container: IContainer): Promise<void> {
@@ -40,13 +53,21 @@ export class AppLifeCycle {
             appName: container.get(URLSearchParams).get("win")
         });
         bc.close();
+
+        this.eventBus.publish(new AppActivatedEvent());
     }
 
     public async deactivating(container: IContainer): Promise<void> {
         this.logger.debug("App deactivating...");
+        this.eventBus.publish(new AppDeactivatingEvent());
 
         await appTasks.stopBackgroundServices(container);
-        container.get(IIpcGateway).dispose();
+
+        const ipcGateways = container.getAll(IIpcGateway);
+        for (const ipcGateway of ipcGateways) {
+            await ipcGateway.stop();
+            ipcGateway.dispose();
+        }
     }
 
     public async deactivated(container: IContainer): Promise<void> {
@@ -58,5 +79,7 @@ export class AppLifeCycle {
             appName: container.get(URLSearchParams).get("win")
         });
         bc.close();
+
+        this.eventBus.publish(new AppDeactivatedEvent());
     }
 }

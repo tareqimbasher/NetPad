@@ -1,8 +1,12 @@
 import {HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel as SignalRLogLevel} from "@microsoft/signalr";
 import {ILogger, PLATFORM} from "aurelia";
-import {IIpcGateway} from "@domain";
-import {SubscriptionToken} from "@common";
+import {ChannelInfo, IIpcGateway} from "@domain";
+import {IDisposable, SubscriptionToken} from "@common";
 
+/**
+ * The main mode of communication with the .NET backend app over SignalR. All interaction with the
+ * backend's SignalR connection should occur through this gateway.
+ */
 export class SignalRIpcGateway implements IIpcGateway {
     private readonly logger: ILogger;
     private readonly signalrHandlers: Map<string, (...args: unknown[]) => void>;
@@ -28,7 +32,7 @@ export class SignalRIpcGateway implements IIpcGateway {
         this.connection = new HubConnectionBuilder()
             .withUrl("/ipc-hub")
             .configureLogging({
-                log: (logLevel: SignalRLogLevel, message: string)=> {
+                log: (logLevel: SignalRLogLevel, message: string) => {
                     if (logLevel === SignalRLogLevel.Warning && message.startsWith("No client method with the name"))
                         logLevel = SignalRLogLevel.Debug;
 
@@ -88,6 +92,11 @@ export class SignalRIpcGateway implements IIpcGateway {
         await this.startConnection();
     }
 
+    public async stop(): Promise<void> {
+        this.removeAllCallbacks();
+        await this.connection.stop();
+    }
+
     private async startConnection(): Promise<void> {
         if (this.disposed || this.connection.state === HubConnectionState.Connected)
             return;
@@ -106,16 +115,21 @@ export class SignalRIpcGateway implements IIpcGateway {
         }
     }
 
-    public subscribe<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void): SubscriptionToken {
-        this.addCallback(channelName, callback);
+    public subscribe<TMessage>(channel: ChannelInfo, callback: (message: TMessage, channel: ChannelInfo) => void): IDisposable {
+        // TODO Use ChannelInfo keys instead of strings
+        // This wrapper was added to accomodate the new IIpcGateway interface change. This class uses strings
+        // for keys, the rest of the event messaging system use a "ChannelInfo" object as the channel key.
+        const wrappedCallback = (message: TMessage, channelName: string) => callback(message as TMessage, channel);
+
+        this.addCallback(channel.name, wrappedCallback);
 
         return new SubscriptionToken(() => {
-            this.removeCallback(channelName, callback);
+            this.removeCallback(channel.name, wrappedCallback);
         });
     }
 
-    public async send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult> {
-        return await this.connection.invoke(channelName, ...params);
+    public async send<TResult>(channel: ChannelInfo, ...params: unknown[]): Promise<TResult> {
+        return await this.connection.invoke(channel.name, ...params);
     }
 
     private addCallback<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void) {
@@ -197,9 +211,7 @@ export class SignalRIpcGateway implements IIpcGateway {
         if (this.disposed) return;
         this.disposed = true;
 
-        this.removeAllCallbacks();
-
         // TODO Create an interface IAsyncDisposable and use it here
-        this.connection.stop();
+        this.stop();
     }
 }

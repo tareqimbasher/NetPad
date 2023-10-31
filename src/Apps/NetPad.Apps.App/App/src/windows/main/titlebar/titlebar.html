@@ -1,35 +1,36 @@
 <import from="./main-menu/main-menu"></import>
 
-<div class="left-column">
-    <img src="logo/circle/32x32.png" alt="" style="max-height: 18px"/>
-    <main-menu></main-menu>
+<div class="logo titlebar-icon">
+    <img src="logo/circle/32x32.png" alt="logo"/>
 </div>
-<div class="middle-column">
+
+<main-menu></main-menu>
+
+<div class="title">
     ${title}
 </div>
-<div class="right-column">
-    <div class="actions">
-        <i class="app-update-icon action-icon text-blue"
-           click.trigger="openAppUpdateDialog()"
-           title="Update available"
-           if.bind="appService.appHasUpdate"></i>
-        <i class="settings-icon action-icon"
-           click.trigger="openSettingsWindow()"
-           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
-        <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
-           click.trigger="toggleWindowAlwaysOnTop()"
-           title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
-    </div>
 
-    <div class="window-controls">
-        <i class="window-minimize-icon action-icon"
-           click.trigger="minimize()"
-           title="Minimize"></i>
-        <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
-           click.trigger="maximize()"
-           title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
-        <i class="window-close-icon action-icon hover-bg-red"
-           click.trigger="close()"
-           title="Close"></i>
-    </div>
+<div class="actions">
+    <i class="app-update-icon action-icon text-blue"
+       click.trigger="openAppUpdateDialog()"
+       title="Update available"
+       if.bind="appService.appHasUpdate"></i>
+    <i class="settings-icon action-icon"
+       click.trigger="openSettingsWindow()"
+       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+    <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
+       click.trigger="toggleWindowAlwaysOnTop()"
+       title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
+</div>
+
+<div class="window-controls ${leftWinCtrls ? 'order-first' : ''}">
+    <i class="window-minimize-icon action-icon ${leftWinCtrls ? 'order-last' : ''}"
+       click.trigger="minimize()"
+       title="Minimize"></i>
+    <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
+       click.trigger="maximize()"
+       title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
+    <i class="window-close-icon action-icon hover-bg-red ${leftWinCtrls ? 'order-first' : ''}"
+       click.trigger="close()"
+       title="Close"></i>
 </div>

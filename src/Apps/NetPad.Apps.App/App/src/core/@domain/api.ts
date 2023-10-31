@@ -4143,6 +4143,7 @@ export class AppearanceOptions implements IAppearanceOptions {
     showScriptRunStatusIndicatorInTab!: boolean;
     showScriptRunStatusIndicatorInScriptsList!: boolean;
     showScriptRunningIndicatorInScriptsList!: boolean;
+    titlebar!: TitlebarOptions;
 
     constructor(data?: IAppearanceOptions) {
         if (data) {
@@ -4150,6 +4151,9 @@ export class AppearanceOptions implements IAppearanceOptions {
                 if (data.hasOwnProperty(property))
                     (<any>this)[property] = (<any>data)[property];
             }
+        }
+        if (!data) {
+            this.titlebar = new TitlebarOptions();
         }
     }
 
@@ -4160,6 +4164,7 @@ export class AppearanceOptions implements IAppearanceOptions {
             this.showScriptRunStatusIndicatorInTab = _data["showScriptRunStatusIndicatorInTab"];
             this.showScriptRunStatusIndicatorInScriptsList = _data["showScriptRunStatusIndicatorInScriptsList"];
             this.showScriptRunningIndicatorInScriptsList = _data["showScriptRunningIndicatorInScriptsList"];
+            this.titlebar = _data["titlebar"] ? TitlebarOptions.fromJS(_data["titlebar"]) : new TitlebarOptions();
         }
     }
 
@@ -4177,6 +4182,7 @@ export class AppearanceOptions implements IAppearanceOptions {
         data["showScriptRunStatusIndicatorInTab"] = this.showScriptRunStatusIndicatorInTab;
         data["showScriptRunStatusIndicatorInScriptsList"] = this.showScriptRunStatusIndicatorInScriptsList;
         data["showScriptRunningIndicatorInScriptsList"] = this.showScriptRunningIndicatorInScriptsList;
+        data["titlebar"] = this.titlebar ? this.titlebar.toJSON() : <any>undefined;
         return data;
     }
 
@@ -4194,11 +4200,69 @@ export interface IAppearanceOptions {
     showScriptRunStatusIndicatorInTab: boolean;
     showScriptRunStatusIndicatorInScriptsList: boolean;
     showScriptRunningIndicatorInScriptsList: boolean;
+    titlebar: TitlebarOptions;
 }
 
 export type Theme = "Dark" | "Light";
 
 export type IconTheme = "Default" | "Colorful";
+
+export class TitlebarOptions implements ITitlebarOptions {
+    type!: TitlebarType;
+    windowControlsPosition!: WindowControlsPosition;
+    mainMenuVisibility!: MainMenuVisibility;
+
+    constructor(data?: ITitlebarOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.type = _data["type"];
+            this.windowControlsPosition = _data["windowControlsPosition"];
+            this.mainMenuVisibility = _data["mainMenuVisibility"];
+        }
+    }
+
+    static fromJS(data: any): TitlebarOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new TitlebarOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type;
+        data["windowControlsPosition"] = this.windowControlsPosition;
+        data["mainMenuVisibility"] = this.mainMenuVisibility;
+        return data;
+    }
+
+    clone(): TitlebarOptions {
+        const json = this.toJSON();
+        let result = new TitlebarOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ITitlebarOptions {
+    type: TitlebarType;
+    windowControlsPosition: WindowControlsPosition;
+    mainMenuVisibility: MainMenuVisibility;
+}
+
+export type TitlebarType = "Integrated" | "Native";
+
+export type WindowControlsPosition = "Right" | "Left";
+
+export type MainMenuVisibility = "AlwaysVisible" | "AutoHidden";
 
 export class EditorOptions implements IEditorOptions {
     backgroundColor?: string | undefined;

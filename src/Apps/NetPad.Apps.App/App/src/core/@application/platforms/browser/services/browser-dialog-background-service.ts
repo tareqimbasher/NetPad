@@ -1,5 +1,12 @@
 import {IBackgroundService, WithDisposables} from "@common";
-import {ConfirmSaveCommand, IEventBus, IIpcGateway, RequestNewScriptNameCommand, YesNoCancel} from "@domain";
+import {
+    ChannelInfo,
+    ConfirmSaveCommand,
+    IEventBus,
+    IIpcGateway,
+    RequestNewScriptNameCommand,
+    YesNoCancel
+} from "@domain";
 
 /**
  * This is utilized for the Browser app, not the Electron app.
@@ -35,12 +42,12 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
     private async confirmSave(command: ConfirmSaveCommand) {
         const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
 
-        await this.ipcGateway.send("Respond", command.id, ync);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, ync);
     }
 
     private async requestNewScriptName(command: RequestNewScriptNameCommand) {
         const newName = prompt("Name:", command.currentScriptName);
 
-        await this.ipcGateway.send("Respond", command.id, newName || null);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, newName || null);
     }
 }

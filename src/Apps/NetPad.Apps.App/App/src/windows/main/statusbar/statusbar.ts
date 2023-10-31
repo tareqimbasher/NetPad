@@ -5,6 +5,7 @@ import {
     ISession,
     ISettingService,
     ScriptEnvironment,
+    Settings,
 } from "@domain";
 import {PLATFORM} from "aurelia";
 import {IShortcutManager} from "@application";
@@ -20,6 +21,7 @@ export class Statusbar {
     public lastPersistantPriorityMessage: IAppStatusMessage | null;
 
     constructor(private readonly workbench: Workbench,
+                private readonly settings: Settings,
                 @ISession private readonly session: ISession,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,

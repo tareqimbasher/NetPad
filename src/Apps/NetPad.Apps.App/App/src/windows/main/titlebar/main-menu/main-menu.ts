@@ -1,50 +1,83 @@
+import {PLATFORM} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import {IMenuItem} from "./imenu-item";
-import {IShortcutManager} from "@application";
 import {Workbench} from "../../workbench";
+import {Settings} from "@domain";
 
+interface ITopLevelMenuItem {
+    element: HTMLElement;
+    label: HTMLElement;
+    isOpen: boolean;
+}
 
 export class MainMenu {
-    public isExpanded = false;
+    private openCounter = 0;
+    private topLevelMenuItems: ITopLevelMenuItem[];
+    private visible: boolean;
+
+    public get isOpen() {
+        return this.openCounter > 0;
+    }
 
     constructor(
         private readonly element: HTMLElement,
         private readonly workbench: Workbench,
-        @IShortcutManager private readonly shortcutManager: IShortcutManager,
-    ) {
+        private readonly settings: Settings) {
+        this.visible = settings.appearance.titlebar.mainMenuVisibility === "AlwaysVisible";
     }
 
     public attached() {
-        const topLevelMenuItems =
-            Array.from<HTMLElement>(this.element.querySelectorAll(".top-level-menu-item"))
-                .map(mi => {
-                    return {
-                        element: mi,
-                        isOpen: false,
-                        labelElement: mi.querySelector(".menu-item-label") as HTMLElement,
-                    };
-                });
-
-        for (const topLevelMenuItem of topLevelMenuItems) {
-            topLevelMenuItem.element.addEventListener("shown.bs.dropdown", () => {
-                topLevelMenuItem.isOpen = true;
+        this.topLevelMenuItems = Array.from<HTMLElement>(this.element.querySelectorAll(".top-level-menu-item"))
+            .map(mi => {
+                return {
+                    element: mi,
+                    isOpen: false,
+                    label: mi.querySelector(".menu-item-label") as HTMLElement,
+                };
             });
 
-            topLevelMenuItem.element.addEventListener("hidden.bs.dropdown", () => {
-                topLevelMenuItem.isOpen = false;
+
+        for (const topLevelMenuItem of this.topLevelMenuItems) {
+            topLevelMenuItem.element.addEventListener("shown.bs.dropdown", ev => {
+                this.menuVisibilityChanged("open", topLevelMenuItem);
             });
 
-            topLevelMenuItem.labelElement.addEventListener("mouseenter", () => {
-                if (!topLevelMenuItem.isOpen && topLevelMenuItems.some(x => x.isOpen))
-                    topLevelMenuItem.labelElement.click();
+            topLevelMenuItem.element.addEventListener("hidden.bs.dropdown", ev => {
+                this.menuVisibilityChanged("close", topLevelMenuItem);
+            });
+
+            topLevelMenuItem.label.addEventListener("mouseenter", () => {
+                if (!topLevelMenuItem.isOpen && this.topLevelMenuItems.some(x => x.isOpen))
+                    topLevelMenuItem.label.click();
             });
         }
     }
 
-    public async menuItemClicked(item: IMenuItem) {
-        if (item.click) {
-            await item.click();
-        } else if (item.shortcut) {
-            this.shortcutManager.executeShortcut(item.shortcut);
+    private openMenu() {
+        this.visible = true;
+        PLATFORM.taskQueue.queueTask(async () => {
+            await PLATFORM.domWriteQueue.yield();
+            this.topLevelMenuItems[0].label.click();
+        });
+    }
+
+    @watch<MainMenu>(vm => vm.settings.appearance.titlebar.mainMenuVisibility)
+    private menuVisibilityChanged(change: "open" | "close", topLevelMenuItem: ITopLevelMenuItem) {
+        if (change === "open") {
+            this.visible = true;
+            this.openCounter++;
+            topLevelMenuItem.isOpen = true;
+            topLevelMenuItem.element.classList.add("open");
+        } else if (change === "close") {
+            this.openCounter--;
+            topLevelMenuItem.isOpen = false;
+            topLevelMenuItem.element.classList.remove("open");
         }
+
+        this.visible = this.openCounter > 0 || this.settings.appearance.titlebar.mainMenuVisibility === "AlwaysVisible";
+    }
+
+    private async clickMenuItem(item: IMenuItem) {
+        await this.workbench.mainMenuService.clickMenuItem(item);
     }
 }

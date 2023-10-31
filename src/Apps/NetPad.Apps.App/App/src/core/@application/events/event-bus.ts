@@ -1,7 +1,11 @@
 import {Constructable, EventAggregator, ILogger} from "aurelia";
-import {IEventBus, IIpcGateway} from "@domain";
-import {IDisposable} from "@common";
+import {ChannelInfo, IEventBus, IIpcGateway} from "@domain";
+import {IDisposable, Util} from "@common";
 
+/**
+ * The main event message bus for the application.
+ * Uses the base implementation of the Aurelia event aggregator.
+ */
 export class EventBus extends EventAggregator implements IEventBus {
     private readonly logger: ILogger;
 
@@ -10,20 +14,21 @@ export class EventBus extends EventAggregator implements IEventBus {
         this.logger = logger.scopeTo(nameof(EventBus));
     }
 
-    public subscribeToServer<TMessage extends Constructable>(
-        channel: string | Constructable,
-        callback: (message: InstanceType<TMessage>, channel: string) => void): IDisposable {
-        const channelName = typeof channel === 'string' ? channel : channel.name;
+    public subscribeToServer<TMessage>(
+        channelTypeOrName: Constructable<TMessage> | string,
+        callback: (message: TMessage, channel: ChannelInfo) => void): IDisposable {
 
-        const proxyCallback = (message: InstanceType<TMessage>, channel: string) => {
+        const channel = new ChannelInfo(channelTypeOrName as Constructable);
+
+        const proxyCallback = (message: TMessage, proxiedChannel: ChannelInfo) => {
             try {
-                callback(message, channel);
+                callback(message, proxiedChannel);
             } catch (ex) {
                 this.logger.error(`An unhandled error occurred while processing a server-pushed message callback on channel: ${channel}`, ex, callback);
             }
         };
 
-        return this.ipcGateway.subscribe(channelName, proxyCallback);
+        return this.ipcGateway.subscribe(channel, proxyCallback);
     }
 }
 

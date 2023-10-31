@@ -4,102 +4,206 @@
         Appearance
     </div>
 
-    <div class="body">
-        <div class="d-flex">
-            <div class="flex-grow-1">
-                <div class="sub-header">Theme</div>
-                <div class="body">
-                    <div class="form-check">
-                        <input id="theme-light"
-                               name="theme"
-                               class="form-check-input"
-                               type="radio"
-                               model.bind="'Light'"
-                               checked.bind="settings.appearance.theme">
-                        <label class="form-check-label" for="theme-light">
-                            Light
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input id="theme-dark"
-                               name="theme"
-                               class="form-check-input"
-                               type="radio"
-                               model.bind="'Dark'"
-                               checked.bind="settings.appearance.theme">
-                        <label class="form-check-label" for="theme-dark">
-                            Dark
-                        </label>
-                    </div>
+    <div class="row">
+        <div class="col">
+            <div class="sub-header">Theme</div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="theme-light"
+                           name="theme"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Light'"
+                           checked.bind="settings.appearance.theme">
+                    <label class="form-check-label" for="theme-light">
+                        Light
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="theme-dark"
+                           name="theme"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Dark'"
+                           checked.bind="settings.appearance.theme">
+                    <label class="form-check-label" for="theme-dark">
+                        Dark
+                    </label>
                 </div>
             </div>
-            <div class="flex-grow-1">
-                <div class="sub-header">Icon Theme</div>
-                <div class="body">
-                    <div class="form-check">
-                        <input id="icon-theme-default"
-                               name="icon-theme"
-                               class="form-check-input"
-                               type="radio"
-                               model.bind="'Default'"
-                               checked.bind="settings.appearance.iconTheme">
-                        <label class="form-check-label d-flex" for="icon-theme-default">
-                            <span style="width: 50px">Default</span>
-                            <div class="d-flex ms-5 uncolored-icons" style="gap: 0.75rem">
-                                <i class="cut-icon"></i>
-                                <i class="app-deps-check-icon"></i>
-                                <i class="properties-icon"></i>
-                            </div>
-                        </label>
+        </div>
+        <div class="col">
+            <div class="sub-header">Icon Theme</div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="icon-theme-default"
+                           name="icon-theme"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Default'"
+                           checked.bind="settings.appearance.iconTheme">
+                    <label class="form-check-label d-flex" for="icon-theme-default">
+                        <span style="width: 50px">Default</span>
+                        <div class="d-flex ms-5 uncolored-icons" style="gap: 0.75rem">
+                            <i class="output-icon"></i>
+                            <i class="explorer-icon"></i>
+                            <i class="tree-expand-all-icon"></i>
+                        </div>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="icon-theme-colorful"
+                           name="icon-theme"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Colorful'"
+                           checked.bind="settings.appearance.iconTheme">
+                    <label class="form-check-label d-flex" for="icon-theme-colorful">
+                        <span style="width: 50px">Colorful</span>
+                        <div class="d-flex ms-5 colored-icons" style="gap: 0.75rem">
+                            <i class="output-icon"></i>
+                            <i class="explorer-icon"></i>
+                            <i class="tree-expand-all-icon"></i>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" platforms="Electron">
+        <div class="col">
+            <div class="row">
+                <div class="col">
+                    <div class="sub-header">
+                        Titlebar
+                        <small show.bind="settings.appearance.titlebar.type !== currentSettings.appearance.titlebar.type"
+                               class="text-warning">(Restart Required)</small>
                     </div>
-                    <div class="form-check">
-                        <input id="icon-theme-colorful"
-                               name="icon-theme"
-                               class="form-check-input"
-                               type="radio"
-                               model.bind="'Colorful'"
-                               checked.bind="settings.appearance.iconTheme">
-                        <label class="form-check-label d-flex" for="icon-theme-colorful">
-                            <span style="width: 50px">Colorful</span>
-                            <div class="d-flex ms-5 colored-icons" style="gap: 0.75rem">
-                                <i class="cut-icon"></i>
-                                <i class="app-deps-check-icon"></i>
-                                <i class="properties-icon"></i>
-                            </div>
-                        </label>
+                    <div class="body">
+                        <div class="form-check">
+                            <input id="titlebar-integrated"
+                                   name="titlebarType"
+                                   class="form-check-input"
+                                   type="radio"
+                                   model.bind="'Integrated'"
+                                   checked.bind="settings.appearance.titlebar.type">
+                            <label class="form-check-label" for="titlebar-integrated">
+                                Integrated
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input id="titlebar-native"
+                                   name="titlebarType"
+                                   class="form-check-input"
+                                   type="radio"
+                                   model.bind="'Native'"
+                                   checked.bind="settings.appearance.titlebar.type">
+                            <label class="form-check-label" for="titlebar-native">
+                                Native
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
+                    <div class="sub-header">
+                        Window Controls
+                        <i class="info-icon" style="color: dodgerblue" title="Where the window close, maximize and minimize buttons are located.
+Only applicable when using the Integrated titlebar."></i>
+                    </div>
+                    <div class="body">
+                        <div class="form-check">
+                            <input id="window-controls-position-right"
+                                   name="windowControlsPosition"
+                                   class="form-check-input"
+                                   type="radio"
+                                   model.bind="'Right'"
+                                   checked.bind="settings.appearance.titlebar.windowControlsPosition">
+                            <label class="form-check-label" for="window-controls-position-right">
+                                Right
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input id="window-controls-position-left"
+                                   name="windowControlsPosition"
+                                   class="form-check-input"
+                                   type="radio"
+                                   model.bind="'Left'"
+                                   checked.bind="settings.appearance.titlebar.windowControlsPosition">
+                            <label class="form-check-label" for="window-controls-position-left">
+                                Left
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col">
+            <div class="sub-header">
+                Main Menu
+                <small class="text-warning"
+                       show.bind="settings.appearance.titlebar.mainMenuVisibility !== currentSettings.appearance.titlebar.mainMenuVisibility && currentSettings.appearance.titlebar.type === 'Native'">
+                    (Restart Required)
+                </small>
+            </div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="main-menu-always-visible"
+                           name="mainMenuVisibility"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'AlwaysVisible'"
+                           checked.bind="settings.appearance.titlebar.mainMenuVisibility">
+                    <label class="form-check-label" for="main-menu-always-visible">
+                        Always Show
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="main-menu-auto-hidden"
+                           name="mainMenuVisibility"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'AutoHidden'"
+                           checked.bind="settings.appearance.titlebar.mainMenuVisibility">
+                    <label class="form-check-label" for="main-menu-auto-hidden">
+                        Auto-Hide <br><small>(Native: press ALT to show)</small>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <div class="sub-header mt-3">Indicators</div>
-        <div class="body">
-            <div class="form-check">
-                <input id="showScriptRunStatusIndicatorInTab"
-                       class="form-check-input"
-                       type="checkbox"
-                       checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
-                <label class="form-check-label" for="showScriptRunStatusIndicatorInTab">
-                    Show colored indicator in tab reflecting if script ran successfully or not
-                </label>
-            </div>
-            <div class="form-check">
-                <input id="showScriptRunStatusIndicatorInScriptsList"
-                       class="form-check-input"
-                       type="checkbox"
-                       checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
-                <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
-                    Show colored indicator in Explorer representing if script ran successfully or not
-                </label>
-            </div>
-            <div class="form-check">
-                <input id="showScriptRunningIndicatorInScriptsList"
-                       class="form-check-input"
-                       type="checkbox"
-                       checked.bind="settings.appearance.showScriptRunningIndicatorInScriptsList">
-                <label class="form-check-label" for="showScriptRunningIndicatorInScriptsList">
-                    Show indicator in Explorer when script is running
-                </label>
+    <div class="row">
+        <div class="col">
+            <div class="sub-header">Indicators</div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="showScriptRunStatusIndicatorInTab"
+                           class="form-check-input"
+                           type="checkbox"
+                           checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
+                    <label class="form-check-label" for="showScriptRunStatusIndicatorInTab">
+                        Show colored indicator in tab reflecting if script ran successfully or not
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="showScriptRunStatusIndicatorInScriptsList"
+                           class="form-check-input"
+                           type="checkbox"
+                           checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
+                    <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
+                        Show colored indicator in Explorer representing if script ran successfully or not
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="showScriptRunningIndicatorInScriptsList"
+                           class="form-check-input"
+                           type="checkbox"
+                           checked.bind="settings.appearance.showScriptRunningIndicatorInScriptsList">
+                    <label class="form-check-label" for="showScriptRunningIndicatorInScriptsList">
+                        Show indicator in Explorer when script is running
+                    </label>
+                </div>
             </div>
         </div>
     </div>

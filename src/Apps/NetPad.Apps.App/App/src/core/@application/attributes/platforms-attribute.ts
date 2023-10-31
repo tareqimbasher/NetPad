@@ -1,32 +1,61 @@
 import {bindable} from "aurelia";
 import {Env} from "@domain";
+import {System} from "@common";
 
 /**
  * A custom attribute that removes the element it's applied on from the DOM on unsupported platforms.
  * Usage: <div platforms="Electron"></a> will only keep this element in the DOM when the platform is Electron.
  *
  * The value of the platforms attribute must be a comma delimited string.
- * Possible values (case-sensitive):
+ * Possible values (case-insensitive):
  *      - Electron
  *      - Web
+ *      - Any type in NodeJS.Platform (win32, darwin, linux...etc). These values also accept "!" in front
+ *      to signify "NOT". ie. !win32 = show element on all except win32.
  */
 export class PlatformsCustomAttribute {
-    @bindable supportedPlatforms?: string;
+    @bindable requirements?: string;
 
     constructor(private readonly element: Element) {
     }
 
     public bound() {
-        if (!this.supportedPlatforms) return;
+        if (!this.requirements) return;
 
-        const runningInElectron = Env.isRunningInElectron();
+        const requirements = this.requirements.split(",").map(x => x.trim().toLowerCase());
 
-        const supported = this.supportedPlatforms.split(",").map(x => x.trim());
 
-        if (runningInElectron && supported.indexOf("Electron") < 0)
-            this.element.remove();
+        const runtimeReqs = requirements.filter(x => ["electron", "browser"].indexOf(x) >= 0);
+        if (runtimeReqs.length) {
+            const runningInElectron = Env.isRunningInElectron();
 
-        if (!runningInElectron && supported.indexOf("Browser") < 0)
-            this.element.remove();
+            if (runningInElectron && runtimeReqs.indexOf("electron") < 0) {
+                this.element.remove();
+                return
+            }
+
+            if (!runningInElectron && runtimeReqs.indexOf("browser") < 0) {
+                this.element.remove();
+                return;
+            }
+        }
+
+        const osReqs = requirements.filter(x => ["darwin", "win32", "linux"].indexOf(x) >= 0);
+        if (osReqs.length) {
+            const currentPlat = System.getPlatform()?.toLowerCase();
+
+            if (currentPlat) {
+                if (osReqs.indexOf(currentPlat) < 0) {
+                    this.element.remove();
+                    return;
+                }
+
+                // If inverse is specified (ex. !win32) and we are on win32, remove element
+                if (osReqs.indexOf("!" + currentPlat) >= 0) {
+                    this.element.remove();
+                    return;
+                }
+            }
+        }
     }
 }

@@ -1,33 +1,34 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const {BundleAnalyzerPlugin} = require('webpack-bundle-analyzer');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const Dotenv = require('dotenv-webpack');
+const path = require("path");
+const Dotenv = require("dotenv-webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const {BundleAnalyzerPlugin} = require("webpack-bundle-analyzer");
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+/* eslint-enable @typescript-eslint/no-var-requires */
 
-const cssLoader = 'css-loader';
+const cssLoader = "css-loader";
 
 const sassLoader = {
-    loader: 'sass-loader',
+    loader: "sass-loader",
     options: {
         sassOptions: {
-            includePaths: ['node_modules']
+            includePaths: ["node_modules"]
         }
     }
 };
 
 const postcssLoader = {
-    loader: 'postcss-loader',
+    loader: "postcss-loader",
     options: {
         postcssOptions: {
-            plugins: ['autoprefixer']
+            plugins: ["autoprefixer"]
         }
     }
 };
 
 module.exports = function (env, {analyze}) {
-    const production = env.production || process.env.NODE_ENV === 'production';
+    const production = env.production || process.env.NODE_ENV === "production";
     const environment = production ? "production" : "development";
     const target = env.target || "electron";
 
@@ -35,11 +36,38 @@ module.exports = function (env, {analyze}) {
     console.log(`   Environment: ${environment}`);
     console.log(`   Target: ${target}`);
 
-    /** @type {import('webpack').Configuration} */
+    /** @type {import("webpack").Configuration} */
     return {
         target: target === "web" ? "web" : "electron-renderer",
-        mode: production ? 'production' : 'development',
-        devtool: production ? undefined : 'eval-cheap-source-map',
+        mode: production ? "production" : "development",
+        devtool: production ? undefined : "eval-cheap-source-map",
+        entry: {
+            entry: "./src/main.ts"
+        },
+        output: {
+            path: path.resolve(__dirname, "dist"),
+            filename: production ? "[name].[contenthash].bundle.js" : "[name].bundle.js"
+        },
+        resolve: {
+            extensions: [".ts", ".js"],
+            modules: [
+                path.resolve(__dirname, "src"),
+                path.resolve(__dirname, "src/core"),
+                path.resolve(__dirname, "dev-app"),
+                path.resolve(__dirname, "node_modules"),
+            ],
+            fallback: {
+                "fs": false,
+                "path": require.resolve("path-browserify"),
+            },
+            alias: {
+                // Re-route all "import from "monaco-editor" to this so that MonacoWebpackPlugin
+                // can do its job and only bundle the parts of monaco editor that we need and not
+                // all of it. The "$" here is so we allow more specific imports like:
+                // import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput"
+                "monaco-editor$": "monaco-editor/esm/vs/editor/editor.api.js",
+            }
+        },
         optimization: {
             minimize: true,
             minimizer: [
@@ -53,69 +81,42 @@ module.exports = function (env, {analyze}) {
                 })
             ]
         },
-        entry: {
-            entry: './src/main.ts'
-        },
-        output: {
-            path: path.resolve(__dirname, 'dist'),
-            filename: production ? '[name].[contenthash].bundle.js' : '[name].bundle.js'
-        },
-        resolve: {
-            extensions: ['.ts', '.js'],
-            modules: [
-                path.resolve(__dirname, 'src'),
-                path.resolve(__dirname, 'src/core'),
-                path.resolve(__dirname, 'dev-app'),
-                path.resolve(__dirname, 'node_modules'),
-            ],
-            fallback: {
-                "fs": false,
-                "path": require.resolve("path-browserify"),
-            },
-            alias: {
-                // Re-route all 'import from "monaco-editor"' to this so that MonacoWebpackPlugin
-                // can do its job and only bundle the parts of monaco editor that we need and not
-                // all of it. The '$' here is so we allow more specific imports like:
-                // import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput"
-                "monaco-editor$": "monaco-editor/esm/vs/editor/editor.api.js",
-            }
-        },
         devServer: {
             historyApiFallback: true,
             //open: !process.env.CI,
             port: 9000,
             client: {
                 progress: true,
-                overlay: false
+                overlay: true
             },
         },
         module: {
             rules: [
-                {test: /\.(png|svg|jpg|jpeg|gif)$/i, type: 'asset'},
-                {test: /\.(woff|woff2|ttf|eot|svg|otf)(\?v=[0-9]\.[0-9]\.[0-9])?$/i, type: 'asset'},
-                {test: /\.css$/i, use: ['style-loader', cssLoader, postcssLoader]},
-                {test: /\.scss$/i, use: ['style-loader', cssLoader, postcssLoader, sassLoader]},
+                {test: /\.(png|svg|jpg|jpeg|gif)$/i, type: "asset"},
+                {test: /\.(woff|woff2|ttf|eot|svg|otf)(\?v=[0-9]\.[0-9]\.[0-9])?$/i, type: "asset"},
+                {test: /\.css$/i, use: ["style-loader", cssLoader, postcssLoader]},
+                {test: /\.scss$/i, use: ["style-loader", cssLoader, postcssLoader, sassLoader]},
                 {
                     test: /\.ts$/i,
                     use: [
                         {
-                            loader: 'ts-loader'
+                            loader: "ts-loader"
                         },
-                        '@aurelia/webpack-loader'
+                        "@aurelia/webpack-loader"
                     ],
                     exclude: /node_modules/
                 },
                 {
                     test: /[/\\]src[/\\].+\.html$/i,
-                    use: '@aurelia/webpack-loader',
+                    use: "@aurelia/webpack-loader",
                     exclude: /node_modules/
                 }
             ]
         },
         plugins: [
-            new HtmlWebpackPlugin({template: 'index.html', favicon: '../wwwroot/favicon.ico'}),
+            new HtmlWebpackPlugin({template: "index.html", favicon: "../wwwroot/favicon.ico"}),
             new Dotenv({
-                path: `./.env${production ? '' : '.' + environment}`,
+                path: `./.env${production ? '' : "." + environment}`,
             }),
             new MonacoWebpackPlugin({
                 languages: [

@@ -13,7 +13,6 @@ import {
     BuiltinCSharpCompletionProvider,
     BuiltinSqlCompletionProvider,
     DataConnectionName,
-    DialogBackgroundService,
     IActionProvider,
     ICompletionItemProvider,
     IPaneManager,
@@ -35,6 +34,8 @@ import {ITextEditorService, TextEditorService} from "@application/editor/text-ed
 import {AppWindows} from "@application/windows/app-windows";
 import {ExcelService, IExcelService} from "@application/data/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {MainMenuBackgroundService} from "@application/background-services/main-menu-background-service";
+import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -49,6 +50,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(ITextEditorService, TextEditorService),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
+            Registration.singleton(IBackgroundService, MainMenuBackgroundService),
             Registration.singleton(IWorkAreaService, WorkAreaService),
             Registration.singleton(IMainMenuService, MainMenuService),
             Registration.singleton(IStatusbarService, StatusbarService),
@@ -63,6 +65,8 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(IExcelService, ExcelService),
             PaneHost,
             DataConnectionName,
+
+            // App startup task
             AppTask.activated(IContainer, async container => {
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();

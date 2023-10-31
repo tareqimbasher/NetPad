@@ -65,7 +65,8 @@ public class Settings : ISettingsOptions
             .SetIconTheme(options.IconTheme)
             .SetShowScriptRunStatusIndicatorInTab(options.ShowScriptRunStatusIndicatorInTab)
             .SetShowScriptRunStatusIndicatorInScriptsList(options.ShowScriptRunStatusIndicatorInScriptsList)
-            .SetShowScriptRunningIndicatorInScriptsList(options.ShowScriptRunningIndicatorInScriptsList);
+            .SetShowScriptRunningIndicatorInScriptsList(options.ShowScriptRunningIndicatorInScriptsList)
+            .SetTitlebarOptions(options.Titlebar);
 
         return this;
     }

@@ -1,4 +1,4 @@
-import {IAppService, ISession, ISettingService, IWindowService, WindowState} from "@domain";
+import {IAppService, ISession, ISettingService, IWindowService, Settings, WindowState} from "@domain";
 import {IShortcutManager, ViewModelBase} from "@application";
 import {Util} from "@common";
 import {ILogger} from "aurelia";
@@ -14,6 +14,7 @@ export class Titlebar extends ViewModelBase {
                 @IAppService private readonly appService: IAppService,
                 @ISettingService private readonly settingsService: ISettingService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
+                private readonly settings: Settings,
                 private readonly dialogUtil: DialogUtil,
                 @ILogger logger: ILogger
     ) {
@@ -22,6 +23,10 @@ export class Titlebar extends ViewModelBase {
         this.updateWindowState = Util.debounce(this, async () => {
             this.windowState = await this.windowService.getState();
         }, 500, true);
+    }
+
+    private get leftWinCtrls(): boolean {
+        return this.settings.appearance.titlebar.windowControlsPosition === "Left";
     }
 
     public get title() {

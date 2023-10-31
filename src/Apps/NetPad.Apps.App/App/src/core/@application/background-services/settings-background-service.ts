@@ -5,7 +5,7 @@ import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
  * Used to sync the Settings singleton from changes upstream.
  */
 export class SettingsBackgroundService implements IBackgroundService {
-    private settingsUpdatedEventToken: IDisposable;
+    private settingsUpdatedEventSubscription: IDisposable;
 
     constructor(
         readonly settings: Settings,
@@ -13,13 +13,13 @@ export class SettingsBackgroundService implements IBackgroundService {
     }
 
     public start(): Promise<void> {
-        this.settingsUpdatedEventToken = this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => {
+        this.settingsUpdatedEventSubscription = this.eventBus.subscribeToServer(SettingsUpdatedEvent, msg => {
             this.settings.init(msg.settings);
         });
         return Promise.resolve(undefined);
     }
 
     public stop(): void {
-        this.settingsUpdatedEventToken.dispose();
+        this.settingsUpdatedEventSubscription.dispose();
     }
 }
