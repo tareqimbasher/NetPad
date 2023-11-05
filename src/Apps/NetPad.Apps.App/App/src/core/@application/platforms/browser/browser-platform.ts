@@ -6,12 +6,11 @@ import {BrowserDialogBackgroundService} from "./services/browser-dialog-backgrou
 import {BrowserWindowBackgroundService} from "./services/browser-window-background-service";
 import {BrowserWindowService} from "./services/browser-window-service";
 
-// Configurations for when the app is running in the Browser.
+/**
+ * Configurations for when the app is running in the Browser.
+ */
 export class BrowserPlatform implements IPlatform {
     public configure(appBuilder: IAurelia) {
-        const logger = appBuilder.container.get(ILogger).scopeTo(nameof(BrowserPlatform));
-        logger.debug("Configuring for web platform");
-
         appBuilder.register(
             Registration.transient(IBackgroundService, BrowserDialogBackgroundService),
             Registration.transient(IBackgroundService, BrowserWindowBackgroundService),

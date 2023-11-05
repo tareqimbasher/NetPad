@@ -1,3 +1,5 @@
+import * as process from "process";
+
 export class System {
     /**
      * Opens a URL in system-configured default browser.
@@ -10,6 +12,14 @@ export class System {
             /* eslint-enable @typescript-eslint/no-var-requires */
         } else
             window.open(url, "_blank");
+    }
+
+    public static getPlatform() {
+        try {
+            return process.platform;
+        } catch {
+            return undefined;
+        }
     }
 
     public static downloadFile(fileName: string, mimeType = "text/plain", base64: string) {

@@ -5,63 +5,44 @@ titlebar {
     @include theme(background-color, statusbarBackground);
     height: $titlebar-height;
     max-height: $titlebar-height;
+    position: relative;
     display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
     align-items: stretch;
     user-select: none;
     -webkit-app-region: drag;
 
-    .left-column,
-    .middle-column,
-    .right-column {
-        flex: 1 1 0;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 0.5em;
-    }
-
-    .left-column {
+    .titlebar-icon {
         padding-left: 0.5rem;
-    }
-
-    .middle-column {
-        justify-content: center;
-        font-size: 0.9rem;
-    }
-
-    .right-column {
-        justify-content: flex-end;
         display: flex;
-        align-items: stretch;
+        align-items: center;
 
-        .actions {
-            -webkit-app-region: no-drag;
-            display: flex;
-            align-items: stretch;
-            z-index: 1000;
-
-            i {
-                padding-left: 0.5rem;
-                padding-right: 0.5rem;
-                display: flex;
-                align-items: center;
-
-                &:not(:last-child) {
-                    margin-right: 0.5rem;
-                }
-
-                &:hover {
-                    @include theme(background-color, hoverColor);
-                }
-            }
+        img {
+            max-height: 18px;
         }
+    }
+
+    .title {
+        position: absolute;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        left: 50%;
+        transform: translate(-50%, 0)
     }
 
     .window-controls {
         display: flex;
-        align-items: stretch;
         -webkit-app-region: no-drag;
         z-index: 1000;
+
+        // To counteract margin-right of .actions when window controls are on the right side
+        margin-left: -1rem;
+        &.order-first {
+            margin-left: 0;
+        }
 
         i {
             display: flex;
@@ -70,6 +51,31 @@ titlebar {
             padding-right: 1rem;
             padding-left: 1rem;
             cursor: default;
+
+            &:hover {
+                @include theme(background-color, hoverColor);
+            }
+        }
+    }
+
+    .actions {
+        -webkit-app-region: no-drag;
+        display: flex;
+        z-index: 1000;
+        margin-left: auto;
+        margin-right: 1rem;
+
+        .action-icon {
+            width: 30px;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &:not(:last-child) {
+                margin-right: 0.5rem;
+            }
 
             &:hover {
                 @include theme(background-color, hoverColor);

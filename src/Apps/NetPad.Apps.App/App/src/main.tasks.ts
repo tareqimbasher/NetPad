@@ -60,6 +60,11 @@ export const stopBackgroundServices = async (container: IContainer) => {
     for (const backgroundService of backgroundServices) {
         try {
             backgroundService.stop();
+
+            const dispose = backgroundService["dispose" as keyof typeof backgroundService];
+            if (typeof dispose === "function") {
+                dispose();
+            }
         } catch (ex) {
             if (ex instanceof Error)
                 logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);

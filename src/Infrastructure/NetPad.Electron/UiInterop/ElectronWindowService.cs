@@ -1,30 +1,21 @@
 using ElectronNET.API.Entities;
-using MediatR;
 using Microsoft.Extensions.Logging;
-using NetPad.CQs;
+using NetPad.Configuration;
 using NetPad.Scripts;
-using NetPad.Sessions;
 using NetPad.UiInterop;
 
 namespace NetPad.Electron.UiInterop;
 
 public class ElectronWindowService : IUiWindowService
 {
-    private static bool _isMenuInitialized;
     private readonly WindowManager _windowManager;
-    private readonly ISession _session;
-    private readonly IMediator _mediator;
+    private readonly Settings _settings;
     private readonly ILogger<ElectronWindowService> _logger;
 
-    public ElectronWindowService(
-        WindowManager windowManager,
-        ISession session,
-        IMediator mediator,
-        ILogger<ElectronWindowService> logger)
+    public ElectronWindowService(WindowManager windowManager, Settings settings, ILogger<ElectronWindowService> logger)
     {
         _windowManager = windowManager;
-        _session = session;
-        _mediator = mediator;
+        _settings = settings;
         _logger = logger;
     }
 
@@ -32,6 +23,8 @@ public class ElectronWindowService : IUiWindowService
 
     public async Task OpenMainWindowAsync()
     {
+        bool useNativeDecorations = _settings.Appearance.Titlebar.Type == TitlebarType.Native;
+
         var display = await PrimaryDisplay();
         var window = await _windowManager.CreateWindowAsync("main", true, new BrowserWindowOptions
         {
@@ -40,18 +33,13 @@ public class ElectronWindowService : IUiWindowService
             Width = display.Bounds.Width * 2 / 3,
             X = display.Bounds.X,
             Y = display.Bounds.Y,
-            Frame = false,
+            Frame = useNativeDecorations,
+            AutoHideMenuBar = _settings.Appearance.Titlebar.MainMenuVisibility == MainMenuVisibility.AutoHidden,
             Fullscreenable = true,
         });
 
         window.Show();
         window.Maximize();
-
-        if (!_isMenuInitialized)
-        {
-            InitializeMenu();
-            _isMenuInitialized = true;
-        }
     }
 
     public async Task OpenSettingsWindowAsync(string? tab = null)
@@ -166,245 +154,5 @@ public class ElectronWindowService : IUiWindowService
         window.Center();
         window.Maximize();
         window.Show();
-    }
-
-    private void InitializeMenu()
-    {
-        var menu = new MenuItem[]
-        {
-            new MenuItem
-            {
-                Label = "File", Type = MenuType.submenu, Submenu = new MenuItem[]
-                {
-                    new MenuItem
-                    {
-                        Label = "New",
-                        Accelerator = "CmdOrCtrl+N",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                var script = await _mediator.Send(new CreateScriptCommand());
-                                await _mediator.Send(new OpenScriptCommand(script));
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while creating new script");
-                            }
-                        }
-                    },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem
-                    {
-                        Label = "Save",
-                        Accelerator = "CmdOrCtrl+S",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                if (_session.Active != null)
-                                {
-                                    await _mediator.Send(new SaveScriptCommand(_session.Active.Script));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while calling save script");
-                            }
-                        }
-                    },
-                    new MenuItem
-                    {
-                        Label = "Save All",
-                        Accelerator = "CmdOrCtrl+Shift+A",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                foreach (var environment in _session.Environments.Where(env => env.Script.IsDirty))
-                                {
-                                    await _mediator.Send(new SaveScriptCommand(environment.Script));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while calling save all scripts");
-                            }
-                        }
-                    },
-                    new MenuItem
-                    {
-                        Label = "Properties",
-                        Accelerator = "F4",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                if (_session.Active != null)
-                                {
-                                    await OpenScriptConfigWindowAsync(_session.Active.Script);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while script config window");
-                            }
-                        }
-                    },
-                    new MenuItem
-                    {
-                        Label = "Close",
-                        Accelerator = "CmdOrCtrl+W",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                if (_session.Active != null)
-                                {
-                                    await _mediator.Send(new CloseScriptCommand(_session.Active.Script.Id));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while calling close script");
-                            }
-                        }
-                    },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem
-                    {
-                        Label = "Settings",
-                        Accelerator = "F12",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                await OpenSettingsWindowAsync();
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error opening settings window");
-                            }
-                        }
-                    },
-                    new MenuItem { Label = "Exit", Accelerator = "CmdOrCtrl+Q", Role = MenuRole.quit },
-                }
-            },
-            new MenuItem
-            {
-                Label = "Edit", Type = MenuType.submenu, Submenu = new MenuItem[]
-                {
-                    new MenuItem { Label = "Undo", Accelerator = "CmdOrCtrl+Z", Role = MenuRole.undo },
-                    new MenuItem { Label = "Redo", Accelerator = "Shift+CmdOrCtrl+Z", Role = MenuRole.redo },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem { Label = "Cut", Accelerator = "CmdOrCtrl+X", Role = MenuRole.cut },
-                    new MenuItem { Label = "Copy", Accelerator = "CmdOrCtrl+C", Role = MenuRole.copy },
-                    new MenuItem { Label = "Paste", Accelerator = "CmdOrCtrl+V", Role = MenuRole.paste },
-                    new MenuItem { Label = "Delete", Role = MenuRole.delete },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem { Label = "Select All", Accelerator = "CmdOrCtrl+A", Role = MenuRole.selectall }
-                }
-            },
-            new MenuItem
-            {
-                Label = "View", Type = MenuType.submenu, Submenu = new MenuItem[]
-                {
-                    new MenuItem { Label = "Reload", Accelerator = "CmdOrCtrl+R", Role = MenuRole.reload },
-                    new MenuItem
-                    {
-                        Label = "Force Reload",
-                        Accelerator = "CmdOrCtrl+Shift+R",
-                        Click = () =>
-                        {
-                            try
-                            {
-                                // On force reload, start fresh and close any old
-                                // open secondary windows
-                                var mainWindowId = ElectronNET.API.Electron.WindowManager.BrowserWindows.ToList()
-                                    .First().Id;
-                                ElectronNET.API.Electron.WindowManager.BrowserWindows.ToList().ForEach(browserWindow =>
-                                {
-                                    if (browserWindow.Id != mainWindowId)
-                                    {
-                                        browserWindow.Close();
-                                    }
-                                    else
-                                    {
-                                        browserWindow.Reload();
-                                    }
-                                });
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error while force reloading");
-                            }
-                        }
-                    },
-                    new MenuItem
-                    {
-                        Label = "Open Developer Tools",
-                        Accelerator = "CmdOrCtrl+Shift+I",
-                        Role = MenuRole.toggledevtools
-                    },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem { Label = "Actual Size", Accelerator = "CmdOrCtrl+0", Role = MenuRole.resetzoom },
-                    new MenuItem { Label = "Zoom in", Accelerator = "CmdOrCtrl+Plus", Role = MenuRole.zoomin },
-                    new MenuItem { Label = "Zoom out", Accelerator = "CmdOrCtrl+-", Role = MenuRole.zoomout },
-                    new MenuItem { Type = MenuType.separator },
-                    new MenuItem
-                    {
-                        Label = "Toggle Full Screen",
-                        Accelerator = "F11",
-                        Role = MenuRole.togglefullscreen
-                    }
-                }
-            },
-            new MenuItem
-            {
-                Label = "Window", Role = MenuRole.window, Type = MenuType.submenu, Submenu = new MenuItem[]
-                {
-                    new MenuItem { Label = "Minimize", Accelerator = "CmdOrCtrl+M", Role = MenuRole.minimize },
-                    new MenuItem { Label = "Zoom", Role = MenuRole.zoom },
-                    new MenuItem { Label = "Close", Accelerator = "CmdOrCtrl+W", Role = MenuRole.close }
-                }
-            },
-            new MenuItem
-            {
-                Label = "Help", Role = MenuRole.help, Type = MenuType.submenu, Submenu = new MenuItem[]
-                {
-                    new MenuItem
-                    {
-                        Label = "About",
-                        Click = async () =>
-                        {
-                            try
-                            {
-                                await OpenSettingsWindowAsync("about");
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError(ex, "Error opening about window");
-                            }
-                        }
-                    },
-                    new MenuItem
-                    {
-                        Label = "GitHub",
-                        Click = async () =>
-                            await ElectronNET.API.Electron.Shell.OpenExternalAsync(
-                                "https://github.com/tareqimbasher/NetPad")
-                    },
-                    new MenuItem
-                    {
-                        Label = "Search Issues",
-                        Click = async () =>
-                            await ElectronNET.API.Electron.Shell.OpenExternalAsync(
-                                "https://github.com/tareqimbasher/NetPad/issues")
-                    }
-                }
-            }
-        };
-
-        ElectronNET.API.Electron.Menu.SetApplicationMenu(menu);
     }
 }

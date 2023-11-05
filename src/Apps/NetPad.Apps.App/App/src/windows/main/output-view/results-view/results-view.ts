@@ -3,6 +3,7 @@ import {watch} from "@aurelia/runtime-html";
 import {DialogDeactivationStatuses} from "@aurelia/dialog";
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {
+    ChannelInfo,
     HtmlScriptOutput,
     IEventBus,
     IIpcGateway,
@@ -171,7 +172,7 @@ export class ResultsView extends OutputViewBase {
     private showUserInput(commandId: string) {
         this.userInputKeyHandler = async (ev: KeyboardEvent) => {
             if (ev.code === KeyCode.Enter) {
-                await this.ipcGateway.send("Respond", commandId, this.txtUserInput.value);
+                await this.ipcGateway.send(new ChannelInfo("Respond"), commandId, this.txtUserInput.value);
                 this.stopUserInput();
             }
         };

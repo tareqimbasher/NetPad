@@ -4,6 +4,7 @@ export * from "./extensions/abort-controller-extensions";
 
 export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";
+export * from "./events/channel-info";
 
 export * from "./configuration/setting-service";
 export * from "./app/app-service";

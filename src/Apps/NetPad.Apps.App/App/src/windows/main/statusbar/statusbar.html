@@ -33,6 +33,10 @@ This includes the time it took to start the host process.">
        click.trigger="settingsService.toggleTheme()"
        title="Toggle Theme"></i>
     <i class="settings-icon action-icon"
+       if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
+       click.trigger="settingsService.openSettingsWindow()"
+       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+    <i class="settings-icon action-icon"
        click.trigger="settingsService.openSettingsWindow()"
        platforms="Browser"
        title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>

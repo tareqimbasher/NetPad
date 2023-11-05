@@ -1,12 +1,18 @@
 import {DI} from "aurelia";
 import {IDisposable} from "@common";
+import {ChannelInfo} from "@domain";
 
+/**
+ * Provides an interface to interact with an external process.
+ */
 export interface IIpcGateway extends IDisposable {
     start(): Promise<void>;
 
-    subscribe<TMessage>(channelName: string, callback: (message: TMessage, channel: string) => void): IDisposable;
+    stop(): Promise<void>;
 
-    send<TResult>(channelName: string, ...params: unknown[]): Promise<TResult>;
+    subscribe<TMessage>(channel: ChannelInfo, callback: (message: TMessage, channel: ChannelInfo) => void): IDisposable;
+
+    send<TResult>(channel: ChannelInfo, ...params: unknown[]): Promise<TResult>;
 }
 
 export const IIpcGateway = DI.createInterface<IIpcGateway>();
