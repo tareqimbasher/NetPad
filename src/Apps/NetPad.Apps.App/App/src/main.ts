@@ -11,10 +11,10 @@ import {
     IEventBus,
     IIpcGateway,
     ISession,
-    ISettingService,
+    ISettingsService,
     Session,
     Settings,
-    SettingService,
+    SettingsService,
 } from "@domain";
 import {
     ConsoleLogSink,
@@ -50,7 +50,7 @@ const builder = Aurelia.register(
     Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
-    Registration.singleton(ISettingService, SettingService),
+    Registration.singleton(ISettingsService, SettingsService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
     LogConfig.register({
@@ -152,7 +152,7 @@ logger.debug(`Configuring platform: ${platform.constructor.name}`);
 platform.configure(builder);
 
 // Load app settings
-const settings = await builder.container.get(ISettingService).get();
+const settings = await builder.container.get(ISettingsService).get();
 builder.container.get(Settings).init(settings.toJSON());
 
 // Start the app

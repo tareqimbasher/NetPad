@@ -1,7 +1,7 @@
-import {IShortcutManager, Pane} from "@application";
-import {IScriptService, ISession} from "@domain";
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
+import {IShortcutManager, Pane, ShortcutIds} from "@application";
+import {IScriptService, ISession} from "@domain";
 import {Util} from "@common";
 
 export class NamespacesPane extends Pane {
@@ -14,7 +14,7 @@ export class NamespacesPane extends Pane {
         @IShortcutManager private readonly shortcutManager: IShortcutManager
     ) {
         super("Namespaces", "namespaces-icon");
-        this.hasShortcut(shortcutManager.getShortcutByName("Namespaces"));
+        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openNamespaces));
     }
 
     public override get name() {

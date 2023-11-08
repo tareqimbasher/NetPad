@@ -3,7 +3,7 @@ import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
 import {Util} from "@common";
 import {CreateScriptDto, IScriptService, ISession, Script, Settings} from "@domain";
-import {ContextMenuOptions, IShortcutManager, ViewModelBase} from "@application";
+import {ContextMenuOptions, IShortcutManager, ShortcutIds, ViewModelBase} from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
 import {ViewerHost} from "../viewers/viewer-host";
 import {ViewableAppScriptDocument} from "../viewers/text-document-viewer/viewable-text-document";
@@ -45,7 +45,7 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "run-icon",
                 text: "Run",
-                shortcut: this.shortcutManager.getShortcutByName("Run"),
+                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
                 show: (clickTarget) => {
                     const viewable = this.getViewable(clickTarget);
                     return viewable instanceof ViewableAppScriptDocument
@@ -77,13 +77,13 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "save-icon",
                 text: "Save",
-                shortcut: this.shortcutManager.getShortcutByName("Save"),
+                shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
                 icon: "properties-icon",
                 text: "Properties",
-                shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
+                shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
                 show: (clickTarget) => this.getViewable(clickTarget) instanceof ViewableAppScriptDocument,
                 onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).openProperties()
             },
@@ -99,7 +99,6 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "",
                 text: "Close Other Tabs",
-                shortcut: this.shortcutManager.getShortcutByName("Close Other Tabs"),
                 onSelected: async (clickTarget) => {
                     const clicked = this.getViewable(clickTarget);
                     for (const viewable of this.viewables) {
@@ -111,7 +110,6 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "",
                 text: "Close All Tabs",
-                shortcut: this.shortcutManager.getShortcutByName("Close All Tabs"),
                 onSelected: async () => {
                     for (const viewable of this.viewables) {
                         await this.close(viewable);
@@ -121,7 +119,7 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "close-icon",
                 text: "Close",
-                shortcut: this.shortcutManager.getShortcutByName("Close"),
+                shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
                 onSelected: async (clickTarget) => await this.close(this.getViewable(clickTarget))
             }
         ]);

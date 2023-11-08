@@ -1,4 +1,4 @@
-import {IAppService, ISession, ISettingService, IWindowService, Settings, WindowState} from "@domain";
+import {IAppService, ISession, ISettingsService, IWindowService, Settings, WindowState} from "@domain";
 import {IShortcutManager, ViewModelBase} from "@application";
 import {Util} from "@common";
 import {ILogger} from "aurelia";
@@ -12,7 +12,7 @@ export class Titlebar extends ViewModelBase {
     constructor(@ISession private readonly session: ISession,
                 @IWindowService private readonly windowService: IWindowService,
                 @IAppService private readonly appService: IAppService,
-                @ISettingService private readonly settingsService: ISettingService,
+                @ISettingsService private readonly settingsService: ISettingsService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
                 private readonly settings: Settings,
                 private readonly dialogUtil: DialogUtil,

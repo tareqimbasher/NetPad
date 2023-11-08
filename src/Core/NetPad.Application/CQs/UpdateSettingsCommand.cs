@@ -38,6 +38,7 @@ public class UpdateSettingsCommand : Command
                 .SetAppearanceOptions(incoming.Appearance)
                 .SetEditorOptions(incoming.Editor)
                 .SetResultsOptions(incoming.Results)
+                .SetKeyboardShortcutOptions(incoming.KeyboardShortcuts)
                 .SetOmniSharpOptions(incoming.OmniSharp);
 
             await _settingsRepository.SaveSettingsAsync(_settings);

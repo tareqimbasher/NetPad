@@ -1,4 +1,4 @@
-﻿import {IShortcutManager, Pane, PaneAction} from "@application";
+﻿import {IShortcutManager, Pane, PaneAction, ShortcutIds} from "@application";
 import {ISession, IWindowService, Settings} from "@domain";
 import {watch} from "@aurelia/runtime-html";
 import {IContainer, PLATFORM} from "aurelia";
@@ -17,7 +17,7 @@ export class OutputPane extends Pane {
                 private readonly settings: Settings) {
         super("Output", "output-icon", false);
 
-        this.hasShortcut(shortcutManager.getShortcutByName("Output"));
+        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
 
         this._actions.push(new PaneAction(
             '<i class="pop-out-icon me-3"></i> Pop out',

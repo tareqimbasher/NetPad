@@ -21,9 +21,14 @@ import {
     IRenameProvider,
     ISignatureHelpProvider
 } from "./providers/interfaces";
+import {KeyCodeNum} from "@common";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {ShortcutIds} from "@application/shortcuts/builtin-shortcuts";
 
 export class EditorSetup {
     constructor(
+        private readonly settings: Settings,
+        @IEventBus private readonly eventBus: IEventBus,
         @all(ICommandProvider) private readonly commandProviders: ICommandProvider[],
         @all(IActionProvider) private readonly actionProviders: IActionProvider[],
         @all(ICompletionItemProvider) private readonly completionItemProviders: ICompletionItemProvider[],
@@ -50,6 +55,7 @@ export class EditorSetup {
         this.registerThemes();
         this.registerCommands();
         this.registerActions();
+        this.registerKeyboardShortcuts();
         this.registerCompletionProviders();
         this.registerSemanticTokensProviders();
         this.registerDocumentSymbolProviders();
@@ -121,6 +127,68 @@ export class EditorSetup {
                 }
             }, 100);
         });
+    }
+
+    private registerKeyboardShortcuts() {
+        // Currently we are only overriding the Command Palette keybinding.
+        let commandPaletteKeybinding: number;
+
+        const addOrUpdateShortcuts = (settings: Settings) => {
+            const commandPaletteShortcutConfig = this.settings.keyboardShortcuts.shortcuts
+                .find(s => s.id === ShortcutIds.openCommandPalette);
+
+            // If the config for this shortcut doesn't exist yet, or did but is now removed.
+            if (!commandPaletteShortcutConfig) {
+                if (commandPaletteKeybinding) {
+                    // Disable previous rule
+                    monaco.editor.addKeybindingRule({
+                        keybinding: commandPaletteKeybinding,
+                        command: null,
+                    });
+                }
+
+                monaco.editor.addKeybindingRule({
+                    keybinding: monaco.KeyCode.F1,
+                    command: "editor.action.quickCommand",
+                });
+
+                return;
+            }
+
+            if (commandPaletteKeybinding === undefined) {
+                // If this is first time we are customizing the command palette keybinding,
+                // disable default show command palette
+                monaco.editor.addKeybindingRule({
+                    keybinding: monaco.KeyCode.F1,
+                    command: null,
+                });
+            } else {
+                // Disable previous rule
+                monaco.editor.addKeybindingRule({
+                    keybinding: commandPaletteKeybinding,
+                    command: null,
+                });
+            }
+
+            // Add a new rule for the new keybinding
+            const combo: number[] = [];
+            if (commandPaletteShortcutConfig.meta) combo.push(monaco.KeyMod.WinCtrl);
+            if (commandPaletteShortcutConfig.alt) combo.push(monaco.KeyMod.Alt);
+            if (commandPaletteShortcutConfig.ctrl) combo.push(monaco.KeyMod.CtrlCmd);
+            if (commandPaletteShortcutConfig.shift) combo.push(monaco.KeyMod.Shift);
+            if (commandPaletteShortcutConfig.key) combo.push(KeyCodeNum[commandPaletteShortcutConfig.key!.toString() as keyof typeof KeyCodeNum]);
+
+            commandPaletteKeybinding = combo.reduce((a, b) => a | b, 0);
+
+            monaco.editor.addKeybindingRule({
+                keybinding: commandPaletteKeybinding,
+                command: "editor.action.quickCommand",
+            });
+        };
+
+        this.eventBus.subscribeToServer(SettingsUpdatedEvent, event => addOrUpdateShortcuts(event.settings));
+
+        addOrUpdateShortcuts(this.settings);
     }
 
     private registerCompletionProviders() {

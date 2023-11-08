@@ -1,10 +1,10 @@
 import Split from "split.js";
-import {IShortcutManager, Pane} from "@application";
+import {IShortcutManager, Pane, ShortcutIds} from "@application";
 
 export class Explorer extends Pane {
     constructor(@IShortcutManager private readonly shortcutManager: IShortcutManager) {
         super("Explorer", "explorer-icon");
-        this.hasShortcut(shortcutManager.getShortcutByName("Explorer"));
+        this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openExplorer));
     }
 
     public async attached() {

@@ -36,7 +36,7 @@
                 ${item.text}
             </div>
             <div class="menu-item-help-text" if.bind="!hasSubmenu && (item.shortcut || item.helpText)">
-                ${item.helpText ? item.helpText : item.shortcut.keyComboString}
+                ${item.helpText ? item.helpText : item.shortcut.keyCombo.asString}
             </div>
             <div class="menu-item-submenu-indicator" if.bind="hasSubmenu">
                 <i class="caret-right-icon"></i>

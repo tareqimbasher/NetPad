@@ -47,6 +47,14 @@ kbd {
     cursor: pointer;
 }
 
+.text-clickable {
+    @extend %clickable;
+
+    &:hover {
+        @include theme(color, textHoverColor);
+    }
+}
+
 .btn.btn-basic {
     background: transparent;
 }

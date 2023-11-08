@@ -4062,6 +4062,7 @@ export class Settings implements ISettings {
     appearance!: AppearanceOptions;
     editor!: EditorOptions;
     results!: ResultsOptions;
+    keyboardShortcuts!: KeyboardShortcutOptions;
     omniSharp!: OmniSharpOptions;
 
     constructor(data?: ISettings) {
@@ -4075,6 +4076,7 @@ export class Settings implements ISettings {
             this.appearance = new AppearanceOptions();
             this.editor = new EditorOptions();
             this.results = new ResultsOptions();
+            this.keyboardShortcuts = new KeyboardShortcutOptions();
             this.omniSharp = new OmniSharpOptions();
         }
     }
@@ -4090,6 +4092,7 @@ export class Settings implements ISettings {
             this.appearance = _data["appearance"] ? AppearanceOptions.fromJS(_data["appearance"]) : new AppearanceOptions();
             this.editor = _data["editor"] ? EditorOptions.fromJS(_data["editor"]) : new EditorOptions();
             this.results = _data["results"] ? ResultsOptions.fromJS(_data["results"]) : new ResultsOptions();
+            this.keyboardShortcuts = _data["keyboardShortcuts"] ? KeyboardShortcutOptions.fromJS(_data["keyboardShortcuts"]) : new KeyboardShortcutOptions();
             this.omniSharp = _data["omniSharp"] ? OmniSharpOptions.fromJS(_data["omniSharp"]) : new OmniSharpOptions();
         }
     }
@@ -4112,6 +4115,7 @@ export class Settings implements ISettings {
         data["appearance"] = this.appearance ? this.appearance.toJSON() : <any>undefined;
         data["editor"] = this.editor ? this.editor.toJSON() : <any>undefined;
         data["results"] = this.results ? this.results.toJSON() : <any>undefined;
+        data["keyboardShortcuts"] = this.keyboardShortcuts ? this.keyboardShortcuts.toJSON() : <any>undefined;
         data["omniSharp"] = this.omniSharp ? this.omniSharp.toJSON() : <any>undefined;
         return data;
     }
@@ -4134,6 +4138,7 @@ export interface ISettings {
     appearance: AppearanceOptions;
     editor: EditorOptions;
     results: ResultsOptions;
+    keyboardShortcuts: KeyboardShortcutOptions;
     omniSharp: OmniSharpOptions;
 }
 
@@ -4369,6 +4374,125 @@ export interface IResultsOptions {
     maxSerializationDepth: number;
     maxCollectionSerializeLength: number;
 }
+
+export class KeyboardShortcutOptions implements IKeyboardShortcutOptions {
+    shortcuts!: KeyboardShortcutConfiguration[];
+
+    constructor(data?: IKeyboardShortcutOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.shortcuts = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["shortcuts"])) {
+                this.shortcuts = [] as any;
+                for (let item of _data["shortcuts"])
+                    this.shortcuts!.push(KeyboardShortcutConfiguration.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): KeyboardShortcutOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new KeyboardShortcutOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.shortcuts)) {
+            data["shortcuts"] = [];
+            for (let item of this.shortcuts)
+                data["shortcuts"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): KeyboardShortcutOptions {
+        const json = this.toJSON();
+        let result = new KeyboardShortcutOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IKeyboardShortcutOptions {
+    shortcuts: KeyboardShortcutConfiguration[];
+}
+
+export class KeyboardShortcutConfiguration implements IKeyboardShortcutConfiguration {
+    id!: string;
+    meta!: boolean;
+    alt!: boolean;
+    ctrl!: boolean;
+    shift!: boolean;
+    key?: KeyCode | undefined;
+
+    constructor(data?: IKeyboardShortcutConfiguration) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.meta = _data["meta"];
+            this.alt = _data["alt"];
+            this.ctrl = _data["ctrl"];
+            this.shift = _data["shift"];
+            this.key = _data["key"];
+        }
+    }
+
+    static fromJS(data: any): KeyboardShortcutConfiguration {
+        data = typeof data === 'object' ? data : {};
+        let result = new KeyboardShortcutConfiguration();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["meta"] = this.meta;
+        data["alt"] = this.alt;
+        data["ctrl"] = this.ctrl;
+        data["shift"] = this.shift;
+        data["key"] = this.key;
+        return data;
+    }
+
+    clone(): KeyboardShortcutConfiguration {
+        const json = this.toJSON();
+        let result = new KeyboardShortcutConfiguration();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IKeyboardShortcutConfiguration {
+    id: string;
+    meta: boolean;
+    alt: boolean;
+    ctrl: boolean;
+    shift: boolean;
+    key?: KeyCode | undefined;
+}
+
+export type KeyCode = "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
 
 export class OmniSharpOptions implements IOmniSharpOptions {
     enabled!: boolean;

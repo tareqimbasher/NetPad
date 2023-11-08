@@ -1,8 +1,8 @@
 import {DI} from "aurelia";
 import {IMenuItem} from "./imenu-item";
 import {System} from "@common";
-import {ISettingService, IWindowService} from "@domain";
-import {IShortcutManager} from "@application";
+import {ISettingsService, IWindowService} from "@domain";
+import {IShortcutManager, ShortcutIds} from "@application";
 import {ITextEditorService} from "@application/editor/text-editor-service";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -25,7 +25,7 @@ export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
 
     constructor(
-        @ISettingService private readonly settingsService: ISettingService,
+        @ISettingsService private readonly settingsService: ISettingsService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @ITextEditorService private readonly textEditorService: ITextEditorService,
         @IWindowService private readonly windowService: IWindowService,
@@ -39,12 +39,12 @@ export class MainMenuService implements IMainMenuService {
                         id: "file.new",
                         text: "New",
                         icon: "add-script-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("New"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.newDocument),
                     },
                     {
                         id: "file.goToScript",
                         text: "Go to Script",
-                        shortcut: this.shortcutManager.getShortcutByName("Go to Script"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.quickOpenDocument),
                     },
                     {
                         isDivider: true
@@ -53,25 +53,25 @@ export class MainMenuService implements IMainMenuService {
                         id: "file.save",
                         text: "Save",
                         icon: "save-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Save"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                     },
                     {
                         id: "file.saveAll",
                         text: "Save All",
                         icon: "save-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Save All"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveAllDocuments),
                     },
                     {
                         id: "file.properties",
                         text: "Properties",
                         icon: "properties-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Script Properties"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
                     },
                     {
                         id: "file.close",
                         text: "Close",
                         icon: "close-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Close"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.closeDocument),
                     },
                     {
                         isDivider: true
@@ -80,7 +80,7 @@ export class MainMenuService implements IMainMenuService {
                         id: "file.settings",
                         text: "Settings",
                         icon: "settings-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Settings"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
                     },
                     {
                         id: "file.exit",
@@ -219,26 +219,26 @@ export class MainMenuService implements IMainMenuService {
                         id: "view.output",
                         text: "Output",
                         icon: "output-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Output"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openOutput),
                     },
                     {
                         id: "view.explorer",
                         text: "Explorer",
                         icon: "explorer-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Explorer"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
                     },
                     {
                         id: "view.namespaces",
                         text: "Namespaces",
                         icon: "namespaces-icon",
-                        shortcut: this.shortcutManager.getShortcutByName("Namespaces"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openNamespaces),
                     },
                     {
                         isDivider: true
                     },
                     {
                         text: "Reload",
-                        shortcut: this.shortcutManager.getShortcutByName("Reload"),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.reloadWindow),
                     },
                     {
                         text: "Toggle Developer Tools",
@@ -328,7 +328,7 @@ export class MainMenuService implements IMainMenuService {
         if (menuItem.click) {
             await menuItem.click();
         } else if (menuItem.shortcut) {
-            this.shortcutManager.executeShortcut(menuItem.shortcut);
+            await this.shortcutManager.executeShortcut(menuItem.shortcut);
         }
     }
 

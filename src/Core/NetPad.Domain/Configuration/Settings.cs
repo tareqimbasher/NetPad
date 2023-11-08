@@ -27,6 +27,7 @@ public class Settings : ISettingsOptions
     [JsonInclude] public AppearanceOptions Appearance { get; private set; }
     [JsonInclude] public EditorOptions Editor { get; private set; }
     [JsonInclude] public ResultsOptions Results { get; private set; }
+    [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; }
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; }
 
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
@@ -98,6 +99,17 @@ public class Settings : ISettingsOptions
         return this;
     }
 
+    public Settings SetKeyboardShortcutOptions(KeyboardShortcutOptions options)
+    {
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        KeyboardShortcuts
+            .SetShortcuts(options.Shortcuts);
+
+        return this;
+    }
+
     public Settings SetOmniSharpOptions(OmniSharpOptions options)
     {
         if (options == null)
@@ -135,10 +147,11 @@ public class Settings : ISettingsOptions
         if (string.IsNullOrWhiteSpace(PackageCacheDirectoryPath))
             PackageCacheDirectoryPath = AppDataProvider.Defaults.PackageCacheDirectoryPath.Path;
 
-        (Appearance ??= new AppearanceOptions()).DefaultMissingValues();
-        (Editor ??= new EditorOptions()).DefaultMissingValues();
-        (Results ??= new ResultsOptions()).DefaultMissingValues();
-        (OmniSharp ??= new OmniSharpOptions()).DefaultMissingValues();
+        (Appearance ??= new()).DefaultMissingValues();
+        (Editor ??= new()).DefaultMissingValues();
+        (Results ??= new()).DefaultMissingValues();
+        (KeyboardShortcuts ??= new()).DefaultMissingValues();
+        (OmniSharp ??= new()).DefaultMissingValues();
 
         // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
     }

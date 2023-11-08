@@ -1,13 +1,13 @@
 import {DI, IHttpClient} from "aurelia";
 import {ISettingsApiClient, Settings, SettingsApiClient} from "@domain";
 
-export interface ISettingService extends ISettingsApiClient {
+export interface ISettingsService extends ISettingsApiClient {
     toggleTheme(): Promise<void>;
 }
 
-export const ISettingService = DI.createInterface<ISettingService>();
+export const ISettingsService = DI.createInterface<ISettingsService>();
 
-export class SettingService extends SettingsApiClient implements ISettingService {
+export class SettingsService extends SettingsApiClient implements ISettingsService {
     constructor(readonly settings: Settings,
                 baseUrl: string,
                 @IHttpClient http: IHttpClient) {
