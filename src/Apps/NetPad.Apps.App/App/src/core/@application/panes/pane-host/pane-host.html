@@ -5,7 +5,7 @@
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="toggle(pane)"
-             title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyComboString + ')') : ''}">
+             title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
             <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
             <span>${pane.name}</span>
         </div>

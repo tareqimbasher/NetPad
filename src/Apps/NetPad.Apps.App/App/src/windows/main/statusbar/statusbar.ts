@@ -3,7 +3,7 @@ import {
     AppStatusMessagePublishedEvent,
     IEventBus,
     ISession,
-    ISettingService,
+    ISettingsService,
     ScriptEnvironment,
     Settings,
 } from "@domain";
@@ -23,7 +23,7 @@ export class Statusbar {
     constructor(private readonly workbench: Workbench,
                 private readonly settings: Settings,
                 @ISession private readonly session: ISession,
-                @ISettingService private readonly settingsService: ISettingService,
+                @ISettingsService private readonly settingsService: ISettingsService,
                 @IShortcutManager private readonly shortcutManager: IShortcutManager,
                 private readonly dialogUtil: DialogUtil,
                 @IEventBus private readonly eventBus: IEventBus) {

@@ -1,27 +1,85 @@
-<div class="section flex-grow-height-restricted d-flex flex-column">
-    <div class="header">
-        <i class="keyboard-icon"></i>
-        Shortcuts
-    </div>
-    <div class="body flex-grow-height-restricted d-flex flex-column">
-        <div class="list-group flex-grow-height-restricted d-flex flex-column overflow-y-auto overflow-x-hidden">
-            <div class="list-group-item list-group-item-action"
-                 repeat.for="shortcut of builtinShortcuts">
-                <div class="row justify-content-between align-items-center">
-                    <div class="col-4">
-                        ${shortcut.name}
+<template>
+    <div class="section flex-grow-height-restricted d-flex flex-column">
+        <div class="header">
+            <i class="keyboard-icon"></i>
+            Shortcuts
+        </div>
+        <div class="body flex-grow-height-restricted d-flex flex-column">
+            <div class="list-group flex-grow-height-restricted d-flex flex-column overflow-y-auto overflow-x-hidden">
+                <div class="list-group-item p-3">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <div class="text-clickable d-inline" click.trigger="order('description')">
+                                <b>Description</b>
+                                <i show.bind="orderBy === 'description'"
+                                   class="${orderDir === 'asc' ? 'up-icon' : 'down-icon'} ms-3"></i>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-clickable d-inline" click.trigger="order('keys')">
+                                    <i class="reset-keyboard-shortcut-icon me-3 invisible"></i>
+                                    <i class="edit-keyboard-shortcut-icon me-3 invisible"></i>
+                                <b class="ms-3">Shortcut</b>
+                                <i show.bind="orderBy === 'keys'"
+                                   class="${orderDir === 'asc' ? 'up-icon' : 'down-icon'} ms-3"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-3 d-flex align-items-center">
-                        <!--                        <i class="edit-keyboard-shortcut-icon action-icon me-3"></i>-->
-                        <kbd class="d-inline-block">${shortcut.keyComboString}</kbd>
+                </div>
+                <div class="list-group-item list-group-item-action"
+                     repeat.for="shortcut of orderedShortcuts">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-8">
+                            ${shortcut.name}
+                        </div>
+                        <div class="col-4 d-flex align-items-center">
+                            <div if.bind="shortcut.isConfigurable">
+                                <i class="reset-keyboard-shortcut-icon action-icon me-3 ${!shortcut.isDefaultKeyCombo ? '' : 'invisible'}"
+                                   title="Undo"
+                                   click.trigger="reset(shortcut)"></i>
+                                <i class="edit-keyboard-shortcut-icon action-icon me-3"
+                                   title="Edit"
+                                   click.trigger="editKeyCombo(shortcut)"></i>
+                            </div>
+                            <div else>
+                                <i class="reset-keyboard-shortcut-icon action-icon me-3 invisible"></i>
+                                <i class="edit-keyboard-shortcut-icon action-icon me-3 invisible"></i>
+                            </div>
+                            <kbd class="d-inline-block ms-3">${shortcut.keyCombo.asString}</kbd>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!--        <input type="text"-->
-        <!--               class="form-control"-->
-        <!--               value.bind="keyCombo"-->
-        <!--               keydown.trigger="keyComboPressed($event)">-->
+        <div id="keyboard-shortcut-capture" ref="keyComboCaptureContainer" tabindex="-1" show.bind="isEditMode">
+            <div class="text-center">
+                <h1><i class="keyboard-icon"></i></h1>
+                <h4 class="mb-5">
+                    Press new key combination
+                </h4>
+                <div>
+                    <h4>Current</h4>
+                    <kbd>${shortcutInEdit.keyCombo}</kbd>
+                </div>
+                <div class="mt-5">
+                    <h4>New</h4>
+                    <kbd class="${isKeyComboValid ? 'text-bg-success' : 'text-bg-danger'} ${!pressedKeyCombo ? 'invisible' : ''}">
+                        ${pressedKeyCombo}
+                    </kbd>
+                </div>
+                <div show.bind="pressedKeyComboMatchingShortcut" class="mt-3">
+                    Already assigned to: <b>${pressedKeyComboMatchingShortcut.name}</b>
+                </div>
+            </div>
+            <div class="mt-5">
+                <button class="btn btn-sm btn-secondary" click.trigger="closeKeyComboCapture()">Cancel</button>
+                <button class="btn btn-sm btn-primary"
+                        click.trigger="confirmKeyCombo()"
+                        disabled.bind="!isKeyComboValid">
+                    Confirm
+                </button>
+            </div>
+        </div>
     </div>
-</div>
+</template>

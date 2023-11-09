@@ -31,8 +31,10 @@ export * from "./panes/ipane-host-view-state-controller";
 export * from "./panes/pane-action"
 export * from "./panes/pane";
 
+export * from "./shortcuts/key-combo";
 export * from "./shortcuts/shortcut";
 export * from "./shortcuts/shortcut-action-execution-context";
+export * from "./shortcuts/ishortcut-manager";
 export * from "./shortcuts/shortcut-manager";
 export * from "./shortcuts/builtin-shortcuts";
 

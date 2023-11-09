@@ -1,11 +1,10 @@
+import {IContainer} from "aurelia";
 import {IBackgroundService, WithDisposables} from "@common";
-import {ChannelInfo, Settings} from "@domain";
+import {ChannelInfo} from "@domain";
+import {IShortcutManager, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
-import {IShortcutManager} from "@application";
 import {IMainMenuService} from "../../../../../windows/main/titlebar/main-menu/main-menu-service";
 import {IMenuItem} from "../../../../../windows/main/titlebar/main-menu/imenu-item";
-import {Shortcut} from "@application";
-import {IContainer} from "aurelia";
 
 /**
  * Handles top-level IPC events sent by Electron's main process.
@@ -71,7 +70,7 @@ export class ElectronEventHandlerBackgroundService extends WithDisposables imple
         return  {
             name: shortcut.name,
             isEnabled: shortcut.isEnabled,
-            keyCombo: shortcut.keyComboString.split('+').map(x => x.trim())
+            keyCombo: shortcut.keyCombo.asArray
         };
     }
 }

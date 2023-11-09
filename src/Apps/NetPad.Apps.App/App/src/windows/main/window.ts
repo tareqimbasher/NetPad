@@ -1,16 +1,9 @@
 import {IContainer} from "aurelia";
+import {watch} from "@aurelia/runtime-html";
 import {CreateScriptDto, DataConnectionStore, IScriptService, ISession} from "@domain";
-import {
-    BuiltinShortcuts,
-    EditorSetup,
-    IPaneManager,
-    IShortcutManager,
-    PaneHost,
-    PaneHostOrientation,
-} from "@application";
+import {EditorSetup, IPaneManager, IShortcutManager, PaneHost, PaneHostOrientation,} from "@application";
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 import {Workbench} from "./workbench";
-import {watch} from "@aurelia/runtime-html";
 import {WindowBase} from "@application/windows/window-base";
 
 export class Window extends WindowBase {
@@ -32,7 +25,6 @@ export class Window extends WindowBase {
 
     public hydrating() {
         this.shortcutManager.initialize();
-        this.registerKeyboardShortcuts();
     }
 
     public async binding() {
@@ -81,12 +73,6 @@ export class Window extends WindowBase {
 
         // Always start output pane hidden when app starts
         setTimeout(() => outputPane.hide(), 1);
-    }
-
-    private registerKeyboardShortcuts() {
-        for (const shortcut of BuiltinShortcuts) {
-            this.shortcutManager.registerShortcut(shortcut);
-        }
     }
 
     @watch<Window>(vm => vm.session.environments.length)

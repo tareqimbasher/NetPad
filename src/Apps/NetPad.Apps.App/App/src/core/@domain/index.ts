@@ -6,7 +6,7 @@ export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";
 export * from "./events/channel-info";
 
-export * from "./configuration/setting-service";
+export * from "./configuration/settings-service";
 export * from "./app/app-service";
 export * from "./window/window-service";
 export * from "./window/window-state";

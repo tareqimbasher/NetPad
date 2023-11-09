@@ -1,4 +1,4 @@
-import {ISettingService, Settings} from "@domain";
+import {ISettingsService, Settings} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
 
 export class Window extends WindowBase {
@@ -15,14 +15,14 @@ export class Window extends WindowBase {
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        @ISettingService readonly settingService: ISettingService) {
+        @ISettingsService readonly settingsService: ISettingsService) {
         super();
 
         document.title = "Settings";
 
         let tabIndex = this.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
         if (tabIndex < 0)
-            tabIndex = 0;
+            tabIndex = 3;
 
         this.selectedTab = this.tabs[tabIndex];
         this.editableSettings = this.settings.clone();
@@ -33,12 +33,16 @@ export class Window extends WindowBase {
             return;
         }
 
-        await this.settingService.update(this.editableSettings);
+        await this.settingsService.update(this.editableSettings);
         window.close();
     }
 
     public cancel() {
         window.close();
+    }
+
+    public async showSettingsFile() {
+        await this.settingsService.showSettingsFile();
     }
 
     private validate(): boolean {

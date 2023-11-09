@@ -452,6 +452,11 @@ button > .icon-base {
     @extend .fa-pencil;
 }
 
+.reset-keyboard-shortcut-icon {
+    @extend %icon-base;
+    @extend .fa-rotate-left;
+}
+
 .editor-background-settings-icon {
     @extend %icon-base;
     @extend .fa-align-left;

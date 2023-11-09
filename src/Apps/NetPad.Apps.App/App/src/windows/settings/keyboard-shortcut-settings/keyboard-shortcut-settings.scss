@@ -1,0 +1,18 @@
+@import "~styles/themes";
+
+#keyboard-shortcut-capture {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    @include theme(background-color, backgroundLighterColor);
+    z-index: 1;
+}
