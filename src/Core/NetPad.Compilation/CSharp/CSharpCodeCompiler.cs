@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using NetPad.DotNet;
 using NetPad.IO;
@@ -32,7 +33,7 @@ public class CSharpCodeCompiler : ICodeCompiler
         var compilation = CreateCompilation(input, assemblyName);
 
         using var stream = new MemoryStream();
-        var result = compilation.Emit(stream);
+        var result = compilation.Emit(stream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
 
         stream.Seek(0, SeekOrigin.Begin);
         return new CompilationResult(result.Success, new AssemblyName(assemblyName), assemblyName + ".dll", stream.ToArray(), result.Diagnostics);

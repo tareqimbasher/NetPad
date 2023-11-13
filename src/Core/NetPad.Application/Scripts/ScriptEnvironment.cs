@@ -17,9 +17,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private IServiceScope _serviceScope;
     private IInputReader<string> _inputReader;
-    private IScriptOutputAdapter<ScriptOutput, ScriptOutput> _outputAdapter;
+    private IOutputWriter<object> _outputAdapter;
     private ScriptStatus _status;
-    private IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>? _runtime;
+    private IScriptRuntime? _runtime;
     private bool _isDisposed;
 
     public ScriptEnvironment(Script script, IServiceScope serviceScope)
@@ -30,7 +30,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         _dataConnectionResourcesCache = _serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>();
         _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
         _inputReader = ActionInputReader<string>.Null;
-        _outputAdapter = IScriptOutputAdapter<ScriptOutput, ScriptOutput>.Null;
+        _outputAdapter = ActionOutputWriter<object>.Null;
         _status = ScriptStatus.Ready;
 
         Initialize();
@@ -48,8 +48,10 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         _logger.LogTrace($"{nameof(RunAsync)} start");
 
-        if (Status == ScriptStatus.Running)
-            throw new InvalidOperationException("Script is already running.");
+        if (_status.NotIn(ScriptStatus.Ready, ScriptStatus.Error))
+        {
+            throw new InvalidOperationException($"Script is not in the correct state to run. Status is currently: {_status}");
+        }
 
         await SetStatusAsync(ScriptStatus.Running);
 
@@ -70,19 +72,15 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             var runResult = await runtime.RunScriptAsync(runOptions);
 
             await SetRunDurationAsync(runResult.DurationMs);
-            await SetStatusAsync(runResult.IsScriptCompletedSuccessfully ? ScriptStatus.Ready : ScriptStatus.Error);
 
-            _logger.LogDebug("Run completed with status: {Status}",
-                runResult.IsScriptCompletedSuccessfully
-                    ? "Success"
-                    : runResult.IsRunAttemptSuccessful
-                        ? "Failure in script code"
-                        : "Could not run");
+            await SetStatusAsync(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled ? ScriptStatus.Ready : ScriptStatus.Error);
+
+            _logger.LogDebug("Run finished with status: {Status}", _status);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
+            await _outputAdapter.WriteAsync(new ErrorScriptOutput(ex));
             await SetStatusAsync(ScriptStatus.Error);
         }
         finally
@@ -162,6 +160,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             return;
         }
 
+        var stopTime = DateTime.Now;
         await SetStatusAsync(ScriptStatus.Stopping);
 
         try
@@ -172,13 +171,13 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 await _runtime.StopScriptAsync();
             }
 
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput($"\n# Script stopped on: {DateTime.Now}"));
+            await _outputAdapter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
             await SetStatusAsync(ScriptStatus.Ready);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error stopping script");
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex));
+            await _outputAdapter.WriteAsync(new ErrorScriptOutput(ex));
             await SetStatusAsync(ScriptStatus.Error);
         }
         finally
@@ -187,14 +186,14 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
-    public void SetIO(IInputReader<string> inputReader, IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void SetIO(IInputReader<string> inputReader, IOutputWriter<object> outputAdapter)
     {
         EnsureNotDisposed();
 
         RemoveScriptRuntimeIOHandlers();
 
         _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-        _outputAdapter = outputAdapter ?? throw new ArgumentNullException(nameof(outputAdapter));
+        _outputAdapter = outputAdapter;
 
         AddScriptRuntimeIOHandlers();
     }
@@ -224,8 +223,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         var oldValue = RunDurationMilliseconds;
         RunDurationMilliseconds = runDurationMs;
-        await _eventBus.PublishAsync(
-            new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), oldValue, runDurationMs));
+        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), oldValue, runDurationMs));
     }
 
     private async Task<IScriptRuntime> GetRuntimeAsync()
@@ -295,6 +293,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             Script.RemoveAllPropertyChangedHandlers();
             Script.Config.RemoveAllPropertyChangedHandlers();
+
+            _inputReader = ActionInputReader<string>.Null;
+            _outputAdapter = ActionOutputWriter<object>.Null;
 
             _runtime?.Dispose();
             _runtime = null;

@@ -1,6 +1,5 @@
 using NetPad.Compilation;
 using NetPad.DotNet;
-using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Runtimes;
@@ -13,7 +12,8 @@ public class InMemoryRuntimeCSharpCodeParser : ICodeParser
     private static readonly string[] _usingsNeededByBaseProgram =
     {
         "System",
-        "NetPad.IO"
+        "NetPad.IO",
+        "NetPad.Runtimes"
     };
 
     public CodeParsingResult Parse(
@@ -94,26 +94,26 @@ catch (System.Exception ex)
     {
         return $@"class {{0}}
 {{{{
-    internal static IScriptOutputAdapter<ScriptOutput, ScriptOutput> Output {{{{ get; set; }}}}
+    internal static IOutputWriter<object> Output {{{{ get; set; }}}}
 
-    private static void {{1}}(IScriptOutputAdapter<ScriptOutput, ScriptOutput> output)
+    private static void {{1}}(IOutputWriter<object> output)
     {{{{
         Output = output;
     }}}}
 
     internal static void OutputWrite(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutputAdapter<ScriptOutput, ScriptOutput>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
+        Output.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 
     internal static void OutputWriteLine(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutputAdapter<ScriptOutput, ScriptOutput>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
+        Output.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 
-    internal static void SqlWrite<T>(T? o, string? title = null)
+    internal static void SqlWrite(object? o, string? title = null)
     {{{{
-        {{0}}.Output.{nameof(IScriptOutputAdapter<ScriptOutput, ScriptOutput>.SqlChannel)}?.WriteAsync(new RawScriptOutput(o), title);
+        {{0}}.Output.WriteAsync(new SqlScriptOutput(o?.ToString()), title);
     }}}}
 }}}}
 

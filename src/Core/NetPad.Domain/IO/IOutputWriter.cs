@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetPad.IO;
@@ -12,5 +13,6 @@ public interface IOutputWriter<in TOutput>
     /// </summary>
     /// <param name="output">The output to write.</param>
     /// <param name="title">A title to associate with the output.</param>
-    Task WriteAsync(TOutput? output, string? title = null);
+    /// <param name="cancellationToken">A cancellation token to cancel writing of output.</param>
+    Task WriteAsync(TOutput? output, string? title = null, CancellationToken cancellationToken = default);
 }

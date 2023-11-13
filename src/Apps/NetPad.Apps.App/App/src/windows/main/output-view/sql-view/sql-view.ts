@@ -1,4 +1,4 @@
-import {HtmlScriptOutput, IEventBus, ScriptSqlOutputEmittedEvent, ScriptStatus} from "@domain";
+import {HtmlSqlScriptOutput, IEventBus, ScriptOutputEmittedEvent, ScriptStatus} from "@domain";
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {OutputViewBase} from "../output-view-base";
@@ -60,20 +60,24 @@ export class SqlView extends OutputViewBase {
     }
 
     public attached() {
-        const token = this.eventBus.subscribeToServer(ScriptSqlOutputEmittedEvent, msg => {
-            if (msg.scriptId === this.environment.script.id) {
-                if (!msg.output) return;
+        this.addDisposable(
+            this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
+                if (msg.scriptId !== this.environment.script.id || !msg.output)
+                    return;
 
-                const output = JSON.parse(msg.output) as HtmlScriptOutput;
+                if (msg.outputType !== nameof(HtmlSqlScriptOutput)) {
+                    return;
+                }
+
+                const output = msg.output as HtmlSqlScriptOutput;
 
                 if (output.body && this.colorize) {
                     output.body = Colorizer.colorize(output.body);
                 }
 
                 this.appendOutput(output);
-            }
-        });
-        this.addDisposable(token);
+            })
+        );
     }
 
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {

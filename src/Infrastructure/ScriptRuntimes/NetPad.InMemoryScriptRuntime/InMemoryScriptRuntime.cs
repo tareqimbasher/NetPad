@@ -19,19 +19,16 @@ namespace NetPad.Runtimes;
 ///
 /// NOTE: If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised.
 /// </summary>
-public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
+public sealed class InMemoryScriptRuntime : IScriptRuntime
 {
-    internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel, IOutputWriter<ScriptOutput> SqlChannel)
-        : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
-
     private readonly Script _script;
     private readonly ICodeParser _codeParser;
     private readonly ICodeCompiler _codeCompiler;
     private readonly IPackageProvider _packageProvider;
     private readonly ILogger<InMemoryScriptRuntime> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputAdapters;
-    private readonly MainScriptOutputAdapter _outputAdapter;
-    private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
+    private readonly IOutputWriter<object> _output;
+    private readonly HashSet<IOutputWriter<object>> _externalOutputAdapters;
     private IServiceScope? _serviceScope;
 
     public InMemoryScriptRuntime(
@@ -49,41 +46,28 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         _packageProvider = packageProvider;
         _logger = logger;
         _externalInputAdapters = new HashSet<IInputReader<string>>();
-        _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
+        _externalOutputAdapters = new HashSet<IOutputWriter<object>>();
 
-        void ForwardToExternalAdapters<TScriptOutput>(
-            Func<IScriptOutputAdapter<ScriptOutput, ScriptOutput>, IOutputWriter<TScriptOutput>?> channelGetter,
-            TScriptOutput? output,
-            string? title)
+        // Forward output to any configured external output adapters
+        _output = new AsyncActionOutputWriter<object>(async (output, title) =>
         {
             if (output == null)
             {
                 return;
             }
 
-            foreach (var adapter in _externalOutputAdapters)
+            foreach (var externalAdapter in _externalOutputAdapters)
             {
                 try
                 {
-                    channelGetter(adapter)?.WriteAsync(output, title);
+                    await externalAdapter.WriteAsync(output, title);
                 }
                 catch
                 {
                     // ignored
                 }
             }
-        }
-
-        _outputAdapter = new MainScriptOutputAdapter(
-            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
-                o => o.ResultsChannel,
-                obj,
-                title)),
-            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
-                o => o.SqlChannel,
-                obj,
-                title))
-        );
+        });
     }
 
     public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
@@ -116,7 +100,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(ex + "\n"));
+            await _output.WriteAsync(new RawScriptOutput(ex + "\n"));
             return RunResult.RunAttemptFailure();
         }
     }
@@ -136,12 +120,12 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         _externalInputAdapters.Remove(inputReader);
     }
 
-    public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void AddOutput(IOutputWriter<object> outputAdapter)
     {
         _externalOutputAdapters.Add(outputAdapter);
     }
 
-    public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void RemoveOutput(IOutputWriter<object> outputAdapter)
     {
         _externalOutputAdapters.Remove(outputAdapter);
     }
@@ -190,7 +174,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
 
         if (!compilationResult.Success)
         {
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(
+            await _output.WriteAsync(new ErrorScriptOutput(
                 compilationResult.Diagnostics
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
                     .JoinToString("\n") + "\n"));
@@ -243,7 +227,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
                 $"Could not find the entry method {setIOMethodName} on bootstrapper type: {bootstrapperClassName}");
         }
 
-        setIOMethod.Invoke(null, new object?[] { _outputAdapter });
+        setIOMethod.Invoke(null, new object?[] { _output });
 
         MethodInfo? entryPoint = assembly.EntryPoint;
         if (entryPoint == null)
@@ -259,7 +243,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime<IScriptOutputAdapter<
         }
         catch (Exception ex)
         {
-            await _outputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput((ex.InnerException ?? ex).ToString()));
+            await _output.WriteAsync(new ErrorScriptOutput((ex.InnerException ?? ex).ToString()));
             return (alcWeakRef, false, GetElapsedMilliseconds(runStart));
         }
 

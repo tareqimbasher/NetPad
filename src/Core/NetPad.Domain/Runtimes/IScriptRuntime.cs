@@ -11,16 +11,9 @@ public interface IScriptRuntime : IDisposable
 {
     Task<RunResult> RunScriptAsync(RunOptions runOptions);
     Task StopScriptAsync();
-}
 
-/// <summary>
-/// Handles all operations related to running a <see cref="Scripts.Script"/>. This runtime
-/// also specifies what type of <see cref="IScriptOutputAdapter"/> the runtime uses.
-/// </summary>
-public interface IScriptRuntime<in TScriptOutputAdapter> : IScriptRuntime where TScriptOutputAdapter : IScriptOutputAdapter
-{
     void AddInput(IInputReader<string> outputAdapter);
     void RemoveInput(IInputReader<string> outputAdapter);
-    void AddOutput(TScriptOutputAdapter outputAdapter);
-    void RemoveOutput(TScriptOutputAdapter outputAdapter);
+    void AddOutput(IOutputWriter<object> outputAdapter);
+    void RemoveOutput(IOutputWriter<object> outputAdapter);
 }

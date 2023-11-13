@@ -19,7 +19,7 @@ internal class RawOutputHandler
     private readonly Action PushResultOutput;
     private readonly Action PushErrorOutput;
 
-    public RawOutputHandler(IScriptOutputAdapter scriptOutputAdapter)
+    public RawOutputHandler(IOutputWriter<object> scriptOutputAdapter)
     {
         _rawResultOutput = new();
         _rawErrorOutput = new();
@@ -35,7 +35,7 @@ internal class RawOutputHandler
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputAdapter.ResultsChannel.WriteAsync(new RawScriptOutput(
+            await scriptOutputAdapter.WriteAsync(new RawScriptOutput(
                 Interlocked.Increment(ref _rawResultOutputPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
@@ -51,7 +51,7 @@ internal class RawOutputHandler
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(
+            await scriptOutputAdapter.WriteAsync(new ErrorScriptOutput(
                 Interlocked.Increment(ref _rawErrorOutputPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
