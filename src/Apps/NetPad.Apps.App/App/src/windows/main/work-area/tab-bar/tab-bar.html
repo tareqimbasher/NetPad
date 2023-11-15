@@ -12,6 +12,9 @@
                      alt=""
                      style="max-height: 1rem" class="me-3"/>
                 ${viewable.name}
+                <small class="database-icon ms-3 ${viewable.environment.script.dataConnection.containsProductionData ? 'is-production' : ''}"
+                       show.bind="viewable.environment.script.dataConnection"
+                       title="${viewable.environment.script.dataConnection.name} ${viewable.environment.script.dataConnection.containsProductionData ? '(Production)' : ''}"></small>
             </div>
 
             <div class="script-status"
