@@ -110,6 +110,9 @@ public sealed class HtmlSerializer
 
         propertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanRead)
+            // Exclude properties that exist in base types and are hidden by properties in derived types
+            .GroupBy(p => p.Name)
+            .Select(g => g.OrderBy(p => p.DeclaringType == type).First())
             .ToArray();
 
         _typePropertyCache.TryAdd(type, propertyInfos);
