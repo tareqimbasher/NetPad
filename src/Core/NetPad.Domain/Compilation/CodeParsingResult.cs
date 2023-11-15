@@ -21,7 +21,7 @@ public class CodeParsingResult
     public SourceCodeCollection? AdditionalCodeProgram { get; }
     public ParsedCodeInformation ParsedCodeInformation { get; }
 
-    public SourceCodeCollection CombineSourceCode()
+    public SourceCodeCollection GetFullProgram()
     {
         var combined = new SourceCodeCollection();
 
@@ -35,10 +35,5 @@ public class CodeParsingResult
         combined.Add(BootstrapperProgram);
 
         return combined;
-    }
-
-    public string GetFullProgram()
-    {
-        return CombineSourceCode().ToCodeString();
     }
 }

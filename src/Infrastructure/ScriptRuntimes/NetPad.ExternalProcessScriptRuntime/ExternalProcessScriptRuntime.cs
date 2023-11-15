@@ -118,6 +118,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
             var scriptAssemblyFilePath = await SetupExternalProcessFolderAsync(_externalProcessRootDirectory, runDependencies);
 
+            int userProgramStartLineNumber = runDependencies.ParsingResult.GetFullProgram().GetAllUsings().Count + 1;
+
             // Reset raw output order
             _rawOutputHandler.Reset();
 
@@ -192,6 +194,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
             _processHandler.IO.OnErrorReceivedHandlers.Add(output =>
             {
+                output = CorrectUncaughtExceptionStackTraceLineNumber(output, userProgramStartLineNumber);
+
                 _rawOutputHandler.RawErrorOutputReceived(output);
                 return Task.CompletedTask;
             });
@@ -343,11 +347,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
         referenceAssemblyPaths.Add(typeof(HtmlSerializer).Assembly.Location);
 
-
         //
         // Parse Code & Compile
         //
-        var compilationResult = ParseAndCompile(
+        var (parsingResult, compilationResult) = ParseAndCompile(
             runOptions.SpecificCodeToRun ?? _script.Code,
             referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
             referenceAssemblyPaths,
@@ -355,10 +358,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
         if (!compilationResult.Success)
         {
-            await _output.WriteAsync(new ErrorScriptOutput(compilationResult
+            int userProgramStartLineNumber = parsingResult.GetFullProgram().GetAllUsings().Count + 1;
+
+            var error = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .JoinToString("\n") + "\n"));
+                .Select(d => CorrectDiagnosticErrorLineNumber(d, userProgramStartLineNumber));
+
+            await _output.WriteAsync(new ErrorScriptOutput(error.JoinToString("\n") + "\n"));
 
             return null;
         }
@@ -371,6 +378,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         }
 
         return new RunDependencies(
+            parsingResult,
             compilationResult.AssemblyBytes,
             referenceAssemblyImages,
             referenceAssemblyPaths,
@@ -378,13 +386,13 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         );
     }
 
-    private CompilationResult ParseAndCompile(
+    private (CodeParsingResult parsingResult, CompilationResult compilationResult) ParseAndCompile(
         string code,
         HashSet<byte[]> referenceAssemblyImages,
         HashSet<string> referenceAssemblyPaths,
         SourceCodeCollection additionalCode)
     {
-        CompilationResult parseAndCompile(string targetCode)
+        (CodeParsingResult parsingResult, CompilationResult compilationResult) parseAndCompile(string targetCode)
         {
             var parsingResult = _codeParser.Parse(
                 targetCode,
@@ -397,12 +405,14 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 
             var fullProgram = parsingResult.GetFullProgram();
 
-            return _codeCompiler.Compile(new CompilationInput(
-                    fullProgram,
+            var compilationResult = _codeCompiler.Compile(new CompilationInput(
+                    fullProgram.ToCodeString(),
                     _script.Config.TargetFrameworkVersion,
                     referenceAssemblyImages,
                     referenceAssemblyPaths)
                 .WithOutputAssemblyNameTag(_script.Name));
+
+            return (parsingResult, compilationResult);
         }
 
         // We want to try code as-is, but also try additional permutations of it if it fails to compile
@@ -422,8 +432,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             }
         };
 
+        CodeParsingResult? firstParsingResult = null;
         CompilationResult? firstCompilationResult = null;
-        CompilationResult? compilationResult;
 
         for (var ixPerm = 0; ixPerm < permutations.Count; ixPerm++)
         {
@@ -431,20 +441,22 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
             var permutation = permutationFunc();
             if (!permutation.shouldAttempt) continue;
 
-            compilationResult = parseAndCompile(permutation.code);
+            var result = parseAndCompile(permutation.code);
 
-            if (ixPerm == 0) firstCompilationResult = compilationResult;
-
-            if (compilationResult.Success)
+            if (ixPerm == 0)
             {
-                return compilationResult;
+                firstParsingResult = result.parsingResult;
+                firstCompilationResult = result.compilationResult;
+            }
+
+            if (result.compilationResult.Success)
+            {
+                return result;
             }
         }
 
         // If we got here compilation failed
-        compilationResult = firstCompilationResult ?? throw new Exception($"Expected {nameof(firstCompilationResult)} to have a value");
-
-        return compilationResult;
+        return (firstParsingResult!, firstCompilationResult!);
     }
 
     private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
@@ -534,7 +546,49 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime
         _logger.LogTrace("Dispose end");
     }
 
+    /// <summary>
+    /// Corrects line numbers in stack trace messages of uncaught exceptions in external running process.
+    /// </summary>
+    private static string CorrectUncaughtExceptionStackTraceLineNumber(string output, int userProgramStartLineNumber)
+    {
+        if (!output.StartsWith("   at ") || !output.Contains(" :line "))
+        {
+            return output;
+        }
+
+        var lineNumberStr = output.Split(" :line ").LastOrDefault();
+        if (int.TryParse(lineNumberStr, out int lineNumber))
+        {
+            output = output[..^lineNumberStr.Length] + (lineNumber - userProgramStartLineNumber);
+        }
+
+        return output;
+    }
+
+    /// <summary>
+    /// Corrects line numbers in compilation errors.
+    /// </summary>
+    private static string CorrectDiagnosticErrorLineNumber(Diagnostic diagnostic, int userProgramStartLineNumber)
+    {
+        var err = diagnostic.ToString();
+
+        if (!err.StartsWith('('))
+        {
+            return err;
+        }
+
+        var errParts = err.Split(':');
+        var span = errParts.First().Trim(new[] { '(', ')' });
+        var spanParts = span.Split(',');
+        var lineNumberStr = spanParts[0];
+
+        return int.TryParse(lineNumberStr, out int lineNumber)
+            ? $"({lineNumber - userProgramStartLineNumber},{spanParts[1]}):{errParts.Skip(1).JoinToString(":")}"
+            : err;
+    }
+
     private record RunDependencies(
+        CodeParsingResult ParsingResult,
         byte[] ScriptAssemblyBytes,
         HashSet<AssemblyImage> AssemblyImageDependencies,
         HashSet<string> AssemblyPathDependencies,

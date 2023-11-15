@@ -161,6 +161,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
         var referenceAssemblyPaths = assets.Where(a => a.IsAssembly()).Select(a => a.Path).ToHashSet();
 
         var fullProgram = parsingResult.GetFullProgram()
+            .ToCodeString()
             .Replace("Console.WriteLine",
                 $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
             .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");
