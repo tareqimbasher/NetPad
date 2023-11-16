@@ -4,6 +4,8 @@ namespace NetPad.Compilation;
 
 public class CodeParsingResult
 {
+    private int? _userProgramStartLineNumber;
+
     public CodeParsingResult(
         SourceCode userProgram,
         SourceCode bootstrapperProgram,
@@ -20,6 +22,19 @@ public class CodeParsingResult
     public SourceCode BootstrapperProgram { get; }
     public SourceCodeCollection? AdditionalCodeProgram { get; }
     public ParsedCodeInformation ParsedCodeInformation { get; }
+
+    public int UserProgramStartLineNumber
+    {
+        get
+        {
+            if (_userProgramStartLineNumber == null)
+            {
+                _userProgramStartLineNumber = GetFullProgram().GetAllUsings().Count + 1;
+            }
+
+            return _userProgramStartLineNumber.Value;
+        }
+    }
 
     public SourceCodeCollection GetFullProgram()
     {
