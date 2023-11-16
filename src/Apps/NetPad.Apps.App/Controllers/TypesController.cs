@@ -3,8 +3,9 @@ using NetPad.CQs;
 using NetPad.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Dtos;
 using NetPad.Events;
-using NetPad.IO;
+using NetPad.Runtimes;
 using NetPad.Scripts;
+using NetPad.Services;
 using NetPad.UiInterop;
 
 namespace NetPad.Controllers;
@@ -25,15 +26,18 @@ public class TypesController : Controller
     {
         public YesNoCancel YesNoCancel { get; set; }
 
+        public IpcMessageBatch? IpcMessageBatch { get; set; }
         public ErrorResult? ErrorResult { get; set; }
         public Script? Script { get; set; }
-        public HtmlScriptOutput? HtmlScriptOutput { get; set; }
+        public HtmlResultsScriptOutput? HtmlResultsScriptOutput { get; set; }
+        public HtmlErrorScriptOutput? HtmlErrorScriptOutput { get; set; }
+        public HtmlRawScriptOutput? HtmlRawScriptOutput { get; set; }
+        public HtmlSqlScriptOutput? HtmlSqlScriptOutput { get; set; }
         public SettingsUpdatedEvent? SettingsUpdated { get; set; }
         public AppStatusMessagePublishedEvent? AppStatusMessagePublished { get; set; }
         public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }
         public ScriptConfigPropertyChangedEvent? ScriptConfigPropertyChanged { get; set; }
         public ScriptOutputEmittedEvent? ScriptOutputEmitted { get; set; }
-        public ScriptSqlOutputEmittedEvent? ScriptSqlOutputEmittedEvent { get; set; }
         public EnvironmentsAddedEvent? EnvironmentsAdded { get; set; }
         public EnvironmentsRemovedEvent? EnvironmentsRemoved { get; set; }
         public EnvironmentPropertyChangedEvent? EnvironmentPropertyChanged { get; set; }

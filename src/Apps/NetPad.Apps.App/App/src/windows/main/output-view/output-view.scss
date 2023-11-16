@@ -72,8 +72,29 @@ output-view {
             padding: 0.25rem;
             border-left: 2px transparent solid;
 
+            &.text:not(.error,.raw) {
+                padding-top: 0;
+            }
+
+            &.raw {
+                padding: 1rem 0.75rem;
+                background: rgb(128 128 128 / 10%);
+                border-left: #949494 2px dashed;
+
+                &:hover {
+                    background: rgb(128 128 128 / 20%);
+                }
+            }
+
             &.error {
+                padding: 1.25rem 0.75rem;
                 color: red;
+                background: rgba(250, 128, 114, 0.06);
+                border-left: red 2px solid;
+
+                &:hover {
+                    background: rgba(250, 128, 114, 0.10);
+                }
             }
 
             &.titled {

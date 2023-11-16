@@ -1,6 +1,4 @@
-using System;
-using System.IO;
-using NetPad.Common;
+using System.Text.Json;
 using NetPad.IO;
 using Xunit;
 
@@ -8,24 +6,14 @@ namespace NetPad.Runtimes.Tests.ExternalProcessScriptRuntime;
 
 public class ScriptRuntimeServicesTests
 {
-    public ScriptRuntimeServicesTests()
-    {
-        ScriptRuntimeServices.SetIO(null); // Reset IO
-    }
-
     [Fact]
     public void SetIO_Works()
     {
-        var testResultOutput = new HtmlScriptOutput("test result output");
-        var testSqlOutput = new HtmlScriptOutput("test sql output");
+        var testResultOutput = new HtmlResultsScriptOutput("test result output");
 
-        ScriptRuntimeServices.SetIO(new TestScriptOutputAdapter(
-            new ActionOutputWriter<object>((o, t) => Assert.Equal(testResultOutput, o)),
-            new ActionOutputWriter<object>((o, t) => Assert.Equal(testSqlOutput, o))
-        ));
+        ScriptRuntimeServices.SetIO(new ActionOutputWriter<object>((o, t) => Assert.Equal(testResultOutput, o)));
 
         ScriptRuntimeServices.ResultWrite(testResultOutput);
-        ScriptRuntimeServices.SqlWrite(testSqlOutput);
     }
 
     [Fact]
@@ -37,16 +25,14 @@ public class ScriptRuntimeServicesTests
             Age = 21
         };
 
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        ScriptRuntimeServices.Init();
+        string? output = null;
+        ScriptRuntimeServices.SetIO(new ActionOutputWriter<object>((o, t) => output = o as string));
         ScriptRuntimeServices.ResultWrite(o);
-        var str = writer.ToString();
-        var externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(str);
 
-        Assert.NotNull(externalProcessOutput);
-        Assert.Equal(ExternalProcessOutputChannel.Results, externalProcessOutput!.Channel);
-        Assert.NotNull(externalProcessOutput.Output?.Body);
+        Assert.NotNull(output);
+        var json = JsonDocument.Parse(output).RootElement;
+        Assert.Equal(nameof(HtmlResultsScriptOutput), json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString());
+        Assert.NotEmpty(json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant()).ToString());
     }
 
     [Fact]
@@ -58,19 +44,15 @@ public class ScriptRuntimeServicesTests
             Age = 21
         };
 
-        using var writer = new StringWriter();
-        Console.SetOut(writer);
-        ScriptRuntimeServices.Init();
+        string? output = null;
+        ScriptRuntimeServices.SetIO(new ActionOutputWriter<object>((o, t) => output = o as string));
         ScriptRuntimeServices.SqlWrite(o);
-        var externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(writer.ToString());
 
-        Assert.NotNull(externalProcessOutput);
-        Assert.Equal(ExternalProcessOutputChannel.Sql, externalProcessOutput!.Channel);
-        Assert.NotNull(externalProcessOutput.Output?.Body);
+        Assert.NotNull(output);
+        var json = JsonDocument.Parse(output).RootElement;
+        Assert.Equal(nameof(HtmlSqlScriptOutput), json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString());
+        Assert.NotEmpty(json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant()).ToString());
     }
-
-    private record TestScriptOutputAdapter
-        (IOutputWriter<object> ResultsChannel, IOutputWriter<object>? SqlChannel = null) : IScriptOutputAdapter<object, object>;
 }
 
 

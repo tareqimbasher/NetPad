@@ -60,12 +60,11 @@ public class ScriptRuntimeTests : TestBase
     {
         var script = GetScript();
         script.Config.SetKind(ScriptKind.Program);
-        script.UpdateCode($@"Console.Write({code});");
+        script.UpdateCode($"Console.Write({code});");
 
         string? result = null;
         var runtime = await GetScriptRuntimeAsync(script);
-        runtime.AddOutput(
-            new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(new ActionOutputWriter<ScriptOutput>((output, title) => result = output?.Body?.ToString())));
+        runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
 
         var runResult = await runtime.RunScriptAsync(new RunOptions());
 
@@ -89,9 +88,7 @@ public class ScriptRuntimeTests : TestBase
 
             // Keep result in local variable to test that assembly unloads even if we keep reference to result
             string? result = null;
-            runtime.AddOutput(
-                new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(new ActionOutputWriter<ScriptOutput>(
-                    (output, title) => result = output?.Body?.ToString())));
+            runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
 
             await runtime.RunScriptAsync(new RunOptions());
 

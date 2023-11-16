@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
-using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
 
@@ -16,7 +15,7 @@ public class DefaultInMemoryScriptRuntimeFactory : IScriptRuntimeFactory
         _serviceProvider = serviceProvider;
     }
 
-    public Task<IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>> CreateScriptRuntimeAsync(Script script)
+    public Task<IScriptRuntime> CreateScriptRuntimeAsync(Script script)
     {
         var runtime = new InMemoryScriptRuntime(
             script,
@@ -27,6 +26,6 @@ public class DefaultInMemoryScriptRuntimeFactory : IScriptRuntimeFactory
             _serviceProvider.GetRequiredService<ILogger<InMemoryScriptRuntime>>()
         );
 
-        return Task.FromResult<IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>>(runtime);
+        return Task.FromResult<IScriptRuntime>(runtime);
     }
 }

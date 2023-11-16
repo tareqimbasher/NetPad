@@ -137,7 +137,7 @@ export class WorkArea extends ViewModelBase {
                 if (openInOtherViewerHosts) {
                     viewerHost.removeViewables(viewable);
                     // TODO What tab should be activated?
-                } else {
+                } else if (environment.status !== "Running") {
                     await this.session.close(environment.script.id);
                 }
             },

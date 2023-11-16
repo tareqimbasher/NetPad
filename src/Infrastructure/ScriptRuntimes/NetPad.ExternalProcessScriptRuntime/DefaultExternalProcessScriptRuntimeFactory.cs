@@ -18,7 +18,7 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
         _serviceProvider = serviceProvider;
     }
 
-    public Task<IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>> CreateScriptRuntimeAsync(Script script)
+    public Task<IScriptRuntime> CreateScriptRuntimeAsync(Script script)
     {
         var runtime = new ExternalProcessScriptRuntime(
             script,
@@ -30,6 +30,6 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
             _serviceProvider.GetRequiredService<ILogger<ExternalProcessScriptRuntime>>()
         );
 
-        return Task.FromResult<IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>>(runtime);
+        return Task.FromResult<IScriptRuntime>(runtime);
     }
 }

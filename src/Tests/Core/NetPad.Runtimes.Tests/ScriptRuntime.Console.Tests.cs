@@ -49,8 +49,7 @@ public class ScriptRuntimeConsoleTests : TestBase
 
         string? result = null;
         var runtime = await GetScriptRuntimeAsync(script);
-        runtime.AddOutput(
-            new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(new ActionOutputWriter<ScriptOutput>((output, title) => result = output?.Body?.ToString())));
+        runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
 
         await runtime.RunScriptAsync(new RunOptions());
 

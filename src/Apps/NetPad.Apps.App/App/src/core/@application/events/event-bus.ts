@@ -24,7 +24,7 @@ export class EventBus extends EventAggregator implements IEventBus {
             try {
                 callback(message, proxiedChannel);
             } catch (ex) {
-                this.logger.error(`An unhandled error occurred while processing a server-pushed message callback on channel: ${channel}`, ex, callback);
+                this.logger.error(`An unhandled error occurred while processing a server-pushed message callback on channel: ${channel.name}`, ex, callback);
             }
         };
 

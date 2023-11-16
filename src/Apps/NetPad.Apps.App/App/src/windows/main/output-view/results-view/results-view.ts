@@ -4,7 +4,9 @@ import {DialogDeactivationStatuses} from "@aurelia/dialog";
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {
     ChannelInfo,
-    HtmlScriptOutput,
+    HtmlErrorScriptOutput,
+    HtmlRawScriptOutput,
+    HtmlResultsScriptOutput,
     IEventBus,
     IIpcGateway,
     ISession,
@@ -132,8 +134,11 @@ export class ResultsView extends OutputViewBase {
                 if (msg.scriptId !== this.environment.script.id || !msg.output)
                     return;
 
-                const output = JSON.parse(msg.output) as HtmlScriptOutput;
-                this.appendOutput(output);
+                if ([nameof(HtmlResultsScriptOutput), nameof(HtmlErrorScriptOutput), nameof(HtmlRawScriptOutput)].indexOf(msg.outputType) < 0) {
+                    return;
+                }
+
+                this.appendOutput(msg.output);
             })
         );
 
@@ -260,7 +265,7 @@ export class ResultsView extends OutputViewBase {
         bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
 
         const html = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>${name}</title>
 ${metas}

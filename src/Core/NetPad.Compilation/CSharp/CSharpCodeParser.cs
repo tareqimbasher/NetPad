@@ -69,12 +69,12 @@ public class CSharpCodeParser : ICodeParser
 
     internal static void OutputWrite(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutputAdapter<object, object>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
+        Output.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 
     internal static void OutputWriteLine(object? o = null, string? title = null)
     {{{{
-        Output.{nameof(IScriptOutputAdapter<object, object>.ResultsChannel)}.WriteAsync(new RawScriptOutput(o), title);
+        Output.WriteAsync(new RawScriptOutput(o), title);
     }}}}
 }}}}
 
@@ -95,7 +95,7 @@ static class Exts
 
     internal static void DumpToSqlOutput<T>(this T? o, string? title = null)
     {{{{
-        {{0}}.Output.{nameof(IScriptOutputAdapter<object, object>.SqlChannel)}?.WriteAsync(o, title);
+        {{0}}.Output?.WriteAsync(o, title);
     }}}}
 }}}}
 ";

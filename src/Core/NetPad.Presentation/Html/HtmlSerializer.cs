@@ -7,7 +7,7 @@ namespace NetPad.Html;
 
 public static class HtmlSerializer
 {
-    public static HtmlSerializerSettings _htmlSerializerSettings;
+    public static readonly HtmlSerializerSettings _htmlSerializerSettings;
 
     static HtmlSerializer()
     {
@@ -24,7 +24,12 @@ public static class HtmlSerializer
 
     public static bool IsDotNetTypeWithStringRepresentation(Type type) => O2Html.HtmlSerializer.IsDotNetTypeWithStringRepresentation(type);
 
-    public static string Serialize(object? output, string? title = null, bool isError = false)
+    public static string Serialize(
+        object? output,
+        string? title = null,
+        bool isError = false,
+        bool appendNewLineForAllTextOutput = false,
+        Action<Element>? transform = null)
     {
         bool titled = title != null;
 
@@ -41,7 +46,7 @@ public static class HtmlSerializer
         }
         catch (Exception ex)
         {
-            node = HtmlConvert.Serialize(ex, _htmlSerializerSettings);
+            node = HtmlConvert.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
             isError = true;
         }
 
@@ -67,12 +72,19 @@ public static class HtmlSerializer
             }
         }
 
+        group.AddChild(node);
+
         if (outputIsAllText)
         {
             group.WithAddClass("text");
+
+            if (appendNewLineForAllTextOutput)
+            {
+                group.AddElement("<br/>");
+            }
         }
 
-        group.AddChild(node);
+        transform?.Invoke(group);
 
         return group.ToHtml();
     }

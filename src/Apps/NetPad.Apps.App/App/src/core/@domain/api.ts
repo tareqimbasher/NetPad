@@ -4492,7 +4492,7 @@ export interface IKeyboardShortcutConfiguration {
     key?: KeyCode | undefined;
 }
 
-export type KeyCode = "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
+export type KeyCode = "Unknown" | "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
 
 export class OmniSharpOptions implements IOmniSharpOptions {
     enabled!: boolean;
@@ -4713,15 +4713,18 @@ export interface IOmniSharpInlayHintsOptions {
 
 export class Types implements ITypes {
     yesNoCancel!: YesNoCancel;
+    ipcMessageBatch?: IpcMessageBatch | undefined;
     errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
-    htmlScriptOutput?: HtmlScriptOutput | undefined;
+    htmlResultsScriptOutput?: HtmlResultsScriptOutput | undefined;
+    htmlErrorScriptOutput?: HtmlErrorScriptOutput | undefined;
+    htmlRawScriptOutput?: HtmlRawScriptOutput | undefined;
+    htmlSqlScriptOutput?: HtmlSqlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
-    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
@@ -4758,15 +4761,18 @@ export class Types implements ITypes {
     init(_data?: any) {
         if (_data) {
             this.yesNoCancel = _data["yesNoCancel"];
+            this.ipcMessageBatch = _data["ipcMessageBatch"] ? IpcMessageBatch.fromJS(_data["ipcMessageBatch"]) : <any>undefined;
             this.errorResult = _data["errorResult"] ? ErrorResult.fromJS(_data["errorResult"]) : <any>undefined;
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
-            this.htmlScriptOutput = _data["htmlScriptOutput"] ? HtmlScriptOutput.fromJS(_data["htmlScriptOutput"]) : <any>undefined;
+            this.htmlResultsScriptOutput = _data["htmlResultsScriptOutput"] ? HtmlResultsScriptOutput.fromJS(_data["htmlResultsScriptOutput"]) : <any>undefined;
+            this.htmlErrorScriptOutput = _data["htmlErrorScriptOutput"] ? HtmlErrorScriptOutput.fromJS(_data["htmlErrorScriptOutput"]) : <any>undefined;
+            this.htmlRawScriptOutput = _data["htmlRawScriptOutput"] ? HtmlRawScriptOutput.fromJS(_data["htmlRawScriptOutput"]) : <any>undefined;
+            this.htmlSqlScriptOutput = _data["htmlSqlScriptOutput"] ? HtmlSqlScriptOutput.fromJS(_data["htmlSqlScriptOutput"]) : <any>undefined;
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdatedEvent.fromJS(_data["settingsUpdated"]) : <any>undefined;
             this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublishedEvent.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
             this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChangedEvent.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
             this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmittedEvent.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
-            this.scriptSqlOutputEmittedEvent = _data["scriptSqlOutputEmittedEvent"] ? ScriptSqlOutputEmittedEvent.fromJS(_data["scriptSqlOutputEmittedEvent"]) : <any>undefined;
             this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAddedEvent.fromJS(_data["environmentsAdded"]) : <any>undefined;
             this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemovedEvent.fromJS(_data["environmentsRemoved"]) : <any>undefined;
             this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
@@ -4803,15 +4809,18 @@ export class Types implements ITypes {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["yesNoCancel"] = this.yesNoCancel;
+        data["ipcMessageBatch"] = this.ipcMessageBatch ? this.ipcMessageBatch.toJSON() : <any>undefined;
         data["errorResult"] = this.errorResult ? this.errorResult.toJSON() : <any>undefined;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
-        data["htmlScriptOutput"] = this.htmlScriptOutput ? this.htmlScriptOutput.toJSON() : <any>undefined;
+        data["htmlResultsScriptOutput"] = this.htmlResultsScriptOutput ? this.htmlResultsScriptOutput.toJSON() : <any>undefined;
+        data["htmlErrorScriptOutput"] = this.htmlErrorScriptOutput ? this.htmlErrorScriptOutput.toJSON() : <any>undefined;
+        data["htmlRawScriptOutput"] = this.htmlRawScriptOutput ? this.htmlRawScriptOutput.toJSON() : <any>undefined;
+        data["htmlSqlScriptOutput"] = this.htmlSqlScriptOutput ? this.htmlSqlScriptOutput.toJSON() : <any>undefined;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
         data["appStatusMessagePublished"] = this.appStatusMessagePublished ? this.appStatusMessagePublished.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
         data["scriptConfigPropertyChanged"] = this.scriptConfigPropertyChanged ? this.scriptConfigPropertyChanged.toJSON() : <any>undefined;
         data["scriptOutputEmitted"] = this.scriptOutputEmitted ? this.scriptOutputEmitted.toJSON() : <any>undefined;
-        data["scriptSqlOutputEmittedEvent"] = this.scriptSqlOutputEmittedEvent ? this.scriptSqlOutputEmittedEvent.toJSON() : <any>undefined;
         data["environmentsAdded"] = this.environmentsAdded ? this.environmentsAdded.toJSON() : <any>undefined;
         data["environmentsRemoved"] = this.environmentsRemoved ? this.environmentsRemoved.toJSON() : <any>undefined;
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
@@ -4848,15 +4857,18 @@ export class Types implements ITypes {
 
 export interface ITypes {
     yesNoCancel: YesNoCancel;
+    ipcMessageBatch?: IpcMessageBatch | undefined;
     errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
-    htmlScriptOutput?: HtmlScriptOutput | undefined;
+    htmlResultsScriptOutput?: HtmlResultsScriptOutput | undefined;
+    htmlErrorScriptOutput?: HtmlErrorScriptOutput | undefined;
+    htmlRawScriptOutput?: HtmlRawScriptOutput | undefined;
+    htmlSqlScriptOutput?: HtmlSqlScriptOutput | undefined;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
-    scriptSqlOutputEmittedEvent?: ScriptSqlOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
@@ -4883,6 +4895,107 @@ export interface ITypes {
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
+
+export class IpcMessageBatch implements IIpcMessageBatch {
+    messages!: IpcMessage[];
+
+    constructor(data?: IIpcMessageBatch) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.messages = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["messages"])) {
+                this.messages = [] as any;
+                for (let item of _data["messages"])
+                    this.messages!.push(IpcMessage.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): IpcMessageBatch {
+        data = typeof data === 'object' ? data : {};
+        let result = new IpcMessageBatch();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.messages)) {
+            data["messages"] = [];
+            for (let item of this.messages)
+                data["messages"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): IpcMessageBatch {
+        const json = this.toJSON();
+        let result = new IpcMessageBatch();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IIpcMessageBatch {
+    messages: IpcMessage[];
+}
+
+export class IpcMessage implements IIpcMessage {
+    message!: any;
+    messageType!: string;
+
+    constructor(data?: IIpcMessage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.message = _data["message"];
+            this.messageType = _data["messageType"];
+        }
+    }
+
+    static fromJS(data: any): IpcMessage {
+        data = typeof data === 'object' ? data : {};
+        let result = new IpcMessage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        data["messageType"] = this.messageType;
+        return data;
+    }
+
+    clone(): IpcMessage {
+        const json = this.toJSON();
+        let result = new IpcMessage();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IIpcMessage {
+    message: any;
+    messageType: string;
+}
 
 export class ErrorResult implements IErrorResult {
     message!: string;
@@ -4973,7 +5086,7 @@ export interface IScriptOutput {
     order: number;
 }
 
-export class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput {
+export abstract class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput {
     body?: string | undefined;
 
     constructor(data?: IHtmlScriptOutput) {
@@ -4989,9 +5102,7 @@ export class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput 
 
     static fromJS(data: any): HtmlScriptOutput {
         data = typeof data === 'object' ? data : {};
-        let result = new HtmlScriptOutput();
-        result.init(data);
-        return result;
+        throw new Error("The abstract class 'HtmlScriptOutput' cannot be instantiated.");
     }
 
     toJSON(data?: any) {
@@ -5002,15 +5113,148 @@ export class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput 
     }
 
     clone(): HtmlScriptOutput {
-        const json = this.toJSON();
-        let result = new HtmlScriptOutput();
-        result.init(json);
-        return result;
+        throw new Error("The abstract class 'HtmlScriptOutput' cannot be instantiated.");
     }
 }
 
 export interface IHtmlScriptOutput extends IScriptOutput {
     body?: string | undefined;
+}
+
+export class HtmlResultsScriptOutput extends HtmlScriptOutput implements IHtmlResultsScriptOutput {
+
+    constructor(data?: IHtmlResultsScriptOutput) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): HtmlResultsScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new HtmlResultsScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): HtmlResultsScriptOutput {
+        const json = this.toJSON();
+        let result = new HtmlResultsScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHtmlResultsScriptOutput extends IHtmlScriptOutput {
+}
+
+export class HtmlErrorScriptOutput extends HtmlScriptOutput implements IHtmlErrorScriptOutput {
+
+    constructor(data?: IHtmlErrorScriptOutput) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): HtmlErrorScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new HtmlErrorScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): HtmlErrorScriptOutput {
+        const json = this.toJSON();
+        let result = new HtmlErrorScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHtmlErrorScriptOutput extends IHtmlScriptOutput {
+}
+
+export class HtmlRawScriptOutput extends HtmlScriptOutput implements IHtmlRawScriptOutput {
+
+    constructor(data?: IHtmlRawScriptOutput) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): HtmlRawScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new HtmlRawScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): HtmlRawScriptOutput {
+        const json = this.toJSON();
+        let result = new HtmlRawScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHtmlRawScriptOutput extends IHtmlScriptOutput {
+}
+
+export class HtmlSqlScriptOutput extends HtmlScriptOutput implements IHtmlSqlScriptOutput {
+
+    constructor(data?: IHtmlSqlScriptOutput) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): HtmlSqlScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new HtmlSqlScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): HtmlSqlScriptOutput {
+        const json = this.toJSON();
+        let result = new HtmlSqlScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHtmlSqlScriptOutput extends IHtmlScriptOutput {
 }
 
 export class SettingsUpdatedEvent implements ISettingsUpdatedEvent {
@@ -5294,7 +5538,8 @@ export interface IScriptConfigPropertyChangedEvent extends IPropertyChangedEvent
 
 export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
     scriptId!: string;
-    output?: string | undefined;
+    output!: ScriptOutput;
+    outputType!: string;
 
     constructor(data?: IScriptOutputEmittedEvent) {
         if (data) {
@@ -5308,7 +5553,8 @@ export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
     init(_data?: any) {
         if (_data) {
             this.scriptId = _data["scriptId"];
-            this.output = _data["output"];
+            this.output = _data["output"] ? ScriptOutput.fromJS(_data["output"]) : <any>undefined;
+            this.outputType = _data["outputType"];
         }
     }
 
@@ -5322,7 +5568,8 @@ export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["scriptId"] = this.scriptId;
-        data["output"] = this.output;
+        data["output"] = this.output ? this.output.toJSON() : <any>undefined;
+        data["outputType"] = this.outputType;
         return data;
     }
 
@@ -5336,54 +5583,8 @@ export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
 
 export interface IScriptOutputEmittedEvent {
     scriptId: string;
-    output?: string | undefined;
-}
-
-export class ScriptSqlOutputEmittedEvent implements IScriptSqlOutputEmittedEvent {
-    scriptId!: string;
-    output?: string | undefined;
-
-    constructor(data?: IScriptSqlOutputEmittedEvent) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.scriptId = _data["scriptId"];
-            this.output = _data["output"];
-        }
-    }
-
-    static fromJS(data: any): ScriptSqlOutputEmittedEvent {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptSqlOutputEmittedEvent();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["scriptId"] = this.scriptId;
-        data["output"] = this.output;
-        return data;
-    }
-
-    clone(): ScriptSqlOutputEmittedEvent {
-        const json = this.toJSON();
-        let result = new ScriptSqlOutputEmittedEvent();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptSqlOutputEmittedEvent {
-    scriptId: string;
-    output?: string | undefined;
+    output: ScriptOutput;
+    outputType: string;
 }
 
 export class EnvironmentsAddedEvent implements IEnvironmentsAddedEvent {

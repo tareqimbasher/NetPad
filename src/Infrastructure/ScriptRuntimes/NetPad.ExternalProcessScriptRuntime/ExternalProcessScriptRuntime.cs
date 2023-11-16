@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.DotNet;
@@ -11,6 +11,7 @@ using NetPad.Scripts;
 using NetPad.Utilities;
 using O2Html;
 using HtmlSerializer = NetPad.Html.HtmlSerializer;
+using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Runtimes;
 
@@ -19,12 +20,8 @@ namespace NetPad.Runtimes;
 ///
 /// NOTE: If this class is unsealed, IDisposable and IAsyncDisposable implementations must be revised.
 /// </summary>
-public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>
+public sealed class ExternalProcessScriptRuntime : IScriptRuntime
 {
-    internal record MainScriptOutputAdapter(IOutputWriter<ScriptOutput> ResultsChannel,
-            IOutputWriter<ScriptOutput> SqlChannel)
-        : ScriptOutputAdapter<ScriptOutput, ScriptOutput>(ResultsChannel, SqlChannel);
-
     private const string RuntimeConfigFileTemplate = @"{{
     ""runtimeOptions"": {{
         ""tfm"": ""{0}"",
@@ -45,8 +42,8 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
     private readonly Settings _settings;
     private readonly ILogger<ExternalProcessScriptRuntime> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
-    private readonly MainScriptOutputAdapter _outputAdapter;
-    private readonly HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>> _externalOutputAdapters;
+    private readonly IOutputWriter<object> _output;
+    private readonly HashSet<IOutputWriter<object>> _externalOutputAdapters;
     private readonly DirectoryInfo _externalProcessRootDirectory;
     private readonly RawOutputHandler _rawOutputHandler;
 
@@ -69,16 +66,13 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _settings = settings;
         _logger = logger;
         _externalInputReaders = new HashSet<IInputReader<string>>();
-        _externalOutputAdapters = new HashSet<IScriptOutputAdapter<ScriptOutput, ScriptOutput>>();
+        _externalOutputAdapters = new HashSet<IOutputWriter<object>>();
         _externalProcessRootDirectory = AppDataProvider.ExternalProcessesDirectoryPath
             .Combine(_script.Id.ToString())
             .GetInfo();
 
-        // Used to forward output sent to the main _outputAdapter to any configured external output adapters
-        void ForwardToExternalAdapters<TScriptOutput>(
-            Func<IScriptOutputAdapter<ScriptOutput, ScriptOutput>, IOutputWriter<TScriptOutput>?> channelGetter,
-            TScriptOutput? output,
-            string? title)
+        // Forward output to any configured external output adapters
+        _output = new AsyncActionOutputWriter<object>(async (output, title) =>
         {
             if (output == null)
             {
@@ -89,27 +83,16 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             {
                 try
                 {
-                    channelGetter(externalAdapter)?.WriteAsync(output, title);
+                    await externalAdapter.WriteAsync(output, title);
                 }
                 catch
                 {
                     // ignored
                 }
             }
-        }
+        });
 
-        _outputAdapter = new MainScriptOutputAdapter(
-            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
-                o => o.ResultsChannel,
-                obj,
-                title)),
-            new ActionOutputWriter<ScriptOutput>((obj, title) => ForwardToExternalAdapters(
-                o => o.SqlChannel,
-                obj,
-                title))
-        );
-
-        _rawOutputHandler = new RawOutputHandler(_outputAdapter);
+        _rawOutputHandler = new RawOutputHandler(_output);
     }
 
     public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
@@ -141,9 +124,9 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
             // TODO optimize this section
             _processHandler = new ProcessHandler(_dotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
 
-            _processHandler.IO.OnOutputReceivedHandlers.Add(async output =>
+            _processHandler.IO.OnOutputReceivedHandlers.Add(async raw =>
             {
-                if (output == "[INPUT_REQUEST]")
+                if (raw == "[INPUT_REQUEST]")
                 {
                     _logger.LogDebug("Input Request received");
 
@@ -162,31 +145,49 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                     return;
                 }
 
-                _logger.LogDebug("Script output received. Length: {OutputLength}", output.Length.ToString());
+                _logger.LogDebug("Script output received. Length: {OutputLength}", raw.Length.ToString());
 
-                ExternalProcessOutput<HtmlScriptOutput>? externalProcessOutput = null;
+                JsonElement packetJson;
+                string type;
+                JsonElement outputProperty;
 
                 try
                 {
-                    externalProcessOutput = JsonSerializer.Deserialize<ExternalProcessOutput<HtmlScriptOutput>>(output);
+                    packetJson = JsonDocument.Parse(raw).RootElement;
+                    type = packetJson.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ?? string.Empty;
+                    outputProperty = packetJson.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant());
                 }
                 catch
                 {
-                    _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{Output}'", output);
+                    _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{RawOutput}'", raw);
+                    _rawOutputHandler.RawErrorOutputReceived(raw);
+                    return;
                 }
 
-                if (externalProcessOutput?.Output == null)
+                ScriptOutput output;
+
+                if (type == nameof(HtmlResultsScriptOutput))
                 {
-                    _rawOutputHandler.RawErrorOutputReceived(output);
+                    output = JsonSerializer.Deserialize<HtmlResultsScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlResultsScriptOutput)}");
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Results)
+                else if (type == nameof(HtmlSqlScriptOutput))
                 {
-                    await _outputAdapter.ResultsChannel.WriteAsync(externalProcessOutput.Output);
+                    output = JsonSerializer.Deserialize<HtmlSqlScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlSqlScriptOutput)}");
                 }
-                else if (externalProcessOutput.Channel == ExternalProcessOutputChannel.Sql && _outputAdapter.SqlChannel != null)
+                else if (type == nameof(HtmlErrorScriptOutput))
                 {
-                    await _outputAdapter.SqlChannel.WriteAsync(externalProcessOutput.Output);
+                    output = JsonSerializer.Deserialize<HtmlErrorScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlErrorScriptOutput)}");
                 }
+                else
+                {
+                    _rawOutputHandler.RawResultOutputReceived(raw);
+                    return;
+                }
+
+                await _output.WriteAsync(output);
             });
 
             _processHandler.IO.OnErrorReceivedHandlers.Add(output =>
@@ -213,14 +214,17 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
                 exitCode,
                 elapsed);
 
-            return exitCode == 0
-                ? RunResult.Success(elapsed)
-                : RunResult.ScriptCompletionFailure(elapsed);
+            return exitCode switch
+            {
+                0 => RunResult.Success(elapsed),
+                -1 => RunResult.RunCancelled(),
+                _ => RunResult.ScriptCompletionFailure(elapsed)
+            };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(ex));
+            await _output.WriteAsync(new ErrorScriptOutput(ex));
             return RunResult.RunAttemptFailure();
         }
         finally
@@ -294,7 +298,7 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         // Add code that initializes runtime services
         //
         runOptions.AdditionalCode.Add(new SourceCode("public partial class Program " +
-                                                     $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.Init(); }} }}"));
+                                                     $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.{nameof(ScriptRuntimeServices.UseStandardIO)}(); }} }}"));
 
         //
         // Gather assembly references
@@ -351,8 +355,10 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
 
         if (!compilationResult.Success)
         {
-            await _outputAdapter.ResultsChannel.WriteAsync(new ErrorScriptOutput(
-                compilationResult.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).JoinToString("\n") + "\n"));
+            await _output.WriteAsync(new ErrorScriptOutput(compilationResult
+                .Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .JoinToString("\n") + "\n"));
 
             return null;
         }
@@ -508,12 +514,12 @@ public sealed class ExternalProcessScriptRuntime : IScriptRuntime<IScriptOutputA
         _externalInputReaders.Remove(inputReader);
     }
 
-    public void AddOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void AddOutput(IOutputWriter<object> outputAdapter)
     {
         _externalOutputAdapters.Add(outputAdapter);
     }
 
-    public void RemoveOutput(IScriptOutputAdapter<ScriptOutput, ScriptOutput> outputAdapter)
+    public void RemoveOutput(IOutputWriter<object> outputAdapter)
     {
         _externalOutputAdapters.Remove(outputAdapter);
     }

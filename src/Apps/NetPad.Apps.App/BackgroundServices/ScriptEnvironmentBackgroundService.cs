@@ -20,8 +20,9 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
     private readonly IEventBus _eventBus;
     private readonly IIpcService _ipcService;
     private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
+    private readonly ILoggerFactory _loggerFactory;
 
-    private readonly Dictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens;
+    private readonly Dictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens;
 
     public ScriptEnvironmentBackgroundService(
         IEventBus eventBus,
@@ -32,7 +33,8 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         _eventBus = eventBus;
         _ipcService = ipcService;
         _autoSaveScriptRepository = autoSaveScriptRepository;
-        _environmentSubscriptionTokens = new Dictionary<Guid, List<EventSubscriptionToken>>();
+        _loggerFactory = loggerFactory;
+        _environmentSubscriptionTokens = new Dictionary<Guid, List<IDisposable>>();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -51,16 +53,18 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
                 AutoSaveScriptChanges(environment);
 
                 var inputReader = new AsyncActionInputReader<string>(
-                    // TODO There should be a way to cancel the wait when the environment stops
-                    // Possibly using a CancellationToken
+                    // TODO There should be a way to cancel the wait when the environment stops using a CancellationToken
                     async () => await _ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
 
-                var outputAdapter = new ScriptOutputAdapter<ScriptOutput, ScriptOutput>(
-                    new IpcScriptResultOutputWriter(environment.Script.Id, _ipcService),
-                    new IpcScriptSqlOutputWriter(environment.Script.Id, _ipcService)
-                );
+                var outputWriter = new ScriptEnvironmentIpcOutputWriter(
+                    environment,
+                    _ipcService,
+                    _eventBus,
+                    _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>());
 
-                environment.SetIO(inputReader, outputAdapter);
+                environment.SetIO(inputReader, outputWriter);
+
+                AddEnvironmentEventToken(environment, new DisposableToken(() => outputWriter.Dispose()));
             }
 
             return Task.CompletedTask;
@@ -102,11 +106,11 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
         AddEnvironmentEventToken(environment, scriptConfigPropChangeToken);
     }
 
-    private void AddEnvironmentEventToken(ScriptEnvironment environment, EventSubscriptionToken token)
+    private void AddEnvironmentEventToken(ScriptEnvironment environment, IDisposable token)
     {
         if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
         {
-            tokens = new List<EventSubscriptionToken>();
+            tokens = new List<IDisposable>();
             _environmentSubscriptionTokens.Add(environment.Script.Id, tokens);
         }
 
@@ -122,7 +126,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
         foreach (var token in tokens)
         {
-            _eventBus.Unsubscribe(token);
+            token.Dispose();
         }
 
         _environmentSubscriptionTokens.Remove(environment.Script.Id);

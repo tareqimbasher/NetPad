@@ -14,13 +14,18 @@ public class ElectronIpcService : IIpcService
         _logger = logger;
     }
 
-    public async Task SendAsync<TMessage>(TMessage message) where TMessage : class
+    public async Task SendAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : class
     {
-        await SendAsync(typeof(TMessage).Name, message);
+        await SendAsync(typeof(TMessage).Name, message, cancellationToken);
     }
 
-    public Task SendAsync(string channel, object? message)
+    public Task SendAsync(string channel, object? message, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.CompletedTask;
+        }
+
         try
         {
             ElectronNET.API.Electron.IpcMain.Send(
@@ -36,7 +41,7 @@ public class ElectronIpcService : IIpcService
         return Task.CompletedTask;
     }
 
-    public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message)
+    public Task<TResponse?> SendAndReceiveAsync<TResponse>(Command<TResponse> message, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
