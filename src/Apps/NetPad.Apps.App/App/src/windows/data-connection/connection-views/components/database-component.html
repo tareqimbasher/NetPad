@@ -9,8 +9,10 @@
                placeholder="${dbLoadingOptions.enabled ? 'Type to search, or click to select...' : 'Path to data file...'}"
                focus.trigger="loadDatabases()">
 
-        <button class="btn btn-sm btn-secondary ms-3 btn-basic" click.trigger="browseInput.click()">...</button>
-        <input ref="browseInput" type="file" files.bind="browsedFile" class="d-none">
+        <div if.bind="options.allowSelectDatabaseFile">
+            <button class="btn btn-sm btn-secondary ms-3 btn-basic" click.trigger="browseInput.click()">...</button>
+            <input ref="browseInput" type="file" files.bind="browsedFile" class="d-none">
+        </div>
 
         <span if.bind="dbLoadingOptions.enabled">
             <datalist id="datalistOptions">
