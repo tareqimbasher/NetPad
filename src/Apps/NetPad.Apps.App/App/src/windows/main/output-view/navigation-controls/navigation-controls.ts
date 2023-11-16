@@ -9,34 +9,11 @@ export class NavigationControls extends ViewModelBase {
     public showBottom = true;
 
     public attached() {
-        const resizeObserver = new ResizeObserver(() => this.showOrHideNavigationControls());
-        resizeObserver.observe(this.outputElement);
-        this.addDisposable(() => resizeObserver.disconnect());
-
-        const scrollHandler = () => this.showOrHideNavigationControls();
-        this.outputElement.addEventListener("scroll", scrollHandler);
-        this.addDisposable(() => this.outputElement.removeEventListener("scroll", scrollHandler));
+        // TODO: disabled because debouncing showOrHideNavigationControls causes issue where nav controls
+        // won't show at all till output has entirely finished. Until fixed properly, always show
+        // this.watchNavigationControls();
+        this.showNavigationControls = true;
     }
-
-    private showOrHideNavigationControls = Util.debounce(this, () => {
-        const groups = Array.from(this.outputElement.querySelectorAll(".group"));
-        if (!groups.length) {
-            this.showNavigationControls = false;
-        }
-        else {
-            const output = this.outputElement.getBoundingClientRect();
-            const first = groups[0].getBoundingClientRect();
-            const last = groups[groups.length - 1].getBoundingClientRect();
-
-            const firstTopInView = first.top >= output.top;
-            const lastBottomInView = last.bottom <= output.bottom;
-            const allOutputInView = firstTopInView && lastBottomInView;
-
-            this.showTop = !firstTopInView;
-            this.showBottom = !lastBottomInView;
-            this.showNavigationControls = !allOutputInView;
-        }
-    }, 100);
 
     private navigateTop() {
         this.outputElement.scrollTop = 0;
@@ -110,4 +87,34 @@ export class NavigationControls extends ViewModelBase {
             ? (isTopInView) || (isBottomInView) || isMiddleInView
             : top >= viewport.top && left >= viewport.left && bottom <= viewport.bottom && right <= viewport.right;
     }
+
+    // private watchNavigationControls() {
+    //     const resizeObserver = new ResizeObserver(() => this.showOrHideNavigationControls());
+    //     resizeObserver.observe(this.outputElement);
+    //     this.addDisposable(() => resizeObserver.disconnect());
+    //
+    //     const scrollHandler = () => this.showOrHideNavigationControls();
+    //     this.outputElement.addEventListener("scroll", scrollHandler);
+    //     this.addDisposable(() => this.outputElement.removeEventListener("scroll", scrollHandler));
+    // }
+
+    // private showOrHideNavigationControls = Util.debounce(this, () => {
+    //     const groups = Array.from(this.outputElement.querySelectorAll(".group"));
+    //     if (!groups.length) {
+    //         this.showNavigationControls = false;
+    //     }
+    //     else {
+    //         const output = this.outputElement.getBoundingClientRect();
+    //         const first = groups[0].getBoundingClientRect();
+    //         const last = groups[groups.length - 1].getBoundingClientRect();
+    //
+    //         const firstTopInView = first.top >= output.top;
+    //         const lastBottomInView = last.bottom <= output.bottom;
+    //         const allOutputInView = firstTopInView && lastBottomInView;
+    //
+    //         this.showTop = !firstTopInView;
+    //         this.showBottom = !lastBottomInView;
+    //         this.showNavigationControls = !allOutputInView;
+    //     }
+    // }, 100);
 }
