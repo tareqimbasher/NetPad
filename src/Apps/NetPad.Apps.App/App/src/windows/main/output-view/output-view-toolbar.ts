@@ -10,7 +10,6 @@ export interface IToolbarTab {
     text: string;
     icon?: string;
     active?: boolean;
-    show?: () => boolean;
     clicked?: (event: MouseEvent) => Promise<void>;
     view: OutputViewBase
 }
@@ -19,7 +18,7 @@ export interface IToolbarAction {
     icon?: string;
     label?: string;
     active?: boolean;
-    show?: () => boolean;
+    show?: boolean;
     clicked?: (event: MouseEvent) => Promise<void>;
     actions?: IToolbarAction[];
 }
