@@ -80,8 +80,11 @@ catch (System.Exception ex)
         return userCode;
     }
 
-    public string GetBootstrapperProgram()
+    private static string GetBootstrapperProgram()
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ScriptRuntimeServices).Assembly, $"{nameof(ScriptRuntimeServices)}.cs");
+        var scriptRuntimeServicesCode = AssemblyUtil.ReadEmbeddedResource(typeof(ScriptRuntimeServices).Assembly, $"{nameof(ScriptRuntimeServices)}.cs");
+
+        return scriptRuntimeServicesCode +
+               $"\n\npublic partial class Program {{ static Program() {{ {nameof(ScriptRuntimeServices)}.{nameof(ScriptRuntimeServices.UseStandardIO)}(); }} }}";
     }
 }

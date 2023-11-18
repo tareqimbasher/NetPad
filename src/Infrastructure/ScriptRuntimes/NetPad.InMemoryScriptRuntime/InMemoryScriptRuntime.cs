@@ -120,14 +120,14 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
         _externalInputAdapters.Remove(inputReader);
     }
 
-    public void AddOutput(IOutputWriter<object> outputAdapter)
+    public void AddOutput(IOutputWriter<object> outputWriter)
     {
-        _externalOutputAdapters.Add(outputAdapter);
+        _externalOutputAdapters.Add(outputWriter);
     }
 
-    public void RemoveOutput(IOutputWriter<object> outputAdapter)
+    public void RemoveOutput(IOutputWriter<object> outputWriter)
     {
-        _externalOutputAdapters.Remove(outputAdapter);
+        _externalOutputAdapters.Remove(outputWriter);
     }
 
     private async Task<(

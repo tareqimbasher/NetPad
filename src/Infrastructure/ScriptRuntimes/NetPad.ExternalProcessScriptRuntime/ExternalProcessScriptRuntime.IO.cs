@@ -27,6 +27,11 @@ public partial class ExternalProcessScriptRuntime
         _externalOutputWriters.Remove(outputWriter);
     }
 
+    /// <summary>
+    /// Processes raw external process output data.
+    /// </summary>
+    /// <param name="raw">Raw output data as written to STD OUT of external process.</param>
+    /// <exception cref="FormatException"></exception>
     private async Task OnProcessOutputReceived(string raw)
     {
         if (raw == "[INPUT_REQUEST]")
@@ -92,6 +97,11 @@ public partial class ExternalProcessScriptRuntime
         await _output.WriteAsync(output);
     }
 
+    /// <summary>
+    /// Processes raw external process error data.
+    /// </summary>
+    /// <param name="raw">Raw error data as written to STD OUT of external process.</param>
+    /// <param name="userProgramStartLineNumber">The line number the user's program starts. Used to correct line numbers.</param>
     private Task OnProcessErrorReceived(string raw, int userProgramStartLineNumber)
     {
         raw = CorrectUncaughtExceptionStackTraceLineNumber(raw, userProgramStartLineNumber);

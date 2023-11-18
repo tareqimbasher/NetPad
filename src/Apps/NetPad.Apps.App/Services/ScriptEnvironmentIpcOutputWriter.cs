@@ -18,6 +18,7 @@ namespace NetPad.Services;
 
 /// <summary>
 /// An <see cref="IOutputWriter{TOutput}"/> that coordinates sending of script output messages emitted by ScriptEnvironments to IPC clients.
+/// It employs queueing and max output limits to prevent over-flooding IPC with too much data.
 /// </summary>
 public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, IDisposable
 {
@@ -31,7 +32,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     private readonly Timer _sendMessageQueueTimer;
     private const int _sendMessageQueueBatchSize = 1000;
     private const int _processSendMessageQueueEveryMs = 50;
-    private const int _maxUserOutputMessagePerRun = 10100;
+    private const int _maxUserOutputMessagesPerRun = 10100;
     private int _userOutputMessagesSentThisRun;
     private bool _outputLimitReachedMessageSent;
     private readonly object _outputLimitReachedMessageSendLock = new ();
@@ -188,7 +189,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
     private bool HasReachedUserOutputMessageLimitForThisRun()
     {
-        return _userOutputMessagesSentThisRun >= _maxUserOutputMessagePerRun;
+        return _userOutputMessagesSentThisRun >= _maxUserOutputMessagesPerRun;
     }
 
     private void QueueMessage(ScriptOutput output, bool isCancellable)

@@ -169,8 +169,16 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
     {
         _logger.LogTrace("Dispose start");
 
-        _processHandler?.Dispose();
         _externalOutputWriters.Clear();
+
+        try
+        {
+            _processHandler?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disposing process handler");
+        }
 
         _logger.LogTrace("Dispose end");
     }

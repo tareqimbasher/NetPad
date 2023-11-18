@@ -22,7 +22,7 @@ export class Window extends WindowBase {
 
         let tabIndex = this.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
         if (tabIndex < 0)
-            tabIndex = 3;
+            tabIndex = 0;
 
         this.selectedTab = this.tabs[tabIndex];
         this.editableSettings = this.settings.clone();

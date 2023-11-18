@@ -21,11 +21,6 @@ public partial class ExternalProcessScriptRuntime
 
     private async Task<RunDependencies?> GetRunDependencies(RunOptions runOptions)
     {
-        // Add code that initializes runtime services
-        runOptions.AdditionalCode.Add(new SourceCode("public partial class Program " +
-                                                     $"{{ static Program() {{ {nameof(ScriptRuntimeServices)}.{nameof(ScriptRuntimeServices.UseStandardIO)}(); }} }}"));
-
-        // Gather assembly references
         // Images
         var referenceAssemblyImages = new HashSet<AssemblyImage>();
         foreach (var additionalReference in runOptions.AdditionalReferences)
@@ -58,7 +53,7 @@ public partial class ExternalProcessScriptRuntime
             .Select(x => x.Path)
             .ToHashSet();
 
-        // Add custom assemblies
+        // Add certain app assemblies needed to support script runtime services running in external process
         referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
         // Needed to serialize output in external process to HTML
         referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
@@ -128,13 +123,17 @@ public partial class ExternalProcessScriptRuntime
             return new ParseAndCompileResult(parsingResult, compilationResult);
         }
 
-        // We want to try code as-is, but also try additional permutations of it if it fails to compile
+        // We will try different permutations of the user's code, starting with running it as-is. The idea is to account
+        // for, and give the ability for users to, run expressions not ending with semi-colon or .Dump() and still produce
+        // the "missing" pieces to run the expression.
         var permutations = new List<Func<(bool shouldAttempt, string code)>>
         {
             // As-is
             () => (true, code),
 
             // Try adding ".Dump();" to dump the result of an expression
+            // There is no good way that I've found to determine if expression returns void or otherwise
+            // so the only way to test if the expression results in a value is to try to compile it.
             () =>
             {
                 var trimmedCode = code.Trim();
