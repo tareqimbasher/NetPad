@@ -11,11 +11,14 @@ export class PostgresqlView extends DataConnectionView<PostgreSqlDatabaseConnect
         this.components = [
             new HostAndPortComponent(this.connection),
             new AuthComponent(this.connection, dataConnectionService),
-            new DatabaseComponent(this.connection, {
-                enabled: true,
-                requirementsToLoadAreMet: () => this.components.slice(0, 2).every(c => !c.validationError),
-                dataConnectionService: dataConnectionService
-            })
+            new DatabaseComponent(
+                this.connection,
+                undefined,
+                {
+                    enabled: true,
+                    requirementsToLoadAreMet: () => this.components.slice(0, 2).every(c => !c.validationError),
+                    dataConnectionService: dataConnectionService
+                })
         ];
     }
 }

@@ -2,6 +2,10 @@ import {observable} from "@aurelia/runtime";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
 import {DatabaseConnection, IDataConnectionService} from "@domain";
 
+export interface IDatabaseComponentOptions {
+    allowSelectDatabaseFile: boolean;
+}
+
 /**
  * Options to control if and when database names are loaded from server.
  */
@@ -18,7 +22,12 @@ export class DatabaseComponent implements IDataConnectionViewComponent {
     private browseInput: HTMLInputElement;
     @observable public browsedFile: FileList;
 
-    constructor(private readonly connection: DatabaseConnection, private readonly dbLoadingOptions?: IDatabaseLoadingOptions) {
+    constructor(
+        private readonly connection: DatabaseConnection,
+        private readonly options?: IDatabaseComponentOptions,
+        private readonly dbLoadingOptions?: IDatabaseLoadingOptions) {
+
+        if (!options) this.options = {allowSelectDatabaseFile: false};
     }
 
     public get validationError(): string | undefined {

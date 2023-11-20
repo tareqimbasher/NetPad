@@ -19,6 +19,12 @@ export class OmniSharpService extends OmniSharpApiClient implements IOmniSharpSe
 
         try {
             return await fetchCall();
+        } catch(ex) {
+            // Catch abort errors
+            if (ex instanceof Error && ex.name?.startsWith("AbortError")) {
+                return new Response(undefined);
+            }
+            throw ex;
         } finally {
             OmniSharpService.semaphore.release();
         }

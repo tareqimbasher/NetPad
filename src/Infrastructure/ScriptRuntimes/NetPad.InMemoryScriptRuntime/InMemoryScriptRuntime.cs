@@ -120,14 +120,14 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
         _externalInputAdapters.Remove(inputReader);
     }
 
-    public void AddOutput(IOutputWriter<object> outputAdapter)
+    public void AddOutput(IOutputWriter<object> outputWriter)
     {
-        _externalOutputAdapters.Add(outputAdapter);
+        _externalOutputAdapters.Add(outputWriter);
     }
 
-    public void RemoveOutput(IOutputWriter<object> outputAdapter)
+    public void RemoveOutput(IOutputWriter<object> outputWriter)
     {
-        _externalOutputAdapters.Remove(outputAdapter);
+        _externalOutputAdapters.Remove(outputWriter);
     }
 
     private async Task<(
@@ -161,6 +161,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
         var referenceAssemblyPaths = assets.Where(a => a.IsAssembly()).Select(a => a.Path).ToHashSet();
 
         var fullProgram = parsingResult.GetFullProgram()
+            .ToCodeString()
             .Replace("Console.WriteLine",
                 $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWriteLine")
             .Replace("Console.Write", $"{parsingResult.ParsedCodeInformation.BootstrapperClassName}.OutputWrite");

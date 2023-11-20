@@ -238,6 +238,11 @@ button > .icon-base {
     @extend .fa-file-excel;
 }
 
+.database-icon {
+    @extend %icon-base;
+    @extend .fa-database;
+}
+
 .cloud-icon {
     @extend %icon-base;
     @extend .fa-cloud;

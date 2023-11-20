@@ -8,27 +8,18 @@ export const configureFetchClient = (container: IContainer) => {
     const client = container.get(IHttpClient);
     const logger = container.get(ILogger).scopeTo("http-client");
 
-    const isAbortError = (error: Error | undefined) => error instanceof Error && error.name?.startsWith("AbortError");
-    const shouldLogErrors = (error: Error | undefined) => error && !isAbortError(error);
+    const isAbortError = (error: unknown) => error instanceof Error && error.name?.startsWith("AbortError");
 
     client.configure(config =>
         config
             .useStandardConfiguration()
             .withInterceptor({
-                requestError(error: Request | unknown): Request | Response | Promise<Request | Response> {
-                    if (error instanceof Request) return error;
-
-                    if (shouldLogErrors(error as Error))
-                        logger.error("Request Error", error);
-
+                requestError(error: unknown): Request | Response | Promise<Request | Response> {
+                    if (!isAbortError(error)) logger.error("Request Error", error);
                     throw error;
                 },
-                responseError(error: Response | unknown, request?: Request): Response | Promise<Response> {
-                    if (error instanceof Response) return error;
-
-                    if (shouldLogErrors(error as Error))
-                        logger.error("Response Error", error);
-
+                responseError(error: unknown, request?: Request): Response | Promise<Response> {
+                    if (!isAbortError(error)) logger.error("Response Error", error);
                     throw error;
                 }
             })

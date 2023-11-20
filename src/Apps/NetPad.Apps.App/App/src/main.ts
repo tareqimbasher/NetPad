@@ -41,18 +41,25 @@ import {AppLifeCycle} from "./main.app-lifecycle";
 import {IPlatform} from "@application/platforms/iplatform";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 
-// Register common dependencies shared for all windows
+// Register common dependencies shared for all windows/apps
 const builder = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
-    Registration.singleton(IIpcGateway, SignalRIpcGateway),
     Registration.singleton(IEventBus, EventBus),
     Registration.singleton(ISession, Session),
     Registration.singleton(ISettingsService, SettingsService),
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
+
+    // The default main IPC gateway the app will use. Can be configured for each platform separately
+    Registration.singleton(IIpcGateway, SignalRIpcGateway),
+
+    DialogDefaultConfiguration.customize((config) => {
+        config.lock = true;
+    }),
+
     LogConfig.register({
         colorOptions: ColorOptions.colors,
         level: Env.isProduction ? LogLevel.info : LogLevel.debug,
@@ -103,10 +110,6 @@ const builder = Aurelia.register(
 
         ]
     }),
-    DialogDefaultConfiguration.customize((config) => {
-        config.lock = true;
-    }),
-
 
     // Global Custom Attributes
     ExternalLinkCustomAttribute,
@@ -162,6 +165,6 @@ const app = builder.app(entryPoint);
 
 await app.start();
 
-window.addEventListener("beforeunload", (e) => app.stop(true));
+window.addEventListener("beforeunload", () => app.stop(true));
 
 logger.debug("App started");

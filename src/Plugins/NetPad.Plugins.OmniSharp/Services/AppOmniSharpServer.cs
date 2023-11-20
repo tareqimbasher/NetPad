@@ -344,7 +344,7 @@ public class AppOmniSharpServer
 
     private async Task UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(CodeParsingResult parsingResult)
     {
-        var usings = parsingResult.CombineSourceCode().GetAllUsings()
+        var usings = parsingResult.GetFullProgram().GetAllUsings()
             .Select(u => u.ToCodeString(true))
             .JoinToString(Environment.NewLine);
 

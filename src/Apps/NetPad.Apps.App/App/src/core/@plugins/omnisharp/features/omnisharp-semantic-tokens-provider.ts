@@ -71,6 +71,10 @@ export class OmniSharpSemanticTokensProvider extends FeatureProvider implements 
 
         const response = await this.omnisharpService.getSemanticHighlights(scriptId, request, this.getAbortSignal(token));
 
+        if (model.isDisposed()) { // Can happen if model (ie. script tab) is closed before the response is returned
+            return null;
+        }
+
         const versionAfterRequest = model.getVersionId();
 
         if (versionBeforeRequest !== versionAfterRequest) {

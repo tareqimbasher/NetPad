@@ -106,7 +106,11 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
 
         const scriptId = EditorUtil.getScriptId(model);
 
-        const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, this.getAbortSignal(token));
+        let omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, this.getAbortSignal(token));
+
+        if (ctx.triggerKind !== languages.CompletionTriggerKind.Invoke && (!omnisharpCompletions || !omnisharpCompletions.items.length)) {
+            omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, this.getAbortSignal(token));
+        }
 
         if (token.isCancellationRequested || !omnisharpCompletions || !omnisharpCompletions.items) {
             return new CompletionResults();

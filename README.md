@@ -34,6 +34,8 @@ Additional requirements only if you plan to create and use database connections:
 
 [Download](https://github.com/tareqimbasher/NetPad/releases) the latest version for free!
 
+On **macOS** see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash) if you have trouble opening NetPad.
+
 ## Updates
 
 NetPad checks for updates on startup and will let you know when a new version is available.

@@ -5,15 +5,30 @@ using NetPad.IO;
 namespace NetPad.Runtimes;
 
 /// <summary>
-/// Handles all operations related to running a <see cref="Scripts.Script"/>.
+/// An execution engine that runs <see cref="Scripts.Script"/>s.
 /// </summary>
 public interface IScriptRuntime : IDisposable
 {
     Task<RunResult> RunScriptAsync(RunOptions runOptions);
     Task StopScriptAsync();
 
-    void AddInput(IInputReader<string> outputAdapter);
-    void RemoveInput(IInputReader<string> outputAdapter);
-    void AddOutput(IOutputWriter<object> outputAdapter);
-    void RemoveOutput(IOutputWriter<object> outputAdapter);
+    /// <summary>
+    /// Adds an input reader that will be invoked whenever script makes a request for user input.
+    /// </summary>
+    void AddInput(IInputReader<string> inputReader);
+
+    /// <summary>
+    /// Removes a previously added input reader.
+    /// </summary>
+    void RemoveInput(IInputReader<string> inputReader);
+
+    /// <summary>
+    /// Adds an output writer that will be invoked whenever script, or this runtime itself, emits any output.
+    /// </summary>
+    void AddOutput(IOutputWriter<object> outputWriter);
+
+    /// <summary>
+    /// Removes a previously added output writer.
+    /// </summary>
+    void RemoveOutput(IOutputWriter<object> outputWriter);
 }

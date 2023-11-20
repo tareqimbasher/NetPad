@@ -7,73 +7,77 @@ namespace NetPad.Runtimes;
 /// <summary>
 /// Handles unstructured raw process output. Used to buffer output and give it order. Usually raw process output
 /// is not user-designated output and can be unpredictable (ex. stackoverflow output can be thousands of lines in rapid succession).
+///
+/// Another use for this is raw process output comes in line-by-line. An error emitted as a result of an uncaught
+/// exception for example will span multiple lines, each line will come in one by one. The debounced queue
+/// implemented here will ensure that those lines will be bundled and written to output as one message.
 /// </summary>
 internal class RawOutputHandler
 {
-    private uint _rawResultOutputOrder;
-    private uint _rawResultOutputPushOrder;
-    private uint _rawErrorOutputOrder;
-    private uint _rawErrorOutputPushOrder;
-    private readonly ConcurrentQueue<(uint order, string output)> _rawResultOutput;
-    private readonly ConcurrentQueue<(uint order, string output)> _rawErrorOutput;
-    private readonly Action PushResultOutput;
-    private readonly Action PushErrorOutput;
+    private uint _rawOutputOrder;
+    private uint _rawOutputPushOrder;
+    private uint _rawErrorOrder;
+    private uint _rawErrorPushOrder;
+    private readonly ConcurrentQueue<(uint order, string output)> _rawOutputs;
+    private readonly ConcurrentQueue<(uint order, string output)> _rawErrors;
+    private readonly Action PushOutputs;
+    private readonly Action PushErrors;
 
-    public RawOutputHandler(IOutputWriter<object> scriptOutputAdapter)
+    public RawOutputHandler(IOutputWriter<object> scriptOutputWriter)
     {
-        _rawResultOutput = new();
-        _rawErrorOutput = new();
+        _rawOutputs = new();
+        _rawErrors = new();
 
-        PushResultOutput = new Func<Task>(async () =>
+        PushOutputs = new Func<Task>(async () =>
         {
             var list = new List<(uint order, string output)>();
 
-            while (_rawResultOutput.TryDequeue(out var output))
+            while (_rawOutputs.TryDequeue(out var output))
                 list.Add(output);
 
             if (!list.Any()) return;
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputAdapter.WriteAsync(new RawScriptOutput(
-                Interlocked.Increment(ref _rawResultOutputPushOrder) - 1,
+            await scriptOutputWriter.WriteAsync(new RawScriptOutput(
+                Interlocked.Increment(ref _rawOutputPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
 
-        PushErrorOutput = new Func<Task>(async () =>
+        PushErrors = new Func<Task>(async () =>
         {
             var list = new List<(uint order, string output)>();
 
-            while (_rawErrorOutput.TryDequeue(out var output))
+            while (_rawErrors.TryDequeue(out var output))
                 list.Add(output);
 
             if (!list.Any()) return;
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputAdapter.WriteAsync(new ErrorScriptOutput(
-                Interlocked.Increment(ref _rawErrorOutputPushOrder) - 1,
+            await scriptOutputWriter.WriteAsync(new ErrorScriptOutput(
+                Interlocked.Increment(ref _rawErrorPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
     }
 
     public void Reset()
     {
-        _rawResultOutputOrder = 0;
-        _rawResultOutputPushOrder = 0;
-        _rawErrorOutputOrder = 0;
-        _rawErrorOutputPushOrder = 0;
+        _rawOutputOrder = 0;
+        _rawOutputPushOrder = 0;
+        _rawErrorOrder = 0;
+        _rawErrorPushOrder = 0;
     }
 
-    public void RawResultOutputReceived(string output)
+    public void RawOutputReceived(string output)
     {
-        _rawResultOutput.Enqueue((Interlocked.Increment(ref _rawResultOutputOrder) - 1, output));
-        PushResultOutput();
+        _rawOutputs.Enqueue((Interlocked.Increment(ref _rawOutputOrder) - 1, output));
+        PushOutputs();
     }
 
-    public void RawErrorOutputReceived(string output)
+    public void RawErrorReceived(string output)
     {
-        _rawErrorOutput.Enqueue((Interlocked.Increment(ref _rawErrorOutputOrder) - 1, output));
-        PushErrorOutput();
+        _rawErrors.Enqueue((Interlocked.Increment(ref _rawErrorOrder) - 1, output));
+        PushErrors();
     }
 }
