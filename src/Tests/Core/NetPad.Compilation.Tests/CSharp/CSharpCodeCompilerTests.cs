@@ -85,7 +85,7 @@ public class CSharpCodeCompilerTests
     [InlineData(DotNetFrameworkVersion.DotNet5, null)]
     [InlineData(DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10)]
     [InlineData(DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11)]
-    [InlineData(DotNetFrameworkVersion.DotNet8, null)]
+    [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
     public void Compiler_Uses_Correct_CSharp_LanguageVersion(DotNetFrameworkVersion targetFrameworkVersion, LanguageVersion? expectedLangVersion)
     {
         var compiler = CreateCSharpCodeCompiler();
@@ -137,6 +137,16 @@ public class CSharpCodeCompilerTests
         var code = GetProgram("var str = \"\"\"\nsome text\n\"\"\";");
 
         var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet7));
+
+        Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
+    }
+
+    [Fact]
+    public void Can_Compile_CSharp12_Features()
+    {
+        var code = GetProgram("var IncrementBy = (int source, int increment = 1) => source + increment;");
+
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }

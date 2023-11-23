@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace NetPad.DotNet;
 
@@ -43,7 +44,7 @@ public static class DotNetFrameworkVersionUtil
 
     public static bool IsSdkVersionSupported(SemanticVersion sdkVersion)
     {
-        return sdkVersion.Major is 6 or 7;
+        return sdkVersion.Major is >= 6 and <= 8;
     }
 
     public static bool IsSupported(this DotNetSdkVersion sdkVersion)
@@ -80,5 +81,16 @@ public static class DotNetFrameworkVersionUtil
             throw new ArgumentOutOfRangeException(nameof(frameworkVersion), frameworkVersion, $"Unknown framework version: {frameworkVersion}");
 
         return _map.First(x => x.Value == frameworkVersion).Key;
+    }
+
+    public static LanguageVersion GetLatestSupportedCSharpLanguageVersion(DotNetFrameworkVersion dotNetFrameworkVersion)
+    {
+        return dotNetFrameworkVersion switch
+        {
+            DotNetFrameworkVersion.DotNet6 => LanguageVersion.CSharp10,
+            DotNetFrameworkVersion.DotNet7 => LanguageVersion.CSharp11,
+            DotNetFrameworkVersion.DotNet8 => LanguageVersion.CSharp12,
+            _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unhandled .NET framework version")
+        };
     }
 }
