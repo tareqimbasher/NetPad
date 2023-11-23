@@ -4,8 +4,8 @@
 
 * `core`: folders contained here should be thought of as separate modules.
     * `@common`: contains common utils and non-app specific code.
-    * `@domain`: the app-specific domain layer.
-    * `@application`: the application layer.
+    * `@domain`: contains api client code and services that are not concerned with UI or the structure of the app. Should only rely on `@common`.
+    * `@application`: contains components and application services.
     * `@plugins`: app plugins.
 * `styles`: application-wide styling.
 * `windows`: each window should have a separate folder within this folder.

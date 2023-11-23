@@ -19,6 +19,7 @@ public static class GlobalConsts
             {
                 DotNetFrameworkVersion.DotNet6 => "6.0.19",
                 DotNetFrameworkVersion.DotNet7 => "7.0.8",
+                DotNetFrameworkVersion.DotNet8 => "8.0.0",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion,
                     $"Unsupported framework version: {dotNetFrameworkVersion}")
             };
@@ -30,6 +31,7 @@ public static class GlobalConsts
             {
                 DotNetFrameworkVersion.DotNet6 => "6.0.8",
                 DotNetFrameworkVersion.DotNet7 => "7.0.4",
+                DotNetFrameworkVersion.DotNet8 => "8.0.0",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion,
                     $"Unsupported framework version: {dotNetFrameworkVersion}")
             };
@@ -41,6 +43,7 @@ public static class GlobalConsts
             {
                 DotNetFrameworkVersion.DotNet6 => "6.0.21",
                 DotNetFrameworkVersion.DotNet7 => "7.0.10",
+                DotNetFrameworkVersion.DotNet8 => "8.0.0",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion,
                     $"Unsupported framework version: {dotNetFrameworkVersion}")
             };

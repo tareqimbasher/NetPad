@@ -112,17 +112,7 @@ public class CSharpCodeCompiler : ICodeCompiler
     {
         // TODO investigate using SourceKind.Script
         return CSharpParseOptions.Default
-            .WithLanguageVersion(GetCSharpLanguageVersion(targetFrameworkVersion))
+            .WithLanguageVersion(DotNetFrameworkVersionUtil.GetLatestSupportedCSharpLanguageVersion(targetFrameworkVersion))
             .WithKind(SourceCodeKind.Regular);
-    }
-
-    private LanguageVersion GetCSharpLanguageVersion(DotNetFrameworkVersion dotNetFrameworkVersion)
-    {
-        return dotNetFrameworkVersion switch
-        {
-            DotNetFrameworkVersion.DotNet6 => LanguageVersion.CSharp10,
-            DotNetFrameworkVersion.DotNet7 => LanguageVersion.CSharp11,
-            _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unhandled .NET framework version")
-        };
     }
 }
