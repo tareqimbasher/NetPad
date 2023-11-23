@@ -23,7 +23,7 @@ features developers most commonly need, and if we're lucky, a few new useful one
 
 The following must be be installed to use NetPad:
 
-* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or v7)
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or greater)
 
 Additional requirements only if you plan to create and use database connections:
 

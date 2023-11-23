@@ -33,8 +33,9 @@ while getopts "bcht:" flag; do
   h)
     echo "help:"
     echo "   -b:   Builds the electron app. If this is omitted, the script will only distribute to dist directory."
-    echo "   -t:   Target a specific os. Options: linux, osx, win"
-    echo "   -h:   Print help section and exit"
+    echo "   -t:   Target a specific os. Options: linux, osx, osx-arm, win.  Will target all if unspecified."
+    echo "   -c:   Cleans (deletes) dist dir and its contents and recreates it."
+    echo "   -h:   Print help section and exit."
     exit 0
     ;;
   *) exit 1 ;;
@@ -123,13 +124,17 @@ if [[ -z $os ]] || [[ $os == "linux" ]]; then
   package linux
 fi
 
-if [[ -z $os ]] || [[ $os == "osx" ]]; then
-  printf "%b" "${GREEN}\n# OSX packages\n${ENDCOLOR}"
-  package osx
-  package "custom osx-arm64;mac /electron-arch arm64"
-fi
-
 if [[ -z $os ]] || [[ $os == "win" ]]; then
   printf "%b" "${GREEN}\n# WINDOWS packages\n${ENDCOLOR}"
   package win
+fi
+
+if [[ -z $os ]] || [[ $os == "osx" ]]; then
+  printf "%b" "${GREEN}\n# OSX packages\n${ENDCOLOR}"
+  package osx
+fi
+
+if [[ -z $os ]] || [[ $os == "osx-arm" ]]; then
+  printf "%b" "${GREEN}\n# OSX ARM packages\n${ENDCOLOR}"
+  package "custom osx-arm64;mac /electron-arch arm64"
 fi
