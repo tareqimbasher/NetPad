@@ -15,9 +15,9 @@ public class DefaultInMemoryScriptRuntimeFactory : IScriptRuntimeFactory
         _serviceProvider = serviceProvider;
     }
 
-    public Task<IScriptRuntime> CreateScriptRuntimeAsync(Script script)
+    public IScriptRuntime CreateScriptRuntime(Script script)
     {
-        var runtime = new InMemoryScriptRuntime(
+        return new InMemoryScriptRuntime(
             script,
             _serviceProvider.CreateScope(),
             _serviceProvider.GetRequiredService<ICodeParser>(),
@@ -25,7 +25,5 @@ public class DefaultInMemoryScriptRuntimeFactory : IScriptRuntimeFactory
             _serviceProvider.GetRequiredService<IPackageProvider>(),
             _serviceProvider.GetRequiredService<ILogger<InMemoryScriptRuntime>>()
         );
-
-        return Task.FromResult<IScriptRuntime>(runtime);
     }
 }

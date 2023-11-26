@@ -88,11 +88,15 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
             // Reset raw output order
             _rawOutputHandler.Reset();
 
-            _processHandler = new ProcessHandler(_dotNetInfo.LocateDotNetExecutableOrThrow(), scriptAssemblyFilePath.Path);
+            _processHandler = new ProcessHandler(
+                _dotNetInfo.LocateDotNetExecutableOrThrow(),
+                $"{scriptAssemblyFilePath.Path} -html"
+            );
 
             _processHandler.IO.OnOutputReceivedHandlers.Add(OnProcessOutputReceived);
 
-            _processHandler.IO.OnErrorReceivedHandlers.Add(async raw => await OnProcessErrorReceived(raw, runDependencies.ParsingResult.UserProgramStartLineNumber));
+            _processHandler.IO.OnErrorReceivedHandlers.Add(async raw =>
+                await OnProcessErrorReceived(raw, runDependencies.ParsingResult.UserProgramStartLineNumber));
 
             var stopWatch = Stopwatch.StartNew();
 
@@ -163,6 +167,14 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
         }
 
         return Task.CompletedTask;
+    }
+
+    public string[] GetSupportAssemblies()
+    {
+        return new[]
+        {
+            typeof(ExternalProcessOutput).Assembly.Location
+        };
     }
 
     public void Dispose()

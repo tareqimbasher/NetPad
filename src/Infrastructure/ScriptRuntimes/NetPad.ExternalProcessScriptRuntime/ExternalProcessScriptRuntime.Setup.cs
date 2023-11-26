@@ -1,14 +1,14 @@
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
+using NetPad.Presentation;
 using NetPad.Utilities;
 using O2Html;
-using HtmlSerializer = NetPad.Html.HtmlSerializer;
-using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Runtimes;
 
@@ -53,11 +53,15 @@ public partial class ExternalProcessScriptRuntime
             .Select(x => x.Path)
             .ToHashSet();
 
-        // Add certain app assemblies needed to support script runtime services running in external process
-        referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);
-        // Needed to serialize output in external process to HTML
+        // Add app assemblies needed to support running external process
+        referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);          // NetPad.Domain
+        referenceAssemblyPaths.Add(typeof(ExternalProcessOutput).Assembly.Location);    // NetPad.ExternalProcessRuntime.Interface
+        referenceAssemblyPaths.Add(typeof(PresentationSettings).Assembly.Location);     // NetPad.Presentation
+
+        // Needed as dependencies to NetPad.Presentation assembly
         referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
-        referenceAssemblyPaths.Add(typeof(HtmlSerializer).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(Dumpify.DumpExtensions).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(Spectre.Console.IAnsiConsole).Assembly.Location);
 
         // Parse Code & Compile
         var (parsingResult, compilationResult) = ParseAndCompile(
@@ -110,6 +114,11 @@ public partial class ExternalProcessScriptRuntime
                 {
                     AdditionalCode = additionalCode
                 });
+
+            parsingResult.BootstrapperProgram.Code.Update(parsingResult.BootstrapperProgram.Code.Value?
+                .Replace("SCRIPT_ID", _script.Id.ToString())
+                .Replace("SCRIPT_NAME", _script.Name)
+                .Replace("SCRIPT_LOCATION", _script.Path));
 
             var fullProgram = parsingResult.GetFullProgram();
 

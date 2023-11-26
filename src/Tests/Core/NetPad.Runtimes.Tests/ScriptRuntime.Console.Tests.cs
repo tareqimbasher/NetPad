@@ -48,7 +48,7 @@ public class ScriptRuntimeConsoleTests : TestBase
         script.UpdateCode($"Console.Write({code});");
 
         string? result = null;
-        var runtime = await GetScriptRuntimeAsync(script);
+        var runtime = GetScriptRuntime(script);
         runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
 
         await runtime.RunScriptAsync(new RunOptions());
@@ -56,9 +56,9 @@ public class ScriptRuntimeConsoleTests : TestBase
         Assert.Equal(expectedOutput, result);
     }
 
-    private async Task<InMemoryScriptRuntime> GetScriptRuntimeAsync(Script script)
+    private InMemoryScriptRuntime GetScriptRuntime(Script script)
     {
-        return (InMemoryScriptRuntime)await ServiceProvider.GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
-            .CreateScriptRuntimeAsync(script);
+        return (InMemoryScriptRuntime)ServiceProvider.GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
+            .CreateScriptRuntime(script);
     }
 }

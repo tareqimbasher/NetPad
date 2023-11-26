@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Events;
 using NetPad.IO;
+using NetPad.Presentation.Html;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 using O2Html;
-using HtmlSerializer = NetPad.Html.HtmlSerializer;
 using Timer = System.Timers.Timer;
 
 namespace NetPad.Services;
@@ -35,7 +35,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     private const int _maxUserOutputMessagesPerRun = 10100;
     private int _userOutputMessagesSentThisRun;
     private bool _outputLimitReachedMessageSent;
-    private readonly object _outputLimitReachedMessageSendLock = new ();
+    private readonly object _outputLimitReachedMessageSendLock = new();
 
     public ScriptEnvironmentIpcOutputWriter(
         ScriptEnvironment scriptEnvironment,
@@ -113,10 +113,12 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 {
                     if (_outputLimitReachedMessageSent) return;
 
-                    var message = new HtmlRawScriptOutput(HtmlSerializer.Serialize(
+                    var message = new HtmlRawScriptOutput(HtmlPresenter.SerializeToElement(
                         "Output limit reached.",
-                        transform: group => group.WithAddClass("raw"),
-                        appendNewLineForAllTextOutput: true));
+                        appendNewLineForAllTextOutput: true)
+                        .WithAddClass("raw")
+                        .ToHtml()
+                    );
                     QueueMessage(message, true);
                     _outputLimitReachedMessageSent = true;
                 }
@@ -132,7 +134,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlSqlScriptOutput = new HtmlSqlScriptOutput(
                 sqlScriptOutput.Order,
-                HtmlSerializer.Serialize(sqlScriptOutput.Body, title));
+                HtmlPresenter.Serialize(sqlScriptOutput.Body, title));
 
             await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput), _ctsAccessor.Value.Token);
         }
@@ -144,12 +146,14 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlRawScriptOutput = new HtmlRawScriptOutput(
                 rawScriptOutput.Order,
-                HtmlSerializer.Serialize(
-                    rawScriptOutput.Body,
-                    title,
-                    transform: group => group.WithAddClass("raw"),
-                    appendNewLineForAllTextOutput: true
-                ));
+                HtmlPresenter.SerializeToElement(
+                        rawScriptOutput.Body,
+                        title,
+                        appendNewLineForAllTextOutput: true
+                    )
+                    .WithAddClass("raw")
+                    .ToHtml()
+            );
 
             QueueMessage(htmlRawScriptOutput, false);
         }
@@ -161,7 +165,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlErrorOutput = new HtmlErrorScriptOutput(
                 errorScriptOutput.Order,
-                HtmlSerializer.Serialize(errorScriptOutput.Body, title, true));
+                HtmlPresenter.Serialize(errorScriptOutput.Body, title, true));
 
             QueueMessage(htmlErrorOutput, false);
         }
@@ -173,7 +177,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlRawOutput = new HtmlRawScriptOutput(
                 scriptOutput.Order,
-                HtmlSerializer.Serialize(output, title));
+                HtmlPresenter.Serialize(output, title));
 
             QueueMessage(htmlRawOutput, true);
         }
@@ -181,7 +185,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             _logger.LogWarning("Unexpected script output format: {OutputType}", output?.GetType().Name);
 
-            var htmlRawOutput = new HtmlRawScriptOutput(0, HtmlSerializer.Serialize(output, title));
+            var htmlRawOutput = new HtmlRawScriptOutput(0, HtmlPresenter.Serialize(output, title));
 
             QueueMessage(htmlRawOutput, true);
         }

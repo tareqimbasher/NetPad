@@ -69,6 +69,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Infrastructure.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Presentation", "Core\NetPad.Presentation\NetPad.Presentation.csproj", "{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Presentation.Tests", "Tests\Core\NetPad.Presentation.Tests\NetPad.Presentation.Tests.csproj", "{C83E9EF6-6B1C-4580-863E-748A398E6BA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.ExternalProcessScriptRuntime.Interface", "Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime.Interface\NetPad.ExternalProcessScriptRuntime.Interface.csproj", "{E5665E5B-B410-4E21-8F39-57D4174DBAEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +163,14 @@ Global
 		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C83E9EF6-6B1C-4580-863E-748A398E6BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C83E9EF6-6B1C-4580-863E-748A398E6BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C83E9EF6-6B1C-4580-863E-748A398E6BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C83E9EF6-6B1C-4580-863E-748A398E6BA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5665E5B-B410-4E21-8F39-57D4174DBAEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5665E5B-B410-4E21-8F39-57D4174DBAEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5665E5B-B410-4E21-8F39-57D4174DBAEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5665E5B-B410-4E21-8F39-57D4174DBAEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
@@ -185,5 +197,7 @@ Global
 		{CE6863C5-6B3A-4555-8FB3-D3782E182074} = {6DD496D9-D5F3-4985-854C-165CD1B2691E}
 		{73C3CD0F-BC83-42BE-A4FE-6169482413F9} = {CE6863C5-6B3A-4555-8FB3-D3782E182074}
 		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
+		{C83E9EF6-6B1C-4580-863E-748A398E6BA8} = {B71E3F38-D81F-4DE0-905B-DD4262DA8AA8}
+		{E5665E5B-B410-4E21-8F39-57D4174DBAEC} = {DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1}
 	EndGlobalSection
 EndGlobal

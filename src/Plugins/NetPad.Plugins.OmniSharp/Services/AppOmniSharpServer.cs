@@ -84,6 +84,11 @@ public class AppOmniSharpServer
 
         await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
 
+        foreach (var assemblyPath in _environment.GetScriptRuntimeSupportAssemblies())
+        {
+            await Project.AddAssemblyFileReferenceAsync(new AssemblyFileReference(assemblyPath));
+        }
+
         await Project.RestoreAsync();
 
         InitializeEventHandlers();
@@ -112,6 +117,8 @@ public class AppOmniSharpServer
         {
             semaphore.Dispose();
         }
+
+        _bufferUpdateSemaphores.Clear();
 
         await _eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
@@ -175,7 +182,7 @@ public class AppOmniSharpServer
         }.JoinToString(" ");
 
         var omniSharpServer = _omniSharpServerFactory.CreateStdioServerFromNewProcess(
-            executablePath,
+            executablePath!,
             Project.ProjectDirectoryPath,
             args,
             _dotNetInfo.LocateDotNetRootDirectory());
@@ -414,7 +421,7 @@ public class AppOmniSharpServer
 
     private async Task UpdateBufferAsync(string filePath, string? buffer)
     {
-        var semaphore = _bufferUpdateSemaphores.GetOrAdd(filePath, key => new SemaphoreSlim(1, 1));
+        var semaphore = _bufferUpdateSemaphores.GetOrAdd(filePath, _ => new SemaphoreSlim(1, 1));
         await semaphore.WaitAsync();
 
         try
