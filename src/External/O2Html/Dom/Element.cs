@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using O2Html.Dom.Attributes;
 
 namespace O2Html.Dom;
 
@@ -20,6 +21,7 @@ public class Element : Node
         TagName = tagName;
 
         Attributes = new List<ElementAttribute>();
+        ClassList = new ClassList(this);
     }
 
     public string TagName { get; }
@@ -27,7 +29,7 @@ public class Element : Node
     public IReadOnlyList<Node> Children => _children;
     public List<ElementAttribute> Attributes { get; }
     public IEnumerable<Element> ChildElements => Children.OfType<Element>();
-
+    public ClassList ClassList { get; }
 
     public void AddChild(Node child)
     {
@@ -142,13 +144,19 @@ public class Element : Node
         output.Add(HtmlConstants.OpeningAngleBracket);
         output.AddRange(tagNameBytes);
 
-        if (Attributes.Any())
+        if (Attributes.Count > 0)
         {
             output.Add(HtmlConstants.Space);
 
             for (var iAttr = 0; iAttr < Attributes.Count; iAttr++)
             {
                 var attribute = Attributes[iAttr];
+
+                if (string.IsNullOrWhiteSpace(attribute.Value))
+                {
+                    continue;
+                }
+
                 if (iAttr > 0) output.Add(HtmlConstants.Space);
                 output.AddRange(Encoding.UTF8.GetBytes(attribute.ToString()));
             }
