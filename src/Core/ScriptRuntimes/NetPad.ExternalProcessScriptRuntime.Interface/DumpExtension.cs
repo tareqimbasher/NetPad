@@ -1,3 +1,5 @@
+using NetPad.Presentation.Html;
+
 namespace NetPad.Runtimes;
 
 public static class DumpExtension
@@ -20,7 +22,7 @@ public static class DumpExtension
             // they are rendered in an HTML block element that automatically pushes elements after it
             // to a new line. However when rendering strings (or objects that are rendered as strings)
             // HTML renders them in-line. So here we detect that, add manually add a new line
-            shouldAddNewLineAfter = title == null && NetPad.Presentation.Html.HtmlPresenter.IsDotNetTypeWithStringRepresentation(typeof(T));
+            shouldAddNewLineAfter = title == null || HtmlPresenter.IsDotNetTypeWithStringRepresentation(typeof(T));
         }
 
         ScriptRuntimeServices.ResultWrite(o, title, appendNewLine: shouldAddNewLineAfter);
