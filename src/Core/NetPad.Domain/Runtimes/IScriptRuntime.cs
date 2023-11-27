@@ -13,6 +13,12 @@ public interface IScriptRuntime : IDisposable
     Task StopScriptAsync();
 
     /// <summary>
+    /// Gets assemblies that expose supporting code to the running script specific to this runtime.
+    /// </summary>
+    /// <returns>Fully-qualified file paths of all support assemblies exposed by runtime.</returns>
+    string[] GetSupportAssemblies();
+
+    /// <summary>
     /// Adds an input reader that will be invoked whenever script makes a request for user input.
     /// </summary>
     void AddInput(IInputReader<string> inputReader);

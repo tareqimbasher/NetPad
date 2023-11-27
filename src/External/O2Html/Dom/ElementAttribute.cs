@@ -19,8 +19,9 @@ public class ElementAttribute
 
     public string Value { get; private set; }
 
-    public IEnumerable<string> Values => Value.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+    public string[] Values => Value.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
+    public bool IsEmpty => string.IsNullOrWhiteSpace(Value);
 
     public ElementAttribute Set(string? value)
     {
@@ -28,15 +29,25 @@ public class ElementAttribute
         return this;
     }
 
+    public ElementAttribute Set(IEnumerable<string> values)
+    {
+        Value = string.Join(" ", values);
+        return this;
+    }
+
     public ElementAttribute Append(string? value, bool appendIfExists = true)
     {
-        if (!string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            Set(value);
+        }
+        else
         {
             var values = Values.ToList();
             if (appendIfExists || !values.Contains(value!))
             {
                 values.Add(value!);
-                Set(string.Join(" ", values));
+                Set(values);
             }
         }
 
@@ -45,8 +56,8 @@ public class ElementAttribute
 
     public ElementAttribute Remove(string value)
     {
-        if (string.IsNullOrEmpty(Value)) return this;
-        Value = string.Join(" ", Value.Split(' ').Where(i => i != value));
+        if (string.IsNullOrWhiteSpace(Value)) return this;
+        Set(Values.Where(i => i != value));
         return this;
     }
 

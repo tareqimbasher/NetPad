@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Newtonsoft.Json;
 using O2Html.Dom;
@@ -22,8 +23,8 @@ public class PerformanceTests
     [Fact(Skip = "Adhoc for performance testing")]
     public void LibComparison_Performance_Test()
     {
-        int times = 3;
-        bool preRun = true;
+        const int times = 3;
+        const bool preRun = true;
 
         foreach (var itemsCount in new[] {1, 10, 100, 1000, 10000})
         {
@@ -33,6 +34,7 @@ public class PerformanceTests
             Benchmark("System.Text.Json", () => JsonSerializer.Serialize(cars), times, preRun);
             Benchmark("Json.NET", () => JsonConvert.SerializeObject(cars), times, preRun);
             Benchmark("O2HTML", () => HtmlConvert.Serialize(cars).ToHtml(), times, preRun);
+            Benchmark("Dumpify", () => Dumpify.DumpExtensions.DumpText(cars), times, preRun);
             _testOutputHelper.WriteLine("");
         }
     }
@@ -63,26 +65,42 @@ public class PerformanceTests
 
     private void Benchmark(string label, Action action, int runTimes = 1, bool preRun = false)
     {
+        var stopWatch = new Stopwatch();
+
         if (preRun)
         {
+            stopWatch.Start();
+
             // Run action first so that if first call caches data that later calls will use,
             // we don't get skewed results for non-cached call
             action();
         }
 
+        double? firstRunMs = stopWatch.IsRunning ? stopWatch.Elapsed.TotalMilliseconds : null;
+
         var timings = new List<double>();
+
 
         for (int i = 0; i < runTimes; i++)
         {
-            var start = DateTime.Now;
+            stopWatch.Restart();
             action();
-            timings.Add((DateTime.Now - start).TotalMilliseconds);
+            timings.Add(stopWatch.Elapsed.TotalMilliseconds);
         }
+
+        stopWatch.Stop();
 
         timings.Sort();
         var median = timings[timings.Count / 2];
 
-        _testOutputHelper.WriteLine($"### {label.PadRight(25)} => MEDIAN: {median} | AVG: {timings.Average()}");
+        var result = $"### {label,-25} => MEDIAN: {median}ms | AVG: {Math.Round(timings.Average(), 4)}ms";
+        if (firstRunMs.HasValue)
+        {
+            result += $" | First Run: {firstRunMs}ms";
+        }
+
+
+        _testOutputHelper.WriteLine(result);
     }
 
     private static List<Car> GetCars(int count)

@@ -4,11 +4,14 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>NetPad</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\External\O2Html\O2Html.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Dumpify" Version="0.6.0" />
     </ItemGroup>
 
 </Project>

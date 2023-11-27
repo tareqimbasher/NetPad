@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -89,11 +88,6 @@ public static class HtmlElementExtensions
     {
         element.SetOrAddAttribute("id", id);
         return element;
-    }
-
-    public static IEnumerable<string>? ClassList(this Element element)
-    {
-        return element.GetAttribute("class")?.Values;
     }
 
     public static TElement WithAddClass<TElement>(this TElement element, string className) where TElement : Element

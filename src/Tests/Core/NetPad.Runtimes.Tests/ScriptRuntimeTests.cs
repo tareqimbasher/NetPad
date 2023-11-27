@@ -48,7 +48,7 @@ public class ScriptRuntimeTests : TestBase
         script.Config.SetKind(ScriptKind.Expression);
         script.UpdateCode(@"Console.Write(5)");
 
-        var runtime = await GetScriptRuntimeAsync(script);
+        var runtime = GetScriptRuntime(script);
 
         var result = await runtime.RunScriptAsync(new RunOptions());
         Assert.False(result.IsRunAttemptSuccessful);
@@ -63,7 +63,7 @@ public class ScriptRuntimeTests : TestBase
         script.UpdateCode($"Console.Write({code});");
 
         string? result = null;
-        var runtime = await GetScriptRuntimeAsync(script);
+        var runtime = GetScriptRuntime(script);
         runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
 
         var runResult = await runtime.RunScriptAsync(new RunOptions());
@@ -84,7 +84,7 @@ public class ScriptRuntimeTests : TestBase
             script.UpdateCode("Console.Write(4 + 7);");
 
             var scope = ServiceProvider.CreateScope();
-            var runtime = await GetScriptRuntimeAsync(script, scope.ServiceProvider);
+            var runtime = GetScriptRuntime(script, scope.ServiceProvider);
 
             // Keep result in local variable to test that assembly unloads even if we keep reference to result
             string? result = null;
@@ -108,13 +108,13 @@ public class ScriptRuntimeTests : TestBase
         }
     }
 
-    private async Task<InMemoryScriptRuntime> GetScriptRuntimeAsync(Script script, IServiceProvider? serviceProvider = null)
+    private InMemoryScriptRuntime GetScriptRuntime(Script script, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= ServiceProvider;
 
-        return (InMemoryScriptRuntime)await serviceProvider
+        return (InMemoryScriptRuntime)serviceProvider
             .GetRequiredService<DefaultInMemoryScriptRuntimeFactory>()
-            .CreateScriptRuntimeAsync(script);
+            .CreateScriptRuntime(script);
     }
 
     private Script GetScript()

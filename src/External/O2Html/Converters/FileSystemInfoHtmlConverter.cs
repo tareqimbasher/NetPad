@@ -32,6 +32,8 @@ public class FileSystemInfoHtmlConverter : ObjectHtmlConverter
 #if NET7_0_OR_GREATER
         nameof(FileSystemInfo.UnixFileMode),
 #endif
+        nameof(DirectoryInfo.Parent),
+        nameof(FileInfo.Directory),
     };
 
     protected override PropertyInfo[] GetReadableProperties(HtmlSerializer htmlSerializer, Type type)

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.DotNet;
-using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
 
@@ -18,9 +17,9 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
         _serviceProvider = serviceProvider;
     }
 
-    public Task<IScriptRuntime> CreateScriptRuntimeAsync(Script script)
+    public IScriptRuntime CreateScriptRuntime(Script script)
     {
-        var runtime = new ExternalProcessScriptRuntime(
+        return new ExternalProcessScriptRuntime(
             script,
             _serviceProvider.GetRequiredService<ICodeParser>(),
             _serviceProvider.GetRequiredService<ICodeCompiler>(),
@@ -29,7 +28,5 @@ public class DefaultExternalProcessScriptRuntimeFactory : IScriptRuntimeFactory
             _serviceProvider.GetRequiredService<Settings>(),
             _serviceProvider.GetRequiredService<ILogger<ExternalProcessScriptRuntime>>()
         );
-
-        return Task.FromResult<IScriptRuntime>(runtime);
     }
 }

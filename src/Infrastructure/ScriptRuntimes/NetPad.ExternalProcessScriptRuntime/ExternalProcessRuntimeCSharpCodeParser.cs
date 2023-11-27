@@ -22,10 +22,12 @@ public class ExternalProcessRuntimeCSharpCodeParser : ICodeParser
 
         var bootstrapperProgramSourceCode = SourceCode.Parse(bootstrapperProgram);
 
+        var additionalCode = options != null ? new SourceCodeCollection(options.AdditionalCode) : new SourceCodeCollection();
+
         return new CodeParsingResult(
             new SourceCode(userProgram, namespaces),
             bootstrapperProgramSourceCode,
-            options?.AdditionalCode,
+            additionalCode,
             new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
     }
 
@@ -42,35 +44,8 @@ public class ExternalProcessRuntimeCSharpCodeParser : ICodeParser
         {
             scriptCode = scriptCode.Replace("\"", "\"\"");
 
-            userCode = $@"
-await using var command = DataContext.Database.GetDbConnection().CreateCommand();
-
-command.CommandText = @""{scriptCode}"";
-await DataContext.Database.OpenConnectionAsync();
-
-try
-{{
-    await using var reader = await command.ExecuteReaderAsync();
-
-    do
-    {{
-        var dataTable = new System.Data.DataTable();
-        dataTable.Load(reader);
-
-        if (dataTable.Rows.Count > 0)
-            dataTable.Dump();
-        else
-            ""No rows returned"".Dump();
-    }} while (!reader.IsClosed);
-
-    return 0;
-}}
-catch (System.Exception ex)
-{{
-    ex.Message.Dump();
-    return 1;
-}}
-";
+            userCode = AssemblyUtil.ReadEmbeddedResource(typeof(ExternalProcessRuntimeCSharpCodeParser).Assembly, "EmbeddedCode.SqlAccessCode.cs")
+                .Replace("SQL_CODE", scriptCode);
         }
         else
         {
@@ -82,9 +57,6 @@ catch (System.Exception ex)
 
     private static string GetBootstrapperProgram()
     {
-        var scriptRuntimeServicesCode = AssemblyUtil.ReadEmbeddedResource(typeof(ScriptRuntimeServices).Assembly, $"{nameof(ScriptRuntimeServices)}.cs");
-
-        return scriptRuntimeServicesCode +
-               $"\n\npublic partial class Program {{ static Program() {{ {nameof(ScriptRuntimeServices)}.{nameof(ScriptRuntimeServices.UseStandardIO)}(); }} }}";
+        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalProcessRuntimeCSharpCodeParser).Assembly, "EmbeddedCode.Program.cs");
     }
 }
