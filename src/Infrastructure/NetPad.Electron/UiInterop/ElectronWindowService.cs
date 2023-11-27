@@ -1,6 +1,8 @@
+using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
+using NetPad.Data;
 using NetPad.Scripts;
 using NetPad.UiInterop;
 
@@ -9,12 +11,14 @@ namespace NetPad.Electron.UiInterop;
 public class ElectronWindowService : IUiWindowService
 {
     private readonly WindowManager _windowManager;
+    private readonly IKeyValueDataStore _keyValueDataStore;
     private readonly Settings _settings;
     private readonly ILogger<ElectronWindowService> _logger;
 
-    public ElectronWindowService(WindowManager windowManager, Settings settings, ILogger<ElectronWindowService> logger)
+    public ElectronWindowService(WindowManager windowManager, IKeyValueDataStore keyValueDataStore, Settings settings, ILogger<ElectronWindowService> logger)
     {
         _windowManager = windowManager;
+        _keyValueDataStore = keyValueDataStore;
         _settings = settings;
         _logger = logger;
     }
@@ -25,21 +29,46 @@ public class ElectronWindowService : IUiWindowService
     {
         bool useNativeDecorations = _settings.Appearance.Titlebar.Type == TitlebarType.Native;
 
-        var display = await PrimaryDisplay();
         var window = await _windowManager.CreateWindowAsync("main", true, new BrowserWindowOptions
         {
             Show = false,
-            Height = display.Bounds.Height * 2 / 3,
-            Width = display.Bounds.Width * 2 / 3,
-            X = display.Bounds.X,
-            Y = display.Bounds.Y,
             Frame = useNativeDecorations,
             AutoHideMenuBar = _settings.Appearance.Titlebar.MainMenuVisibility == MainMenuVisibility.AutoHidden,
             Fullscreenable = true,
         });
 
-        window.Show();
-        window.Maximize();
+        await RestoreMainWindowPositionAsync(window);
+    }
+
+    private async Task RestoreMainWindowPositionAsync(BrowserWindow window)
+    {
+        try
+        {
+            var savedBounds = _keyValueDataStore.Get<Rectangle>("main-window.bounds");
+            if (savedBounds != null)
+            {
+                window.SetBounds(savedBounds);
+                window.Show();
+            }
+            else
+            {
+                var display = await PrimaryDisplay();
+                window.SetBounds(display.Bounds);
+                window.Show();
+                window.Maximize();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while restoring main window size and position");
+            window.Show();
+            window.Maximize();
+        }
+
+        window.OnClose += async () =>
+        {
+            _keyValueDataStore.Set("main-window.bounds", await window.GetBoundsAsync());
+        };
     }
 
     public async Task OpenSettingsWindowAsync(string? tab = null)
