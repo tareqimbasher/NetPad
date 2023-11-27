@@ -1,5 +1,5 @@
 import {bindable, Constructable, IContainer} from "aurelia";
-import {ScriptEnvironment} from "@domain";
+import {ScriptEnvironment, Settings} from "@domain";
 import {IToolbarAction, OutputViewToolbar, ToolbarOptions} from "./output-view-toolbar";
 import {ResultsView} from "./results-view/results-view";
 import {SqlView} from "./sql-view/sql-view";
@@ -7,7 +7,14 @@ import {SqlView} from "./sql-view/sql-view";
 export class OutputView {
     @bindable public environment: ScriptEnvironment;
 
-    constructor(public readonly toolbar: OutputViewToolbar, @IContainer private readonly container: IContainer) {
+    constructor(
+        public readonly toolbar: OutputViewToolbar,
+        public readonly settings: Settings,
+        @IContainer private readonly container: IContainer) {
+    }
+
+    public get font(): string {
+        return this.settings.results.font ? this.settings.results.font : "inherit";
     }
 
     public bound() {
