@@ -121,15 +121,20 @@ class Colorizer {
     public static colorize(html: string): string {
         // Date/time
         const spaceSplitParts = html.split("&nbsp;");
-        spaceSplitParts[1] = `<span class="query-time">${spaceSplitParts[1]}`;
-        spaceSplitParts[2] = `${spaceSplitParts[2]}</span>`;
-        html = spaceSplitParts.join("&nbsp;");
+        if (spaceSplitParts.length >= 3) {
+            const timeStr = `${spaceSplitParts[1]} ${spaceSplitParts[2]}`;
+            if (!isNaN(Date.parse(timeStr))) {
+                spaceSplitParts[1] = `<span class="query-time">${spaceSplitParts[1]}`
+                spaceSplitParts[2] = `${spaceSplitParts[2]}</span>`;
+                html = spaceSplitParts.join("&nbsp;");
+            }
+        }
 
         // Parameters
         const paramNames: string[] = [];
         const paramParts = html.split("[Parameters=[");
 
-        if (paramParts.length > 1 || !paramParts[1].startsWith("]")) {
+        if (paramParts.length > 1 && !paramParts[1].startsWith("]")) {
             // paramParts[1] looks like: @__p_1='1000', @__p_0='2'], CommandType='Text', CommandTimeout='30']...
             const params = paramParts[1].split("]")[0].split(",");
 
