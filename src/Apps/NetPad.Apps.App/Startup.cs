@@ -78,6 +78,7 @@ public class Startup
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
         services.AddTransient<ILogoService, LogoService>();
         services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
+        services.AddSingleton<IKeyValueDataStore, FileSystemKeyValueDataStore>();
 
         // Scripts
         services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
