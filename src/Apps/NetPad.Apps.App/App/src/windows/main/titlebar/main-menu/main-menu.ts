@@ -1,8 +1,8 @@
 import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {IMenuItem} from "./imenu-item";
-import {Workbench} from "../../workbench";
 import {Settings} from "@domain";
+import {IMainMenuService} from "@application/main-menu/main-menu-service";
+import {IMenuItem} from "@application/main-menu/imenu-item";
 
 interface ITopLevelMenuItem {
     element: HTMLElement;
@@ -19,9 +19,13 @@ export class MainMenu {
         return this.openCounter > 0;
     }
 
+    public get items() {
+        return this.mainMenuService.items;
+    }
+
     constructor(
         private readonly element: HTMLElement,
-        private readonly workbench: Workbench,
+        @IMainMenuService private readonly mainMenuService: IMainMenuService,
         private readonly settings: Settings) {
         this.visible = settings.appearance.titlebar.mainMenuVisibility === "AlwaysVisible";
     }
@@ -78,6 +82,6 @@ export class MainMenu {
     }
 
     private async clickMenuItem(item: IMenuItem) {
-        await this.workbench.mainMenuService.clickMenuItem(item);
+        await this.mainMenuService.clickMenuItem(item);
     }
 }

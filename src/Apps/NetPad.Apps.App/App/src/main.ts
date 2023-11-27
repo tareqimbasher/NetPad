@@ -3,7 +3,7 @@ import {DialogDefaultConfiguration} from "@aurelia/dialog";
 import "bootstrap";
 import "./styles/main.scss";
 import "@common/globals";
-import {AppMutationObserver, IBackgroundService} from "@common";
+import {AppMutationObserver} from "@common";
 import {
     AppService,
     Env,
@@ -23,6 +23,7 @@ import {
     EventBus,
     ExternalLinkCustomAttribute,
     FindTextBox,
+    IBackgroundService,
     LangLogoValueConverter,
     LogConfig,
     PlatformsCustomAttribute,

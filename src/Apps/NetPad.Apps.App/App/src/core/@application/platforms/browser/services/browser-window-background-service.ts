@@ -1,5 +1,6 @@
-import {IBackgroundService, IDisposable} from "@common";
+import {IDisposable} from "@common";
 import {IEventBus, OpenWindowCommand} from "@domain";
+import {IBackgroundService} from "@application";
 
 /**
  * This is utilized for the Browser app, not the Electron app

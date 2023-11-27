@@ -1,6 +1,6 @@
 ﻿import {IObserver} from "@aurelia/runtime";
 import {IObserverLocator} from "aurelia";
-import {WithDisposables} from "@common/disposable";
+import {WithDisposables} from "@common";
 
 export class LocalStorageBacked extends WithDisposables {
     public readonly scope: string;

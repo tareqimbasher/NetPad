@@ -1,7 +1,7 @@
-import {IBackgroundService, IDisposable} from "../../@common";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "../../@domain";
-import {ClickMenuItemEvent} from "../events/action-events";
-import {IMainMenuService} from "../../../windows/main/titlebar/main-menu/main-menu-service";
+import {IDisposable} from "@common";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {ClickMenuItemEvent, IBackgroundService} from "@application";
+import {IMainMenuService} from "@application/main-menu/main-menu-service";
 
 export class MainMenuBackgroundService implements IBackgroundService {
     private clickMenuItemEventSubscription: IDisposable;

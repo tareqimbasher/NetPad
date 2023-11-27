@@ -1,7 +1,7 @@
 import {Constructable, ILogger} from "aurelia";
-import {IBackgroundService, WithDisposables} from "@common";
+import {WithDisposables} from "@common";
 import {ChannelInfo, IEventBus} from "@domain";
-import {AppActivatedEvent, ClickMenuItemEvent} from "@application";
+import {AppActivatedEvent, ClickMenuItemEvent, IBackgroundService} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
 
 /**

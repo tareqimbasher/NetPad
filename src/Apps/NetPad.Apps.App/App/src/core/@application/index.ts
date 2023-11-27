@@ -22,6 +22,8 @@ export * from "./events/action-events";
 export * from "./events/event-bus";
 export * from "./events/signalr-ipc-gateway";
 
+export * from "./background-services/ibackground-service";
+
 export * from "./windows/iwindow-bootstrapper";
 export * from "./panes/pane-manager";
 export * from "./panes/pane-host/pane-host";

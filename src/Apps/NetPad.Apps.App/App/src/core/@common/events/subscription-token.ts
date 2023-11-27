@@ -1,4 +1,4 @@
-import {IDisposable} from "@common/disposable";
+import {IDisposable} from "@common";
 
 export class SubscriptionToken implements IDisposable {
     private disposeAction: (() => void) | null;

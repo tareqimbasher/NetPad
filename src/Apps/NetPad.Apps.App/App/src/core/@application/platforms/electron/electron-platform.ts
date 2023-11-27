@@ -1,6 +1,6 @@
 import {IAurelia, Registration} from "aurelia";
-import {IBackgroundService} from "@common";
 import {IWindowService} from "@domain";
+import {IBackgroundService} from "@application";
 import {IPlatform} from "../iplatform";
 import {ElectronWindowService} from "./services/electron-window-service";
 import {ElectronEventSync} from "./services/electron-event-sync";

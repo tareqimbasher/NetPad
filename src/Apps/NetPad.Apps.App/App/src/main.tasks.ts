@@ -1,7 +1,6 @@
 ﻿import {IAurelia, IContainer, ILogger} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
-import {IBackgroundService} from "@common";
-import {IWindowBootstrapperConstructor} from "@application";
+import {IBackgroundService, IWindowBootstrapperConstructor} from "@application";
 import {Env} from "@domain";
 
 export const configureFetchClient = (container: IContainer) => {

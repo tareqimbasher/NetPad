@@ -1,4 +1,5 @@
 ﻿import {ILogger} from "aurelia";
+import {WithDisposables} from "@common";
 import {
     AlertUserAboutMissingAppDependencies,
     AlertUserCommand,
@@ -9,7 +10,7 @@ import {
     PromptUserCommand,
     YesNoCancel
 } from "@domain";
-import {IBackgroundService, WithDisposables} from "@common";
+import {IBackgroundService} from "./ibackground-service";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";

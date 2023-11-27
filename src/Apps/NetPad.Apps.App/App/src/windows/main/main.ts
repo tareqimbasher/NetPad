@@ -1,5 +1,4 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
-import {IBackgroundService} from "@common";
 import {
     DataConnectionService,
     IAppService,
@@ -14,6 +13,7 @@ import {
     BuiltinSqlCompletionProvider,
     DataConnectionName,
     IActionProvider,
+    IBackgroundService,
     ICompletionItemProvider,
     IPaneManager,
     IShortcutManager,
@@ -26,7 +26,6 @@ import {Window} from "./window";
 import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
 import {Workbench} from "./workbench";
 import {IStatusbarService, StatusbarService} from "./statusbar/statusbar-service";
-import {IMainMenuService, MainMenuService} from "./titlebar/main-menu/main-menu-service";
 import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-appearance";
 import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {ITextEditor, TextEditor} from "@application/editor/text-editor";
@@ -36,6 +35,7 @@ import {ExcelService, IExcelService} from "@application/data/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {MainMenuBackgroundService} from "@application/background-services/main-menu-background-service";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
+import {IMainMenuService, MainMenuService} from "@application/main-menu/main-menu-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {

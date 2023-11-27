@@ -1,5 +1,6 @@
-import {IBackgroundService, IDisposable} from "@common";
+import {IDisposable} from "@common";
 import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {IBackgroundService} from "./ibackground-service";
 
 /**
  * Used to sync the Settings singleton from changes upstream.

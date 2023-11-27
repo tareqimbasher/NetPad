@@ -1,10 +1,10 @@
 import {IContainer} from "aurelia";
-import {IBackgroundService, WithDisposables} from "@common";
+import {WithDisposables} from "@common";
 import {ChannelInfo} from "@domain";
-import {IShortcutManager, Shortcut} from "@application";
+import {IBackgroundService, IShortcutManager, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
-import {IMainMenuService} from "../../../../../windows/main/titlebar/main-menu/main-menu-service";
-import {IMenuItem} from "../../../../../windows/main/titlebar/main-menu/imenu-item";
+import {IMainMenuService} from "@application/main-menu/main-menu-service";
+import {IMenuItem} from "@application/main-menu/imenu-item";
 
 /**
  * Handles top-level IPC events sent by Electron's main process.
