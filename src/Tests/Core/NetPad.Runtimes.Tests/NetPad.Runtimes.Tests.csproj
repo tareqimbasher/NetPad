@@ -24,9 +24,9 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
         <ProjectReference Include="..\..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
-        <ProjectReference Include="..\..\..\Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime.Interface\NetPad.ExternalProcessScriptRuntime.Interface.csproj" />
-        <ProjectReference Include="..\..\..\Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj" />
-        <ProjectReference Include="..\..\..\Infrastructure\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj" />
+        <ProjectReference Include="..\..\..\Core\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime.Interface\NetPad.ExternalProcessScriptRuntime.Interface.csproj" />
+        <ProjectReference Include="..\..\..\Core\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj" />
+        <ProjectReference Include="..\..\..\Core\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj" />
         <ProjectReference Include="..\..\NetPad.Tests\NetPad.Tests.csproj" />
     </ItemGroup>
 

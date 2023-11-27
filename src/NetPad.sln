@@ -42,9 +42,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Web", "Infrastructur
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScriptRuntimes", "ScriptRuntimes", "{DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.InMemoryScriptRuntime", "Infrastructure\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj", "{9E53E081-A7E7-4FF4-A7BC-C60EECD86645}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.InMemoryScriptRuntime", "Core\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj", "{9E53E081-A7E7-4FF4-A7BC-C60EECD86645}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.ExternalProcessScriptRuntime", "Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj", "{A930F257-B3CF-4E89-A9F2-C27C8F0C80AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.ExternalProcessScriptRuntime", "Core\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj", "{A930F257-B3CF-4E89-A9F2-C27C8F0C80AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Application.Tests", "Tests\Core\NetPad.Application.Tests\NetPad.Application.Tests.csproj", "{F6635FE9-B2AC-4E22-A5E9-93FEC3E10F34}"
 EndProject
@@ -69,7 +69,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Presentation", "Core
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Presentation.Tests", "Tests\Core\NetPad.Presentation.Tests\NetPad.Presentation.Tests.csproj", "{C83E9EF6-6B1C-4580-863E-748A398E6BA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.ExternalProcessScriptRuntime.Interface", "Infrastructure\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime.Interface\NetPad.ExternalProcessScriptRuntime.Interface.csproj", "{E5665E5B-B410-4E21-8F39-57D4174DBAEC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.ExternalProcessScriptRuntime.Interface", "Core\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime.Interface\NetPad.ExternalProcessScriptRuntime.Interface.csproj", "{E5665E5B-B410-4E21-8F39-57D4174DBAEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -182,7 +182,6 @@ Global
 		{A37E9174-33C0-4F85-AA1A-5C2FE3039875} = {3F2AD2F0-FEFB-4633-991E-8DB22471EDE9}
 		{FAAB8EF2-D8F0-4372-ACA7-EC2B94E50E10} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
 		{DA7DC475-4311-4826-A023-532791E7B058} = {3F2AD2F0-FEFB-4633-991E-8DB22471EDE9}
-		{DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1} = {3F2AD2F0-FEFB-4633-991E-8DB22471EDE9}
 		{9E53E081-A7E7-4FF4-A7BC-C60EECD86645} = {DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1}
 		{A930F257-B3CF-4E89-A9F2-C27C8F0C80AA} = {DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1}
 		{F6635FE9-B2AC-4E22-A5E9-93FEC3E10F34} = {B71E3F38-D81F-4DE0-905B-DD4262DA8AA8}
@@ -192,5 +191,6 @@ Global
 		{D29BCA98-5BCE-44A8-9E6F-0F10560B54B8} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
 		{C83E9EF6-6B1C-4580-863E-748A398E6BA8} = {B71E3F38-D81F-4DE0-905B-DD4262DA8AA8}
 		{E5665E5B-B410-4E21-8F39-57D4174DBAEC} = {DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1}
+		{DC4184D2-D0E3-4888-8169-7C2BB8CD6BA1} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
 	EndGlobalSection
 EndGlobal
