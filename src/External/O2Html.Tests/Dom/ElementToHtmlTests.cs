@@ -47,7 +47,11 @@ public class ElementToHtmlTests
         var element = new Element("div");
         element.AddElement("p");
 
-        Assert.Equal("<div>\n<p></p>\n</div>", element.ToHtml(Formatting.NewLines));
+        Assert.Equal("""
+                     <div>
+                       <p></p>
+                     </div>
+                     """, element.ToHtml(Formatting.Indented));
     }
 
     [Fact]
@@ -56,6 +60,14 @@ public class ElementToHtmlTests
         var element = new Element("div");
         element.AddAndGetElement("p").AddAndGetElement("span").AddText("Test");
 
-        Assert.Equal("<div>\n<p>\n<span>\nTest\n</span>\n</p>\n</div>", element.ToHtml(Formatting.NewLines));
+        Assert.Equal("""
+                     <div>
+                       <p>
+                         <span>
+                           Test
+                         </span>
+                       </p>
+                     </div>
+                     """, element.ToHtml(Formatting.Indented));
     }
 }

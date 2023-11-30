@@ -176,7 +176,7 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
             typeof(IOutputWriter<>).Assembly.Location,
             typeof(ExternalProcessOutput).Assembly.Location,
             typeof(Presentation.PresentationSettings).Assembly.Location,
-            typeof(O2Html.HtmlConvert).Assembly.Location,
+            typeof(O2Html.HtmlSerializer).Assembly.Location,
         };
     }
 

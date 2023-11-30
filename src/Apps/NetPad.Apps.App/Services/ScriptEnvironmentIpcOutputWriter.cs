@@ -116,8 +116,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
                     var message = new HtmlRawScriptOutput(HtmlPresenter.SerializeToElement(
                             "Output limit reached.",
-                            new DumpOptions(AppendNewLine: true))
-                        .WithAddClass("raw")
+                            new DumpOptions(AppendNewLineToAllTextOutput: true))
+                        .AddClass("raw")
                         .ToHtml()
                     );
                     QueueMessage(message, true);
@@ -149,9 +149,9 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 rawScriptOutput.Order,
                 HtmlPresenter.SerializeToElement(
                         rawScriptOutput.Body,
-                        new DumpOptions(Title: title, AppendNewLine: true)
+                        new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true)
                     )
-                    .WithAddClass("raw")
+                    .AddClass("raw")
                     .ToHtml()
             );
 
@@ -167,7 +167,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 errorScriptOutput.Order,
                 HtmlPresenter.Serialize(
                     errorScriptOutput.Body,
-                    new DumpOptions(Title: title, AppendNewLine: true),
+                    new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true),
                     isError: true));
 
             QueueMessage(htmlErrorOutput, false);

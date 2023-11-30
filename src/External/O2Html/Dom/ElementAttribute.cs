@@ -9,7 +9,7 @@ public class ElementAttribute
     public ElementAttribute(Element element, string name, string? value = null)
     {
         Element = element ?? throw new ArgumentNullException(nameof(element));
-        Name = name;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
         Value = value?.Trim() ?? string.Empty;
     }
 
@@ -25,15 +25,17 @@ public class ElementAttribute
 
     public ElementAttribute Set(string? value)
     {
-        Value = value?.Trim() ?? string.Empty;
+        Value = value ?? string.Empty;
         return this;
     }
 
-    public ElementAttribute Set(IEnumerable<string> values)
+    public ElementAttribute Set(IEnumerable<string?> values)
     {
-        Value = string.Join(" ", values);
+        Value = string.Join(" ", values.Where(v => v != null)).Trim();
         return this;
     }
+
+    public ElementAttribute Clear() => Set(string.Empty);
 
     public ElementAttribute Append(string? value, bool appendIfExists = true)
     {

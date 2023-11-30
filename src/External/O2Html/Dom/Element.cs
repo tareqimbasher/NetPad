@@ -1,67 +1,77 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using O2Html.Common;
 using O2Html.Dom.Attributes;
 
 namespace O2Html.Dom;
 
+/// <summary>
+/// A HTML Element-type Node.
+/// </summary>
 public class Element : Node
 {
     private readonly List<Node> _children = new();
 
+    /// <summary>
+    /// Creates a new <see cref="Element"/>.
+    /// </summary>
+    /// <param name="tagName">The tag name of the element.</param>
+    ///
     public Element(string tagName) : base(NodeType.Element)
     {
-        IsSelfClosing = tagName.EndsWith(">");
+        if (tagName == null) throw new ArgumentNullException(nameof(tagName));
 
-        tagName = tagName
-            .ReplaceIfExists("<", "")
-            .ReplaceIfExists(">", "")
-            .ReplaceIfExists("/", "");
+        if (HtmlConsts.SelfClosingTags.Contains(tagName))
+        {
+            IsSelfClosing = true;
+        }
+        else
+        {
+            IsSelfClosing = tagName.EndsWith(">");
 
-        TagName = tagName;
+            tagName = tagName
+                .ReplaceIfExists("<", "")
+                .ReplaceIfExists(">", "")
+                .ReplaceIfExists("/", "");
+        }
+
+        TagName = tagName.ToLowerInvariant();
 
         Attributes = new List<ElementAttribute>();
         ClassList = new ClassList(this);
     }
 
+    /// <summary>
+    /// The element's tag name
+    /// </summary>
     public string TagName { get; }
+
+    /// <summary>
+    /// Whether this element is self-closing. If an element is self-closing it cannot contain children.
+    /// </summary>
     public bool IsSelfClosing { get; }
-    public IReadOnlyList<Node> Children => _children;
+
+    /// <summary>
+    /// HTML attributes added to this element.
+    /// </summary>
     public List<ElementAttribute> Attributes { get; }
-    public IEnumerable<Element> ChildElements => Children.OfType<Element>();
+
+    /// <summary>
+    /// List of CSS classes applied to this element.
+    /// </summary>
     public ClassList ClassList { get; }
 
-    public void AddChild(Node child)
-    {
-        child.Parent = this;
-        _children.Add(child);
-    }
+    /// <summary>
+    /// All child nodes.
+    /// </summary>
+    public IReadOnlyList<Node> Children => _children;
 
-    public void InsertChild(int index, Node child)
-    {
-        child.Parent = this;
-        _children.Insert(index, child);
-    }
-
-    public void RemoveChild(Node node)
-    {
-        if (!_children.Contains(node)) return;
-
-        _children.Remove(node);
-        node.Parent = null;
-    }
-
-    public void AddElement(string tagName)
-    {
-        var element = new Element(tagName);
-        AddChild(element);
-    }
-
-    public void AddText(string? text)
-    {
-        var textNode = new TextNode(text);
-        AddChild(textNode);
-    }
+    /// <summary>
+    /// Element-type child nodes.
+    /// </summary>
+    public IEnumerable<Element> ChildElements => Children.OfType<Element>();
 
     public bool HasAttribute(string name)
     {
@@ -84,12 +94,7 @@ public class Element : Node
         return attribute;
     }
 
-    public ElementAttribute SetOrAddAttribute(string name, string? value)
-    {
-        return GetOrAddAttribute(name).Set(value);
-    }
-
-    public ElementAttribute? DeleteAttribute(string name)
+    public ElementAttribute? DeleteAndGetAttribute(string name)
     {
         var attribute = GetAttribute(name);
         if (attribute != null)
@@ -97,99 +102,146 @@ public class Element : Node
         return attribute;
     }
 
+    internal void InternalAddChild(Node child)
+    {
+        EnsureCanManageChildren();
+
+        if (child.Parent == this)
+        {
+            return;
+        }
+
+        child.Parent = this;
+        _children.Add(child);
+    }
+
+    public void InsertChild(int index, Node child)
+    {
+        EnsureCanManageChildren();
+
+        if (child.Parent == this)
+        {
+            return;
+        }
+
+        child.Parent = this;
+        _children.Insert(index, child);
+    }
+
+    public void RemoveChild(Node child)
+    {
+        EnsureCanManageChildren();
+
+        if (child.Parent != this)
+        {
+            return;
+        }
+
+        _children.Remove(child);
+        child.Parent = null;
+    }
+
     public void Clear()
     {
+        EnsureCanManageChildren();
+
+        var children = _children.ToList();
+
         _children.Clear();
+        children.ForEach(c => c.Parent = null);
     }
 
-    public string InnerHtml(Formatting? formatting = null)
+    private void EnsureCanManageChildren()
     {
-        var output = new List<byte>();
-
-        InnerHtml(output);
-
-        return Encoding.UTF8.GetString(output.ToArray());
+        if (IsSelfClosing)
+        {
+            throw new InvalidOperationException("Cannot add or remove children in a self-closing element.");
+        }
     }
 
-    public List<byte> InnerHtml(List<byte> output, Formatting? formatting = null)
+    public string InnerHtml(Formatting? formatting = null, int indentLevel = 0)
+    {
+        var buffer = new List<byte>();
+
+        InnerHtml(buffer, formatting, indentLevel);
+
+        return Encoding.UTF8.GetString(buffer.ToArray());
+    }
+
+    public List<byte> InnerHtml(List<byte> buffer, Formatting? formatting = null, int indentLevel = 0)
     {
         if (IsSelfClosing && Children.Any())
-            return output;
+            return buffer;
 
-        bool addBreaker = formatting == Formatting.NewLines;
+        bool indented = formatting == Formatting.Indented;
 
         for (var iChild = 0; iChild < Children.Count; iChild++)
         {
             var child = Children[iChild];
-            if (addBreaker && iChild > 0) output.Add(HtmlConstants.NewLine);
-            child.ToHtml(output, formatting);
+            if (indented && iChild > 0) buffer.Add(HtmlConsts.NewLineByte);
+            child.ToHtml(buffer, formatting, indentLevel);
         }
 
-        return output;
+        return buffer;
     }
 
-    public override string ToHtml(Formatting? formatting = null)
+    public override string ToHtml(Formatting? formatting = null, int indentLevel = 0)
     {
-        var output = new List<byte>();
-        ToHtml(output, formatting);
-        return Encoding.UTF8.GetString(output.ToArray());
+        var buffer = new List<byte>();
+        ToHtml(buffer, formatting, indentLevel);
+        return Encoding.UTF8.GetString(buffer.ToArray());
     }
 
-    public override void ToHtml(List<byte> output, Formatting? formatting = null)
+    public override void ToHtml(List<byte> buffer, Formatting? formatting = null, int indentLevel = 0)
     {
-        bool addBreaker = formatting == Formatting.NewLines;
+        bool indented = formatting == Formatting.Indented;
 
         byte[] tagNameBytes = Encoding.UTF8.GetBytes(TagName);
 
-        output.Add(HtmlConstants.OpeningAngleBracket);
-        output.AddRange(tagNameBytes);
+        if (indented) buffer.AddIndent(indentLevel);
+        buffer.Add(HtmlConsts.OpeningAngleBracketByte);
+        buffer.AddRange(tagNameBytes);
 
         if (Attributes.Count > 0)
         {
-            output.Add(HtmlConstants.Space);
+            buffer.Add(HtmlConsts.SpaceByte);
 
             for (var iAttr = 0; iAttr < Attributes.Count; iAttr++)
             {
                 var attribute = Attributes[iAttr];
 
-                if (iAttr > 0) output.Add(HtmlConstants.Space);
-                output.AddRange(Encoding.UTF8.GetBytes(attribute.ToString()));
+                if (iAttr > 0) buffer.Add(HtmlConsts.SpaceByte);
+                buffer.AddRange(Encoding.UTF8.GetBytes(attribute.ToString()));
             }
         }
 
         if (IsSelfClosing)
         {
-            output.Add(HtmlConstants.ForwardSlash);
-            output.Add(HtmlConstants.ClosingAngleBracket);
+            buffer.Add(HtmlConsts.ForwardSlashByte);
+            buffer.Add(HtmlConsts.ClosingAngleBracketByte);
         }
         else
         {
-            output.Add(HtmlConstants.ClosingAngleBracket);
+            buffer.Add(HtmlConsts.ClosingAngleBracketByte);
 
             if (Children.Any())
             {
-                if (addBreaker) output.Add(HtmlConstants.NewLine);
-                InnerHtml(output, formatting);
-                if (addBreaker) output.Add(HtmlConstants.NewLine);
+                if (indented) buffer.Add(HtmlConsts.NewLineByte);
+                InnerHtml(buffer, formatting, indentLevel + 1);
             }
 
-            output.Add(HtmlConstants.OpeningAngleBracket);
-            output.Add(HtmlConstants.ForwardSlash);
-            output.AddRange(tagNameBytes);
-            output.Add(HtmlConstants.ClosingAngleBracket);
+            if (indented && Children.Any())
+            {
+                buffer.Add(HtmlConsts.NewLineByte);
+                buffer.AddIndent(indentLevel);
+            }
+
+            buffer.Add(HtmlConsts.OpeningAngleBracketByte);
+            buffer.Add(HtmlConsts.ForwardSlashByte);
+            buffer.AddRange(tagNameBytes);
+            buffer.Add(HtmlConsts.ClosingAngleBracketByte);
         }
     }
 
     public override string ToString() => ToHtml();
-}
-
-public static class HtmlConstants
-{
-    public const byte OpeningAngleBracket = 0x3C;
-    public const byte ClosingAngleBracket = 0x3E;
-    public const byte ForwardSlash = 0x2F;
-    public const byte Space = 0x20;
-    public const byte NewLine = 0x0A;
-
-    //IBufferWriter<>
 }

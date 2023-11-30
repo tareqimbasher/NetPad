@@ -6,11 +6,6 @@ namespace O2Html;
 
 internal static class InternalExtensions
 {
-    public static bool In<T>(this T item, params T[] collection)
-    {
-        return collection.Contains(item);
-    }
-
     public static string ReplaceIfExists(this string source, string strToReplace, string replaceWith)
     {
         if (source.Contains(strToReplace))

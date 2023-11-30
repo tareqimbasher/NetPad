@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using O2Html.Dom;
-using O2Html.Dom.Elements;
 
 namespace O2Html.Converters;
 
@@ -16,21 +15,18 @@ public class MemoryHtmlConverter : CollectionHtmlConverter
         typeof(ReadOnlyMemory<>),
     };
 
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
         return type.IsGenericType && _canConvertTypes.Contains(type.GetGenericTypeDefinition());
     }
 
     protected override (Node node, int? collectionLength) Convert<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj == null)
-            return (new Null(htmlSerializer.SerializerSettings.CssClasses.Null), null);
-
         var method = type.GetMethod(ToArrayMethodName, BindingFlags.Public | BindingFlags.Instance);
 
         if (method == null)
         {
-            throw new Exception($"Cannot serialize type {type}. {ToArrayMethodName} method not found.");
+            throw new HtmlSerializationException($"Cannot serialize type {type}. {ToArrayMethodName} method not found.");
         }
 
         Array array = (Array)method.Invoke(obj, Array.Empty<object>());

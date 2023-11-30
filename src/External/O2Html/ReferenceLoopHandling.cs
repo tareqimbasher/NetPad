@@ -1,7 +1,7 @@
 namespace O2Html;
 
 /// <summary>
-/// Specifies reference loop handling options for the <see cref="HtmlSerializer" />.
+/// Methods in dealing with reference loops.
 /// </summary>
 public enum ReferenceLoopHandling
 {

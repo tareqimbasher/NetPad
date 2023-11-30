@@ -10,9 +10,9 @@ namespace O2Html.Converters;
 
 public class CollectionHtmlConverter : HtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
-        return htmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
+        return HtmlSerializer.GetTypeCategory(type) == TypeCategory.Collection;
     }
 
     public override Node WriteHtml<T>(
@@ -31,19 +31,19 @@ public class CollectionHtmlConverter : HtmlConverter
         SerializationScope serializationScope,
         HtmlSerializer htmlSerializer)
     {
-        var td = tr.AddAndGetElement("td").WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue);
+        var td = tr.AddAndGetElement("td").AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
 
         if (obj == null)
         {
-            td.AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
+            td.AddAndGetNull().AddClass(htmlSerializer.SerializerOptions.CssClasses.Null);
             return;
         }
 
         var result = Convert(obj, type, serializationScope, htmlSerializer);
 
-        if (result.collectionLength == 0 && htmlSerializer.SerializerSettings.DoNotSerializeNonRootEmptyCollections)
+        if (result.collectionLength == 0 && htmlSerializer.SerializerOptions.DoNotSerializeNonRootEmptyCollections)
         {
-            td.AddChild(new EmptyCollection(type).WithAddClass(htmlSerializer.SerializerSettings.CssClasses.EmptyCollection));
+            td.AddChild(new EmptyCollection(type).AddClass(htmlSerializer.SerializerOptions.CssClasses.EmptyCollection));
         }
         else
         {
@@ -53,24 +53,16 @@ public class CollectionHtmlConverter : HtmlConverter
 
     protected virtual (Node node, int? collectionLength) Convert<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj == null)
-            return (new Null(htmlSerializer.SerializerSettings.CssClasses.Null), null);
-
-        if (ShouldShortCircuit(obj, type, serializationScope, htmlSerializer, out var shortCircuitValue))
-        {
-            return (shortCircuitValue, null);
-        }
-
-        Type elementType = htmlSerializer.GetCollectionElementType(type) ?? typeof(object);
+        Type elementType = HtmlSerializer.GetCollectionElementType(type) ?? typeof(object);
         var enumerable = ToEnumerable(obj);
 
         var table = new Table();
 
-        var enumerationResult = LazyEnumerable.Enumerate(enumerable, htmlSerializer.SerializerSettings.MaxCollectionSerializeLength, (element, _) =>
+        var enumerationResult = Enumerate.Max(enumerable, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (item, _) =>
         {
             var tr = table.Body.AddAndGetElement("tr");
 
-            htmlSerializer.SerializeWithinTableRow(tr, element, elementType, serializationScope);
+            htmlSerializer.SerializeWithinTableRow(tr, item, elementType, serializationScope);
 
             if (!tr.Children.Any()) table.Body.RemoveChild(tr);
         });
@@ -78,13 +70,12 @@ public class CollectionHtmlConverter : HtmlConverter
         string headerRowText = GetHeaderRowText(
             enumerable,
             type,
-            enumerationResult.ElementsEnumerated,
-            enumerationResult.CollectionLengthExceedsMax,
-            htmlSerializer);
+            enumerationResult.ItemsProcessed,
+            enumerationResult.CollectionLengthExceedsMax);
 
-        if (htmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
+        if (HtmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
         {
-            var properties = htmlSerializer.GetReadableProperties(elementType);
+            var properties = HtmlSerializer.GetReadableProperties(elementType);
 
             if (properties.Any())
             {
@@ -92,36 +83,35 @@ public class CollectionHtmlConverter : HtmlConverter
                 {
                     table.Head
                         .AddAndGetHeading(property.Name, property.PropertyType.GetReadableName(true))
-                        .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName);
+                        .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName);
                 }
 
-                table.Head.ChildElements.Single().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableDataHeader);
+                table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableDataHeader);
             }
 
             var infoHeaderRow = table.Head.InsertAndGetChild(0, new Element("tr"));
 
             infoHeaderRow
-                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader)
-                .WithTitle(type.GetReadableName(true))
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+                .SetTitle(type.GetReadableName(true))
                 .AddAndGetElement("th")
-                .SetOrAddAttribute("colspan", properties.Length.ToString()).Element
-                .AddText(headerRowText);
+                .SetAttribute("colspan", properties.Length.ToString())
+                .AddEscapedText(headerRowText);
         }
         else
         {
-            table.Head.WithHeading(headerRowText);
-            table.Head.ChildElements.Single().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader);
+            table.Head.AddHeading(headerRowText);
+            table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
         }
 
-        return (table, enumerationResult.ElementsEnumerated);
+        return (table, enumerationResult.ItemsProcessed);
     }
 
     protected string GetHeaderRowText(
         IEnumerable collection,
         Type collectionType,
         int collectionLength,
-        bool collectionHasMoreElementsThanMax,
-        HtmlSerializer htmlSerializer)
+        bool collectionHasMoreElementsThanMax)
     {
         string headerRowText = "";
 
@@ -129,6 +119,9 @@ public class CollectionHtmlConverter : HtmlConverter
 
         if (collectionType.Namespace == "System.Linq" && collectionTypeName.StartsWith("IGrouping<"))
         {
+            // TODO This needs to be simplified
+            // Get the type TKey of the IGrouping<TKey, TElement> and add it to the headerRowText
+
             var keyProp = collectionType.GetProperty("Key", BindingFlags.Instance | BindingFlags.Public);
             if (keyProp != null)
             {
@@ -139,14 +132,19 @@ public class CollectionHtmlConverter : HtmlConverter
                 if (keyValue != null)
                 {
                     var keyValueType = keyValue.GetType();
-                    var typeCategory = htmlSerializer.GetTypeCategory(keyValueType);
+                    var typeCategory = HtmlSerializer.GetTypeCategory(keyValueType);
+
                     if (typeCategory == TypeCategory.DotNetTypeWithStringRepresentation)
                     {
                         keyValueStr = keyValue.ToString();
                     }
+                    else if( typeCategory == TypeCategory.Collection)
+                    {
+                        keyValueStr = keyValue.GetType().GetReadableName();
+                    }
                     else if (typeCategory == TypeCategory.SingleObject)
                     {
-                        var properties = htmlSerializer.GetReadableProperties(keyValueType);
+                        var properties = HtmlSerializer.GetReadableProperties(keyValueType);
                         keyValueStr += "{";
                         for (var iProp = 0; iProp < properties.Length; iProp++)
                         {
@@ -155,7 +153,7 @@ public class CollectionHtmlConverter : HtmlConverter
                             string? propValueStr = null;
                             if (propValue != null)
                             {
-                                var propValueTypeCategory = htmlSerializer.GetTypeCategory(property.PropertyType);
+                                var propValueTypeCategory = HtmlSerializer.GetTypeCategory(property.PropertyType);
                                 propValueStr = propValueTypeCategory == TypeCategory.DotNetTypeWithStringRepresentation
                                     ? propValue.ToString()
                                     : property.PropertyType.GetReadableName();
@@ -169,10 +167,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
                         keyValueStr += "}";
                     }
-                    else
-                    {
-                        keyValueStr = keyValue.GetType().GetReadableName();
-                    }
+
                 }
 
                 keyValueStr = keyValueStr == null
@@ -193,6 +188,6 @@ public class CollectionHtmlConverter : HtmlConverter
     protected IEnumerable ToEnumerable<T>(T obj)
     {
         return obj as IEnumerable ??
-               throw new InvalidCastException($"Cannot cast {nameof(obj)} of type {obj!.GetType()} to {nameof(IEnumerable)}");
+               throw new HtmlSerializationException($"Value of type {obj!.GetType()} is not an {nameof(IEnumerable)}.");
     }
 }

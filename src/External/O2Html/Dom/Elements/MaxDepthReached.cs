@@ -4,7 +4,7 @@ public class MaxDepthReached : Element
 {
     public MaxDepthReached(string cssClass) : base("span")
     {
-        AddText("max depth reached");
-        this.WithAddClass(cssClass);
+        this.AddText("max depth reached");
+        this.AddClass(cssClass);
     }
 }

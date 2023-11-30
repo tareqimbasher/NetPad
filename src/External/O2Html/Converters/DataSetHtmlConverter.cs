@@ -8,27 +8,19 @@ namespace O2Html.Converters;
 
 public class DataSetHtmlConverter : HtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
         return typeof(DataSet) == type;
     }
 
     public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj == null)
-            return new Null(htmlSerializer.SerializerSettings.CssClasses.Null);
-
-        if (ShouldShortCircuit(obj, type, serializationScope, htmlSerializer, out var shortCircuitValue))
-        {
-            return shortCircuitValue;
-        }
-
         if (obj is not DataSet dataSet)
             throw new HtmlSerializationException($"The {nameof(DataSetHtmlConverter)} can only convert objects of type {nameof(DataSet)}");
 
         var table = new Table();
 
-        var enumerationResult = LazyEnumerable.Enumerate<DataTable>(dataSet.Tables, htmlSerializer.SerializerSettings.MaxCollectionSerializeLength, (dataTable, ix) =>
+        var enumerationResult = Enumerate.Max<DataTable>(dataSet.Tables, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (dataTable, ix) =>
         {
             var tr = table.Body.AddAndGetRow();
 
@@ -38,13 +30,13 @@ public class DataSetHtmlConverter : HtmlConverter
         });
 
         string headerRowText = (!string.IsNullOrWhiteSpace(dataSet.DataSetName) ? dataSet.DataSetName : "DataTable") +
-                               $" ({(enumerationResult.CollectionLengthExceedsMax ? "First " : "")}{enumerationResult.ElementsEnumerated} tables)";
+                               $" ({(enumerationResult.CollectionLengthExceedsMax ? "First " : "")}{enumerationResult.ItemsProcessed} tables)";
 
         table.Head
             .AddAndGetRow()
-            .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader)
-            .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
-            .AddText(headerRowText);
+            .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .AddAndGetElement("th").SetAttribute("colspan", "2")
+            .AddEscapedText(headerRowText);
 
         return table;
     }
@@ -52,7 +44,7 @@ public class DataSetHtmlConverter : HtmlConverter
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
         tr.AddAndGetElement("td")
-            .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+            .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
             .AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

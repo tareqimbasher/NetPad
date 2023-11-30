@@ -63,39 +63,40 @@ public static class HtmlPresenter
         {
             try
             {
-                node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
+                node = HtmlSerializer.Serialize(output, _htmlSerializerSettings);
             }
             catch (Exception ex)
             {
-                node = HtmlConvert.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
+                node = HtmlSerializer.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
                 isError = true;
             }
         }
 
-        bool outputIsAllText = node is TextNode || (node is Element element && element.Children.All(c => c.Type == NodeType.Text));
+        bool outputIsAllText = node is TextNode { IsEscaped: true } ||
+                               (node is Element element && element.Children.Any() && element.Children.All(c => c.Type == NodeType.Text));
 
-        var group = new Element("div").WithAddClass("group");
+        var group = new Element("div").AddClass("group");
 
         if (options.CssClasses?.Length > 0)
         {
-            group.WithAddClass(options.CssClasses);
+            group.AddClass(options.CssClasses);
         }
 
         if (isError)
         {
-            group.WithAddClass("error");
+            group.AddClass("error");
         }
 
         if (isTitled)
         {
-            group.WithAddClass("titled")
+            group.AddClass("titled")
                 .AddAndGetElement("h6")
-                .WithAddClass("title")
+                .AddClass("title")
                 .AddText(options.Title);
 
             if (outputIsAllText)
             {
-                node = new Element("span").WithAddClass("text").WithChild(node);
+                node = new Element("span").AddClass("text").AddChild(node);
             }
         }
 
@@ -103,7 +104,7 @@ public static class HtmlPresenter
 
         if (outputIsAllText)
         {
-            group.WithAddClass("text");
+            group.AddClass("text");
 
             if (options.AppendNewLine)
             {
@@ -112,20 +113,20 @@ public static class HtmlPresenter
         }
         else if (output is Image)
         {
-            group.WithAddClass("image");
+            group.AddClass("image");
         }
         else if (output is Audio)
         {
-            group.WithAddClass("audio");
+            group.AddClass("audio");
         }
         else if (output is Video)
         {
-            group.WithAddClass("video");
+            group.AddClass("video");
         }
 
         if (options.DestructAfterMs > 0)
         {
-            group.SetOrAddAttribute("data-destruct", options.DestructAfterMs.Value.ToString());
+            group.SetAttribute("data-destruct", options.DestructAfterMs.Value.ToString());
         }
 
         return group;

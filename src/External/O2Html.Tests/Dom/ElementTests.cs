@@ -14,10 +14,10 @@ public class ElementTests
     }
 
     [Fact]
-    public void TagName_Casing_Does_Not_Change()
+    public void TagName_Casing_IsNormalized()
     {
         var element = new Element("dIv");
-        Assert.Equal("dIv", element.TagName);
+        Assert.Equal("div", element.TagName);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class ElementTests
         var attribute = new ElementAttribute(element, "test");
         element.Attributes.Add(attribute);
 
-        element.SetOrAddAttribute("test", "val");
+        element.SetAttribute("test", "val");
 
         Assert.Equal(attribute, element.GetAttribute("test"));
         Assert.Equal("val", attribute.Value);
@@ -153,9 +153,9 @@ public class ElementTests
     public void SetOrAddAttribute_Adds_And_Returns_Attribute_And_Sets_Value_When_It_Does_Not_Exist()
     {
         var element = new Element("div");
-        var attribute = element.SetOrAddAttribute("test", "val");
+        var attribute = element.GetOrAddAttribute("test").Set("val");
 
-        Assert.Equal(attribute, element.GetAttribute("test"));
+        Assert.Equal(attribute, element.GetOrAddAttribute("test"));
         Assert.Equal("val", attribute.Value);
     }
 
@@ -163,8 +163,8 @@ public class ElementTests
     public void SetOrAddAttribute_Does_Not_Add_Duplicates()
     {
         var element = new Element("div");
-        element.SetOrAddAttribute("test", "val");
-        element.SetOrAddAttribute("test", "val");
+        element.SetAttribute("test", "val");
+        element.SetAttribute("test", "val");
 
         Assert.Single(element.Attributes.Where(a => a.Name == "test"));
     }
@@ -211,8 +211,8 @@ public class ElementTests
     public void HtmlTest_With_Attributes()
     {
         var element = new Element("div");
-        element.SetOrAddAttribute("id", "test");
-        element.SetOrAddAttribute("style", "width: 100%");
+        element.SetAttribute("id", "test");
+        element.SetAttribute("style", "width: 100%");
 
         Assert.Equal("<div id=\"test\" style=\"width: 100%\"></div>", element.ToHtml());
     }

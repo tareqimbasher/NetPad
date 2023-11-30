@@ -6,11 +6,11 @@ public class EmptyCollection : Element
 {
     public EmptyCollection() : base("span")
     {
-        AddText("0 items");
+        this.AddText("0 items");
     }
 
     public EmptyCollection(Type collectionType) : base("span")
     {
-        AddText($"0 items ({collectionType.GetReadableName()})");
+        this.AddEscapedText($"0 items ({collectionType.GetReadableName()})");
     }
 }

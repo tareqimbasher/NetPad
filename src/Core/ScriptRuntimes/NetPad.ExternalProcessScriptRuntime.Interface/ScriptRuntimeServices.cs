@@ -47,7 +47,7 @@ public static class ScriptRuntimeServices
                 RawConsoleWriteLine("[INPUT_REQUEST]");
                 return _defaultConsoleInput.ReadLine();
             }));
-            Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, new DumpOptions(AppendNewLine: appendNewLine))));
+            Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, new DumpOptions(AppendNewLineToAllTextOutput: appendNewLine))));
             Output = new ExternalProcessOutputHtmlWriter(async str => await _defaultConsoleOutput.WriteLineAsync(str));
         }
         else

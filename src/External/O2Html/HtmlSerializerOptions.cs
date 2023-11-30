@@ -2,17 +2,12 @@ using System.Collections.Generic;
 
 namespace O2Html;
 
-public class HtmlSerializerSettings
+public class HtmlSerializerOptions
 {
-    internal const ReferenceLoopHandling DefaultReferenceLoopHandling = ReferenceLoopHandling.Error;
-    private const uint DefaultMaxDepth = 64;
-    private uint _maxDepth = DefaultMaxDepth;
+    public const ReferenceLoopHandling DefaultReferenceLoopHandling = ReferenceLoopHandling.Error;
+    public const uint DefaultMaxDepth = 64;
 
-    public HtmlSerializerSettings()
-    {
-        Converters = new List<HtmlConverter>();
-        CssClasses = new CssClasses();
-    }
+    private uint _maxDepth = DefaultMaxDepth;
 
     /// <summary>
     /// How reference loops should be handled. (Default: Error)
@@ -45,12 +40,12 @@ public class HtmlSerializerSettings
     /// <summary>
     /// The list of custom HTML Converters to use during serialization.
     /// </summary>
-    public List<HtmlConverter> Converters { get; }
+    public List<HtmlConverter> Converters { get; } = new();
 
     /// <summary>
     /// CSS classes added to serialized HTML nodes.
     /// </summary>
-    public CssClasses CssClasses { get; }
+    public CssClasses CssClasses { get; } = new();
 }
 
 public class CssClasses

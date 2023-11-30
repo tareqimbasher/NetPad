@@ -7,7 +7,7 @@ namespace NetPad.Presentation.Html;
 
 public class AudioHtmlConverter : ObjectHtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
         return typeof(Audio).IsAssignableFrom(type);
     }
@@ -20,14 +20,13 @@ public class AudioHtmlConverter : ObjectHtmlConverter
         string title = audio.FilePath?.Path ?? audio.Uri?.ToString() ?? (audio.Base64Data == null ? "(no source)" : "Base 64 data");
 
         return new Element("audio")
-            .WithSetOrAddAttribute("controls")
-            .WithSrc(audio.HtmlSource)
-            .WithTitle($"Audio: {title}");
+            .SetAttribute("controls")
+            .SetSrc(audio.HtmlSource)
+            .SetTitle($"Audio: {title}");
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td")
-            .WithChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
+        HtmlExtensions.AddChild(tr.AddAndGetElement("td"), WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

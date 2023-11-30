@@ -8,7 +8,7 @@ namespace O2Html.Converters;
 
 public class FileSystemInfoHtmlConverter : ObjectHtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
         return typeof(FileSystemInfo).IsAssignableFrom(type);
     }

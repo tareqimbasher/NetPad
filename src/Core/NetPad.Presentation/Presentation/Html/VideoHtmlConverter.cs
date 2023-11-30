@@ -1,13 +1,12 @@
 using NetPad.Media;
 using O2Html;
-using O2Html.Converters;
 using O2Html.Dom;
 
 namespace NetPad.Presentation.Html;
 
-public class VideoHtmlConverter : ObjectHtmlConverter
+public class VideoHtmlConverter : HtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
         return typeof(Video).IsAssignableFrom(type);
     }
@@ -19,18 +18,17 @@ public class VideoHtmlConverter : ObjectHtmlConverter
 
         string title = video.FilePath?.Path ?? video.Uri?.ToString() ?? (video.Base64Data == null ? "(no source)" : "Base 64 data");
 
-        var videoElement = new Element("video").WithTitle($"Video: {title}");
+        var videoElement = new Element("video").SetTitle($"Video: {title}");
         videoElement.GetOrAddAttribute("controls");
 
         videoElement.AddAndGetElement("source")
-            .WithSrc(video.HtmlSource);
+            .SetSrc(video.HtmlSource);
 
         return videoElement;
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td")
-            .WithChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
+        HtmlExtensions.AddChild(tr.AddAndGetElement("td"), WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }
