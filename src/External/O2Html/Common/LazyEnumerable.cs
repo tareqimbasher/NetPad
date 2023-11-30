@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace O2Html.Common;
 
-internal class LazyEnumerationResult
+public class LazyEnumerationResult
 {
     public int ElementsEnumerated { get; set; }
     public bool CollectionLengthExceedsMax { get; set; }
 }
 
-internal static class LazyEnumerable
+public static class LazyEnumerable
 {
     public static LazyEnumerationResult Enumerate<T>(IEnumerable<T> collection, uint? maxItemsToEnumerate, Action<T?, uint> action)
     {

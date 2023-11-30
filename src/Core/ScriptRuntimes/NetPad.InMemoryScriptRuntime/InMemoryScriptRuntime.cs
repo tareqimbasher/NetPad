@@ -110,7 +110,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
         throw new InvalidOperationException("Cannot stop a script running in-memory.");
     }
 
-    public string[] GetSupportAssemblies()
+    public string[] GetUserAccessibleAssemblies()
     {
         return Array.Empty<string>();
     }

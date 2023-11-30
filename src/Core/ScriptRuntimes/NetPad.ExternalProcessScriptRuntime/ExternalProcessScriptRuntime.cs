@@ -169,11 +169,14 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
         return Task.CompletedTask;
     }
 
-    public string[] GetSupportAssemblies()
+    public string[] GetUserAccessibleAssemblies()
     {
         return new[]
         {
-            typeof(ExternalProcessOutput).Assembly.Location
+            typeof(IOutputWriter<>).Assembly.Location,
+            typeof(ExternalProcessOutput).Assembly.Location,
+            typeof(Presentation.PresentationSettings).Assembly.Location,
+            typeof(O2Html.HtmlConvert).Assembly.Location,
         };
     }
 

@@ -47,17 +47,22 @@ public sealed class HtmlSerializer
         Converters.Add(new ObjectHtmlConverter());
     }
 
-    internal HtmlSerializerSettings SerializerSettings { get; }
+    public HtmlSerializerSettings SerializerSettings { get; }
 
     public List<HtmlConverter> Converters { get; }
 
     public Node Serialize<T>(T? obj, Type type, SerializationScope? serializationScope = null)
     {
+        if (obj == null)
+        {
+            return new Null(SerializerSettings.CssClasses.Null);
+        }
+
         var converter = GetConverter(type);
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
 
-        var isSimpleType = obj == null || GetTypeCategory(type) == TypeCategory.DotNetTypeWithStringRepresentation;
+        var isSimpleType = GetTypeCategory(type) == TypeCategory.DotNetTypeWithStringRepresentation;
 
         if ((!isSimpleType && serializationScope?.Depth > SerializerSettings.MaxDepth) ||
             // Let's serialize values with string representations at the last depth level

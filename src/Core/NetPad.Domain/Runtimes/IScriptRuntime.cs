@@ -16,7 +16,7 @@ public interface IScriptRuntime : IDisposable
     /// Gets assemblies that expose supporting code to the running script specific to this runtime.
     /// </summary>
     /// <returns>Fully-qualified file paths of all support assemblies exposed by runtime.</returns>
-    string[] GetSupportAssemblies();
+    string[] GetUserAccessibleAssemblies();
 
     /// <summary>
     /// Adds an input reader that will be invoked whenever script makes a request for user input.

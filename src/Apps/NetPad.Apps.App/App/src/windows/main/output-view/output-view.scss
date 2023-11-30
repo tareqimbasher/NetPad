@@ -21,7 +21,6 @@ output-view {
     .html-output-container {
         $font-size: 13px;
 
-        //font-family: "monospace";
         padding: 0.25rem;
         line-height: 1;
         overflow-x: auto;
@@ -97,6 +96,45 @@ output-view {
                 }
             }
 
+            &.image, &.video, &.audio {
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+                padding: 0.5rem;
+
+                &:hover {
+                    background: rgb(128, 128, 128, 0.2);
+                }
+            }
+
+            &.image {
+                img {
+                    max-height: 300px;
+                }
+            }
+
+            &.video {
+                video {
+                    max-height: 300px;
+                    min-width: 350px;
+                }
+            }
+
+            &.audio {
+                audio {
+                    min-width: 350px;
+                    padding: 0.5rem;
+                }
+            }
+
+            td {
+                img, audio, video {
+                    padding: 0.5rem;
+                    max-height: 300px;
+                    margin-left: 50%;
+                    transform: translateX(-50%);
+                }
+            }
+
             &.titled {
                 border-left: 2px orange solid;
                 margin-top: 0.5rem;
@@ -107,7 +145,7 @@ output-view {
                         border-bottom: 2px greenyellow dotted;
                     }
 
-                    .text {
+                    :not(.title) {
                         display: none;
                     }
                 }

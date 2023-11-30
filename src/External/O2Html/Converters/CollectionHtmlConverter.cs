@@ -116,7 +116,7 @@ public class CollectionHtmlConverter : HtmlConverter
         return (table, enumerationResult.ElementsEnumerated);
     }
 
-    private string GetHeaderRowText(
+    protected string GetHeaderRowText(
         IEnumerable collection,
         Type collectionType,
         int collectionLength,
@@ -190,7 +190,7 @@ public class CollectionHtmlConverter : HtmlConverter
         return headerRowText;
     }
 
-    private IEnumerable ToEnumerable<T>(T obj)
+    protected IEnumerable ToEnumerable<T>(T obj)
     {
         return obj as IEnumerable ??
                throw new InvalidCastException($"Cannot cast {nameof(obj)} of type {obj!.GetType()} to {nameof(IEnumerable)}");

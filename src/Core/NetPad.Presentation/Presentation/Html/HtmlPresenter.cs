@@ -1,3 +1,4 @@
+using NetPad.Media;
 using O2Html;
 using O2Html.Dom;
 
@@ -14,6 +15,13 @@ public static class HtmlPresenter
         {
             ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
             DoNotSerializeNonRootEmptyCollections = true,
+            Converters =
+            {
+                new ImageHtmlConverter(),
+                new AudioHtmlConverter(),
+                new VideoHtmlConverter(),
+                new MediaFileCollectionConverter()
+            },
         };
 
         var configFileValues = PresentationSettings.GetConfigFileValues();
@@ -96,6 +104,18 @@ public static class HtmlPresenter
             {
                 group.AddElement("<br/>");
             }
+        }
+        else if (output is Image)
+        {
+            group.WithAddClass("image");
+        }
+        else if (output is Audio)
+        {
+            group.WithAddClass("audio");
+        }
+        else if (output is Video)
+        {
+            group.WithAddClass("video");
         }
 
         return group;

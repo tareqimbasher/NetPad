@@ -5,6 +5,18 @@ namespace O2Html;
 
 public static class HtmlElementExtensions
 {
+    public static TElement WithSetOrAddAttribute<TElement>(this TElement element, string attributeName) where TElement : Element
+    {
+        element.SetOrAddAttribute(attributeName, null);
+        return element;
+    }
+
+    public static TElement WithSetOrAddAttribute<TElement>(this TElement element, string attributeName, string? value) where TElement : Element
+    {
+        element.SetOrAddAttribute(attributeName, value);
+        return element;
+    }
+
     public static TElement WithChild<TElement>(this TElement element, Node child) where TElement : Element
     {
         element.AddChild(child);

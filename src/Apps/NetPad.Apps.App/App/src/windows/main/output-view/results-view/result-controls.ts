@@ -8,16 +8,16 @@ export class ResultControls extends WithDisposables {
 
     public bind(content: DocumentFragment) {
 
-        for (const textGroup of Array.from(content.querySelectorAll(".group.titled.text"))) {
-            const title = textGroup.querySelector(".title");
+        for (const titledGroup of Array.from(content.querySelectorAll(".group.titled"))) {
+            const title = titledGroup.querySelector(".title");
             if (!title) continue;
 
             const clickHandler = (e: Event) => {
                 const selection = document.getSelection();
                 if (selection && selection.toString() && (e.target as Element).contains(selection.anchorNode)) return;
 
-                if (textGroup.classList.contains("collapsed")) textGroup.classList.remove("collapsed");
-                else textGroup.classList.add("collapsed");
+                if (titledGroup.classList.contains("collapsed")) titledGroup.classList.remove("collapsed");
+                else titledGroup.classList.add("collapsed");
             };
 
             title.addEventListener("click", clickHandler);
@@ -101,7 +101,7 @@ export class ResultControls extends WithDisposables {
     public expandAll(level?: number) {
         if (!level) {
             this.querySelectorAll("table").forEach(t => this.expand(t as HTMLTableElement));
-            this.querySelectorAll(".group.titled.text").forEach(t => t.classList.remove("collapsed"));
+            this.querySelectorAll(".group.titled").forEach(t => t.classList.remove("collapsed"));
             return;
         }
 
@@ -123,7 +123,7 @@ export class ResultControls extends WithDisposables {
 
         if (!level) {
             root.querySelectorAll("table").forEach(t => this.collapse(t as HTMLTableElement));
-            root.querySelectorAll(".group.titled.text").forEach(t => t.classList.add("collapsed"));
+            root.querySelectorAll(".group.titled").forEach(t => t.classList.add("collapsed"));
             return;
         }
 

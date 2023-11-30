@@ -152,11 +152,6 @@ public class Element : Node
             {
                 var attribute = Attributes[iAttr];
 
-                if (string.IsNullOrWhiteSpace(attribute.Value))
-                {
-                    continue;
-                }
-
                 if (iAttr > 0) output.Add(HtmlConstants.Space);
                 output.AddRange(Encoding.UTF8.GetBytes(attribute.ToString()));
             }
