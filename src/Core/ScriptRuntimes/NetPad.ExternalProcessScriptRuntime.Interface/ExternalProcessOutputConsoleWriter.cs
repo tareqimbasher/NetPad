@@ -1,3 +1,4 @@
+using NetPad.Presentation;
 using NetPad.Presentation.Console;
 
 namespace NetPad.Runtimes;
@@ -14,17 +15,21 @@ internal class ExternalProcessOutputConsoleWriter : IExternalProcessOutputWriter
         _useConsoleColors = useConsoleColors;
     }
 
-    public System.Threading.Tasks.Task WriteResultAsync(object? output, string? title = null, bool appendNewLine = false)
+    public Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
-        ConsolePresenter.Serialize(output, title, _useConsoleColors);
+        options ??= DumpOptions.Default;
 
-        return System.Threading.Tasks.Task.CompletedTask;
+        ConsolePresenter.Serialize(output, options.Title, _useConsoleColors);
+
+        return Task.CompletedTask;
     }
 
-    public System.Threading.Tasks.Task WriteSqlAsync(object? output, string? title = null)
+    public Task WriteSqlAsync(object? output, DumpOptions? options = null)
     {
-        ConsolePresenter.Serialize(output, title, _useConsoleColors);
+        options ??= DumpOptions.Default;
 
-        return System.Threading.Tasks.Task.CompletedTask;
+        ConsolePresenter.Serialize(output, options.Title, _useConsoleColors);
+
+        return Task.CompletedTask;
     }
 }

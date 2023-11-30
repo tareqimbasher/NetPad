@@ -63,6 +63,20 @@ export class ResultControls extends WithDisposables {
                 }
             }
         }
+
+        for (const group of Array.from(content.querySelectorAll(".group[data-destruct]:not([data-destruct=''])"))) {
+            const val = group.getAttribute("data-destruct");
+            if (!val) {
+                continue;
+            }
+
+            const milliseconds = Number(val);
+            if (isNaN(milliseconds)) {
+                continue;
+            }
+
+            setTimeout(() => group.remove(), milliseconds);
+        }
     }
 
     public expand(table: HTMLTableElement) {

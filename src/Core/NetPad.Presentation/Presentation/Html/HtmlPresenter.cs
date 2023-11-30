@@ -10,7 +10,6 @@ public static class HtmlPresenter
 
     static HtmlPresenter()
     {
-
         _htmlSerializerSettings = new()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
@@ -41,52 +40,58 @@ public static class HtmlPresenter
     /// Serializes output to an HTML <see cref="Element"/>.
     /// </summary>
     /// <param name="output">The object to serialize.</param>
-    /// <param name="title">If provided, will add a title heading to the result.</param>
+    /// <param name="options">Dump options</param>
     /// <param name="isError">
     /// If true, output will be considered an error. This has no effect if <see cref="output"/> is
     /// an <see cref="Exception"/> as</param> as exceptions are always considered errors.
-    /// <param name="appendNewLineForAllTextOutput">If true and the output is all text (not a nested structure), a HTML break will be appended to the result.</param>
     /// <returns>An HTML <see cref="Element"/> representing the <see cref="output"/>.</returns>
     public static Element SerializeToElement(
         object? output,
-        string? title = null,
-        bool isError = false,
-        bool appendNewLineForAllTextOutput = false)
+        DumpOptions? options = null,
+        bool isError = false)
     {
-        bool titled = title != null;
+        options ??= DumpOptions.Default;
+
+        bool isTitled = options.Title != null;
 
         if (!isError && output is Exception)
         {
             isError = true;
         }
 
-        Node node;
-
-        try
+        if (output is not Node node)
         {
-            node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
-        }
-        catch (Exception ex)
-        {
-            node = HtmlConvert.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
-            isError = true;
+            try
+            {
+                node = HtmlConvert.Serialize(output, _htmlSerializerSettings);
+            }
+            catch (Exception ex)
+            {
+                node = HtmlConvert.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
+                isError = true;
+            }
         }
 
         bool outputIsAllText = node is TextNode || (node is Element element && element.Children.All(c => c.Type == NodeType.Text));
 
         var group = new Element("div").WithAddClass("group");
 
+        if (options.CssClasses?.Length > 0)
+        {
+            group.WithAddClass(options.CssClasses);
+        }
+
         if (isError)
         {
             group.WithAddClass("error");
         }
 
-        if (titled)
+        if (isTitled)
         {
             group.WithAddClass("titled")
                 .AddAndGetElement("h6")
                 .WithAddClass("title")
-                .AddText(title);
+                .AddText(options.Title);
 
             if (outputIsAllText)
             {
@@ -100,7 +105,7 @@ public static class HtmlPresenter
         {
             group.WithAddClass("text");
 
-            if (appendNewLineForAllTextOutput)
+            if (options.AppendNewLine)
             {
                 group.AddElement("<br/>");
             }
@@ -118,6 +123,11 @@ public static class HtmlPresenter
             group.WithAddClass("video");
         }
 
+        if (options.DestructAfterMs > 0)
+        {
+            group.SetOrAddAttribute("data-destruct", options.DestructAfterMs.Value.ToString());
+        }
+
         return group;
     }
 
@@ -125,23 +135,17 @@ public static class HtmlPresenter
     /// Serializes output to an HTML string.
     /// </summary>
     /// <param name="output">The object to serialize.</param>
-    /// <param name="title">If provided, will add a title heading to the result.</param>
+    /// <param name="options">Dump options</param>
     /// <param name="isError">
     /// If true, output will be considered an error. This has no effect if <see cref="output"/> is
     /// an <see cref="Exception"/> as</param> as exceptions are always considered errors.
-    /// <param name="appendNewLineForAllTextOutput">If true and the output is all text (not a nested structure), a HTML break will be appended to the result.</param>
     /// <returns>An HTML string representation of <see cref="output"/>.</returns>
     public static string Serialize(
         object? output,
-        string? title = null,
-        bool isError = false,
-        bool appendNewLineForAllTextOutput = false)
+        DumpOptions? options = null,
+        bool isError = false
+    )
     {
-        return SerializeToElement(
-            output,
-            title,
-            isError,
-            appendNewLineForAllTextOutput
-        ).ToHtml();
+        return SerializeToElement(output, options, isError).ToHtml();
     }
 }

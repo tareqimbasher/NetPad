@@ -1,7 +1,9 @@
+using NetPad.Presentation;
+
 namespace NetPad.Runtimes;
 
 internal interface IExternalProcessOutputWriter
 {
-    System.Threading.Tasks.Task WriteResultAsync(object? output, string? title = null, bool appendNewLine = false);
-    System.Threading.Tasks.Task WriteSqlAsync(object? output, string? title = null);
+    Task WriteResultAsync(object? output, DumpOptions? options = null);
+    Task WriteSqlAsync(object? output, DumpOptions? options = null);
 }

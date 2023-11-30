@@ -1,4 +1,5 @@
 using NetPad.IO;
+using NetPad.Presentation;
 
 namespace NetPad.Runtimes;
 
@@ -46,7 +47,7 @@ public static class ScriptRuntimeServices
                 RawConsoleWriteLine("[INPUT_REQUEST]");
                 return _defaultConsoleInput.ReadLine();
             }));
-            Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, appendNewLine: appendNewLine)));
+            Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, new DumpOptions(AppendNewLine: appendNewLine))));
             Output = new ExternalProcessOutputHtmlWriter(async str => await _defaultConsoleOutput.WriteLineAsync(str));
         }
         else
@@ -65,13 +66,13 @@ public static class ScriptRuntimeServices
         _defaultConsoleOutput.WriteLine(text);
     }
 
-    public static void ResultWrite(object? o = null, string? title = null, bool appendNewLine = false)
+    public static void ResultWrite(object? o, DumpOptions? options = null)
     {
-        _ = Output.WriteResultAsync(o, title, appendNewLine);
+        _ = Output.WriteResultAsync(o, options ?? DumpOptions.Default);
     }
 
-    public static void SqlWrite(object? o = null, string? title = null)
+    public static void SqlWrite(object? o, DumpOptions? options = null)
     {
-        _ = Output.WriteSqlAsync(o, title);
+        _ = Output.WriteSqlAsync(o, options);
     }
 }

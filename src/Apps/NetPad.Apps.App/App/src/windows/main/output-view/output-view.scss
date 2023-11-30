@@ -164,6 +164,7 @@ output-view {
             width: initial;
             margin: 5px 0;
             border-color: $table-border-color;
+            color: inherit;
 
             &.collapsed > tbody,
             &.collapsed > thead > .table-data-header {

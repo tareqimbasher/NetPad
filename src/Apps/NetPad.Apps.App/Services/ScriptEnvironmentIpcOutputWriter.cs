@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NetPad.Events;
 using NetPad.IO;
+using NetPad.Presentation;
 using NetPad.Presentation.Html;
 using NetPad.Runtimes;
 using NetPad.Scripts;
@@ -114,8 +115,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                     if (_outputLimitReachedMessageSent) return;
 
                     var message = new HtmlRawScriptOutput(HtmlPresenter.SerializeToElement(
-                        "Output limit reached.",
-                        appendNewLineForAllTextOutput: true)
+                            "Output limit reached.",
+                            new DumpOptions(AppendNewLine: true))
                         .WithAddClass("raw")
                         .ToHtml()
                     );
@@ -134,7 +135,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlSqlScriptOutput = new HtmlSqlScriptOutput(
                 sqlScriptOutput.Order,
-                HtmlPresenter.Serialize(sqlScriptOutput.Body, title));
+                HtmlPresenter.Serialize(sqlScriptOutput.Body, new DumpOptions(Title: title)));
 
             await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput), _ctsAccessor.Value.Token);
         }
@@ -148,8 +149,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 rawScriptOutput.Order,
                 HtmlPresenter.SerializeToElement(
                         rawScriptOutput.Body,
-                        title,
-                        appendNewLineForAllTextOutput: true
+                        new DumpOptions(Title: title, AppendNewLine: true)
                     )
                     .WithAddClass("raw")
                     .ToHtml()
@@ -165,7 +165,10 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlErrorOutput = new HtmlErrorScriptOutput(
                 errorScriptOutput.Order,
-                HtmlPresenter.Serialize(errorScriptOutput.Body, title, true));
+                HtmlPresenter.Serialize(
+                    errorScriptOutput.Body,
+                    new DumpOptions(Title: title, AppendNewLine: true),
+                    isError: true));
 
             QueueMessage(htmlErrorOutput, false);
         }
@@ -177,7 +180,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlRawOutput = new HtmlRawScriptOutput(
                 scriptOutput.Order,
-                HtmlPresenter.Serialize(output, title));
+                HtmlPresenter.Serialize(output, new DumpOptions(Title: title)));
 
             QueueMessage(htmlRawOutput, true);
         }
@@ -185,7 +188,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             _logger.LogWarning("Unexpected script output format: {OutputType}", output?.GetType().Name);
 
-            var htmlRawOutput = new HtmlRawScriptOutput(0, HtmlPresenter.Serialize(output, title));
+            var htmlRawOutput = new HtmlRawScriptOutput(0, HtmlPresenter.Serialize(output, new DumpOptions(Title: title)));
 
             QueueMessage(htmlRawOutput, true);
         }

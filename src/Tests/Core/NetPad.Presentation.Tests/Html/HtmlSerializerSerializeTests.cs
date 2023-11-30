@@ -45,7 +45,7 @@ public class HtmlSerializerSerializeTests
     {
         var output = GetGenericOutput();
 
-        var element = HtmlPresenter.SerializeToElement(output, "some title");
+        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(Title: "some title"));
 
         Assert.Contains("titled", element.ClassList);
     }
@@ -53,7 +53,7 @@ public class HtmlSerializerSerializeTests
     [Fact]
     public void GroupShouldHaveTitledClass_WhenOutputHasTitleEvenIfError()
     {
-        var element = HtmlPresenter.SerializeToElement(new Exception(), "some title");
+        var element = HtmlPresenter.SerializeToElement(new Exception(), new DumpOptions(Title: "some title"));
 
         Assert.Contains("titled", element.ClassList);
         Assert.Contains("error", element.ClassList);
@@ -84,7 +84,7 @@ public class HtmlSerializerSerializeTests
     {
         var output = GetAllTextOutput();
 
-        var element = HtmlPresenter.SerializeToElement(output, appendNewLineForAllTextOutput: true);
+        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(AppendNewLine: true));
 
         Assert.Equal("br", element.ChildElements.Last().TagName, StringComparer.OrdinalIgnoreCase);
     }
@@ -94,7 +94,7 @@ public class HtmlSerializerSerializeTests
     {
         var output = GetAllTextOutput();
 
-        var element = HtmlPresenter.SerializeToElement(output, title: "some title", appendNewLineForAllTextOutput: true);
+        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(Title: "some title", AppendNewLine: true));
 
         Assert.Equal("br", element.ChildElements.Last().TagName, StringComparer.OrdinalIgnoreCase);
     }
