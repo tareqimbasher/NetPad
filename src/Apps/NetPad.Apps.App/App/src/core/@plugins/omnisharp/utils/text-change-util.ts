@@ -84,8 +84,10 @@ export class TextChangeUtil {
     }
 
     private static getNamespacesFromUsings(textChange: LinePositionSpanTextChange): string[] {
-        return textChange.newText?.split("\n")
-            .filter(l => !!l && l.trim())
+        return textChange.newText
+            ?.split("\n")
+            .map(l => l?.trim()) // to remove empty parts
+            .filter(l => !!l)
             .map(l => Util.trimWord(l, "using "))
             .map(l => Util.trimEnd(l, ";"))
             .map(l => l.trim())

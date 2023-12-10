@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using NetPad.Data;
 using NetPad.Events;
 using NetPad.Exceptions;
 using NetPad.Scripts;
@@ -7,7 +8,10 @@ namespace NetPad.Sessions;
 
 public class Session : ISession
 {
+    private const string CurrentActiveSaveKey = "session.active";
+
     private readonly IScriptEnvironmentFactory _scriptEnvironmentFactory;
+    private readonly ITrivialDataStore _trivialDataStore;
     private readonly IEventBus _eventBus;
     private readonly ILogger<Session> _logger;
     private readonly List<ScriptEnvironment> _environments;
@@ -15,10 +19,12 @@ public class Session : ISession
 
     public Session(
         IScriptEnvironmentFactory scriptEnvironmentFactory,
+        ITrivialDataStore trivialDataStore,
         IEventBus eventBus,
         ILogger<Session> logger)
     {
         _scriptEnvironmentFactory = scriptEnvironmentFactory;
+        _trivialDataStore = trivialDataStore;
         _eventBus = eventBus;
         _logger = logger;
         _environments = new List<ScriptEnvironment>();
@@ -53,17 +59,21 @@ public class Session : ISession
 
     public async Task OpenAsync(IEnumerable<Script> scripts)
     {
-        Script? last = null;
+        scripts = scripts.ToArray();
 
         foreach (var script in scripts)
         {
             await OpenAsync(script, activate: false);
-            last = script;
         }
 
-        if (last != null)
+        if (Guid.TryParse(_trivialDataStore.Get<string>(CurrentActiveSaveKey), out var lastSavedScriptId) &&
+            scripts.Any(s => s.Id == lastSavedScriptId))
         {
-            await ActivateAsync(last.Id);
+            await ActivateAsync(lastSavedScriptId);
+        }
+        else
+        {
+            await ActivateAsync(scripts.LastOrDefault()?.Id);
         }
     }
 
@@ -126,7 +136,9 @@ public class Session : ISession
         }
 
         if (scriptId == null)
+        {
             newActive = null;
+        }
         else
         {
             var environment = Get(scriptId.Value);
@@ -135,6 +147,8 @@ public class Session : ISession
 
         Active = newActive;
         _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
+
+        _trivialDataStore.Set(CurrentActiveSaveKey, Active?.Script.Id);
 
         return Task.CompletedTask;
     }
@@ -147,5 +161,6 @@ public class Session : ISession
         return Task.CompletedTask;
     }
 
-    private bool CanActivateLastActiveScript() => _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
+    private bool CanActivateLastActiveScript() =>
+        _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
 }
