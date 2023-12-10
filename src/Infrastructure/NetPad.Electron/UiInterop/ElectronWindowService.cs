@@ -11,14 +11,14 @@ namespace NetPad.Electron.UiInterop;
 public class ElectronWindowService : IUiWindowService
 {
     private readonly WindowManager _windowManager;
-    private readonly IKeyValueDataStore _keyValueDataStore;
+    private readonly ITrivialDataStore _trivialDataStore;
     private readonly Settings _settings;
     private readonly ILogger<ElectronWindowService> _logger;
 
-    public ElectronWindowService(WindowManager windowManager, IKeyValueDataStore keyValueDataStore, Settings settings, ILogger<ElectronWindowService> logger)
+    public ElectronWindowService(WindowManager windowManager, ITrivialDataStore trivialDataStore, Settings settings, ILogger<ElectronWindowService> logger)
     {
         _windowManager = windowManager;
-        _keyValueDataStore = keyValueDataStore;
+        _trivialDataStore = trivialDataStore;
         _settings = settings;
         _logger = logger;
     }
@@ -44,7 +44,7 @@ public class ElectronWindowService : IUiWindowService
     {
         try
         {
-            var savedBounds = _keyValueDataStore.Get<Rectangle>("main-window.bounds");
+            var savedBounds = _trivialDataStore.Get<Rectangle>("main-window.bounds");
             if (savedBounds != null)
             {
                 window.SetBounds(savedBounds);
@@ -67,7 +67,7 @@ public class ElectronWindowService : IUiWindowService
 
         window.OnClose += async () =>
         {
-            _keyValueDataStore.Set("main-window.bounds", await window.GetBoundsAsync());
+            _trivialDataStore.Set("main-window.bounds", await window.GetBoundsAsync());
         };
     }
 
