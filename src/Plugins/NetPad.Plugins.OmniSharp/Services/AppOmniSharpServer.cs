@@ -277,10 +277,7 @@ public class AppOmniSharpServer
         Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
         {
             if (ev.Script.Id != _environment.Script.Id) return;
-
-            var script = _environment.Script;
-            var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
-            await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
+            await UpdateOmniSharpCodeBufferAsync();
         });
 
         Subscribe<ScriptReferencesUpdatedEvent>(async ev =>
@@ -385,8 +382,6 @@ public class AppOmniSharpServer
         // Needed to trigger diagnostics and semantic highlighting for script file
         await Task.Delay(1000);
         await UpdateOmniSharpCodeBufferAsync();
-
-        await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<DataConnectionSourceCode>? sourceCodeTask)
@@ -438,5 +433,7 @@ public class AppOmniSharpServer
         {
             semaphore.Release();
         }
+
+        await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
 }
