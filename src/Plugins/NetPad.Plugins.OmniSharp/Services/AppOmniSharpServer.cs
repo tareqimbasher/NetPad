@@ -16,7 +16,8 @@ using OmniSharp.Stdio;
 namespace NetPad.Plugins.OmniSharp.Services;
 
 /// <summary>
-/// A wrapper around an <see cref="IOmniSharpServer"/> that includes app-specific functionality.
+/// A wrapper around an <see cref="IOmniSharpServer"/> that includes app-specific functionality. Each script
+/// has its own instance of an <see cref="AppOmniSharpServer"/>.
 /// </summary>
 public class AppOmniSharpServer
 {
@@ -333,7 +334,7 @@ public class AppOmniSharpServer
 
     #endregion
 
-    public async Task UpdateOmniSharpCodeBufferAsync()
+    private async Task UpdateOmniSharpCodeBufferAsync()
     {
         var script = _environment.Script;
         var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
