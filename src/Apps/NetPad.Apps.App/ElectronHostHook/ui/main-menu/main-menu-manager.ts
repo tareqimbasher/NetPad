@@ -16,14 +16,24 @@ export class MainMenuManager {
         const mainMenuBootstrapChannelName = "main-menu-bootstrap";
 
         const sendBootstrapEvent = () => {
-            const allBrowsers = BrowserWindow.getAllWindows();
+            let allBrowsers: Electron.BrowserWindow[];
 
-            if (allBrowsers.length < 1) {
-                console.warn(`There are no active browser windows to send '${mainMenuBootstrapChannelName}'`);
-                return;
+            try {
+                allBrowsers = BrowserWindow.getAllWindows();
+
+                if (allBrowsers.length < 1) {
+                    console.warn(`There are no active browser windows to send '${mainMenuBootstrapChannelName}'`);
+                    return;
+                }
+            } catch (err) {
+                console.error("Unexpected error evaluating browser windows: ", err);
             }
 
-            allBrowsers[0].webContents.send(mainMenuBootstrapChannelName);
+            try {
+                allBrowsers[0].webContents.send(mainMenuBootstrapChannelName);
+            } catch (err) {
+                // ignore, Renderer process event handler might not be setup yet.
+            }
         };
 
         ipcMain.handle(mainMenuBootstrapChannelName, (event, ...args) => {
@@ -37,11 +47,7 @@ export class MainMenuManager {
         ipcMain.handle("AppActivatedEvent", (event, ...args) => sendBootstrapEvent());
 
         // Send right away to take care of any race-condition that might occur.
-        try {
-            sendBootstrapEvent();
-        } catch (err) {
-            // ignore, Renderer process event handler might not be setup yet.
-        }
+        sendBootstrapEvent();
     }
 
     private static rebuildMenu() {

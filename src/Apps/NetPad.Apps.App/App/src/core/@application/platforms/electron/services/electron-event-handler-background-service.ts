@@ -32,20 +32,25 @@ export class ElectronEventHandlerBackgroundService extends WithDisposables imple
     public start(): Promise<void> {
         const bootstrapChannel = new ChannelInfo("main-menu-bootstrap");
 
-        const sendBootstrapDataToMain = () => this.electronIpcGateway.send(bootstrapChannel, {
-            menuItems: this.mainMenuService?.items.map(i => this.mapToMenuItemDto(i))
-        });
+        const sendBootstrapDataToMain = () => {
+            // If no main menu service is registered for the app/window then don't send the event to main process
+            if (!this.mainMenuService) {
+                return;
+            }
 
-        this.addDisposable(
-            this.electronIpcGateway.subscribe(bootstrapChannel, (message, channel) => sendBootstrapDataToMain())
-        );
+            try {
+                this.electronIpcGateway.send(bootstrapChannel, {
+                    menuItems: this.mainMenuService.items.map(i => this.mapToMenuItemDto(i))
+                });
+            } catch (err) {
+                // ignore, Main process event handler might not be setup yet.
+            }
+        };
+
+        this.addDisposable(this.electronIpcGateway.subscribe(bootstrapChannel, () => sendBootstrapDataToMain()));
 
         // Send right away to take care of any race-condition that might occur.
-        try {
-            sendBootstrapDataToMain();
-        } catch (err) {
-            // ignore, Main process event handler might not be setup yet.
-        }
+        sendBootstrapDataToMain();
 
         return Promise.resolve();
     }
@@ -67,7 +72,7 @@ export class ElectronEventHandlerBackgroundService extends WithDisposables imple
     }
 
     private mapToShortcutDto(shortcut: Shortcut) {
-        return  {
+        return {
             name: shortcut.name,
             isEnabled: shortcut.isEnabled,
             keyCombo: shortcut.keyCombo.asArray
