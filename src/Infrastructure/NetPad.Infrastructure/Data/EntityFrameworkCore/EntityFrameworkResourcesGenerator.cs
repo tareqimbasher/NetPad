@@ -180,7 +180,14 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
             );
 
         base.OnConfiguring(optionsBuilder);
+
+        OnConfiguringPartial(optionsBuilder);
     }
+
+    /// <summary>
+    /// Implement this partial method to configure 'OnConfiguring'.
+    /// </summary>
+    partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder);
 
     /// <summary>
     /// Calls DataContext.SaveChanges();
@@ -229,16 +236,12 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
             var entityType = parts[0].SubstringBetween("<", ">");
             var propertyName = parts[1];
-            var dbContextPropertyName = $"{propertyName}_HIDDEN";
 
             programProperties.Add($@"
     /// <summary>
     /// The {propertyName} table (DbSet).
     /// </summary>
-    public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{dbContextPropertyName};");
-
-            // Rename property on DbContext
-            dbContextCodeLines[iLine] = line.Replace($" {propertyName} ", $" {dbContextPropertyName} ");
+    public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{propertyName};");
         }
 
         // Replace the DbContext code since we modified it above when renaming properties
