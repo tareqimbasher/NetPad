@@ -21,16 +21,16 @@ public partial class Program
             ScriptRuntimeServices.UseStandardIO(ExternalProcessOutputFormat.Console, true);
 
             Console.WriteLine($"# {UserScript.Name}");
-            Console.WriteLine("""
-                              help:
-                                Output Format:
-                                    -console    (default)
-                                    -text       Text output
-                                    -html       HTML output
+            Console.WriteLine(@"""
+help:
+Output Format:
+    -console    (default)
+    -text       Text output
+    -html       HTML output
 
-                                Other Options:
-                                    -no-color   Do not color output. Does not apply to "HTML" format.
-                              """);
+Other Options:
+    -no-color   Do not color output. Does not apply to ""HTML"" format.
+""");
 
             Environment.Exit(0);
         }
