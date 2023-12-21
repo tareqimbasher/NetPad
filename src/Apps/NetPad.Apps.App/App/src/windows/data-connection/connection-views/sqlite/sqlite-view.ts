@@ -10,7 +10,9 @@ export class SqliteView extends DataConnectionView<SQLiteDatabaseConnection> {
 
         this.components = [
             new AuthComponent(this.connection, dataConnectionService, true),
-            new DatabaseComponent(this.connection)
+            new DatabaseComponent(this.connection, {
+                allowSelectDatabaseFile: true
+            })
         ];
     }
 
