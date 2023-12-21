@@ -15,7 +15,11 @@ public class ElectronWindowService : IUiWindowService
     private readonly Settings _settings;
     private readonly ILogger<ElectronWindowService> _logger;
 
-    public ElectronWindowService(WindowManager windowManager, ITrivialDataStore trivialDataStore, Settings settings, ILogger<ElectronWindowService> logger)
+    public ElectronWindowService(
+        WindowManager windowManager,
+        ITrivialDataStore trivialDataStore,
+        Settings settings,
+        ILogger<ElectronWindowService> logger)
     {
         _windowManager = windowManager;
         _trivialDataStore = trivialDataStore;
@@ -44,10 +48,17 @@ public class ElectronWindowService : IUiWindowService
     {
         try
         {
-            var savedBounds = _trivialDataStore.Get<Rectangle>("main-window.bounds");
-            if (savedBounds != null)
+            var windowState = _trivialDataStore.Get<WindowState>("main-window.bounds");
+
+            if (windowState?.HasSaneBounds() == true)
             {
-                window.SetBounds(savedBounds);
+                window.SetBounds(windowState.Bounds);
+
+                if (windowState.IsMaximized)
+                {
+                    window.Maximize();
+                }
+
                 window.Show();
             }
             else
@@ -67,7 +78,8 @@ public class ElectronWindowService : IUiWindowService
 
         window.OnClose += async () =>
         {
-            _trivialDataStore.Set("main-window.bounds", await window.GetBoundsAsync());
+            _trivialDataStore.Set("main-window.bounds",
+                new WindowState(await window.GetBoundsAsync(), await window.IsMaximizedAsync()));
         };
     }
 
@@ -80,23 +92,17 @@ public class ElectronWindowService : IUiWindowService
             return;
         }
 
-        var display = await PrimaryDisplay();
-
         var queryParams = new List<(string, object?)>();
         if (tab != null) queryParams.Add(("tab", tab));
 
         var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = "Settings",
-            Height = display.Bounds.Height * 2 / 3,
-            Width = display.Bounds.Width * 1 / 2,
-            AutoHideMenuBar = true
+            AutoHideMenuBar = true,
+            Show = false
         }, queryParams.ToArray());
 
-        window.SetParentWindow(ElectronUtil.MainWindow);
-        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-        window.Center();
+        await ShowModalWindowAsync(window, 0.67, 0.5);
     }
 
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
@@ -108,8 +114,6 @@ public class ElectronWindowService : IUiWindowService
             return;
         }
 
-        var display = await PrimaryDisplay();
-
         var queryParams = new List<(string, object?)>();
         queryParams.Add(("script-id", script.Id));
         if (tab != null) queryParams.Add(("tab", tab));
@@ -117,15 +121,11 @@ public class ElectronWindowService : IUiWindowService
         var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = script.Name,
-            Height = display.Bounds.Height * 2 / 3,
-            Width = display.Bounds.Width * 4 / 5,
-            AutoHideMenuBar = true
+            AutoHideMenuBar = true,
+            Show = false
         }, queryParams.ToArray());
 
-        window.SetParentWindow(ElectronUtil.MainWindow);
-        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-        window.Center();
+        await ShowModalWindowAsync(window, 0.67, 0.8);
     }
 
     public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
@@ -137,25 +137,19 @@ public class ElectronWindowService : IUiWindowService
             return;
         }
 
-        var display = await PrimaryDisplay();
-
         var queryParams = new List<(string, object?)>();
         if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
 
         var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
-            Height = display.Bounds.Height * 4 / 10,
-            Width = 750,
             AutoHideMenuBar = true,
             MinWidth = 550,
-            MinHeight = 550
+            MinHeight = 550,
+            Show = false
         }, queryParams.ToArray());
 
-        window.SetParentWindow(ElectronUtil.MainWindow);
-        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
-        window.Center();
+        await ShowModalWindowAsync(window, 0.4, 0.5);
     }
 
     public async Task OpenOutputWindowAsync()
@@ -167,21 +161,41 @@ public class ElectronWindowService : IUiWindowService
             return;
         }
 
-        var display = await PrimaryDisplay();
-
         var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {
             Title = "Output",
-            Height = display.Bounds.Height * 2 / 3,
-            Width = display.Bounds.Width * 4 / 5,
             AutoHideMenuBar = true,
             Show = false
         });
 
-        var mainWindowPosition = await ElectronUtil.MainWindow.GetPositionAsync();
-        window.SetPosition(mainWindowPosition[0], mainWindowPosition[1]);
+        await ShowModalWindowAsync(window, 0.67, 0.8);
+    }
+
+    private async Task ShowModalWindowAsync(BrowserWindow window, double height, double width)
+    {
+        var mainWindowPosition = await ElectronUtil.MainWindow.GetBoundsAsync();
+        var allDisplays = (await ElectronNET.API.Electron.Screen.GetAllDisplaysAsync())
+            .OrderBy(x => x.Bounds.X)
+            .ToArray();
+
+        // Find display where most of main window resides
+        var mainWindowMidWayPoint = mainWindowPosition.X + mainWindowPosition.Width / 2;
+        var mainWindowDisplay = allDisplays.LastOrDefault(x => x.Bounds.X <= mainWindowMidWayPoint)
+                                ?? allDisplays[0];
+
+        window.SetParentWindow(ElectronUtil.MainWindow);
+
+        window.SetPosition(mainWindowPosition.X, mainWindowPosition.Y);
+
+        window.SetBounds(new Rectangle
+        {
+            X = mainWindowPosition.X,
+            Y = mainWindowPosition.Y,
+            Height = (int)(mainWindowDisplay.Bounds.Height * height),
+            Width = (int)(mainWindowDisplay.Bounds.Width * width)
+        });
+
         window.Center();
-        window.Maximize();
         window.Show();
     }
 }
