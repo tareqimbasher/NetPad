@@ -9,7 +9,7 @@ public class PackageMetadata
     {
         PackageId = packageId ?? throw new ArgumentNullException(nameof(packageId));
         Title = title ?? throw new ArgumentNullException(nameof(title));
-        Dependencies = Array.Empty<string>();
+        Dependencies = Array.Empty<PackageDependencySet>();
     }
 
     public string PackageId { get; set; }
@@ -24,9 +24,10 @@ public class PackageMetadata
     public Uri? ReadmeUrl { get; set; }
     public Uri? ReportAbuseUrl { get; set; }
     public bool? RequireLicenseAcceptance { get; set; }
-    public string[] Dependencies { get; set; }
+    public PackageDependencySet[] Dependencies { get; set; }
     public long? DownloadCount { get; set; }
     public DateTime? PublishedDate { get; set; }
+    public string? LatestAvailableVersion { get; set; }
 
     public bool IsSomeMetadataMetadataMissing()
     {

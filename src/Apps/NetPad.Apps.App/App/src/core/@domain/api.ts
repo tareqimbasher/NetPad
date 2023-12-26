@@ -887,7 +887,9 @@ export interface IPackagesApiClient {
 
     purgePackageCache(signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
-    getPackageVersions(packageId: string | null | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
+    getPackageVersions(packageId: string | null | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal | undefined): Promise<string[]>;
+
+    getPackageMetadata(packages: PackageIdentity[], signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]>;
 
@@ -1067,10 +1069,14 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
         return Promise.resolve<FileResponse | null>(<any>null);
     }
 
-    getPackageVersions(packageId: string | null | undefined, signal?: AbortSignal | undefined): Promise<string[]> {
+    getPackageVersions(packageId: string | null | undefined, includePrerelease: boolean | undefined, signal?: AbortSignal | undefined): Promise<string[]> {
         let url_ = this.baseUrl + "/packages/versions?";
         if (packageId !== undefined && packageId !== null)
             url_ += "packageId=" + encodeURIComponent("" + packageId) + "&";
+        if (includePrerelease === null)
+            throw new Error("The parameter 'includePrerelease' cannot be null.");
+        else if (includePrerelease !== undefined)
+            url_ += "includePrerelease=" + encodeURIComponent("" + includePrerelease) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -1109,6 +1115,52 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             });
         }
         return Promise.resolve<string[]>(<any>null);
+    }
+
+    getPackageMetadata(packages: PackageIdentity[], signal?: AbortSignal | undefined): Promise<PackageMetadata[]> {
+        let url_ = this.baseUrl + "/packages/metadata";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(packages);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetPackageMetadata(_response);
+        });
+    }
+
+    protected processGetPackageMetadata(response: Response): Promise<PackageMetadata[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(PackageMetadata.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PackageMetadata[]>(<any>null);
     }
 
     search(term: string | null | undefined, skip: number | null | undefined, take: number | null | undefined, includePrerelease: boolean | null | undefined, signal?: AbortSignal | undefined): Promise<PackageMetadata[]> {
@@ -3480,9 +3532,10 @@ export class PackageMetadata implements IPackageMetadata {
     readmeUrl?: string | undefined;
     reportAbuseUrl?: string | undefined;
     requireLicenseAcceptance?: boolean | undefined;
-    dependencies!: string[];
+    dependencies!: PackageDependencySet[];
     downloadCount?: number | undefined;
     publishedDate?: Date | undefined;
+    latestAvailableVersion?: string | undefined;
 
     constructor(data?: IPackageMetadata) {
         if (data) {
@@ -3513,10 +3566,11 @@ export class PackageMetadata implements IPackageMetadata {
             if (Array.isArray(_data["dependencies"])) {
                 this.dependencies = [] as any;
                 for (let item of _data["dependencies"])
-                    this.dependencies!.push(item);
+                    this.dependencies!.push(PackageDependencySet.fromJS(item));
             }
             this.downloadCount = _data["downloadCount"];
             this.publishedDate = _data["publishedDate"] ? new Date(_data["publishedDate"].toString()) : <any>undefined;
+            this.latestAvailableVersion = _data["latestAvailableVersion"];
         }
     }
 
@@ -3544,10 +3598,11 @@ export class PackageMetadata implements IPackageMetadata {
         if (Array.isArray(this.dependencies)) {
             data["dependencies"] = [];
             for (let item of this.dependencies)
-                data["dependencies"].push(item);
+                data["dependencies"].push(item.toJSON());
         }
         data["downloadCount"] = this.downloadCount;
         data["publishedDate"] = this.publishedDate ? this.publishedDate.toISOString() : <any>undefined;
+        data["latestAvailableVersion"] = this.latestAvailableVersion;
         return data;
     }
 
@@ -3572,9 +3627,10 @@ export interface IPackageMetadata {
     readmeUrl?: string | undefined;
     reportAbuseUrl?: string | undefined;
     requireLicenseAcceptance?: boolean | undefined;
-    dependencies: string[];
+    dependencies: PackageDependencySet[];
     downloadCount?: number | undefined;
     publishedDate?: Date | undefined;
+    latestAvailableVersion?: string | undefined;
 }
 
 export class CachedPackage extends PackageMetadata implements ICachedPackage {
@@ -3622,6 +3678,108 @@ export interface ICachedPackage extends IPackageMetadata {
 }
 
 export type PackageInstallReason = "Explicit" | "Dependency";
+
+export class PackageDependencySet implements IPackageDependencySet {
+    targetFramework!: string;
+    packages?: string[] | undefined;
+
+    constructor(data?: IPackageDependencySet) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.targetFramework = _data["targetFramework"];
+            if (Array.isArray(_data["packages"])) {
+                this.packages = [] as any;
+                for (let item of _data["packages"])
+                    this.packages!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): PackageDependencySet {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageDependencySet();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["targetFramework"] = this.targetFramework;
+        if (Array.isArray(this.packages)) {
+            data["packages"] = [];
+            for (let item of this.packages)
+                data["packages"].push(item);
+        }
+        return data;
+    }
+
+    clone(): PackageDependencySet {
+        const json = this.toJSON();
+        let result = new PackageDependencySet();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPackageDependencySet {
+    targetFramework: string;
+    packages?: string[] | undefined;
+}
+
+export class PackageIdentity implements IPackageIdentity {
+    id!: string;
+    version!: string;
+
+    constructor(data?: IPackageIdentity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.version = _data["version"];
+        }
+    }
+
+    static fromJS(data: any): PackageIdentity {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageIdentity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["version"] = this.version;
+        return data;
+    }
+
+    clone(): PackageIdentity {
+        const json = this.toJSON();
+        let result = new PackageIdentity();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPackageIdentity {
+    id: string;
+    version: string;
+}
 
 export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
 

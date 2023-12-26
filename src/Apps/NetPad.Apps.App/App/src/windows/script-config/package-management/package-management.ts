@@ -4,24 +4,27 @@ import {ConfigStore} from "../config-store";
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {ViewModelBase} from "@application";
+import {PackageExtendedMetadataLoader} from "./package-extended-metadata-loader";
+import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
 
 export class PackageManagement extends ViewModelBase {
     public searchTerm: string;
-    public searchTake = 10;
+    public searchTake = 15;
     public searchPrereleases = false;
     public searchCurrentPage = 1;
-
+    public searchLoadingPromise?: Promise<void>;
     public searchResults: PackageSearchResult[] = [];
-    public cachedPackages: CachedPackageViewModel[] = [];
-    public selectedPackage?: PackageMetadata;
-    public showAllCachedDeps: boolean;
 
+    public cachedPackages: CachedPackageViewModel[] = [];
+    public cacheLoadingPromise?: Promise<void>;
+    public showAllCachedDeps: boolean;
+    private cachedPackagedExtendedMetadataLoader: PackageExtendedMetadataLoader | undefined;
+
+    public selectedPackage?: PackageMetadata;
+    public showDescriptions = false;
     public showVersionPickerModal: boolean;
     public versionsToPickFrom: string[] | undefined;
     public selectedVersion?: string | undefined;
-
-    public searchLoadingPromise?: Promise<void>;
-    public cacheLoadingPromise?: Promise<void>;
 
     constructor(
         readonly configStore: ConfigStore,
@@ -62,7 +65,7 @@ export class PackageManagement extends ViewModelBase {
         this.selectedVersion = undefined;
         this.showVersionPickerModal = true;
 
-        this.versionsToPickFrom = (await this.packageService.getPackageVersions(pkg.packageId)).reverse();
+        this.versionsToPickFrom = (await this.packageService.getPackageVersions(pkg.packageId, this.searchPrereleases)).reverse();
 
         if (!this.versionsToPickFrom || !this.versionsToPickFrom.length) {
             alert("Could not find any versions for package: " + pkg.packageId);
@@ -126,24 +129,40 @@ export class PackageManagement extends ViewModelBase {
     @watch((vm: PackageManagement) => vm.showAllCachedDeps)
     private async refreshCachedPackages() {
         const promise = this.showAllCachedDeps
-            ? this.packageService.getCachedPackages(true)
-            : this.packageService.getExplicitlyInstalledCachedPackages(true);
+            ? this.packageService.getCachedPackages(false)
+            : this.packageService.getExplicitlyInstalledCachedPackages(false);
 
         this.cacheLoadingPromise = promise.then(cps => {
-            this.cachedPackages = cps
+            const cachedPackages = cps
                 .sort((a, b) => (a.title > b.title) ? 1 : ((b.title > a.title) ? -1 : 0))
                 .map(p => new CachedPackageViewModel(p));
+
+            if (this.cachedPackagedExtendedMetadataLoader) {
+                this.cachedPackagedExtendedMetadataLoader.cancel();
+            }
+
+            this.cachedPackagedExtendedMetadataLoader = new PackageExtendedMetadataLoader(cachedPackages, this.packageService);
+            this.cachedPackagedExtendedMetadataLoader.load()
+                .finally(() => this.cachedPackagedExtendedMetadataLoader = undefined);
+
+            this.cachedPackages = cachedPackages;
             this.markReferencedPackages();
         });
     }
 
     @watch<PackageManagement>(vm => vm.searchTerm)
+    private async searchTermChanged() {
+        // Users would expect to go back to page 1 for new results
+        this.searchCurrentPage = 1;
+        await this.searchPackages();
+    }
+
     @watch<PackageManagement>(vm => vm.searchPrereleases)
     @watch<PackageManagement>(vm => vm.searchTake)
     @watch<PackageManagement>(vm => vm.searchCurrentPage)
-    private async searchPackages(term?: string) {
+    private async searchPackages() {
         this.searchLoadingPromise = this.packageService.search(
-            term ?? this.searchTerm,
+            this.searchTerm,
             (this.searchCurrentPage - 1) * this.searchTake,
             this.searchTake,
             this.searchPrereleases)
@@ -170,12 +189,25 @@ export class PackageManagement extends ViewModelBase {
     }
 }
 
-class PackageSearchResult extends PackageMetadata {
+class PackageSearchResult extends PackageMetadata implements IPackageWithExtendedMetadata {
     public existsInLocalCache = false;
     public isInstalling = false;
     public referenced = false;
+
+    public get isExtMetaLoaded(): boolean {
+        return !!this.publishedDate;
+    }
+
+    public isExtMetaLoading: boolean;
 }
 
-class CachedPackageViewModel extends CachedPackage {
+class CachedPackageViewModel extends CachedPackage implements IPackageWithExtendedMetadata {
     public referenced = false;
+
+    public get isExtMetaLoaded(): boolean {
+        return !!this.publishedDate;
+    }
+
+    public isExtMetaLoading: boolean;
 }
+

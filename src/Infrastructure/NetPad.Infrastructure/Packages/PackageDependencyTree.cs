@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NugetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace NetPad.Packages;
 
 internal class PackageDependencyTree
 {
-    public PackageDependencyTree(PackageIdentity packageIdentity)
+    public PackageDependencyTree(NugetPackageIdentity packageIdentity)
     {
         Identity = packageIdentity;
         Dependencies = new List<PackageDependencyTree>();
     }
 
-    public PackageIdentity Identity { get; }
+    public NugetPackageIdentity Identity { get; }
     public SourcePackageDependencyInfo? DependencyInfo { get; set; }
     public List<PackageDependencyTree> Dependencies { get; }
 

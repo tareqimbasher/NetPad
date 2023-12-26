@@ -1,10 +1,12 @@
+<import from="./package-info-view/package-info-view"></import>
+
 <template as-custom-element="loader"
           class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
     <div>
         Loading...
     </div>
     <div class="progress mt-3"
-         style="width: 200px">
+         style="width: 200px; height: 8px">
         <div class="progress-bar progress-bar-striped progress-bar-animated"
              role="progressbar"
              style="width: 100%"></div>
@@ -18,6 +20,7 @@
 <template as-custom-element="packages" class="flex-grow-height-restricted d-flex flex-column">
     <bindable property="packages"></bindable>
     <bindable property="selectedPackage"></bindable>
+    <bindable property="descriptions"></bindable>
 
     <div class="list-group flex-grow-height-restricted overflow-y-auto">
         <div class="list-group-item list-group-item-action package ${selectedPackage === package ? 'active' : ''}"
@@ -29,9 +32,20 @@
                         <img class="me-3"
                              src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
                              style="height: 24px;"/>
-                        <b>${package.title} <small>(${package.version})</small></b>
+                        <b>
+                            ${package.title}
+                            <small>
+                                (${package.version})
+                            </small>
+                            <small class="text-blue"
+                                   if.bind="package.latestAvailableVersion && package.latestAvailableVersion !== package.version"
+                                   title="There is a later version of this package: v${package.latestAvailableVersion}">
+                                <i>${package.latestAvailableVersion}</i>
+                            </small>
+                        </b>
                     </h6>
-                    <p class="text-truncate-3-lines">${package.description}</p>
+
+                    <p class="text-truncate-3-lines" if.bind="descriptions">${package.description}</p>
                     <small class="text-warning" show.bind="package.installReason === 'Dependency'">
                         Installed as a dependency
                     </small>
@@ -49,8 +63,9 @@
     <!-- CACHED PACKAGES -->
     <div id="cached-packages" class="d-flex flex-column column">
         <div class="column-header justify-content-between">
-            <h5>Local Package Cache (${cachedPackages.length})</h5>
-            <div class="form-check" title="Show packages that were installed as dependencies">
+            <span title="These are packages that exist on your device"
+                  style="font-size: 1.1rem">Local Cache (${cachedPackages.length})</span>
+            <div class="form-check" title="Show packages that were installed as dependencies of other packages">
                 <input id="show-deps-checkbox" class="form-check-input" type="checkbox"
                        checked.bind="showAllCachedDeps">
                 <label class="form-check-label" for="show-deps-checkbox">
@@ -63,7 +78,8 @@
             <loader pending></loader>
             <packages then
                       packages.bind="cachedPackages"
-                      selected-package.two-way="selectedPackage">
+                      selected-package.two-way="selectedPackage"
+                      descriptions.bind="showDescriptions">
                 <div au-slot="actions" class="btn-group btn-group-sm">
                     <let package.bind="$host.package"></let>
 
@@ -79,7 +95,7 @@
                             data-bs-toggle="dropdown">
                     </button>
                     <ul class="dropdown-menu">
-                        <li title="Delete from Local Cache"
+                        <li title="Delete from local cache"
                             click.trigger="deleteFromCache(package)">
                             <button class="dropdown-item btn btn-link">
                                 <i class="delete-icon"></i>
@@ -96,12 +112,12 @@
     <div id="package-search" class="d-flex flex-column column">
         <div class="column-header">
             <input class="form-control"
-                   type="text"
+                   type="search"
                    placeholder="Search packages..."
                    value.bind="searchTerm & debounce:400"/>
             <select class="form-select ms-2" style="max-width: 100px" value.bind="searchTake">
-                <option model.bind="10">10 results</option>
-                <option model.bind="20">20 results</option>
+                <option model.bind="15">15 results</option>
+                <option model.bind="30">30 results</option>
                 <option model.bind="50">50 results</option>
             </select>
         </div>
@@ -110,8 +126,9 @@
             <loader pending></loader>
             <packages then
                       packages.bind="searchResults"
-                      selected-package.two-way="selectedPackage">
-                <div au-slot="actions">
+                      selected-package.two-way="selectedPackage"
+                      descriptions.bind="showDescriptions">
+                <div au-slot="actions" class="d-flex align-items-center justify-content-end">
                     <let package.bind="$host.package"></let>
 
                     <div class="btn-group btn-group-sm" show.bind="!package.isInstalling">
@@ -127,7 +144,7 @@
                                 data-bs-toggle="dropdown">
                         </button>
                         <ul class="dropdown-menu">
-                            <li title="Download without adding to Script"
+                            <li title="Download to local cache without referencing the package"
                                 show.bind="!package.existsInLocalCache"
                                 click.trigger="installPackage(package)">
                                 <button class="dropdown-item btn btn-link">
@@ -135,18 +152,19 @@
                                     Download Only
                                 </button>
                             </li>
-                            <li title="Add specific version"
+                            <li title="Reference a specific version"
                                 click.trigger="selectPackageVersionToInstall(package)">
                                 <button class="dropdown-item btn btn-link">
                                     <i class="add-package-specific-icon"></i>
-                                    Add Specific Version
+                                    Reference Specific Version
                                 </button>
                             </li>
                         </ul>
                     </div>
-                    <div class="progress"
+
+                    <div class="progress w-100"
                          show.bind="package.isInstalling"
-                         style="height: 10px">
+                         style="height: 10px;">
                         <div class="progress-bar progress-bar-striped bg-warning progress-bar-animated"
                              role="progressbar"
                              style="width: 100%"></div>
@@ -156,21 +174,34 @@
                     <div class="d-flex justify-content-between search-bottom-bar">
                         <button class="btn btn-sm btn-link"
                                 click.trigger="goToPreviousPage()"
-                                disabled.bind="searchCurrentPage === 1">
+                                disabled.bind="searchCurrentPage === 1"
+                                title="Go to the previous page of results">
                             Previous
                         </button>
-                        <div class="form-check">
-                            <input id="searchPrereleases"
-                                   class="form-check-input"
-                                   type="checkbox"
-                                   checked.bind="searchPrereleases">
-                            <label class="form-check-label" for="searchPrereleases">
-                                Include Pre-Releases
-                            </label>
+                        <div class="d-flex gap-4 align-items-center">
+                            <div class="form-check" title="Check to show descriptions">
+                                <input id="showDescriptions"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       checked.bind="showDescriptions">
+                                <label class="form-check-label" for="showDescriptions">
+                                    Descriptions
+                                </label>
+                            </div>
+                            <div class="form-check" title="Check to include pre-release versions results">
+                                <input id="searchPrereleases"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       checked.bind="searchPrereleases">
+                                <label class="form-check-label" for="searchPrereleases">
+                                    Pre-releases
+                                </label>
+                            </div>
                         </div>
                         <button class="btn btn-sm btn-link"
                                 click.trigger="goToNextPage()"
-                                disabled.bind="searchResults.length < searchTake">
+                                disabled.bind="searchResults.length < searchTake"
+                                title="Go to the next page of results">
                             Next
                         </button>
                     </div>
@@ -184,44 +215,7 @@
 
     <!-- PACKAGES INFO -->
     <div id="package-info" class="column overflow-y-auto">
-        <ul class="list-unstyled details-list" show.bind="selectedPackage">
-            <li><b>ID:</b> ${selectedPackage.packageId}</li>
-            <li><b>Authors:</b> ${selectedPackage.authors}</li>
-            <li><b>Version:</b> ${selectedPackage.version}</li>
-            <li><b>Published:</b> ${selectedPackage.publishedDate | dateTime}</li>
-            <li show.bind="selectedPackage.downloadCount !== null">
-                <b>Downloads:</b> ${selectedPackage.downloadCount}
-            </li>
-            <li><b>Requires Accept License:</b> ${selectedPackage.requireLicenseAcceptance | yesNo}</li>
-            <li show.bind="selectedPackage.licenseUrl !== null">
-                <a href.bind="selectedPackage.licenseUrl" external-link>License</a>
-            </li>
-            <li show.bind="selectedPackage.projectUrl !== null">
-                <a href.bind="selectedPackage.projectUrl" external-link>Project Url</a>
-            </li>
-            <li show.bind="selectedPackage.packageDetailsUrl !== null">
-                <a href.bind="selectedPackage.packageDetailsUrl" external-link>Project Details</a>
-            </li>
-            <li show.bind="selectedPackage.readmeUrl !== null">
-                <a href.bind="selectedPackage.readmeUrl" external-link>Readme</a>
-            </li>
-            <li show.bind="selectedPackage.reportAbuseUrl !== null">
-                <a href.bind="selectedPackage.reportAbuseUrl" external-link>Report Abuse</a>
-            </li>
-            <li>
-                <b>Description:</b><br/>
-                <p innerHTML.bind="selectedPackage.description | sanitizeHtml | textToHtml"></p>
-            </li>
-            <li>
-                <b>Dependencies:</b><br/>
-                <ul class="list-unstyled" if.bind="selectedPackage.dependencies.length">
-                    <li repeat.for="dep of selectedPackage.dependencies">
-                        <p innerHTML.bind="dep | sanitizeHtml | textToHtml"></p>
-                    </li>
-                </ul>
-                <span else>(none)</span>
-            </li>
-        </ul>
+        <package-info-view package.bind="selectedPackage"></package-info-view>
     </div>
 </div>
 
@@ -232,7 +226,7 @@
         <div class="list-group flex-grow-height-restricted overflow-y-auto" if.bind="versionsToPickFrom.length">
             <div class="list-group-item list-group-item-action"
                  repeat.for="version of versionsToPickFrom"
-                 click.trigger="selectedVersion == version ? selectedVersion = null : selectedVersion = version">
+                 click.trigger="selectedVersion === version ? selectedVersion = null : selectedVersion = version">
                 ${version}
                 <i class="text-success check-circle-icon float-end"
                    show.bind="version === selectedVersion"></i>
@@ -242,11 +236,13 @@
             Fetching versions...
         </p>
         <div class="text-end mt-3">
-            <button class="btn btn-primary ${!selectedVersion ? 'disabled' : ''}"
-                    click.trigger="referencePackage(selectedPackage, selectedVersion)">
-                Confirm
-            </button>
-            <button class="btn btn-outline-secondary" click.trigger="showVersionPickerModal = false">Cancel</button>
+            <div class="text-end mt-3">
+                <button class="btn btn-primary ${!selectedVersion ? 'disabled' : ''}"
+                        click.trigger="referencePackage(selectedPackage, selectedVersion)">
+                    Confirm
+                </button>
+                <button class="btn btn-outline-secondary" click.trigger="showVersionPickerModal = false">Cancel</button>
+            </div>
         </div>
     </div>
 </div>

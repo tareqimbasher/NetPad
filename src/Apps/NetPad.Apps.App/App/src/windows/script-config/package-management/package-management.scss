@@ -1,4 +1,5 @@
 @import "~styles/themes";
+@import "~styles/colors";
 
 package-management {
     .column {
@@ -14,8 +15,12 @@ package-management {
         @include theme(border-bottom, borderColor, 1px solid);
     }
 
-    .details-list > li {
-        margin-bottom: 5px;
+    .details-list {
+        word-break: break-word;
+
+        li {
+            margin-bottom: 5px;
+        }
     }
 
     .package-version-picker-modal-wrapper {
@@ -36,6 +41,18 @@ package-management {
     }
 
     .package {
+        &.active {
+            @extend %bg-blue-muted;
+        }
+
+        &.active .package-description {
+            b::selection,
+            small::selection,
+            p::selection {
+                background: orange;
+            }
+        }
+
         .package-container {
             display: flex;
             align-items: center;

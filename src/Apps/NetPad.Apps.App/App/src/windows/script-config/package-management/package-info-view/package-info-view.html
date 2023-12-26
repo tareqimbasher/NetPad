@@ -1,0 +1,77 @@
+﻿<div class="flex-grow-1 d-flex align-items-center justify-content-center text-secondary" show.bind="!package">
+    <p>Select a package for details.</p>
+</div>
+<ul class="list-unstyled details-list" show.bind="package">
+    <li class="d-flex">
+        <div class="me-3">
+            <img class="me-3"
+                 src.bind="package.iconUrl || 'https://www.nuget.org/Content/gallery/img/logo-og-600x600.png'"
+                 style="height: 64px;"/>
+        </div>
+        <div class="flex-grow-1">
+            <ul class="list-unstyled">
+                <li><b>ID:</b> <span class="user-select-all">${package.packageId}</span></li>
+                <li><b>Version:</b> <span class="user-select-all">${package.version}</span></li>
+                <li if.bind="package.latestAvailableVersion && package.latestAvailableVersion !== package.version"
+                    title="There is a later version of this package: v${package.latestAvailableVersion}">
+                    <b class="text-blue">Latest:</b> <span class="user-select-all">${package.latestAvailableVersion}</span>
+                </li>
+            </ul>
+        </div>
+    </li>
+    <li><b>Authors:</b> ${package.authors}</li>
+    <li if.bind="!package.isExtMetaLoading">
+        <b>Published:</b> ${package.publishedDate | dateTime}
+    </li>
+    <li else class="placeholder-glow">
+        <b>Published:</b> <span class="placeholder bg-secondary col-3"></span>
+    </li>
+    <li show.bind="package.downloadCount !== null">
+        <b>Downloads:</b> ${package.downloadCount}
+    </li>
+    <li><b>Requires Accept License:</b> ${package.requireLicenseAcceptance | yesNo}</li>
+    <li show.bind="package.licenseUrl !== null">
+        <a href.bind="package.licenseUrl" external-link>License</a>
+    </li>
+    <li show.bind="package.projectUrl !== null">
+        <a href.bind="package.projectUrl" external-link>Project Url</a>
+    </li>
+    <li show.bind="package.packageDetailsUrl !== null">
+        <a href.bind="package.packageDetailsUrl" external-link>Project Details</a>
+    </li>
+    <li show.bind="package.readmeUrl !== null">
+        <a href.bind="package.readmeUrl" external-link>Readme</a>
+    </li>
+    <li show.bind="package.reportAbuseUrl !== null">
+        <a href.bind="package.reportAbuseUrl" external-link>Report Abuse</a>
+    </li>
+    <li>
+        <b>Description:</b><br/>
+        <p innerHTML.bind="package.description | sanitizeHtml | textToHtml"></p>
+    </li>
+    <li>
+        <b>Dependencies:</b><br/>
+
+        <div if.bind="!package.isExtMetaLoading">
+            <ul class="list-unstyled"
+                if.bind="package.dependencies.length">
+                <li repeat.for="dep of package.dependencies" class="mt-3">
+                    <b><i class="package-dependency-group-icon text-secondary"></i> ${dep.targetFramework}</b>
+                    <ul>
+                        <li repeat.for="pck of dep.packages">
+                            ${pck}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <span else>(none)</span>
+        </div>
+        <div else>
+            <p class="placeholder-glow">
+                <span class="placeholder bg-secondary col-4 mt-3"></span><br/>
+                <span class="placeholder bg-secondary col-5"></span><br/>
+                <span class="placeholder bg-secondary col-4"></span><br/>
+            </p>
+        </div>
+    </li>
+</ul>

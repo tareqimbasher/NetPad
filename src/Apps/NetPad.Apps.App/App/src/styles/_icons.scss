@@ -452,6 +452,11 @@ button > .icon-base {
     @extend .fa-hashtag;
 }
 
+.package-dependency-group-icon {
+    @extend %icon-base;
+    @extend .fa-gear;
+}
+
 .edit-keyboard-shortcut-icon {
     @extend %icon-base;
     @extend .fa-pencil;

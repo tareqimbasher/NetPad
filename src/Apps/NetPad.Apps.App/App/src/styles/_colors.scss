@@ -2,7 +2,13 @@
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 
-$colors: () !default;
+// Additional colors
+$colors: map.merge(
+    $colors,
+    (
+        "blue-muted":       rgb(13 110 253 / 50%),
+    )
+);
 
 @each $color in map-keys($colors) {
     .text-#{"" + $color}, %text-#{"" + $color} {
