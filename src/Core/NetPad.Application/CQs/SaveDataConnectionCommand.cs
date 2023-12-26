@@ -52,7 +52,7 @@ public class SaveDataConnectionCommand : Command
             return Unit.Value;
         }
 
-        private static readonly HashSet<string> _propertiesToIgnore = new()
+        private static readonly HashSet<string> _propertiesThatDoNotTriggerResourceRefresh = new()
         {
             nameof(DataConnection.Name),
             nameof(DatabaseConnection.ContainsProductionData)
@@ -70,7 +70,7 @@ public class SaveDataConnectionCommand : Command
 
             var properties = updatedConnectionType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => !_propertiesToIgnore.Contains(p.Name));
+                .Where(p => !_propertiesThatDoNotTriggerResourceRefresh.Contains(p.Name));
 
             foreach (var property in properties)
             {

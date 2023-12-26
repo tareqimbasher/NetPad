@@ -21,6 +21,7 @@ using INugetLogger = NuGet.Common.ILogger;
 using NuGetNullLogger = NuGet.Common.NullLogger;
 using PackageReference = NuGet.Packaging.PackageReference;
 using Settings = NetPad.Configuration.Settings;
+using NugetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace NetPad.Packages;
 
@@ -32,7 +33,10 @@ public class NuGetPackageProvider : IPackageProvider
     private const string NugetApiUri = "https://api.nuget.org/v3/index.json";
     private const string PackageInstallInfoFileName = "netpad.json";
 
-    public NuGetPackageProvider(Settings settings, IAppStatusMessagePublisher appStatusMessagePublisher, ILogger<NuGetPackageProvider> logger)
+    public NuGetPackageProvider(
+        Settings settings,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
+        ILogger<NuGetPackageProvider> logger)
     {
         _settings = settings;
         _appStatusMessagePublisher = appStatusMessagePublisher;
@@ -85,36 +89,46 @@ public class NuGetPackageProvider : IPackageProvider
             packages.Add(metadata);
         }
 
-        await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
+        if (loadMetadata)
+        {
+            await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
+        }
 
         return packages.ToArray();
     }
 
-    public async Task<string[]> GetPackageVersionsAsync(string packageId)
+    public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
     {
         using var sourceCacheContext = new SourceCacheContext();
 
         foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
         {
             var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
-            var versions = await resource.GetAllVersionsAsync(
-                packageId,
-                sourceCacheContext,
-                NuGetNullLogger.Instance,
-                CancellationToken.None);
+            var versions = (await resource.GetAllVersionsAsync(
+                    packageId,
+                    sourceCacheContext,
+                    NuGetNullLogger.Instance,
+                    CancellationToken.None))
+                .ToArray();
 
             if (versions.Any())
             {
-                return versions.Select(v => v.ToString()).ToArray();
+                return versions
+                    .Where(v => includePrerelease || !v.IsPrerelease)
+                    .Select(v => v.ToString())
+                    .ToArray();
             }
         }
 
         return Array.Empty<string>();
     }
 
-    public async Task InstallPackageAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion)
+    public async Task InstallPackageAsync(
+        string packageId,
+        string packageVersion,
+        DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        var packageIdentity = new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
+        var packageIdentity = new NugetPackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
 
         var sourceRepositoryProvider = GetSourceRepositoryProvider();
         var repositories = sourceRepositoryProvider.GetRepositories();
@@ -146,7 +160,7 @@ public class NuGetPackageProvider : IPackageProvider
     {
         PackageInstallInfo? installInfo = null;
 
-        var installPath = GetInstallPath(new PackageIdentity(packageId, NuGetVersion.Parse(packageVersion)));
+        var installPath = GetInstallPath(new NugetPackageIdentity(packageId, NuGetVersion.Parse(packageVersion)));
         if (installPath != null) installInfo = GetInstallInfo(installPath);
 
         return Task.FromResult(installInfo);
@@ -156,7 +170,8 @@ public class NuGetPackageProvider : IPackageProvider
     {
         var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
 
-        return await GetCachedPackagesAsync(nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories), loadMetadata);
+        return await GetCachedPackagesAsync(
+            nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories), loadMetadata);
     }
 
     public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
@@ -169,9 +184,12 @@ public class NuGetPackageProvider : IPackageProvider
         return await GetCachedPackagesAsync(packageInstallInfoFiles, loadMetadata);
     }
 
-    public Task<HashSet<PackageAsset>> GetCachedPackageAssetsAsync(string packageId, string packageVersion, DotNetFrameworkVersion dotNetFrameworkVersion)
+    public Task<HashSet<PackageAsset>> GetCachedPackageAssetsAsync(
+        string packageId,
+        string packageVersion,
+        DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
+        var packageIdentity = new NugetPackageIdentity(packageId, new NuGetVersion(packageVersion));
 
         var installPath = GetInstallPath(packageIdentity);
         if (installPath == null)
@@ -193,7 +211,8 @@ public class NuGetPackageProvider : IPackageProvider
 
         IEnumerable<string> GetNearestItems(IEnumerable<FrameworkSpecificGroup> items)
         {
-            var nearestLibItemsFramework = frameworkReducer.GetNearest(nugetFramework, items.Select(x => x.TargetFramework));
+            var nearestLibItemsFramework =
+                frameworkReducer.GetNearest(nugetFramework, items.Select(x => x.TargetFramework));
             return items.Where(x => x.TargetFramework.Equals(nearestLibItemsFramework))
                 .SelectMany(x => x.Items)
                 .Select(i => Path.Combine(installPath, i));
@@ -205,7 +224,7 @@ public class NuGetPackageProvider : IPackageProvider
         string packageVersion,
         DotNetFrameworkVersion dotNetFrameworkVersion)
     {
-        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
+        var packageIdentity = new NugetPackageIdentity(packageId, new NuGetVersion(packageVersion));
 
         if (!IsInstalled(packageIdentity))
         {
@@ -238,7 +257,8 @@ public class NuGetPackageProvider : IPackageProvider
                 await InstallPackageAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
             }
 
-            var packageAssets = await GetCachedPackageAssetsAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
+            var packageAssets =
+                await GetCachedPackageAssetsAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
 
             foreach (var asset in packageAssets)
             {
@@ -252,7 +272,7 @@ public class NuGetPackageProvider : IPackageProvider
 
     public Task DeleteCachedPackageAsync(string packageId, string packageVersion)
     {
-        var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
+        var packageIdentity = new NugetPackageIdentity(packageId, new NuGetVersion(packageVersion));
 
         var installPath = GetInstallPath(packageIdentity);
 
@@ -275,7 +295,9 @@ public class NuGetPackageProvider : IPackageProvider
     }
 
 
-    private async Task<CachedPackage[]> GetCachedPackagesAsync(IEnumerable<FileInfo> packageInstallInfoFiles, bool loadMetadata = false)
+    private async Task<CachedPackage[]> GetCachedPackagesAsync(
+        IEnumerable<FileInfo> packageInstallInfoFiles,
+        bool loadMetadata = false)
     {
         var cachedPackages = new List<CachedPackage>();
 
@@ -285,12 +307,31 @@ public class NuGetPackageProvider : IPackageProvider
 
             try
             {
-                using var  packageReader = new PackageFolderReader(packageDir);
+                using var packageReader = new PackageFolderReader(packageDir);
                 var nuspecReader = packageReader.NuspecReader;
                 var installInfo = GetInstallInfo(infoFile)!;
 
                 string packageId = nuspecReader.GetId();
                 string title = nuspecReader.GetTitle().DefaultIfNullOrWhitespace(nuspecReader.GetId());
+
+                string icon = nuspecReader.GetIconUrl();
+                if (string.IsNullOrWhiteSpace(icon) && !string.IsNullOrWhiteSpace(nuspecReader.GetIcon()))
+                {
+                    try
+                    {
+                        var iconPath = Path.Combine(packageDir.FullName, nuspecReader.GetIcon());
+
+                        if (File.Exists(iconPath))
+                        {
+                            var iconBytes = await File.ReadAllBytesAsync(iconPath);
+                            icon = $"data:image/{Path.GetExtension(iconPath).Trim('.')};base64,{Convert.ToBase64String(iconBytes)}";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Could not load icon at: {PackageDir}", packageDir.FullName);
+                    }
+                }
 
                 var cachedPackage = new CachedPackage(packageId, title)
                 {
@@ -299,15 +340,17 @@ public class NuGetPackageProvider : IPackageProvider
                     Version = nuspecReader.GetVersion().ToString(),
                     Authors = nuspecReader.GetAuthors(),
                     Description = nuspecReader.GetDescription(),
-                    IconUrl = StringUtil.ToUriOrDefault(nuspecReader.GetIconUrl()), // GetIcon()
+                    IconUrl = StringUtil.ToUriOrDefault(icon),
                     ProjectUrl = StringUtil.ToUriOrDefault(nuspecReader.GetProjectUrl()),
                     PackageDetailsUrl = null, // Does not exist in nuspec file
                     LicenseUrl = StringUtil.ToUriOrDefault(nuspecReader.GetLicenseUrl()),
                     ReadmeUrl = StringUtil.ToUriOrDefault(nuspecReader.GetReadme()),
                     ReportAbuseUrl = null,
                     RequireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance(),
-                    Dependencies = nuspecReader.GetDependencyGroups().Select(dg =>
-                            $"{dg.TargetFramework}\n{dg.Packages.Select(p => $"{p.Id} {p.VersionRange}").JoinToString("\n")}")
+                    Dependencies = nuspecReader.GetDependencyGroups()
+                        .Select(ds => new PackageDependencySet(
+                            ds.TargetFramework.ToString() ?? string.Empty,
+                            ds.Packages.Select(p => $"{p.Id} {p.VersionRange}").ToArray()))
                         .ToArray(),
                     DownloadCount = null,
                     PublishedDate = null
@@ -317,7 +360,8 @@ public class NuGetPackageProvider : IPackageProvider
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Could not gather info about package located in: {PackageDir}", packageDir.FullName);
+                _logger.LogError(ex, "Could not gather info about package located in: {PackageDir}",
+                    packageDir.FullName);
             }
         }
 
@@ -337,7 +381,7 @@ public class NuGetPackageProvider : IPackageProvider
     }
 
     private async Task<PackageDependencyTree> GetPackageDependencyTreeAsync(
-        PackageIdentity package,
+        NugetPackageIdentity package,
         NuGetFramework framework,
         IEnumerable<SourceRepository> repositories,
         DependencyContext hostDependencies,
@@ -378,7 +422,7 @@ public class NuGetPackageProvider : IPackageProvider
             foreach (var dep in actualDependencyInfo.Dependencies)
             {
                 var depDependencyTree = await GetPackageDependencyTreeAsync(
-                    new PackageIdentity(dep.Id, dep.VersionRange.MinVersion),
+                    new NugetPackageIdentity(dep.Id, dep.VersionRange.MinVersion),
                     framework,
                     repositories,
                     hostDependencies,
@@ -408,7 +452,7 @@ public class NuGetPackageProvider : IPackageProvider
             new[] { packageDependencyTree.Identity.Id },
             Enumerable.Empty<string>(),
             Enumerable.Empty<PackageReference>(),
-            Enumerable.Empty<PackageIdentity>(),
+            Enumerable.Empty<NugetPackageIdentity>(),
             allPackages,
             sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
             logger);
@@ -423,10 +467,10 @@ public class NuGetPackageProvider : IPackageProvider
         return packagesToInstall;
     }
 
-    private bool IsInstalled(PackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
+    private bool IsInstalled(NugetPackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
 
     private async Task InstallPackagesAsync(
-        PackageIdentity explicitPackageToInstallIdentity,
+        NugetPackageIdentity explicitPackageToInstallIdentity,
         IEnumerable<SourcePackageDependencyInfo> packagesToInstall,
         SourceCacheContext sourceCacheContext,
         INugetLogger logger,
@@ -446,7 +490,8 @@ public class NuGetPackageProvider : IPackageProvider
             {
                 if (installPath == null)
                 {
-                    var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
+                    var downloadResource =
+                        await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
 
                     // Download the package.
                     _ = await downloadResource.GetDownloadResourceResultAsync(
@@ -492,8 +537,14 @@ public class NuGetPackageProvider : IPackageProvider
                 if (installInfo == null)
                 {
                     installInfo = isExplicitPackageToInstall
-                        ? new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Explicit)
-                        : new PackageInstallInfo(packageToInstall.Id, packageToInstall.Version.ToString(), PackageInstallReason.Dependency);
+                        ? new PackageInstallInfo(
+                            packageToInstall.Id,
+                            packageToInstall.Version.ToString(),
+                            PackageInstallReason.Explicit)
+                        : new PackageInstallInfo(
+                            packageToInstall.Id,
+                            packageToInstall.Version.ToString(),
+                            PackageInstallReason.Dependency);
 
                     SaveInstallInfo(installPath, installInfo);
                 }
@@ -515,6 +566,61 @@ public class NuGetPackageProvider : IPackageProvider
             $"Installed package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})");
     }
 
+    public async Task<Dictionary<PackageIdentity, PackageMetadata?>> GetExtendedMetadataAsync(
+        IEnumerable<PackageIdentity> packageIdentities,
+        CancellationToken cancellationToken = default)
+    {
+        var metadatas = packageIdentities
+            .ToDictionary(p => p, x => (PackageMetadata?)null);
+
+        using var sourceCacheContext = new SourceCacheContext();
+        var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
+
+        foreach (var sourceRepository in sourceRepositories)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            var targets = metadatas
+                .Where(x => x.Value == null)
+                .Select(x => x.Key)
+                .ToArray();
+
+            var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+
+            await Parallel.ForEachAsync(targets, async (packageIdentity, ct) =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var metadata = await resource.GetMetadataAsync(
+                    new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
+                    sourceCacheContext,
+                    NuGetNullLogger.Instance,
+                    cancellationToken);
+
+                var package = new PackageMetadata(packageIdentity.Id, string.Empty);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                await MapAsync(metadata, package);
+
+                package.Version ??= packageIdentity.Version;
+
+                metadatas[packageIdentity] = package;
+            });
+        }
+
+        return metadatas;
+    }
+
     private async Task HydrateMetadataAsync(IEnumerable<PackageMetadata> packages, TimeSpan? timeout = null)
     {
         var needsProcessing = packages.Where(p => p.IsSomeMetadataMetadataMissing()).ToList();
@@ -523,7 +629,8 @@ public class NuGetPackageProvider : IPackageProvider
 
         using var sourceCacheContext = new SourceCacheContext();
         var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
-        var cancellationTokenSource = timeout == null ? new CancellationTokenSource() : new CancellationTokenSource(timeout.Value);
+        var cancellationTokenSource =
+            timeout == null ? new CancellationTokenSource() : new CancellationTokenSource(timeout.Value);
 
         foreach (var sourceRepository in sourceRepositories)
         {
@@ -544,7 +651,7 @@ public class NuGetPackageProvider : IPackageProvider
                 }
 
                 var metadata = await resource.GetMetadataAsync(
-                    new PackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
+                    new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                     sourceCacheContext,
                     NuGetNullLogger.Instance,
                     cancellationTokenSource.Token);
@@ -808,16 +915,23 @@ public class NuGetPackageProvider : IPackageProvider
         packageMetadata.PublishedDate = searchMetadata.Published?.UtcDateTime;
         packageMetadata.RequireLicenseAcceptance = searchMetadata.RequireLicenseAcceptance;
 
-        packageMetadata.Dependencies = searchMetadata.DependencySets.Select(dg =>
-                $"{dg.TargetFramework}\n{dg.Packages.Select(p => $"{p.Id} {p.VersionRange}").JoinToString("\n")}")
+        packageMetadata.Dependencies = searchMetadata.DependencySets
+            .Select(ds => new PackageDependencySet(
+                ds.TargetFramework.ToString() ?? string.Empty,
+                ds.Packages.Select(p => $"{p.Id} {p.VersionRange}").ToArray()))
             .ToArray();
 
-        packageMetadata.Version ??= (await searchMetadata.GetVersionsAsync().ConfigureAwait(false))?
-            .LastOrDefault()?
-            .Version.ToString();
+        var versions = await searchMetadata.GetVersionsAsync().ConfigureAwait(false);
+        var latestVersion = versions?.MaxBy(v => v.Version);
+
+        packageMetadata.Version ??= latestVersion?.Version.ToString();
+
+        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ??
+                                                 (await GetPackageVersionsAsync(packageMetadata.PackageId, false))
+                                                 .MaxBy(NuGetVersion.Parse);
     }
 
-    private string? GetInstallPath(PackageIdentity packageIdentity)
+    private string? GetInstallPath(NugetPackageIdentity packageIdentity)
     {
         bool TryGetPath(string? path, out string? newPath)
         {
@@ -847,7 +961,8 @@ public class NuGetPackageProvider : IPackageProvider
             return false;
         }
 
-        string dirPath = Path.Combine(GetNuGetCacheDirectoryPath(), packageIdentity.Id.ToLower(), packageIdentity.Version.ToString().ToLower());
+        string dirPath = Path.Combine(GetNuGetCacheDirectoryPath(), packageIdentity.Id.ToLower(),
+            packageIdentity.Version.ToString().ToLower());
         if (TryGetPath(dirPath, out string? installPath))
             return installPath;
 
@@ -857,12 +972,16 @@ public class NuGetPackageProvider : IPackageProvider
     private PackageInstallInfo? GetInstallInfo(string installPath)
     {
         var infoFile = Path.Combine(installPath, PackageInstallInfoFileName);
-        return !File.Exists(infoFile) ? null : JsonSerializer.Deserialize<PackageInstallInfo>(File.ReadAllText(infoFile));
+        return !File.Exists(infoFile)
+            ? null
+            : JsonSerializer.Deserialize<PackageInstallInfo>(File.ReadAllText(infoFile));
     }
 
     private PackageInstallInfo? GetInstallInfo(FileInfo installInfoFile)
     {
-        return !installInfoFile.Exists ? null : JsonSerializer.Deserialize<PackageInstallInfo>(File.ReadAllText(installInfoFile.FullName));
+        return !installInfoFile.Exists
+            ? null
+            : JsonSerializer.Deserialize<PackageInstallInfo>(File.ReadAllText(installInfoFile.FullName));
     }
 
     private void SaveInstallInfo(string installPath, PackageInstallInfo info)

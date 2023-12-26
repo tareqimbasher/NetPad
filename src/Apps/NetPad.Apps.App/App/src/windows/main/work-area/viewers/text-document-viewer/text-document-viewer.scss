@@ -12,12 +12,8 @@ text-document-viewer {
 
     .production-marker {
         @extend %bg-orange;
-        @extend %text-black;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        font-weight: bold;
-        line-height: 1.3rem;
-        text-align: center;
         cursor: default;
+        overflow: hidden;
+        width: 0.25rem;
     }
 }

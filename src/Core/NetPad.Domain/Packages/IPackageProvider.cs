@@ -32,7 +32,15 @@ public interface IPackageProvider
     /// Gets all versions of a package.
     /// </summary>
     /// <param name="packageId">Package ID</param>
-    Task<string[]> GetPackageVersionsAsync(string packageId);
+    /// <param name="includePrerelease">Whether to include pre-release versions.</param>
+    Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease);
+
+    /// <summary>
+    /// Gets metadata for a set set of packages.
+    /// </summary>
+    Task<Dictionary<PackageIdentity, PackageMetadata?>> GetExtendedMetadataAsync(
+        IEnumerable<PackageIdentity> packageIdentities,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Installs a package and adds it to cache.

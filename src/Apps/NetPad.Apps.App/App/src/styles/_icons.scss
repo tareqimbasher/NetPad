@@ -452,6 +452,11 @@ button > .icon-base {
     @extend .fa-hashtag;
 }
 
+.package-dependency-group-icon {
+    @extend %icon-base;
+    @extend .fa-gear;
+}
+
 .edit-keyboard-shortcut-icon {
     @extend %icon-base;
     @extend .fa-pencil;
@@ -553,10 +558,6 @@ button > .icon-base {
         color: #82aaff;
     }
 
-    .properties-icon {
-        color: #ffd782;
-    }
-
     .settings-icon,
     .window-always-on-top-icon {
         color: #93a3af;
@@ -565,7 +566,7 @@ button > .icon-base {
     .undo-icon,
     .redo-icon,
     .refresh-icon {
-        color: #99b89d;
+        color: greenyellow;
     }
 
     .cut-icon {
@@ -647,10 +648,6 @@ button > .icon-base {
         color: #3676ff;
     }
 
-    .properties-icon {
-        color: #ffb71d;
-    }
-
     .settings-icon,
     .window-always-on-top-icon {
         color: #68818e;
@@ -659,7 +656,7 @@ button > .icon-base {
     .undo-icon,
     .redo-icon,
     .refresh-icon {
-        color: #6c9972;
+        color: green;
     }
 
     .cut-icon {

@@ -29,7 +29,12 @@ public class NullPackageProvider : IPackageProvider
         throw new NotImplementedException();
     }
 
-    public Task<string[]> GetPackageVersionsAsync(string packageId)
+    public Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Dictionary<PackageIdentity, PackageMetadata?>> GetExtendedMetadataAsync(IEnumerable<PackageIdentity> packageIdentities, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

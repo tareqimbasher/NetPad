@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Common;
@@ -50,9 +52,18 @@ public class PackagesController : Controller
     }
 
     [HttpGet("versions")]
-    public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId)
+    public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId, [FromQuery] bool includePrerelease = false)
     {
-        return await _packageProvider.GetPackageVersionsAsync(packageId);
+        return await _packageProvider.GetPackageVersionsAsync(packageId, includePrerelease);
+    }
+
+    [HttpPost("metadata")]
+    public async Task<PackageMetadata[]> GetPackageMetadata([FromBody] PackageIdentity[] packages, CancellationToken cancellationToken)
+    {
+        return (await _packageProvider.GetExtendedMetadataAsync(packages, cancellationToken))
+            .Values
+            .Where(x => x != null)
+            .ToArray()!;
     }
 
     [HttpGet("search")]
@@ -67,7 +78,7 @@ public class PackagesController : Controller
             skip ?? 0,
             take ?? 30,
             includePrerelease ?? false,
-            true
+            false
         );
 
         return Ok(packages);

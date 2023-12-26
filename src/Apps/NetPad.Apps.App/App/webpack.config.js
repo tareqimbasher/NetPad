@@ -87,7 +87,7 @@ module.exports = function (env, {analyze}) {
             port: 9000,
             client: {
                 progress: true,
-                overlay: true
+                overlay: false
             },
         },
         module: {
