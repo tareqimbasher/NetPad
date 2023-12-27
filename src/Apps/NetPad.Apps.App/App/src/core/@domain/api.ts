@@ -53,7 +53,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetIdentifier(_response);
         });
     }
@@ -88,7 +88,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetLatestVersion(_response);
         });
     }
@@ -123,7 +123,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processNotifyClientAppIsReady(_response);
         });
     }
@@ -155,7 +155,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processCheckDependencies(_response);
         });
     }
@@ -191,7 +191,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenFolderContainingScript(_response);
         });
     }
@@ -224,7 +224,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenScriptsFolder(_response);
         });
     }
@@ -255,7 +255,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenPackageCacheFolder(_response);
         });
     }
@@ -293,7 +293,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSendRemoteLog(_response);
         });
     }
@@ -346,7 +346,7 @@ export class AssembliesApiClient extends ApiClientBase implements IAssembliesApi
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetNamespaces(_response);
         });
     }
@@ -428,7 +428,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenDataConnectionWindow(_response);
         });
     }
@@ -460,7 +460,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetAll(_response);
         });
     }
@@ -505,7 +505,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSave(_response);
         });
     }
@@ -540,7 +540,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGet(_response);
         });
     }
@@ -577,7 +577,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processDelete(_response);
         });
     }
@@ -609,7 +609,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetAllNames(_response);
         });
     }
@@ -653,7 +653,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRefresh(_response);
         });
     }
@@ -689,7 +689,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetConnectionString(_response);
         });
     }
@@ -729,7 +729,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processTest(_response);
         });
     }
@@ -768,7 +768,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processProtectPassword(_response);
         });
     }
@@ -808,7 +808,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetDatabases(_response);
         });
     }
@@ -853,7 +853,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetDatabaseStructure(_response);
         });
     }
@@ -923,7 +923,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCachedPackages(_response);
         });
     }
@@ -969,7 +969,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processDeleteCachedPackage(_response);
         });
     }
@@ -1006,7 +1006,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetExplicitlyInstalledCachedPackages(_response);
         });
     }
@@ -1048,7 +1048,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processPurgePackageCache(_response);
         });
     }
@@ -1087,7 +1087,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetPackageVersions(_response);
         });
     }
@@ -1133,7 +1133,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetPackageMetadata(_response);
         });
     }
@@ -1183,7 +1183,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSearch(_response);
         });
     }
@@ -1231,7 +1231,7 @@ export class PackagesApiClient extends ApiClientBase implements IPackagesApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processInstall(_response);
         });
     }
@@ -1307,7 +1307,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetScripts(_response);
         });
     }
@@ -1352,7 +1352,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processCreate(_response);
         });
     }
@@ -1390,7 +1390,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRename(_response);
         });
     }
@@ -1424,7 +1424,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processDuplicate(_response);
         });
     }
@@ -1458,7 +1458,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSave(_response);
         });
     }
@@ -1496,7 +1496,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRun(_response);
         });
     }
@@ -1530,7 +1530,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processStop(_response);
         });
     }
@@ -1568,7 +1568,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processUpdateCode(_response);
         });
     }
@@ -1604,7 +1604,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenConfigWindow(_response);
         });
     }
@@ -1643,7 +1643,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSetScriptNamespaces(_response);
         });
     }
@@ -1683,7 +1683,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSetReferences(_response);
         });
     }
@@ -1723,7 +1723,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSetScriptKind(_response);
         });
     }
@@ -1763,7 +1763,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSetTargetFrameworkVersion(_response);
         });
     }
@@ -1801,7 +1801,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processSetDataConnection(_response);
         });
     }
@@ -1866,7 +1866,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetEnvironment(_response);
         });
     }
@@ -1901,7 +1901,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetEnvironments(_response);
         });
     }
@@ -1946,7 +1946,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenByPath(_response);
         });
     }
@@ -1980,7 +1980,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processClose(_response);
         });
     }
@@ -2012,7 +2012,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetActive(_response);
         });
     }
@@ -2050,7 +2050,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processActivate(_response);
         });
     }
@@ -2081,7 +2081,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processActivateLastActive(_response);
         });
     }
@@ -2136,7 +2136,7 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGet(_response);
         });
     }
@@ -2175,7 +2175,7 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processUpdate(_response);
         });
     }
@@ -2209,7 +2209,7 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenSettingsWindow(_response);
         });
     }
@@ -2241,7 +2241,7 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processShowSettingsFile(_response);
         });
     }
@@ -2291,7 +2291,7 @@ export class TypesApiClient extends ApiClientBase implements ITypesApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processAdditionalTypes(_response);
         });
     }
@@ -2342,7 +2342,7 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processOpenOutputWindow(_response);
         });
     }

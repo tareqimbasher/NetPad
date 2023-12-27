@@ -80,7 +80,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRestartServer(_response);
         });
     }
@@ -123,7 +123,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCompletion(_response);
         });
     }
@@ -165,7 +165,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCompletionResolution(_response);
         });
     }
@@ -207,7 +207,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCompletionAfterInsert(_response);
         });
     }
@@ -249,7 +249,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processFormatRange(_response);
         });
     }
@@ -291,7 +291,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processFormatAfterKeystroke(_response);
         });
     }
@@ -333,7 +333,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetSemanticHighlights(_response);
         });
     }
@@ -375,7 +375,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processFindImplementations(_response);
         });
     }
@@ -417,7 +417,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetQuickInfo(_response);
         });
     }
@@ -459,7 +459,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetSignatureHelp(_response);
         });
     }
@@ -501,7 +501,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processFindUsages(_response);
         });
     }
@@ -539,7 +539,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCodeStructure(_response);
         });
     }
@@ -581,7 +581,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetInlayHints(_response);
         });
     }
@@ -623,7 +623,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processResolveInlayHint(_response);
         });
     }
@@ -665,7 +665,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetCodeActions(_response);
         });
     }
@@ -707,7 +707,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRunCodeAction(_response);
         });
     }
@@ -749,7 +749,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processCodeCheck(_response);
         });
     }
@@ -786,7 +786,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processStartDiagnostics(_response);
         });
     }
@@ -821,7 +821,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processGetBlockStructure(_response);
         });
     }
@@ -863,7 +863,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processRename(_response);
         });
     }
@@ -915,7 +915,7 @@ export class TypesApiClient extends ApiClientBase implements ITypesApiClient {
             }
         };
 
-        return this.makeFetchCall(() => this.http.fetch(url_, options_)).then((_response: Response) => {
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
             return this.processAdditionalTypes(_response);
         });
     }
@@ -4226,6 +4226,25 @@ export class ApiException extends Error {
     }
 
     protected isApiException = true;
+
+    private _errorResponse: ErrorResult | undefined | null;
+    public get errorResponse(): ErrorResult | undefined {
+        if (this._errorResponse !== undefined)
+            return this._errorResponse || undefined;
+
+        if (!this.response) {
+            this._errorResponse = null;
+            return undefined;
+        }
+
+        try {
+            this._errorResponse = JSON.parse(this.response) as ErrorResult;
+            return this._errorResponse;
+        } catch {
+            this._errorResponse = null;
+            return undefined;
+        }
+    }
 
     static isApiException(obj: any): obj is ApiException {
         return obj.isApiException === true;

@@ -18,7 +18,7 @@ internal static class TypeScriptClientCodeTransform
                 "@IHttpClient http?: IHttpClient")
             .Replace(
                 "return this.http.fetch(url_, options_)",
-                "return this.makeFetchCall(() => this.http.fetch(url_, options_))")
+                "return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_))")
 
             // Convert to lines
             .Split("\n")
