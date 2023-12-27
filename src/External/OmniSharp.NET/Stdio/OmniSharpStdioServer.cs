@@ -23,8 +23,6 @@ namespace OmniSharp.Stdio
         private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
         private readonly object _stdioStandardInputLock;
         private ProcessIO? _processIo;
-        private readonly HashSet<Func<string, Task>> _onOutputReceivedHandlers;
-        private readonly HashSet<Func<string, Task>> _onErrorReceivedHandlers;
         private bool _isStopped = true;
 
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
@@ -42,58 +40,42 @@ namespace OmniSharp.Stdio
             _requestResponseQueue = new RequestResponseQueue();
             _eventHandlers = new ConcurrentDictionary<string, List<Func<JsonNode, Task>>>();
             _stdioStandardInputLock = new object();
-            _onOutputReceivedHandlers = new HashSet<Func<string, Task>>();
-            _onErrorReceivedHandlers = new HashSet<Func<string, Task>>();
         }
 
         public override async Task StartAsync()
         {
-            _processIo = await _omniSharpServerProcessAccessor.GetEntryPointAsync();
+            _processIo = await _omniSharpServerProcessAccessor.GetEntryPointAsync().ConfigureAwait(false);
 
             _processIo.OnOutputReceivedHandlers.Add(HandleOmniSharpDataOutput);
             _processIo.OnErrorReceivedHandlers.Add(HandleOmniSharpErrorOutput);
-
-            foreach (var handler in _onOutputReceivedHandlers)
-                _processIo.OnOutputReceivedHandlers.Add(handler);
-
-            foreach (var handler in _onErrorReceivedHandlers)
-                _processIo.OnErrorReceivedHandlers.Add(handler);
 
             _isStopped = false;
         }
 
         public override async Task StopAsync()
         {
-            await _omniSharpServerProcessAccessor.StopProcessAsync();
+            await _omniSharpServerProcessAccessor.StopProcessAsync().ConfigureAwait(false);
             _processIo?.Dispose();
             _isStopped = true;
         }
 
         public void AddOnProcessOutputReceivedHandler(Func<string, Task> handler)
         {
-            _onOutputReceivedHandlers.Add(handler);
-
             _processIo?.OnOutputReceivedHandlers.Add(handler);
         }
 
         public void RemoveOnProcessOutputReceivedHandler(Func<string, Task> handler)
         {
-            _onOutputReceivedHandlers.Remove(handler);
-
             _processIo?.OnOutputReceivedHandlers.Remove(handler);
         }
 
         public void AddOnProcessErrorReceivedHandler(Func<string, Task> handler)
         {
-            _onErrorReceivedHandlers.Add(handler);
-
             _processIo?.OnErrorReceivedHandlers.Add(handler);
         }
 
         public void RemoveOnProcessErrorReceivedHandler(Func<string, Task> handler)
         {
-            _onErrorReceivedHandlers.Remove(handler);
-
             _processIo?.OnErrorReceivedHandlers.Remove(handler);
         }
 
@@ -127,8 +109,7 @@ namespace OmniSharp.Stdio
             return SendAsync<TResponse>(endpointAttribute.EndpointName, requests, cancellationToken);
         }
 
-        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request,
-            CancellationToken? cancellationToken = default)
+        public override async Task<TResponse?> SendAsync<TResponse>(string endpointName, object request, CancellationToken? cancellationToken = default)
             where TResponse : class
         {
             if (request == null)
@@ -140,12 +121,12 @@ namespace OmniSharp.Stdio
             if (_isStopped)
                 throw new InvalidOperationException("Server is stopped.");
 
-            var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
-
             if (cancellationToken?.IsCancellationRequested == true)
             {
                 return null;
             }
+
+            var requestPacket = new RequestPacket(NextSequence(), endpointName, request);
 
             var responsePromise =
                 _requestResponseQueue.Enqueue(requestPacket, cancellationToken ?? CancellationToken.None);
@@ -268,9 +249,9 @@ namespace OmniSharp.Stdio
             try
             {
                 if (packetType == "response")
-                    await HandleResponsePacketReceived(outputPacket);
+                    await HandleResponsePacketReceived(outputPacket).ConfigureAwait(false);
                 else if (packetType == "event")
-                    await HandleEventPacketReceived(outputPacket);
+                    await HandleEventPacketReceived(outputPacket).ConfigureAwait(false);
                 else
                     Logger.LogError("Unknown packet type: {PacketType}", packetType);
             }

@@ -28,7 +28,7 @@ namespace OmniSharp.Utilities
             {
                 try
                 {
-                    await func();
+                    await func().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -64,7 +64,7 @@ namespace OmniSharp.Utilities
             {
                 try
                 {
-                    result = await func();
+                    result = await func().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {

@@ -33,7 +33,7 @@ namespace OmniSharp.Utilities
 
             foreach (var handler in OnOutputReceivedHandlers.ToArray())
             {
-                Task.Run(async () => { await handler(ev.Data); });
+                Task.Run(async () => { await handler(ev.Data); }).ConfigureAwait(false);
             }
         }
 
@@ -44,7 +44,7 @@ namespace OmniSharp.Utilities
 
             foreach (var handler in OnErrorReceivedHandlers.ToArray())
             {
-                Task.Run(async () => { await handler(ev.Data); });
+                Task.Run(async () => { await handler(ev.Data); }).ConfigureAwait(false);
             }
         }
 
