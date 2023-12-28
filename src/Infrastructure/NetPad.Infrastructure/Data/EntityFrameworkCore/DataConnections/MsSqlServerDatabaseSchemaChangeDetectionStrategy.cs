@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using NetPad.Application;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
@@ -20,6 +21,18 @@ public class MsSqlServerDatabaseSchemaChangeDetectionStrategy : EntityFrameworkS
     {
         if (dataConnection is not MsSqlServerDatabaseConnection connection) return null;
 
+        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MsSqlServerSchemaCompareInfo>(connection.Id);
+
+        if (schemaCompareInfo == null)
+        {
+            return null;
+        }
+
+        if (schemaCompareInfo.GeneratedUsingStaleAppVersion())
+        {
+            return true;
+        }
+
         var lastSchemaModificationTime = await GetLastSchemaModificationTimeFromServerAsync(connection);
 
         if (lastSchemaModificationTime == null)
@@ -27,9 +40,7 @@ public class MsSqlServerDatabaseSchemaChangeDetectionStrategy : EntityFrameworkS
             return null;
         }
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MsSqlServerSchemaCompareInfo>(connection.Id);
-
-        return schemaCompareInfo == null ? null : lastSchemaModificationTime > schemaCompareInfo.LastSchemaModificationTime;
+        return lastSchemaModificationTime > schemaCompareInfo.LastSchemaModificationTime;
     }
 
     public async Task<SchemaCompareInfo?> GenerateSchemaCompareInfoAsync(DataConnection dataConnection)
@@ -38,7 +49,10 @@ public class MsSqlServerDatabaseSchemaChangeDetectionStrategy : EntityFrameworkS
 
         var lastSchemaModificationTime = await GetLastSchemaModificationTimeFromServerAsync(connection);
 
-        return lastSchemaModificationTime == null ? null : new MsSqlServerSchemaCompareInfo(lastSchemaModificationTime.Value);
+        return lastSchemaModificationTime == null ? null : new MsSqlServerSchemaCompareInfo(lastSchemaModificationTime.Value)
+        {
+            GeneratedOnAppVersion = AppIdentifier.PRODUCT_VERSION
+        };
     }
 
     private async Task<DateTime?> GetLastSchemaModificationTimeFromServerAsync(MsSqlServerDatabaseConnection connection)

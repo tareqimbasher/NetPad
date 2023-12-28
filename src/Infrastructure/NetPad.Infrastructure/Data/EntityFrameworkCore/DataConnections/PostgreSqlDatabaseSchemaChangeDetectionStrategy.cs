@@ -2,6 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using NetPad.Application;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
@@ -22,6 +23,18 @@ public class PostgreSqlDatabaseSchemaChangeDetectionStrategy : EntityFrameworkSc
     {
         if (dataConnection is not PostgreSqlDatabaseConnection connection) return null;
 
+        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<PostGreSqlSchemaCompareInfo>(connection.Id);
+
+        if (schemaCompareInfo == null)
+        {
+            return null;
+        }
+
+        if (schemaCompareInfo.GeneratedUsingStaleAppVersion())
+        {
+            return true;
+        }
+
         var hash = await GetSchemaHashAsync(connection);
 
         if (hash == null)
@@ -29,9 +42,7 @@ public class PostgreSqlDatabaseSchemaChangeDetectionStrategy : EntityFrameworkSc
             return null;
         }
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<PostGreSqlSchemaCompareInfo>(connection.Id);
-
-        return schemaCompareInfo == null ? null : hash != schemaCompareInfo.SchemaHash;
+        return hash != schemaCompareInfo.SchemaHash;
     }
 
     public async Task<SchemaCompareInfo?> GenerateSchemaCompareInfoAsync(DataConnection dataConnection)
@@ -40,7 +51,10 @@ public class PostgreSqlDatabaseSchemaChangeDetectionStrategy : EntityFrameworkSc
 
         var hash = await GetSchemaHashAsync(connection);
 
-        return hash == null ? null : new PostGreSqlSchemaCompareInfo(hash);
+        return hash == null ? null : new PostGreSqlSchemaCompareInfo(hash)
+        {
+            GeneratedOnAppVersion = AppIdentifier.PRODUCT_VERSION
+        };
     }
 
     private async Task<string?> GetSchemaHashAsync(PostgreSqlDatabaseConnection connection)
