@@ -71,11 +71,11 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
     * Write, save and run your own scripts
     * Manage namespaces
     * Standard code editor features powered by Monaco editor
+    * Auto-open unsaved scripts from previous session on launch
 * Dump complex objects to the results console and export results to Excel or HTML
 * Choose the .NET SDK version you want to use per script
 * Add and use database connections
 * Run SQL queries
-* Auto-save: When you close NetPad, it will auto-save your changes and restore them the next time you fire it up
 * Add NuGet packages
 * Reference assemblies from disk
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
@@ -116,7 +116,7 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
     * Workspaces/Sessions
 * Plugins & Theming
 
----
+<img src="https://api.star-history.com/svg?repos=tareqimbasher/NetPad&type=Date" />
 
 ## Tech Stack :computer:
 
