@@ -172,11 +172,8 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
             .LogTo(
                 output =>
                 {
-                    if (!output.Contains(""Executing DbCommand"")) return;
-
                     ScriptRuntimeServices.SqlWrite(output + ""\n"");
-                },
-                new[] { Microsoft.EntityFrameworkCore.DbLoggerCategory.Database.Command.Name }
+                }
             );
 
         base.OnConfiguring(optionsBuilder);

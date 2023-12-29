@@ -17,10 +17,13 @@ export interface IToolbarTab {
 export interface IToolbarAction {
     icon?: string;
     label?: string;
+    title?: string;
     active?: boolean;
     show?: boolean;
+    isDivider?: boolean;
     clicked?: (event: MouseEvent) => Promise<void>;
     actions?: IToolbarAction[];
+    [x: string | number | symbol]: unknown;
 }
 
 export class OutputViewToolbar {

@@ -76,6 +76,9 @@ export class ResultsView extends OutputViewBase {
                         clicked: async () => this.resultControls.collapseAll(3)
                     },
                     {
+                        isDivider: true
+                    },
+                    {
                         label: "Expand to Level 1",
                         clicked: async () => this.resultControls.expandAll(1)
                     },

@@ -86,6 +86,11 @@ button > .icon-base {
     @extend .fa-delete-left;
 }
 
+.check-icon {
+    @extend %icon-base;
+    @extend .fa-check;
+}
+
 .check-circle-icon {
     @extend %icon-base;
     @extend .fa-circle-check;
