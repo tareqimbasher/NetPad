@@ -1,2 +1,20 @@
 <au-compose repeat.for="component of components"
             component.bind="component"></au-compose>
+
+<div class="input-row">
+    <div class="label-column">
+        <label class="col-form-label"
+               title="Select to always trust the server certificate."
+               for="chkTrustServerCertificate">
+            Trust Server Certificate
+        </label>
+    </div>
+    <div class="input-column">
+        <div class="form-check">
+            <input id="chkTrustServerCertificate"
+                   class="form-check-input"
+                   type="checkbox"
+                   checked.bind="trustServerCertificate">
+        </div>
+    </div>
+</div>

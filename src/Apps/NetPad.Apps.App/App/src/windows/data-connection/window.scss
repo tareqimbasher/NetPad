@@ -40,13 +40,20 @@
     }
 
     .label-column {
-        width: 150px;
+        width: 160px;
         min-width: 150px;
-        font-weight: bold;
+        font-size: 1rem;
+        line-height: 1rem;
+    }
+
+    .col-form-label {
+        @include theme(color, textHighestContrastColor);
+        user-select: none;
     }
 
     .input-column {
         flex-grow: 1;
+        font-size: 1rem;
     }
 
     .auth-input {

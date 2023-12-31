@@ -92,6 +92,22 @@ export class Window extends WindowBase {
         return this.prohibitedNames.indexOf(this.connectionView.connection.name) < 0;
     }
 
+
+    private _showConnectionStringAugment = false;
+    public get showConnectionStringAugment() {
+        if (!this._showConnectionStringAugment) {
+            this._showConnectionStringAugment = this.connectionView?.connection instanceof DatabaseConnection
+                && !!this.connectionView.connection.connectionStringAugment;
+        }
+
+        return this._showConnectionStringAugment;
+    }
+
+    public set showConnectionStringAugment(value) {
+        this._showConnectionStringAugment = value;
+    }
+
+
     public setConnectionType(connectionType: ConnectionType) {
         if (this.testingConnectionStatus === "testing") {
             return;
@@ -102,7 +118,6 @@ export class Window extends WindowBase {
         }
 
         this.connectionType = connectionType;
-
 
         this.connectionView = this.createNewConnectionView(this.connectionType.type, this.connectionView?.connection);
     }
@@ -202,6 +217,7 @@ export class Window extends WindowBase {
     @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.userId)
     @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.password)
     @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.databaseName)
+    @watch<Window>(vm => (vm.connectionView?.connection as DatabaseConnection)?.connectionStringAugment)
     private async updateConnectionString() {
         if (!this.connectionView) {
             this.connectionString = "";

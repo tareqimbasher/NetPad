@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,16 +14,19 @@ public sealed class SQLiteDatabaseConnection : EntityFrameworkRelationalDatabase
 
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        var connectionString = new StringBuilder();
+        var connectionStringBuilder = new ConnectionStringBuilder();
 
-        connectionString.Append($"Data Source={DatabaseName}");
+        connectionStringBuilder.TryAdd("Data Source", DatabaseName);
 
         if (Password != null)
         {
-            connectionString.Append($";Password={passwordProtector.Unprotect(Password)}");
+            connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
         }
 
-        return connectionString.ToString();
+        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
+            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
+
+        return connectionStringBuilder.Build();
     }
 
     public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)

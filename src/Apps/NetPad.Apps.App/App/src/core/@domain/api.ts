@@ -101,7 +101,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -702,7 +702,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -781,7 +781,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -2025,7 +2025,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -6839,6 +6839,7 @@ export abstract class DatabaseConnection extends DataConnection implements IData
     userId?: string | undefined;
     password?: string | undefined;
     containsProductionData!: boolean;
+    connectionStringAugment?: string | undefined;
 
     constructor(data?: IDatabaseConnection) {
         super(data);
@@ -6854,6 +6855,7 @@ export abstract class DatabaseConnection extends DataConnection implements IData
             this.userId = _data["userId"];
             this.password = _data["password"];
             this.containsProductionData = _data["containsProductionData"];
+            this.connectionStringAugment = _data["connectionStringAugment"];
         }
     }
 
@@ -6891,6 +6893,7 @@ export abstract class DatabaseConnection extends DataConnection implements IData
         data["userId"] = this.userId;
         data["password"] = this.password;
         data["containsProductionData"] = this.containsProductionData;
+        data["connectionStringAugment"] = this.connectionStringAugment;
         super.toJSON(data);
         return data;
     }
@@ -6907,6 +6910,7 @@ export interface IDatabaseConnection extends IDataConnection {
     userId?: string | undefined;
     password?: string | undefined;
     containsProductionData: boolean;
+    connectionStringAugment?: string | undefined;
 }
 
 export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnection implements IEntityFrameworkDatabaseConnection {

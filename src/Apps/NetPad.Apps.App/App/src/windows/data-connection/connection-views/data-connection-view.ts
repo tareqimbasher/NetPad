@@ -37,11 +37,13 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
             connection.name = from.name;
 
             if (connection instanceof DatabaseConnection && from instanceof DatabaseConnection) {
+                // TODO bad solution. find better way to selectively copy this data without listing each prop
                 connection.host = from.host;
                 connection.databaseName = from.databaseName;
                 connection.userId = from.userId;
                 connection.password = from.password;
                 connection.containsProductionData = from.containsProductionData;
+                connection.connectionStringAugment = from.connectionStringAugment;
             }
         }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,25 +14,31 @@ public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalData
 
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        var connectionString = new StringBuilder($"Host={Host}");
+        var connectionStringBuilder = new ConnectionStringBuilder();
+
+        string host = Host ?? "";
         if (!string.IsNullOrWhiteSpace(Port))
         {
-            connectionString.Append($":{Port}");
+            host += $":{Port}";
         }
 
-        connectionString.Append($";Database={DatabaseName}");
+        connectionStringBuilder.TryAdd("Host", host);
+        connectionStringBuilder.TryAdd("Database", DatabaseName);
 
         if (UserId != null)
         {
-            connectionString.Append($";UserId={UserId}");
+            connectionStringBuilder.TryAdd("UserId", UserId);
         }
 
         if (Password != null)
         {
-            connectionString.Append($";Password={passwordProtector.Unprotect(Password)}");
+            connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
         }
 
-        return connectionString.ToString();
+        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
+            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
+
+        return connectionStringBuilder.Build();
     }
 
     public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)

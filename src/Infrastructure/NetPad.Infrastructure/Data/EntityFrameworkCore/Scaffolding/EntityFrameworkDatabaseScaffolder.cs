@@ -157,7 +157,7 @@ class Program
 
         if (process.ExitCode != 0)
         {
-            throw new Exception($"Scaffolding process failed with exit code: {process.ExitCode}. Errors: {toolOutput.JoinToString("\n")}");
+            throw new Exception($"Scaffolding process failed with exit code: {process.ExitCode}. dotnet-ef tool output:\n{toolOutput.JoinToString("\n")}");
         }
     }
 

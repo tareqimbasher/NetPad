@@ -3,7 +3,7 @@
         <div class="connection-details flex-grow-height-restricted container-fluid pt-3 overflow-y-auto">
             <div class="input-row">
                 <div class="label-column">
-                    <label class="col-form-label">Type:</label>
+                    <label class="col-form-label">Type</label>
                 </div>
                 <div class="input-column">
                     <div class="dropdown connection-type-selector">
@@ -28,7 +28,7 @@
                 <fieldset disabled.bind="!connectionType">
                     <div class="input-row">
                         <div class="label-column">
-                            <label class="col-form-label">Name:</label>
+                            <label class="col-form-label">Name</label>
                         </div>
                         <div class="input-column">
                             <input ref="nameField" type="text" class="form-control"
@@ -44,13 +44,14 @@
                     <div class="input-row">
                         <div class="label-column">
                             <label class="col-form-label"
-                                   title="Select if this connection is used for production data.">
-                                Production Data?
+                                   title="Select if this connection is used for production data."
+                                   for="chkContainsProductionData">
+                                Production Data
                             </label>
                         </div>
                         <div class="input-column">
                             <div class="form-check">
-                                <input class="form-check-input"
+                                <input id="chkContainsProductionData" class="form-check-input"
                                        type="checkbox"
                                        checked.bind="connectionView.connection.containsProductionData">
                             </div>
@@ -61,13 +62,36 @@
                             <label class="col-form-label">
                                 Connection String
                             </label>
+                            <a class="btn btn-link ps-0"
+                               show.bind="connectionString && !showConnectionStringAugment && !connectionView.connection.connectionStringAugment"
+                               click.trigger="showConnectionStringAugment = true">
+                                <small>Customize</small>
+                            </a>
                         </div>
                         <div class="input-column">
-                            <input class="form-control"
-                                   type="text"
-                                   value="${connectionString}"
-                                   placeholder="Auto-generated..."
-                                   disabled>
+                            <textarea class="form-control"
+                                      type="text"
+                                      placeholder="Auto-generated..."
+                                      disabled>${connectionString}</textarea>
+                        </div>
+                    </div>
+                    <div class="input-row"
+                         show.bind="showConnectionStringAugment">
+                        <div class="label-column">
+                            <label class="col-form-label">
+                                Custom
+                            </label>
+                            <br/>
+                            <small class="text-secondary" style="font-weight: normal"
+                                   title="This does not replace the entire connection string, but adds/edits key/values in the generated connection string.">
+                                Augments generated connection string
+                            </small>
+                        </div>
+                        <div class="input-column">
+                            <textarea class="form-control"
+                                      type="text"
+                                      placeholder="ex: MultipleActiveResultSets=True;"
+                                      value.bind="connectionView.connection.connectionStringAugment"></textarea>
                         </div>
                     </div>
                     <div class="input-row">

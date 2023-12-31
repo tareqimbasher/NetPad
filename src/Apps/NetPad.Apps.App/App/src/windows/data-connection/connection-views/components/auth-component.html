@@ -1,6 +1,6 @@
 <div class="input-row">
     <div class="label-column">
-        <label class="col-form-label">Authentication:</label>
+        <label class="col-form-label">Authentication</label>
     </div>
     <div class="input-column auth-input">
         <select class="form-select" value.bind="authType">
@@ -12,7 +12,7 @@
 </div>
 <div class="input-row" if.bind="authType === 'userAndPassword'">
     <div class="label-column">
-        <label class="col-form-label">User:</label>
+        <label class="col-form-label">User</label>
     </div>
     <div class="input-column auth-input">
         <input type="text" class="form-control" value.bind="connection.userId"/>
@@ -20,7 +20,7 @@
 </div>
 <div class="input-row" if.bind="authType !== 'none'">
     <div class="label-column">
-        <label class="col-form-label">Password:</label>
+        <label class="col-form-label">Password</label>
     </div>
     <div class="input-column auth-input">
         <input type="password"
