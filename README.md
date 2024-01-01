@@ -19,6 +19,17 @@ features developers most commonly need, and if we're lucky, a few new useful one
 
 #### If you like the project, please star it :star2:!
 
+## What does it do?
+
+NetPad is a C# playground. It is the quickest way to run some C# code without the ceremonies of creating and managing projects. 
+As soon as you open NetPad you'll be presented with the editor right away. Write some C# code, hit Run and see your output. That's it.
+
+- Prototyping and testing code before you incorporate it into your projects.
+- Experiment with C# features that you haven't used before. NetPad is a great way to start learning C#.
+- Query databases using LINQ or SQL.
+- Create and save your own utility or administration scripts.
+- Visualize Data in an interactive interface.
+
 ## Requirements
 
 The following must be be installed to use NetPad:
@@ -132,7 +143,7 @@ packaged as an Electron desktop app or served and accessed on any browser.
 Communication between the user interface and the ASP.NET backend occurs via HTTP
 and SignalR.
 
-## Development
+## Build
 
 This section describes how to build and run NetPad from source.
 NetPad can be run as an Electron desktop app or as a web application
@@ -150,7 +161,7 @@ accessed with a web browser.
 
 ```
 # Install dependencies
-cd Apps/NetPad.Apps.App/ElectronHostHook
+cd src/Apps/NetPad.Apps.App/ElectronHostHook
 npm install
 
 cd ../App
@@ -171,7 +182,7 @@ dotnet tool install ElectronNET.CLI -g
 Start the app:
 
 ```
-cd Apps/NetPad.Apps.App
+cd src/Apps/NetPad.Apps.App
 
 # Start in watch mode (remove '/watch' to run without watch mode)
 electronize start /watch /manifest electron.manifest.dev.js
