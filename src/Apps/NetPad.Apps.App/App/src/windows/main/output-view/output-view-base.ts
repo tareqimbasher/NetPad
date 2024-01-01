@@ -165,6 +165,24 @@ export abstract class OutputViewBase extends ViewModelBase {
                 // Replace the previous script
                 group.lastElementChild.remove();
                 group.appendChild(script);
+            } else if (group.getAttribute("tag")?.startsWith("live-collection")) {
+                const liveCollectionId = group.getAttribute("tag")!.split(':')[1];
+                const existingLiveCollectionGroup =
+                    batch.find((item, index) => index < iEl && item.getAttribute("id") == liveCollectionId) ??
+                    document.getElementById(liveCollectionId);
+
+                if (existingLiveCollectionGroup) {
+                    const incomingTable = group.lastElementChild as HTMLTableElement;
+
+                    const table = existingLiveCollectionGroup.lastElementChild as HTMLTableElement;
+                    table.replaceWith(incomingTable);
+
+                    // table.tBodies.item(0)!.innerHTML = incomingTable.tBodies.item(0)!.innerHTML;
+
+                    // We don't need this group anymore, remove it.
+                    batch.splice(iEl, 1);
+                    iEl--;
+                }
             }
         }
 

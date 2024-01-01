@@ -91,6 +91,16 @@ public static class HtmlPresenter
 
         bool outputIsOnlyEscapedText = ContainsOnlyEscapedText(node);
 
+        if (!string.IsNullOrWhiteSpace(options.Id))
+        {
+            group.SetAttribute("id", options.Id);
+        }
+
+        if (options.Tag != null)
+        {
+            group.SetAttribute("tag", options.Tag);
+        }
+
         if (options.CssClasses?.Length > 0)
         {
             group.AddClass(options.CssClasses);

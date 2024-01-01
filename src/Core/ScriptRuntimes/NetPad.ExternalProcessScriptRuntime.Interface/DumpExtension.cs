@@ -16,7 +16,13 @@ public static class DumpExtension
     /// <param name="clear">If specified, will remove the result after specified milliseconds.</param>
     /// <returns>The same object being dumped.</returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
-    public static T? Dump<T>(this T? o, string? title = null, string? css = null, string? code = null, int? clear = null)
+    public static T? Dump<T>(
+        this T? o,
+        string? title = null,
+        string? css = null,
+        string? code = null,
+        int? clear = null,
+        string? id = null)
     {
         bool shouldAddNewLineAfter = false;
 
@@ -30,7 +36,13 @@ public static class DumpExtension
             shouldAddNewLineAfter = title == null || HtmlPresenter.IsDotNetTypeWithStringRepresentation(typeof(T));
         }
 
+        // if (id != null && id.All(char.IsWhiteSpace))
+        // {
+        //     id = null;
+        // }
+
         ScriptRuntimeServices.ResultWrite(o, new DumpOptions(
+            Id: id,
             Title: title,
             CssClasses: css,
             CodeType: code,
@@ -39,6 +51,80 @@ public static class DumpExtension
         ));
 
         return o;
+    }
+
+    // [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
+    // public static T? DumpReplace<T>(
+    //     this T? o,
+    //     string id,
+    //     string? title = null,
+    //     string? css = null,
+    //     string? code = null,
+    //     int? clear = null)
+    // {
+    //     if (string.IsNullOrWhiteSpace(id))
+    //     {
+    //         throw new ArgumentNullException(nameof(id), "ID cannot be null or whitespace.");
+    //     }
+    //
+    //     return o;
+    // }
+
+
+    public static LiveCollection<T> DumpLive<T>(
+        this LiveCollection<T> collection,
+        string? title = null,
+        string? css = null,
+        int? clear = null,
+        Func<LiveCollection<T>, bool>? stopWhen = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        collection.StartLiveView(o =>
+            {
+                ScriptRuntimeServices.ResultWrite(
+                    o,
+                    new DumpOptions(
+                        Id: collection.Id.ToString(),
+                        Tag: $"live-collection:{collection.Id}",
+                        Title: title,
+                        CssClasses: css,
+                        DestructAfterMs: clear
+                    ));
+            },
+            stopWhen,
+            cancellationToken
+        );
+
+        return collection;
+    }
+
+    public static PresentationView<T> DumpView<T>(
+        this PresentationView<T> view,
+        string? title = null,
+        string? css = null,
+        int? clear = null,
+        Func<bool>? stopWhen = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        view.StartLiveView(o =>
+            {
+                ScriptRuntimeServices.ResultWrite(
+                    o,
+                    new DumpOptions(
+                        Id: view.Id.ToString(),
+                        Tag: $"live-collection:{view.Id}",
+                        Title: title,
+                        CssClasses: css,
+                        DestructAfterMs: clear
+                    ));
+            },
+            stopWhen,
+            cancellationToken
+        );
+
+        return view;
     }
 
     /// <summary>
