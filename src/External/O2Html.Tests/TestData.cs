@@ -70,7 +70,6 @@ public class TestData
             new object[] { StringComparer.Ordinal },
             new object[] { new Action<int>(i => { ++i; }) },
             new object[] { Task.FromResult(new Customer("name", 33)) },
-            new object[] { JsonDocument.Parse(@"[{""Name"": ""John Smith"", ""Age"": 33}]") },
             new object[] { new Regex(@"\b(?<word>\w+)\s+(\k<word>)\b") },
             new object[] { new Regex(@"\b(?<word>\w+)\s+(\k<word>)\b").Matches("The the quick brown fox  fox jumps over the lazy dog dog.")[0].Groups[0] },
             new object[] { Process.GetCurrentProcess() },
@@ -156,6 +155,14 @@ public class TestData
         {
             new object[] { XDocument.Parse(GetXml()) },
             new object[] { XElement.Parse(GetXml()) },
+        };
+    }
+
+    public static IEnumerable<object?[]> JsonDocumentValues()
+    {
+        return new []
+        {
+            new object[] { JsonDocument.Parse(@"[{""Name"": ""John Smith"", ""Age"": 33}]") },
         };
     }
 

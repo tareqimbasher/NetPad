@@ -2,7 +2,7 @@ using NetPad.Presentation.Html;
 
 namespace NetPad.Presentation.Tests.Html;
 
-public class HtmlSerializerSerializeTests
+public class HtmlPresenterTests
 {
     private static object GetGenericOutput() => new
     {
@@ -84,7 +84,7 @@ public class HtmlSerializerSerializeTests
     {
         var output = GetAllTextOutput();
 
-        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(AppendNewLine: true));
+        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(AppendNewLineToAllTextOutput: true));
 
         Assert.Equal("br", element.ChildElements.Last().TagName, StringComparer.OrdinalIgnoreCase);
     }
@@ -94,7 +94,7 @@ public class HtmlSerializerSerializeTests
     {
         var output = GetAllTextOutput();
 
-        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(Title: "some title", AppendNewLine: true));
+        var element = HtmlPresenter.SerializeToElement(output, new DumpOptions(Title: "some title", AppendNewLineToAllTextOutput: true));
 
         Assert.Equal("br", element.ChildElements.Last().TagName, StringComparer.OrdinalIgnoreCase);
     }

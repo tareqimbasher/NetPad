@@ -11,10 +11,12 @@ public static class DumpExtension
     /// <param name="o">The object to dump.</param>
     /// <param name="title">If specified, will add a title heading to the result.</param>
     /// <param name="css">If specified, will add the specified CSS classes to the result.</param>
+    /// <param name="code">If specified, assumes the dump target is a code string of this language and will
+    /// render with syntax highlighting. See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md for supported languages.</param>
     /// <param name="clear">If specified, will remove the result after specified milliseconds.</param>
     /// <returns>The same object being dumped.</returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
-    public static T? Dump<T>(this T? o, string? title = null, string? css = null, int? clear = null)
+    public static T? Dump<T>(this T? o, string? title = null, string? css = null, string? code = null, int? clear = null)
     {
         bool shouldAddNewLineAfter = false;
 
@@ -30,9 +32,10 @@ public static class DumpExtension
 
         ScriptRuntimeServices.ResultWrite(o, new DumpOptions(
             Title: title,
-            AppendNewLine: shouldAddNewLineAfter,
             CssClasses: css,
-            DestructAfterMs: clear
+            CodeType: code,
+            DestructAfterMs: clear,
+            AppendNewLineToAllTextOutput: shouldAddNewLineAfter
         ));
 
         return o;

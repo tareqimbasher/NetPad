@@ -34,6 +34,8 @@ $tooltip-padding-x:                 $spacer * 1;
 $info:                              #6f42c1;
 $body-secondary-color:              #808080;
 
+$font-family-monospace:             monospace;
+
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
 @import "~styles/themes";

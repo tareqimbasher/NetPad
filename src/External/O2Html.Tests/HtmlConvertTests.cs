@@ -41,6 +41,7 @@ public class HtmlConvertTests
         AddData(TestData.MemoryValues(), typeof(MemoryHtmlConverter));
         AddData(TestData.XmlNodeValues(), typeof(XmlNodeHtmlConverter));
         AddData(TestData.XNodeValues(), typeof(XNodeHtmlConverter));
+        AddData(TestData.JsonDocumentValues(), typeof(JsonDocumentHtmlConverter));
         AddData(TestData.FileSystemInfoValues(), typeof(FileSystemInfoHtmlConverter));
         AddData(TestData.DataTableValues(), typeof(DataTableHtmlConverter));
         AddData(TestData.DataSetValues(), typeof(DataSetHtmlConverter));

@@ -3,7 +3,11 @@ import {bindable, ILogger} from "aurelia";
 import {ScriptEnvironment, ScriptOutput} from "@domain";
 import {IToolbarAction} from "./output-view-toolbar";
 import {Util} from "@common";
+import "highlight.js/styles/atom-one-dark.min.css";
 
+/**
+ * A base class for children of the output-view.
+ */
 export abstract class OutputViewBase extends ViewModelBase {
     @bindable public environment: ScriptEnvironment;
     @bindable public active: boolean;
@@ -34,15 +38,6 @@ export abstract class OutputViewBase extends ViewModelBase {
     // A queue where elements await being appended to the outputElement
     protected renderQueue: Element[] = [];
 
-    private processRenderQueue = Util.debounce(this, () => {
-        this.outputElement.append(...this.renderQueue);
-        this.renderQueue.splice(0);
-
-        if (this.scrollOnOutput) {
-            this.outputElement.scrollTop = this.outputElement.scrollHeight;
-        }
-    }, 5);
-
     protected constructor(logger: ILogger) {
         super(logger);
     }
@@ -50,7 +45,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     public bound() {
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
-            ".null, .property-value, .property-name, .text");
+            ".null, .property-value, .property-name, .text, .group > .title");
     }
 
     public getOutputHtml() {
@@ -94,7 +89,7 @@ export abstract class OutputViewBase extends ViewModelBase {
     }
 
     private appendHtml(html: string | null | undefined) {
-        if (html === undefined || html === null ) return;
+        if (html === undefined || html === null) return;
 
         const template = document.createElement("template");
         template.innerHTML = html;
@@ -107,28 +102,84 @@ export abstract class OutputViewBase extends ViewModelBase {
 
         this.outputElementChildCount += children.length;
 
+        let htmlToAppendToLastRenderedOutput: string = "";
+
         for (const child of children) {
             if (this.lastRenderedOutput && this.shouldAppendOutputChildToLastRenderedOutput(child, this.lastRenderedOutput)) {
-                const childInnerHtml = child.innerHTML;
-                this.outputElementLength += childInnerHtml.length;
-                this.lastRenderedOutput.innerHTML = this.lastRenderedOutput.innerHTML + childInnerHtml;
-
-                if (this.scrollOnOutput) {
-                    this.outputElement.scrollTop = this.outputElement.scrollHeight;
-                }
+                const childHtml = child.innerHTML;
+                this.outputElementLength += childHtml.length;
+                htmlToAppendToLastRenderedOutput += childHtml;
             } else {
                 this.outputElementLength += child.innerHTML.length;
                 this.lastRenderedOutput = child;
                 this.renderQueue.push(child);
-                this.processRenderQueue();
             }
         }
 
-        this.afterAppendOutputHtml();
+        if (htmlToAppendToLastRenderedOutput) {
+            this.lastRenderedOutput!.innerHTML = this.lastRenderedOutput!.innerHTML + htmlToAppendToLastRenderedOutput;
+
+            if (this.scrollOnOutput) {
+                this.outputElement.scrollTop = this.outputElement.scrollHeight;
+            }
+
+            this.afterAppendOutputHtml();
+        }
+
+        this.processRenderQueue();
     }
 
     protected afterAppendOutputHtml() {
     }
+
+    private processRenderQueue = Util.debounce(this, () => {
+        const batch = [...this.renderQueue];
+        this.renderQueue.splice(0);
+
+        for (let iEl = 0; iEl < batch.length; iEl++) {
+            const group = batch[iEl];
+
+            if (group.classList.contains("code")) {
+                const codeEl = group.querySelector("code");
+                if (codeEl) {
+                    const lang = codeEl.getAttribute("language");
+                    const code = codeEl.textContent ?? "";
+
+                    if (code) {
+                        import("highlight.js/lib/common")
+                            .then(m => m.default)
+                            .then(hljs => {
+                                codeEl.innerHTML = !lang || lang === "auto" || !hljs.autoDetection(lang)
+                                    ? hljs.highlightAuto(code).value
+                                    : hljs.highlight(code, {language: lang}).value;
+                            });
+                    }
+                }
+            } else if (group.lastElementChild?.tagName.toLowerCase() === "script") {
+                // Script tags cannot be injected as is, they must be recreated and appended to the DOM for
+                // them to execute.
+                const script = document.createElement("script");
+                const code = document.createTextNode(group.textContent ?? "");
+                script.appendChild(code);
+
+                // Replace the previous script
+                group.lastElementChild.remove();
+                group.appendChild(script);
+            }
+        }
+
+        if (batch.length === 0) {
+            return;
+        }
+
+        this.outputElement.append(...batch);
+
+        if (this.scrollOnOutput) {
+            this.outputElement.scrollTop = this.outputElement.scrollHeight;
+        }
+
+        this.afterAppendOutputHtml();
+    }, 5);
 
     public setHtml(html: string) {
         this.clearOutput(true);
