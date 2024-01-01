@@ -1,16 +1,20 @@
 using NetPad.Media;
 using O2Html;
+using O2Html.Common;
 using O2Html.Dom;
 
 namespace NetPad.Presentation.Html;
 
+/// <summary>
+/// Prepares output for presentation by formatting it as HTML.
+/// </summary>
 public static class HtmlPresenter
 {
-    public static readonly HtmlSerializerSettings _htmlSerializerSettings;
+    public static readonly HtmlSerializerOptions _htmlSerializerOptions;
 
     static HtmlPresenter()
     {
-        _htmlSerializerSettings = new()
+        _htmlSerializerOptions = new()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
             DoNotSerializeNonRootEmptyCollections = true,
@@ -33,8 +37,8 @@ public static class HtmlPresenter
 
     public static void UpdateSerializerSettings(uint? maxDepth, uint? maxCollectionSerializeLength)
     {
-        _htmlSerializerSettings.MaxDepth = maxDepth ?? PresentationSettings.MaxDepth;
-        _htmlSerializerSettings.MaxCollectionSerializeLength = maxCollectionSerializeLength ?? PresentationSettings.MaxCollectionLength;
+        _htmlSerializerOptions.MaxDepth = maxDepth ?? PresentationSettings.MaxDepth;
+        _htmlSerializerOptions.MaxCollectionSerializeLength = maxCollectionSerializeLength ?? PresentationSettings.MaxCollectionLength;
     }
 
     /// <summary>
@@ -44,7 +48,8 @@ public static class HtmlPresenter
     /// <param name="options">Dump options</param>
     /// <param name="isError">
     /// If true, output will be considered an error. This has no effect if <see cref="output"/> is
-    /// an <see cref="Exception"/> as</param> as exceptions are always considered errors.
+    /// an <see cref="Exception"/> as exceptions are always considered errors.
+    /// </param>
     /// <returns>An HTML <see cref="Element"/> representing the <see cref="output"/>.</returns>
     public static Element SerializeToElement(
         object? output,
@@ -60,23 +65,31 @@ public static class HtmlPresenter
             isError = true;
         }
 
+        // If output is already an HTML DOM element, do not serialize it.
         if (output is not Node node)
         {
             try
             {
-                node = HtmlSerializer.Serialize(output, _htmlSerializerSettings);
+                if (options.CodeType != null && output is string code)
+                {
+                    node = TextNode.RawText(code);
+                }
+                else
+                {
+                    node = HtmlSerializer.Serialize(output, _htmlSerializerOptions);
+                }
             }
             catch (Exception ex)
             {
-                node = HtmlSerializer.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerSettings);
+                node = HtmlSerializer.Serialize("Could not serialize object to HTML. " + ex, _htmlSerializerOptions);
                 isError = true;
             }
         }
 
-        bool outputIsAllText = node is TextNode { IsEscaped: true } ||
-                               (node is Element element && element.Children.Any() && element.Children.All(c => c.Type == NodeType.Text));
-
+        // ALL outputs are wrapped in a <div class="group"></div>
         var group = new Element("div").AddClass("group");
+
+        bool outputIsOnlyEscapedText = ContainsOnlyEscapedText(node);
 
         if (options.CssClasses?.Length > 0)
         {
@@ -93,21 +106,23 @@ public static class HtmlPresenter
             group.AddClass("titled")
                 .AddAndGetElement("h6")
                 .AddClass("title")
-                .AddText(options.Title);
+                .AddEscapedText(options.Title);
 
-            if (outputIsAllText)
+            if (outputIsOnlyEscapedText)
             {
                 node = new Element("span").AddClass("text").AddChild(node);
             }
         }
 
+        node = HandleSourceCode(node, group, options);
+
         group.AddChild(node);
 
-        if (outputIsAllText)
+        if (outputIsOnlyEscapedText)
         {
             group.AddClass("text");
 
-            if (options.AppendNewLine)
+            if (options.AppendNewLineToAllTextOutput)
             {
                 group.AddElement("<br/>");
             }
@@ -149,5 +164,69 @@ public static class HtmlPresenter
     )
     {
         return SerializeToElement(output, options, isError).ToHtml();
+    }
+
+    internal static bool ContainsOnlyEscapedText(Node node)
+    {
+        return node is TextNode { IsEscaped: true } ||
+               (node is Element element &&
+                element.Children.Any() &&
+                element.Children.All(c => c is TextNode { IsEscaped: true }));
+    }
+
+    internal static Node HandleSourceCode(Node serializedOutput, Element group, DumpOptions options)
+    {
+        bool outputIsCodeString = options.CodeType != null && serializedOutput is TextNode { IsEscaped: false };
+        Element? codeElement = GetPreCodeElement(serializedOutput);
+
+        bool shouldBeRenderedAsCode = outputIsCodeString || codeElement != null;
+
+        if (!shouldBeRenderedAsCode)
+        {
+            return serializedOutput;
+        }
+
+        group.AddClass("code");
+
+        if (codeElement == null)
+        {
+            var textNode = (TextNode)serializedOutput;
+
+            var pre = new Element("pre");
+
+            codeElement = pre.AddAndGetElement("code")
+                .AddText(
+                    // Angle brackets in code elements need to be escaped for proper rendering.
+                    textNode.Text?
+                        .Replace("<", HtmlConsts.HtmlLessThan)
+                        .Replace(">", HtmlConsts.HtmlGreaterThan) ?? string.Empty
+                );
+
+            serializedOutput = pre;
+        }
+
+        if (options.CodeType != null)
+        {
+            codeElement.SetAttribute("language", options.CodeType);
+        }
+
+        return serializedOutput;
+    }
+
+    private static Element? GetPreCodeElement(Node node)
+    {
+        if (node is not Element { TagName: "pre" } element)
+        {
+            return null;
+        }
+
+        var codeElements = element.ChildElements.Where(el => el.TagName == "code").ToArray();
+
+        if (codeElements.Length != 1)
+        {
+            return null;
+        }
+
+        return codeElements.First();
     }
 }

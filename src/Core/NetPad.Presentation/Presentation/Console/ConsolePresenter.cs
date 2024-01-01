@@ -1,5 +1,9 @@
 namespace NetPad.Presentation.Console;
 
+/// <summary>
+/// Presents output to user. Optimized for outputting to a Console. In contrast to other Presenters in this library
+/// this Presenter handles the process of presentation of the output by printing it to the Console.
+/// </summary>
 public static class ConsolePresenter
 {
     private static readonly int _maxDepth;

@@ -1,5 +1,8 @@
 namespace NetPad.Presentation.Text;
 
+/// <summary>
+/// Prepares output for presentation by formatting it as structured text.
+/// </summary>
 public static class TextPresenter
 {
     private static readonly int _maxDepth;

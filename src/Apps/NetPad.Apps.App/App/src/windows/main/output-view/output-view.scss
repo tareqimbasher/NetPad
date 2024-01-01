@@ -71,7 +71,7 @@ output-view {
             padding: 0.25rem;
             border-left: 2px transparent solid;
 
-            &.text:not(.error,.raw) {
+            &.text:not(.raw,.error,.code) {
                 padding-top: 0;
             }
 
@@ -96,13 +96,22 @@ output-view {
                 }
             }
 
+            &.code {
+                pre {
+                    margin: 0;
+                    font-size: inherit;
+                    padding-top: 0.25rem;
+                    padding-bottom: 0.25rem;
+                }
+            }
+
             &.image, &.video, &.audio {
                 margin-top: 1rem;
                 margin-bottom: 1rem;
                 padding: 0.5rem;
 
                 &:hover {
-                    background: rgb(128, 128, 128, 0.2);
+                    background: rgb(128, 128, 128, 0.1);
                 }
             }
 
@@ -201,7 +210,7 @@ output-view {
                 top: -3px;
             }
 
-            .table-info-header + .table-data-header  {
+            .table-info-header + .table-data-header {
                 top: -4px; // An extra -1 to account for border of info header
             }
 
