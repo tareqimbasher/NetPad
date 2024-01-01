@@ -34,12 +34,12 @@ public class ClassList : IList<string>
 
     public void Add(string item)
     {
-        ClassAttributeOrCreate.Append(item);
+        ClassAttributeOrCreate.Append(item, false);
     }
 
     public void Clear()
     {
-        ClassAttribute?.Set(string.Empty);
+        ClassAttribute?.Clear();
     }
 
     public bool Contains(string item)
@@ -92,7 +92,7 @@ public class ClassList : IList<string>
 
     public string this[int index]
     {
-        get => ClassAttribute?.Values[index] ?? throw new IndexOutOfRangeException();
+        get => ClassAttribute?.Values[index] ?? string.Empty;
         set
         {
             var classAttribute = ClassAttributeOrCreate;

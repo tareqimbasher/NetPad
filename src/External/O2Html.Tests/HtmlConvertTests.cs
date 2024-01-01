@@ -8,7 +8,7 @@ namespace O2Html.Tests;
 
 public class HtmlConvertTests
 {
-    private static readonly HtmlSerializerSettings _htmlSerializerSettings = new()
+    private static readonly HtmlSerializerOptions _htmlSerializerOptions = new()
     {
         ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference
     };
@@ -17,7 +17,7 @@ public class HtmlConvertTests
     [MemberData(nameof(TestData.All), MemberType = typeof(TestData))]
     public void HtmlSerailizerSuccessfullyConverts(object? value)
     {
-        var node = HtmlConvert.Serialize(value, _htmlSerializerSettings);
+        var node = HtmlSerializer.Serialize(value, _htmlSerializerOptions);
         _ = node.ToHtml();
     }
 
@@ -41,6 +41,7 @@ public class HtmlConvertTests
         AddData(TestData.MemoryValues(), typeof(MemoryHtmlConverter));
         AddData(TestData.XmlNodeValues(), typeof(XmlNodeHtmlConverter));
         AddData(TestData.XNodeValues(), typeof(XNodeHtmlConverter));
+        AddData(TestData.JsonDocumentValues(), typeof(JsonDocumentHtmlConverter));
         AddData(TestData.FileSystemInfoValues(), typeof(FileSystemInfoHtmlConverter));
         AddData(TestData.DataTableValues(), typeof(DataTableHtmlConverter));
         AddData(TestData.DataSetValues(), typeof(DataSetHtmlConverter));

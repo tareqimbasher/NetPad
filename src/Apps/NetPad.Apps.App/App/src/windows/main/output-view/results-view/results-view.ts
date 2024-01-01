@@ -19,7 +19,7 @@ import {ResultControls} from "./result-controls";
 import {OutputViewBase} from "../output-view-base";
 import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
 import {KeyCode, System, Util} from "@common";
-import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";
+import {ExcelExportDialog} from "../components/excel-export-dialog/excel-export-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class ResultsView extends OutputViewBase {
@@ -161,7 +161,6 @@ export class ResultsView extends OutputViewBase {
         super.beforeAppendOutputHtml(documentFragment);
         this.resultControls.bind(documentFragment);
     }
-
     protected override beforeClearOutput() {
         super.beforeClearOutput();
         this.resultControls.dispose();

@@ -1,4 +1,5 @@
 using System.Reflection;
+using Dumpify;
 using Microsoft.CodeAnalysis;
 using NetPad.Common;
 using NetPad.Compilation;
@@ -6,9 +7,8 @@ using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
-using NetPad.Presentation;
 using NetPad.Utilities;
-using O2Html;
+using Spectre.Console;
 
 namespace NetPad.Runtimes;
 
@@ -54,14 +54,14 @@ public partial class ExternalProcessScriptRuntime
             .ToHashSet();
 
         // Add app assemblies needed to support running external process
-        referenceAssemblyPaths.Add(typeof(IOutputWriter<>).Assembly.Location);          // NetPad.Domain
-        referenceAssemblyPaths.Add(typeof(ExternalProcessOutput).Assembly.Location);    // NetPad.ExternalProcessRuntime.Interface
-        referenceAssemblyPaths.Add(typeof(PresentationSettings).Assembly.Location);     // NetPad.Presentation
+        foreach (var assemblyPath in GetUserAccessibleAssemblies())
+        {
+            referenceAssemblyPaths.Add(assemblyPath);
+        }
 
         // Needed as dependencies to NetPad.Presentation assembly
-        referenceAssemblyPaths.Add(typeof(HtmlConvert).Assembly.Location);
-        referenceAssemblyPaths.Add(typeof(Dumpify.DumpExtensions).Assembly.Location);
-        referenceAssemblyPaths.Add(typeof(Spectre.Console.IAnsiConsole).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(DumpExtensions).Assembly.Location);
+        referenceAssemblyPaths.Add(typeof(IAnsiConsole).Assembly.Location);
 
         // Parse Code & Compile
         var (parsingResult, compilationResult) = ParseAndCompile(

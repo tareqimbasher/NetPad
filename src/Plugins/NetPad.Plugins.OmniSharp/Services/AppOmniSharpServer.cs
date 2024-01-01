@@ -85,7 +85,7 @@ public class AppOmniSharpServer
 
         await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
 
-        foreach (var assemblyPath in _environment.GetScriptRuntimeSupportAssemblies())
+        foreach (var assemblyPath in _environment.GetScriptRuntimeUserAccessibleAssemblies())
         {
             await Project.AddAssemblyFileReferenceAsync(new AssemblyFileReference(assemblyPath));
         }

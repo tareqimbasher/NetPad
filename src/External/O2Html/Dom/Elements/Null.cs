@@ -4,11 +4,11 @@ public class Null : Element
 {
     public Null() : base("span")
     {
-        AddText("null");
+        this.AddText("null");
     }
 
     public Null(string cssClass) : this()
     {
-        this.WithAddClass(cssClass);
+        this.AddClass(cssClass);
     }
 }

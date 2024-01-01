@@ -7,29 +7,21 @@ namespace O2Html.Converters;
 
 public class ObjectHtmlConverter : HtmlConverter
 {
-    public override bool CanConvert(HtmlSerializer htmlSerializer, Type type)
+    public override bool CanConvert(Type type)
     {
-        return htmlSerializer.GetTypeCategory(type) == TypeCategory.SingleObject;
+        return HtmlSerializer.GetTypeCategory(type) == TypeCategory.SingleObject;
     }
 
     public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj == null)
-            return new Null(htmlSerializer.SerializerSettings.CssClasses.Null);
-
-        if (ShouldShortCircuit(obj, type, serializationScope, htmlSerializer, out var shortCircuitValue))
-        {
-            return shortCircuitValue;
-        }
-
         var table = new Table();
 
         table.Head
             .AddAndGetRow()
-            .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.TableInfoHeader)
-            .AddAndGetElement("th").SetOrAddAttribute("colspan", "2").Element
-            .WithText(type.GetReadableName())
-            .WithTitle(type.GetReadableName(true));
+            .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
+            .AddAndGetElement("th").SetAttribute("colspan", "2")
+            .AddEscapedText(type.GetReadableName())
+            .SetTitle(type.GetReadableName(true));
 
         PropertyInfo[] properties = GetReadableProperties(htmlSerializer, type);
 
@@ -46,13 +38,13 @@ public class ObjectHtmlConverter : HtmlConverter
 
             // Add property name
             tr.AddAndGetElement("th")
-                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyName)
-                .WithTitle($"[{propertyType.GetReadableName(true)}] {name}")
-                .AddText($"{name}");
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName)
+                .SetTitle($"[{propertyType.GetReadableName(true)}] {name}")
+                .AddText(name);
 
             // Add property value
             tr.AddAndGetElement("td")
-                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
                 .AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
         }
 
@@ -64,12 +56,12 @@ public class ObjectHtmlConverter : HtmlConverter
         if (obj == null)
         {
             tr.AddAndGetElement("td")
-                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
-                .AddAndGetNull().WithAddClass(htmlSerializer.SerializerSettings.CssClasses.Null);
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
+                .AddAndGetNull().AddClass(htmlSerializer.SerializerOptions.CssClasses.Null);
             return;
         }
 
-        var properties = htmlSerializer.GetReadableProperties(type);
+        var properties = HtmlSerializer.GetReadableProperties(type);
 
         foreach (var property in properties)
         {
@@ -79,14 +71,14 @@ public class ObjectHtmlConverter : HtmlConverter
                 : value.GetType();
 
             tr.AddAndGetElement("td")
-                .WithAddClass(htmlSerializer.SerializerSettings.CssClasses.PropertyValue)
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
                 .AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
         }
     }
 
     protected virtual PropertyInfo[] GetReadableProperties(HtmlSerializer htmlSerializer, Type type)
     {
-        return htmlSerializer.GetReadableProperties(type);
+        return HtmlSerializer.GetReadableProperties(type);
     }
 
     private object? GetPropertyValue<T>(PropertyInfo property, ref T? obj)

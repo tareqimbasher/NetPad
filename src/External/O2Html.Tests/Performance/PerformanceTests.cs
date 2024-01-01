@@ -26,15 +26,15 @@ public class PerformanceTests
         const int times = 3;
         const bool preRun = true;
 
-        foreach (var itemsCount in new[] {1, 10, 100, 1000, 10000})
+        foreach (var itemsCount in new[] { 1, 10, 100, 1000, 10000 })
         {
             var cars = GetCars(itemsCount);
 
             _testOutputHelper.WriteLine($"Serializing {itemsCount} Cars");
             Benchmark("System.Text.Json", () => JsonSerializer.Serialize(cars), times, preRun);
             Benchmark("Json.NET", () => JsonConvert.SerializeObject(cars), times, preRun);
-            Benchmark("O2HTML", () => HtmlConvert.Serialize(cars).ToHtml(), times, preRun);
-            Benchmark("Dumpify", () => Dumpify.DumpExtensions.DumpText(cars), times, preRun);
+            Benchmark("O2HTML", () => HtmlSerializer.Serialize(cars).ToHtml(), times, preRun);
+            //Benchmark("Dumpify", () => Dumpify.DumpExtensions.DumpText(cars), times, preRun);
             _testOutputHelper.WriteLine("");
         }
     }
@@ -42,25 +42,31 @@ public class PerformanceTests
     [Fact(Skip = "Adhoc for performance testing")]
     public void O2HTML_Performance_Tests()
     {
-        var cars = GetCars(100);
+        var cars = GetCars(10000);
 
         // To cache
-        _ = HtmlConvert.Serialize(cars).ToHtml();
+        _ = HtmlSerializer.Serialize(cars).ToHtml();
 
         Node node = null!;
 
         Benchmark("All", () =>
         {
-            Benchmark("Serialize to Element", () => node = HtmlConvert.Serialize(cars));
+            Benchmark("Serialize to Element", () => node = HtmlSerializer.Serialize(cars));
             Benchmark("To HTML", () => node.ToHtml());
-        });
+        }, 3, true);
+
+        // Timings for 10000 Cars:
+        // Serialize to Element step is taking the most time (~500ms)
+        // ToHtml() step takes less time (~150ms)
+        // Conclusion: need to provide option to serialize.NET object to HTML string directly without needing to go through constructing
+        // DOM tree objects.
     }
 
     [Fact(Skip = "Adhoc for performance testing")]
     public void Profiling_Serialize()
     {
         var cars = GetCars(1000);
-        HtmlConvert.Serialize(cars);
+        HtmlSerializer.Serialize(cars);
     }
 
     private void Benchmark(string label, Action action, int runTimes = 1, bool preRun = false)

@@ -11,7 +11,7 @@ public enum Formatting
     None = 0,
 
     /// <summary>
-    /// Causes child elements to be on new lines.
+    /// Adds newlines and indents generated HTML.
     /// </summary>
-    NewLines = 1
+    Indented = 1
 }

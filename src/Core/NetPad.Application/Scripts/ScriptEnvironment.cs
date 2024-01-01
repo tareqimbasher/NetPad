@@ -170,7 +170,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         AddScriptRuntimeIOHandlers();
     }
 
-    public string[] GetScriptRuntimeSupportAssemblies() => _runtime.Value.GetSupportAssemblies();
+    public string[] GetScriptRuntimeUserAccessibleAssemblies() => _runtime.Value.GetUserAccessibleAssemblies();
 
     private async Task SetStatusAsync(ScriptStatus status)
     {

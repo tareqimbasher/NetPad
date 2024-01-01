@@ -1,10 +1,13 @@
-namespace NetPad.Presentation.Console;
+namespace NetPad.Presentation.Text;
 
-public static class ConsolePresenter
+/// <summary>
+/// Prepares output for presentation by formatting it as structured text.
+/// </summary>
+public static class TextPresenter
 {
     private static readonly int _maxDepth;
 
-    static ConsolePresenter()
+    static TextPresenter()
     {
         var configFileValues = PresentationSettings.GetConfigFileValues();
         var maxDepth = configFileValues.maxDepth ?? PresentationSettings.MaxDepth;
@@ -13,12 +16,12 @@ public static class ConsolePresenter
         _maxDepth = maxDepth > 10 ? 10 : (int)maxDepth;
     }
 
-    public static void Serialize(object? value, string? title = null, bool useConsoleColors = true)
+    public static string Serialize(object? value, string? title = null, bool useConsoleColors = true)
     {
         var colors = useConsoleColors
             ? Dumpify.ColorConfig.DefaultColors
             : Dumpify.ColorConfig.NoColors;
 
-        Dumpify.DumpExtensions.Dump(value, label: title, colors: colors, maxDepth: _maxDepth);
+        return Dumpify.DumpExtensions.DumpText(value, label: title, colors: colors, maxDepth: _maxDepth);
     }
 }

@@ -16,11 +16,11 @@ public abstract class ElementWithTableRows : Element
 
 public class THead : ElementWithTableRows
 {
-    public THead() : base("thead")
+    internal THead() : base("thead")
     {
     }
 
-    public THead WithHeading(string text, string? title = null)
+    public THead AddHeading(string text, string? title = null)
     {
         AddAndGetHeading(text, title);
         return this;
@@ -33,15 +33,15 @@ public class THead : ElementWithTableRows
         var heading = row.AddAndGetElement("th");
 
         if (title != null)
-            heading.WithTitle(title);
+            heading.SetTitle(title);
 
-        return heading.WithText(text);
+        return heading.AddEscapedText(text);
     }
 }
 
 public class TBody : ElementWithTableRows
 {
-    public TBody() : base("tbody")
+    internal TBody() : base("tbody")
     {
     }
 }

@@ -5,10 +5,19 @@
         <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
         <AssemblyVersion>1.0.0</AssemblyVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <NoWarn>1701;1702;CS1591</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <NoWarn>1701;1702;CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="$(AssemblyName).Tests" />
     </ItemGroup>
-    
+
 </Project>
