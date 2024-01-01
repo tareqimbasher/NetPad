@@ -19,6 +19,7 @@ public static class HtmlPresenter
                 new ImageHtmlConverter(),
                 new AudioHtmlConverter(),
                 new VideoHtmlConverter(),
+                new MediaFileHtmlConverter(),
                 new MediaFileCollectionConverter()
             },
         };

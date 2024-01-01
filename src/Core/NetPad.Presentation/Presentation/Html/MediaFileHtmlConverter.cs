@@ -4,24 +4,20 @@ using O2Html.Dom;
 
 namespace NetPad.Presentation.Html;
 
-public class ImageHtmlConverter : HtmlConverter
+public class MediaFileHtmlConverter : HtmlConverter
 {
     public override bool CanConvert(Type type)
     {
-        return typeof(Image).IsAssignableFrom(type);
+        return type == typeof(MediaFile);
     }
 
     public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj is not Image image)
-            throw new Exception($"Expected an object of type {typeof(Image).FullName}, got {obj.GetType().FullName}");
+        if (obj is Image image) return htmlSerializer.Serialize(image, typeof(Image), serializationScope);
+        if (obj is Audio audio) return htmlSerializer.Serialize(audio, typeof(Audio), serializationScope);
+        if (obj is Video video) return htmlSerializer.Serialize(video, typeof(Video), serializationScope);
 
-        string title = image.FilePath?.Path ?? image.Uri?.ToString() ?? (image.Base64Data == null ? "(no source)" : "Base 64 data");
-
-        return new Element("<img />")
-            .SetSrc(image.HtmlSource)
-            .SetAttribute("alt", title)
-            .SetTitle($"Image: {title}");
+        throw new Exception($"Unhandled {nameof(MediaFile)} type.");
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)

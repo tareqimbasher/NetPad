@@ -29,6 +29,6 @@ public class VideoHtmlConverter : HtmlConverter
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        HtmlExtensions.AddChild(tr.AddAndGetElement("td"), WriteHtml(obj, type, serializationScope, htmlSerializer));
+        tr.AddAndGetElement("td").AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

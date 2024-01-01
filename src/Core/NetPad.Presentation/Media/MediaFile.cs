@@ -30,15 +30,21 @@ public abstract class MediaFile<T> : MediaFile where T : MediaFile, new()
     /// Creates a new file from a URI (link).
     /// </summary>
     /// <param name="uri">The uri that points to the file.</param>
-    /// <returns></returns>
     public static T FromUri(Uri uri) => new T { Uri = uri };
 
     /// <summary>
     /// Creates a new file from a HTML-compatible Base64 string. Example: "data:image/png;base64,9j/4AAQS...".
     /// </summary>
     /// <param name="base64"></param>
-    /// <returns></returns>
     public static T FromBase64(string base64) => new T { Base64Data = base64 };
+
+    /// <summary>
+    /// Creates a new file from a byte array. This is a convenience method and will call <see cref="FromBase64"/> internally.
+    /// </summary>
+    /// <param name="bytes">Data bytes.</param>
+    /// <param name="mimeType">The mimetype of the data.</param>
+    public static T FromBytes(byte[] bytes, string mimeType)
+        => FromBase64($"data:{mimeType};base64,{Convert.ToBase64String(bytes)}");
 }
 
 /// <summary>
