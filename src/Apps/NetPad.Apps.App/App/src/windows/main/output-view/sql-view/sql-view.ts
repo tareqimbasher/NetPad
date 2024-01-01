@@ -3,10 +3,23 @@ import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {OutputViewBase} from "../output-view-base";
 import {FindTextBoxOptions} from "@application";
+import {Colorizer} from "./colorizer";
 
 export class SqlView extends OutputViewBase {
     private textWrap: boolean;
     private colorize: boolean;
+    private logLength = 0;
+
+    private enabledLoggers: Set<string> = new Set<string>();
+    private loggers = new Map<string, string>([
+        // [label, loggerName]
+        ["Command", "Microsoft.EntityFrameworkCore.Database.Command"],
+        ["Connection", "Microsoft.EntityFrameworkCore.Database.Connection"],
+        ["Query", "Microsoft.EntityFrameworkCore.Query"],
+        ["ChangeTracking", "Microsoft.EntityFrameworkCore.ChangeTracking"],
+        ["Model", "Microsoft.EntityFrameworkCore.Model"],
+        ["Infrastructure", "Microsoft.EntityFrameworkCore.Infrastructure"],
+    ]);
 
     constructor(@IEventBus private readonly eventBus: IEventBus, @ILogger logger: ILogger) {
         super(logger);
@@ -14,6 +27,57 @@ export class SqlView extends OutputViewBase {
 
         const self = this;
         this.toolbarActions = [
+            {
+                title: "Show/Hide EF Core logs.",
+                label: "Log",
+                actions: [
+                    {
+                        get label() {
+                            return `Default <span class="float-end ms-5 badge">${this["count"]}</span>`;
+                        },
+                        title: 'Show "Executing Command" logs only.',
+                        count: 0,
+                        active: self.enabledLoggers.size === 0,
+                        get icon() {
+                            return this.active ? "check-icon" : "invisible check-icon";
+                        },
+                        clicked: async function () {
+                            self.toggleLogger(null);
+                        }
+                    },
+                    {
+                        isDivider: true
+                    },
+                    {
+                        label: "All",
+                        title: "Show all log types.",
+                        icon: "invisible check-icon",
+                        clicked: async function () {
+                            self.loggers.forEach((val, key) => {
+                                if (!self.enabledLoggers.has(key)) {
+                                    self.toggleLogger(key);
+                                }
+                            });
+                        }
+                    },
+                    ...Array.from(self.loggers.entries()).map(x => {
+                        return {
+                            get label() {
+                                return `${x[0]} <span class="float-end ms-5 badge">${this["count"]}</span>`;
+                            },
+                            title: `Show ${x[0]} logs.`,
+                            count: 0,
+                            active: self.enabledLoggers.has(x[0]),
+                            get icon() {
+                                return this.active ? "check-icon" : "invisible check-icon";
+                            },
+                            clicked: async function () {
+                                self.toggleLogger(x[0]);
+                            }
+                        }
+                    })
+                ]
+            },
             {
                 label: "Color output - turn off for better 'Find Text' (CTRL + F) accuracy",
                 get icon() {
@@ -38,7 +102,7 @@ export class SqlView extends OutputViewBase {
                 label: "Scroll on Output",
                 icon: "scroll-on-output-icon",
                 active: this.scrollOnOutput,
-                clicked: async function (){
+                clicked: async function () {
                     self.scrollOnOutput = !self.scrollOnOutput;
                     this.active = self.scrollOnOutput;
                 },
@@ -56,10 +120,13 @@ export class SqlView extends OutputViewBase {
 
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
-            ".text, .sql-keyword, .query-time, .query-params, .not-special");
+            ".text, .sql-keyword, .query-time, .query-params, .logger-name, .not-special");
     }
 
     public attached() {
+        // Set default log option
+        this.toggleLogger(null);
+
         this.addDisposable(
             this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
                 if (msg.scriptId !== this.environment.script.id || !msg.output)
@@ -80,18 +147,27 @@ export class SqlView extends OutputViewBase {
         );
     }
 
+    @watch<SqlView>(vm => vm.environment.status)
+    private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
+        if (oldStatus !== "Running" && newStatus === "Running")
+            this.clearOutput(true);
+    }
+
+    protected override beforeClearOutput() {
+        this.logLength = 0;
+        this.toolbarActions[0].label = "Log";
+        this.toolbarActions[0].actions!.forEach(a => a["count"] = 0);
+    }
+
     protected override beforeAppendOutputHtml(documentFragment: DocumentFragment) {
         super.beforeAppendOutputHtml(documentFragment);
 
+        const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
+
+        this.updateLoggerCounts(groups);
+
         if (this.colorize) {
-            const groups = Array.from(documentFragment.querySelectorAll(".group.text")) as HTMLElement[];
-
             for (const group of groups) {
-                // Since we know each group is just text for SQL View, we want to add a new line at the end
-                // of each one so when base class combines this text with the previous displayed text it is
-                // separated by an extra empty line that makes output easier to read
-                group.append(document.createElement("br"));
-
                 const childNodes = Array.from(group.childNodes);
                 for (let iChildNode = 0; iChildNode < childNodes.length; iChildNode++) {
                     const childNode = childNodes[iChildNode];
@@ -110,147 +186,71 @@ export class SqlView extends OutputViewBase {
         }
     }
 
-    @watch<SqlView>(vm => vm.environment.status)
-    private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
-        if (oldStatus !== "Running" && newStatus === "Running")
-            this.clearOutput(true);
-    }
-}
+    private updateLoggerCounts(groups: HTMLElement[]) {
+        // Update the overall log count
+        this.logLength += groups.length;
+        this.toolbarActions[0].label = `Log (${this.logLength})`;
 
-class Colorizer {
-    public static colorize(html: string): string {
-        // Date/time
-        const spaceSplitParts = html.split("&nbsp;");
-        if (spaceSplitParts.length >= 3) {
-            const timeStr = `${spaceSplitParts[1]} ${spaceSplitParts[2]}`;
-            if (!isNaN(Date.parse(timeStr))) {
-                spaceSplitParts[1] = `<span class="query-time">${spaceSplitParts[1]}`
-                spaceSplitParts[2] = `${spaceSplitParts[2]}</span>`;
-                html = spaceSplitParts.join("&nbsp;");
+        // Update the individual log counts
+        const logActions = this.toolbarActions[0].actions!;
+        for (const group of groups) {
+            const text = group.textContent;
+            if (!text) continue;
+
+            if (text.indexOf("Executing DbCommand") >= 0
+                && text.indexOf("(Microsoft.EntityFrameworkCore.Database.Command)") >= 0) {
+                group.classList.add("log-by-default");
+                (logActions[0]["count"] as number) += 1;
+            }
+
+            this.loggers.forEach((logger, label) => {
+                if (text.indexOf(logger) >= 0) {
+                    group.classList.add("log-by-" + label.toLowerCase());
+
+                    const action = logActions.find(a => a.label?.startsWith(label));
+                    if (action) {
+                        (action["count"] as number) += 1;
+                    }
+                }
+            });
+        }
+    }
+
+    private toggleLogger(label: string | null) {
+        const logActions = this.toolbarActions[0].actions!;
+
+        if (label) {
+            if (this.enabledLoggers.has(label)) {
+                this.enabledLoggers.delete(label);
+            } else {
+                this.enabledLoggers.add(label);
             }
         }
 
-        // Parameters
-        const paramNames: string[] = [];
-        const paramParts = html.split("[Parameters=[");
+        if (!label || this.enabledLoggers.size === 0) {
+            this.enabledLoggers.clear();
+            logActions[0].active = true;
+            logActions.slice(2).forEach(x => x.active = false);
+        } else {
+            logActions[0].active = false;
+            logActions.slice(2).forEach(a => a.active = this.enabledLoggers.has(a.label!.split(' ')[0]));
+        }
 
-        if (paramParts.length > 1 && !paramParts[1].startsWith("]")) {
-            // paramParts[1] looks like: @__p_1='1000', @__p_0='2'], CommandType='Text', CommandTimeout='30']...
-            const params = paramParts[1].split("]")[0].split(",");
+        this.loggers.forEach((logger, label) => {
+            const cl = "show-logs-by-" + label.toLowerCase();
 
-            if (params.length > 0 && !!params[0]) {
-                for (const param of params) {
-                    const parts = param.split("=");
-                    paramNames.push(parts[0]);
-                }
-
-                html = paramParts
-                    .join(`[Parameters=[<span class="query-params">`)
-                    .split("],&nbsp;CommandType")
-                    .join("</span>],&nbsp;CommandType");
-
-                for (const paramName of paramNames) {
-                    html = html.replaceAll(paramName, `<span class="query-params">${paramName}</span>`)
-                }
+            if (this.enabledLoggers.has(label)) {
+                this.outputElement.classList.add(cl);
+            } else {
+                this.outputElement.classList.remove(cl);
             }
+        });
+
+        if (this.enabledLoggers.size === 0) {
+            this.outputElement.classList.add("show-logs-by-default");
+        } else {
+            this.outputElement.classList.remove("show-logs-by-default");
         }
-
-        // Keywords
-        for (const keyword of this.keywords) {
-            html = this.replaceKeyword(html, keyword[0], keyword.length > 1 ? keyword[1] : undefined);
-        }
-
-        return html;
     }
-
-    private static replaceKeyword(text: string, keyword: string, additionalClasses?: string) {
-        const searchValue = `&nbsp;${keyword.replaceAll(" ", "&nbsp;")}`;
-
-        if (text.indexOf(searchValue) >= 0)
-            text = text.replaceAll(searchValue, `&nbsp;<span class="sql-keyword ${additionalClasses || ""}">${keyword}</span>`);
-
-        return text;
-    }
-
-    private static keywords = [
-        ["ADD"],
-        ["ADD CONSTRAINT"],
-        ["ALL"],
-        ["ALTER COLUMN"],
-        ["ALTER TABLE"],
-        ["ALTER"],
-        ["AND"],
-        ["ANY"],
-        ["ASC"],
-        ["AS"],
-        ["BACKUP DATABASE"],
-        ["BETWEEN"],
-        ["CASE"],
-        ["CHECK"],
-        ["COLUMN"],
-        ["CONSTRAINT"],
-        ["CREATE DATABASE"],
-        ["CREATE INDEX"],
-        ["CREATE OR REPLACE VIEW"],
-        ["CREATE TABLE"],
-        ["CREATE PROCEDURE"],
-        ["CREATE UNIQUE INDEX"],
-        ["CREATE VIEW"],
-        ["CREATE"],
-        ["DATABASE"],
-        ["DEFAULT"],
-        ["DELETE", "sql-delete"],
-        ["DESC"],
-        ["DISTINCT"],
-        ["DROP COLUMN"],
-        ["DROP CONSTRAINT"],
-        ["DROP DATABASE"],
-        ["DROP DEFAULT"],
-        ["DROP INDEX"],
-        ["DROP TABLE"],
-        ["DROP VIEW"],
-        ["DROP"],
-        ["EXEC"],
-        ["EXISTS"],
-        ["FOREIGN KEY"],
-        ["FROM"],
-        ["FULL OUTER JOIN"],
-        ["GROUP BY"],
-        ["HAVING"],
-        ["INDEX"],
-        ["INNER JOIN"],
-        ["INSERT INTO"],
-        ["INSERT INTO SELECT"],
-        ["IN"],
-        ["IS NULL"],
-        ["IS NOT NULL"],
-        ["JOIN"],
-        ["LEFT JOIN"],
-        ["LIKE"],
-        ["LIMIT"],
-        ["NOT NULL"],
-        ["NOT"],
-        ["ORDER BY"],
-        ["OR"],
-        ["OUTER JOIN"],
-        ["PRIMARY KEY"],
-        ["PROCEDURE"],
-        ["RIGHT JOIN"],
-        ["ROWNUM"],
-        ["SELECT DISTINCT", "sql-select"],
-        ["SELECT INTO", "sql-select"],
-        ["SELECT TOP", "sql-select"],
-        ["SELECT", "sql-select"],
-        ["SET"],
-        ["TABLE"],
-        ["TOP"],
-        ["TRUNCATE TABLE"],
-        ["UNION ALL"],
-        ["UNION"],
-        ["UNIQUE"],
-        ["UPDATE", "sql-update"],
-        ["VALUES"],
-        ["VIEW"],
-        ["WHERE"]
-    ];
 }
+

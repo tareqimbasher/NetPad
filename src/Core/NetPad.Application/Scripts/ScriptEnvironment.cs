@@ -112,44 +112,6 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             runOptions.AdditionalCode.AddRange(connectionCode.ApplicationCode);
         }
 
-        if (dataConnection.Type == DataConnectionType.MSSQLServer)
-        {
-            // Special case for MS SQL Server. When targeting a MS SQL server database, we must load the
-            // os-specific version of Microsoft.Data.SqlClient.dll that MSBuild copies for us in
-            // a specific dir (in app .csproj file). This behavior is an issue where .NET does not
-            // properly detect platform-specific version of the assembly
-            // See:
-            // https://github.com/dotnet/SqlClient/issues/1631
-            // https://github.com/dotnet/SqlClient/issues/1643
-            var appExePath = Assembly.GetEntryAssembly()?.Location;
-            if (appExePath != null && File.Exists(appExePath))
-            {
-                string sqlClientVersion = Script.Config.TargetFrameworkVersion == DotNetFrameworkVersion.DotNet6
-                    ? "2.1.4"
-                    : "5.0.1";
-
-                string os = PlatformUtil.IsWindowsPlatform() ? "win" : "unix";
-
-                runOptions.Assets.Add(new RunAsset(Path.Combine(
-                        Path.GetDirectoryName(appExePath)!,
-                        $"Assets/Assemblies/Microsoft.Data.SqlClient/{sqlClientVersion}/{os}/Microsoft.Data.SqlClient.dll"),
-                    "./Microsoft.Data.SqlClient.dll"));
-
-                // Windows also needs Microsoft.Data.SqlClient.SNI
-                if (PlatformUtil.IsWindowsPlatform())
-                {
-                    string sqlClientSniVersion = Script.Config.TargetFrameworkVersion == DotNetFrameworkVersion.DotNet6
-                        ? "2.1.1"
-                        : "5.0.1";
-
-                    runOptions.Assets.Add(new RunAsset(Path.Combine(
-                            Path.GetDirectoryName(appExePath)!,
-                            $"Assets/Assemblies/Microsoft.Data.SqlClient.SNI/{sqlClientSniVersion}/win-x64/Microsoft.Data.SqlClient.SNI.dll"),
-                        "./Microsoft.Data.SqlClient.SNI.dll"));
-                }
-            }
-        }
-
         var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(dataConnection, Script.Config.TargetFrameworkVersion);
         if (connectionAssembly != null)
         {

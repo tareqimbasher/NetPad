@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,27 +14,31 @@ public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDat
 
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        var connectionString = new StringBuilder($"Data Source={Host}");
+        var connectionStringBuilder = new ConnectionStringBuilder();
+
+        string dataSource = Host ?? "";
         if (!string.IsNullOrWhiteSpace(Port))
         {
-            connectionString.Append($",{Port}");
+            dataSource += $",{Port}";
         }
 
-        connectionString.Append($";Initial Catalog={DatabaseName}");
+        connectionStringBuilder.TryAdd("Data Source", dataSource);
+        connectionStringBuilder.TryAdd("Initial Catalog", DatabaseName);
 
         if (UserId != null)
         {
-            connectionString.Append($";User Id={UserId}");
+            connectionStringBuilder.TryAdd("User Id", UserId);
         }
 
         if (Password != null)
         {
-            connectionString.Append($";Password={passwordProtector.Unprotect(Password)}");
+            connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
         }
 
-        connectionString.Append(";Trust Server Certificate=True;MultipleActiveResultSets=True;");
+        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
+            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
 
-        return connectionString.ToString();
+        return connectionStringBuilder.Build();
     }
 
     public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)

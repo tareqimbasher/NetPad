@@ -14,6 +14,7 @@ public abstract class DatabaseConnection : DataConnection
     public string? UserId { get; set; }
     public string? Password { get; set; }
     public bool ContainsProductionData { get; set; }
+    public string? ConnectionStringAugment { get; set; }
 
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 }

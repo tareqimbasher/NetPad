@@ -9,7 +9,7 @@
     <div repeat.for="action of options.actions"
        class="action ${action.actions ? 'has-actions': ''}"
        show.bind="action.show === undefined || action.show"
-       title.bind="action.label">
+       title.bind="action.title || action.label">
         <div if.bind="!action.actions" click.trigger="actionClicked(action, $event)">
             <i class="${action.icon} ${action.clicked ? 'action-icon' : ''} ${action.active ? 'active' : ''}"
                if.bind="action.icon"></i>
@@ -23,11 +23,12 @@
             </span>
             <ul class="dropdown-menu">
                 <li repeat.for="subAction of action.actions"
-                    title.bind="subAction.label"
+                    title.bind="subAction.title || subAction.label"
                     click.trigger="actionClicked(subAction, $event)">
-                    <button class="dropdown-item">
+                    <div class="dropdown-divider" if.bind="subAction.isDivider"></div>
+                    <button class="dropdown-item" else>
                         <i if.bind="subAction.icon" class="${subAction.icon} me-3"></i>
-                        ${subAction.label}
+                        <span innerHTML.bind="subAction.label"></span>
                     </button>
                 </li>
             </ul>

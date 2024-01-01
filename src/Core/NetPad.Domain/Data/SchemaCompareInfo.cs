@@ -1,4 +1,5 @@
 using System;
+using NetPad.Common;
 
 namespace NetPad.Data;
 
@@ -13,4 +14,17 @@ public abstract class SchemaCompareInfo
     }
 
     public DateTime GeneratedAt { get; init; }
+    public string? GeneratedOnAppVersion { get; init; }
+
+    public bool GeneratedUsingStaleAppVersion()
+    {
+        if (GeneratedOnAppVersion == null
+            || !SemanticVersion.TryParse(GeneratedOnAppVersion, out var infoAppVersion)
+            || infoAppVersion < GlobalConsts.DataConnectionCacheValidOnOrAfterAppVersion)
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

@@ -7,19 +7,21 @@ namespace NetPad.Application;
 public class AppIdentifier
 {
     public const string AppName = "NetPad";
+    public static readonly Version VERSION;
+    public static readonly string PRODUCT_VERSION;
 
-    public AppIdentifier()
+    static AppIdentifier()
     {
-        Version = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version();
+        VERSION = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version();
 
         var infoVersion = (AssemblyInformationalVersionAttribute?)Assembly.GetEntryAssembly()!
             .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
             .FirstOrDefault();
 
-        ProductVersion = infoVersion?.InformationalVersion ?? Version.ToString();
+        PRODUCT_VERSION = infoVersion?.InformationalVersion ?? VERSION.ToString();
     }
 
     public string Name => AppName;
-    public Version Version { get; }
-    public string ProductVersion { get; set; }
+    public Version Version => VERSION;
+    public string ProductVersion => PRODUCT_VERSION;
 }

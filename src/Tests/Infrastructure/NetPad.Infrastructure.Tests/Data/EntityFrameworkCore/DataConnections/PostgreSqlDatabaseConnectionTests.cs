@@ -20,6 +20,7 @@ public class PostgreSqlDatabaseConnectionTests : CommonTests
         string? databaseName,
         string? userId,
         string? password,
+        string? connectionStringAugment,
         string expected
     )
     {
@@ -30,19 +31,25 @@ public class PostgreSqlDatabaseConnectionTests : CommonTests
         connection.DatabaseName = databaseName;
         connection.UserId = userId;
         connection.Password = password;
+        connection.ConnectionStringAugment = connectionStringAugment;
 
-        Assert.Equal(expected, connection.GetConnectionString(new NullDataConnectionPasswordProtector()));
+        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+
+        Assert.Equal(expected, connectionString);
     }
 
     public static IEnumerable<object?[]> ConnectionStringTestData => new[]
     {
-        new[] { "host", "port", "db name", "user id", "password", "Host=host:port;Database=db name;UserId=user id;Password=password" },
-        new[] { null, "port", "db name", "user id", "password", "Host=:port;Database=db name;UserId=user id;Password=password" },
-        new[] { "host", null, "db name", "user id", "password", "Host=host;Database=db name;UserId=user id;Password=password" },
-        new[] { "host", "port", null, "user id", "password", "Host=host:port;Database=;UserId=user id;Password=password" },
-        new[] { "host", "port", "db name", null, "password", "Host=host:port;Database=db name;Password=password" },
-        new[] { "host", "port", "db name", "user id", null, "Host=host:port;Database=db name;UserId=user id" },
-        new[] { "host", "port", "db name", null, null, "Host=host:port;Database=db name" }
+        new[] { "host", "port", "db name", "user id", "password", null, "Host=host:port;Database=db name;UserId=user id;Password=password;" },
+        new[] { null, "port", "db name", "user id", "password", null, "Host=:port;Database=db name;UserId=user id;Password=password;" },
+        new[] { "host", null, "db name", "user id", "password", null, "Host=host;Database=db name;UserId=user id;Password=password;" },
+        new[] { "host", "port", null, "user id", "password", null, "Host=host:port;Database=;UserId=user id;Password=password;" },
+        new[] { "host", "port", "db name", null, "password", null, "Host=host:port;Database=db name;Password=password;" },
+        new[] { "host", "port", "db name", "user id", null, null, "Host=host:port;Database=db name;UserId=user id;" },
+        new[] { "host", "port", "db name", null, null, null, "Host=host:port;Database=db name;" },
+        new[] { "host", "port", "db name", null, null, "Host=new host:new port", "Host=new host:new port;Database=db name;" },
+        new[] { "host", "port", "db name", null, null, "Host=new host;Command Timeout=300", "Host=new host;Database=db name;Command Timeout=300;" },
+
     };
 
     protected override EntityFrameworkDatabaseConnection CreateConnection()

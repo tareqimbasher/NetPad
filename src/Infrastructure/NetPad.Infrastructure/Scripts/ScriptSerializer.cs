@@ -26,7 +26,8 @@ public static class ScriptSerializer
                 Port = dbConnection.Port,
                 DatabaseName = dbConnection.DatabaseName,
                 UserId = dbConnection.UserId,
-                ContainsProductionData = dbConnection.ContainsProductionData
+                ContainsProductionData = dbConnection.ContainsProductionData,
+                ConnectionStringAugment = dbConnection.ConnectionStringAugment
             };
         }
         else if (script.DataConnection != null)
@@ -159,5 +160,6 @@ public static class ScriptSerializer
         public string? DatabaseName { get; set; }
         public string? UserId { get; set; }
         public bool ContainsProductionData { get; set; }
+        public string? ConnectionStringAugment { get; set; }
     }
 }

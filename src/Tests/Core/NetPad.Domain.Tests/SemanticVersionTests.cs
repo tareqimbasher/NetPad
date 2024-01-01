@@ -125,6 +125,9 @@ public class SemanticVersionTests
 
             Assert.Equal(-1, lowerResult.CompareTo(higherResult));
             Assert.Equal(1, higherResult.CompareTo(lowerResult));
+
+            Assert.True(higherResult > lowerResult);
+            Assert.True(lowerResult < higherResult);
         }
     }
 }

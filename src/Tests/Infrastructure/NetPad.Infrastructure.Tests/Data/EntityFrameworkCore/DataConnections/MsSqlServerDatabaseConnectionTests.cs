@@ -20,6 +20,7 @@ public class MsSqlServerDatabaseConnectionTests : CommonTests
         string? databaseName,
         string? userId,
         string? password,
+        string? connectionStringAugment,
         string expected
     )
     {
@@ -30,19 +31,24 @@ public class MsSqlServerDatabaseConnectionTests : CommonTests
         connection.DatabaseName = databaseName;
         connection.UserId = userId;
         connection.Password = password;
+        connection.ConnectionStringAugment = connectionStringAugment;
 
-        Assert.Equal(expected, connection.GetConnectionString(new NullDataConnectionPasswordProtector()));
+        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+
+        Assert.Equal(expected, connectionString);
     }
 
     public static IEnumerable<object?[]> ConnectionStringTestData => new[]
     {
-        new[] { "host", "port", "db name", "user id", "password", "Data Source=host,port;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { null, "port", "db name", "user id", "password", "Data Source=,port;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { "host", null, "db name", "user id", "password", "Data Source=host;Initial Catalog=db name;User Id=user id;Password=password;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { "host", "port", null, "user id", "password", "Data Source=host,port;Initial Catalog=;User Id=user id;Password=password;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { "host", "port", "db name", null, "password", "Data Source=host,port;Initial Catalog=db name;Password=password;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { "host", "port", "db name", "user id", null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;Trust Server Certificate=True;MultipleActiveResultSets=True;" },
-        new[] { "host", "port", "db name", null, null, "Data Source=host,port;Initial Catalog=db name;Trust Server Certificate=True;MultipleActiveResultSets=True;" }
+        new[] { "host", "port", "db name", "user id", "password", null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;Password=password;" },
+        new[] { null, "port", "db name", "user id", "password", null, "Data Source=,port;Initial Catalog=db name;User Id=user id;Password=password;" },
+        new[] { "host", null, "db name", "user id", "password", null, "Data Source=host;Initial Catalog=db name;User Id=user id;Password=password;" },
+        new[] { "host", "port", null, "user id", "password", null, "Data Source=host,port;Initial Catalog=;User Id=user id;Password=password;" },
+        new[] { "host", "port", "db name", null, "password", null, "Data Source=host,port;Initial Catalog=db name;Password=password;" },
+        new[] { "host", "port", "db name", "user id", null, null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;" },
+        new[] { "host", "port", "db name", null, null, null, "Data Source=host,port;Initial Catalog=db name;" },
+        new[] { "host", "port", "db name", null, null, "Initial Catalog=new db", "Data Source=host,port;Initial Catalog=new db;" },
+        new[] { "host", "port", "db name", null, null, "Trust Server Certificate=True;MultipleActiveResultSets=True;", "Data Source=host,port;Initial Catalog=db name;Trust Server Certificate=True;MultipleActiveResultSets=True;" }
     };
 
     protected override EntityFrameworkDatabaseConnection CreateConnection()

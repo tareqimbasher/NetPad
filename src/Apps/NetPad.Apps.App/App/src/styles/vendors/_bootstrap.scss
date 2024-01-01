@@ -136,3 +136,7 @@ textarea.form-control {
         @include theme(border-color, borderColor);
     }
 }
+
+.badge {
+    @include theme(color, textHighestContrastColor);
+}

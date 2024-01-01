@@ -47,28 +47,6 @@
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
-    <ItemGroup Condition="'$(RuntimeIdentifier)' != 'win-x64' Or '$(RuntimeIdentifier)' == ''">
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient\2.1.4\unix\Microsoft.Data.SqlClient.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient\5.0.1\unix\Microsoft.Data.SqlClient.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-    <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == ''">
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient\2.1.4\win\Microsoft.Data.SqlClient.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient.SNI\2.1.1\win-x64\Microsoft.Data.SqlClient.SNI.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient\5.0.1\win\Microsoft.Data.SqlClient.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Assets\Assemblies\Microsoft.Data.SqlClient.SNI\5.0.1\win-x64\Microsoft.Data.SqlClient.SNI.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
         <!-- Ensure Node.js is installed -->
         <Exec Command="node --version" ContinueOnError="true">
