@@ -81,6 +81,7 @@ public class AppOmniSharpServer
         await Project.CreateAsync(
             _environment.Script.Config.TargetFrameworkVersion,
             ProjectOutputType.Executable,
+            _environment.Script.Config.UseAspNet ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp,
             true);
 
         await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
@@ -275,6 +276,14 @@ public class AppOmniSharpServer
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 
+        Subscribe<ScriptUseAspNetUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            await Project.SetProjectAttributeAsync("Sdk", DotNetCSharpProject.GetSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
+            await NotifyOmniSharpServerProjectFileChangedAsync();
+        });
+
         Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
         {
             if (ev.Script.Id != _environment.Script.Id) return;
@@ -337,7 +346,10 @@ public class AppOmniSharpServer
     private async Task UpdateOmniSharpCodeBufferAsync()
     {
         var script = _environment.Script;
-        var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
+        var parsingResult = _codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, new CodeParsingOptions()
+        {
+            IncludeAspNetUsings = script.Config.UseAspNet,
+        });
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
     }
@@ -413,6 +425,8 @@ public class AppOmniSharpServer
                 ChangeType = FileChangeType.Change
             }
         });
+
+        await _eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(_environment.Script.Id));
     }
 
     private async Task UpdateBufferAsync(string filePath, string? buffer)

@@ -51,7 +51,7 @@ public class EntityFrameworkDatabaseScaffolder
 
     public async Task<ScaffoldedDatabaseModel> ScaffoldAsync()
     {
-        await _project.CreateAsync(_targetFrameworkVersion, ProjectOutputType.Library, true);
+        await _project.CreateAsync(_targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp, true);
 
         try
         {

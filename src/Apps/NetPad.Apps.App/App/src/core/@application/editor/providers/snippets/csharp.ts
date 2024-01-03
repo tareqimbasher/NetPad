@@ -506,5 +506,14 @@ export const snippets = {
             "}$0"
         ],
         description: "create xunit test method"
+    },
+    "Web App (ASP.NET)": {
+        prefix: "webapp",
+        body: [
+            "var app = WebApplication.CreateBuilder().Build();",
+            "app.UseWelcomePage();",
+            "await app.RunAsync(\"http://localhost:${0:5678}\");",
+        ],
+        description: "create xunit test method"
     }
 }

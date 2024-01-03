@@ -1,70 +1,84 @@
-<div if.bind="!references.length"
-     class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <p class="text-muted text-center">
-        No assembly references.<br/>
-        <span platforms="Electron">
+<div class="flex-grow-height-restricted d-flex flex-row mb-3">
+    <div if.bind="!references.length"
+         class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <p class="text-muted text-center">
+            No assembly references.<br/>
+            <span platforms="Electron">
             <a class="btn-link" click.trigger="browseInput.click()">Browse</a> for an assembly or
             <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a NuGet package</a>.
         </span>
-        <span platforms="Browser">
+            <span platforms="Browser">
             <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">Add a NuGet package</a>.
         </span>
-    </p>
-</div>
+        </p>
+    </div>
 
-<div class="flex-grow-height-restricted d-flex flex-row" show.bind="references.length">
-    <div id="references-list" >
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Source</th>
-                <th class="text-center"><i class="actions-icon"></i></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr as-element="row"
-                class="${selectedReference === reference ? 'active' : ''}"
-                repeat.for="reference of references"
-                click.trigger="selectReference(reference)">
-                <td>
-                    ${reference.title}
-                    <span show.bind="reference.version">
+    <div class="flex-grow-height-restricted d-flex flex-row" show.bind="references.length">
+        <div id="references-list" >
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Source</th>
+                    <th class="text-center"><i class="actions-icon"></i></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr as-element="row"
+                    class="${selectedReference === reference ? 'active' : ''}"
+                    repeat.for="reference of references"
+                    click.trigger="selectReference(reference)">
+                    <td>
+                        ${reference.title}
+                        <span show.bind="reference.version">
                     (${reference.version})
                 </span>
-                </td>
-                <td>
-                    ${reference.version ? 'NuGet' : reference.assemblyPath}
-                </td>
-                <td class="text-center" style="width: 40px">
-                    <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
-                        Remove
-                    </button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div id="namespace-selection" class="ps-3 flex-grow-height-restricted d-flex flex-column">
-        <div if.bind="!selectedReference"
-             class="flex-grow-1 d-flex align-items-center justify-content-center">
-            <p class="text-muted text-center">
-                Click a reference to select Namespaces you want to include.
-            </p>
+                    </td>
+                    <td>
+                        ${reference.version ? 'NuGet' : reference.assemblyPath}
+                    </td>
+                    <td class="text-center" style="width: 40px">
+                        <button class="btn btn-sm btn-secondary" click.trigger="removeReference(reference)">
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
-        <div class="d-flex flex-column flex-grow-height-restricted" else>
-            <h5>Select Namespaces:</h5>
-            <hr/>
-            <ul class="list-unstyled overflow-y-auto">
-                <li repeat.for="namespace of namespaces">
-                    <label class="text-break">
-                        <input type="checkbox" checked.bind="namespace.selected"/>
-                        ${namespace.name}
-                    </label>
-                </li>
-            </ul>
+        <div id="namespace-selection" class="ps-3 flex-grow-height-restricted d-flex flex-column">
+            <div if.bind="!selectedReference"
+                 class="flex-grow-1 d-flex align-items-center justify-content-center">
+                <p class="text-muted text-center">
+                    Click a reference to select Namespaces you want to include.
+                </p>
+            </div>
+            <div class="d-flex flex-column flex-grow-height-restricted" else>
+                <h5>Select Namespaces:</h5>
+                <hr/>
+                <ul class="list-unstyled overflow-y-auto">
+                    <li repeat.for="namespace of namespaces">
+                        <label class="text-break">
+                            <input type="checkbox" checked.bind="namespace.selected"/>
+                            ${namespace.name}
+                        </label>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
+</div>
+
+<div class="flex-shrink-0 flex-grow-0 ps-2 pe-2">
+    <b>Options</b>
+    <ul class="list-unstyled">
+        <li class="form-check" title="Check to use the ASP.NET SDK pack.">
+            <input class="form-check-input" type="checkbox" checked.bind="configStore.useAspNet" id="chkUseAspNet">
+            <label class="form-check-label" for="chkUseAspNet">
+                Reference ASP.NET
+            </label>
+        </li>
+    </ul>
 </div>
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'references'" platforms="Electron">

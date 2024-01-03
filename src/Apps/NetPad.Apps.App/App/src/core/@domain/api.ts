@@ -101,7 +101,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -702,7 +702,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -781,7 +781,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1280,6 +1280,8 @@ export interface IScriptsApiClient {
     setScriptKind(id: string, scriptKind: ScriptKind, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    setUseAspNet(id: string, useAspNet: boolean, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
@@ -1784,6 +1786,46 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<FileResponse | null>(<any>null);
     }
 
+    setUseAspNet(id: string, useAspNet: boolean, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/use-asp-net";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(useAspNet);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSetUseAspNet(_response);
+        });
+    }
+
+    protected processSetUseAspNet(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
     setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/scripts/{id}/data-connection?";
         if (id === undefined || id === null)
@@ -2025,7 +2067,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -4136,6 +4178,7 @@ export interface IScript {
 export class ScriptConfig implements IScriptConfig {
     kind!: ScriptKind;
     targetFrameworkVersion!: DotNetFrameworkVersion;
+    useAspNet!: boolean;
     namespaces!: string[];
     references!: Reference[];
 
@@ -4156,6 +4199,7 @@ export class ScriptConfig implements IScriptConfig {
         if (_data) {
             this.kind = _data["kind"];
             this.targetFrameworkVersion = _data["targetFrameworkVersion"];
+            this.useAspNet = _data["useAspNet"];
             if (Array.isArray(_data["namespaces"])) {
                 this.namespaces = [] as any;
                 for (let item of _data["namespaces"])
@@ -4180,6 +4224,7 @@ export class ScriptConfig implements IScriptConfig {
         data = typeof data === 'object' ? data : {};
         data["kind"] = this.kind;
         data["targetFrameworkVersion"] = this.targetFrameworkVersion;
+        data["useAspNet"] = this.useAspNet;
         if (Array.isArray(this.namespaces)) {
             data["namespaces"] = [];
             for (let item of this.namespaces)
@@ -4204,6 +4249,7 @@ export class ScriptConfig implements IScriptConfig {
 export interface IScriptConfig {
     kind: ScriptKind;
     targetFrameworkVersion: DotNetFrameworkVersion;
+    useAspNet: boolean;
     namespaces: string[];
     references: Reference[];
 }

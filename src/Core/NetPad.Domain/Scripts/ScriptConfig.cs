@@ -14,15 +14,18 @@ public class ScriptConfig : INotifyOnPropertyChanged
     private DotNetFrameworkVersion _targetFrameworkVersion;
     private List<string> _namespaces;
     private List<Reference> _references;
+    private bool _useAspNet;
 
     public ScriptConfig(
         ScriptKind kind,
         DotNetFrameworkVersion targetFrameworkVersion,
         List<string>? namespaces = null,
-        List<Reference>? references = null)
+        List<Reference>? references = null,
+        bool useAspNet = false)
     {
         _kind = kind;
         _targetFrameworkVersion = targetFrameworkVersion;
+        _useAspNet = useAspNet;
         _namespaces = namespaces ?? new List<string>();
         _references = references ?? new List<Reference>();
         OnPropertyChanged = new List<Func<PropertyChangedArgs, Task>>();
@@ -40,6 +43,12 @@ public class ScriptConfig : INotifyOnPropertyChanged
     {
         get => _targetFrameworkVersion;
         private set => this.RaiseAndSetIfChanged(ref _targetFrameworkVersion, value);
+    }
+
+    public bool UseAspNet
+    {
+        get => _useAspNet;
+        private set => this.RaiseAndSetIfChanged(ref _useAspNet, value);
     }
 
     public List<string> Namespaces
@@ -68,6 +77,14 @@ public class ScriptConfig : INotifyOnPropertyChanged
             return;
 
         TargetFrameworkVersion = targetFrameworkVersion;
+    }
+
+    public void SetUseAspNet(bool useAspNet)
+    {
+        if (useAspNet == _useAspNet)
+            return;
+
+        UseAspNet = useAspNet;
     }
 
     public void SetNamespaces(IEnumerable<string> namespaces)

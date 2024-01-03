@@ -121,6 +121,7 @@ public static class ScriptSerializer
     {
         public ScriptKind? Kind { get; set; }
         public DotNetFrameworkVersion? TargetFrameworkVersion { get; set; }
+        public bool UseAspNet { get; set; }
         public List<string>? Namespaces { get; set; }
         public List<Reference>? References { get; set; }
 
@@ -130,6 +131,7 @@ public static class ScriptSerializer
             {
                 Kind = config.Kind,
                 TargetFrameworkVersion = config.TargetFrameworkVersion,
+                UseAspNet = config.UseAspNet,
                 Namespaces = config.Namespaces,
                 References = config.References
             };
@@ -141,7 +143,8 @@ public static class ScriptSerializer
                 Kind ?? ScriptKind.Program,
                 TargetFrameworkVersion ?? dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion,
                 Namespaces,
-                References
+                References,
+                UseAspNet
             );
         }
     }

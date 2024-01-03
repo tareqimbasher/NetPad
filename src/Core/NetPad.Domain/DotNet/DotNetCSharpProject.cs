@@ -72,8 +72,13 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="targetDotNetFrameworkVersion">The .NET framework to target.</param>
     /// <param name="outputType">The output type of the project.</param>
+    /// <param name="sdkPack">The SDK pack to use for this project.</param>
     /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
-    public virtual async Task CreateAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion, ProjectOutputType outputType, bool deleteExisting = false)
+    public virtual async Task CreateAsync(
+        DotNetFrameworkVersion targetDotNetFrameworkVersion,
+        ProjectOutputType outputType,
+        DotNetSdkPack sdkPack = DotNetSdkPack.NetApp,
+        bool deleteExisting = false)
     {
         if (deleteExisting)
         {
@@ -84,7 +89,7 @@ public class DotNetCSharpProject
 
         string dotnetOutputType = outputType == ProjectOutputType.Executable ? "Exe" : "Library";
 
-        string xml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
+        string xml = $@"<Project Sdk=""{GetSdkName(sdkPack)}"">
 
     <PropertyGroup>
         <OutputType>{dotnetOutputType}</OutputType>
@@ -99,6 +104,11 @@ public class DotNetCSharpProject
         await File.WriteAllTextAsync(ProjectFilePath, xml);
     }
 
+    public static string GetSdkName(DotNetSdkPack pack)
+    {
+        return pack == DotNetSdkPack.AspNetApp ? "Microsoft.NET.Sdk.Web" : "Microsoft.NET.Sdk";
+    }
+
     /// <summary>
     /// Deletes project directory on disk.
     /// </summary>
@@ -110,6 +120,31 @@ public class DotNetCSharpProject
         }
 
         return Task.CompletedTask;
+    }
+
+    public async Task SetProjectAttributeAsync(string attributeName, object? value)
+    {
+        await _projectFileLock.WaitAsync();
+
+        try
+        {
+            var xmlDoc = XDocument.Load(ProjectFilePath);
+
+            var root = xmlDoc.Elements("Project").FirstOrDefault();
+
+            if (root == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly.");
+            }
+
+            root.SetAttributeValue(attributeName, value);
+
+            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        }
+        finally
+        {
+            _projectFileLock.Release();
+        }
     }
 
     public async Task SetProjectPropertyAsync(string propertyName, string? value)
