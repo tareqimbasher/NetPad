@@ -8,7 +8,7 @@ namespace NetPad.DotNet;
 
 public static class DotNetFrameworkVersionUtil
 {
-    private static readonly Dictionary<int, DotNetFrameworkVersion> _map = new()
+    private static readonly Dictionary<int, DotNetFrameworkVersion> _sdkVersionMap = new()
     {
         { 2, DotNetFrameworkVersion.DotNet2 },
         { 3, DotNetFrameworkVersion.DotNet3 },
@@ -17,6 +17,9 @@ public static class DotNetFrameworkVersionUtil
         { 7, DotNetFrameworkVersion.DotNet7 },
         { 8, DotNetFrameworkVersion.DotNet8 },
     };
+
+    private static readonly Dictionary<DotNetFrameworkVersion, int> _sdkVersionMapReverse = _sdkVersionMap
+        .ToDictionary(kv => kv.Value, kv => kv.Key);
 
     public static string GetTargetFrameworkMoniker(this DotNetFrameworkVersion frameworkVersion)
     {
@@ -69,7 +72,7 @@ public static class DotNetFrameworkVersionUtil
 
     public static DotNetFrameworkVersion GetDotNetFrameworkVersion(int majorVersion)
     {
-        if (_map.TryGetValue(majorVersion, out var frameworkVersion))
+        if (_sdkVersionMap.TryGetValue(majorVersion, out var frameworkVersion))
             return frameworkVersion;
 
         throw new ArgumentOutOfRangeException(nameof(majorVersion), majorVersion, $"Unknown major version: {majorVersion}");
@@ -77,10 +80,10 @@ public static class DotNetFrameworkVersionUtil
 
     public static int GetMajorVersion(this DotNetFrameworkVersion frameworkVersion)
     {
-        if (!_map.ContainsValue(frameworkVersion))
+        if (!_sdkVersionMapReverse.TryGetValue(frameworkVersion, out int majorVersion))
             throw new ArgumentOutOfRangeException(nameof(frameworkVersion), frameworkVersion, $"Unknown framework version: {frameworkVersion}");
 
-        return _map.First(x => x.Value == frameworkVersion).Key;
+        return majorVersion;
     }
 
     public static LanguageVersion GetLatestSupportedCSharpLanguageVersion(DotNetFrameworkVersion dotNetFrameworkVersion)

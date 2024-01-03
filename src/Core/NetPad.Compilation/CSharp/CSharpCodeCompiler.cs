@@ -48,7 +48,7 @@ public class CSharpCodeCompiler : ICodeCompiler
         SyntaxTree parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
         // Build references
-        var assemblyLocations = SystemAssemblies.GetAssemblyLocations(_dotNetInfo, input.TargetFrameworkVersion);
+        var assemblyLocations = SystemAssemblies.GetAssemblyLocations(_dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
 
         foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
             assemblyLocations.Add(assemblyReferenceLocation);

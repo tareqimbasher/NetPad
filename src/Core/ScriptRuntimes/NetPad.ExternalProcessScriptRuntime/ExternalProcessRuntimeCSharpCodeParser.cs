@@ -24,11 +24,36 @@ public class ExternalProcessRuntimeCSharpCodeParser : ICodeParser
 
         var additionalCode = options != null ? new SourceCodeCollection(options.AdditionalCode) : new SourceCodeCollection();
 
+        if (options?.IncludeAspNetUsings == true)
+        {
+            namespaces = AddAspNetNamespaces(namespaces);
+        }
+
         return new CodeParsingResult(
             new SourceCode(userProgram, namespaces),
             bootstrapperProgramSourceCode,
             additionalCode,
             new ParsedCodeInformation(BootstrapperClassName, BootstrapperSetIOMethodName));
+    }
+
+    private IEnumerable<string>? AddAspNetNamespaces(IEnumerable<string>? namespaces)
+    {
+        var list = namespaces != null ? namespaces.ToList() : new List<string>();
+
+        list.AddRange(new[]
+        {
+            "System.Net.Http.Json",
+            "Microsoft.AspNetCore.Builder",
+            "Microsoft.AspNetCore.Hosting",
+            "Microsoft.AspNetCore.Http",
+            "Microsoft.AspNetCore.Routing",
+            "Microsoft.Extensions.Configuration",
+            "Microsoft.Extensions.DependencyInjection",
+            "Microsoft.Extensions.Hosting",
+            "Microsoft.Extensions.Logging",
+        });
+
+        return list;
     }
 
     public string GetUserProgram(string scriptCode, ScriptKind kind)

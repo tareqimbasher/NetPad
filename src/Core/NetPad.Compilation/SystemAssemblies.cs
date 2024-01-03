@@ -7,14 +7,21 @@ using NetPad.DotNet;
 
 namespace NetPad.Compilation;
 
+record SysAssembliesKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
+
 public static class SystemAssemblies
 {
-    private static readonly ConcurrentDictionary<DotNetFrameworkVersion, HashSet<string>> _systemAssembliesLocations = new();
+    private static readonly ConcurrentDictionary<SysAssembliesKey, HashSet<string>> _systemAssembliesLocations = new();
 
-    public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion)
+    public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion, bool includeAspNet)
     {
+        var key = new SysAssembliesKey(dotNetFrameworkVersion, includeAspNet);
+
         return _systemAssembliesLocations.GetOrAdd(
-                dotNetFrameworkVersion, static (framework, dni) => GetReferenceAssemblyLocationsFromDotNetRoot(dni, framework), dotNetInfo)
+                key,
+                static (k, dni) => GetReferenceAssemblyLocationsFromDotNetRoot(dni, k.DotNetFrameworkVersion, k.IncludeAspNet),
+                dotNetInfo
+            )
             .ToHashSet();
     }
 
@@ -48,46 +55,97 @@ public static class SystemAssemblies
             .ToHashSet();
     }
 
-    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion)
+    private static HashSet<string> GetReferenceAssemblyLocationsFromDotNetRoot(
+        IDotNetInfo dotNetInfo,
+        DotNetFrameworkVersion dotNetFrameworkVersion,
+        bool includeAspNet)
     {
-        var targetMajorVersion = dotNetFrameworkVersion.GetMajorVersion();
-
         var dotnetRoot = dotNetInfo.LocateDotNetRootDirectoryOrThrow();
 
-        var assembliesDirectory = GetReferenceAssembliesDirectory(dotnetRoot, targetMajorVersion)
-                                  ?? GetImplementationAssembliesDirectory(dotnetRoot, targetMajorVersion);
+        var assemblyDirectories = GetReferenceAssemblyDirectories(dotnetRoot, dotNetFrameworkVersion, includeAspNet);
 
-        if (assembliesDirectory == null)
+        if (assemblyDirectories == null)
         {
-            throw new Exception($".NET {targetMajorVersion} SDK could not be found.");
+            var implementationAssemblyDir = GetImplementationAssemblyDirectory(dotnetRoot, dotNetFrameworkVersion);
+            if (implementationAssemblyDir != null)
+            {
+                assemblyDirectories = new List<string>() { implementationAssemblyDir };
+            }
         }
 
-        return Directory.GetFiles(assembliesDirectory, "*.dll")
-            .Where(a => !a.Contains("VisualBasic"))
+        if (assemblyDirectories?.Any() != true)
+        {
+            throw new Exception(
+                $"Could not locate .NET {dotNetFrameworkVersion.GetMajorVersion()} SDK reference or implementation assemblies using .NET SDK root: {dotnetRoot}");
+        }
+
+        return assemblyDirectories
+            .SelectMany(d => Directory.GetFiles(d, "*.dll"))
+            .Where(filePath => !filePath.Contains("VisualBasic"))
             .ToHashSet();
     }
 
-    private static string? GetReferenceAssembliesDirectory(string dotnetRoot, int targetMajorVersion)
+    /// <summary>
+    /// Gets paths of reference assemblies for a particular .NET version. Reference assemblies contain no actual implementation
+    /// and only contain metadata.
+    /// </summary>
+    /// <param name="dotnetRoot">The absolute directory path where .NET SDK is installed.</param>
+    /// <param name="dotNetFrameworkVersion">The .NET version.</param>
+    /// <param name="includeAspNet">Whether to include ASP.NET Core reference assembly directories.</param>
+    private static List<string>? GetReferenceAssemblyDirectories(string dotnetRoot, DotNetFrameworkVersion dotNetFrameworkVersion, bool includeAspNet)
     {
-        var sdkReferenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"));
+        var directories = new List<string>();
+        var majorVersion = dotNetFrameworkVersion.GetMajorVersion();
 
-        var latestVersionDir = GetLatestVersionDir(sdkReferenceAssemblyRoot, targetMajorVersion)?.Name;
-
-        if (latestVersionDir == null)
+        if (!AddDir("Microsoft.NETCore.App.Ref"))
         {
             return null;
         }
 
-        var referenceAssembliesDir = Path.Combine(sdkReferenceAssemblyRoot.FullName, latestVersionDir, "ref", $"net{targetMajorVersion}.0");
+        if (includeAspNet && !AddDir("Microsoft.AspNetCore.App.Ref"))
+        {
+            return null;
+        }
 
-        return !Directory.Exists(referenceAssembliesDir) ? null : referenceAssembliesDir;
+        return directories;
+
+        bool AddDir(string packName)
+        {
+            var referenceAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "packs", packName));
+
+            var latestMinorVersionDir = GetLatestVersionDir(referenceAssemblyRoot, majorVersion)?.Name;
+
+            if (latestMinorVersionDir != null)
+            {
+                var target = Path.Combine(referenceAssemblyRoot.FullName, latestMinorVersionDir, "ref", $"net{majorVersion}.0");
+
+                if (!Directory.Exists(target))
+                {
+                    return false;
+                }
+
+                directories.Add(target);
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 
-    private static string? GetImplementationAssembliesDirectory(string dotnetRoot, int targetMajorVersion)
+    /// <summary>
+    /// Gets paths of implementation assemblies for a particular .NET version. Reference assemblies should be preferred over
+    /// implementation assemblies to compile against.
+    /// </summary>
+    /// <param name="dotnetRoot">The absolute directory path where .NET SDK is installed.</param>
+    /// <param name="dotNetFrameworkVersion">The .NET version.</param>
+    private static string? GetImplementationAssemblyDirectory(string dotnetRoot, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         var runtimeImplementationAssemblyRoot = new DirectoryInfo(Path.Combine(dotnetRoot, "shared", "Microsoft.NETCore.App"));
 
-        var latestApplicableDirName = GetLatestVersionDir(runtimeImplementationAssemblyRoot, targetMajorVersion)?.Name;
+        var latestApplicableDirName = GetLatestVersionDir(runtimeImplementationAssemblyRoot, dotNetFrameworkVersion.GetMajorVersion())?.Name;
 
         if (latestApplicableDirName == null)
         {
@@ -99,14 +157,14 @@ public static class SystemAssemblies
         return !Directory.Exists(implementationAssembliesDir) ? null : implementationAssembliesDir;
     }
 
-    private static DirectoryInfo? GetLatestVersionDir(DirectoryInfo directory, int targetMajorVersion)
+    private static DirectoryInfo? GetLatestVersionDir(DirectoryInfo root, int targetMajorVersion)
     {
-        if (!directory.Exists)
+        if (!root.Exists)
         {
             return null;
         }
 
-        return directory.GetDirectories()
+        return root.GetDirectories()
             .Select(d => Version.TryParse(d.Name, out var version)
                 ? new { Directory = d, Version = version }
                 : null)

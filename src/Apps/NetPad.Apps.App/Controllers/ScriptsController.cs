@@ -142,6 +142,16 @@ public class ScriptsController : Controller
         return NoContent();
     }
 
+    [HttpPut("{id:guid}/use-asp-net")]
+    public async Task<IActionResult> SetUseAspNet(Guid id, [FromBody] bool useAspNet)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        await _mediator.Send(new UpdateScriptUseAspNetCommand(environment.Script, useAspNet));
+
+        return NoContent();
+    }
+
     [HttpPut]
     [Route("{id:guid}/data-connection")]
     public async Task<IActionResult> SetDataConnection(

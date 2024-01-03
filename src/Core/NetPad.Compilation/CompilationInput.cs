@@ -26,10 +26,11 @@ public class CompilationInput
         AssemblyFileReferences = assemblyFileReferences ?? new HashSet<string>();
     }
 
-    public DotNetFrameworkVersion TargetFrameworkVersion { get; private set; }
     public OutputKind OutputKind { get; private set; }
+    public DotNetFrameworkVersion TargetFrameworkVersion { get; private set; }
     public string Code { get; }
     public string? OutputAssemblyNameTag { get; private set; }
+    public bool UseAspNet { get; private set; }
     public HashSet<byte[]> AssemblyImageReferences { get; }
     public HashSet<string> AssemblyFileReferences { get; }
 
@@ -42,6 +43,12 @@ public class CompilationInput
     public CompilationInput WithOutputAssemblyNameTag(string? outputAssemblyNameTag)
     {
         OutputAssemblyNameTag = outputAssemblyNameTag;
+        return this;
+    }
+
+    public CompilationInput WithUseAspNet(bool useAspNet = true)
+    {
+        UseAspNet = useAspNet;
         return this;
     }
 }

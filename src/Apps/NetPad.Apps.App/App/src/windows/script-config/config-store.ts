@@ -6,6 +6,7 @@ interface ITab {
 }
 
 export class ConfigStore {
+    public useAspNet: boolean;
     private _script: Script;
     private _namespaces: string[] = [];
     private _references: Reference[] = [];
@@ -36,6 +37,8 @@ export class ConfigStore {
 
         this._references = [...script.config.references];
         this.updateReferenceCount();
+
+        this.useAspNet = script.config.useAspNet;
     }
 
     public updateNamespaces(namespaces: string[]) {

@@ -1,7 +1,6 @@
 ﻿using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
-using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Plugins.OmniSharp;
@@ -40,12 +39,13 @@ public class ScriptProject : DotNetCSharpProject
     public string UserProgramFilePath { get; }
     public string DataConnectionProgramFilePath { get; }
 
-    public override async Task CreateAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion, ProjectOutputType outputType, bool deleteExisting = false)
+    public override async Task CreateAsync(
+        DotNetFrameworkVersion targetDotNetFrameworkVersion,
+        ProjectOutputType outputType,
+        DotNetSdkPack sdkPack = DotNetSdkPack.NetApp,
+        bool deleteExisting = false)
     {
-        await base.CreateAsync(targetDotNetFrameworkVersion, outputType, deleteExisting);
-
-        var domainAssembly = typeof(IOutputWriter<>).Assembly;
-        await AddAssemblyFileReferenceAsync(new AssemblyFileReference(domainAssembly.Location));
+        await base.CreateAsync(targetDotNetFrameworkVersion, outputType, sdkPack, deleteExisting);
         await AddReferencesAsync(Script.Config.References);
     }
 

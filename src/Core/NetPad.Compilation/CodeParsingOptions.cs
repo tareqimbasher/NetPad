@@ -4,13 +4,13 @@ namespace NetPad.Compilation;
 
 public class CodeParsingOptions
 {
-    public CodeParsingOptions()
-    {
-        AdditionalCode = new SourceCodeCollection();
-    }
+    /// <summary>
+    /// Additional code to include in the program.
+    /// </summary>
+    public SourceCodeCollection AdditionalCode { get; init; } = new();
 
     /// <summary>
-    /// Additional code, that is not user code, to include in the program.
+    /// Whether code parser should add add ASP.NET namespaces.
     /// </summary>
-    public SourceCodeCollection AdditionalCode { get; init; }
+    public bool IncludeAspNetUsings { get; init; }
 }

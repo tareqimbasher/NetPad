@@ -112,6 +112,7 @@ public partial class ExternalProcessScriptRuntime
                 _script.Config.Namespaces,
                 new CodeParsingOptions
                 {
+                    IncludeAspNetUsings = _script.Config.UseAspNet,
                     AdditionalCode = additionalCode
                 });
 
@@ -122,12 +123,15 @@ public partial class ExternalProcessScriptRuntime
 
             var fullProgram = parsingResult.GetFullProgram();
 
-            var compilationResult = _codeCompiler.Compile(new CompilationInput(
+            var compilationInput = new CompilationInput(
                     fullProgram.ToCodeString(),
                     _script.Config.TargetFrameworkVersion,
                     referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
                     referenceAssemblyPaths)
-                .WithOutputAssemblyNameTag(_script.Name));
+                .WithOutputAssemblyNameTag(_script.Name)
+                .WithUseAspNet(_script.Config.UseAspNet);
+
+            var compilationResult = _codeCompiler.Compile(compilationInput);
 
             return new ParseAndCompileResult(parsingResult, compilationResult);
         }
@@ -283,7 +287,7 @@ public partial class ExternalProcessScriptRuntime
     ""runtimeOptions"": {{
         ""tfm"": ""{tfm}"",
         ""framework"": {{
-            ""name"": ""Microsoft.NETCore.App"",
+            ""name"": ""Microsoft.AspNetCore.App"",
             ""version"": ""{runtimeVersion}""
         }},
         ""rollForward"": ""Minor"",
