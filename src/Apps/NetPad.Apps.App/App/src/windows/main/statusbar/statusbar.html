@@ -4,8 +4,8 @@
     <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds"
           title="The time it took to run the script (in milliseconds).
 This includes the time it took to start the host process.">
-            (Took: ${activeEnvironment.runDurationMilliseconds}ms)
-        </span>
+        (Took: ${activeEnvironment.runDurationMilliseconds}ms)
+    </span>
 </div>
 <div class="middle-column">
     <div class="active-app-status-message text-truncate-1-line" show.bind="appStatusMessage">

@@ -13,7 +13,6 @@ statusbar {
     .left-column,
     .middle-column,
     .right-column {
-        flex-grow: 1;
         flex-basis: 0;
         display: flex;
         flex-direction: row;
@@ -23,11 +22,14 @@ statusbar {
 
     .left-column {
         font-size: 0.9rem;
+        white-space: nowrap;
     }
 
     .middle-column {
         justify-content: center;
         font-size: 0.9rem;
+        overflow: hidden;
+        flex-grow: 1;
     }
 
     .right-column {
@@ -44,6 +46,8 @@ statusbar {
     }
 
     .statusbar-item {
+        white-space: nowrap;
+
         > i {
             margin-right: 0.25rem;
         }

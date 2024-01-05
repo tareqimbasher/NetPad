@@ -1,5 +1,10 @@
-<h6>List each namespace on a separate line</h6>
+<p>
+    List each namespace (using directive) on a separate line.
+    Do not include the "<code>using</code>" part or semi-colons (<code>;</code>)
+</p>
+
 <textarea class="form-control flex-grow-1"
           value.bind="namespaces & updateTrigger:'blur'"
           spellcheck="false"></textarea>
+
 <label class="mt-2 text-red" show.bind="!!error">${error}</label>
