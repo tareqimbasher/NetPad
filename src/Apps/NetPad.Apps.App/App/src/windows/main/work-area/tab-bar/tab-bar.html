@@ -5,7 +5,7 @@
          title.bind="viewable.environment.script.path || (viewable.isDirty ? 'Unsaved' : '')">
         <div class="view-tab-content"
              click.trigger="activate(viewable)"
-             auxclick.trigger="tabWheelButtonClicked(viewable, $event)">
+             auxclick.trigger="close(viewable, $event)">
 
             <div class="script-name">
                 <img src.bind="viewable.environment.script.config.kind | langLogo"

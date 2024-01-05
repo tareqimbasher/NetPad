@@ -128,6 +128,22 @@ export class TabBar extends ViewModelBase {
     public attached() {
         this.loadViewablesOrder();
         this.initializeTabDragAndDrop();
+
+        setTimeout(() => this.scrollTabIntoView(this.active), 50);
+    }
+
+    private activeChanged(newActive?: ViewableObject, oldActive?: ViewableObject) {
+        this.scrollTabIntoView(newActive);
+    }
+
+    private scrollTabIntoView(viewable: ViewableObject | undefined | null) {
+        if (!viewable) return;
+
+        const tab = this.element.querySelector(`.view-tab[data-viewable-id='${viewable.id}']`);
+
+        if (tab) {
+            tab.scrollIntoView();
+        }
     }
 
     public async new() {
@@ -138,13 +154,12 @@ export class TabBar extends ViewModelBase {
         await viewable.activate(this.viewerHost);
     }
 
-    public async close(viewable: ViewableObject) {
-        await viewable.close(this.viewerHost);
-    }
+    public async close(viewable: ViewableObject, event?: MouseEvent) {
+        if (event && event.button !== 1) { // Only mouse-wheel click should close tab
+            return;
+        }
 
-    public async tabWheelButtonClicked(viewable: ViewableObject, event: MouseEvent) {
-        if (event.button !== 1) return;
-        await this.close(viewable);
+        await viewable.close(this.viewerHost);
     }
 
     private getViewableId(tab: Element): string {
