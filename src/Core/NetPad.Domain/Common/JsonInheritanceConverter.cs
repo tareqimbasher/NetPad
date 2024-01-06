@@ -128,20 +128,38 @@ public class JsonInheritanceConverter<T> : JsonConverter<T> where T : class
 
     private void WriteElement(Utf8JsonWriter writer, JsonElement element, string? discriminatorType = null)
     {
-        writer.WriteStartObject();
-
-        if (discriminatorType != null)
+        if (element.ValueKind == JsonValueKind.Object)
         {
-            writer.WritePropertyName(_discriminatorName);
-            writer.WriteStringValue(discriminatorType);
-        }
+            writer.WriteStartObject();
 
-        foreach (var property in element.EnumerateObject())
+            if (discriminatorType != null)
+            {
+                writer.WritePropertyName(_discriminatorName);
+                writer.WriteStringValue(discriminatorType);
+            }
+
+            foreach (var property in element.EnumerateObject())
+            {
+                WriteProperty(writer, property);
+            }
+
+            writer.WriteEndObject();
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
         {
-            WriteProperty(writer, property);
-        }
+            writer.WriteStartArray();
 
-        writer.WriteEndObject();
+            foreach (var item in element.EnumerateArray())
+            {
+                WriteElement(writer, item);
+            }
+
+            writer.WriteEndArray();
+        }
+        else
+        {
+            element.WriteTo(writer);
+        }
     }
 
     private void WriteProperty(Utf8JsonWriter writer, JsonProperty property)

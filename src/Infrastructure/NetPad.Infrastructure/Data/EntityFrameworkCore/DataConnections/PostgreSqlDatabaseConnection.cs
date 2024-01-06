@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class PostgreSqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
-    public PostgreSqlDatabaseConnection(Guid id, string name)
-        : base(id, name, DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL")
+    public PostgreSqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+        : base(id, name, DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL", scaffoldOptions)
     {
     }
 

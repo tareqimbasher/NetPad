@@ -2,13 +2,14 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public abstract class EntityFrameworkRelationalDatabaseConnection : EntityFrameworkDatabaseConnection
 {
-    protected EntityFrameworkRelationalDatabaseConnection(Guid id, string name, DataConnectionType type, string entityFrameworkProviderName)
-        : base(id, name, type, entityFrameworkProviderName)
+    protected EntityFrameworkRelationalDatabaseConnection(Guid id, string name, DataConnectionType type, string entityFrameworkProviderName, ScaffoldOptions? scaffoldOptions)
+        : base(id, name, type, entityFrameworkProviderName, scaffoldOptions)
     {
     }
 

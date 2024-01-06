@@ -2,18 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public abstract class EntityFrameworkDatabaseConnection : DatabaseConnection
 {
-    protected EntityFrameworkDatabaseConnection(Guid id, string name, DataConnectionType type, string entityFrameworkProviderName)
+    protected EntityFrameworkDatabaseConnection(Guid id, string name, DataConnectionType type, string entityFrameworkProviderName, ScaffoldOptions? scaffoldOptions)
         : base(id, name, type)
     {
         EntityFrameworkProviderName = entityFrameworkProviderName;
+        ScaffoldOptions = scaffoldOptions;
     }
 
     public string EntityFrameworkProviderName { get; }
+    public ScaffoldOptions? ScaffoldOptions { get; }
 
     public abstract Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector);
 

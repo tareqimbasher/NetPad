@@ -6961,6 +6961,7 @@ export interface IDatabaseConnection extends IDataConnection {
 
 export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnection implements IEntityFrameworkDatabaseConnection {
     entityFrameworkProviderName!: string;
+    scaffoldOptions?: ScaffoldOptions | undefined;
 
     constructor(data?: IEntityFrameworkDatabaseConnection) {
         super(data);
@@ -6971,6 +6972,7 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
         super.init(_data);
         if (_data) {
             this.entityFrameworkProviderName = _data["entityFrameworkProviderName"];
+            this.scaffoldOptions = _data["scaffoldOptions"] ? ScaffoldOptions.fromJS(_data["scaffoldOptions"]) : <any>undefined;
         }
     }
 
@@ -7000,6 +7002,7 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["entityFrameworkProviderName"] = this.entityFrameworkProviderName;
+        data["scaffoldOptions"] = this.scaffoldOptions ? this.scaffoldOptions.toJSON() : <any>undefined;
         super.toJSON(data);
         return data;
     }
@@ -7011,6 +7014,7 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
 
 export interface IEntityFrameworkDatabaseConnection extends IDatabaseConnection {
     entityFrameworkProviderName: string;
+    scaffoldOptions?: ScaffoldOptions | undefined;
 }
 
 export abstract class EntityFrameworkRelationalDatabaseConnection extends EntityFrameworkDatabaseConnection implements IEntityFrameworkRelationalDatabaseConnection {
@@ -7091,6 +7095,81 @@ export class MsSqlServerDatabaseConnection extends EntityFrameworkRelationalData
 }
 
 export interface IMsSqlServerDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class ScaffoldOptions implements IScaffoldOptions {
+    noPluralize!: boolean;
+    useDatabaseNames!: boolean;
+    schemas!: string[];
+    tables!: string[];
+
+    constructor(data?: IScaffoldOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.schemas = [];
+            this.tables = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.noPluralize = _data["noPluralize"];
+            this.useDatabaseNames = _data["useDatabaseNames"];
+            if (Array.isArray(_data["schemas"])) {
+                this.schemas = [] as any;
+                for (let item of _data["schemas"])
+                    this.schemas!.push(item);
+            }
+            if (Array.isArray(_data["tables"])) {
+                this.tables = [] as any;
+                for (let item of _data["tables"])
+                    this.tables!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): ScaffoldOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScaffoldOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["noPluralize"] = this.noPluralize;
+        data["useDatabaseNames"] = this.useDatabaseNames;
+        if (Array.isArray(this.schemas)) {
+            data["schemas"] = [];
+            for (let item of this.schemas)
+                data["schemas"].push(item);
+        }
+        if (Array.isArray(this.tables)) {
+            data["tables"] = [];
+            for (let item of this.tables)
+                data["tables"].push(item);
+        }
+        return data;
+    }
+
+    clone(): ScaffoldOptions {
+        const json = this.toJSON();
+        let result = new ScaffoldOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScaffoldOptions {
+    noPluralize: boolean;
+    useDatabaseNames: boolean;
+    schemas: string[];
+    tables: string[];
 }
 
 export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IPostgreSqlDatabaseConnection {
