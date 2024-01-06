@@ -52,6 +52,13 @@ html {
             }
         }
     }
+
+    &.tabs-sm {
+        .nav-link {
+            padding-top: $tab-sm-vertical-padding;
+            padding-bottom: $tab-sm-vertical-padding;
+        }
+    }
 }
 
 .tab-content {

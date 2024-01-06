@@ -74,6 +74,11 @@ export class DataConnectionViewModel {
     public resourceCompletedLoading(component: DataConnectionResourceComponent) {
         this.resourcesBeingLoaded.delete(component);
         this.error = null;
+
+        // If structure was previously fetched and this is last resource being loaded
+        if (this.structure && this.resourcesBeingLoaded.size === 0) {
+            this.getDatabaseStructure();
+        }
     }
 
     public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | undefined) {

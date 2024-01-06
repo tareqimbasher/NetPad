@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using NetPad.Data.EntityFrameworkCore.Scaffolding;
 
 namespace NetPad.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MsSqlServerDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
-    public MsSqlServerDatabaseConnection(Guid id, string name)
-        : base(id, name, DataConnectionType.MSSQLServer, "Microsoft.EntityFrameworkCore.SqlServer")
+    public MsSqlServerDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+        : base(id, name, DataConnectionType.MSSQLServer, "Microsoft.EntityFrameworkCore.SqlServer", scaffoldOptions)
     {
     }
 

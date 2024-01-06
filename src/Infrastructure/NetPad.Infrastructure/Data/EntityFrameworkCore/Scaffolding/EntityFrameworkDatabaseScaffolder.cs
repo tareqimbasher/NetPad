@@ -95,7 +95,7 @@ class Program
 
         Directory.CreateDirectory(_dbModelOutputDirPath);
 
-        var args = string.Join(" ", new[]
+        var argList = new List<string>()
         {
             "dbcontext scaffold",
             $"\"{_connection.GetConnectionString(_dataConnectionPasswordProtector)}\"",
@@ -104,7 +104,29 @@ class Program
             "--namespace \"\"", // Instructs tool to not wrap code in any namespace
             "--force",
             $"--output-dir {(PlatformUtil.IsWindowsPlatform() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}" // Relative to proj dir
-        });
+        };
+
+        if (_connection.ScaffoldOptions?.NoPluralize == true)
+        {
+            argList.Add("--no-pluralize");
+        }
+
+        if (_connection.ScaffoldOptions?.UseDatabaseNames == true)
+        {
+            argList.Add("--use-database-names");
+        }
+
+        if (_connection.ScaffoldOptions?.Schemas.Any() == true)
+        {
+            argList.AddRange(_connection.ScaffoldOptions.Schemas.Select(schema => $"--schema {schema}"));
+        }
+
+        if (_connection.ScaffoldOptions?.Tables.Any() == true)
+        {
+            argList.AddRange(_connection.ScaffoldOptions.Tables.Select(table => $"--table {table}"));
+        }
+
+        var args = string.Join(" ", argList);
 
         var dotnetEfToolExe = _dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
 

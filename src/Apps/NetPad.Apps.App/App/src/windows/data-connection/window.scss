@@ -3,6 +3,15 @@
 .connection-window {
     padding: 1rem;
 
+    .tabs-control-container {
+        @include theme(border, borderColor, 1px solid);
+    }
+
+    .tab-content-container {
+        padding: 0.5rem 1rem;
+        overflow-y: auto;
+    }
+
     .connection-details {
         > .row,
         fieldset > .row {

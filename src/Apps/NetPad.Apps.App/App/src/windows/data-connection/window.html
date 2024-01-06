@@ -1,6 +1,8 @@
 <template class="${classes}">
+    <import from="./scaffolding-options/scaffolding-options"></import>
+
     <div class="window connection-window">
-        <div class="connection-details flex-grow-height-restricted container-fluid pt-3 overflow-y-auto">
+        <div class="connection-details flex-grow-height-restricted d-flex flex-column container-fluid pt-3">
             <div class="input-row">
                 <div class="label-column">
                     <label class="col-form-label">Type</label>
@@ -24,8 +26,8 @@
                     </div>
                 </div>
             </div>
-            <form>
-                <fieldset disabled.bind="!connectionType">
+            <form class="flex-grow-height-restricted d-flex">
+                <fieldset class="flex-grow-height-restricted d-flex flex-column" disabled.bind="!connectionType">
                     <div class="input-row">
                         <div class="label-column">
                             <label class="col-form-label">Name</label>
@@ -39,90 +41,114 @@
                         </div>
                     </div>
 
-                    <au-compose component.bind="connectionView"></au-compose>
+                    <div class="tabs-control-container flex-grow-height-restricted d-flex flex-column"
+                         if.bind="connectionView.connection">
+                        <let active-tab.bind="'Connection'"></let>
 
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label"
-                                   title="Select if this connection is used for production data."
-                                   for="chkContainsProductionData">
-                                Production Data
-                            </label>
-                        </div>
-                        <div class="input-column">
-                            <div class="form-check">
-                                <input id="chkContainsProductionData" class="form-check-input"
-                                       type="checkbox"
-                                       checked.bind="connectionView.connection.containsProductionData">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label">
-                                Connection String
-                            </label>
-                            <a class="btn btn-link ps-0"
-                               show.bind="connectionString && !showConnectionStringAugment && !connectionView.connection.connectionStringAugment"
-                               click.trigger="showConnectionStringAugment = true">
-                                <small>Customize</small>
-                            </a>
-                        </div>
-                        <div class="input-column">
+                        <ul class="tabs tabs-sm nav nav-tabs mb-3">
+                            <li class="nav-item ${activeTab === 'Connection' ? 'active' : ''}"
+                                click.trigger="activeTab = 'Connection'">
+                                <div class="nav-link">Connection</div>
+                            </li>
+                            <li class="nav-item ${activeTab === 'Scaffolding' ? 'active' : ''}"
+                                click.trigger="activeTab = 'Scaffolding'">
+                                <div class="nav-link">Scaffolding</div>
+                            </li>
+                        </ul>
+                        <div class="tab-content-container">
+                            <div class="tab-content" show.bind="activeTab === 'Connection'">
+                                <au-compose component.bind="connectionView"></au-compose>
+
+                                <div class="input-row">
+                                    <div class="label-column">
+                                        <label class="col-form-label"
+                                               title="Select if this connection is used for production data."
+                                               for="chkContainsProductionData">
+                                            Production Data
+                                        </label>
+                                    </div>
+                                    <div class="input-column">
+                                        <div class="form-check">
+                                            <input id="chkContainsProductionData" class="form-check-input"
+                                                   type="checkbox"
+                                                   checked.bind="connectionView.connection.containsProductionData">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="input-row">
+                                    <div class="label-column">
+                                        <label class="col-form-label">
+                                            Connection String
+                                        </label>
+                                        <a class="btn btn-link ps-0"
+                                           show.bind="connectionString && !showConnectionStringAugment && !connectionView.connection.connectionStringAugment"
+                                           click.trigger="showConnectionStringAugment = true">
+                                            <small>Customize</small>
+                                        </a>
+                                    </div>
+                                    <div class="input-column">
                             <textarea class="form-control"
                                       type="text"
                                       placeholder="Auto-generated..."
                                       disabled>${connectionString}</textarea>
-                        </div>
-                    </div>
-                    <div class="input-row"
-                         show.bind="showConnectionStringAugment">
-                        <div class="label-column">
-                            <label class="col-form-label">
-                                Custom
-                            </label>
-                            <br/>
-                            <small class="text-secondary" style="font-weight: normal"
-                                   title="This does not replace the entire connection string, but adds/edits key/values in the generated connection string.">
-                                Augments generated connection string
-                            </small>
-                        </div>
-                        <div class="input-column">
+                                    </div>
+                                </div>
+                                <div class="input-row"
+                                     show.bind="showConnectionStringAugment">
+                                    <div class="label-column">
+                                        <label class="col-form-label">
+                                            Custom
+                                        </label>
+                                        <br/>
+                                        <small class="text-secondary" style="font-weight: normal"
+                                               title="This does not replace the entire connection string, but adds/edits key/values in the generated connection string.">
+                                            Augments generated connection string
+                                        </small>
+                                    </div>
+                                    <div class="input-column">
                             <textarea class="form-control"
                                       type="text"
                                       placeholder="ex: MultipleActiveResultSets=True;"
                                       value.bind="connectionView.connection.connectionStringAugment"></textarea>
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="label-column">
-                        </div>
-                        <div class="input-column">
-                            <button class="btn btn-primary"
-                                    click.trigger="testConnection()"
-                                    disabled.bind="testingConnectionStatus === 'testing' || !isConnectionValid">
-                                Test Connection
-                            </button>
+                                    </div>
+                                </div>
+                                <div class="input-row">
+                                    <div class="label-column">
+                                    </div>
+                                    <div class="input-column">
+                                        <button class="btn btn-primary"
+                                                click.trigger="testConnection()"
+                                                disabled.bind="testingConnectionStatus === 'testing' || !isConnectionValid">
+                                            Test Connection
+                                        </button>
 
-                            <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus"
-                                 switch.bind="testingConnectionStatus">
+                                        <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus"
+                                             switch.bind="testingConnectionStatus">
                                 <span case="testing" class="spinner-border spinner-border-sm text-yellow"
                                       title="Please wait..."></span>
-                                <i case="success" class="check-circle-icon text-green" title="Success"></i>
-                                <i case="fail" class="warning-icon text-yellow" title="Connection failed"></i>
+                                            <i case="success" class="check-circle-icon text-green" title="Success"></i>
+                                            <i case="fail" class="warning-icon text-yellow"
+                                               title="Connection failed"></i>
+                                        </div>
+
+                                        <p class="text-red mt-3"
+                                           show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
+                                            ${testingConnectionFailureMessage}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <p class="text-red mt-3"
-                               show.bind="testingConnectionStatus === 'fail' && testingConnectionFailureMessage">
-                                ${testingConnectionFailureMessage}
-                            </p>
+                            <div class="tab-content" show.bind="activeTab === 'Scaffolding'">
+                                <scaffolding-options connection.bind="connectionView.connection"></scaffolding-options>
+                            </div>
                         </div>
                     </div>
                 </fieldset>
             </form>
         </div>
 
-        <div class="bottom-buttons-bar">
+        <div class="bottom-buttons-bar mt-3 border-top-0">
             <div class="me-auto text-orange">
                 <span class="production-marker rounded-pill badge bg-orange"
                       show.bind="connectionView.connection.containsProductionData"

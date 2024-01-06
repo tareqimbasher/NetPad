@@ -1,6 +1,8 @@
+import {Constructable} from "aurelia";
 import {
     DatabaseConnection,
     DataConnection,
+    EntityFrameworkDatabaseConnection,
     MsSqlServerDatabaseConnection,
     PostgreSqlDatabaseConnection,
     SQLiteDatabaseConnection
@@ -8,7 +10,6 @@ import {
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
 import {Util} from "@common";
-import {Constructable} from "aurelia";
 
 export abstract class DataConnectionView<TDataConnection extends DataConnection> implements IDataConnectionView {
     public readonly connection: TDataConnection;
@@ -33,18 +34,9 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
         const connection = this.createEmptyConnection(ctor);
 
         if (from) {
-            connection.id = from.id;
-            connection.name = from.name;
-
-            if (connection instanceof DatabaseConnection && from instanceof DatabaseConnection) {
-                // TODO bad solution. find better way to selectively copy this data without listing each prop
-                connection.host = from.host;
-                connection.databaseName = from.databaseName;
-                connection.userId = from.userId;
-                connection.password = from.password;
-                connection.containsProductionData = from.containsProductionData;
-                connection.connectionStringAugment = from.connectionStringAugment;
-            }
+            const newConnectionType = connection.type;
+            connection.init(from);
+            connection.type = newConnectionType;
         }
 
         connection.id ||= Util.newGuid();
