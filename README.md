@@ -45,6 +45,8 @@ Additional requirements only if you plan to create and use database connections:
 
 [Download](https://github.com/tareqimbasher/NetPad/releases) the latest version for free!
 
+For folks on **Arch Linux** or **Manjaro**, you can also install it from the [AUR](https://aur.archlinux.org/packages/netpad-bin).
+
 On **macOS** see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash) if you have trouble opening NetPad.
 
 ## Updates

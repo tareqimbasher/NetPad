@@ -9,3 +9,27 @@ This library powers [NetPad](https://github.com/tareqimbasher/NetPad).
 
 TODO before publishing a nuget package:
 - Add instructions and usage examples
+
+### Example Usage
+
+```csharp
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOmniSharpServer();
+
+var app = builder.Build();
+
+// ...
+
+var factory = app.Services.GetRequiredService<IOmniSharpServerFactory>();
+
+IOmniSharpStdioServer omniSharpServer = factory.CreateStdioServerFromNewProcess(
+    string executablePath,
+    string projectPath,
+    string? additionalArgs,
+    string? dotNetSdkRootDirectoryPath);
+
+await omniSharpServer.StartAsync();
+
+var response = await omniSharpServer.SendAsync<[RESPONSE]>([REQUEST], cancellationToken);
+```
