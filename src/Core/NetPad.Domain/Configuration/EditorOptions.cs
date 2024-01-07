@@ -10,7 +10,7 @@ public class EditorOptions : ISettingsOptions
     }
 
     [JsonInclude] public string? BackgroundColor { get; private set; }
-    [JsonInclude] public object MonacoOptions { get; private set; }
+    [JsonInclude] public object MonacoOptions { get; private set; } = null!;
 
     public EditorOptions SetBackgroundColor(string? backgroundColor)
     {

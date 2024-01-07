@@ -21,7 +21,7 @@ public class AppearanceOptions : ISettingsOptions
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInTab { get; private set; }
     [JsonInclude] public bool ShowScriptRunStatusIndicatorInScriptsList { get; private set; }
     [JsonInclude] public bool ShowScriptRunningIndicatorInScriptsList { get; private set; }
-    [JsonInclude] public TitlebarOptions Titlebar { get; private set; }
+    [JsonInclude] public TitlebarOptions Titlebar { get; private set; } = null!;
 
     public AppearanceOptions SetTheme(Theme theme)
     {

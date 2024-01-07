@@ -28,12 +28,12 @@ public class SemanticVersionTests
             var parsed = SemanticVersion.TryParse(version, out var result);
 
             Assert.True(parsed, $"{version} did not successfully parse.");
-            Assert.Equal(version, result.ToString());
-            Assert.Equal(expectedMajor, result.Major);
-            Assert.Equal(expectedMinor, result.Minor);
-            Assert.Equal(expectedPatch, result.Patch);
-            Assert.Equal(expectedPrereleaseLabel, result.PreReleaseLabel);
-            Assert.Equal(expectedBuildLabel, result.BuildLabel);
+            Assert.Equal(version, result?.ToString());
+            Assert.Equal(expectedMajor, result?.Major);
+            Assert.Equal(expectedMinor, result?.Minor);
+            Assert.Equal(expectedPatch, result?.Patch);
+            Assert.Equal(expectedPrereleaseLabel, result?.PreReleaseLabel);
+            Assert.Equal(expectedBuildLabel, result?.BuildLabel);
         }
 
         public static IEnumerable<object?[]> GetDotNetVersionTestData()

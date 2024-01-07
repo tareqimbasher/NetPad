@@ -29,7 +29,8 @@ public class MemoryHtmlConverter : CollectionHtmlConverter
             throw new HtmlSerializationException($"Cannot serialize type {type}. {ToArrayMethodName} method not found.");
         }
 
-        Array array = (Array)method.Invoke(obj, Array.Empty<object>());
+        Array array = (Array)method.Invoke(obj, Array.Empty<object>())!;
+
         return base.Convert(array, array.GetType(), serializationScope, htmlSerializer);
     }
 }

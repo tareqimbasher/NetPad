@@ -83,7 +83,7 @@ namespace OmniSharp.Utilities
                 {
                     return process.ExitCode;
                 }
-                catch (Exception ex)
+                catch
                 {
                     // Can throw if process is killed
                     return -1;

@@ -12,7 +12,7 @@ public class DotNetTypeWithStringRepresentationHtmlConverter : HtmlConverter
 
     public override Node WriteHtml<T>(T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        return TextNode.EscapedText(obj.ToString());
+        return TextNode.EscapedText(obj!.ToString()!);
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)

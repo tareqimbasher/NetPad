@@ -12,7 +12,7 @@ public class KeyboardShortcutOptions : ISettingsOptions
         DefaultMissingValues();
     }
 
-    [JsonInclude] public List<KeyboardShortcutConfiguration> Shortcuts { get; private set; }
+    [JsonInclude] public List<KeyboardShortcutConfiguration> Shortcuts { get; private set; } = null!;
 
     public KeyboardShortcutOptions SetShortcuts(IEnumerable<KeyboardShortcutConfiguration> shortcuts)
     {

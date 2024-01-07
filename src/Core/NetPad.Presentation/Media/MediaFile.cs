@@ -4,7 +4,7 @@ using NetPad.IO;
 namespace NetPad.Media;
 
 /// <summary>
-/// Base class for media files of type <see cref="T"/>.
+/// Base class for media files of type T.
 /// </summary>
 public abstract class MediaFile<T> : MediaFile where T : MediaFile, new()
 {

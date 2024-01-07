@@ -18,17 +18,17 @@ public class Settings : ISettingsOptions
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
     }
 
-    [JsonInclude] public Version Version { get; private set; }
+    [JsonInclude] public Version Version { get; private set; } = null!;
     [JsonInclude] public bool? AutoCheckUpdates { get; private set; }
     [JsonInclude] public string? DotNetSdkDirectoryPath { get; private set; }
-    [JsonInclude] public string ScriptsDirectoryPath { get; private set; }
-    [JsonInclude] public string AutoSaveScriptsDirectoryPath { get; private set; }
-    [JsonInclude] public string PackageCacheDirectoryPath { get; private set; }
-    [JsonInclude] public AppearanceOptions Appearance { get; private set; }
-    [JsonInclude] public EditorOptions Editor { get; private set; }
-    [JsonInclude] public ResultsOptions Results { get; private set; }
-    [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; }
-    [JsonInclude] public OmniSharpOptions OmniSharp { get; set; }
+    [JsonInclude] public string ScriptsDirectoryPath { get; private set; } = null!;
+    [JsonInclude] public string AutoSaveScriptsDirectoryPath { get; private set; } = null!;
+    [JsonInclude] public string PackageCacheDirectoryPath { get; private set; } = null!;
+    [JsonInclude] public AppearanceOptions Appearance { get; private set; } = null!;
+    [JsonInclude] public EditorOptions Editor { get; private set; } = null!;
+    [JsonInclude] public ResultsOptions Results { get; private set; } = null!;
+    [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; } = null!;
+    [JsonInclude] public OmniSharpOptions OmniSharp { get; set; } = null!;
 
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
     {

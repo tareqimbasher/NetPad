@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace NetPad.Utilities;
@@ -31,7 +32,8 @@ public static class Try
         }
     }
 
-    public static T Run<T>(Func<T> action, T valueOnError = default(T))
+    [return: NotNullIfNotNull("valueOnError")]
+    public static T? Run<T>(Func<T> action, T? valueOnError = default(T))
     {
         try
         {
@@ -43,7 +45,7 @@ public static class Try
         }
     }
 
-    public static async Task<T> RunAsync<T>(Func<Task<T>> action, T valueOnError = default(T))
+    public static async Task<T?> RunAsync<T>(Func<Task<T>> action, T? valueOnError = default(T))
     {
         try
         {

@@ -47,10 +47,10 @@ public static class HtmlPresenter
     /// <param name="output">The object to serialize.</param>
     /// <param name="options">Dump options</param>
     /// <param name="isError">
-    /// If true, output will be considered an error. This has no effect if <see cref="output"/> is
+    /// If true, output will be considered an error. This has no effect if <paramref name="output"/> is
     /// an <see cref="Exception"/> as exceptions are always considered errors.
     /// </param>
-    /// <returns>An HTML <see cref="Element"/> representing the <see cref="output"/>.</returns>
+    /// <returns>An HTML <see cref="Element"/> representing the <paramref name="output"/>.</returns>
     public static Element SerializeToElement(
         object? output,
         DumpOptions? options = null,
@@ -154,9 +154,9 @@ public static class HtmlPresenter
     /// <param name="output">The object to serialize.</param>
     /// <param name="options">Dump options</param>
     /// <param name="isError">
-    /// If true, output will be considered an error. This has no effect if <see cref="output"/> is
+    /// If true, output will be considered an error. This has no effect if <paramref name="output"/> is
     /// an <see cref="Exception"/> as</param> as exceptions are always considered errors.
-    /// <returns>An HTML string representation of <see cref="output"/>.</returns>
+    /// <returns>An HTML string representation of <paramref name="output"/>.</returns>
     public static string Serialize(
         object? output,
         DumpOptions? options = null,

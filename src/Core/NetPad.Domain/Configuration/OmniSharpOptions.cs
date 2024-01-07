@@ -24,8 +24,8 @@ public class OmniSharpOptions : ISettingsOptions
     [JsonInclude] public bool EnableImportCompletion { get; private set; }
     [JsonInclude] public bool EnableSemanticHighlighting { get; private set; }
     [JsonInclude] public bool EnableCodeLensReferences { get; private set; }
-    [JsonInclude] public OmniSharpDiagnosticsOptions Diagnostics { get; private set; }
-    [JsonInclude] public OmniSharpInlayHintsOptions InlayHints { get; private set; }
+    [JsonInclude] public OmniSharpDiagnosticsOptions Diagnostics { get; private set; } = null!;
+    [JsonInclude] public OmniSharpInlayHintsOptions InlayHints { get; private set; } = null!;
 
     public OmniSharpOptions SetEnabled(bool enabled)
     {

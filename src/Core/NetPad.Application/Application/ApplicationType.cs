@@ -1,4 +1,4 @@
-namespace NetPad;
+namespace NetPad.Application;
 
 public enum ApplicationType
 {

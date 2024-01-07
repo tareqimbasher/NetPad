@@ -97,7 +97,7 @@ public sealed class HtmlSerializer
 
         if (ShouldShortCircuit(obj, type, serializationScope, SerializerOptions, out var shortCircuitValue))
         {
-            return shortCircuitValue;
+            return shortCircuitValue!;
         }
 
         var converter = GetConverter(type);

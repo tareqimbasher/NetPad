@@ -8,6 +8,7 @@ namespace NetPad.Presentation;
 /// <param name="CodeType">If specified, assumes the dump target is a code string of this language and will
 /// render with syntax highlighting.</param>
 /// <param name="AppendNewLineToAllTextOutput">If true and the output is all text (not a nested structure), an additional line will be appended to the result.</param>
+/// <param name="DestructAfterMs">Removes the output after the specified number of milliseconds.</param>
 public record DumpOptions(
     string? Title = null,
     string? CssClasses = null,
