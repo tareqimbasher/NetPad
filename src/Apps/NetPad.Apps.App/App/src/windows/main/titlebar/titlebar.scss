@@ -2,7 +2,7 @@
 @import "~styles/themes";
 
 titlebar {
-    @include theme(background-color, statusbarBackground);
+    @include theme(background, titlebarBackground);
     height: $titlebar-height;
     max-height: $titlebar-height;
     position: relative;

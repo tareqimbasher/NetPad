@@ -5,7 +5,7 @@ context-menu {
     z-index: 100001;
     opacity: 0;
     visibility: hidden;
-    @include theme(background-color, contextMenuBackgroundColor);
+    @include theme(background, contextMenuBackground);
     border-radius: 2px;
     min-width: 285px;
     max-width: 600px;
@@ -37,7 +37,7 @@ context-menu {
             padding: 2px 5px;
 
             &:hover {
-                @include theme(background-color, contextMenuItemBackgroundColor);
+                @include theme(background, contextMenuItemHoverBackground);
             }
 
             .item-container {

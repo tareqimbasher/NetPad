@@ -48,7 +48,7 @@
     }
 
     .col-form-label {
-        @include theme(color, textHighestContrastColor);
+        @include theme(color, textStrongColor);
         user-select: none;
     }
 

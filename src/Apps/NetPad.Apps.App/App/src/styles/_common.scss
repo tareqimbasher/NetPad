@@ -39,7 +39,7 @@ hr {
 }
 
 kbd {
-    @include theme(background-color, kbdBackground);
+    @include theme(background-color, kbdBackgroundColor);
 }
 
 .clickable,

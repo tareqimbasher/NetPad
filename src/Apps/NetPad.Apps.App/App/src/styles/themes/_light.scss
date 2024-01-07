@@ -1,46 +1,49 @@
 $light: (
+    // TEXT
     textColor: #34314b,
-    textHighestContrastColor: #000,
+    textStrongColor: #000,
     textHoverColor: #000,
-    textContrastColor: #d4d4d4,
+    // BACKGROUND
     backgroundColor: rgb(243, 243, 243),
-    backgroundDarkerColor: #f3f3f3,
-    backgroundLighterColor: #f6f6f6,
-    borderColor: #ccc,
-    borderContrastColor: #bfbfbf,
+    backgroundDarkerColor: rgb(237, 237, 237),
+    backgroundLighterColor: rgb(246, 246, 246),
+    listBackground: #f1f1f1,
+    formControlBackground: rgb(250, 250, 250),
+    formControlDisabledBackgroundColor: rgb(236, 236, 236),
+    kbdBackgroundColor: #212529,
+    // BORDERS
+    borderColor: rgb(204, 204, 204),
+    borderContrastColor: rgb(191, 191, 191),
+    // ACTIONS
     hoverColor: rgba(0, 0, 0, 0.075),
     activeColor: #0d6efd,
-    tabColor: rgb(236, 236, 236),
-    tabActiveColor: rgb(255, 255, 255),
-    tabActiveTextColor: #000,
-    tabInactiveTextColor: rgba(0, 0, 0, 0.65),
-    splitterColor: #dcdcdc,
-    scrollbarTrackColor: #CECECE,
-    scrollbarThumbColor: #7E8182,
-    listBackground: #f1f1f1,
     actionIconColor: #595959,
     actionIconHoverColor: black,
-    formControlBackground: #eee,
-    kbdBackground: #212529,
+    // SHADOWS
     boxShadowBottom: 0 7px 8px -8px rgba(0, 0, 0, 0.16),
     boxShadowBottomAndSides: 0 0 8px 2px rgba(0, 0, 0, 0.16),
-    // WINDOW
-    windowBorderColor: #ccc,
-    // HEADER
-    headerBackground: #333,
-    // MAIN MENU
+    // TITLEBAR
+    titlebarBackground: #dfdfdf,
     mainMenuDropdownItemBackgroundColor: rgb(30 144 255 / 50%),
     // STATUSBAR
     statusbarBackground: #e3e3e3,
     // PANES
     paneRibbonBackground: #efefef,
     // SCRIPT VIEW
-    scriptHeaderBackground: #fff,
-    resultsBackground: #fafafa,
-    resultsToolbarBackground: #ccc,
+    scriptToolbarBackground: #fff,
+    outputPaneBackground: #fafafa,
     // CONTEXT MENU
-    contextMenuBackgroundColor: #f3f3f3,
-    contextMenuItemBackgroundColor: rgb(30 144 255 / 50%),
+    contextMenuBackground: #f3f3f3,
+    contextMenuItemHoverBackground: rgb(30 144 255 / 50%),
     // DIALOG
-    dialogBackgroundColor: #f3f3f3,
+    dialogBackground: #f3f3f3,
+    // TABS
+    tabColor: rgb(236, 236, 236),
+    tabActiveColor: rgb(255, 255, 255),
+    tabActiveTextColor: #000,
+    tabInactiveTextColor: rgba(0, 0, 0, 0.65),
+    // SCROLLBARS & SPLITTER
+    scrollbarTrackColor: #CECECE,
+    scrollbarThumbColor: #7E8182,
+    splitterColor: #dcdcdc,
 );

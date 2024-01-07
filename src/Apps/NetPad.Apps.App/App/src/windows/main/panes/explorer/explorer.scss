@@ -1,5 +1,4 @@
 @import "~styles/colors";
-@import "~styles/themes";
 
 explorer {
     display: flex;
@@ -13,7 +12,7 @@ explorer {
         padding-bottom: 0;
         padding-right: 0;
         user-select: none;
-        @include theme(background-color, backgroundColor);
+        background-color: transparent !important;
     }
 
     .tree-expand-node-icon,

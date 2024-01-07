@@ -57,6 +57,11 @@ a.btn-link:hover {
     &:focus {
         @include theme(border-color, activeColor);
     }
+
+    &[disabled],
+    &[disabled="true"] {
+        @include theme(background-color, formControlDisabledBackgroundColor);
+    }
 }
 
 textarea.form-control {
@@ -68,6 +73,11 @@ textarea.form-control {
     @include theme(background-color, formControlBackground);
     @include theme(color, textColor);
     @include theme(border-color, borderColor);
+
+    &[disabled],
+    &[disabled="true"] {
+        @include theme(background-color, formControlDisabledBackgroundColor);
+    }
 }
 
 .list-group-item {
@@ -80,7 +90,7 @@ textarea.form-control {
 
     &.active {
         @include theme(background-color, activeColor);
-        @include theme(color, textHighestContrastColor);
+        @include theme(color, textStrongColor);
     }
 
     &.active:hover {
@@ -140,5 +150,5 @@ textarea.form-control {
 }
 
 .badge {
-    @include theme(color, textHighestContrastColor);
+    @include theme(color, textStrongColor);
 }

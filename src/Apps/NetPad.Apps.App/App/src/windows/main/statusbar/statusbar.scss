@@ -2,7 +2,7 @@
 @import "~styles/themes";
 
 statusbar {
-    @include theme(background-color, statusbarBackground);
+    @include theme(background, statusbarBackground);
     height: $statusbar-height;
     max-height: $statusbar-height;
     padding: 0 0.5rem;
