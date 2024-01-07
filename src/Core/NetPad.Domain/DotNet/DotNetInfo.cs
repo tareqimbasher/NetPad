@@ -166,7 +166,7 @@ public class DotNetInfo : IDotNetInfo
             var dotNetExePath = LocateDotNetExecutable();
             if (dotNetExePath == null) return Array.Empty<DotNetRuntimeVersion>();
 
-            var p = Process.Start(new ProcessStartInfo
+            using var p = Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -220,7 +220,7 @@ public class DotNetInfo : IDotNetInfo
             var dotNetExePath = LocateDotNetExecutable();
             if (dotNetExePath == null) return Array.Empty<DotNetSdkVersion>();
 
-            var p = Process.Start(new ProcessStartInfo
+            using var p = Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -293,7 +293,7 @@ public class DotNetInfo : IDotNetInfo
             {
                 // Try getting path using ShellExecute
                 // Prioritize this over global tool install path in case user defines a different path for dotnet for the execution of this app.
-                var process = Process.Start(new ProcessStartInfo
+                using var process = Process.Start(new ProcessStartInfo
                 {
                     UseShellExecute = true,
                     CreateNoWindow = true,
@@ -340,7 +340,7 @@ public class DotNetInfo : IDotNetInfo
 
     public SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath)
     {
-        var p = Process.Start(new ProcessStartInfo
+        using var p = Process.Start(new ProcessStartInfo
         {
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -392,7 +392,7 @@ public class DotNetInfo : IDotNetInfo
             var exeName = GetDotNetExeName();
 
             // Try getting path using ShellExecute
-            var process = Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
                 CreateNoWindow = true,

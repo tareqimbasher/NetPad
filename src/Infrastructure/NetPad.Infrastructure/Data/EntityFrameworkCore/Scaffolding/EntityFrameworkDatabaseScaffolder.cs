@@ -148,7 +148,7 @@ class Program
         startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
-        var process = Process.Start(startInfo);
+        using var process = Process.Start(startInfo);
 
         if (process == null)
         {

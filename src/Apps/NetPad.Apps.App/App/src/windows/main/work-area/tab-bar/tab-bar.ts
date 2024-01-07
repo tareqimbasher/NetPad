@@ -129,7 +129,7 @@ export class TabBar extends ViewModelBase {
         this.loadViewablesOrder();
         this.initializeTabDragAndDrop();
 
-        setTimeout(() => this.scrollTabIntoView(this.active), 50);
+        setTimeout(() => this.scrollTabIntoView(this.active), 200);
     }
 
     private activeChanged(newActive?: ViewableObject, oldActive?: ViewableObject) {

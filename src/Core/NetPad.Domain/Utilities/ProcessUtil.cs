@@ -25,7 +25,7 @@ public static class ProcessUtil
 
     public static void OpenInDesktopExplorer(string path)
     {
-        Process.Start(new ProcessStartInfo
+        using var p = Process.Start(new ProcessStartInfo
         {
             FileName = path,
             UseShellExecute = true

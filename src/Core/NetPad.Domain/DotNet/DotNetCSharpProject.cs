@@ -193,7 +193,7 @@ public class DotNetCSharpProject
     {
         EnsurePackageCacheDirectoryExists();
 
-        var process = Process.Start(new ProcessStartInfo(
+        using var process = Process.Start(new ProcessStartInfo(
             _dotNetInfo.LocateDotNetExecutableOrThrow(),
             $"restore \"{ProjectFilePath}\"")
         {
@@ -407,7 +407,7 @@ public class DotNetCSharpProject
             var packageId = reference.PackageId;
             var packageVersion = reference.Version;
 
-            var process = Process.Start(new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(),
+            using var process = Process.Start(new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(),
                 $"add \"{ProjectFilePath}\" package {packageId} " +
                 $"--version {packageVersion} " +
                 $"--package-directory \"{PackageCacheDirectoryPath}\"")
@@ -450,7 +450,7 @@ public class DotNetCSharpProject
 
             var dotnetExe = _dotNetInfo.LocateDotNetExecutableOrThrow();
 
-            var process = Process.Start(new ProcessStartInfo(dotnetExe,
+            using var process = Process.Start(new ProcessStartInfo(dotnetExe,
                 $"remove \"{ProjectFilePath}\" package {packageId}")
             {
                 UseShellExecute = false,
@@ -464,7 +464,7 @@ public class DotNetCSharpProject
             }
 
             // This is needed so that 'project.assets.json' file is updated properly
-            process = Process.Start(new ProcessStartInfo(dotnetExe,
+            using var process2 = Process.Start(new ProcessStartInfo(dotnetExe,
                 $"restore {ProjectFilePath}")
             {
                 UseShellExecute = false,
@@ -472,9 +472,9 @@ public class DotNetCSharpProject
                 CreateNoWindow = true
             });
 
-            if (process != null)
+            if (process2 != null)
             {
-                await process.WaitForExitAsync();
+                await process2.WaitForExitAsync();
             }
         }
         finally

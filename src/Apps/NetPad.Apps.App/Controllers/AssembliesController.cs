@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
@@ -42,7 +43,7 @@ public class AssembliesController : Controller
 
             var namespaces = new HashSet<string>();
 
-            foreach (var asset in assets)
+            foreach (var asset in assets.Where(a => a.IsAssembly()))
             {
                 using var assemblyInfoReader = new AssemblyInfoReader(asset.Path);
 

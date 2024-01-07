@@ -2,7 +2,6 @@ import {Constructable} from "aurelia";
 import {
     DatabaseConnection,
     DataConnection,
-    EntityFrameworkDatabaseConnection,
     MsSqlServerDatabaseConnection,
     PostgreSqlDatabaseConnection,
     SQLiteDatabaseConnection

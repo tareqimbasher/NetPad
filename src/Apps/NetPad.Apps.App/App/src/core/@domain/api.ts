@@ -7268,24 +7268,26 @@ export class ApiException extends Error {
 
     protected isApiException = true;
 
-    private _errorResponse: ErrorResult | undefined | null;
-    public get errorResponse(): ErrorResult | undefined {
-        if (this._errorResponse !== undefined)
-            return this._errorResponse || undefined;
 
-        if (!this.response) {
-            this._errorResponse = null;
-            return undefined;
-        }
+                private _errorResponse: ErrorResult | undefined | null;
+                public get errorResponse(): ErrorResult | undefined {
+                    if (this._errorResponse !== undefined)
+                        return this._errorResponse || undefined;
 
-        try {
-            this._errorResponse = JSON.parse(this.response) as ErrorResult;
-            return this._errorResponse;
-        } catch {
-            this._errorResponse = null;
-            return undefined;
-        }
-    }
+                    if (!this.response) {
+                        this._errorResponse = null;
+                        return undefined;
+                    }
+
+                    try {
+                        this._errorResponse = JSON.parse(this.response) as ErrorResult;
+                        return this._errorResponse;
+                    } catch {
+                        this._errorResponse = null;
+                        return undefined;
+                    }
+                }
+            
 
     static isApiException(obj: any): obj is ApiException {
         return obj.isApiException === true;

@@ -79,7 +79,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
 
             if (platform != OSPlatform.Windows)
             {
-                Process.Start("chmod", $"+x {downloadedLocation.ExecutablePath}");
+                using var p = Process.Start("chmod", $"+x {downloadedLocation.ExecutablePath}");
             }
 
             await _appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");

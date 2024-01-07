@@ -1,28 +1,26 @@
-<div class="section d-flex flex-column align-items-center flex-grow-height-restricted" style="padding-top: 15%">
+<div class="d-flex flex-column align-items-center flex-grow-height-restricted position-relative" style="padding-top: 15%">
     <img src="logo/circle/128x128.png" alt="" class="mb-5" style="max-height: 110px"/>
     <div class="d-flex align-items-center">
         <div class="fs-2">${appId.name}</div>
         <div class="ms-3 fs-5" show.bind="appId">
             <div class="badge bg-primary">
-                v${appId.productVersion}
+                v${appId.version}
             </div>
         </div>
     </div>
     <div class="text-center">
         <p>
-            Tareq Imbasher
+            <small>by</small> <b>Tareq Imbasher</b>
         </p>
-        <p class="d-flex align-items-center text-center">
-        <div class="mb-3">
-            <a external-link
-               href="https://github.com/tareqimbasher/NetPad"
-               class="link-primary text-decoration-none">
-                Repository
-                <i class="open-external-icon"></i>
-            </a>
-        </div>
-        <iframe src="https://ghbtns.com/github-btn.html?user=tareqimbasher&repo=NetPad&type=star&count=true"
-                frameborder="0" scrolling="0" width="80" height="20" title="GitHub"></iframe>
-        </p>
+        <a external-link
+           href="https://github.com/tareqimbasher/NetPad"
+           class="link-primary text-decoration-none mt-3">
+            <i class="github-icon"></i>
+            GitHub
+        </a>
+    </div>
+
+    <div class="position-absolute text-muted" style="bottom: 0.85rem; left: 1rem;">
+        Build: v${appId.productVersion}
     </div>
 </div>

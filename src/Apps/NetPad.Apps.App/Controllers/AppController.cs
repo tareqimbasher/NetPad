@@ -101,7 +101,7 @@ public class AppController : Controller
         if (!file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath))
             throw new Exception("Not allowed");
 
-        Process.Start(new ProcessStartInfo
+        using var process = Process.Start(new ProcessStartInfo
         {
             FileName = file.Directory.FullName,
             UseShellExecute = true
@@ -121,7 +121,7 @@ public class AppController : Controller
         if (!Directory.Exists(sanitized))
             throw new Exception($"Directory does not exist at: {path}");
 
-        Process.Start(new ProcessStartInfo
+        using var process = Process.Start(new ProcessStartInfo
         {
             FileName = sanitized,
             UseShellExecute = true
@@ -135,7 +135,7 @@ public class AppController : Controller
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
             throw new Exception($"Package cache folder does not exist at: '{settings.PackageCacheDirectoryPath}'");
 
-        Process.Start(new ProcessStartInfo
+        using var process = Process.Start(new ProcessStartInfo
         {
             FileName = path,
             UseShellExecute = true
