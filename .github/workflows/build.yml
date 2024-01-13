@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - feat/*
+      - bug/*
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -22,19 +23,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, windows-2022, macos-11 ]
+        os: [ ubuntu-22.04, windows-2022, macos-12 ]
 
     steps:
       - name: 🚚 Checkout latest
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.1
 
       - name: 🧲 Setup .NET 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4.0.0
         with:
           dotnet-version: 6.0.x
 
       - name: 🧲 Setup .NET 7
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4.0.0
         with:
           dotnet-version: 7.0.x
 
@@ -56,14 +57,14 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [ 16.x, 18.x ]
+        node-version: [ 16.x, 18.x, 20.x ]
     
     steps:
       - name: 🚚 Checkout latest
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4.1.1
 
       - name: 🧲 Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4.0.1
         with:
           node-version: ${{ matrix.node-version }}
 
