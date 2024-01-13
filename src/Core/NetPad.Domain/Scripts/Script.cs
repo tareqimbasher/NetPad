@@ -131,6 +131,7 @@ public class Script : INotifyOnPropertyChanged
     {
         Config.SetKind(config.Kind);
         Config.SetTargetFrameworkVersion(config.TargetFrameworkVersion);
+        Config.SetOptimizationLevel(config.OptimizationLevel);
         Config.SetUseAspNet(config.UseAspNet);
         Config.SetReferences(config.References);
         Config.SetNamespaces(config.Namespaces);

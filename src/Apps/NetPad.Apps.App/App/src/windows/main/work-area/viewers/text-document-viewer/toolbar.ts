@@ -6,6 +6,7 @@ import {
     IAppService,
     IEventBus,
     IScriptService,
+    OptimizationLevel,
     Script,
     ScriptEnvironment,
     ScriptKind
@@ -60,7 +61,7 @@ export class Toolbar extends ViewModelBase {
     public set targetFrameworkVersion(value) {
         if (!this.script || !value || this.script.config.targetFrameworkVersion === value) return;
 
-        this.logger.debug("Setting targetFrameworkVersion kind to:", value);
+        this.logger.debug("Setting targetFrameworkVersion to:", value);
 
         this.scriptService.setTargetFrameworkVersion(this.script.id, value)
             .catch(err => {
@@ -91,6 +92,21 @@ export class Toolbar extends ViewModelBase {
             });
     }
 
+    public get optimizationLevel(): OptimizationLevel | null | undefined {
+        return this.script?.config.optimizationLevel;
+    }
+
+    public set optimizationLevel(value) {
+        if (!this.script || !value || this.script.config.optimizationLevel === value) return;
+
+        this.logger.debug("Setting optimizationLevel to:", value);
+
+        this.scriptService.setOptimizationLevel(this.script.id, value)
+            .catch(err => {
+                this.logger.error("Failed to set script optimizationLevel", err);
+            });
+    }
+
     public attached() {
         this.appService.checkDependencies().then(result => {
             if (!result?.dotNetSdkVersions.length) {
@@ -103,9 +119,9 @@ export class Toolbar extends ViewModelBase {
             for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
                 const major = sdkVersion.major;
 
-                if (major === 6) frameworks.add("DotNet6");
-                else if (major === 7) frameworks.add("DotNet7");
-                else if (major === 8) frameworks.add("DotNet8");
+                if (!isNaN(major) && major >= 2) {
+                    frameworks.add(`DotNet${major}` as DotNetFrameworkVersion);
+                }
             }
 
             this.availableFrameworkVersions = [...frameworks]

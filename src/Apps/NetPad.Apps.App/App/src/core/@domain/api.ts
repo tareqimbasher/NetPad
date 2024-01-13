@@ -1281,6 +1281,8 @@ export interface IScriptsApiClient {
 
     setTargetFrameworkVersion(id: string, targetFrameworkVersion: DotNetFrameworkVersion, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
+    setOptimizationLevel(id: string, optimizationLevel: OptimizationLevel, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
     setUseAspNet(id: string, useAspNet: boolean, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
@@ -1771,6 +1773,46 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
     }
 
     protected processSetTargetFrameworkVersion(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    setOptimizationLevel(id: string, optimizationLevel: OptimizationLevel, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/scripts/{id}/optimization-level";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(optimizationLevel);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSetOptimizationLevel(_response);
+        });
+    }
+
+    protected processSetOptimizationLevel(response: Response): Promise<FileResponse | null> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200 || status === 206) {
@@ -4043,6 +4085,8 @@ export interface ISourceCodeDto {
     code?: string | undefined;
 }
 
+export type OptimizationLevel = "Debug" | "Release";
+
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
     status!: ScriptStatus;
@@ -4178,6 +4222,7 @@ export interface IScript {
 export class ScriptConfig implements IScriptConfig {
     kind!: ScriptKind;
     targetFrameworkVersion!: DotNetFrameworkVersion;
+    optimizationLevel!: OptimizationLevel;
     useAspNet!: boolean;
     namespaces!: string[];
     references!: Reference[];
@@ -4199,6 +4244,7 @@ export class ScriptConfig implements IScriptConfig {
         if (_data) {
             this.kind = _data["kind"];
             this.targetFrameworkVersion = _data["targetFrameworkVersion"];
+            this.optimizationLevel = _data["optimizationLevel"];
             this.useAspNet = _data["useAspNet"];
             if (Array.isArray(_data["namespaces"])) {
                 this.namespaces = [] as any;
@@ -4224,6 +4270,7 @@ export class ScriptConfig implements IScriptConfig {
         data = typeof data === 'object' ? data : {};
         data["kind"] = this.kind;
         data["targetFrameworkVersion"] = this.targetFrameworkVersion;
+        data["optimizationLevel"] = this.optimizationLevel;
         data["useAspNet"] = this.useAspNet;
         if (Array.isArray(this.namespaces)) {
             data["namespaces"] = [];
@@ -4249,6 +4296,7 @@ export class ScriptConfig implements IScriptConfig {
 export interface IScriptConfig {
     kind: ScriptKind;
     targetFrameworkVersion: DotNetFrameworkVersion;
+    optimizationLevel: OptimizationLevel;
     useAspNet: boolean;
     namespaces: string[];
     references: Reference[];
@@ -7268,26 +7316,24 @@ export class ApiException extends Error {
 
     protected isApiException = true;
 
+    private _errorResponse: ErrorResult | undefined | null;
+    public get errorResponse(): ErrorResult | undefined {
+        if (this._errorResponse !== undefined)
+            return this._errorResponse || undefined;
 
-                private _errorResponse: ErrorResult | undefined | null;
-                public get errorResponse(): ErrorResult | undefined {
-                    if (this._errorResponse !== undefined)
-                        return this._errorResponse || undefined;
+        if (!this.response) {
+            this._errorResponse = null;
+            return undefined;
+        }
 
-                    if (!this.response) {
-                        this._errorResponse = null;
-                        return undefined;
-                    }
-
-                    try {
-                        this._errorResponse = JSON.parse(this.response) as ErrorResult;
-                        return this._errorResponse;
-                    } catch {
-                        this._errorResponse = null;
-                        return undefined;
-                    }
-                }
-            
+        try {
+            this._errorResponse = JSON.parse(this.response) as ErrorResult;
+            return this._errorResponse;
+        } catch {
+            this._errorResponse = null;
+            return undefined;
+        }
+    }
 
     static isApiException(obj: any): obj is ApiException {
         return obj.isApiException === true;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using NetPad.CQs;
 using NetPad.Data;
 using NetPad.DotNet;
@@ -138,6 +139,16 @@ public class ScriptsController : Controller
         var environment = await GetScriptEnvironmentAsync(id);
 
         await _mediator.Send(new UpdateScriptTargetFrameworkCommand(environment.Script, targetFrameworkVersion));
+
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/optimization-level")]
+    public async Task<IActionResult> SetOptimizationLevel(Guid id, [FromBody] OptimizationLevel optimizationLevel)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+
+        await _mediator.Send(new UpdateScriptOptimizationLevelCommand(environment.Script, optimizationLevel));
 
         return NoContent();
     }

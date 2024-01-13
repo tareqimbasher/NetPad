@@ -45,4 +45,14 @@ public static class ProcessUtil
 
         return processStartInfo;
     }
+
+    public static void MakeExecutable(string filePath)
+    {
+        if (PlatformUtil.IsWindowsPlatform())
+        {
+            return;
+        }
+
+        using var p = Process.Start("chmod", $"+x {filePath}");
+    }
 }

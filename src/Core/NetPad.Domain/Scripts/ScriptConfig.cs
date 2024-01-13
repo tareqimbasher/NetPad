@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using NetPad.Common;
 using NetPad.DotNet;
 
@@ -15,16 +16,19 @@ public class ScriptConfig : INotifyOnPropertyChanged
     private List<string> _namespaces;
     private List<Reference> _references;
     private bool _useAspNet;
+    private OptimizationLevel _optimizationLevel;
 
     public ScriptConfig(
         ScriptKind kind,
         DotNetFrameworkVersion targetFrameworkVersion,
         List<string>? namespaces = null,
         List<Reference>? references = null,
+        OptimizationLevel optimizationLevel = OptimizationLevel.Debug,
         bool useAspNet = false)
     {
         _kind = kind;
         _targetFrameworkVersion = targetFrameworkVersion;
+        _optimizationLevel = optimizationLevel;
         _useAspNet = useAspNet;
         _namespaces = namespaces ?? new List<string>();
         _references = references ?? new List<Reference>();
@@ -43,6 +47,12 @@ public class ScriptConfig : INotifyOnPropertyChanged
     {
         get => _targetFrameworkVersion;
         private set => this.RaiseAndSetIfChanged(ref _targetFrameworkVersion, value);
+    }
+
+    public OptimizationLevel OptimizationLevel
+    {
+        get => _optimizationLevel;
+        private set => this.RaiseAndSetIfChanged(ref _optimizationLevel, value);
     }
 
     public bool UseAspNet
@@ -77,6 +87,14 @@ public class ScriptConfig : INotifyOnPropertyChanged
             return;
 
         TargetFrameworkVersion = targetFrameworkVersion;
+    }
+
+    public void SetOptimizationLevel(OptimizationLevel optimizationLevel)
+    {
+        if (optimizationLevel == _optimizationLevel)
+            return;
+
+        OptimizationLevel = optimizationLevel;
     }
 
     public void SetUseAspNet(bool useAspNet)

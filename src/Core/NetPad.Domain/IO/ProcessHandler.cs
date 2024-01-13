@@ -148,7 +148,7 @@ public sealed class ProcessHandler : IDisposable
     {
         EnsureNotDisposed();
 
-        if (_processStartInfo == null!)
+        if (_processStartInfo == null)
         {
             _processStartInfo = new ProcessStartInfo(_commandText!)
             {
