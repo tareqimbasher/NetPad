@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using NetPad.Common;
 using NetPad.Data;
 using NetPad.DotNet;
@@ -121,6 +122,7 @@ public static class ScriptSerializer
     {
         public ScriptKind? Kind { get; set; }
         public DotNetFrameworkVersion? TargetFrameworkVersion { get; set; }
+        public OptimizationLevel OptimizationLevel { get; set; }
         public bool UseAspNet { get; set; }
         public List<string>? Namespaces { get; set; }
         public List<Reference>? References { get; set; }
@@ -131,6 +133,7 @@ public static class ScriptSerializer
             {
                 Kind = config.Kind,
                 TargetFrameworkVersion = config.TargetFrameworkVersion,
+                OptimizationLevel = config.OptimizationLevel,
                 UseAspNet = config.UseAspNet,
                 Namespaces = config.Namespaces,
                 References = config.References
@@ -144,6 +147,7 @@ public static class ScriptSerializer
                 TargetFrameworkVersion ?? dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.FrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion,
                 Namespaces,
                 References,
+                OptimizationLevel,
                 UseAspNet
             );
         }

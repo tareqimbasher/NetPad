@@ -1,3 +1,4 @@
+using System.Reflection;
 using NetPad.Runtimes;
 
 /// <summary>
@@ -19,18 +20,26 @@ public partial class Program
         if (args.Contains("-help"))
         {
             ScriptRuntimeServices.UseStandardIO(ExternalProcessOutputFormat.Console, true);
+            var currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
+            if (Environment.CurrentDirectory.Length > 1)
+            {
+                currentAssemblyPath = "." + currentAssemblyPath.Replace(Environment.CurrentDirectory, string.Empty);
+            }
 
-            Console.WriteLine($"# {UserScript.Name}");
-            Console.WriteLine(@"""
-help:
+            Console.WriteLine($"{UserScript.Name}");
+            Console.WriteLine($@"
+Usage:
+    dotnet {currentAssemblyPath} [-console|-text|-html] [OPTIONS]
+
 Output Format:
-    -console    (default)
+    -console    Optimized for console output (default)
     -text       Text output
     -html       HTML output
 
-Other Options:
-    -no-color   Do not color output. Does not apply to ""HTML"" format.
-""");
+Options:
+    -no-color   Do not color output. Does not apply to ""HTML"" format
+    -help       Display this help
+");
 
             Environment.Exit(0);
         }

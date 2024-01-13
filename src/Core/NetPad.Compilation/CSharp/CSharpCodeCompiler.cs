@@ -26,9 +26,13 @@ public class CSharpCodeCompiler : ICodeCompiler
         string assemblyName = "NetPad_CompiledAssembly";
 
         if (input.OutputAssemblyNameTag != null)
+        {
             assemblyName += $"_{input.OutputAssemblyNameTag}";
+        }
 
-        assemblyName = $"{assemblyName}_{Guid.NewGuid()}";
+        assemblyName += Guid.NewGuid().ToString();
+
+        string assemblyFileName = assemblyName + GetCompiledFileExtension(input.OutputKind);
 
         var compilation = CreateCompilation(input, assemblyName);
 
@@ -36,16 +40,22 @@ public class CSharpCodeCompiler : ICodeCompiler
         var result = compilation.Emit(stream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
 
         stream.Seek(0, SeekOrigin.Begin);
-        return new CompilationResult(result.Success, new AssemblyName(assemblyName), assemblyName + ".dll", stream.ToArray(), result.Diagnostics);
+        var assemblyBytes = stream.ToArray();
+
+        return new CompilationResult(
+            result.Success,
+            new AssemblyName(assemblyName),
+            assemblyFileName,
+            assemblyBytes,
+            result.Diagnostics);
     }
 
     private CSharpCompilation CreateCompilation(CompilationInput input, string assemblyName)
     {
         // Parse code
         SourceText sourceCode = SourceText.From(input.Code);
-
-        CSharpParseOptions parseOptions = GetParseOptions(input.TargetFrameworkVersion);
-        SyntaxTree parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
+        CSharpParseOptions parseOptions = GetParseOptions(input.TargetFrameworkVersion, input.OptimizationLevel);
+        SyntaxTree syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
 
         // Build references
         var assemblyLocations = SystemAssemblies.GetAssemblyLocations(_dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
@@ -59,12 +69,12 @@ public class CSharpCodeCompiler : ICodeCompiler
 
         var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
             .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
-            .WithOptimizationLevel(OptimizationLevel.Debug)
+            .WithOptimizationLevel(input.OptimizationLevel)
             .WithOverflowChecks(true)
             .WithAllowUnsafe(true);
 
         return CSharpCompilation.Create(assemblyName,
-            new[] { parsedSyntaxTree },
+            new[] { syntaxTree },
             references: references,
             options: compilationOptions);
     }
@@ -73,46 +83,34 @@ public class CSharpCodeCompiler : ICodeCompiler
     {
         var references = assemblyImages.Select(i => MetadataReference.CreateFromImage(i)).ToList();
 
-        // var locationReferences = assemblyLocations
-        //     .Where(al => !string.IsNullOrWhiteSpace(al))
-        //     .Select(location => new
-        //     {
-        //         MetadataReference = MetadataReference.CreateFromFile(location),
-        //         AssemblyName = AssemblyName.GetAssemblyName(location)
-        //     })
-        //     .ToList();
-        //
-        // var duplicateReferences = locationReferences.GroupBy(r => r.AssemblyName.Name)
-        //     .Where(grp => grp.Key != null && grp.Count() > 1);
-        //
-        // foreach (var duplicateReferenceGroup in duplicateReferences)
-        // {
-        //     // Take the highest version. If multiple of the same version, just take one.
-        //     var duplicatesToRemove = duplicateReferenceGroup
-        //         .GroupBy(x => x.AssemblyName.Version)
-        //         .ToArray();
-        //
-        //     foreach (var duplicate in duplicatesToRemove)
-        //     {
-        //         foreach (var x in duplicate.Skip(1))
-        //         {
-        //             locationReferences.Remove(x);
-        //         }
-        //     }
-        // }
-        //
-        // references.AddRange(locationReferences.Select(r => r.MetadataReference));
-
         references.AddRange(assemblyLocations.Select(location => MetadataReference.CreateFromFile(location)));
 
         return references.ToArray();
     }
 
-    public CSharpParseOptions GetParseOptions(DotNetFrameworkVersion targetFrameworkVersion)
+    public CSharpParseOptions GetParseOptions(DotNetFrameworkVersion targetFrameworkVersion, OptimizationLevel optimizationLevel)
     {
-        // TODO investigate using SourceKind.Script
         return CSharpParseOptions.Default
             .WithLanguageVersion(DotNetFrameworkVersionUtil.GetLatestSupportedCSharpLanguageVersion(targetFrameworkVersion))
-            .WithKind(SourceCodeKind.Regular);
+            // TODO investigate using SourceKind.Script (see cs-scripts branch)
+            .WithKind(SourceCodeKind.Regular)
+            .WithPreprocessorSymbols(PreprocessorSymbols.For(optimizationLevel));
+    }
+
+    private static string GetCompiledFileExtension(OutputKind outputKind)
+    {
+        return outputKind switch
+        {
+            OutputKind.DynamicallyLinkedLibrary => ".dll",
+            OutputKind.ConsoleApplication => ExeExtension(),
+            OutputKind.WindowsApplication => ExeExtension(),
+            OutputKind.WindowsRuntimeMetadata => ExeExtension(),
+            OutputKind.WindowsRuntimeApplication => ".winmdobj",
+            OutputKind.NetModule => ".netmodule",
+            _ => throw new ArgumentOutOfRangeException(nameof(outputKind), outputKind, null)
+
+        };
+
+        static string ExeExtension () => PlatformUtil.IsWindowsPlatform() ? ".exe" : string.Empty;
     }
 }

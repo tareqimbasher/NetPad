@@ -20,8 +20,9 @@ public class CompilationInput
         // Another reason to use OutputKind.ConsoleApplication is we are using top-level statements, which we cannot
         // compile the assembly with if set to OutputKind.DynamicallyLinkedLibrary.
         OutputKind = OutputKind.ConsoleApplication;
-        TargetFrameworkVersion = targetFrameworkVersion;
         Code = code;
+        TargetFrameworkVersion = targetFrameworkVersion;
+        OptimizationLevel = OptimizationLevel.Debug;
         AssemblyImageReferences = assemblyImageReferences ?? new HashSet<byte[]>();
         AssemblyFileReferences = assemblyFileReferences ?? new HashSet<string>();
     }
@@ -30,6 +31,7 @@ public class CompilationInput
     public DotNetFrameworkVersion TargetFrameworkVersion { get; private set; }
     public string Code { get; }
     public string? OutputAssemblyNameTag { get; private set; }
+    public OptimizationLevel OptimizationLevel { get; private set; }
     public bool UseAspNet { get; private set; }
     public HashSet<byte[]> AssemblyImageReferences { get; }
     public HashSet<string> AssemblyFileReferences { get; }
@@ -49,6 +51,12 @@ public class CompilationInput
     public CompilationInput WithUseAspNet(bool useAspNet = true)
     {
         UseAspNet = useAspNet;
+        return this;
+    }
+
+    public CompilationInput WithOptimizationLevel(OptimizationLevel level)
+    {
+        OptimizationLevel = level;
         return this;
     }
 }

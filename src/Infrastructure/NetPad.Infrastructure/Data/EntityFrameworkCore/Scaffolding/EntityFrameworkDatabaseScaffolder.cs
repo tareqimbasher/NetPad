@@ -79,14 +79,14 @@ class Program
     }
 }");
 
-        await _project.AddPackageAsync(new PackageReference(
+        await _project.AddReferenceAsync(new PackageReference(
             _connection.EntityFrameworkProviderName,
             _connection.EntityFrameworkProviderName,
             await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_targetFrameworkVersion, _connection.EntityFrameworkProviderName)
             ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
         ));
 
-        await _project.AddPackageAsync(new PackageReference(
+        await _project.AddReferenceAsync(new PackageReference(
             "Microsoft.EntityFrameworkCore.Design",
             "Microsoft.EntityFrameworkCore.Design",
             await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_targetFrameworkVersion)

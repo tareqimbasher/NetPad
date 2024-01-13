@@ -1,10 +1,10 @@
 <template class="d-flex align-items-center" style="overflow-x: auto">
-    <div class="d-flex">
-        <button class="btn btn-sm btn-themed text-green me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
+    <div class="group">
+        <button class="run-button btn btn-sm btn-themed me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
                 show.bind="environment.status !== 'Running'"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
-            <i class="run-icon"></i>
+            <i class="run-icon text-green"></i>
         </button>
         <button class="btn btn-danger me-2"
                 show.bind="environment.status === 'Running'"
@@ -24,16 +24,17 @@
             <i class="properties-icon"></i>
         </button>
     </div>
-    <div class="ms-5 d-flex">
+    <div class="group" title="The .NET SDK to use to run this script.">
         <b>SDK:</b>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
-                value.bind="targetFrameworkVersion"
-                title="The .NET SDK to use to run this script.">
+                value.bind="targetFrameworkVersion">
             <option value="" disabled></option>
-            <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">.NET ${framework.replace('DotNet', '')}</option>
+            <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
+                .NET ${framework.replace('DotNet', '')}
+            </option>
         </select>
     </div>
-    <div class="ms-5 d-flex">
+    <div class="group">
         <b>Kind:</b>
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"
@@ -42,7 +43,17 @@
             <option value="SQL">SQL</option>
         </select>
     </div>
-    <div class="ms-5 me-3 d-flex flex-grow-1">
+    <div class="group"
+         title="The optimization level to use. Compiler optimizations (Optimize+) will be used when Release is selected.">
+        <b>Optimize:</b>
+        <select class="form-select form-select-sm optimization-level-selector ms-3"
+                value.bind="optimizationLevel"
+                disabled.bind="environment.status === 'Running'">
+            <option model.bind="'Debug'">Debug</option>
+            <option model.bind="'Release'">Release</option>
+        </select>
+    </div>
+    <div class="group">
         <b>Connection:</b>
         <select class="form-select form-select-sm data-connection-selector ms-3"
                 value.bind="dataConnection"
@@ -54,7 +65,7 @@
             </option>
         </select>
     </div>
-    <div class="ms-auto me-3 text-truncate">
+    <div class="ms-auto me-3 text-truncate" title="Click to go to References">
         <a class="btn-link" click.trigger="openProperties()">${script.config.references.length} References</a>
     </div>
 </template>

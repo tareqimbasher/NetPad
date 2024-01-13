@@ -3,18 +3,35 @@
 toolbar {
     @include theme(background-color, scriptHeaderBackground);
     padding: 0.3rem 0.5rem;
+    flex-shrink: 0;
+
+    .group {
+        display: flex;
+        align-items: center;
+
+        &:not(:first-of-type) {
+            margin-left: 1rem;
+        }
+    }
+
+    select {
+        line-height: 1rem !important;
+    }
 
     .dotnet-runtime-selector {
         min-width: 70px;
     }
 
     .script-kind-selector {
-        min-width: 150px;
+        min-width: 100px;
     }
 
     .data-connection-selector {
-        min-width: 200px;
-        max-width: 350px;
+        min-width: 250px;
+    }
+
+    .optimization-level-selector {
+        width: 70px;
     }
 }
 

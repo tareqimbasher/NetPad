@@ -11,7 +11,8 @@ using System.Xml.Linq;
 namespace NetPad.DotNet;
 
 /// <summary>
-/// Represents a .NET C# project. Provides methods to create, delete and manage packages and assembly references.
+/// Represents a .NET C# project. Provides methods to create, delete, and manage a project,
+/// add/remove references and other utility functions.
 /// </summary>
 public class DotNetCSharpProject
 {
@@ -89,7 +90,7 @@ public class DotNetCSharpProject
 
         string dotnetOutputType = outputType == ProjectOutputType.Executable ? "Exe" : "Library";
 
-        string xml = $@"<Project Sdk=""{GetSdkName(sdkPack)}"">
+        string xml = $@"<Project Sdk=""{GetProjectSdkName(sdkPack)}"">
 
     <PropertyGroup>
         <OutputType>{dotnetOutputType}</OutputType>
@@ -102,11 +103,6 @@ public class DotNetCSharpProject
 ";
 
         await File.WriteAllTextAsync(ProjectFilePath, xml);
-    }
-
-    public static string GetSdkName(DotNetSdkPack pack)
-    {
-        return pack == DotNetSdkPack.AspNetApp ? "Microsoft.NET.Sdk.Web" : "Microsoft.NET.Sdk";
     }
 
     /// <summary>
@@ -122,7 +118,24 @@ public class DotNetCSharpProject
         return Task.CompletedTask;
     }
 
-    public async Task SetProjectAttributeAsync(string attributeName, object? value)
+    /// <summary>
+    /// Modifies the project file by applying the specified modification action to the root "Project" XML node.
+    /// </summary>
+    /// <param name="modification">The modification to apply to the project's root element.</param>
+    /// <exception cref="FormatException"></exception>
+    /// <remarks>
+    /// Note that this method locks the project file in memory, no other calls to ModifyProjectFileAsync() should
+    /// take place inside the Action handler.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// await ModifyProjectFileAsync(root =>
+    /// {
+    ///     // root is the "Project" XML node
+    /// });
+    /// </code>
+    /// </example>
+    public async Task ModifyProjectFileAsync(Action<XElement> modification)
     {
         await _projectFileLock.WaitAsync();
 
@@ -134,49 +147,10 @@ public class DotNetCSharpProject
 
             if (root == null)
             {
-                throw new FormatException("Project XML file is not formatted correctly.");
+                throw new FormatException("Project XML file is not formatted correctly. Could not find the root \"Project\" XML node.");
             }
 
-            root.SetAttributeValue(attributeName, value);
-
-            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
-        }
-        finally
-        {
-            _projectFileLock.Release();
-        }
-    }
-
-    public async Task SetProjectPropertyAsync(string propertyName, string? value)
-    {
-        await _projectFileLock.WaitAsync();
-
-        try
-        {
-            var xmlDoc = XDocument.Load(ProjectFilePath);
-
-            var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-            if (root == null)
-            {
-                throw new FormatException("Project XML file is not formatted correctly.");
-            }
-
-            var projectProperties = root.Elements("PropertyGroup").FirstOrDefault();
-
-            if (projectProperties == null)
-            {
-                throw new FormatException("Project XML file is not formatted correctly.");
-            }
-
-            var property = projectProperties.Elements(propertyName).FirstOrDefault();
-            if (property == null)
-            {
-                property = new XElement(propertyName);
-                projectProperties.Add(property);
-            }
-
-            property.SetValue(value ?? string.Empty);
+            modification(root);
 
             await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
         }
@@ -187,7 +161,58 @@ public class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Runs 'dotnet restore' on project
+    /// Sets a project attribute.
+    /// </summary>
+    /// <param name="attributeName">The name of the attribute to set.</param>
+    /// <param name="value">The value to set for the attribute.</param>
+    /// <remarks>
+    /// This method modifies the project file by setting the specified attribute on the root Project XML node
+    /// to the given value.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// await SetProjectAttributeAsync("Sdk", "Microsoft.NET.Sdk");
+    /// </code>
+    /// </example>
+    public async Task SetProjectAttributeAsync(string attributeName, object? value)
+    {
+        await ModifyProjectFileAsync(root => root.SetAttributeValue(attributeName, value));
+    }
+
+    /// <summary>
+    /// Sets the value of a project property in the first found "PropertyGroup" XML node.
+    /// </summary>
+    /// <param name="propertyName">The name of the project property to set.</param>
+    /// <param name="value">The value to set for the property.</param>
+    /// <example>
+    /// <code>
+    /// await SetProjectPropertyAsync("Nullable", "enable");
+    /// </code>
+    /// </example>
+    public async Task SetProjectPropertyAsync(string propertyName, string? value)
+    {
+        await ModifyProjectFileAsync(root =>
+        {
+            var projectProperties = root.Elements("PropertyGroup").FirstOrDefault();
+
+            if (projectProperties == null)
+            {
+                throw new FormatException("Project XML file is not formatted correctly. Could not find a \"PropertyGroup\" XML node.");
+            }
+
+            var property = projectProperties.Elements(propertyName).FirstOrDefault();
+            if (property == null)
+            {
+                property = new XElement(propertyName);
+                projectProperties.Add(property);
+            }
+
+            property.SetValue(value ?? string.Empty);
+        });
+    }
+
+    /// <summary>
+    /// Runs 'dotnet restore' on project.
     /// </summary>
     public virtual async Task RestoreAsync()
     {
@@ -208,7 +233,11 @@ public class DotNetCSharpProject
         }
     }
 
-
+    /// <summary>
+    /// Adds a reference to this project.
+    /// </summary>
+    /// <param name="reference">The reference to add.</param>
+    /// <exception cref="InvalidOperationException">When the type of Reference being added is unsupported.</exception>
     public Task AddReferenceAsync(Reference reference)
     {
         if (reference is AssemblyFileReference assemblyFileReference)
@@ -226,9 +255,14 @@ public class DotNetCSharpProject
             return AddPackageAsync(packageReference);
         }
 
-        throw new InvalidOperationException("Unhandled reference type.");
+        throw new InvalidOperationException($"Unhandled reference type: {reference.GetType().FullName}");
     }
 
+    /// <summary>
+    /// Removes a reference to this project.
+    /// </summary>
+    /// <param name="reference">The reference to remove.</param>
+    /// <exception cref="InvalidOperationException">When the type of Reference being removed is unsupported.</exception>
     public Task RemoveReferenceAsync(Reference reference)
     {
         if (reference is AssemblyFileReference assemblyFileReference)
@@ -246,7 +280,7 @@ public class DotNetCSharpProject
             return RemovePackageAsync(packageReference);
         }
 
-        throw new InvalidOperationException("Unhandled reference type.");
+        throw new InvalidOperationException($"Unhandled reference type: {reference.GetType().FullName}");
     }
 
     public async Task AddReferencesAsync(IEnumerable<Reference> references)
@@ -270,7 +304,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The assembly reference to add.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task AddAssemblyFileReferenceAsync(AssemblyFileReference reference)
+    private async Task AddAssemblyFileReferenceAsync(AssemblyFileReference reference)
     {
         if (_references.Contains(reference))
         {
@@ -298,7 +332,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The assembly reference to remove.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task RemoveAssemblyFileReferenceAsync(AssemblyFileReference reference)
+    private async Task RemoveAssemblyFileReferenceAsync(AssemblyFileReference reference)
     {
         if (!_references.Contains(reference))
         {
@@ -326,7 +360,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The assembly reference to add.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task AddAssemblyImageReferenceAsync(AssemblyImageReference reference)
+    private async Task AddAssemblyImageReferenceAsync(AssemblyImageReference reference)
     {
         if (_references.Contains(reference))
         {
@@ -358,7 +392,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The assembly reference to remove.</param>
     /// <exception cref="FormatException">Thrown if the project file XML is not formatted properly.</exception>
-    public virtual async Task RemoveAssemblyImageReferenceAsync(AssemblyImageReference reference)
+    private async Task RemoveAssemblyImageReferenceAsync(AssemblyImageReference reference)
     {
         if (!_references.Contains(reference))
         {
@@ -391,7 +425,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The package to add.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    public virtual async Task AddPackageAsync(PackageReference reference)
+    private async Task AddPackageAsync(PackageReference reference)
     {
         if (_references.Contains(reference))
         {
@@ -433,7 +467,7 @@ public class DotNetCSharpProject
     /// </summary>
     /// <param name="reference">The package to remove.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    public virtual async Task RemovePackageAsync(PackageReference reference)
+    private async Task RemovePackageAsync(PackageReference reference)
     {
         if (!_references.Contains(reference))
         {
@@ -573,5 +607,13 @@ public class DotNetCSharpProject
         }
 
         if (!Directory.Exists(PackageCacheDirectoryPath)) Directory.CreateDirectory(PackageCacheDirectoryPath);
+    }
+
+    /// <summary>
+    /// Returns the name of the project SDK based on the provided <see cref="DotNetSdkPack"/>.
+    /// </summary>
+    public static string GetProjectSdkName(DotNetSdkPack pack)
+    {
+        return pack == DotNetSdkPack.AspNetApp ? "Microsoft.NET.Sdk.Web" : "Microsoft.NET.Sdk";
     }
 }

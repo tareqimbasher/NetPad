@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Xml.Linq;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
@@ -86,10 +87,9 @@ public class AppOmniSharpServer
 
         await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
 
-        foreach (var assemblyPath in _environment.GetScriptRuntimeUserAccessibleAssemblies())
-        {
-            await Project.AddAssemblyFileReferenceAsync(new AssemblyFileReference(assemblyPath));
-        }
+        await SetPreprocessorSymbolsAsync();
+
+        await Project.AddReferencesAsync(_environment.GetScriptRuntimeUserAccessibleAssemblies().Select(a => new AssemblyFileReference(a)));
 
         await Project.RestoreAsync();
 
@@ -100,6 +100,30 @@ public class AppOmniSharpServer
         await _eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
 
         return true;
+    }
+
+    private async Task SetPreprocessorSymbolsAsync()
+    {
+        await Project.ModifyProjectFileAsync(root =>
+        {
+            var existing = root.Elements()
+                .FirstOrDefault(el =>
+                {
+                    var children = el.Elements().ToArray();
+
+                    return children.Length == 1 && children[0].Name == "DefineConstants";
+                });
+
+            // Remove the existing group
+            existing?.Remove();
+
+            var symbols = string.Join(";", PreprocessorSymbols.For(_environment.Script.Config.OptimizationLevel)) + ";";
+
+            // Add a new group
+            root.Add(XElement.Parse(@$"<PropertyGroup>
+    <DefineConstants>{symbols}</DefineConstants>
+</PropertyGroup>"));
+        });
     }
 
     /// <summary>
@@ -276,11 +300,19 @@ public class AppOmniSharpServer
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 
+        Subscribe<ScriptOptimizationLevelUpdatedEvent>(async ev =>
+        {
+            if (ev.Script.Id != _environment.Script.Id) return;
+
+            await SetPreprocessorSymbolsAsync();
+            await NotifyOmniSharpServerProjectFileChangedAsync();
+        });
+
         Subscribe<ScriptUseAspNetUpdatedEvent>(async ev =>
         {
             if (ev.Script.Id != _environment.Script.Id) return;
 
-            await Project.SetProjectAttributeAsync("Sdk", DotNetCSharpProject.GetSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
+            await Project.SetProjectAttributeAsync("Sdk", DotNetCSharpProject.GetProjectSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 

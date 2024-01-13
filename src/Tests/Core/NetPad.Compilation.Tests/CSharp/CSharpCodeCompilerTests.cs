@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
@@ -92,11 +93,11 @@ public class CSharpCodeCompilerTests
 
         if (expectedLangVersion == null)
         {
-            Assert.ThrowsAny<Exception>(() => compiler.GetParseOptions(targetFrameworkVersion));
+            Assert.ThrowsAny<Exception>(() => compiler.GetParseOptions(targetFrameworkVersion, OptimizationLevel.Debug));
         }
         else
         {
-            CSharpParseOptions parseOptions = compiler.GetParseOptions(targetFrameworkVersion);
+            CSharpParseOptions parseOptions = compiler.GetParseOptions(targetFrameworkVersion, OptimizationLevel.Debug);
             Assert.Equal(expectedLangVersion, parseOptions.LanguageVersion);
         }
     }

@@ -129,6 +129,7 @@ public partial class ExternalProcessScriptRuntime
                     referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
                     referenceAssemblyPaths)
                 .WithOutputAssemblyNameTag(_script.Name)
+                .WithOptimizationLevel(_script.Config.OptimizationLevel)
                 .WithUseAspNet(_script.Config.UseAspNet);
 
             var compilationResult = _codeCompiler.Compile(compilationInput);
