@@ -961,8 +961,8 @@ public class NuGetPackageProvider : IPackageProvider
             return false;
         }
 
-        string dirPath = Path.Combine(GetNuGetCacheDirectoryPath(), packageIdentity.Id.ToLower(),
-            packageIdentity.Version.ToString().ToLower());
+        string dirPath = Path.Combine(GetNuGetCacheDirectoryPath(), packageIdentity.Id.ToLowerInvariant(),
+            packageIdentity.Version.ToString().ToLowerInvariant());
         if (TryGetPath(dirPath, out string? installPath))
             return installPath;
 
