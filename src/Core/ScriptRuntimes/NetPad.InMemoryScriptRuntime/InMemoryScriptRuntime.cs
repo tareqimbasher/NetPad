@@ -175,8 +175,7 @@ public sealed class InMemoryScriptRuntime : IScriptRuntime
                 fullProgram,
                 _script.Config.TargetFrameworkVersion,
                 referenceAssemblyImages.Select(a => a.Image).ToHashSet(),
-                referenceAssemblyPaths)
-            .WithOutputAssemblyNameTag(_script.Name));
+                referenceAssemblyPaths));
 
         if (!compilationResult.Success)
         {
