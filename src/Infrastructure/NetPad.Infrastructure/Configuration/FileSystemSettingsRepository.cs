@@ -35,7 +35,7 @@ public class FileSystemSettingsRepository : ISettingsRepository
 
             // Validate settings file has a valid version
             var jsonRoot = JsonDocument.Parse(json).RootElement;
-            if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLower(), out var versionProp)
+            if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLowerInvariant(), out var versionProp)
                 || !Version.TryParse(versionProp.GetString(), out _))
             {
                 settings = new Settings();

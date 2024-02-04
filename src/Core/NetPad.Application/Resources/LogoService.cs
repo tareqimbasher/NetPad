@@ -12,6 +12,6 @@ public class LogoService : ILogoService
     public string? GetLogoPath(LogoStyle style, LogoSize size)
     {
         string sizeStr = ((int)size).ToString();
-        return Path.Combine(_hostInfo.WorkingDirectory, $"wwwroot/logo/{style.ToString().ToLower()}/{sizeStr}x{sizeStr}.png");
+        return Path.Combine(_hostInfo.WorkingDirectory, $"wwwroot/logo/{style.ToString().ToLowerInvariant()}/{sizeStr}x{sizeStr}.png");
     }
 }
