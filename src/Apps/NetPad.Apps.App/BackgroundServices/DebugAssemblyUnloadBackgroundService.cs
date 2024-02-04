@@ -8,7 +8,7 @@ namespace NetPad.BackgroundServices;
 
 /// <summary>
 /// Periodically outputs the compiled script assemblies loaded by the program into memory. This is
-/// mainly used to debug assembly unloading after script execution.
+/// mainly used to debug assembly unloading after script execution (when using InMemoryScriptRuntime only).
 /// </summary>
 public class DebugAssemblyUnloadBackgroundService : BackgroundService
 {
@@ -26,7 +26,7 @@ public class DebugAssemblyUnloadBackgroundService : BackgroundService
 
                 int count = 0;
                 var names = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.FullName)
-                    .Where(n => n?.Contains("NetPad_CompiledAssembly") == true)
+                    .Where(n => n?.Contains("NetPadScript") == true)
                     .Select(s => $"{++count}. {s?.Split(',')[0]}");
 
                 _logger.LogDebug("Loaded NetPad script assemblies (count: {Count}):\n{Assemblies}",

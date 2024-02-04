@@ -23,16 +23,14 @@ public class CSharpCodeCompiler : ICodeCompiler
 
     public CompilationResult Compile(CompilationInput input)
     {
-        string assemblyName = "NetPad_CompiledAssembly";
+        string assemblyName = "NetPadScript";
 
         if (input.OutputAssemblyNameTag != null)
         {
             assemblyName += $"_{input.OutputAssemblyNameTag}";
         }
 
-        assemblyName += Guid.NewGuid().ToString();
-
-        string assemblyFileName = assemblyName + GetCompiledFileExtension(input.OutputKind);
+        string assemblyFileName = $"{assemblyName}{GetCompiledFileExtension(input.OutputKind)}";
 
         var compilation = CreateCompilation(input, assemblyName);
 
