@@ -7,7 +7,7 @@
 
 await using var command = DataContext.Database.GetDbConnection().CreateCommand();
 
-command.CommandText = "SQL_CODE";
+command.CommandText = @"SQL_CODE";
 await DataContext.Database.OpenConnectionAsync();
 
 try
