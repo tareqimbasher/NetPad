@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using NetPad.Application;
 using NetPad.Assemblies;
 using NetPad.BackgroundServices;
@@ -86,11 +85,9 @@ public class Startup
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
         services.AddTransient<IScriptEnvironmentFactory, DefaultScriptEnvironmentFactory>();
 
-
         // Select how we will run scripts, using an external process or in-memory
-        // NOTE: A different app, ex. a CLI version of NetPad, could use in-memory
+        // NOTE: A different app, ex. a CLI version of NetPad, could use AddInMemoryScriptRuntime()
         services.AddExternalProcessScriptRuntime();
-        // services.AddInMemoryScriptRuntime();
 
         // Data connections
         services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
@@ -122,10 +119,10 @@ public class Startup
         services.AddHostedService<EventForwardToIpcBackgroundService>();
         services.AddHostedService<ScriptEnvironmentBackgroundService>();
         services.AddHostedService<ScriptsFileWatcherBackgroundService>();
-        if (WebHostEnvironment.IsDevelopment())
-        {
-            //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
-        }
+
+#if DEBUG
+        //services.AddHostedService<DebugAssemblyUnloadBackgroundService>();
+#endif
 
         // Should be the last hosted service so it runs last on app start
         services.AddHostedService<AppSetupAndCleanupBackgroundService>();
@@ -171,10 +168,9 @@ public class Startup
         services.AddMediatR(new[] { typeof(Command).Assembly }.Union(pluginRegistrations.Select(pr => pr.Assembly)).ToArray());
 
         // Swagger
-        if (WebHostEnvironment.IsDevelopment())
-        {
-            SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
-        }
+#if DEBUG
+        SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
+#endif
 
         services.AddDataProtection(options =>
         {
@@ -194,28 +190,22 @@ public class Startup
     {
         var services = app.ApplicationServices;
 
-        if (env.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
+#if DEBUG
+        app.UseDeveloperExceptionPage();
+#else
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
+#endif
 
         //app.UseHttpsRedirection();
         app.UseStaticFiles();
 
-        if (!env.IsDevelopment())
-        {
-            app.UseSpaStaticFiles();
-        }
-        else
-        {
-            app.UseOpenApi();
-            app.UseSwaggerUi3();
-        }
+#if DEBUG
+        app.UseOpenApi();
+        app.UseSwaggerUi3();
+#else
+        app.UseSpaStaticFiles();
+#endif
 
         // Set host url
         var hostInfo = services.GetRequiredService<HostInfo>();
@@ -258,14 +248,10 @@ public class Startup
 
         app.UseSpa(spa =>
         {
-            // More options for serving an SPA from ASP.NET Core: https://go.microsoft.com/fwlink/?linkid=864501
-
             spa.Options.SourcePath = "App";
-
-            if (env.IsDevelopment())
-            {
-                spa.UseProxyToSpaDevelopmentServer("http://localhost:9000/");
-            }
+#if DEBUG
+            spa.UseProxyToSpaDevelopmentServer("http://localhost:9000/");
+#endif
         });
 
         // Allow ApplicationConfigurator to run any configuration
