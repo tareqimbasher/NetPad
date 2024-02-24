@@ -212,8 +212,14 @@ public partial class ExternalProcessScriptRuntime
 
         // Write compiled assembly to dir
         var fileSafeScriptName = StringUtil
-            .RemoveInvalidFileNameCharacters(_script.Name, "_")
-            .Replace(" ", "_");
+                                     .RemoveInvalidFileNameCharacters(_script.Name, "_")
+                                     .Replace(" ", "_")
+                                 // Arbitrary suffix so we don't match an assembly/asset with the same name.
+                                 // Example: Assume user names script "Microsoft.Extensions.DependencyInjection"
+                                 // If user also has a reference to "Microsoft.Extensions.DependencyInjection.dll"
+                                 // then code further below will not copy the "Microsoft.Extensions.DependencyInjection.dll"
+                                 // to the output directory, resulting in the referenced assembly not being found.
+                                 + "__";
 
         FilePath scriptAssemblyFilePath = Path.Combine(_externalProcessRootDirectory.FullName, $"{fileSafeScriptName}.dll");
 
