@@ -60,7 +60,7 @@
         "highlight.js": "^11.9.0",
         "monaco-editor": "^0.39.0",
         "path-browserify": "^1.0.1",
-        "sanitize-html": "^2.7.1",
+        "sanitize-html": "^2.12.1",
         "split.js": "^1.6.5"
     },
     "devDependencies": {
