@@ -203,7 +203,7 @@ electronize start /watch /manifest electron.manifest.dev.js
 
 ```
 # Install dependencies
-cd Apps/NetPad.Apps.App/App
+cd src/Apps/NetPad.Apps.App/App
 npm install
 
 # Start the development web server
@@ -213,7 +213,7 @@ npm run start-web
 #### 2. Run the .NET app
 
 ```
-cd Apps/NetPad.Apps.App
+cd src/Apps/NetPad.Apps.App
 dotnet watch run --environment Development
 ```
 
