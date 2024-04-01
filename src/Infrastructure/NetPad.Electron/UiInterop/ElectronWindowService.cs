@@ -145,7 +145,7 @@ public class ElectronWindowService : IUiWindowService
             Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
             AutoHideMenuBar = true,
             MinWidth = 550,
-            MinHeight = 580,
+            MinHeight = 630,
             Show = false
         }, queryParams.ToArray());
 

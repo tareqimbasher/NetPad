@@ -24,7 +24,7 @@
             <i class="properties-icon"></i>
         </button>
     </div>
-    <div class="group" title="The .NET SDK to use to run this script.">
+    <div class="group" title="The .NET SDK to use for this script.">
         <b>SDK:</b>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="targetFrameworkVersion">
@@ -44,13 +44,13 @@
         </select>
     </div>
     <div class="group"
-         title="The optimization level to use. Compiler optimizations (Optimize+) will be used when Release is selected.">
+         title="Compiler optimizations (Optimize -/+)">
         <b>Optimize:</b>
         <select class="form-select form-select-sm optimization-level-selector ms-3"
                 value.bind="optimizationLevel"
                 disabled.bind="environment.status === 'Running'">
-            <option model.bind="'Debug'">Debug</option>
-            <option model.bind="'Release'">Release</option>
+            <option model.bind="'Debug'" title="Optimize-: Optimizations disabled.">- Debug</option>
+            <option model.bind="'Release'" title="Optimize+: Optimizations enabled.">+ Release</option>
         </select>
     </div>
     <div class="group">

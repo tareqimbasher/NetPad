@@ -514,6 +514,6 @@ export const snippets = {
             "app.UseWelcomePage();",
             "await app.RunAsync(\"http://localhost:${0:5678}\");",
         ],
-        description: "create xunit test method"
+        description: "ASP.NET WebApplication"
     }
 }

@@ -113,7 +113,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
         }
 
         const apiCompletions = omnisharpCompletions.items
-            .filter(c => !c.detail || !c.detail.startsWith("NetPad."));
+            .filter(c => !c.detail || c.detail?.startsWith("NetPad.Media") || !c.detail.startsWith("NetPad."));
 
         const monacoCompletions = apiCompletions
             .map(omnisharpCompletion => this.convertToMonacoCompletionItem(model, range, omnisharpCompletion));

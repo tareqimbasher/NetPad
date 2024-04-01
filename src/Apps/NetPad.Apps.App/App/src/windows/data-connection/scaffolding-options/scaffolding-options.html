@@ -1,5 +1,5 @@
 <p class="fw-bold">
-    Options here control how the scaffolded code is generated:
+    These options control the scaffolding process:
 </p>
 
 <div class="input-row"
@@ -38,37 +38,35 @@
 
 <hr class="mb-4"/>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <b>Schemas</b>
-            <p>
-                The schemas of tables and views to generate entity types for
-                <i class="info-icon text-info"
-                   title="If no schemas are defined, all schemas are included. If this option is used, then all tables and views in the schemas will be included in the model, even if they are not explicitly included in the Tables section."></i>
-            </p>
-            <textarea value.bind="schemas"
-                      class="form-control"
-                      rows="8"
-                      spellcheck="false"
-                      placeholder="schema1
+<div class="row">
+    <div class="col">
+        <b>Schemas</b>
+        <p>
+            The schemas of tables and views to generate entity types for
+            <i class="info-icon text-info"
+               title="If no schemas are defined, all schemas are included. If this option is used, then all tables and views in the schemas will be included in the model, even if they are not explicitly included in the Tables section."></i>
+        </p>
+        <textarea value.bind="schemas"
+                  class="form-control"
+                  rows="8"
+                  spellcheck="false"
+                  placeholder="schema1
 schema2
 schema3"></textarea>
-        </div>
-        <div class="col">
-            <b>Tables</b>
-            <p>
-                The tables and views to generate entity types for
-                <i class="info-icon text-info"
-                   title="Tables or views in a specific schema can be included using the 'schema.table' or 'schema.view' format. If this option is omitted, all tables and views are included."></i>
-            </p>
-            <textarea value.bind="tables"
-                      class="form-control"
-                      rows="8"
-                      spellcheck="false"
-                      placeholder="table1
+    </div>
+    <div class="col">
+        <b>Tables</b>
+        <p>
+            The tables and views to generate entity types for
+            <i class="info-icon text-info"
+               title="Tables or views in a specific schema can be included using the 'schema.table' or 'schema.view' format. If this option is omitted, all tables and views are included."></i>
+        </p>
+        <textarea value.bind="tables"
+                  class="form-control"
+                  rows="8"
+                  spellcheck="false"
+                  placeholder="table1
 table2
 table3"></textarea>
-        </div>
     </div>
 </div>
