@@ -17,7 +17,7 @@ public static class AppDataProvider
     /// <summary>
     /// Path of where the app stores logs.
     /// </summary>
-    public static readonly DirectoryPath LogDirectoryPath = Path.Combine(AppDataDirectoryPath.Path, "Logs");
+    public static readonly DirectoryPath LogDirectoryPath = AppDataDirectoryPath.Combine("Logs");
 
     public static readonly DirectoryPath TempDirectoryPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
     public static readonly DirectoryPath ExternalProcessesDirectoryPath = TempDirectoryPath.Combine("Processes");
@@ -26,14 +26,42 @@ public static class AppDataProvider
 
     public static class Defaults
     {
-        public static DirectoryPath ScriptsDirectoryPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "Documents",
-            AppIdentifier.AppName,
-            "Scripts");
+        private static DirectoryPath? _scriptsDirectoryPath;
 
-        public static DirectoryPath AutoSaveScriptsDirectoryPath = AppDataDirectoryPath.Combine("AutoSave", "Scripts");
+        public static DirectoryPath ScriptsDirectoryPath
+        {
+            get
+            {
+                if (_scriptsDirectoryPath != null)
+                {
+                    return _scriptsDirectoryPath;
+                }
 
-        public static DirectoryPath PackageCacheDirectoryPath = AppDataDirectoryPath.Combine("Cache", "Packages");
+                DirectoryPath dir;
+
+                var documentsDir = new DirectoryPath(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Documents"));
+
+                if (documentsDir.IsWritable())
+                {
+                    dir = documentsDir.Combine(AppIdentifier.AppName, "Scripts");
+                }
+                else
+                {
+                    dir = FallbackScriptsDirectoryPath;
+                }
+
+                _scriptsDirectoryPath = dir;
+
+                return _scriptsDirectoryPath;
+            }
+        }
+
+        public static DirectoryPath FallbackScriptsDirectoryPath { get; } = AppDataDirectoryPath.Combine("Scripts");
+
+        public static DirectoryPath AutoSaveScriptsDirectoryPath { get; } = AppDataDirectoryPath.Combine("AutoSave", "Scripts");
+
+        public static DirectoryPath PackageCacheDirectoryPath { get; } = AppDataDirectoryPath.Combine("Cache", "Packages");
     }
 }
