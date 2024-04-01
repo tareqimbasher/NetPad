@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using NetPad.Configuration;
 using Xunit;
 
@@ -11,12 +12,18 @@ public class SettingsTests
     public void ScriptsDirectoryPath_Initialized_To_Correct_Directory()
     {
         var settings = new Settings();
-        var expected = Path.Combine(
+
+        var documentsDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "Documents",
             "NetPad",
             "Scripts");
 
-        Assert.Equal(expected, settings.ScriptsDirectoryPath);
+        var fallbackDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NetPad",
+            "Scripts");
+
+        Assert.Contains(new[] { documentsDir, fallbackDir }, e => e == settings.ScriptsDirectoryPath);
     }
 }

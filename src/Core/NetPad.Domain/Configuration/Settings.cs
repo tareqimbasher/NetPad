@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace NetPad.Configuration;
@@ -159,9 +160,28 @@ public class Settings : ISettingsOptions
     /// <summary>
     /// Upgrades a <see cref="Settings"/> object to the latest version.
     /// </summary>
-    /// <returns>True if changes were made, otherwise false.</returns>
+    /// <returns>Returns <see langword="true"/> if changes were made, otherwise <see langword="false"/>.</returns>
     public bool Upgrade()
     {
-        return false;
+        bool changesMade = false;
+
+        var scriptsDirWritable = Try.Run(() =>
+        {
+            if (!Directory.Exists(ScriptsDirectoryPath))
+            {
+                Directory.CreateDirectory(ScriptsDirectoryPath);
+                return true;
+            }
+
+            return FileSystemUtil.IsDirectoryWritable(ScriptsDirectoryPath);
+        });
+
+        if (!scriptsDirWritable && ScriptsDirectoryPath != AppDataProvider.Defaults.FallbackScriptsDirectoryPath.Path)
+        {
+            ScriptsDirectoryPath = AppDataProvider.Defaults.FallbackScriptsDirectoryPath.Path;
+            changesMade = true;
+        }
+
+        return changesMade;
     }
 }

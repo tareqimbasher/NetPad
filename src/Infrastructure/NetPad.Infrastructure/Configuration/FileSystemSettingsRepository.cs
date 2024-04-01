@@ -43,14 +43,14 @@ public class FileSystemSettingsRepository : ISettingsRepository
             }
 
             settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not deserialize settings file.");
-
-            if (settings.Upgrade())
-            {
-                await SaveSettingsAsync(settings);
-            }
         }
 
         settings.DefaultMissingValues();
+
+        if (settings.Upgrade())
+        {
+            await SaveSettingsAsync(settings);
+        }
 
         return settings;
     }
