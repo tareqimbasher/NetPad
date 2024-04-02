@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2020 Tareq Imbasher",
-    buildVersion: "0.6.1",
+    buildVersion: "0.7.0",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -50,6 +50,12 @@ const electronBuilderConfig = {
                 target: "rpm",
             },
             {
+                target: "flatpak",
+            },
+            {
+                target: "snap",
+            },
+            {
                 target: "zip",
             },
         ]
@@ -88,6 +94,12 @@ const electronBuilderConfig = {
         depends: ["libnotify4", "libxtst6", "libnss3"]
     },
     rpm: {
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
+    },
+    flatpak: {
+        artifactName: "${name}-${version}-${os}-${arch}.${ext}",
+    },
+    snap: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
     },
     nsis: {

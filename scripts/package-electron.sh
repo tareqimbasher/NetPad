@@ -110,7 +110,7 @@ package() {
       continue
     fi
 
-    if [[ $filename != *.exe* ]] && [[ $filename != *.zip ]] && [[ $filename != *.pacman ]] && [[ $filename != *.AppImage ]] && [[ $filename != *.deb ]] && [[ $filename != *.rpm ]]; then
+    if [[ $filename != *.exe* ]] && [[ $filename != *.zip ]] && [[ $filename != *.pacman ]] && [[ $filename != *.AppImage ]] && [[ $filename != *.deb ]] && [[ $filename != *.rpm ]] && [[ $filename != *.flatpak ]] && [[ $filename != *.snap ]]; then
       continue
     fi
 

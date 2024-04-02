@@ -85,9 +85,10 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
     * Manage namespaces
     * Standard code editor features powered by Monaco editor
     * Auto-open unsaved scripts from previous session on launch
-* Dump complex objects to the results console and export results to Excel or HTML
+* Dump complex objects to the results console
+* Export results to Excel or HTML
 * Choose the .NET SDK version you want to use per script
-* Add and use database connections
+* Add database connections and query them with LINQ
 * Run SQL queries
 * Add NuGet packages
 * Reference assemblies from disk
@@ -120,10 +121,6 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
 * Export a script as a C# project
 * Ability to run a script from the command-line
 * Git tracking of script changes
-* More advanced `Dump()` capabilities:
-    * Dump HTML controls and interact with them
-    * Dump images, SVGs, and bitmaps
-    * Dump code with syntax highlighting
 * Quality of Life:
     * User-defined results styling
     * Workspaces/Sessions
@@ -238,9 +235,10 @@ electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest 
 
 Packaged files can be found in the `bin/Desktop` folder.
 
-###### Note
+###### Notes
 
-> Alternatively, on Linux, the `/scripts/package-electron.sh` script can be used
+> 1. To build flatpak files the `flatpak` and `flatpak-builder` packages need to be installed.
+> 2. On Linux, the `/scripts/package-electron.sh` script can be used
 > to package the Electron app, in which case packaged files can be found in
 > the `/dist/` folder.
 
