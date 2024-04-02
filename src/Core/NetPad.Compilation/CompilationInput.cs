@@ -30,7 +30,7 @@ public class CompilationInput
     public OutputKind OutputKind { get; private set; }
     public DotNetFrameworkVersion TargetFrameworkVersion { get; private set; }
     public string Code { get; }
-    public string? OutputAssemblyNameTag { get; private set; }
+    public string? AssemblyName { get; private set; }
     public OptimizationLevel OptimizationLevel { get; private set; }
     public bool UseAspNet { get; private set; }
     public HashSet<byte[]> AssemblyImageReferences { get; }
@@ -42,9 +42,9 @@ public class CompilationInput
         return this;
     }
 
-    public CompilationInput WithOutputAssemblyNameTag(string? outputAssemblyNameTag)
+    public CompilationInput WithAssemblyName(string? assemblyName)
     {
-        OutputAssemblyNameTag = outputAssemblyNameTag;
+        AssemblyName = assemblyName;
         return this;
     }
 

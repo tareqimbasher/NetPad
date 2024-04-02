@@ -130,6 +130,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
                 null,
                 assemblyFileReferences)
             .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
+            .WithAssemblyName($"DataConnection_{efConnection.Id}")
         );
     }
 
