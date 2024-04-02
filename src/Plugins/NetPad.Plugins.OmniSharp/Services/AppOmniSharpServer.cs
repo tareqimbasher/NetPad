@@ -297,7 +297,16 @@ public class AppOmniSharpServer
             if (ev.Script.Id != _environment.Script.Id) return;
 
             await Project.SetProjectPropertyAsync("TargetFramework", ev.NewVersion.GetTargetFrameworkMoniker());
-            await NotifyOmniSharpServerProjectFileChangedAsync();
+
+            if (ev.Script.DataConnection == null)
+            {
+                await NotifyOmniSharpServerProjectFileChangedAsync();
+            }
+            else
+            {
+                // When target framework version changes, we need to update OmniSharp's data connection assembly references
+                _ = Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection); });
+            }
         });
 
         Subscribe<ScriptOptimizationLevelUpdatedEvent>(async ev =>
