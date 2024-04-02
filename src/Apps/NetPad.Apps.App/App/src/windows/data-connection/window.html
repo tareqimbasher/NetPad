@@ -34,7 +34,8 @@
                         </div>
                         <div class="input-column">
                             <input ref="nameField" type="text" class="form-control"
-                                   value.bind="connectionView.connection.name"/>
+                                   value.bind="connectionView.connection.name"
+                                   spellcheck="false"/>
                             <div class="invalid-feedback">
                                 Name already exists. Please choose a unique name.
                             </div>
@@ -90,6 +91,7 @@
                             <textarea class="form-control"
                                       type="text"
                                       placeholder="Auto-generated..."
+                                      spellcheck="false"
                                       disabled>${connectionString}</textarea>
                                     </div>
                                 </div>
@@ -109,7 +111,8 @@
                             <textarea class="form-control"
                                       type="text"
                                       placeholder="ex: MultipleActiveResultSets=True;"
-                                      value.bind="connectionView.connection.connectionStringAugment"></textarea>
+                                      value.bind="connectionView.connection.connectionStringAugment"
+                                      spellcheck="false"></textarea>
                                     </div>
                                 </div>
                                 <div class="input-row">

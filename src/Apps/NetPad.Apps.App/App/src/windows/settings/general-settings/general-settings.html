@@ -222,7 +222,8 @@ Only applicable when using the Integrated titlebar."></i>
                 <input type="text"
                        class="form-control"
                        value.bind="settings.dotNetSdkDirectoryPath"
-                       placeholder="Keep empty to automatically locate .NET SDK directory (Restart required)">
+                       placeholder="Keep empty to automatically locate .NET SDK directory (Restart required)"
+                       spellcheck="false">
             </div>
             <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"
@@ -236,7 +237,7 @@ Only applicable when using the Integrated titlebar."></i>
         <div class="mb-3 row">
             <label class="col-12 col-md-2 col-form-label fw-bold">Scripts</label>
             <div class="col-10 col-md-8">
-                <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath">
+                <input type="text" class="form-control" value.bind="settings.scriptsDirectoryPath" spellcheck="false">
             </div>
             <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"
@@ -250,7 +251,7 @@ Only applicable when using the Integrated titlebar."></i>
         <div class="mb-3 row">
             <label class="col-12 col-md-2 col-form-label fw-bold">Package Cache</label>
             <div class="col-10 col-md-8">
-                <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath">
+                <input type="text" class="form-control" value.bind="settings.packageCacheDirectoryPath" spellcheck="false">
             </div>
             <div class="col-2 col-md-2 text-end">
                 <button class="btn btn-secondary"

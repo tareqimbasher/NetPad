@@ -1,5 +1,5 @@
 <template show.bind="show">
-    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" value.bind="searchText & debounce"/>
+    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" spellcheck="false" value.bind="searchText & debounce"/>
     <span class="found-count ${!!searchText && !results.length ? 'none-found' : ''}" style="white-space: nowrap">
         ${(!searchText || !results.length) ? 'No results' : (currentResultNumber + ' of ' + results.length)}
     </span>

@@ -3,7 +3,8 @@
         <input type="text"
                class="form-control"
                placeholder="Search..."
-               value.bind="searchTerm"/>
+               value.bind="searchTerm"
+               spellcheck="false"/>
         <i class="action-icon case-sensitive-icon ms-3 me-3 ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
             title="Match case"></i>
