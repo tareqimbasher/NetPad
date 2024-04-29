@@ -81,7 +81,7 @@
         "cross-env": "^7.0.3",
         "css-loader": "^6.7.1",
         "dotenv-webpack": "^8.0.0",
-        "electron-builder": "^24.0.0",
+        "electron-builder": "^24.13.3",
         "eslint": "^8.47.0",
         "html-webpack-plugin": "^5.5.0",
         "htmlhint": "^1.1.4",
