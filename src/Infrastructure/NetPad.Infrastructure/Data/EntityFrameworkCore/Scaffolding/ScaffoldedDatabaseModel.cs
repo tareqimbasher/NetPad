@@ -15,6 +15,8 @@ public class ScaffoldedDatabaseModel
 
     public ScaffoldedSourceFile DbContextFile => SourceFiles.Single(f => f.IsDbContext);
 
+    public ScaffoldedSourceFile? DbContextCompiledModelFile => SourceFiles.FirstOrDefault(f => f.IsDbContextCompiledModel);
+
     public void AddFile(ScaffoldedSourceFile file)
     {
         if (file.IsDbContext && SourceFiles.Any(f => f.IsDbContext))

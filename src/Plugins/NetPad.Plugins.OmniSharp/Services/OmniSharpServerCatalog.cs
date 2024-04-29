@@ -66,7 +66,7 @@ public class OmniSharpServerCatalog
             serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
             serviceScope.ServiceProvider.GetRequiredService<IDotNetInfo>(),
             serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
-            serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptProject>>()
+            serviceScope.ServiceProvider.GetRequiredService<ILogger<OmniSharpProject>>()
         );
 
         _logger.LogDebug("Initialized a new {Type} for script {Script}",

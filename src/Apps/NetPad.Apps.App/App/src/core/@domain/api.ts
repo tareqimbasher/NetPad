@@ -7150,6 +7150,7 @@ export class ScaffoldOptions implements IScaffoldOptions {
     useDatabaseNames!: boolean;
     schemas!: string[];
     tables!: string[];
+    optimizeDbContext!: boolean;
 
     constructor(data?: IScaffoldOptions) {
         if (data) {
@@ -7178,6 +7179,7 @@ export class ScaffoldOptions implements IScaffoldOptions {
                 for (let item of _data["tables"])
                     this.tables!.push(item);
             }
+            this.optimizeDbContext = _data["optimizeDbContext"];
         }
     }
 
@@ -7202,6 +7204,7 @@ export class ScaffoldOptions implements IScaffoldOptions {
             for (let item of this.tables)
                 data["tables"].push(item);
         }
+        data["optimizeDbContext"] = this.optimizeDbContext;
         return data;
     }
 
@@ -7218,6 +7221,7 @@ export interface IScaffoldOptions {
     useDatabaseNames: boolean;
     schemas: string[];
     tables: string[];
+    optimizeDbContext: boolean;
 }
 
 export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IPostgreSqlDatabaseConnection {

@@ -1,27 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetPad.IO;
-
-public class ProcessStartResult
-{
-    public ProcessStartResult(bool success, Task<int> waitForExitTask)
-    {
-        Success = success;
-        WaitForExitTask = waitForExitTask;
-    }
-
-    /// <summary>
-    /// Indicates if the process was started successfully or not.
-    /// </summary>
-    public bool Success { get; }
-
-    /// <summary>
-    /// A task that completes when the process terminates. It returns the process exit code.
-    /// </summary>
-    public Task<int> WaitForExitTask { get; }
-}
 
 public sealed class ProcessHandler : IDisposable
 {
@@ -31,7 +15,6 @@ public sealed class ProcessHandler : IDisposable
     private ProcessIO? _io;
     private ProcessStartInfo? _processStartInfo;
     private Task<int>? _processStartTask;
-    private bool _isDisposed;
 
     public ProcessHandler(string commandText) : this(commandText, null)
     {
@@ -67,10 +50,8 @@ public sealed class ProcessHandler : IDisposable
         }
     }
 
-    public ProcessStartResult StartProcess()
+    public ProcessStartResult StartProcess(CancellationToken cancellationToken = default)
     {
-        EnsureNotDisposed();
-
         Init();
 
         var process = _process!;
@@ -82,9 +63,9 @@ public sealed class ProcessHandler : IDisposable
         process.Start();
 
         // We have to wait for the process or otherwise it exists shortly after its spawned
-        _processStartTask = Task.Run(() =>
+        _processStartTask = Task.Run(async () =>
         {
-            process.WaitForExit();
+            await process.WaitForExitAsync(cancellationToken);
 
             try
             {
@@ -107,8 +88,6 @@ public sealed class ProcessHandler : IDisposable
 
     public void StopProcess()
     {
-        EnsureNotDisposed();
-
         if (_process != null)
         {
             if (_process.IsProcessRunning())
@@ -138,26 +117,13 @@ public sealed class ProcessHandler : IDisposable
         StartProcess();
     }
 
-    public void Dispose()
-    {
-        StopProcess();
-        _isDisposed = true;
-    }
-
     private void Init()
     {
-        EnsureNotDisposed();
-
         if (_processStartInfo == null)
         {
             _processStartInfo = new ProcessStartInfo(_commandText!)
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+                .WithRedirectIO()
+                .WithNoUi();
 
             if (!string.IsNullOrWhiteSpace(_args))
                 _processStartInfo.Arguments = _args;
@@ -177,11 +143,101 @@ public sealed class ProcessHandler : IDisposable
         }
     }
 
-    private void EnsureNotDisposed()
+    public void Dispose()
     {
-        if (_isDisposed)
+        StopProcess();
+    }
+
+    public static Task<ProcessRunResult> RunAsync(string fileName, string? arguments = null, CancellationToken cancellationToken = default)
+    {
+        var processStartInfo = arguments == null ? new ProcessStartInfo(fileName) : new ProcessStartInfo(fileName, arguments);
+        processStartInfo.WithRedirectIO();
+        processStartInfo.WithNoUi();
+
+        return RunAsync(processStartInfo, cancellationToken);
+    }
+
+    public static async Task<ProcessRunResult> RunAsync(ProcessStartInfo processStartInfo, CancellationToken cancellationToken = default)
+    {
+        using var handler = new ProcessHandler(processStartInfo);
+
+        var output = new List<string>();
+        var errors = new List<string>();
+
+        handler.IO.OnOutputReceivedHandlers.Add(text =>
         {
-            throw new ObjectDisposedException(nameof(ProcessHandler), "The process handler is disposed.");
+            output.Add(text);
+            return Task.CompletedTask;
+        });
+
+        handler.IO.OnErrorReceivedHandlers.Add(text =>
+        {
+            errors.Add(text);
+            return Task.CompletedTask;
+        });
+
+        var startResult = handler.StartProcess(cancellationToken);
+
+        if (!startResult.Success)
+        {
+            return new ProcessRunResult(int.MinValue, output, new List<string>() { "Could not start process." });
+        }
+
+        await startResult.WaitForExitTask;
+
+        return new ProcessRunResult(handler.Process.ExitCode, output, errors);
+    }
+}
+
+public class ProcessStartResult
+{
+    public ProcessStartResult(bool success, Task<int> waitForExitTask)
+    {
+        Success = success;
+        WaitForExitTask = waitForExitTask;
+    }
+
+    /// <summary>
+    /// Indicates if the process was started successfully or not.
+    /// </summary>
+    public bool Success { get; }
+
+    /// <summary>
+    /// A task that completes when the process terminates. It returns the process exit code.
+    /// </summary>
+    public Task<int> WaitForExitTask { get; }
+}
+
+public class ProcessRunResult
+{
+    public ProcessRunResult(int exitCode, List<string> output, List<string>? errors = null)
+    {
+        ExitCode = exitCode;
+        Output = output;
+        Errors = errors ?? new List<string>();
+    }
+
+    public int ExitCode { get; }
+    public List<string> Output { get; }
+    public List<string> Errors { get; }
+    public bool Success => ExitCode == 0;
+    public bool HasError => ExitCode != 0;
+
+    public string? GetErrorMessage()
+    {
+        if (!HasError)
+        {
+            return null;
+        }
+
+        return !Errors.Any() ? Output.JoinToString(Environment.NewLine) : Errors.JoinToString(Environment.NewLine);
+    }
+
+    public void EnsureSuccessful()
+    {
+        if (HasError)
+        {
+            throw new Exception(GetErrorMessage());
         }
     }
 }

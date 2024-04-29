@@ -12,13 +12,6 @@
         overflow-y: auto;
     }
 
-    .connection-details {
-        > .row,
-        fieldset > .row {
-            margin-bottom: 1rem;
-        }
-    }
-
     .connection-type-logo {
         max-width: 1rem;
 
@@ -50,7 +43,6 @@
 
     .label-column {
         width: 160px;
-        min-width: 150px;
         font-size: 1rem;
         line-height: 1rem;
     }
@@ -67,5 +59,16 @@
 
     .auth-input {
         max-width: 230px;
+    }
+
+    .general-settings {
+        padding: 0 1rem;
+    }
+
+    .scaffolding-settings {
+        .input-column {
+            display: flex;
+            gap: 0.2rem;
+        }
     }
 }

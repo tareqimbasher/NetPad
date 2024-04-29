@@ -54,5 +54,31 @@ public static class ProcessUtil
         }
 
         using var p = Process.Start("chmod", $"+x {filePath}");
+
+        p.WaitForExit();
+    }
+
+    public static ProcessStartInfo WithWorkingDirectory(this ProcessStartInfo processStartInfo, string workingDirectory)
+    {
+        processStartInfo.WorkingDirectory = workingDirectory;
+        return processStartInfo;
+    }
+
+    public static ProcessStartInfo WithRedirectIO(this ProcessStartInfo processStartInfo)
+    {
+        processStartInfo.RedirectStandardInput = true;
+        processStartInfo.RedirectStandardOutput = true;
+        processStartInfo.RedirectStandardError = true;
+
+        return processStartInfo;
+    }
+
+    public static ProcessStartInfo WithNoUi(this ProcessStartInfo processStartInfo)
+    {
+        processStartInfo.CreateNoWindow = true;
+        processStartInfo.UseShellExecute = false;
+        processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+        return processStartInfo;
     }
 }
