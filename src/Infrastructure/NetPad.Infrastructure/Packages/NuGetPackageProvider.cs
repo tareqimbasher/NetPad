@@ -57,14 +57,15 @@ public class NuGetPackageProvider : IPackageProvider
     {
         if (skip < 0) skip = 0;
         if (take < 0) take = 0;
-        else if (take > 200) take = 200;
+        else if (take > 100) take = 100;
 
-        var sourceRepositoryProvider = GetSourceRepositoryProvider();
         var filter = new SearchFilter(includePrerelease);
         var packages = new List<PackageMetadata>();
 
-        var resources = sourceRepositoryProvider.GetRepositories()
+        var resources = GetSourceRepositoryProvider()
+            .GetRepositories()
             .Select(r => r.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false));
+
         foreach (var resource in resources)
         {
             var searchResource = await resource;
@@ -76,7 +77,6 @@ public class NuGetPackageProvider : IPackageProvider
                 NuGetNullLogger.Instance,
                 cancellationToken ?? CancellationToken.None
             ).ConfigureAwait(false);
-
 
             foreach (var searchResult in searchResults)
             {
@@ -895,7 +895,6 @@ public class NuGetPackageProvider : IPackageProvider
             NuGet.Configuration.Settings.DefaultSettingsFileName
         );
 
-        // TODO Give user ability to configure additional package sources
         var sourceProvider = new PackageSourceProvider(settings, new[]
         {
             new PackageSource(NugetApiUri)
