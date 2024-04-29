@@ -56,6 +56,11 @@ export class DataConnectionsList extends ViewModelBase {
                 }
             },
             {
+                icon: "copy-icon",
+                text: "Create Similar Connection",
+                onSelected: async (target) => this.copyConnection(this.getElementOrParentDataConnectionId(target))
+            },
+            {
                 isDivider: true
             },
             {
@@ -188,11 +193,15 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async addConnection() {
-        await this.dataConnectionService.openDataConnectionWindow(null);
+        await this.dataConnectionService.openDataConnectionWindow(null, false);
     }
 
     public async editConnection(connectionId: string) {
-        await this.dataConnectionService.openDataConnectionWindow(connectionId);
+        await this.dataConnectionService.openDataConnectionWindow(connectionId, false);
+    }
+
+    public async copyConnection(connectionId: string) {
+        await this.dataConnectionService.openDataConnectionWindow(connectionId, true);
     }
 
     public async delete(connectionId: string) {

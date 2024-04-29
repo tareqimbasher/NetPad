@@ -24,9 +24,9 @@ public class DataConnectionsController : Controller
     }
 
     [HttpPatch("open")]
-    public async Task OpenDataConnectionWindow([FromServices] IUiWindowService uiWindowService, [FromQuery] Guid? dataConnectionId = null)
+    public async Task OpenDataConnectionWindow([FromServices] IUiWindowService uiWindowService, [FromQuery] Guid? dataConnectionId = null, [FromQuery] bool copy = false)
     {
-        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId);
+        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy);
     }
 
     [HttpGet]

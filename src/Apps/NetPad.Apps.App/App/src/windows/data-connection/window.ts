@@ -2,7 +2,7 @@ import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
-import {System} from "@common";
+import {System, Util} from "@common";
 import {IDataConnectionView} from "./connection-views/idata-connection-view";
 import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
@@ -28,8 +28,8 @@ export class Window extends WindowBase {
         super();
         this.logger = logger.scopeTo(nameof(Window));
 
-        const createNew = !this.startupOptions.get("data-connection-id");
-        document.title = createNew ? "New Data Connection" : "Edit Data Connection";
+        const params = this.getStartupParams();
+        document.title = params.createNew ? "New Data Connection" : "Edit Data Connection";
 
         this.connectionTypes = [
             {
@@ -51,10 +51,27 @@ export class Window extends WindowBase {
         }
     }
 
-    public async binding() {
+    private getStartupParams() {
         const dataConnectionId = this.startupOptions.get("data-connection-id");
-        if (dataConnectionId) {
-            const connection = await this.dataConnectionService.get(dataConnectionId);
+        const copy = this.startupOptions.get("copy")?.toLowerCase() === "true";
+
+        return {
+            createNew: !dataConnectionId || copy,
+            createCopy: copy,
+            dataConnectionId: dataConnectionId
+        }
+    }
+
+    public async binding() {
+        const params = this.getStartupParams();
+
+        if (params.dataConnectionId) {
+            const connection = await this.dataConnectionService.get(params.dataConnectionId);
+
+            if (params.createNew && params.createCopy) {
+                connection.id = Util.newGuid();
+                connection.name += " - Copy";
+            }
 
             this.connectionType = this.connectionTypes.find(c => c.type == connection.type);
 
@@ -63,17 +80,17 @@ export class Window extends WindowBase {
             this.updateConnectionString();
         }
 
-        const existingNames = await this.dataConnectionService.getAllNames();
+        const prohibitedNames = await this.dataConnectionService.getAllNames();
 
         // Remove the name of the connection being edited
         if (this.connectionView?.connection.name) {
-            const ix = existingNames.indexOf(this.connectionView.connection.name);
+            const ix = prohibitedNames.indexOf(this.connectionView.connection.name);
             if (ix >= 0) {
-                existingNames.splice(ix, 1);
+                prohibitedNames.splice(ix, 1);
             }
         }
 
-        this.prohibitedNames = existingNames;
+        this.prohibitedNames = prohibitedNames;
     }
 
     public get isConnectionValid() {

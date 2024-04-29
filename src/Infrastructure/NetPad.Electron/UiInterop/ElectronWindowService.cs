@@ -128,8 +128,13 @@ public class ElectronWindowService : IUiWindowService
         await ShowModalWindowAsync(window, 0.67, 0.8);
     }
 
-    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
     {
+        if (copy && dataConnectionId == null)
+        {
+            throw new ArgumentException("Data connection id must be provided when copying a connection.");
+        }
+
         const string windowName = "data-connection";
 
         if (_windowManager.FocusExistingWindowIfOpen(windowName))
@@ -138,7 +143,16 @@ public class ElectronWindowService : IUiWindowService
         }
 
         var queryParams = new List<(string, object?)>();
-        if (dataConnectionId != null) queryParams.Add(("data-connection-id", dataConnectionId));
+
+        if (dataConnectionId != null)
+        {
+            queryParams.Add(("data-connection-id", dataConnectionId));
+        }
+
+        if (copy)
+        {
+            queryParams.Add(("copy", "true"));
+        }
 
         var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
         {

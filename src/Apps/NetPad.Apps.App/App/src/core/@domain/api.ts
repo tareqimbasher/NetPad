@@ -379,7 +379,7 @@ export class AssembliesApiClient extends ApiClientBase implements IAssembliesApi
 
 export interface IDataConnectionsApiClient {
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]>;
 
@@ -415,10 +415,14 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
     }
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/data-connections/open?";
         if (dataConnectionId !== undefined && dataConnectionId !== null)
             url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
+        if (copy === null)
+            throw new Error("The parameter 'copy' cannot be null.");
+        else if (copy !== undefined)
+            url_ += "copy=" + encodeURIComponent("" + copy) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
