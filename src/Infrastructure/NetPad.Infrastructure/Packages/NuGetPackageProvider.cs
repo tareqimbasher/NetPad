@@ -60,38 +60,35 @@ public class NuGetPackageProvider : IPackageProvider
         else if (take > 200) take = 200;
 
         var sourceRepositoryProvider = GetSourceRepositoryProvider();
-
-        // TODO we'd want to show results from multiple repositories in the near future
-        var repository = sourceRepositoryProvider.GetRepositories().First();
-        var searchResource = await repository.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false);
-
         var filter = new SearchFilter(includePrerelease);
-
-        // TODO filter results for packages that support current framework
-        // This does not seem to have any effect
-        //filter.SupportedFrameworks = new[] { BadGlobals.TargetFramework };
-
-        IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
-            term,
-            filter,
-            skip,
-            take,
-            NuGetNullLogger.Instance,
-            cancellationToken ?? CancellationToken.None
-        ).ConfigureAwait(false);
-
         var packages = new List<PackageMetadata>();
 
-        foreach (var searchResult in searchResults)
+        var resources = sourceRepositoryProvider.GetRepositories()
+            .Select(r => r.GetResourceAsync<PackageSearchResource>().ConfigureAwait(false));
+        foreach (var resource in resources)
         {
-            var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
-            await MapAsync(searchResult, metadata);
-            packages.Add(metadata);
-        }
+            var searchResource = await resource;
+            IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
+                term,
+                filter,
+                skip,
+                take,
+                NuGetNullLogger.Instance,
+                cancellationToken ?? CancellationToken.None
+            ).ConfigureAwait(false);
 
-        if (loadMetadata)
-        {
-            await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
+
+            foreach (var searchResult in searchResults)
+            {
+                var metadata = new PackageMetadata(searchResult.Identity.Id, searchResult.Title);
+                await MapAsync(searchResult, metadata);
+                packages.Add(metadata);
+            }
+
+            if (loadMetadata)
+            {
+                await HydrateMetadataAsync(packages, TimeSpan.FromSeconds(packages.Count * 5));
+            }
         }
 
         return packages.ToArray();
@@ -603,6 +600,11 @@ public class NuGetPackageProvider : IPackageProvider
                     NuGetNullLogger.Instance,
                     cancellationToken);
 
+                if (metadata == null)
+                {
+                    return;
+                }
+
                 var package = new PackageMetadata(packageIdentity.Id, string.Empty);
 
                 if (cancellationToken.IsCancellationRequested)
@@ -655,6 +657,11 @@ public class NuGetPackageProvider : IPackageProvider
                     sourceCacheContext,
                     NuGetNullLogger.Instance,
                     cancellationTokenSource.Token);
+
+                if (metadata == null)
+                {
+                    continue;
+                }
 
                 await MapAsync(metadata, package);
                 found.Add(package);
@@ -884,8 +891,12 @@ public class NuGetPackageProvider : IPackageProvider
 
     private SourceRepositoryProvider GetSourceRepositoryProvider()
     {
+        var settings = NuGet.Configuration.Settings.LoadDefaultSettings(
+            NuGet.Configuration.Settings.DefaultSettingsFileName
+        );
+
         // TODO Give user ability to configure additional package sources
-        var sourceProvider = new PackageSourceProvider(NullSettings.Instance, new[]
+        var sourceProvider = new PackageSourceProvider(settings, new[]
         {
             new PackageSource(NugetApiUri)
         });
