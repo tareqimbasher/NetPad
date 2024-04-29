@@ -58,11 +58,16 @@ The latest version can be downloaded from the [Releases](https://github.com/tare
 
 ## Contribution
 
-Maintenance of this project is made possible by all the <a href="https://github.com/tareqimbasher/NetPad/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/tareqimbasher">sponsors</a>. A special thanks to all of you!
+All Pull Requests, feedback and contributions are welcome!
+
+Also a special thanks to the NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">sponsors</a>. Sponsorships
+help pay for builds and helps me maintain this project.
 
 <a href="https://github.com/hamedwiz"><img src="https://github.com/hamedwiz.png" width="50px" alt="hamedwiz" /></a>&nbsp;&nbsp;
 <a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>&nbsp;&nbsp;
 <a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>&nbsp;&nbsp;
+<a href="https://github.com/jdonohoo"><img src="https://github.com/jdonohoo.png" width="50px" alt="jdonohoo" /></a>&nbsp;&nbsp;
+<a href="https://github.com/ChristopherHaws"><img src="https://github.com/ChristopherHaws.png" width="50px" alt="ChristopherHaws" /></a>&nbsp;&nbsp;
 
 If you like NetPad, please consider [sponsoring](https://github.com/sponsors/tareqimbasher) it with a cup of coffee ($5)
 a month, every bit helps me maintain this project and deliver more features. Thank you :heart:
