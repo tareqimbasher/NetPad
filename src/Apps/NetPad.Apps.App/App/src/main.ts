@@ -166,6 +166,6 @@ const app = builder.app(entryPoint);
 
 await app.start();
 
-window.addEventListener("beforeunload", () => app.stop(true));
+window.addEventListener("unload", () => app.stop(true));
 
 logger.debug("App started");
