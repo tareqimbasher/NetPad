@@ -455,6 +455,8 @@ public class DotNetCSharpProject
             {
                 await process.WaitForExitAsync();
             }
+
+            _references.Add(reference);
         }
         finally
         {
@@ -498,18 +500,9 @@ public class DotNetCSharpProject
             }
 
             // This is needed so that 'project.assets.json' file is updated properly
-            using var process2 = Process.Start(new ProcessStartInfo(dotnetExe,
-                $"restore {ProjectFilePath}")
-            {
-                UseShellExecute = false,
-                WorkingDirectory = ProjectDirectoryPath,
-                CreateNoWindow = true
-            });
+            await RestoreAsync();
 
-            if (process2 != null)
-            {
-                await process2.WaitForExitAsync();
-            }
+            _references.Remove(reference);
         }
         finally
         {
