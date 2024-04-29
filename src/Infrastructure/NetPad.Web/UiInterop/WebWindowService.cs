@@ -41,13 +41,26 @@ public class WebWindowService : IUiWindowService
         await _ipcService.SendAsync(command);
     }
 
-    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId)
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
     {
+        if (copy && dataConnectionId == null)
+        {
+            throw new ArgumentException("Data connection id must be provided when copying a connection.");
+        }
+
         var command = new OpenWindowCommand("data-connection");
         command.Options.Height = 2 / 3.0;
         command.Options.Width = 4 / 5.0;
 
-        if (dataConnectionId != null) command.Metadata.Add("data-connection-id", dataConnectionId);
+        if (dataConnectionId != null)
+        {
+            command.Metadata.Add("data-connection-id", dataConnectionId);
+        }
+
+        if (copy)
+        {
+            command.Metadata.Add("copy", "true");
+        }
 
         await _ipcService.SendAsync(command);
     }
