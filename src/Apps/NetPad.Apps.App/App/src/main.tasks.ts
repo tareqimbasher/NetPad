@@ -53,7 +53,7 @@ export const stopBackgroundServices = async (container: IContainer) => {
 
             const dispose = backgroundService["dispose" as keyof typeof backgroundService];
             if (typeof dispose === "function") {
-                dispose();
+                backgroundService["dispose" as keyof typeof backgroundService]();
             }
         } catch (ex) {
             if (ex instanceof Error)
