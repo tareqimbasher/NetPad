@@ -48,7 +48,7 @@ public class AppOmniSharpServer
         IDotNetInfo dotNetInfo,
         ILogger<AppOmniSharpServer> logger,
         // ReSharper disable once ContextualLoggerProblem
-        ILogger<ScriptProject> scriptProjectLogger)
+        ILogger<OmniSharpProject> scriptProjectLogger)
     {
         _environment = environment;
         _omniSharpServerFactory = omniSharpServerFactory;
@@ -61,12 +61,12 @@ public class AppOmniSharpServer
         _logger = logger;
         _subscriptionTokens = new List<EventSubscriptionToken>();
 
-        Project = new ScriptProject(environment.Script, dotNetInfo, settings, scriptProjectLogger);
+        Project = new OmniSharpProject(environment.Script, dotNetInfo, settings, scriptProjectLogger);
     }
 
     public Guid ScriptId => _environment.Script.Id;
 
-    public ScriptProject Project { get; }
+    public OmniSharpProject Project { get; }
 
     public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer
                                                     ?? throw new InvalidOperationException(

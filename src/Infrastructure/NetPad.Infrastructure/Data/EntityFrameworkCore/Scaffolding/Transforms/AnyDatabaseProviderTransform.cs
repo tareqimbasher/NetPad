@@ -9,20 +9,25 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
 {
     public void Transform(ScaffoldedDatabaseModel model)
     {
-        AddAndUseGenericDbContext(model.DbContextFile);
-        EnsureTableMappingsForAllEntities(model.DbContextFile);
+        AddAndUseGenericDbContext(model);
+        EnsureTableMappingsForAllEntities(model);
     }
 
-    private void AddAndUseGenericDbContext(ScaffoldedSourceFile dbContextFile)
+    private void AddAndUseGenericDbContext(ScaffoldedDatabaseModel model)
     {
+        var dbContextFile = model.DbContextFile;
         if (dbContextFile.Code.Value == null) return;
 
         var sb = new StringBuilder(dbContextFile.Code.Value);
 
-        // Convert he existing DbContext to a generic class
-        sb.Replace($"partial class {dbContextFile.ClassName} : DbContext",
+        // Convert the existing DbContext to a generic class
+        sb.Replace(
+            $"partial class {dbContextFile.ClassName} : DbContext",
             $"partial class {dbContextFile.ClassName}<TContext> : DbContext where TContext : DbContext");
-        sb.Replace($"DbContextOptions<{dbContextFile.ClassName}>", "DbContextOptions<TContext>");
+
+        sb.Replace(
+            $"DbContextOptions<{dbContextFile.ClassName}>",
+            "DbContextOptions<TContext>");
 
         // Add a non-generic DbContext that inherits from the new generic DbContext
         sb.AppendLine($@"
@@ -39,18 +44,29 @@ public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbCo
 }}
 ");
 
+        // If a compiled model was generated, make generic modification on compiled model
+        var compiledModel = model.DbContextCompiledModelFile;
+        if (compiledModel?.Code.Value != null)
+        {
+            compiledModel.Code.Update(compiledModel.Code.Value.Replace(
+                $"[DbContext(typeof({EntityFrameworkDatabaseScaffolder.DbContextName}))]",
+                $"[DbContext(typeof({EntityFrameworkDatabaseScaffolder.DbContextName}<>))]"));
+        }
+
         dbContextFile.Code.Update(sb.ToString());
     }
 
-    private static void EnsureTableMappingsForAllEntities(ScaffoldedSourceFile dbContextFile)
+    private static void EnsureTableMappingsForAllEntities(ScaffoldedDatabaseModel model)
     {
+        var dbContextFile = model.DbContextFile;
+        if (dbContextFile.Code.Value == null) return;
+
         // The issue is that EF Core doesn't generate the "entity.ToTable()" statement for
         // some tables/entities in the OnModelCreating() method. As a result, changing the name
         // that EF Core gives the DbSet property will cause an error since it seemingly relies on
         // that name to get the table name, unless a "entity.ToTable()" statement maps the DbSet to the
         // proper table name. Here we explicitly add the "entity.ToTable()" statement when it doesn't
         // already exist.
-        if (dbContextFile.Code.Value == null) return;
         var lines = dbContextFile.Code.Value.Split(Environment.NewLine).ToList();
         var entityNameToDbSetName = new Dictionary<string, string>();
 

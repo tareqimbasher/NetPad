@@ -2,46 +2,49 @@
     <import from="./scaffolding-options/scaffolding-options"></import>
 
     <div class="window connection-window">
-        <div class="connection-details flex-grow-height-restricted d-flex flex-column container-fluid pt-3">
-            <div class="input-row">
-                <div class="label-column">
-                    <label class="col-form-label">Type</label>
+        <div class="flex-grow-height-restricted d-flex flex-column container-fluid pt-3">
+            <div class="general-settings">
+                <div class="input-row">
+                    <div class="label-column">
+                        <label class="col-form-label">Type</label>
+                    </div>
+                    <div class="input-column">
+                        <div class="dropdown connection-type-selector">
+                            <button class="btn btn-secondary btn-basic dropdown-toggle"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    innerHTML.bind="connectionType ? connectionType.label : 'Select a connection type...'">
+                            </button>
+                            <ul class="dropdown-menu w-100">
+                                <li repeat.for="type of connectionTypes">
+                                    <button
+                                        class="dropdown-item d-flex align-items-center ${connectionType === type ? 'active' : ''}"
+                                        click.trigger="setConnectionType(type)"
+                                        innerHTML.bind="type.label">
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-column">
-                    <div class="dropdown connection-type-selector">
-                        <button class="btn btn-secondary btn-basic dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                                innerHTML.bind="connectionType ? connectionType.label : 'Select...'">
-                        </button>
-                        <ul class="dropdown-menu w-100">
-                            <li repeat.for="type of connectionTypes">
-                                <button
-                                    class="dropdown-item d-flex align-items-center ${connectionType === type ? 'active' : ''}"
-                                    click.trigger="setConnectionType(type)"
-                                    innerHTML.bind="type.label">
-                                </button>
-                            </li>
-                        </ul>
+                <div class="input-row">
+                    <div class="label-column">
+                        <label class="col-form-label">Name</label>
+                    </div>
+                    <div class="input-column">
+                        <input ref="nameField" type="text" class="form-control"
+                               value.bind="connectionView.connection.name"
+                               spellcheck="false"
+                               disabled.bind="!connectionType"/>
+                        <div class="invalid-feedback">
+                            Name already exists. Please choose a unique name.
+                        </div>
                     </div>
                 </div>
             </div>
+
             <form class="flex-grow-height-restricted d-flex">
                 <fieldset class="flex-grow-height-restricted d-flex flex-column" disabled.bind="!connectionType">
-                    <div class="input-row">
-                        <div class="label-column">
-                            <label class="col-form-label">Name</label>
-                        </div>
-                        <div class="input-column">
-                            <input ref="nameField" type="text" class="form-control"
-                                   value.bind="connectionView.connection.name"
-                                   spellcheck="false"/>
-                            <div class="invalid-feedback">
-                                Name already exists. Please choose a unique name.
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="tabs-control-container flex-grow-height-restricted d-flex flex-column"
                          if.bind="connectionView.connection">
                         <let active-tab.bind="'Connection'"></let>
@@ -56,8 +59,9 @@
                                 <div class="nav-link">Scaffolding</div>
                             </li>
                         </ul>
+
                         <div class="tab-content-container">
-                            <div class="tab-content" show.bind="activeTab === 'Connection'">
+                            <div class="tab-content connection-settings" show.bind="activeTab === 'Connection'">
                                 <au-compose component.bind="connectionView"></au-compose>
 
                                 <div class="input-row">
@@ -88,11 +92,11 @@
                                         </a>
                                     </div>
                                     <div class="input-column">
-                            <textarea class="form-control"
-                                      type="text"
-                                      placeholder="Auto-generated..."
-                                      spellcheck="false"
-                                      disabled>${connectionString}</textarea>
+                                        <textarea class="form-control"
+                                                  type="text"
+                                                  placeholder="Auto-generated..."
+                                                  spellcheck="false"
+                                                  disabled>${connectionString}</textarea>
                                     </div>
                                 </div>
                                 <div class="input-row"
@@ -108,11 +112,11 @@
                                         </small>
                                     </div>
                                     <div class="input-column">
-                            <textarea class="form-control"
-                                      type="text"
-                                      placeholder="ex: MultipleActiveResultSets=True;"
-                                      value.bind="connectionView.connection.connectionStringAugment"
-                                      spellcheck="false"></textarea>
+                                        <textarea class="form-control"
+                                                  type="text"
+                                                  placeholder="ex: MultipleActiveResultSets=True;"
+                                                  value.bind="connectionView.connection.connectionStringAugment"
+                                                  spellcheck="false"></textarea>
                                     </div>
                                 </div>
                                 <div class="input-row">
@@ -127,8 +131,8 @@
 
                                         <div class="ms-3 d-inline-block" show.bind="testingConnectionStatus"
                                              switch.bind="testingConnectionStatus">
-                                <span case="testing" class="spinner-border spinner-border-sm text-yellow"
-                                      title="Please wait..."></span>
+                                            <span case="testing" class="spinner-border spinner-border-sm text-yellow"
+                                                  title="Please wait..."></span>
                                             <i case="success" class="check-circle-icon text-green" title="Success"></i>
                                             <i case="fail" class="warning-icon text-yellow"
                                                title="Connection failed"></i>
@@ -142,7 +146,7 @@
                                 </div>
                             </div>
 
-                            <div class="tab-content" show.bind="activeTab === 'Scaffolding'">
+                            <div class="tab-content scaffolding-settings" show.bind="activeTab === 'Scaffolding'">
                                 <scaffolding-options connection.bind="connectionView.connection"></scaffolding-options>
                             </div>
                         </div>

@@ -59,7 +59,7 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
 
         var model = await scaffolder.ScaffoldAsync();
 
-        var applicationCode = GenerateApplicationCode(model);
+        var applicationCode = GenerateApplicationCode(efDbConnection, model);
 
         return new DataConnectionSourceCode
         {
@@ -134,14 +134,14 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         );
     }
 
-    private SourceCodeCollection GenerateApplicationCode(ScaffoldedDatabaseModel model)
+    private SourceCodeCollection GenerateApplicationCode(EntityFrameworkDatabaseConnection efDbConnection, ScaffoldedDatabaseModel model)
     {
         // We want to add utility code to a partial Program class that can be used to augment the Program class in scripts.
         // The goal is to accomplish the following items, mainly for convenience while writing scripts:
         // 1. Make the Program class inherit the generated DbContext
         //    Why? - This allows users to override methods on the base DbContext, ex: the OnConfiguring(DbContextOptionsBuilder optionsBuilder) method.
         //
-        // 2. Add a a property for the generated DbContext
+        // 2. Add a property for the generated DbContext
         //    Why? - This allows users to access the DbContext instance being used in the script
         //
         // 3. Add properties for all the generated DbSet's
@@ -155,53 +155,57 @@ public class EntityFrameworkResourcesGenerator : IDataConnectionResourcesGenerat
         // in our Script top-level program
         var dbContext = model.DbContextFile;
         code.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
-            .AppendLine(@"
-{
-    public Program()
-    {
-    }
+            .AppendLine(
+                $$"""
+                  {
+                      public Program()
+                      {
+                      }
 
-    public Program(DbContextOptions<Program> options) : base(options)
-    {
-    }
+                      public Program(DbContextOptions<Program> options) : base(options)
+                      {
+                      }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder
-            .EnableSensitiveDataLogging()
-            .LogTo(
-                output =>
-                {
-                    ScriptRuntimeServices.SqlWrite(output + ""\n"");
-                }
-            );
+                      protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                      {
+                          optionsBuilder
+                              .EnableSensitiveDataLogging()
+                              .LogTo(
+                                  output =>
+                                  {
+                                      ScriptRuntimeServices.SqlWrite(output + "\n");
+                                  }
+                              );
 
-        base.OnConfiguring(optionsBuilder);
+                          base.OnConfiguring(optionsBuilder);
+                          {{(efDbConnection.ScaffoldOptions?.OptimizeDbContext == true
+                              ? $"optionsBuilder.UseModel({EntityFrameworkDatabaseScaffolder.DbContextCompiledModelName}.Instance);"
+                              : string.Empty)}}
 
-        OnConfiguringPartial(optionsBuilder);
-    }
+                          OnConfiguringPartial(optionsBuilder);
+                      }
 
-    /// <summary>
-    /// Implement this partial method to configure 'OnConfiguring'.
-    /// </summary>
-    partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder);
+                      /// <summary>
+                      /// Implement this partial method to configure 'OnConfiguring'.
+                      /// </summary>
+                      partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder);
 
-    /// <summary>
-    /// Calls DataContext.SaveChanges();
-    /// </summary>
-    public static int SaveChanges()
-    {
-        return DataContext.SaveChanges();
-    }
+                      /// <summary>
+                      /// Calls DataContext.SaveChanges();
+                      /// </summary>
+                      public static int SaveChanges()
+                      {
+                          return DataContext.SaveChanges();
+                      }
 
-    /// <summary>
-    /// Calls DataContext.SaveChangesAsync(CancellationToken cancellationToken);
-    /// </summary>
-    public static Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return DataContext.SaveChangesAsync(cancellationToken);
-    }
-");
+                      /// <summary>
+                      /// Calls DataContext.SaveChangesAsync(CancellationToken cancellationToken);
+                      /// </summary>
+                      public static Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+                      {
+                          return DataContext.SaveChangesAsync(cancellationToken);
+                      }
+                  """);
 
         // 2. Add the DbContext property
         code

@@ -25,11 +25,11 @@ export class DataConnectionViewModel {
             return onlyLoadingAssembly ? "Compiling" : "Scaffolding";
         }
 
-        return this.schemaValidationRunning
-            ? "Validating schema"
-            : this.loadingStructure
-                ? "Loading"
-                : null
+        if (this.schemaValidationRunning) {
+            return "Validating schema";
+        }
+
+        return this.loadingStructure ? "Loading" : null;
     }
 
     public toggleExpand() {
@@ -42,7 +42,6 @@ export class DataConnectionViewModel {
 
     public async refresh() {
         await this.dataConnectionService.refresh(this.connection.id);
-        this.getDatabaseStructure();
     }
 
     public getDatabaseStructure() {

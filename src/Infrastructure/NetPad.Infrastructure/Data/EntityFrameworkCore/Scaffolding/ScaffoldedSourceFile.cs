@@ -14,5 +14,6 @@ public class ScaffoldedSourceFile : SourceCode
 
     public string Path { get; }
     public string ClassName { get; }
-    public bool IsDbContext { get; set; }
+    public bool IsDbContext { get; init; }
+    public bool IsDbContextCompiledModel { get; init; }
 }

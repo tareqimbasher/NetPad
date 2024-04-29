@@ -5,17 +5,17 @@ using NetPad.Scripts;
 
 namespace NetPad.Plugins.OmniSharp;
 
-public class ScriptProject : DotNetCSharpProject
+public class OmniSharpProject : DotNetCSharpProject
 {
-    private readonly ILogger<ScriptProject> _logger;
+    private readonly ILogger<OmniSharpProject> _logger;
     private readonly HashSet<Reference> _existingDataConnectionReferences;
     private readonly SemaphoreSlim _dataConnectionReferencesLock;
 
-    public ScriptProject(
+    public OmniSharpProject(
         Script script,
         IDotNetInfo dotNetInfo,
         Settings settings,
-        ILogger<ScriptProject> logger)
+        ILogger<OmniSharpProject> logger)
         : base(
             dotNetInfo,
             Consts.OmniSharpServerProcessesDirectoryPath.Combine(

@@ -36,6 +36,27 @@
     </div>
 </div>
 
+<div class="input-row"
+     title="Generate a pre-compiled model that can improve EF Core startup time for large models. Click 'Learn more' for more info and limitations.">
+    <div class="label-column">
+        <label class="col-form-label"
+               for="chkOptimizeDbContext">
+            Use Compiled Model
+        </label>
+    </div>
+    <div class="input-column">
+        <div class="form-check">
+            <input id="chkOptimizeDbContext" class="form-check-input"
+                   type="checkbox"
+                   checked.bind="connection.scaffoldOptions.optimizeDbContext">
+        </div>
+        <a href="https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics#compiled-models"
+           external-link>
+            Learn more...
+        </a>
+    </div>
+</div>
+
 <hr class="mb-4"/>
 
 <div class="row">
