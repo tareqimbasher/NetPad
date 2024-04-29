@@ -223,6 +223,7 @@ export class DataConnectionsList extends ViewModelBase {
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections.length)
     private constructDataConnectionViewModels() {
         this.dataConnectionViewModels = this.dataConnectionStore.connections
+            .sort((a, b) => a.name.localeCompare(b.name))
             .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
     }
 
