@@ -2,7 +2,7 @@ import {FindTextBoxOptions, ViewModelBase} from "@application";
 import {bindable, ILogger} from "aurelia";
 import {ScriptEnvironment, ScriptOutput} from "@domain";
 import {IToolbarAction} from "./output-view-toolbar";
-import {Util} from "@common";
+import {KeyCode, Util} from "@common";
 import "highlight.js/styles/atom-one-dark.min.css";
 
 /**
@@ -46,6 +46,21 @@ export abstract class OutputViewBase extends ViewModelBase {
         this.findTextBoxOptions = new FindTextBoxOptions(
             this.outputElement,
             ".null, .property-value, .property-name, .text, .group > .title");
+
+        // Confine select all to the output element
+        const selectAllKeyHandler = (ev: KeyboardEvent) => {
+            if (ev.code === KeyCode.KeyA && (ev.ctrlKey || ev.metaKey)) {
+                const range = document.createRange();
+                range.selectNode(this.outputElement);
+                window.getSelection()?.removeAllRanges();
+                window.getSelection()?.addRange(range);
+
+                ev.preventDefault();
+            }
+        };
+
+        this.outputElement.addEventListener("keydown", selectAllKeyHandler);
+        this.addDisposable(() => this.outputElement.removeEventListener("keydown", selectAllKeyHandler))
     }
 
     public getOutputHtml() {
