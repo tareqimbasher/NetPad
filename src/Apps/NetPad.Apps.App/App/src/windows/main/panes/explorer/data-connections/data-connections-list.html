@@ -38,7 +38,8 @@
                     </span>
                     <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
                           if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
-                          title.bind="connectionViewModel.error">
+                          title.bind="connectionViewModel.error + '\n\n(Click to copy to clipboard)'"
+                          click.trigger="copyToClipboard(connectionViewModel.error)">
                         ${connectionViewModel.error}
                     </span>
                 </div>

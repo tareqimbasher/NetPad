@@ -226,6 +226,11 @@ export class DataConnectionsList extends ViewModelBase {
             .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
     }
 
+    private async copyToClipboard(text: string) {
+        await navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    }
+
     private getElementOrParentDataConnectionId(element: Element) {
         let id: string | null;
         let el: Element | null = element;
