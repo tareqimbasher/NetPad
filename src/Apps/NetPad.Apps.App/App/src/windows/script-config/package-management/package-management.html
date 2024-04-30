@@ -18,9 +18,9 @@
 </template>
 
 <template as-custom-element="packages" class="flex-grow-height-restricted d-flex flex-column">
-    <bindable property="packages"></bindable>
-    <bindable property="selectedPackage"></bindable>
-    <bindable property="descriptions"></bindable>
+    <bindable name="packages"></bindable>
+    <bindable name="selectedPackage"></bindable>
+    <bindable name="descriptions"></bindable>
 
     <div class="list-group flex-grow-height-restricted overflow-y-auto">
         <div class="list-group-item list-group-item-action package ${selectedPackage === package ? 'active' : ''}"

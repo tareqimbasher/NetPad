@@ -7,7 +7,7 @@
 // </auto-generated>
 //----------------------
 // ReSharper disable InconsistentNaming
-import {IHttpClient} from "aurelia";
+import {IHttpClient} from "@aurelia/fetch-client";
 import {ApiClientBase} from "@domain/api-client-base";
 
 

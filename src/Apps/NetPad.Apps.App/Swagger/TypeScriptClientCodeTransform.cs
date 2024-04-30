@@ -33,7 +33,7 @@ internal static class TypeScriptClientCodeTransform
         // Add the imports we want
         lines.InsertRange(9, new[]
         {
-            "import {IHttpClient} from \"aurelia\";",
+            "import {IHttpClient} from \"@aurelia/fetch-client\";",
             "import {ApiClientBase} from \"@domain/api-client-base\";",
         });
 

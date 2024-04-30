@@ -1,6 +1,5 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {DialogDeactivationStatuses} from "@aurelia/dialog";
 import {ResultsPaneViewSettings} from "./results-view-settings";
 import {
     ChannelInfo,
@@ -209,7 +208,7 @@ export class ResultsView extends OutputViewBase {
         }
 
         const result = await this.dialogUtil.toggle(ExcelExportDialog);
-        if (result.status !== DialogDeactivationStatuses.Ok) return;
+        if (result.status !== "ok") return;
         const exportOptions = result.value as IExcelExportOptions;
 
         const elementsToExport: Element[] = [];

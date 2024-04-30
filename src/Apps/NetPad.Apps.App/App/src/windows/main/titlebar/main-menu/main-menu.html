@@ -21,8 +21,8 @@
     </div>
 
     <template as-custom-element="menu-item">
-        <bindable property="item"></bindable>
-        <bindable property="click"></bindable>
+        <bindable name="item"></bindable>
+        <bindable name="click"></bindable>
         <let has-submenu.bind="item.menuItems && item.menuItems.length > 0"></let>
         <let has-click-action.bind="item.click || item.shortcut"></let>
 

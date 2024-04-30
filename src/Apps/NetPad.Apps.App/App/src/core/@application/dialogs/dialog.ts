@@ -38,7 +38,11 @@ export abstract class Dialog<TInput> extends ViewModelBase {
         return animation?.finished;
     }
 
-    protected async ok(value?: unknown) {
+    protected async ok(value?: unknown, event?: Event) {
+        if (event) {
+            event.preventDefault();
+        }
+
         const instance = Dialog.instances.get((this as Record<string, unknown>).constructor.name);
 
         if (!instance) {

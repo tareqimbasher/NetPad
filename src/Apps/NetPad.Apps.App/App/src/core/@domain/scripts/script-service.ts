@@ -1,4 +1,5 @@
-import {DI, IHttpClient} from "aurelia";
+import {DI} from "aurelia";
+import {IHttpClient} from "@aurelia/fetch-client";
 import {IEventBus, IScriptsApiClient, ScriptsApiClient} from "@domain";
 
 export interface IScriptService extends IScriptsApiClient {}

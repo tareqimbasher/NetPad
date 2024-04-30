@@ -1,4 +1,5 @@
-import {DI, IHttpClient} from "aurelia";
+import {DI} from "aurelia";
+import {IHttpClient} from "@aurelia/fetch-client";
 import {ISettingsApiClient, Settings, SettingsApiClient} from "@domain";
 
 export interface ISettingsService extends ISettingsApiClient {

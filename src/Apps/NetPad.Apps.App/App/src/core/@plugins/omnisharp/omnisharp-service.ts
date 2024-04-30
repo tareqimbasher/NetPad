@@ -1,4 +1,5 @@
-import {DI, IHttpClient} from "aurelia";
+import {DI} from "aurelia";
+import {IHttpClient} from "@aurelia/fetch-client";
 import {IOmniSharpApiClient, OmniSharpApiClient} from "./api";
 import {Semaphore, Util} from "@common";
 import {IEventBus} from "@domain";

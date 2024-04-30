@@ -1,3 +1,5 @@
+import {DI, ILogger} from "aurelia";
+import {IHttpClient} from "@aurelia/fetch-client";
 import {
     ActiveEnvironmentChangedEvent,
     EnvironmentPropertyChangedEvent,
@@ -10,7 +12,6 @@ import {
     ScriptPropertyChangedEvent,
     SessionApiClient
 } from "@domain";
-import {DI, IHttpClient, ILogger} from "aurelia";
 
 export interface ISession extends ISessionApiClient {
     environments: ReadonlyArray<ScriptEnvironment>;
