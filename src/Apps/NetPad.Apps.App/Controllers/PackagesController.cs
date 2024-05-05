@@ -11,7 +11,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("packages")]
-public class PackagesController : Controller
+public class PackagesController : ControllerBase
 {
     private readonly IPackageProvider _packageProvider;
 

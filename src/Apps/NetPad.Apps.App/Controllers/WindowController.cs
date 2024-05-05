@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.UiInterop;
 
@@ -7,7 +6,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("window")]
-public class WindowController : Controller
+public class WindowController : ControllerBase
 {
     private readonly IUiWindowService _uiWindowService;
 

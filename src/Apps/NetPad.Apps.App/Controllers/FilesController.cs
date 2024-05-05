@@ -7,7 +7,7 @@ namespace NetPad.Controllers;
 [ApiExplorerSettings(IgnoreApi = true)]
 [ApiController]
 [Route("files")]
-public class FilesController : Controller
+public class FilesController : ControllerBase
 {
     [HttpGet("{path}")]
     public IActionResult StreamFile(string path)

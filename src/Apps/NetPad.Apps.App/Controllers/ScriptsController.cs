@@ -16,7 +16,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("scripts")]
-public class ScriptsController : Controller
+public class ScriptsController : ControllerBase
 {
     private readonly IMediator _mediator;
 

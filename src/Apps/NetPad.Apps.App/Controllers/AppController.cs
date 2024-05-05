@@ -19,7 +19,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("app")]
-public class AppController : Controller
+public class AppController : ControllerBase
 {
     private readonly ILogger<AppController> _logger;
 

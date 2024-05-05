@@ -11,7 +11,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("session")]
-public class SessionController : Controller
+public class SessionController : ControllerBase
 {
     private readonly IMediator _mediator;
 

@@ -14,7 +14,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("data-connections")]
-public class DataConnectionsController : Controller
+public class DataConnectionsController : ControllerBase
 {
     private readonly IMediator _mediator;
 

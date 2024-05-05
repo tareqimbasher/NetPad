@@ -10,7 +10,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("settings")]
-public class SettingsController : Controller
+public class SettingsController : ControllerBase
 {
     private readonly Settings _settings;
     private readonly IMediator _mediator;

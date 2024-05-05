@@ -5,14 +5,13 @@ using NetPad.Dtos;
 using NetPad.Events;
 using NetPad.Runtimes;
 using NetPad.Scripts;
-using NetPad.Services;
 using NetPad.UiInterop;
 
 namespace NetPad.Controllers;
 
 [ApiController]
 [Route("types")]
-public class TypesController : Controller
+public class TypesController : ControllerBase
 {
     // This endpoint was created for the sole reason of providing Swagger with types that are not exposed by other endpoints
     // that we want in the generated code

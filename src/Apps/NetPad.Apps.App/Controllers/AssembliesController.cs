@@ -12,7 +12,7 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("assemblies")]
-public class AssembliesController : Controller
+public class AssembliesController : ControllerBase
 {
     private readonly IPackageProvider _packageProvider;
 
