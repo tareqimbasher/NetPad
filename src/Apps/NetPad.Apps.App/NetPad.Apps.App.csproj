@@ -74,7 +74,6 @@
     </Target>
     <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
-        <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
         <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
         <ProjectReference Include="..\..\Core\ScriptRuntimes\NetPad.ExternalProcessScriptRuntime\NetPad.ExternalProcessScriptRuntime.csproj" />
         <ProjectReference Include="..\..\Core\ScriptRuntimes\NetPad.InMemoryScriptRuntime\NetPad.InMemoryScriptRuntime.csproj" />

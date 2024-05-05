@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\NetPad.Compilation\NetPad.Compilation.csproj" />
         <ProjectReference Include="..\..\NetPad.Domain\NetPad.Domain.csproj"/>
         <ProjectReference Include="..\..\NetPad.Presentation\NetPad.Presentation.csproj"/>
         <ProjectReference Include="..\..\..\External\O2Html\O2Html.csproj"/>

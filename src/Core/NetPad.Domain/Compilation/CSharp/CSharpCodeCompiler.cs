@@ -84,7 +84,7 @@ public class CSharpCodeCompiler : ICodeCompiler
     public CSharpParseOptions GetParseOptions(DotNetFrameworkVersion targetFrameworkVersion, OptimizationLevel optimizationLevel)
     {
         return CSharpParseOptions.Default
-            .WithLanguageVersion(DotNetFrameworkVersionUtil.GetLatestSupportedCSharpLanguageVersion(targetFrameworkVersion))
+            .WithLanguageVersion(targetFrameworkVersion.GetLatestSupportedCSharpLanguageVersion())
             // TODO investigate using SourceKind.Script (see cs-scripts branch)
             .WithKind(SourceCodeKind.Regular)
             .WithPreprocessorSymbols(PreprocessorSymbols.For(optimizationLevel));

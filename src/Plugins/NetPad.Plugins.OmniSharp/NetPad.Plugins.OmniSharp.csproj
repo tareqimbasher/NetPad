@@ -13,7 +13,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
-        <ProjectReference Include="..\..\Core\NetPad.Compilation\NetPad.Compilation.csproj" />
         <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj"/>
         <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj"/>
     </ItemGroup>

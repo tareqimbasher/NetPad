@@ -86,7 +86,7 @@ public static class DotNetFrameworkVersionUtil
         return majorVersion;
     }
 
-    public static LanguageVersion GetLatestSupportedCSharpLanguageVersion(DotNetFrameworkVersion dotNetFrameworkVersion)
+    public static LanguageVersion GetLatestSupportedCSharpLanguageVersion(this DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         return dotNetFrameworkVersion switch
         {
