@@ -18,13 +18,23 @@ public class VideoHtmlConverter : HtmlConverter
 
         string title = video.FilePath?.Path ?? video.Uri?.ToString() ?? (video.Base64Data == null ? "(no source)" : "Base 64 data");
 
-        var videoElement = new Element("video").SetTitle($"Video: {title}");
-        videoElement.GetOrAddAttribute("controls");
+        var element = new Element("video").SetTitle($"Video: {title}");
+        element.GetOrAddAttribute("controls");
 
-        videoElement.AddAndGetElement("source")
+        element.AddAndGetElement("source")
             .SetSrc(video.HtmlSource);
 
-        return videoElement;
+        if (!string.IsNullOrWhiteSpace(video.DisplayWidth))
+        {
+            element.GetOrAddAttribute("style").Append($"width: {video.DisplayWidth};");
+        }
+
+        if (!string.IsNullOrWhiteSpace(video.DisplayHeight))
+        {
+            element.GetOrAddAttribute("style").Append($"height: {video.DisplayHeight};");
+        }
+
+        return element;
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)

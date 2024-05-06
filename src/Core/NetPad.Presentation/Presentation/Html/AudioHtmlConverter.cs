@@ -19,10 +19,22 @@ public class AudioHtmlConverter : ObjectHtmlConverter
 
         string title = audio.FilePath?.Path ?? audio.Uri?.ToString() ?? (audio.Base64Data == null ? "(no source)" : "Base 64 data");
 
-        return new Element("audio")
+        var element = new Element("audio")
             .SetAttribute("controls")
             .SetSrc(audio.HtmlSource)
             .SetTitle($"Audio: {title}");
+
+        if (!string.IsNullOrWhiteSpace(audio.DisplayWidth))
+        {
+            element.GetOrAddAttribute("style").Append($"width: {audio.DisplayWidth};");
+        }
+
+        if (!string.IsNullOrWhiteSpace(audio.DisplayHeight))
+        {
+            element.GetOrAddAttribute("style").Append($"height: {audio.DisplayHeight};");
+        }
+
+        return element;
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
