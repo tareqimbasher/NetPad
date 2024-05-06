@@ -18,10 +18,22 @@ public class ImageHtmlConverter : HtmlConverter
 
         string title = image.FilePath?.Path ?? image.Uri?.ToString() ?? (image.Base64Data == null ? "(no source)" : "Base 64 data");
 
-        return new Element("<img />")
+        var element = new Element("<img />")
             .SetSrc(image.HtmlSource)
             .SetAttribute("alt", title)
             .SetTitle($"Image: {title}");
+
+        if (!string.IsNullOrWhiteSpace(image.DisplayWidth))
+        {
+            element.GetOrAddAttribute("style").Append($"width: {image.DisplayWidth};");
+        }
+
+        if (!string.IsNullOrWhiteSpace(image.DisplayHeight))
+        {
+            element.GetOrAddAttribute("style").Append($"height: {image.DisplayHeight};");
+        }
+
+        return element;
     }
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)

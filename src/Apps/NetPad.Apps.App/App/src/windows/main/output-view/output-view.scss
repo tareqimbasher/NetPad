@@ -115,32 +115,15 @@ output-view {
                 }
             }
 
-            &.image {
-                img {
-                    max-height: 300px;
-                }
-            }
-
-            &.video {
-                video {
-                    max-height: 300px;
-                    min-width: 350px;
-                }
-            }
-
             &.audio {
                 audio {
-                    min-width: 350px;
-                    padding: 0.5rem;
+                    width: 35%;
                 }
             }
 
             td {
                 img, audio, video {
-                    padding: 0.5rem;
-                    max-height: 300px;
-                    margin-left: 50%;
-                    transform: translateX(-50%);
+                    margin: 5px 0;
                 }
             }
 

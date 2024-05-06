@@ -72,6 +72,19 @@ public abstract class MediaFile
         _htmlSource = Uri.ToString();
     }
 
+    /// <summary>
+    /// The width in which this media file should be displayed.
+    /// </summary>
+    public string? DisplayWidth { get; set; }
+
+    /// <summary>
+    /// The height in which this media file should be displayed.
+    /// </summary>
+    public string? DisplayHeight { get; set; }
+
+    /// <summary>
+    /// The path to the file this media file represents. Will be null if file is not local.
+    /// </summary>
     public FilePath? FilePath
     {
         get => _filePath;
@@ -82,6 +95,9 @@ public abstract class MediaFile
         }
     }
 
+    /// <summary>
+    /// The Base64 encoded data representing the contents of this media file.
+    /// </summary>
     public string? Base64Data
     {
         get => _base64Data;
@@ -92,6 +108,9 @@ public abstract class MediaFile
         }
     }
 
+    /// <summary>
+    /// The URI from where this media file is loaded.
+    /// </summary>
     public Uri? Uri
     {
         get => _uri;
@@ -101,6 +120,16 @@ public abstract class MediaFile
             UpdateHtmlSource();
         }
     }
+
+    /// <summary>
+    /// Indicates if this file points to a local file. Returns true only if <see cref="FilePath"/> is not null.
+    /// </summary>
+    public bool IsLocalFile => FilePath != null;
+
+    /// <summary>
+    /// The HTML source used to load this media file in an HTML element.
+    /// </summary>
+    public string HtmlSource => _htmlSource ?? string.Empty;
 
     private void UpdateHtmlSource()
     {
@@ -121,13 +150,6 @@ public abstract class MediaFile
             _htmlSource = null;
         }
     }
-
-    /// <summary>
-    /// Indicates if this file points to a local file. Returns true if <see cref="FilePath"/> is not null.
-    /// </summary>
-    public bool IsLocalFile => FilePath != null;
-
-    public string HtmlSource => _htmlSource ?? string.Empty;
 
     /// <summary>
     /// Opens file with the default application. Does not wait for spawned process to exit.
