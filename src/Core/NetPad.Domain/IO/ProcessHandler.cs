@@ -9,22 +9,27 @@ namespace NetPad.IO;
 
 public sealed class ProcessHandler : IDisposable
 {
-    private readonly string? _commandText;
-    private readonly string? _args;
+    private readonly ProcessStartInfo _processStartInfo;
     private Process? _process;
     private ProcessIO? _io;
-    private ProcessStartInfo? _processStartInfo;
     private Task<int>? _processStartTask;
-
-    public ProcessHandler(string commandText) : this(commandText, null)
-    {
-        _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
-    }
 
     public ProcessHandler(string commandText, string? args)
     {
-        _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
-        _args = args;
+        if (string.IsNullOrWhiteSpace(commandText))
+        {
+            throw new ArgumentException("Cannot be null or empty", nameof(commandText));
+        }
+
+        _processStartInfo = new ProcessStartInfo(commandText)
+            .WithRedirectIO()
+            .WithNoUi()
+            .CopyCurrentEnvironmentVariables();
+
+        if (!string.IsNullOrWhiteSpace(args))
+        {
+            _processStartInfo.Arguments = args;
+        }
     }
 
     public ProcessHandler(ProcessStartInfo processStartInfo)
@@ -40,6 +45,8 @@ public sealed class ProcessHandler : IDisposable
             return _process!;
         }
     }
+
+    public ProcessStartInfo ProcessStartInfo => _processStartInfo;
 
     public ProcessIO IO
     {
@@ -119,18 +126,6 @@ public sealed class ProcessHandler : IDisposable
 
     private void Init()
     {
-        if (_processStartInfo == null)
-        {
-            _processStartInfo = new ProcessStartInfo(_commandText!)
-                .WithRedirectIO()
-                .WithNoUi();
-
-            if (!string.IsNullOrWhiteSpace(_args))
-                _processStartInfo.Arguments = _args;
-
-            _processStartInfo.CopyCurrentEnvironmentVariables();
-        }
-
         if (_process == null)
         {
             _process = new Process

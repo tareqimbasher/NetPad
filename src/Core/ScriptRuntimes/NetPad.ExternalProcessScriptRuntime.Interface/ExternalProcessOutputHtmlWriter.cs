@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 
@@ -9,6 +10,7 @@ namespace NetPad.Runtimes;
 /// </summary>
 public class ExternalProcessOutputHtmlWriter : IExternalProcessOutputWriter
 {
+    private static readonly Lazy<Regex> _ansiColorsRegex = new(() => new Regex(@"\x1B\[[^@-~]*[@-~]"));
     private readonly Func<string, Task> _writeToMainOut;
     private uint _resultOutputCounter;
     private uint _sqlOutputCounter;
@@ -23,6 +25,12 @@ public class ExternalProcessOutputHtmlWriter : IExternalProcessOutputWriter
         options ??= DumpOptions.Default;
 
         uint order = Interlocked.Increment(ref _resultOutputCounter);
+
+        // Added because ASP.NET Core output includes ANSI color formatting on Windows OS
+        if (output is string str && str.StartsWith("\u001B[", StringComparison.Ordinal))
+        {
+            output = _ansiColorsRegex.Value.Replace(str, string.Empty);
+        }
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
