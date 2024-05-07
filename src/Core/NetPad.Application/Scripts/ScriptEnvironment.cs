@@ -225,6 +225,11 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         _logger.LogTrace($"{nameof(DisposeAsync)} start");
 
+        if (Status == ScriptStatus.Running)
+        {
+            await StopAsync();
+        }
+
         await DisposeAsyncCore().ConfigureAwait(false);
 
         Dispose(false);

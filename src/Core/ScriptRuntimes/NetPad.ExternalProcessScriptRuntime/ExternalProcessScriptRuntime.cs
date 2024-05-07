@@ -6,6 +6,7 @@ using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Scripts;
+using NetPad.Utilities;
 
 namespace NetPad.Runtimes;
 
@@ -92,6 +93,14 @@ public sealed partial class ExternalProcessScriptRuntime : IScriptRuntime
                 _dotNetInfo.LocateDotNetExecutableOrThrow(),
                 $"{scriptAssemblyFilePath.Path} -html"
             );
+
+            // On Windows, we need this environment var to force console output when using the ConsoleLoggingProvider
+            // See: https://github.com/dotnet/runtime/blob/8a2e7e3e979d671d97cb408fbcbdbee5594479a4/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProvider.cs#L69
+            if (_script.Config.UseAspNet && PlatformUtil.IsWindowsPlatform())
+            {
+                _processHandler.ProcessStartInfo.EnvironmentVariables.Add(
+                    "DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION", "true");
+            }
 
             _processHandler.IO.OnOutputReceivedHandlers.Add(OnProcessOutputReceived);
 
