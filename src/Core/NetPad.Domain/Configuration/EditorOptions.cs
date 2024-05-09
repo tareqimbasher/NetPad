@@ -29,6 +29,7 @@ public class EditorOptions : ISettingsOptions
         // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 
         if (MonacoOptions == null)
+        {
             MonacoOptions = new
             {
                 cursorBlinking = "smooth",
@@ -40,6 +41,7 @@ public class EditorOptions : ISettingsOptions
                     enabled = true
                 }
             };
+        }
 
         // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
     }

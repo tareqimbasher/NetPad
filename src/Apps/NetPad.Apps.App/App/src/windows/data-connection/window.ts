@@ -1,4 +1,3 @@
-import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
@@ -18,15 +17,12 @@ export class Window extends WindowBase {
     public prohibitedNames: string[] = [];
     public connectionString = "";
     private nameField: HTMLInputElement;
-    private readonly logger: ILogger;
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
-        @ILogger logger: ILogger
+        @IDataConnectionService private readonly dataConnectionService: IDataConnectionService
     ) {
         super();
-        this.logger = logger.scopeTo(nameof(Window));
 
         const params = this.getStartupParams();
         document.title = params.createNew ? "New Data Connection" : "Edit Data Connection";

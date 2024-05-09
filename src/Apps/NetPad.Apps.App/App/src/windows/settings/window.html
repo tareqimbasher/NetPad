@@ -2,6 +2,7 @@
     <import from="./general-settings/general-settings"></import>
     <import from="./editor-options-settings/editor-options-settings"></import>
     <import from="./results-options-settings/results-options-settings"></import>
+    <import from="./style-options-settings/style-options-settings"></import>
     <import from="./keyboard-shortcut-settings/keyboard-shortcut-settings"></import>
     <import from="./omnisharp-settings/omnisharp-settings"></import>
     <import from="./about/about"></import>
@@ -24,6 +25,9 @@
                 <results-options-settings case="results"
                                           class="tab-content"
                                           settings.bind="editableSettings"></results-options-settings>
+                <style-options-settings case="style"
+                                          class="tab-content"
+                                          settings.bind="editableSettings"></style-options-settings>
                 <keyboard-shortcut-settings case="keyboard-shortcuts"
                                             class="tab-content"
                                             settings.bind="editableSettings"></keyboard-shortcut-settings>

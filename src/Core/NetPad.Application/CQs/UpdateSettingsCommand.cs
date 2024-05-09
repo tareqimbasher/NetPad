@@ -38,6 +38,7 @@ public class UpdateSettingsCommand : Command
                 .SetAppearanceOptions(incoming.Appearance)
                 .SetEditorOptions(incoming.Editor)
                 .SetResultsOptions(incoming.Results)
+                .SetStyleOptions(incoming.Styles)
                 .SetKeyboardShortcutOptions(incoming.KeyboardShortcuts)
                 .SetOmniSharpOptions(incoming.OmniSharp);
 
