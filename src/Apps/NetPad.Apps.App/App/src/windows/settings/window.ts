@@ -8,10 +8,13 @@ export class Window extends WindowBase {
         {route: "general", text: "General"},
         {route: "editor", text: "Editor"},
         {route: "results", text: "Results"},
+        {route: "style", text: "Styles"},
         {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
         {route: "omnisharp", text: "OmniSharp"},
         {route: "about", text: "About"},
     ];
+
+    private readonly settingsJsonReplacer = (k?: string, v?: string) => v === null || v === undefined ? undefined : v;
 
     constructor(
         private readonly startupOptions: URLSearchParams,
@@ -28,20 +31,38 @@ export class Window extends WindowBase {
         this.editableSettings = this.settings.clone();
     }
 
-    public async save() {
+    public get canApply() {
+        return JSON.stringify(this.settings, this.settingsJsonReplacer) !== JSON.stringify(this.editableSettings, this.settingsJsonReplacer);
+    }
+
+    public async apply(): Promise<boolean> {
         if (!this.validate()) {
+            return false;
+        }
+
+        try {
+            await this.settingsService.update(this.editableSettings);
+            return true;
+        } catch (e) {
+            this.logger.error("Error while saving settings", e);
+            alert("A problem occurred. Could not save settings");
+            return false;
+        }
+    }
+
+    public async save() {
+        if (!await this.apply()) {
             return;
         }
 
-        await this.settingsService.update(this.editableSettings);
         window.close();
     }
 
-    public cancel() {
+    public close() {
         window.close();
     }
 
-    public async showSettingsFile() {
+    public async showAppDataFolder() {
         await this.settingsService.showSettingsFile();
     }
 
