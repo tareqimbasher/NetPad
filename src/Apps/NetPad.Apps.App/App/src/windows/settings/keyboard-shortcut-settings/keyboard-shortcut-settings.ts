@@ -1,9 +1,9 @@
-import {bindable} from "aurelia";
+import {bindable, ILogger} from "aurelia";
 import {KeyboardShortcutConfiguration, Settings} from "@domain";
-import {BuiltinShortcuts, KeyCombo, Shortcut} from "@application";
-import {KeyCode, WithDisposables} from "@common";
+import {BuiltinShortcuts, KeyCombo, Shortcut, ViewModelBase} from "@application";
+import {KeyCode} from "@common";
 
-export class KeyboardShortcutSettings extends WithDisposables {
+export class KeyboardShortcutSettings extends ViewModelBase {
     @bindable public settings: Settings;
     public currentSettings: Readonly<Settings>;
 
@@ -36,8 +36,8 @@ export class KeyboardShortcutSettings extends WithDisposables {
         KeyCode.F12,
     ];
 
-    constructor(currentSettings: Settings) {
-        super();
+    constructor(currentSettings: Settings, @ILogger logger: ILogger) {
+        super(logger);
         this.currentSettings = currentSettings;
     }
 
@@ -79,7 +79,7 @@ export class KeyboardShortcutSettings extends WithDisposables {
                 return shortcut;
             });
 
-        this.shortcuts.push(...configShortcuts);
+        this.shortcuts = configShortcuts;
 
 
         const handler = (ev: KeyboardEvent) => {

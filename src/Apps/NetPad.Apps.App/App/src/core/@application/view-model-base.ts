@@ -6,6 +6,7 @@ import {WithDisposables} from "@common";
  */
 export class ViewModelBase extends WithDisposables {
     protected logger: ILogger;
+    protected componentLifecycleLogger: ILogger;
 
     constructor(@ILogger logger: ILogger) {
         super();
@@ -15,18 +16,15 @@ export class ViewModelBase extends WithDisposables {
         }
 
         this.logger = logger.scopeTo((this as Record<string, unknown>).constructor.name)
+        this.componentLifecycleLogger = this.logger.scopeTo("ComponentLifecycle");
     }
 
     protected attaching() {
-        this.logComponentLifecycle("attaching...");
+        this.componentLifecycleLogger.debug("attaching...");
     }
 
     protected detaching() {
-        this.logComponentLifecycle("detaching...");
+        this.componentLifecycleLogger.debug("detaching...");
         this.dispose();
-    }
-
-    private logComponentLifecycle(action: string) {
-        this.logger.scopeTo("ComponentLifecycle").debug(action);
     }
 }
