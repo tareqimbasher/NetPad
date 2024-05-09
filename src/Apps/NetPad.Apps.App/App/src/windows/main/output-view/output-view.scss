@@ -18,7 +18,7 @@ output-view {
     /*
     * CSS for the Container housing generated HTML
     */
-    .html-output-container {
+    .output-container {
         $font-size: 13px;
 
         padding: 0.25rem;
@@ -66,7 +66,6 @@ output-view {
             @extend %null;
         }
 
-        /* GROUPS */
         .group {
             padding: 0.25rem;
             border-left: 2px transparent solid;
@@ -151,8 +150,7 @@ output-view {
             border-bottom: 2px dodgerblue dotted;
         }
 
-        /* TABLES */
-        table.table {
+        table {
             width: initial;
             margin: 5px 0;
             border-color: $table-border-color;
