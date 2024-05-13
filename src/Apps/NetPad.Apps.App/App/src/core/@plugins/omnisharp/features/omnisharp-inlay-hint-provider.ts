@@ -1,5 +1,5 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range as MonacoRange} from "monaco-editor";
-import {EditorUtil, IInlayHintsProvider} from "@application";
+import {MonacoEditorUtil, IInlayHintsProvider} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
@@ -24,7 +24,7 @@ export class OmniSharpInlayHintProvider extends FeatureProvider implements IInla
     }
 
     public async provideInlayHints(model: editor.ITextModel, range: MonacoRange, token: CancellationToken): Promise<languages.InlayHintList> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const response = await this.omnisharpService.getInlayHints(scriptId, new api.InlayHintRequest({
             location: new api.Location({
@@ -70,7 +70,7 @@ export class OmniSharpInlayHintProvider extends FeatureProvider implements IInla
         const entry = this.inlayHintsMap.get(hint);
         if (!entry) return hint;
 
-        const scriptId = EditorUtil.getScriptId(entry.model);
+        const scriptId = MonacoEditorUtil.getScriptId(entry.model);
         const omnisharpHint = entry.omnisharpHint;
 
         const response = await this.omnisharpService.resolveInlayHint(scriptId, new api.InlayHintResolveRequest({

@@ -1,7 +1,7 @@
 import {IContainer} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {CreateScriptDto, DataConnectionStore, IScriptService, ISession} from "@domain";
-import {EditorSetup, IPaneManager, IShortcutManager, PaneHost, PaneHostOrientation,} from "@application";
+import {MonacoEnvironmentManager, IPaneManager, IShortcutManager, PaneHost, PaneHostOrientation,} from "@application";
 import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
 import {Workbench} from "./workbench";
 import {WindowBase} from "@application/windows/window-base";
@@ -18,8 +18,7 @@ export class Window extends WindowBase {
         @IPaneManager private readonly paneManager: IPaneManager,
         @IScriptService private readonly scriptService: IScriptService,
         @IContainer private readonly container: IContainer,
-        private readonly dataConnectionStore: DataConnectionStore,
-        private readonly editorSetup: EditorSetup) {
+        private readonly dataConnectionStore: DataConnectionStore) {
         super();
     }
 
@@ -28,7 +27,7 @@ export class Window extends WindowBase {
     }
 
     public async binding() {
-        this.editorSetup.setup();
+        await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
         await this.session.initialize();
         await this.dataConnectionStore.initialize();
         this.workbench = this.container.get(Workbench);

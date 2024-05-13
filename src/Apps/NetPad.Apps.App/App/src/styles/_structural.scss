@@ -4,6 +4,10 @@ html {
     font-size: 13px;
 }
 
+body {
+    @include theme(background-color, backgroundColor);
+}
+
 .window {
     height: 100vh;
     display: flex;

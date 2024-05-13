@@ -38,7 +38,6 @@ $font-family-monospace:             monospace;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
-@import "~styles/themes";
 
 a.btn-link:hover {
     cursor: pointer;
@@ -49,18 +48,19 @@ a.btn-link:hover {
 }
 
 .form-control {
-    //@extend .form-control-sm;
-    @include theme(background-color, formControlBackground);
-    @include theme(color, textColor);
-    @include theme(border-color, borderColor);
+    color: var(--textColor);
+    background-color: var(--formControlBackgroundColor);
+    border-color: var(--borderColor);
 
     &:focus {
-        @include theme(border-color, activeColor);
+        color: var(--textColor);
+        background-color: var(--formControlBackgroundColor);
+        border-color: var(--activeColor);
     }
 
     &[disabled],
     &[disabled="true"] {
-        @include theme(background-color, formControlDisabledBackgroundColor);
+        background-color: var(--formControlDisabledBackgroundColor);
     }
 }
 
@@ -70,85 +70,86 @@ textarea.form-control {
 }
 
 .form-select {
-    @include theme(background-color, formControlBackground);
-    @include theme(color, textColor);
-    @include theme(border-color, borderColor);
+    background-color: var(--formControlBackgroundColor);
+    color: var(--textColor);
+    border-color: var(--borderColor);
 
     &[disabled],
     &[disabled="true"] {
-        @include theme(background-color, formControlDisabledBackgroundColor);
+        background-color: var(--formControlDisabledBackgroundColor);
     }
 }
 
 .list-group-item {
-    @include theme(background-color, listBackground);
-    @include theme(color, textColor);
+    background: var(--listBackground);
+    color: var(--textColor);
 
     &.list-group-item-action:not(.active):hover {
-        @include theme(background-color, hoverColor);
+        background: var(--hoverColor);
+        color: var(--textColor);
     }
 
     &.active {
-        @include theme(background-color, activeColor);
-        @include theme(color, textStrongColor);
+        background: var(--activeColor);
+        color: var(--textStrongColor);
     }
 
     &.active:hover {
-        @include theme(background-color, activeColor);
+        background: var(--activeColor);
     }
 }
 
 .nav-tabs {
-    @include theme(border-bottom-color, borderColor);
+    border-bottom-color: var(--borderColor);
 }
 
 .table {
-    @include theme(color, textColor);
+    color: var(--textColor);
 
     tr {
         td {
-            @include theme(border-bottom-color, borderColor);
+            border-bottom-color: var(--borderColor);
         }
 
         &.active > td {
-            @include theme(background-color, activeColor);
+            background: var(--activeColor);
 
             * {
-                @include theme(color, textColor);
+                color: var(--textColor);
             }
         }
 
         &:hover > td {
-            @include theme(color, textColor);
-            @include theme(--bs-table-hover-bg, hoverColor);
+            color: var(--textColor);
+            --bs-table-hover-bg: var(--hoverColor);
         }
     }
 }
 
 .dropdown {
     > .btn {
-        @include theme(color, textColor);
+        color: var(--textColor);
     }
 }
 
 .dropdown-menu {
-    @include theme(background-color, listBackground);
-    @include theme(color, textColor);
-    @include theme(border-color, borderColor);
+    background: var(--listBackground);
+    color: var(--textColor);
+    border-color: var(--borderColor);
 
     .dropdown-item {
-        @include theme(color, textColor);
+        color: var(--textColor);
     }
 
     .dropdown-item:hover {
-        @include theme(background-color, hoverColor);
+        background: var(--hoverColor);
     }
 
     .dropdown-divider {
-        @include theme(border-color, borderColor);
+        border-color: var(--borderColor);
     }
 }
 
 .badge {
-    @include theme(color, textStrongColor);
+    color: var(--textStrongColor);
 }

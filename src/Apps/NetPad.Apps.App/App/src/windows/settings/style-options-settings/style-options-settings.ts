@@ -2,6 +2,7 @@
 import {Settings} from "@domain";
 import * as monaco from "monaco-editor";
 import {watch} from "@aurelia/runtime-html";
+import {MonacoEditorUtil} from "@application";
 
 export class StyleOptionsSettings {
     @bindable public settings: Settings;
@@ -42,27 +43,7 @@ export class StyleOptionsSettings {
 
     @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.backgroundColor)
     @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.monacoOptions)
-    private updateEditorOptions() {
-        const settings = this.currentSettings;
-        let theme = settings.appearance.theme === "Light" ? "vs" : "vs-dark";
-
-        if (settings.editor.backgroundColor) {
-            monaco.editor.defineTheme("custom-theme", {
-                base: theme as monaco.editor.BuiltinTheme,
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": settings.editor.backgroundColor,
-                },
-            });
-            theme = "custom-theme";
-        }
-
-        const options = {
-            theme: theme
-        };
-
-        Object.assign(options, settings.editor.monacoOptions || {})
-        this.editor.updateOptions(options);
+    private async updateEditorOptions() {
+        await MonacoEditorUtil.updateOptions(this.editor, this.settings);
     }
 }

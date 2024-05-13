@@ -1,10 +1,5 @@
 @import "~styles/themes";
 
-text-editor {
-    width: 100%;
-    height: 100%;
-}
-
 .monaco-editor {
     .code-text-error {
         text-decoration: wavy underline red;

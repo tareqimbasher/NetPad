@@ -3,10 +3,13 @@ import {watch} from "@aurelia/runtime-html";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
 import {Settings} from "@domain";
+import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
+import {MonacoEditorUtil} from "@application";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
     @observable public useCustomEditorBackgroundColor: boolean;
+    @observable public theme?: string;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
     private logger: ILogger;
@@ -19,7 +22,7 @@ export class EditorOptionsSettings {
         this.useCustomEditorBackgroundColor = !!this.settings.editor.backgroundColor;
     }
 
-    public attached() {
+    public async attached() {
         const id = "options-editor";
         const el = document.getElementById(id);
         if (!el) {
@@ -34,7 +37,7 @@ export class EditorOptionsSettings {
             automaticLayout: true
         });
 
-        this.updateEditorOptions(this.settings.editor.monacoOptions);
+        this.updateEditorOptions();
 
         this.editor.onDidChangeModelContent(ev => {
             const json = this.editor.getValue();
@@ -49,10 +52,48 @@ export class EditorOptionsSettings {
 
             this.settings.editor.monacoOptions = options;
         });
+
+        this.theme = this.settings.editor.monacoOptions?.theme;
     }
 
     public detaching() {
         this.editor.dispose();
+    }
+
+    public getThemes() {
+        return [...MonacoThemeManager.getThemes()]
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    public themeChanged(newValue: string) {
+        const val = this.editor.getValue();
+        if (!val) {
+            return;
+        }
+
+        try {
+            let o = JSON.parse(val);
+
+            if (!o) {
+                return;
+            }
+
+            if (!newValue) {
+                delete o.theme;
+            } else {
+                if (Object.hasOwn(o, "theme")) {
+                    o.theme = newValue;
+                } else {
+                    const tmp = {theme: newValue};
+                    Object.assign(tmp, o);
+                    o = tmp;
+                }
+            }
+
+            this.editor.setValue(JSON.stringify(o, null, 4));
+        } catch (e) {
+            this.logger.error("Error updating editor with new theme");
+        }
     }
 
     public useCustomEditorBackgroundColorChanged(newValue: boolean) {
@@ -61,29 +102,7 @@ export class EditorOptionsSettings {
 
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.backgroundColor)
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
-    private updateEditorOptions(editorOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
-        let theme = this.settings.appearance.theme === "Light" ? "vs" : "vs-dark";
-
-        if (this.settings.editor.backgroundColor) {
-            monaco.editor.defineTheme("custom-theme", {
-                base: theme as monaco.editor.BuiltinTheme,
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": this.settings.editor.backgroundColor,
-                },
-            });
-            theme = "custom-theme";
-        }
-
-        const options = {
-            theme: theme
-        };
-
-        Object.assign(options, this.settings.editor.monacoOptions || {})
-        this.editor.updateOptions(options);
-
-        if (editorOptions)
-            this.editor.updateOptions(editorOptions);
+    private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
+        await MonacoEditorUtil.updateOptions(this.editor, this.settings);
     }
 }

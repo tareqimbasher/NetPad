@@ -1,5 +1,7 @@
+import {IContainer} from "aurelia";
 import {ISettingsService, Settings} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
+import {MonacoEnvironmentManager} from "@application";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
@@ -18,7 +20,8 @@ export class Window extends WindowBase {
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        @ISettingsService readonly settingsService: ISettingsService) {
+        @ISettingsService readonly settingsService: ISettingsService,
+        @IContainer private readonly container: IContainer) {
         super();
 
         document.title = "Settings";
@@ -29,6 +32,10 @@ export class Window extends WindowBase {
 
         this.selectedTab = this.tabs[tabIndex];
         this.editableSettings = this.settings.clone();
+    }
+
+    public async binding() {
+        await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
     }
 
     public get canApply() {

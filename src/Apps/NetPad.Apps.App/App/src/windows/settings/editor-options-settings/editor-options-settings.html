@@ -1,52 +1,60 @@
-<div class="section">
-    <div class="header">
-        <i class="editor-background-settings-icon text-orange"></i>
-        Background
-    </div>
-    <div class="body">
-        <div class="form-check">
-            <input id="editor-background-theme"
-                   name="editor-background"
-                   class="form-check-input"
-                   type="radio"
-                   model.bind="false"
-                   checked.bind="useCustomEditorBackgroundColor">
-            <label class="form-check-label" for="editor-background-theme">
-                Theme
-            </label>
-        </div>
-        <div class="form-check d-flex align-items-center">
-            <input id="editor-background-custom"
-                   name="editor-background"
-                   class="form-check-input me-3"
-                   type="radio"
-                   model.bind="true"
-                   checked.bind="useCustomEditorBackgroundColor">
-            <label class="form-check-label me-3" for="editor-background-custom">
-                Custom
-            </label>
-
-            <input type="color"
-                   style="width: 70px"
-                   value.bind="settings.editor.backgroundColor"
-                   disabled.bind="!useCustomEditorBackgroundColor">
-
-            <span show.bind="settings.editor.backgroundColor">(${settings.editorBackgroundColor})</span>
-        </div>
-    </div>
-</div>
-
 <div class="section flex-grow-height-restricted d-flex flex-column">
     <div class="header">
-        <i class="monaco-settings-icon"></i>
+        <i class="monaco-settings-icon text-orange"></i>
         Monaco Options
     </div>
-    <p>
-        NetPad uses the Monaco editor. You can set any number of options here and observe their
-        effect live in the editor below.
-        <a href="https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html"
-           external-link>Options Reference</a>
-    </p>
+    <div class="body d-flex gap-5 justify-content-between align-items-center">
+        <p class="m-0">
+            Configure the Monaco editor.
+            <a href="https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IEditorOptions.html"
+               external-link>Options Reference</a>
+        </p>
+        <div class="d-flex align-items-center gap-3">
+            <b>Background:</b>
+            <div class="form-check">
+                <input id="editor-background-theme"
+                       name="editor-background"
+                       class="form-check-input"
+                       type="radio"
+                       model.bind="false"
+                       checked.bind="useCustomEditorBackgroundColor">
+                <label class="form-check-label" for="editor-background-theme">
+                    Theme
+                </label>
+            </div>
+            <div class="form-check d-flex align-items-center">
+                <input id="editor-background-custom"
+                       name="editor-background"
+                       class="form-check-input me-3"
+                       type="radio"
+                       model.bind="true"
+                       checked.bind="useCustomEditorBackgroundColor">
+                <label class="form-check-label me-3" for="editor-background-custom">
+                    Custom
+                </label>
+
+                <input type="color"
+                       style="width: 50px; height: 1.5rem"
+                       show.bind="useCustomEditorBackgroundColor"
+                       value.bind="settings.editor.backgroundColor & debounce:50"
+                       disabled.bind="!useCustomEditorBackgroundColor">
+
+                <span show.bind="settings.editor.backgroundColor"
+                      class="font-monospace ms-2">
+                    (${settings.editor.backgroundColor})
+                </span>
+            </div>
+        </div>
+        <div style="width: 200px">
+            <div class="d-flex gap-3 align-items-center">
+                <b>Theme: </b>
+                <select class="form-select form-select-sm p-3" value.bind="theme">
+                    <option value="">Auto</option>
+                    <option repeat.for="theme of getThemes()" value.bind="theme.id">${theme.name}</option>
+                </select>
+            </div>
+        </div>
+    </div>
     <div class="body flex-grow-height-restricted">
         <div class="text-editor" id="options-editor"></div>
     </div>

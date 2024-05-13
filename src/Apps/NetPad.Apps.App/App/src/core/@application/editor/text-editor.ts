@@ -3,10 +3,9 @@ import {IHydratedController, watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {WithDisposables} from "@common";
 import {IEventBus, Settings} from "@domain";
-import {ViewModelBase} from "@application";
+import {MonacoEditorUtil, ViewModelBase} from "@application";
 import {TextEditorFocusedEvent} from "./events";
 import {TextDocument} from "./text-document";
-import {EditorSetup} from "./editor-setup";
 
 export const ITextEditor = DI.createInterface<ITextEditor>();
 
@@ -155,30 +154,8 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
     @watch<TextEditor>(vm => vm.settings.appearance.theme)
     @watch<TextEditor>(vm => vm.settings.editor.backgroundColor)
     @watch<TextEditor>(vm => vm.settings.editor.monacoOptions)
-    private updateEditorSettings() {
+    private async updateEditorSettings() {
         if (!this.monaco) return;
-
-        let theme = this.settings.appearance.theme === "Light" ? "netpad-light-theme" : "netpad-dark-theme";
-
-        if (this.settings.editor.backgroundColor) {
-            const base: monaco.editor.BuiltinTheme = this.settings.appearance.theme === "Light" ? "vs" : "vs-dark";
-
-            EditorSetup.defineTheme("custom-theme", {
-                base: base,
-                inherit: true,
-                rules: [],
-                colors: {
-                    "editor.background": this.settings.editor.backgroundColor,
-                },
-            });
-            theme = "custom-theme";
-        }
-
-        const options = {
-            theme: theme
-        };
-
-        Object.assign(options, this.settings.editor.monacoOptions || {})
-        this.monaco.updateOptions(options);
+        await MonacoEditorUtil.updateOptions(this.monaco, this.settings);
     }
 }

@@ -35,22 +35,22 @@ export abstract class WindowBase extends ViewModelBase {
     }
 
     private applyCustomCss() {
+        const styleElementId = "user-custom-styles";
         const css = this.settings.styles.enabled ? (this.settings.styles.customCss ?? null) : null;
 
-        let styleElement = document.getElementById("user-styles");
+        let styleElement = document.getElementById(styleElementId);
 
         if (css) {
             const cssTextNode = document.createTextNode(css);
 
             if (!styleElement) {
                 styleElement = document.createElement("style");
-
-                const head = document.head || document.getElementsByTagName('head')[0];
-                head.appendChild(styleElement);
-
-                styleElement.id = "user-styles";
+                styleElement.id = styleElementId;
                 styleElement.setAttribute("type", "text/css");
                 styleElement.appendChild(cssTextNode);
+
+                // Add to body instead of header to ensure it has the highest precedence
+                document.body.prepend(styleElement);
             } else {
                 styleElement.replaceChildren(cssTextNode);
             }

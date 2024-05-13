@@ -1,6 +1,6 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
 import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
-import {EditorUtil, IDocumentRangeSemanticTokensProvider, IDocumentSemanticTokensProvider} from "@application";
+import {MonacoEditorUtil, IDocumentRangeSemanticTokensProvider, IDocumentSemanticTokensProvider} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {SemanticTokens} from "../types";
@@ -51,7 +51,7 @@ export class OmniSharpSemanticTokensProvider extends FeatureProvider implements 
 
     private async provideSemanticTokens(model: editor.ITextModel, range: Range | null | undefined, token: CancellationToken) {
 
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const request = new api.SemanticHighlightRequest();
         if (range) {

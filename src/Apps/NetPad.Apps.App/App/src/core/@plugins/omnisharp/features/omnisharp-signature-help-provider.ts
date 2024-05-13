@@ -1,5 +1,5 @@
 import {CancellationToken, editor, IMarkdownString, languages, Position} from "monaco-editor";
-import {EditorUtil, ISignatureHelpProvider} from "@application";
+import {MonacoEditorUtil, ISignatureHelpProvider} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
 
@@ -8,7 +8,7 @@ export class OmniSharpSignatureHelpProvider extends FeatureProvider implements I
 
     public async provideSignatureHelp(model: editor.ITextModel, position: Position, token: CancellationToken, context: languages.SignatureHelpContext)
         : Promise<languages.SignatureHelpResult> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const response = await this.omnisharpService.getSignatureHelp(scriptId, new api.SignatureHelpRequest({
             line: position.lineNumber,

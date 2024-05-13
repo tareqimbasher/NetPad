@@ -1,11 +1,11 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {EditorUtil, IHoverProvider} from "@application";
+import {MonacoEditorUtil, IHoverProvider} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
 
 export class OmniSharpHoverProvider extends FeatureProvider implements IHoverProvider {
     public async provideHover(model: editor.ITextModel, position: Position, token: CancellationToken): Promise<languages.Hover> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const response = await this.omnisharpService.getQuickInfo(scriptId, new api.QuickInfoRequest({
             line: position.lineNumber,

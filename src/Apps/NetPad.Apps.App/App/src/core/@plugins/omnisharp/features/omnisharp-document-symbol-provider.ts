@@ -1,5 +1,5 @@
 import {CancellationToken, editor, languages} from "monaco-editor";
-import {EditorUtil, IDocumentSymbolProvider} from "@application";
+import {MonacoEditorUtil, IDocumentSymbolProvider} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {Symbols} from "../types";
@@ -7,7 +7,7 @@ import {FeatureProvider} from "./feature-provider";
 
 export class OmnisharpDocumentSymbolProvider extends FeatureProvider implements IDocumentSymbolProvider {
     public async provideDocumentSymbols(model: editor.ITextModel, token: CancellationToken): Promise<languages.DocumentSymbol[]> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const response = await this.omnisharpService.getCodeStructure(scriptId, this.getAbortSignal(token));
 

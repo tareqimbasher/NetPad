@@ -1,12 +1,12 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {EditorUtil, IRenameProvider} from "@application";
+import {MonacoEditorUtil, IRenameProvider} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
 
 export class OmnisharpRenameProvider extends FeatureProvider implements IRenameProvider {
     public async provideRenameEdits(model: editor.ITextModel, position: Position, newName: string, token: CancellationToken): Promise<languages.WorkspaceEdit & languages.Rejection | undefined> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
         const versionIdBeforeRequest = model.getVersionId();
 
         const response = await this.omnisharpService.rename(scriptId, new api.RenameRequest({
