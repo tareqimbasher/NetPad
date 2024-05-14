@@ -8,7 +8,6 @@ import {MonacoEditorUtil} from "@application";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
-    @observable public useCustomEditorBackgroundColor: boolean;
     @observable public theme?: string;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
@@ -16,10 +15,6 @@ export class EditorOptionsSettings {
 
     constructor(@ILogger logger: ILogger) {
         this.logger = logger.scopeTo(nameof(EditorOptionsSettings));
-    }
-
-    public binding() {
-        this.useCustomEditorBackgroundColor = !!this.settings.editor.backgroundColor;
     }
 
     public async attached() {
@@ -30,8 +25,18 @@ export class EditorOptionsSettings {
             return;
         }
 
+        const monacoOptions = JSON.parse(JSON.stringify(this.settings.editor.monacoOptions ?? {}))
+
+        if (!monacoOptions.themeCustomizations) {
+            monacoOptions.themeCustomizations =
+            {
+                colors: {},
+                rules: []
+            }
+        }
+
         this.editor = monaco.editor.create(el, {
-            value: JSON.stringify(this.settings.editor.monacoOptions, null, 4),
+            value: JSON.stringify(monacoOptions, null, 4),
             language: 'json',
             mouseWheelZoom: true,
             automaticLayout: true
@@ -96,11 +101,6 @@ export class EditorOptionsSettings {
         }
     }
 
-    public useCustomEditorBackgroundColorChanged(newValue: boolean) {
-        if (!newValue) this.settings.editor.backgroundColor = undefined;
-    }
-
-    @watch<EditorOptionsSettings>(vm => vm.settings.editor.backgroundColor)
     @watch<EditorOptionsSettings>(vm => vm.settings.editor.monacoOptions)
     private async updateEditorOptions(monacoOptions?: monaco.editor.IEditorOptions & monaco.editor.IGlobalEditorOptions) {
         await MonacoEditorUtil.updateOptions(this.editor, this.settings);

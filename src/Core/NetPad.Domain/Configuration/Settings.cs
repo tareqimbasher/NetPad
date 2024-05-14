@@ -79,9 +79,7 @@ public class Settings : ISettingsOptions
         if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-        Editor
-            .SetBackgroundColor(options.BackgroundColor)
-            .SetMonacoOptions(options.MonacoOptions);
+        Editor.SetMonacoOptions(options.MonacoOptions);
 
         return this;
     }

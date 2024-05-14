@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace NetPad.Configuration;
@@ -9,14 +10,7 @@ public class EditorOptions : ISettingsOptions
         DefaultMissingValues();
     }
 
-    [JsonInclude] public string? BackgroundColor { get; private set; }
     [JsonInclude] public object MonacoOptions { get; private set; } = null!;
-
-    public EditorOptions SetBackgroundColor(string? backgroundColor)
-    {
-        BackgroundColor = backgroundColor;
-        return this;
-    }
 
     public EditorOptions SetMonacoOptions(object monacoOptions)
     {
@@ -30,7 +24,7 @@ public class EditorOptions : ISettingsOptions
 
         if (MonacoOptions == null)
         {
-            MonacoOptions = new
+            MonacoOptions ??= new
             {
                 cursorBlinking = "smooth",
                 lineNumbers = "on",
@@ -39,6 +33,11 @@ public class EditorOptions : ISettingsOptions
                 minimap = new
                 {
                     enabled = true
+                },
+                themeCustomizations = new
+                {
+                    colors = new {},
+                    rules = Array.Empty<string>()
                 }
             };
         }

@@ -1,49 +1,52 @@
 $dark: (
     // TEXT
     textColor: #dcdcdc,
-    textStrongColor: #ffffff,
-    textHoverColor: #ffffff,
+    textStrongColor: #fff,
+    textHoverColor: #fff,
     // BACKGROUND
-    backgroundColor: #222222,
-    backgroundLighterColor: #333333,
+    backgroundColor: rgb(34, 34, 34),
+    backgroundDarkerColor: rgb(28, 28, 28),
+    backgroundLighterColor: rgb(51, 51, 51),
     listBackground: #282828,
-    formControlBackgroundColor: #333333,
-    formControlDisabledBackgroundColor: #1c1c1c,
+    formControlBackground: rgb(51, 51, 51),
+    formControlDisabledBackgroundColor: rgb(28, 28, 28),
     kbdBackgroundColor: #59646e,
     // BORDERS
-    borderColor: #3f3f3f,
-    borderContrastColor: #555555,
+    borderColor: rgb(63, 63, 63),
+    borderContrastColor: rgb(85, 85, 85),
     // ACTIONS
-    hoverColor: rgba(255 255 255 / 7.5%),
+    hoverColor: rgba(255, 255, 255, 0.075),
     activeColor: #0d6efd,
     actionIconColor: silver,
     actionIconHoverColor: white,
     // SHADOWS
-    boxShadowBottom: 0 7px 8px -8px rgb(0 0 0 / 36%),
-    boxShadowBottomAndSides: 0 0 8px 2px rgb(0 0 0 / 36%),
+    boxShadowBottom: 0 7px 8px -8px rgb(0, 0, 0, .36),
+    boxShadowBottomAndSides: 0 0 8px 2px rgb(0, 0, 0, .36),
     // TITLEBAR
     titlebarBackground: #1b1c1d,
+    mainMenuDropdownItemBackgroundColor: #15539E,
     // STATUSBAR
     statusbarBackground: #1b1c1d,
-    // SCRIPT VIEW
-    scriptToolbarBackground: #1e1e1e,
-    findTextBoxBackground: #1c1c1c,
     // PANES
     paneRibbonBackground: #252525,
-    explorerPaneBackground: #222222,
-    outputPaneBackground: #222222,
+    // SCRIPT VIEW
+    scriptToolbarBackground: #1e1e1e,
+    // PANES
+    paneRibbonBackground: #252525,
+    explorerPaneBackground: rgb(34, 34, 34),
+    outputPaneBackground: #222,
     // CONTEXT MENU
     contextMenuBackground: #323232,
     contextMenuItemHoverBackground: #15539E,
     // DIALOG
-    dialogBackground: #222222,
+    dialogBackground: #222,
     // TABS
-    tabBackground: #2d2d2d,
-    tabActiveColor: #1e1e1e,
-    tabActiveTextColor: #ffffff,
-    tabInactiveTextColor: rgb(255 255 255 / 65%),
+    tabColor: rgb(45, 45, 45),
+    tabActiveColor: rgb(30, 30, 30),
+    tabActiveTextColor: #fff,
+    tabInactiveTextColor: rgba(255, 255, 255, 0.65),
     // SCROLLBARS & SPLITTER
     scrollbarTrackColor: #343434,
-    scrollbarThumbColor: #777777,
+    scrollbarThumbColor: #777,
     splitterColor: #282828,
 );

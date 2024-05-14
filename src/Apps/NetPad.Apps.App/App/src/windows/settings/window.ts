@@ -16,8 +16,6 @@ export class Window extends WindowBase {
         {route: "about", text: "About"},
     ];
 
-    private readonly settingsJsonReplacer = (k?: string, v?: string) => v === null || v === undefined ? undefined : v;
-
     constructor(
         private readonly startupOptions: URLSearchParams,
         @ISettingsService readonly settingsService: ISettingsService,
@@ -39,7 +37,7 @@ export class Window extends WindowBase {
     }
 
     public get canApply() {
-        return JSON.stringify(this.settings, this.settingsJsonReplacer) !== JSON.stringify(this.editableSettings, this.settingsJsonReplacer);
+        return JSON.stringify(this.settings) !== JSON.stringify(this.editableSettings);
     }
 
     public async apply(): Promise<boolean> {

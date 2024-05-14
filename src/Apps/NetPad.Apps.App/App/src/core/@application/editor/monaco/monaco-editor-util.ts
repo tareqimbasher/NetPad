@@ -41,33 +41,9 @@ export class MonacoEditorUtil {
             monacoOptions.theme = theme;
         }
 
-        if (settings.editor.backgroundColor) {
-            const baseTheme = await MonacoThemeManager.getOrLoad(theme);
-            let themeData: monaco.editor.IStandaloneThemeData;
-
-            if (baseTheme.data) {
-                themeData = JSON.parse(JSON.stringify(baseTheme.data)) as monaco.editor.IStandaloneThemeData;
-                themeData.colors["editor.background"] = settings.editor.backgroundColor;
-            } else {
-                themeData = {
-                    base: settings.appearance.theme === "Light" ? "vs" : "vs-dark",
-                    inherit: true,
-                    rules: [],
-                    colors: {
-                        "editor.background": settings.editor.backgroundColor,
-                    },
-                }
-            }
-
-            await MonacoThemeManager.setTheme(editor, new MonacoThemeInfo("theme-with-background", "Custom", themeData));
-
-            return;
-        }
-
-
         editor.updateOptions(monacoOptions);
 
-        let themeCustomizations = monacoOptions["theme.meta"];
+        let themeCustomizations = monacoOptions["themeCustomizations"];
 
         await MonacoThemeManager.setTheme(editor, monacoOptions.theme, themeCustomizations);
     }

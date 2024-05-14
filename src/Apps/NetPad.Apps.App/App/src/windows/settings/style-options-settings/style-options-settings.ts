@@ -24,7 +24,10 @@ export class StyleOptionsSettings {
         }
 
         this.editor = monaco.editor.create(el, {
-            value: this.currentSettings.styles.customCss ?? "/*  Write your custom CSS styles here */\n",
+            value: this.currentSettings.styles.customCss || "/*  Write your custom CSS styles here */\n" +
+                ".output-container {\n" +
+                "\tfont-size: 1rem;\n" +
+                "}",
             language: 'css',
             mouseWheelZoom: true,
             automaticLayout: true,
@@ -41,7 +44,6 @@ export class StyleOptionsSettings {
         this.editor.dispose();
     }
 
-    @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.backgroundColor)
     @watch<StyleOptionsSettings>(vm => vm.currentSettings.editor.monacoOptions)
     private async updateEditorOptions() {
         await MonacoEditorUtil.updateOptions(this.editor, this.settings);

@@ -4531,7 +4531,6 @@ export type WindowControlsPosition = "Right" | "Left";
 export type MainMenuVisibility = "AlwaysVisible" | "AutoHidden";
 
 export class EditorOptions implements IEditorOptions {
-    backgroundColor?: string | undefined;
     monacoOptions!: any;
 
     constructor(data?: IEditorOptions) {
@@ -4545,7 +4544,6 @@ export class EditorOptions implements IEditorOptions {
 
     init(_data?: any) {
         if (_data) {
-            this.backgroundColor = _data["backgroundColor"];
             this.monacoOptions = _data["monacoOptions"];
         }
     }
@@ -4559,7 +4557,6 @@ export class EditorOptions implements IEditorOptions {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["backgroundColor"] = this.backgroundColor;
         data["monacoOptions"] = this.monacoOptions;
         return data;
     }
@@ -4573,7 +4570,6 @@ export class EditorOptions implements IEditorOptions {
 }
 
 export interface IEditorOptions {
-    backgroundColor?: string | undefined;
     monacoOptions: any;
 }
 

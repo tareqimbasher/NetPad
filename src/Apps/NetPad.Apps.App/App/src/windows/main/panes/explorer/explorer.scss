@@ -1,8 +1,10 @@
 @import "~styles/colors";
+@import "~styles/themes";
 
 explorer {
     display: flex;
     flex-direction: column;
+    @include theme("background", explorerPaneBackground);
 
     .list-group-item {
         border-right: none;
