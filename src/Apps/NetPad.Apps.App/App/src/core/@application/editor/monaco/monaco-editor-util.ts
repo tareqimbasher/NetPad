@@ -9,7 +9,6 @@ import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser
 /* eslint-enable @typescript-eslint/ban-ts-comment */
 import {Settings} from "@domain";
 import {MonacoThemeManager} from "./monaco-theme-manager";
-import {MonacoThemeInfo} from "./monaco-theme-info";
 
 export class MonacoEditorUtil {
     public static constructModelUri(scriptId: string): monaco.Uri {
@@ -33,7 +32,7 @@ export class MonacoEditorUtil {
     }
 
     public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {
-        let monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions));
+        const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions));
         let theme = monacoOptions.theme;
 
         if (!theme) {
@@ -43,8 +42,6 @@ export class MonacoEditorUtil {
 
         editor.updateOptions(monacoOptions);
 
-        let themeCustomizations = monacoOptions["themeCustomizations"];
-
-        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, themeCustomizations);
+        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]);
     }
 }

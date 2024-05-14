@@ -86,15 +86,15 @@ export class MonacoThemeManager {
     }
 
     public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeId: string, customizations?: {
-        colors?: any,
+        colors?: object,
         rules?: monaco.editor.ITokenThemeRule[]
     }): Promise<void>;
     public static setTheme(editor: monaco.editor.IStandaloneCodeEditor, theme: MonacoThemeInfo, customizations?: {
-        colors?: any,
+        colors?: object,
         rules?: monaco.editor.ITokenThemeRule[]
     }): Promise<void>;
     public static async setTheme(editor: monaco.editor.IStandaloneCodeEditor, themeOrId: string | MonacoThemeInfo, customizations?: {
-        colors?: any,
+        colors?: object,
         rules?: monaco.editor.ITokenThemeRule[]
     }): Promise<void> {
         await this.initialize();
@@ -129,7 +129,7 @@ export class MonacoThemeManager {
 
             if (customizations.colors) {
                 for (const colorsKey in customizations.colors) {
-                    const colorValue = customizations.colors[colorsKey];
+                    const colorValue = customizations.colors[colorsKey as keyof typeof customizations.colors] as string;
 
                     if (colorValue && colorValue.startsWith("#")) {
                         customThemeData.colors[colorsKey] = colorValue;
