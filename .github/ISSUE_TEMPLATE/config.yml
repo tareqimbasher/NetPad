@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/tareqimbasher/NetPad/discussions/categories/q-a
+    about: Questions and help with scripts go in Discussions.
+  - name: Chat on Discord
+    url: https://discord.gg/FrgzNBYQFW
+    about: Talk with other NetPad users and the maintainer.
