@@ -1,5 +1,3 @@
-@import "~styles/themes";
-
 .toolbar {
-    @include theme(box-shadow, boxShadowBottom);
+    box-shadow: var(--box-shadow-bottom);
 }

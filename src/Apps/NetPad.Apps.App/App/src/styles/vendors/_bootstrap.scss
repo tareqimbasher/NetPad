@@ -1,40 +1,32 @@
 // Bootstrap variable overrides
+$info: #6f42c1;
 $body-bg: #eee;
-$font-size-base:                    1rem;
-
-$input-line-height:                 1;
-
-$input-padding-y:                   .275rem;
-$input-padding-x:                   .375rem;
-$input-padding-y-sm:                .2rem;
-$input-padding-x-sm:                .275rem;
-$input-padding-y-lg:                .375rem;
-$input-padding-x-lg:                .75rem;
-
-$input-btn-padding-y:               0.16rem;
-$input-btn-padding-y-sm:            0.1rem;
-
-$border-radius:                     0.15rem;
-$border-radius-sm:                  0.1rem;
-$border-radius-lg:                  0.2rem;
-$input-border-radius:               0rem;
-$input-border-radius-sm:            0rem;
-$input-border-radius-lg:            0rem;
-
-$spacer:                            0.5rem;
-$nav-link-padding-y:                0.25rem;
-$input-btn-focus-width:             0.1rem;
-$form-select-indicator-color:       silver;
-$dropdown-padding-y:                .3rem;
-
-$tooltip-font-size:                 $font-size-base;
-$tooltip-padding-y:                 $spacer * .5;
-$tooltip-padding-x:                 $spacer * 1;
-
-$info:                              #6f42c1;
-$body-secondary-color:              #808080;
-
-$font-family-monospace:             monospace;
+$body-secondary-color: #808080;
+$font-size-base: 1rem;
+$font-family-monospace: monospace;
+$input-line-height: 1;
+$input-padding-y: 0.275rem;
+$input-padding-x: 0.375rem;
+$input-padding-y-sm: 0.2rem;
+$input-padding-x-sm: 0.275rem;
+$input-padding-y-lg: 0.375rem;
+$input-padding-x-lg: 0.75rem;
+$input-btn-padding-y: 0.16rem;
+$input-btn-padding-y-sm: 0.1rem;
+$border-radius: 0.15rem;
+$border-radius-sm: 0.1rem;
+$border-radius-lg: 0.2rem;
+$input-border-radius: 0;
+$input-border-radius-sm: 0;
+$input-border-radius-lg: 0;
+$spacer: 0.5rem;
+$nav-link-padding-y: 0.25rem;
+$input-btn-focus-width: 0.1rem;
+$form-select-indicator-color: silver;
+$dropdown-padding-y: 0.3rem;
+$tooltip-font-size: $font-size-base;
+$tooltip-padding-y: $spacer * 0.5;
+$tooltip-padding-x: $spacer * 1;
 
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
@@ -48,19 +40,19 @@ a.btn-link:hover {
 }
 
 .form-control {
-    color: var(--textColor);
-    background-color: var(--formControlBackgroundColor);
-    border-color: var(--borderColor);
+    color: var(--text-color);
+    background-color: var(--form-control-background-color);
+    border-color: var(--border-color);
 
     &:focus {
-        color: var(--textColor);
-        background-color: var(--formControlBackgroundColor);
-        border-color: var(--activeColor);
+        color: var(--text-color);
+        background-color: var(--form-control-background-color);
+        border-color: var(--active-color);
     }
 
     &[disabled],
     &[disabled="true"] {
-        background-color: var(--formControlDisabledBackgroundColor);
+        background-color: var(--form-control-disabled-background-color);
     }
 }
 
@@ -70,86 +62,86 @@ textarea.form-control {
 }
 
 .form-select {
-    background-color: var(--formControlBackgroundColor);
-    color: var(--textColor);
-    border-color: var(--borderColor);
+    background-color: var(--form-control-background-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
 
     &[disabled],
     &[disabled="true"] {
-        background-color: var(--formControlDisabledBackgroundColor);
+        background-color: var(--form-control-disabled-background-color);
     }
 }
 
 .list-group-item {
-    background: var(--listBackground);
-    color: var(--textColor);
+    background: var(--list-background);
+    color: var(--text-color);
 
     &.list-group-item-action:not(.active):hover {
-        background: var(--hoverColor);
-        color: var(--textColor);
+        background: var(--hover-color);
+        color: var(--text-color);
     }
 
     &.active {
-        background: var(--activeColor);
-        color: var(--textStrongColor);
+        background: var(--active-color);
+        color: var(--text-strong-color);
     }
 
     &.active:hover {
-        background: var(--activeColor);
+        background: var(--active-color);
     }
 }
 
 .nav-tabs {
-    border-bottom-color: var(--borderColor);
+    border-bottom-color: var(--border-color);
 }
 
 .table {
-    color: var(--textColor);
+    color: var(--text-color);
 
     tr {
         td {
-            border-bottom-color: var(--borderColor);
+            border-bottom-color: var(--border-color);
         }
 
         &.active > td {
-            background: var(--activeColor);
+            background: var(--active-color);
 
             * {
-                color: var(--textColor);
+                color: var(--text-color);
             }
         }
 
         &:hover > td {
-            color: var(--textColor);
-            --bs-table-hover-bg: var(--hoverColor);
+            --bs-table-hover-bg: var(--hover-color);
+            color: var(--text-color);
         }
     }
 }
 
 .dropdown {
     > .btn {
-        color: var(--textColor);
+        color: var(--text-color);
     }
 }
 
 .dropdown-menu {
-    background: var(--listBackground);
-    color: var(--textColor);
-    border-color: var(--borderColor);
+    background: var(--list-background);
+    color: var(--text-color);
+    border-color: var(--border-color);
 
     .dropdown-item {
-        color: var(--textColor);
+        color: var(--text-color);
     }
 
     .dropdown-item:hover {
-        background: var(--hoverColor);
+        background: var(--hover-color);
     }
 
     .dropdown-divider {
-        border-color: var(--borderColor);
+        border-color: var(--border-color);
     }
 }
 
 .badge {
-    color: var(--textStrongColor);
+    color: var(--text-strong-color);
 }

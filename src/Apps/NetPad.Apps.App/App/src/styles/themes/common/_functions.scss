@@ -5,7 +5,7 @@
 } */
 
 // Helper function for checking if theme exists in theme colors
-@function themeExists($key, $theme) {
+@function theme-exists($key, $theme) {
     @if map-has-key($theme-values, $key) {
         @return map-has-key(map-get($theme-values, $key), $theme);
     }
@@ -14,6 +14,6 @@
 }
 
 // Helper function for getting a theme value
-@function getThemeValue($key, $theme) {
+@function get-theme-value($key, $theme) {
     @return map-get(map-get($theme-values, $key), $theme);
 }

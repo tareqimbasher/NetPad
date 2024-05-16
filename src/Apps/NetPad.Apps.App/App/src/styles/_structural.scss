@@ -5,19 +5,19 @@ html {
 }
 
 body {
-    @include theme(background-color, backgroundColor);
+    background: var(--background-color);
 }
 
 .window {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    @include theme(background-color, backgroundColor);
-    @include theme(color, textColor);
+    background: var(--background-color);
+    color: var(--text-color);
 
     .bottom-buttons-bar {
         @extend .p-3;
-        @include theme(border-top, borderColor, 1px solid);
+        border-top: var(--border-color) 1px solid;
         display: flex;
         align-items: center;
 
@@ -29,25 +29,31 @@ body {
 
 .tabs {
     .nav-item {
-        @include theme(background-color, tabColor);
+        color: var(--tab-inactive-text-color);
+        background: var(--tab-background);
         border-bottom: 2px solid transparent;
         margin-right: 1px;
 
         &.active {
-            font-weight: bold;
-            @include theme(background-color, tabActiveColor);
-            @include theme(border-bottom, activeColor, 2px solid);
+            color: var(--tab-active-text-color);
+            font-weight: 600;
+            background: var(--tab-active-background);
+            border-bottom: var(activeColor) 2px solid;
+
+            .nav-link {
+                color: var(--tab-active-text-color);
+            }
         }
 
         &:hover {
-            @include theme(background-color, tabActiveColor);
+            background: var(--tab-active-background);
         }
 
         .nav-link {
+            color: var(--tab-inactive-text-color);
             border: none;
             padding-top: $tab-vertical-padding;
             padding-bottom: $tab-vertical-padding;
-            @include theme(color, textColor);
 
             &:hover {
                 border: none;
@@ -73,8 +79,8 @@ body {
 }
 
 .dialog {
-    @include theme(background, dialogBackground);
-    @include theme(color, textColor);
+    background: var(--dialog-background);
+    color: var(--text-color);
 
     min-width: 100px;
     min-height: 50px;
@@ -95,13 +101,13 @@ body {
     background-color: rgb(0 0 0 / 50%);
 }
 
-.netpad-dark {
+.theme-netpad-dark {
     .btn-themed {
         @extend .btn-dark;
     }
 }
 
-.netpad-light {
+.theme-netpad-light {
     .btn-themed {
         @extend .btn-light;
     }

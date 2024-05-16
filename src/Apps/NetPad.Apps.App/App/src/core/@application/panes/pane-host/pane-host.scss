@@ -1,5 +1,3 @@
-@import "~styles/themes";
-
 $ribbon-width: 20px;
 
 pane-host {
@@ -7,7 +5,7 @@ pane-host {
 
     .ribbon {
         display: flex;
-        @include theme(background, paneRibbonBackground);
+        background: var(--pane-ribbon-background);
 
         .pane-tag {
             font-size: 0.9rem;
@@ -16,18 +14,18 @@ pane-host {
             align-items: center;
 
             &.active {
-                @include theme(background-color, tabActiveColor);
+                background: var(--tab-active-background);
             }
 
             &:hover {
-                @include theme(background-color, hoverColor);
+                background: var(--hover-color);
             }
         }
     }
 
     .pane-toolbar {
         z-index: 1;
-        @include theme(box-shadow, boxShadowBottom);
+        box-shadow: var(--box-shadow-bottom);
 
         > .pane-toolbar-composed {
             margin-left: 0.5rem;

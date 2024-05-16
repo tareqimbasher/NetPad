@@ -1,52 +1,49 @@
 $dark: (
     // TEXT
-    textColor: #dcdcdc,
-    textStrongColor: #fff,
-    textHoverColor: #fff,
+    text-color: #dcdcdc,
+    text-strong-color: #ffffff,
+    text-hover-color: #ffffff,
     // BACKGROUND
-    backgroundColor: rgb(34, 34, 34),
-    backgroundDarkerColor: rgb(28, 28, 28),
-    backgroundLighterColor: rgb(51, 51, 51),
-    listBackground: #282828,
-    formControlBackground: rgb(51, 51, 51),
-    formControlDisabledBackgroundColor: rgb(28, 28, 28),
-    kbdBackgroundColor: #59646e,
+    background-color: #222222,
+    background-lighter-color: #333333,
+    list-background: #282828,
+    form-control-background-color: #333333,
+    form-control-disabled-background-color: #1c1c1c,
+    kbd-background-color: #59646e,
     // BORDERS
-    borderColor: rgb(63, 63, 63),
-    borderContrastColor: rgb(85, 85, 85),
+    border-color: #3f3f3f,
+    border-contrast-color: #555555,
     // ACTIONS
-    hoverColor: rgba(255, 255, 255, 0.075),
-    activeColor: #0d6efd,
-    actionIconColor: silver,
-    actionIconHoverColor: white,
+    hover-color: rgba(255 255 255 / 7.5%),
+    active-color: #0d6efd,
+    action-icon-color: silver,
+    action-icon-hover-color: white,
     // SHADOWS
-    boxShadowBottom: 0 7px 8px -8px rgb(0, 0, 0, .36),
-    boxShadowBottomAndSides: 0 0 8px 2px rgb(0, 0, 0, .36),
+    box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 36%),
+    box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 36%),
     // TITLEBAR
-    titlebarBackground: #1b1c1d,
-    mainMenuDropdownItemBackgroundColor: #15539E,
+    titlebar-background: #1b1c1d,
     // STATUSBAR
-    statusbarBackground: #1b1c1d,
-    // PANES
-    paneRibbonBackground: #252525,
+    statusbar-background: #1b1c1d,
     // SCRIPT VIEW
-    scriptToolbarBackground: #1e1e1e,
+    script-toolbar-background: #1e1e1e,
+    find-text-box-background: #1c1c1c,
     // PANES
-    paneRibbonBackground: #252525,
-    explorerPaneBackground: rgb(34, 34, 34),
-    outputPaneBackground: #222,
+    pane-ribbon-background: #252525,
+    explorer-pane-background: #222222,
+    output-pane-background: #222222,
     // CONTEXT MENU
-    contextMenuBackground: #323232,
-    contextMenuItemHoverBackground: #15539E,
+    context-menu-background: #323232,
+    context-menu-item-hover-background: #15539e,
     // DIALOG
-    dialogBackground: #222,
+    dialog-background: #222222,
     // TABS
-    tabColor: rgb(45, 45, 45),
-    tabActiveColor: rgb(30, 30, 30),
-    tabActiveTextColor: #fff,
-    tabInactiveTextColor: rgba(255, 255, 255, 0.65),
+    tab-background: #2d2d2d,
+    tab-active-background: #1e1e1e,
+    tab-active-text-color: #ffffff,
+    tab-inactive-text-color: rgb(255 255 255 / 65%),
     // SCROLLBARS & SPLITTER
-    scrollbarTrackColor: #343434,
-    scrollbarThumbColor: #777,
-    splitterColor: #282828,
+    scrollbar-track-color: #343434,
+    scrollbar-thumb-color: #777777,
+    splitter-color: #282828,
 );

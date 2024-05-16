@@ -6,6 +6,7 @@ module.exports = {
         "declaration-empty-line-before": null,
         "value-no-vendor-prefix": null,
         "color-hex-length": null,
+        "selector-type-no-unknown": null,
         "scss/at-extend-no-missing-placeholder": [
             true,
             {

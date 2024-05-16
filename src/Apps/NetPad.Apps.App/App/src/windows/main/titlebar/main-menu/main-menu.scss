@@ -1,5 +1,4 @@
 @import "~styles/colors";
-@import "~styles/themes";
 
 main-menu {
     -webkit-app-region: no-drag;
@@ -8,7 +7,7 @@ main-menu {
         padding: 5px 8px;
 
         &:hover {
-            @include theme(background-color, hoverColor);
+            background: var(--hover-color);
         }
     }
 
@@ -22,10 +21,10 @@ main-menu {
             display: flex;
 
             &:hover {
-                @include theme(background-color, mainMenuDropdownItemBackgroundColor);
+                background: var(--context-menu-item-hover-background);
 
                 .menu-item-shortcut {
-                    @include theme(color, textColor, null, !important);
+                    color: var(--text-color) !important;
                 }
             }
 
@@ -43,6 +42,9 @@ main-menu {
     .menu-item-label {
         flex-grow: 1;
         padding-left: 0.25rem;
+        display: flex;
+        align-items: center;
+        height: 100%;
     }
 
     .menu-item-help-text {
@@ -56,6 +58,11 @@ main-menu {
         margin-top: 0; /* remove the gap so it doesn't close */
         top: 0;
         right: -285px;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
     }
 
     .main-menu-icon {
@@ -75,7 +82,7 @@ main-menu {
         }
 
         &:hover {
-            @include theme(background-color, hoverColor);
+            background: var(--hover-color);
         }
     }
 }

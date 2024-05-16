@@ -1,12 +1,11 @@
 @import "~styles/colors";
-@import "~styles/themes";
 
 explorer {
     display: flex;
     flex-direction: column;
-    @include theme("background", explorerPaneBackground);
+    background: var(--explorer-pane-background);
 
-    .list-group-item {
+    .list-group .list-group-item {
         border-right: none;
         border-left: none;
         border-width: 0;
@@ -14,7 +13,7 @@ explorer {
         padding-bottom: 0;
         padding-right: 0;
         user-select: none;
-        background-color: transparent !important;
+        background-color: transparent;
     }
 
     .tree-expand-node-icon,

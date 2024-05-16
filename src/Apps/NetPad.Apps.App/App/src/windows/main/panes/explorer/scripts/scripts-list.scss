@@ -1,5 +1,4 @@
 @import "~styles/colors";
-@import "~styles/themes";
 
 scripts-list {
     padding-top: 0.25rem;
@@ -15,7 +14,7 @@ scripts-list {
                 padding: 1px 8px;
 
                 &:hover {
-                    @include theme(background-color, hoverColor);
+                    background: var(--hover-color);
                 }
             }
 
@@ -49,10 +48,6 @@ scripts-list {
                     margin-right: 0.2rem;
                 }
 
-                .script-dirty-flag {
-                    @extend %text-orange;
-                }
-
                 &.is-active {
                     .script-name {
                         font-weight: bold;
@@ -65,12 +60,12 @@ scripts-list {
                     }
                 }
 
-                &.is-dirty {
-
+                &.is-dirty .script-dirty-flag {
+                    @extend %text-orange;
                 }
 
                 &:hover {
-                    @include theme(background-color, hoverColor);
+                    background: var(--hover-color);
                 }
             }
 

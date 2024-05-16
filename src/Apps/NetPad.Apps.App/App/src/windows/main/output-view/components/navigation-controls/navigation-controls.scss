@@ -1,7 +1,5 @@
-@import "~styles/themes";
-
 .nav-controls {
-    $borderRadius: 5px;
+    $border-radius: 5px;
 
     display: none;
     flex-direction: column;
@@ -9,26 +7,25 @@
     z-index: 1;
     right: 1rem;
     gap: 5px;
-    border-radius: $borderRadius;
+    border-radius: $border-radius;
     opacity: 0.65;
 
     &:hover {
-        @include theme(background-color, backgroundColor);
+        background: var(--background-color);
         opacity: 1;
     }
 
     button {
-        //border-radius: 60px;
-        border-radius: $borderRadius;
+        border-radius: $border-radius;
         height: 1.7rem;
         width: 1.7rem;
         text-align: center;
         padding: 0.15rem 0.1rem;
         font-size: 12px;
-        @include theme(color, textColor);
+        color: var(--text-color);
 
         &:hover {
-            @include theme(border-color, borderContrastColor);
+            border-color: var(--border-contrast-color);
         }
     }
 }

@@ -6,9 +6,6 @@ $theme-values: ();
 @import "./light";
 @import "./dark";
 
-@include generateThemeMappings(netpad-light, $light);
-@include generateThemeMappings(netpad-dark, $dark);
-
-html {
-    @include generateThemeVariables;
-}
+@include generate-theme-mappings(theme-netpad-light, $light);
+@include generate-theme-mappings(theme-netpad-dark, $dark);
+@include generate-theme-variables;

@@ -13,7 +13,7 @@ export abstract class WindowBase extends ViewModelBase {
     }
 
     protected get classes() {
-        return `netpad-${this.settings.appearance.theme.toLowerCase()} icon-theme-${this.settings.appearance.iconTheme.toLowerCase()}`;
+        return `theme-netpad-${this.settings.appearance.theme.toLowerCase()} icon-theme-${this.settings.appearance.iconTheme.toLowerCase()}`;
     }
 
     public override attaching() {

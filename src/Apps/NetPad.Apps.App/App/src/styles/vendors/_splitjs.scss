@@ -1,7 +1,5 @@
-@import "~styles/themes";
-
 .gutter {
-    @include theme(background-color, splitterColor);
+    background: var(--splitter-color);
     background-repeat: no-repeat;
     background-position: 50%;
 

@@ -46,14 +46,15 @@
 */
 @mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
     @each $theme in $themes {
-        @if themeExists($key, $theme) {
-            $value: getThemeValue($key, $theme);
+        @if theme-exists($key, $theme) {
+            $value: get-theme-value($key, $theme);
 
-            //:global(.#{$theme}) & {
+            // if using css-modules, use this instead of the @at-root line below
+            // :global(.#{$theme}) & {
             @at-root .#{$theme} #{&} {
-                // if you aren't using css-modules, use this instead of the :global line above
-                #{$property}: #{$inlineExtra} #{$value} #{$postExtra}; //fallback for browsers that shouldn't exist anymore
-                #{$property}: #{$inlineExtra} var(--theme-#{$theme}-#{$key}, #{$value}) #{$postExtra};
+                // fallback for older browsers
+                #{$property}: #{$inlineExtra} #{$value} #{$postExtra};
+                #{$property}: #{$inlineExtra} var(--#{$key}, #{$value}) #{$postExtra};
             }
         } @else {
             @error "Property #{$key} doesn't exist in #{$theme}";
@@ -62,13 +63,13 @@
 }
 
 /*
-  @mixin generateThemeMappings(themeName: string, themeMap: map)
+  @mixin generate-theme-mappings(theme-name: string, themeMap: map)
   helper function for generating list of theme variables and adding to existing map.
   This will add a new theme to the themes array and the theme color list.
 */
-@mixin generateThemeMappings($themeName, $newThemeMap) {
+@mixin generate-theme-mappings($theme-name, $newThemeMap) {
     //creates/adds to list of theme names
-    $themes: append($themes, $themeName, $separator: comma) !global;
+    $themes: append($themes, $theme-name, $separator: comma) !global;
 
     @each $key, $value in $newThemeMap {
         //adds new themeKey if doesn't exist
@@ -77,7 +78,7 @@
                 $theme-values,
                 (
                     $key: (
-                        $themeName: $value,
+                        $theme-name: $value,
                     ),
                 )
             ) !global;
@@ -85,20 +86,20 @@
 
         //adds to existing key map
         @else {
-            $existingKeyMap: map-get($theme-values, $key);
+            $existing-key-map: map-get($theme-values, $key);
 
             //if theme variable doesn't exist, add it
-            @if not map-get($existingKeyMap, $themeName) {
-                $newKeyMap: map-merge(
-                    $existingKeyMap,
+            @if not map-get($existing-key-map, $theme-name) {
+                $new-key-map: map-merge(
+                    $existing-key-map,
                     (
-                        $themeName: $value,
+                        $theme-name: $value,
                     )
                 );
                 $theme-values: map-merge(
                     $theme-values,
                     (
-                        $key: $newKeyMap,
+                        $key: $new-key-map,
                     )
                 ) !global;
             }
@@ -107,15 +108,17 @@
 }
 
 /*
-  @mixin generateThemeVariables
+  @mixin generate-theme-variables
   Auto-generates the entire list of theme variables for use in var() statements.
   Really should only be called in the html selector at the app root.
 */
-@mixin generateThemeVariables {
-    @each $key, $val in $theme-values {
-        @each $theme in $themes {
-            @if themeExists($key, $theme) {
-                --theme-#{$theme}-#{$key}: #{getThemeValue($key, $theme)};
+@mixin generate-theme-variables {
+    @each $theme in $themes {
+        .#{$theme} {
+            @each $key, $val in $theme-values {
+                @if theme-exists($key, $theme) {
+                    --#{$key}: #{get-theme-value($key, $theme)};
+                }
             }
         }
     }
