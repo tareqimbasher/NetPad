@@ -1,9 +1,7 @@
-@import "~styles/themes";
-
 .excel-export-dialog {
     width: 500px;
     padding: 1.5rem;
-    @include theme(box-shadow, boxShadowBottomAndSides);
+    box-shadow: var(--box-shadow-bottom-and-sides);
 
     .main-header {
         margin-bottom: 1.5rem;

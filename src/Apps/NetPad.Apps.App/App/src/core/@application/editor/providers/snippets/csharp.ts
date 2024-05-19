@@ -52,7 +52,7 @@ export const snippets = {
         ],
         description: "Checked block"
     },
-    Class: {
+    "Class": {
         prefix: "class",
         body: [
             "class ${1:MyClass}",
@@ -102,7 +102,7 @@ export const snippets = {
         ],
         description: "Else statement"
     },
-    Enum: {
+    "Enum": {
         prefix: "enum",
         body: [
             "enum ${1:MyEnum}",
@@ -145,7 +145,7 @@ export const snippets = {
         ],
         description: "Implementing Equals() according to guidelines"
     },
-    Exception: {
+    "Exception": {
         prefix: "exception",
         body: [
             "[System.Serializable]",
@@ -201,7 +201,7 @@ export const snippets = {
         ],
         description: "if statement"
     },
-    Indexer: {
+    "Indexer": {
         prefix: "indexer",
         body: [
             "${1:public} ${2:object} this[${3:int} index]",
@@ -212,7 +212,7 @@ export const snippets = {
         ],
         description: "Indexer"
     },
-    Interface: {
+    "Interface": {
         prefix: "interface",
         body: [
             "interface ${1:MyInterface}",
@@ -309,7 +309,7 @@ export const snippets = {
         ],
         description: "MessageBox.Show"
     },
-    Namespace: {
+    "Namespace": {
         prefix: "namespace",
         body: [
             "namespace ${1:Name}",
@@ -319,7 +319,7 @@ export const snippets = {
         ],
         description: "Namespace"
     },
-    FileScopedNamespace: {
+    "FileScopedNamespace": {
         prefix: "fsnamespace",
         body: [
             "namespace ${1:Name};"
@@ -357,21 +357,21 @@ export const snippets = {
         ],
         description: "Property and backing field"
     },
-    propg: {
+    "propg": {
         prefix: "propg",
         body: [
             "public ${1:int} ${2:MyProperty} { get; private set; }$0"
         ],
         description: "An automatically implemented property with a 'get' accessor and a private 'set' accessor. C# 3.0 or higher"
     },
-    prop: {
+    "prop": {
         prefix: "prop",
         body: [
             "public ${1:int} ${2:MyProperty} { get; set; }$0"
         ],
         description: "An automatically implemented property. C# 3.0 or higher"
     },
-    sim: {
+    "sim": {
         prefix: "sim",
         body: [
             "static int Main(string[] args)",
@@ -382,7 +382,7 @@ export const snippets = {
         ],
         description: "int Main()"
     },
-    Struct: {
+    "Struct": {
         prefix: "struct",
         body: [
             "struct ${1:MyStruct}",
@@ -392,7 +392,7 @@ export const snippets = {
         ],
         description: "Struct"
     },
-    svm: {
+    "svm": {
         prefix: "svm",
         body: [
             "static void Main(string[] args)",
@@ -482,7 +482,7 @@ export const snippets = {
         ],
         description: "While loop"
     },
-    constructor: {
+    "constructor": {
         prefix: "ctor",
         body: [
             "${1:public} ${2:MyClass}(${3:Parameters})",

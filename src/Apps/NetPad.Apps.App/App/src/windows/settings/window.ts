@@ -1,5 +1,7 @@
+import {IContainer} from "aurelia";
 import {ISettingsService, Settings} from "@domain";
 import {WindowBase} from "@application/windows/window-base";
+import {MonacoEnvironmentManager} from "@application";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
@@ -8,6 +10,7 @@ export class Window extends WindowBase {
         {route: "general", text: "General"},
         {route: "editor", text: "Editor"},
         {route: "results", text: "Results"},
+        {route: "style", text: "Styles"},
         {route: "keyboard-shortcuts", text: "Keyboard Shortcuts"},
         {route: "omnisharp", text: "OmniSharp"},
         {route: "about", text: "About"},
@@ -15,7 +18,8 @@ export class Window extends WindowBase {
 
     constructor(
         private readonly startupOptions: URLSearchParams,
-        @ISettingsService readonly settingsService: ISettingsService) {
+        @ISettingsService readonly settingsService: ISettingsService,
+        @IContainer private readonly container: IContainer) {
         super();
 
         document.title = "Settings";
@@ -28,20 +32,42 @@ export class Window extends WindowBase {
         this.editableSettings = this.settings.clone();
     }
 
-    public async save() {
+    public async binding() {
+        await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
+    }
+
+    public get canApply() {
+        return JSON.stringify(this.settings) !== JSON.stringify(this.editableSettings);
+    }
+
+    public async apply(): Promise<boolean> {
         if (!this.validate()) {
+            return false;
+        }
+
+        try {
+            await this.settingsService.update(this.editableSettings);
+            return true;
+        } catch (e) {
+            this.logger.error("Error while saving settings", e);
+            alert("A problem occurred. Could not save settings");
+            return false;
+        }
+    }
+
+    public async save() {
+        if (!await this.apply()) {
             return;
         }
 
-        await this.settingsService.update(this.editableSettings);
         window.close();
     }
 
-    public cancel() {
+    public close() {
         window.close();
     }
 
-    public async showSettingsFile() {
+    public async showAppDataFolder() {
         await this.settingsService.showSettingsFile();
     }
 

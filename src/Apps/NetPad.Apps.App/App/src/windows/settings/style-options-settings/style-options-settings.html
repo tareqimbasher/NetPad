@@ -1,0 +1,21 @@
+﻿<div class="section flex-grow-height-restricted d-flex flex-column">
+    <div class="header">
+        <i class="settings-icon"></i>
+        Options
+    </div>
+    <div class="body">
+        <div class="form-check">
+            <input id="custom-styles-enabled"
+                   class="form-check-input"
+                   type="checkbox"
+                   checked.bind="settings.styles.enabled">
+            <label class="form-check-label" for="custom-styles-enabled">
+                Enable custom styles
+            </label>
+        </div>
+    </div>
+
+    <div class="flex-grow-height-restricted border-1">
+        <div class="text-editor" id="style-editor"></div>
+    </div>
+</div>

@@ -1,5 +1,3 @@
-@import "~styles/themes";
-
 #keyboard-shortcut-capture {
     position: absolute;
     top: 0;
@@ -13,6 +11,6 @@
     align-items: center;
     justify-content: center;
     outline: none;
-    @include theme(background-color, backgroundLighterColor);
+    background: var(--background-lighter-color);
     z-index: 1;
 }

@@ -1,5 +1,3 @@
-@import "~styles/themes";
-
 data-connections-list {
     padding-top: 0.25rem;
     display: flex;
@@ -53,7 +51,7 @@ data-connections-list {
 
     .data-connection:hover,
     .display-text:hover {
-        @include theme(background-color, hoverColor);
+        background: var(--hover-color);
     }
 
     i[class*="-node-icon"] {

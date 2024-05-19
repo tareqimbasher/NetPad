@@ -1,17 +1,10 @@
-@import "~styles/themes";
-
-text-editor {
-    width: 100%;
-    height: 100%;
-}
-
 .monaco-editor {
     .code-text-error {
         text-decoration: wavy underline red;
     }
 
     .monaco-inputbox input:active,
-    .monaco-inputbox input:focus{
+    .monaco-inputbox input:focus {
         outline-color: #0d6efd;
         outline-style: solid;
     }
@@ -41,13 +34,13 @@ text-editor {
         }
     }
 
-    .monaco-sash.horizontal.hover:before,
-    .monaco-sash.horizontal.active:before {
+    .monaco-sash.horizontal.hover::before,
+    .monaco-sash.horizontal.active::before {
         height: 4px;
     }
 
-    .monaco-sash.vertical.hover:before,
-    .monaco-sash.vertical.active:before {
+    .monaco-sash.vertical.hover::before,
+    .monaco-sash.vertical.active::before {
         width: 4px;
     }
 
@@ -66,16 +59,16 @@ text-editor {
     }
 
     input.rename-input {
-        @include theme(color, textColor);
+        color: var(--text-color);
     }
 }
 
-.theme-dark {
+.theme-netpad-dark {
     .monaco-editor {
         // Inlay hint styling
         span[class*=" dyn-rule"],
         span[class^="dyn-rule"] {
-            background-color: #2D2D2D;
+            background-color: #2d2d2d;
         }
     }
 }

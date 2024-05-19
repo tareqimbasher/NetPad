@@ -122,6 +122,8 @@ module.exports = function (env, {analyze}) {
                 languages: [
                     "csharp",
                     "sql",
+                    "json",
+                    "css"
                 ]
             }),
             analyze && new BundleAnalyzerPlugin()

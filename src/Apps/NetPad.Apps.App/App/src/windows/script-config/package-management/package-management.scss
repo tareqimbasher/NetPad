@@ -1,4 +1,3 @@
-@import "~styles/themes";
 @import "~styles/colors";
 
 package-management {
@@ -12,7 +11,7 @@ package-management {
         display: flex;
         align-items: center;
         margin-bottom: 5px;
-        @include theme(border-bottom, borderColor, 1px solid);
+        border-bottom: var(--border-color) 1px solid;
     }
 
     .details-list {
@@ -74,6 +73,6 @@ package-management {
     }
 
     .search-bottom-bar {
-        @include theme(border-top, borderColor, 1px solid);
+        border-top: var(--border-color) 1px solid;
     }
 }

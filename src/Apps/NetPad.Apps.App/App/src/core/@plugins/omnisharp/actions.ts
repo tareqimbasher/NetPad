@@ -1,6 +1,6 @@
 import {IContainer} from "aurelia";
 import * as monaco from "monaco-editor";
-import {EditorUtil} from "@application";
+import {MonacoEditorUtil} from "@application";
 import {IOmniSharpService} from "./omnisharp-service";
 
 export class Actions {
@@ -14,7 +14,7 @@ export class Actions {
             const model = editor.getModel();
             if (!model) return;
 
-            const scriptId = EditorUtil.getScriptId(model);
+            const scriptId = MonacoEditorUtil.getScriptId(model);
 
             const omnisharpService = this.container.get(IOmniSharpService);
             await omnisharpService.restartServer(scriptId);

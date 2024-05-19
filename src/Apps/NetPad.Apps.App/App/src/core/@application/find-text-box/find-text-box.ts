@@ -39,6 +39,8 @@ export class FindTextBox extends ViewModelBase {
 
                 this.options.rootElement.classList.remove("hide-text-search-results");
                 setTimeout(() => this.txtSearch.focus(), 100);
+                ev.preventDefault();
+                ev.stopPropagation();
             }
         };
 

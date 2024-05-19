@@ -139,7 +139,7 @@ export class TabBar extends ViewModelBase {
     private scrollTabIntoView(viewable: ViewableObject | undefined | null) {
         if (!viewable) return;
 
-        const tab = this.element.querySelector(`.view-tab[data-viewable-id='${viewable.id}']`);
+        const tab = this.element.querySelector(`.view-tab[data-id='${viewable.id}']`);
 
         if (tab) {
             tab.scrollIntoView();
@@ -163,7 +163,7 @@ export class TabBar extends ViewModelBase {
     }
 
     private getViewableId(tab: Element): string {
-        const id = tab?.attributes.getNamedItem("data-viewable-id")?.value;
+        const id = tab?.attributes.getNamedItem("data-id")?.value;
 
         if (!id) {
             throw new Error(`Could not find viewable ID on element`);
@@ -241,7 +241,7 @@ export class TabBar extends ViewModelBase {
 
     private saveViewablesOrder = Util.debounce(this, () => {
         this.viewablesOrder = Array.from(this.tabContainer.children)
-            .map(e => e.getAttribute("data-viewable-id"))
+            .map(e => e.getAttribute("data-id"))
             .filter(id => id !== null) as string[];
 
         const key = `tab-bar.${this.viewerHost.order}.viewables-order`;

@@ -5,7 +5,7 @@ sql-view {
     min-height: 0;
     overflow: hidden;
 
-    .html-output-container {
+    .output-container {
         white-space: nowrap;
 
         .group.text {
@@ -43,7 +43,7 @@ sql-view {
             color: red;
         }
 
-        > div[class*='log-by-'] {
+        > div[class*="log-by-"] {
             display: none;
         }
     }

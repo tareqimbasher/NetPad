@@ -25,7 +25,7 @@ tab-bar {
         white-space: nowrap;
         font-size: 0.925rem;
         cursor: pointer;
-        @include theme(background-color, tabColor);
+        background: var(--tab-background);
 
         &:not(:last-child) {
             margin-right: 1px;
@@ -79,11 +79,11 @@ tab-bar {
         }
 
         &:hover {
-            @include theme(background-color, tabActiveColor);
+            background: var(--tab-active-background);
         }
 
         &.active {
-            @include theme(background-color, tabActiveColor);
+            background: var(--tab-active-background);
             font-weight: bold;
 
             .script-name {
@@ -102,23 +102,23 @@ tab-bar {
 
 .minimal {
     .view-tab {
-        @include theme(background-color, tabColor);
+        background: var(--tab-background);
         font-weight: normal !important;
         border-top: transparent 2px solid;
         border-bottom: transparent 2px solid;
 
         .script-name {
-            @include theme(color, tabInactiveTextColor);
+            color: var(--tab-inactive-text-color);
             display: flex;
             align-items: center;
         }
 
         &.active {
-            @include theme(background-color, tabActiveColor);
-            @include theme(border-bottom, borderContrastColor, 2px solid);
+            background: var(--tab-active-background);
+            border-bottom: var(borderContrastColor) 2px solid;
 
             .script-name {
-                @include theme(color, tabActiveTextColor);
+                color: var(--tab-active-text-color);
             }
         }
 
@@ -129,7 +129,7 @@ tab-bar {
 
     .viewer-host.active {
         .view-tab.active {
-            @include theme(border-bottom-color, activeColor);
+            border-bottom-color: var(--active-color);
         }
     }
 }

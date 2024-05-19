@@ -1,46 +1,49 @@
 $light: (
-    textColor: #34314b,
-    textHighestContrastColor: #000,
-    textHoverColor: #000,
-    textContrastColor: #d4d4d4,
-    backgroundColor: rgb(243, 243, 243),
-    backgroundDarkerColor: #f3f3f3,
-    backgroundLighterColor: #f6f6f6,
-    borderColor: #ccc,
-    borderContrastColor: #bfbfbf,
-    hoverColor: rgba(0, 0, 0, 0.075),
-    activeColor: #0d6efd,
-    tabColor: rgb(236, 236, 236),
-    tabActiveColor: rgb(255, 255, 255),
-    tabActiveTextColor: #000,
-    tabInactiveTextColor: rgba(0, 0, 0, 0.65),
-    splitterColor: #dcdcdc,
-    scrollbarTrackColor: #CECECE,
-    scrollbarThumbColor: #7E8182,
-    listBackground: #f1f1f1,
-    actionIconColor: #595959,
-    actionIconHoverColor: black,
-    formControlBackground: #eee,
-    kbdBackground: #212529,
-    boxShadowBottom: 0 7px 8px -8px rgba(0, 0, 0, 0.16),
-    boxShadowBottomAndSides: 0 0 8px 2px rgba(0, 0, 0, 0.16),
-    // WINDOW
-    windowBorderColor: #ccc,
-    // HEADER
-    headerBackground: #333,
-    // MAIN MENU
-    mainMenuDropdownItemBackgroundColor: rgb(30 144 255 / 50%),
+    // TEXT
+    text-color: #34314b,
+    text-strong-color: #000000,
+    text-hover-color: #000000,
+    // BACKGROUND
+    background-color: #f3f3f3,
+    background-lighter-color: #f6f6f6,
+    list-background: #f1f1f1,
+    form-control-background-color: #fafafa,
+    form-control-disabled-background-color: #ececec,
+    kbd-background-color: #212529,
+    // BORDERS
+    border-color: #cccccc,
+    border-contrast-color: #bfbfbf,
+    // ACTIONS
+    hover-color: rgb(0 0 0 / 0.75%),
+    active-color: #0d6efd,
+    action-icon-color: #595959,
+    action-icon-hover-color: black,
+    // SHADOWS
+    box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 16%),
+    box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 16%),
+    // TITLEBAR
+    titlebar-background: #dfdfdf,
     // STATUSBAR
-    statusbarBackground: #e3e3e3,
-    // PANES
-    paneRibbonBackground: #efefef,
+    statusbar-background: #e3e3e3,
     // SCRIPT VIEW
-    scriptHeaderBackground: #fff,
-    resultsBackground: #fafafa,
-    resultsToolbarBackground: #ccc,
+    script-toolbar-background: #ffffff,
+    find-text-box-background: #ededed,
+    // PANES
+    pane-ribbon-background: #efefef,
+    explorer-pane-background: #f3f3f3,
+    output-pane-background: #fafafa,
     // CONTEXT MENU
-    contextMenuBackgroundColor: #f3f3f3,
-    contextMenuItemBackgroundColor: rgb(30 144 255 / 50%),
+    context-menu-background: #f3f3f3,
+    context-menu-item-hover-background: rgb(30 144 255 / 50%),
     // DIALOG
-    dialogBackgroundColor: #f3f3f3,
+    dialog-background: #f3f3f3,
+    // TABS
+    tab-background: #ececec,
+    tab-active-background: #ffffff,
+    tab-active-text-color: #000000,
+    tab-inactive-text-color: rgb(0 0 0 / 65%),
+    // SCROLLBARS & SPLITTER
+    scrollbar-track-color: #cecece,
+    scrollbar-thumb-color: #7e8182,
+    splitter-color: #dcdcdc,
 );

@@ -1,5 +1,5 @@
 import {CancellationToken, editor, languages} from "monaco-editor";
-import {EditorUtil} from "@application";
+import {MonacoEditorUtil} from "@application";
 import {IOmniSharpService} from "../omnisharp-service";
 import * as api from "../api";
 import {Converter} from "../utils";
@@ -12,7 +12,7 @@ export async function findUsages(
     excludeDefinition: boolean,
     token: CancellationToken): Promise<languages.Location[] | null> {
 
-    const scriptId = EditorUtil.getScriptId(model);
+    const scriptId = MonacoEditorUtil.getScriptId(model);
 
     const response = await omnisharpService.findUsages(scriptId, new api.FindUsagesRequest({
         onlyThisFile: true,

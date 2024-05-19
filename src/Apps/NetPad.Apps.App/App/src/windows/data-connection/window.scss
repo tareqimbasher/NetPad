@@ -1,10 +1,8 @@
-@import "~styles/themes";
-
 .connection-window {
     padding: 1rem;
 
     .tabs-control-container {
-        @include theme(border, borderColor, 1px solid);
+        border: var(--border-color) 1px solid;
     }
 
     .tab-content-container {
@@ -14,8 +12,6 @@
 
     .connection-type-logo {
         max-width: 1rem;
-
-        //max-height: 1rem;
         margin-right: 0.25rem;
     }
 
@@ -48,7 +44,7 @@
     }
 
     .col-form-label {
-        @include theme(color, textHighestContrastColor);
+        color: var(--text-strong-color);
         user-select: none;
     }
 

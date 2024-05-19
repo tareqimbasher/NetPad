@@ -35,11 +35,11 @@
 }
 
 hr {
-    @include theme(color, borderColor);
+    color: var(--border-color);
 }
 
 kbd {
-    @include theme(background-color, kbdBackground);
+    background: var(--kbd-background-color);
 }
 
 .clickable,
@@ -51,33 +51,25 @@ kbd {
     @extend %clickable;
 
     &:hover {
-        @include theme(color, textHoverColor);
+        color: var(--text-hover-color);
     }
-}
-
-.btn.btn-basic {
-    background: transparent;
 }
 
 .action-icon {
     @extend %clickable;
-    @include theme(color, actionIconColor);
+    color: var(--action-icon-color);
 
     &:hover {
-        @include theme(color, actionIconHoverColor);
-
-        // &::before {
-        //     font-weight: bold !important;
-        // }
+        color: var(--action-icon-hover-color);
     }
 
     &.active {
-        @include theme(color, activeColor);
+        color: var(--active-color);
     }
 }
 
 .active-context-menu-target {
-    @include theme(background-color, hoverColor);
+    background: var(--hover-color);
 }
 
 .text-truncate-1-line {
@@ -119,15 +111,15 @@ kbd {
 }
 
 ::-webkit-scrollbar-track {
-    @include theme(background-color, scrollbarTrackColor);
+    background: var(--scrollbar-track-color);
 }
 
 ::-webkit-scrollbar-thumb {
-    @include theme(background-color, scrollbarThumbColor);
+    background: var(--scrollbar-thumb-color);
 }
 
 ::-webkit-scrollbar-corner {
-    @include theme(background-color, scrollbarTrackColor);
+    background: var(--scrollbar-track-color);
 }
 
 .fade-in {

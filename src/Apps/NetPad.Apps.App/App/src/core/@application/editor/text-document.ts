@@ -1,6 +1,6 @@
 import {SubscriptionToken, WithDisposables} from "@common";
 import * as monaco from "monaco-editor";
-import {EditorUtil, TextLanguage} from "@application";
+import {MonacoEditorUtil, TextLanguage} from "@application";
 
 export class TextDocument extends WithDisposables {
     public selection: monaco.Selection | null | undefined;
@@ -29,7 +29,7 @@ export class TextDocument extends WithDisposables {
             this._textModel = monaco.editor.createModel(
                 initialText,
                 language,
-                EditorUtil.constructModelUri(this.id)
+                MonacoEditorUtil.constructModelUri(this.id)
             );
 
             this.addDisposable(this._textModel.onDidChangeContent(async () => {

@@ -1,5 +1,3 @@
-@import "~styles/themes";
-
 output-view-toolbar {
     display: flex;
     flex-direction: row;
@@ -25,12 +23,12 @@ output-view-toolbar {
             }
 
             &:hover {
-                @include theme(background-color, hoverColor);
+                background: var(--hover-color);
             }
 
             &.active {
-                @include theme(background-color, hoverColor);
-                @include theme(color, activeColor);
+                background: var(--hover-color);
+                color: var(--active-color);
             }
         }
     }
@@ -54,7 +52,7 @@ output-view-toolbar {
             user-select: none;
 
             &:hover {
-                @include theme(background-color, hoverColor);
+                background: var(--hover-color);
             }
         }
     }

@@ -1,8 +1,7 @@
 @import "~styles/variables";
-@import "~styles/themes";
 
 statusbar {
-    @include theme(background-color, statusbarBackground);
+    background: var(--statusbar-background);
     height: $statusbar-height;
     max-height: $statusbar-height;
     padding: 0 0.5rem;
@@ -59,7 +58,7 @@ statusbar {
         user-select: none;
 
         &:hover {
-            @include theme(background-color, hoverColor);
+            background: var(--hover-color);
         }
     }
 }

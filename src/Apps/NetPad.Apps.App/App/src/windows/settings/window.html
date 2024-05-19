@@ -2,6 +2,7 @@
     <import from="./general-settings/general-settings"></import>
     <import from="./editor-options-settings/editor-options-settings"></import>
     <import from="./results-options-settings/results-options-settings"></import>
+    <import from="./style-options-settings/style-options-settings"></import>
     <import from="./keyboard-shortcut-settings/keyboard-shortcut-settings"></import>
     <import from="./omnisharp-settings/omnisharp-settings"></import>
     <import from="./about/about"></import>
@@ -24,6 +25,9 @@
                 <results-options-settings case="results"
                                           class="tab-content"
                                           settings.bind="editableSettings"></results-options-settings>
+                <style-options-settings case="style"
+                                          class="tab-content"
+                                          settings.bind="editableSettings"></style-options-settings>
                 <keyboard-shortcut-settings case="keyboard-shortcuts"
                                             class="tab-content"
                                             settings.bind="editableSettings"></keyboard-shortcut-settings>
@@ -39,15 +43,16 @@
         <div class="bottom-buttons-bar">
             <div class="me-auto">
                 <button class="btn btn-secondary"
-                        click.trigger="showSettingsFile()"
+                        click.trigger="showAppDataFolder()"
                         platforms="Electron"
                         title="This is where NetPad stores local files.">
                     Open App Data Folder
                 </button>
             </div>
             <div>
-                <button class="btn btn-primary" click.trigger="save()">Save</button>
-                <button class="btn btn-outline-secondary" click.trigger="cancel()">Cancel</button>
+                <button class="btn btn-primary" click.trigger="apply()" disabled.bind="!canApply">Apply</button>
+                <button class="btn btn-primary" click.trigger="save()" disabled.bind="!canApply">Save</button>
+                <button class="btn btn-outline-secondary" click.trigger="close()">Close</button>
             </div>
         </div>
     </div>

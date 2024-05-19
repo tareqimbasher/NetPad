@@ -1,11 +1,9 @@
-@import "~styles/themes";
-
 context-menu {
     position: fixed;
     z-index: 100001;
     opacity: 0;
     visibility: hidden;
-    @include theme(background-color, contextMenuBackgroundColor);
+    background: var(--context-menu-background);
     border-radius: 2px;
     min-width: 285px;
     max-width: 600px;
@@ -14,15 +12,6 @@ context-menu {
         0 8px 10px 1px rgb(0 0 0 / 14%),
         0 3px 14px 2px rgb(0 0 0 / 12%),
         0 5px 5px -3px rgb(0 0 0 / 20%);
-    box-shadow:
-        0 8px 10px 1px rgb(0 0 0 / 14%),
-        0 3px 14px 2px rgb(0 0 0 / 12%),
-        0 5px 5px -3px rgb(0 0 0 / 20%);
-    box-shadow:
-        0 8px 10px 1px rgb(0 0 0 / 14%),
-        0 3px 14px 2px rgb(0 0 0 / 12%),
-        0 5px 5px -3px rgb(0 0 0 / 20%);
-    transition: visibility 0.2s, opacity 0.2s linear;
     transition: visibility 0.2s, opacity 0.2s linear;
 
     &.visible {
@@ -37,7 +26,7 @@ context-menu {
             padding: 2px 5px;
 
             &:hover {
-                @include theme(background-color, contextMenuItemBackgroundColor);
+                background: var(--context-menu-item-hover-background);
             }
 
             .item-container {
@@ -65,7 +54,6 @@ context-menu {
         }
 
         hr {
-            //padding: 0;
             margin: 3px 0;
             background-color: white;
         }

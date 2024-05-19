@@ -1,6 +1,6 @@
 import {CancellationToken, editor, IRange, languages, Position} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
+import {MonacoEditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
@@ -73,7 +73,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
                 return item;
             }
 
-            const scriptId = EditorUtil.getScriptId(completion.model);
+            const scriptId = MonacoEditorUtil.getScriptId(completion.model);
 
             const resolution = await this.omnisharpService.getCompletionResolution(scriptId, completion.apiCompletionItem, this.getAbortSignal(token));
 
@@ -104,7 +104,7 @@ export class OmniSharpCompletionProvider extends FeatureProvider implements ICom
             return new CompletionResults();
         }
 
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const omnisharpCompletions = await this.omnisharpService.getCompletion(scriptId, request, this.getAbortSignal(token));
 

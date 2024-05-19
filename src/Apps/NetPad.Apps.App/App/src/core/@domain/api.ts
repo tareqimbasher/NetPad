@@ -4318,6 +4318,7 @@ export class Settings implements ISettings {
     appearance!: AppearanceOptions;
     editor!: EditorOptions;
     results!: ResultsOptions;
+    styles!: StyleOptions;
     keyboardShortcuts!: KeyboardShortcutOptions;
     omniSharp!: OmniSharpOptions;
 
@@ -4332,6 +4333,7 @@ export class Settings implements ISettings {
             this.appearance = new AppearanceOptions();
             this.editor = new EditorOptions();
             this.results = new ResultsOptions();
+            this.styles = new StyleOptions();
             this.keyboardShortcuts = new KeyboardShortcutOptions();
             this.omniSharp = new OmniSharpOptions();
         }
@@ -4348,6 +4350,7 @@ export class Settings implements ISettings {
             this.appearance = _data["appearance"] ? AppearanceOptions.fromJS(_data["appearance"]) : new AppearanceOptions();
             this.editor = _data["editor"] ? EditorOptions.fromJS(_data["editor"]) : new EditorOptions();
             this.results = _data["results"] ? ResultsOptions.fromJS(_data["results"]) : new ResultsOptions();
+            this.styles = _data["styles"] ? StyleOptions.fromJS(_data["styles"]) : new StyleOptions();
             this.keyboardShortcuts = _data["keyboardShortcuts"] ? KeyboardShortcutOptions.fromJS(_data["keyboardShortcuts"]) : new KeyboardShortcutOptions();
             this.omniSharp = _data["omniSharp"] ? OmniSharpOptions.fromJS(_data["omniSharp"]) : new OmniSharpOptions();
         }
@@ -4371,6 +4374,7 @@ export class Settings implements ISettings {
         data["appearance"] = this.appearance ? this.appearance.toJSON() : <any>undefined;
         data["editor"] = this.editor ? this.editor.toJSON() : <any>undefined;
         data["results"] = this.results ? this.results.toJSON() : <any>undefined;
+        data["styles"] = this.styles ? this.styles.toJSON() : <any>undefined;
         data["keyboardShortcuts"] = this.keyboardShortcuts ? this.keyboardShortcuts.toJSON() : <any>undefined;
         data["omniSharp"] = this.omniSharp ? this.omniSharp.toJSON() : <any>undefined;
         return data;
@@ -4394,6 +4398,7 @@ export interface ISettings {
     appearance: AppearanceOptions;
     editor: EditorOptions;
     results: ResultsOptions;
+    styles: StyleOptions;
     keyboardShortcuts: KeyboardShortcutOptions;
     omniSharp: OmniSharpOptions;
 }
@@ -4526,7 +4531,6 @@ export type WindowControlsPosition = "Right" | "Left";
 export type MainMenuVisibility = "AlwaysVisible" | "AutoHidden";
 
 export class EditorOptions implements IEditorOptions {
-    backgroundColor?: string | undefined;
     monacoOptions!: any;
 
     constructor(data?: IEditorOptions) {
@@ -4540,7 +4544,6 @@ export class EditorOptions implements IEditorOptions {
 
     init(_data?: any) {
         if (_data) {
-            this.backgroundColor = _data["backgroundColor"];
             this.monacoOptions = _data["monacoOptions"];
         }
     }
@@ -4554,7 +4557,6 @@ export class EditorOptions implements IEditorOptions {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["backgroundColor"] = this.backgroundColor;
         data["monacoOptions"] = this.monacoOptions;
         return data;
     }
@@ -4568,7 +4570,6 @@ export class EditorOptions implements IEditorOptions {
 }
 
 export interface IEditorOptions {
-    backgroundColor?: string | undefined;
     monacoOptions: any;
 }
 
@@ -4629,6 +4630,53 @@ export interface IResultsOptions {
     font?: string | undefined;
     maxSerializationDepth: number;
     maxCollectionSerializeLength: number;
+}
+
+export class StyleOptions implements IStyleOptions {
+    enabled!: boolean;
+    customCss?: string | undefined;
+
+    constructor(data?: IStyleOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enabled = _data["enabled"];
+            this.customCss = _data["customCss"];
+        }
+    }
+
+    static fromJS(data: any): StyleOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new StyleOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enabled"] = this.enabled;
+        data["customCss"] = this.customCss;
+        return data;
+    }
+
+    clone(): StyleOptions {
+        const json = this.toJSON();
+        let result = new StyleOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IStyleOptions {
+    enabled: boolean;
+    customCss?: string | undefined;
 }
 
 export class KeyboardShortcutOptions implements IKeyboardShortcutOptions {

@@ -1,46 +1,49 @@
 $dark: (
-    textColor: #dcdcdc,
-    textHighestContrastColor: #fff,
-    textHoverColor: #fff,
-    textContrastColor: #34314b,
-    backgroundColor: #222,
-    backgroundDarkerColor: #1c1c1c,
-    backgroundLighterColor: #333,
-    borderColor: #3f3f3f,
-    borderContrastColor: #555,
-    hoverColor: rgba(255, 255, 255, 0.075),
-    activeColor: #0d6efd,
-    tabColor: rgb(45, 45, 45),
-    tabActiveColor: rgb(30, 30, 30),
-    tabActiveTextColor: #fff,
-    tabInactiveTextColor: rgba(255, 255, 255, 0.65),
-    splitterColor: #282828,
-    scrollbarTrackColor: #343434,
-    scrollbarThumbColor: #777,
-    listBackground: #282828,
-    actionIconColor: silver,
-    actionIconHoverColor: white,
-    formControlBackground: #333,
-    kbdBackground: #59646e,
-    boxShadowBottom: 0 7px 8px -8px rgb(0, 0, 0, .36),
-    boxShadowBottomAndSides: 0 0 8px 2px rgb(0, 0, 0, .36),
-    // WINDOW
-    windowBorderColor: #333,
-    // HEADER
-    headerBackground: #333,
-    // MAIN MENU
-    mainMenuDropdownItemBackgroundColor: #15539E,
+    // TEXT
+    text-color: #dcdcdc,
+    text-strong-color: #ffffff,
+    text-hover-color: #ffffff,
+    // BACKGROUND
+    background-color: #222222,
+    background-lighter-color: #333333,
+    list-background: #282828,
+    form-control-background-color: #333333,
+    form-control-disabled-background-color: #1c1c1c,
+    kbd-background-color: #59646e,
+    // BORDERS
+    border-color: #3f3f3f,
+    border-contrast-color: #555555,
+    // ACTIONS
+    hover-color: rgba(255 255 255 / 7.5%),
+    active-color: #0d6efd,
+    action-icon-color: silver,
+    action-icon-hover-color: white,
+    // SHADOWS
+    box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 36%),
+    box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 36%),
+    // TITLEBAR
+    titlebar-background: #1b1c1d,
     // STATUSBAR
-    statusbarBackground: #1b1c1d,
-    // PANES
-    paneRibbonBackground: #252525,
+    statusbar-background: #1b1c1d,
     // SCRIPT VIEW
-    scriptHeaderBackground: #1e1e1e,
-    resultsBackground: #222,
-    resultsToolbarBackground: #333,
+    script-toolbar-background: #1e1e1e,
+    find-text-box-background: #1c1c1c,
+    // PANES
+    pane-ribbon-background: #252525,
+    explorer-pane-background: #222222,
+    output-pane-background: #222222,
     // CONTEXT MENU
-    contextMenuBackgroundColor: #323232,
-    contextMenuItemBackgroundColor: #15539E,
+    context-menu-background: #323232,
+    context-menu-item-hover-background: #15539e,
     // DIALOG
-    dialogBackgroundColor: #222,
+    dialog-background: #222222,
+    // TABS
+    tab-background: #2d2d2d,
+    tab-active-background: #1e1e1e,
+    tab-active-text-color: #ffffff,
+    tab-inactive-text-color: rgb(255 255 255 / 65%),
+    // SCROLLBARS & SPLITTER
+    scrollbar-track-color: #343434,
+    scrollbar-thumb-color: #777777,
+    splitter-color: #282828,
 );

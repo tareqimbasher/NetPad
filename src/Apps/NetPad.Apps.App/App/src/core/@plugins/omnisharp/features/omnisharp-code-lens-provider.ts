@@ -1,5 +1,5 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Position} from "monaco-editor";
-import {EditorUtil, ICodeLensProvider} from "@application";
+import {MonacoEditorUtil, ICodeLensProvider} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
@@ -25,7 +25,7 @@ export class OmniSharpCodeLensProvider extends FeatureProvider implements ICodeL
     }
 
     public async provideCodeLenses(model: editor.ITextModel, token: CancellationToken): Promise<languages.CodeLensList> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const response = await this.omnisharpService.getCodeStructure(scriptId, this.getAbortSignal(token));
 

@@ -1,7 +1,5 @@
-@import "~styles/themes";
-
 toolbar {
-    @include theme(background-color, scriptHeaderBackground);
+    background: var(--script-toolbar-background);
     padding: 0.3rem 0.5rem;
     flex-shrink: 0;
 

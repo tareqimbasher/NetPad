@@ -1,6 +1,6 @@
 import {CancellationToken, editor, languages, Range} from "monaco-editor";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil, ICodeActionProvider, ICommandProvider} from "@application";
+import {MonacoEditorUtil, ICodeActionProvider, ICommandProvider} from "@application";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
@@ -31,7 +31,7 @@ export class OmniSharpCodeActionProvider extends FeatureProvider implements ICod
     }
 
     public async provideCodeActions(model: editor.ITextModel, range: Range, context: languages.CodeActionContext, token: CancellationToken): Promise<languages.CodeActionList> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const request = new api.GetCodeActionsRequest({
             line: range.startLineNumber,

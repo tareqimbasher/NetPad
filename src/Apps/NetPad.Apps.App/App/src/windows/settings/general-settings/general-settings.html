@@ -69,72 +69,38 @@
                 </div>
             </div>
         </div>
+        <div class="col"></div>
     </div>
 
     <div class="row" platforms="Electron">
         <div class="col">
-            <div class="row">
-                <div class="col">
-                    <div class="sub-header">
-                        Titlebar
-                        <small show.bind="settings.appearance.titlebar.type !== currentSettings.appearance.titlebar.type"
-                               class="text-warning">(Restart Required)</small>
-                    </div>
-                    <div class="body">
-                        <div class="form-check">
-                            <input id="titlebar-integrated"
-                                   name="titlebarType"
-                                   class="form-check-input"
-                                   type="radio"
-                                   model.bind="'Integrated'"
-                                   checked.bind="settings.appearance.titlebar.type">
-                            <label class="form-check-label" for="titlebar-integrated">
-                                Integrated
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input id="titlebar-native"
-                                   name="titlebarType"
-                                   class="form-check-input"
-                                   type="radio"
-                                   model.bind="'Native'"
-                                   checked.bind="settings.appearance.titlebar.type">
-                            <label class="form-check-label" for="titlebar-native">
-                                Native
-                            </label>
-                        </div>
-                    </div>
+            <div class="sub-header">
+                Titlebar
+                <small show.bind="settings.appearance.titlebar.type !== currentSettings.appearance.titlebar.type"
+                       class="text-warning">(Restart Required)</small>
+            </div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="titlebar-integrated"
+                           name="titlebarType"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Integrated'"
+                           checked.bind="settings.appearance.titlebar.type">
+                    <label class="form-check-label" for="titlebar-integrated">
+                        Integrated
+                    </label>
                 </div>
-                <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
-                    <div class="sub-header">
-                        Window Controls
-                        <i class="info-icon" style="color: dodgerblue" title="Where the window close, maximize and minimize buttons are located.
-Only applicable when using the Integrated titlebar."></i>
-                    </div>
-                    <div class="body">
-                        <div class="form-check">
-                            <input id="window-controls-position-right"
-                                   name="windowControlsPosition"
-                                   class="form-check-input"
-                                   type="radio"
-                                   model.bind="'Right'"
-                                   checked.bind="settings.appearance.titlebar.windowControlsPosition">
-                            <label class="form-check-label" for="window-controls-position-right">
-                                Right
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input id="window-controls-position-left"
-                                   name="windowControlsPosition"
-                                   class="form-check-input"
-                                   type="radio"
-                                   model.bind="'Left'"
-                                   checked.bind="settings.appearance.titlebar.windowControlsPosition">
-                            <label class="form-check-label" for="window-controls-position-left">
-                                Left
-                            </label>
-                        </div>
-                    </div>
+                <div class="form-check">
+                    <input id="titlebar-native"
+                           name="titlebarType"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Native'"
+                           checked.bind="settings.appearance.titlebar.type">
+                    <label class="form-check-label" for="titlebar-native">
+                        Native
+                    </label>
                 </div>
             </div>
         </div>
@@ -171,6 +137,38 @@ Only applicable when using the Integrated titlebar."></i>
                 </div>
             </div>
         </div>
+        <div class="col" if.bind="settings.appearance.titlebar.type === 'Integrated'">
+            <div class="sub-header">
+                Window Controls
+                <i class="info-icon" style="color: dodgerblue" title="Where the window close, maximize and minimize buttons are located.
+Only applicable when using the Integrated titlebar."></i>
+            </div>
+            <div class="body">
+                <div class="form-check">
+                    <input id="window-controls-position-right"
+                           name="windowControlsPosition"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Right'"
+                           checked.bind="settings.appearance.titlebar.windowControlsPosition">
+                    <label class="form-check-label" for="window-controls-position-right">
+                        Right
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input id="window-controls-position-left"
+                           name="windowControlsPosition"
+                           class="form-check-input"
+                           type="radio"
+                           model.bind="'Left'"
+                           checked.bind="settings.appearance.titlebar.windowControlsPosition">
+                    <label class="form-check-label" for="window-controls-position-left">
+                        Left
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col" else></div>
     </div>
 
     <div class="row">

@@ -1,10 +1,8 @@
-@import "~styles/themes";
-
 .section {
     padding: 0 15px 15px 10px;
 
     &:not(:last-child) {
-        @include theme(border-bottom, borderColor, 1px solid);
+        border-bottom: var(--border-color) 1px solid;
         margin-bottom: 10px;
     }
 

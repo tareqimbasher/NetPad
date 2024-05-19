@@ -1,6 +1,6 @@
 import {IContainer} from "aurelia";
 import * as monaco from "monaco-editor";
-import {EditorUtil, IActionProvider} from "@application";
+import {MonacoEditorUtil, IActionProvider} from "@application";
 import {IScriptService, ISession, Script, ScriptKind} from "@domain";
 
 export class BuiltinActionProvider implements IActionProvider {
@@ -35,7 +35,7 @@ export class BuiltinActionProvider implements IActionProvider {
                 label: "Go to Script",
                 keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT],
                 run: async () => {
-                    const quickInput = EditorUtil.getQuickInputService();
+                    const quickInput = MonacoEditorUtil.getQuickInputService();
                     const scope = this.container.createChild({inheritParentResources: true});
 
                     try {

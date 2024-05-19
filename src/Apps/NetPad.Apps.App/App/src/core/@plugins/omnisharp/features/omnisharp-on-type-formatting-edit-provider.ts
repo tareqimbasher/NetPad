@@ -1,5 +1,5 @@
 import {CancellationToken, editor, languages, Position} from "monaco-editor";
-import {EditorUtil, IOnTypeFormattingEditProvider} from "@application";
+import {MonacoEditorUtil, IOnTypeFormattingEditProvider} from "@application";
 import {FormatAfterKeystrokeRequest} from "../api";
 import {Converter} from "../utils";
 import {FeatureProvider} from "./feature-provider";
@@ -8,7 +8,7 @@ export class OmnisharpOnTypeFormattingEditProvider extends FeatureProvider imple
     public readonly autoFormatTriggerCharacters: string[] = ["}", "/", "\n", ";"];
 
     public async provideOnTypeFormattingEdits(model: editor.ITextModel, position: Position, ch: string, options: languages.FormattingOptions, token: CancellationToken): Promise<languages.TextEdit[]> {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         const request = new FormatAfterKeystrokeRequest();
         request.line = position.lineNumber;

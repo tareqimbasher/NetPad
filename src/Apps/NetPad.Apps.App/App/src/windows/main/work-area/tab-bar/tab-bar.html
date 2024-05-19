@@ -1,7 +1,8 @@
 <div class="drag-drop-container" ref="tabContainer">
     <div class="view-tab ${viewable.id === active.id ? 'active' : ''}"
          repeat.for="viewable of orderedViewables"
-         data-viewable-id.bind="viewable.id"
+         data-id.bind="viewable.id"
+         data-name.bind="viewable.name"
          title.bind="viewable.environment.script.path || (viewable.isDirty ? 'Unsaved' : '')">
         <div class="view-tab-content"
              click.trigger="activate(viewable)"

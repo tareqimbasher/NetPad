@@ -1,6 +1,6 @@
 import {CancellationTokenSource, editor, MarkerSeverity, MarkerTag} from "monaco-editor";
 import {IEventBus, Settings} from "@domain";
-import {EditorUtil, IDiagnosticsProvider} from "@application";
+import {MonacoEditorUtil, IDiagnosticsProvider} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
 
@@ -18,7 +18,7 @@ export class OmnisharpDiagnosticsProvider extends FeatureProvider implements IDi
     }
 
     public async provideDiagnostics(model: editor.ITextModel, setMarkers: (diagnostics: editor.IMarkerData[]) => void) {
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
 
         let cancellationTokenSource = new CancellationTokenSource();
 

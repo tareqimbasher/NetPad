@@ -28,6 +28,7 @@ public class Settings : ISettingsOptions
     [JsonInclude] public AppearanceOptions Appearance { get; private set; } = null!;
     [JsonInclude] public EditorOptions Editor { get; private set; } = null!;
     [JsonInclude] public ResultsOptions Results { get; private set; } = null!;
+    [JsonInclude] public StyleOptions Styles { get; private set; } = null!;
     [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; } = null!;
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; } = null!;
 
@@ -78,9 +79,7 @@ public class Settings : ISettingsOptions
         if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-        Editor
-            .SetBackgroundColor(options.BackgroundColor)
-            .SetMonacoOptions(options.MonacoOptions);
+        Editor.SetMonacoOptions(options.MonacoOptions);
 
         return this;
     }
@@ -96,6 +95,18 @@ public class Settings : ISettingsOptions
             .SetFont(options.Font)
             .SetMaxSerializationDepth(options.MaxSerializationDepth)
             .SetMaxCollectionSerializeLengthDepth(options.MaxCollectionSerializeLength);
+
+        return this;
+    }
+
+    public Settings SetStyleOptions(StyleOptions options)
+    {
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        Styles
+            .SetEnabled(options.Enabled)
+            .SetCustomCss(options.CustomCss);
 
         return this;
     }
@@ -151,6 +162,7 @@ public class Settings : ISettingsOptions
         (Appearance ??= new()).DefaultMissingValues();
         (Editor ??= new()).DefaultMissingValues();
         (Results ??= new()).DefaultMissingValues();
+        (Styles ??= new()).DefaultMissingValues();
         (KeyboardShortcuts ??= new()).DefaultMissingValues();
         (OmniSharp ??= new()).DefaultMissingValues();
 

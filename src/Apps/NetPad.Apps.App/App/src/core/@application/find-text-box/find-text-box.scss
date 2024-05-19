@@ -1,8 +1,6 @@
-@import "~styles/themes";
-
 find-text-box {
-    @include theme(background-color, backgroundDarkerColor);
-    @include theme(box-shadow, boxShadowBottomAndSides);
+    background: var(--find-text-box-background);
+    box-shadow: var(--box-shadow-bottom-and-sides);
     position: absolute;
     top: 0;
     right: 20px;

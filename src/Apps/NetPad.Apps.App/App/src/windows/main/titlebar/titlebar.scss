@@ -1,8 +1,7 @@
 @import "~styles/variables";
-@import "~styles/themes";
 
 titlebar {
-    @include theme(background-color, statusbarBackground);
+    background: var(--titlebar-background);
     height: $titlebar-height;
     max-height: $titlebar-height;
     position: relative;
@@ -30,7 +29,7 @@ titlebar {
         align-items: center;
         height: 100%;
         left: 50%;
-        transform: translate(-50%, 0)
+        transform: translate(-50%, 0);
     }
 
     .window-controls {
@@ -40,6 +39,7 @@ titlebar {
 
         // To counteract margin-right of .actions when window controls are on the right side
         margin-left: -1rem;
+
         &.order-first {
             margin-left: 0;
         }
@@ -53,7 +53,7 @@ titlebar {
             cursor: default;
 
             &:hover {
-                @include theme(background-color, hoverColor);
+                background: var(--hover-color);
             }
         }
     }
@@ -78,7 +78,7 @@ titlebar {
             }
 
             &:hover {
-                @include theme(background-color, hoverColor);
+                background: var(--hover-color);
             }
         }
     }

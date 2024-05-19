@@ -1,6 +1,4 @@
-﻿@import "~styles/themes";
-
-reference-management {
+﻿reference-management {
     #references-list {
         overflow-y: auto;
 
@@ -13,6 +11,6 @@ reference-management {
         flex-shrink: 0;
         flex-grow: 0;
         padding: 0.3rem 0.3rem 0;
-        @include theme(border-top, borderColor, "1px solid");
+        border-top: var(--border-color) 1px solid;
     }
 }

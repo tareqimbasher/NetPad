@@ -472,11 +472,6 @@ button > .icon-base {
     @extend .fa-rotate-left;
 }
 
-.editor-background-settings-icon {
-    @extend %icon-base;
-    @extend .fa-align-left;
-}
-
 .results-serialization-settings-icon {
     @extend %icon-base;
     @extend .fa-cube;
@@ -542,8 +537,8 @@ button > .icon-base {
     color: unset !important;
 }
 
-.theme-dark.icon-theme-colorful,
-.theme-dark .colored-icons {
+.theme-netpad-dark.icon-theme-colorful,
+.theme-netpad-dark .colored-icons {
     .case-sensitive-icon {
         color: #78909c;
     }
@@ -632,8 +627,8 @@ button > .icon-base {
     }
 }
 
-.theme-light.icon-theme-colorful,
-.theme-light .colored-icons {
+.theme-netpad-light.icon-theme-colorful,
+.theme-netpad-light .colored-icons {
     .case-sensitive-icon {
         color: #5f7682;
     }

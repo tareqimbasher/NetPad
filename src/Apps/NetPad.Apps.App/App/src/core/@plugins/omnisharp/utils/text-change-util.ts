@@ -1,7 +1,7 @@
 import {editor} from "monaco-editor";
 import {Util} from "@common";
 import {IScriptService, ISession} from "@domain";
-import {EditorUtil} from "@application";
+import {MonacoEditorUtil} from "@application";
 import {LinePositionSpanTextChange} from "../api";
 import {Converter} from "./converter";
 
@@ -13,7 +13,7 @@ export class TextChangeUtil {
         scriptService: IScriptService) {
 
         const editorLineCount = model.getLineCount();
-        const scriptId = EditorUtil.getScriptId(model);
+        const scriptId = MonacoEditorUtil.getScriptId(model);
         const edits: editor.IIdentifiedSingleEditOperation[] = [];
 
         for (const textChange of textChanges) {
