@@ -149,7 +149,12 @@ namespace OmniSharp.Utilities
                     UseShellExecute = false,
                     RedirectStandardInput = true,
                     RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+#if NETSTANDARD2_1_OR_GREATER
+                    StandardInputEncoding = System.Text.Encoding.UTF8,
+                    StandardOutputEncoding = System.Text.Encoding.UTF8,
+                    StandardErrorEncoding = System.Text.Encoding.UTF8
+#endif
                 };
 
                 if (!string.IsNullOrWhiteSpace(_args))
