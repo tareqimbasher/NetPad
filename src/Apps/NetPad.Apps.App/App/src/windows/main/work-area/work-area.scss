@@ -29,7 +29,9 @@ work-area {
             text-align: right;
 
             .dropdown-header {
-                font-size: 1rem;
+                color: var(--text-color);
+                text-transform: uppercase;
+                font-weight: 600;
             }
         }
     }

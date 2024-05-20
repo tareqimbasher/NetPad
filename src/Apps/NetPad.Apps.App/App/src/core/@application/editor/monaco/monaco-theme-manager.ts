@@ -119,11 +119,8 @@ export class MonacoThemeManager {
 
         let theme = this.themes.get(themeId)!;
 
-        const customize =
-            (customizations?.colors && Object.keys(customizations.colors).length > 0) ||
-            (customizations?.rules && customizations.rules.length > 0);
-
-        if (customize) {
+        if ((customizations?.colors && Object.keys(customizations.colors).length > 0) ||
+            (customizations?.rules && customizations.rules.length > 0)) {
             // Copy theme to a new custom theme and apply customizations
             const customThemeData = JSON.parse(JSON.stringify(theme.data)) as monaco.editor.IStandaloneThemeData;
 
@@ -264,11 +261,11 @@ export class MonacoThemeManager {
     private static readonly csharpMonacoTokenMapping = [
         [["keyword"], ["plainKeyword"]],
         [[
+            "entity.name",
             "entity.name.class",
             "entity.name.type.class",
             "entity.name.type.class-type",
             "entity.name.type",
-            "entity.name",
             "entity",
         ], [
             "class",
@@ -278,7 +275,12 @@ export class MonacoThemeManager {
             "namespace",
             "delegate",
         ]],
-        [["entity.name.tag"], ["interface"]],
+        [[
+            "entity.other.inherited-class",
+            "entity.name.tag"
+        ], [
+            "interface"
+        ]],
         [[
             "entity.name.function",
             "meta.function-call",

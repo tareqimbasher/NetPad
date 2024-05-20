@@ -1,6 +1,6 @@
 <h6>
     <div class="d-flex justify-content-between">
-        <b class="ps-3 text-truncate">Connections</b>
+        <b class="ps-3 text-truncate user-select-none">Connections</b>
         <span class="add-data-connection-action-icon pe-3"
               title="Add Data Connection"
               click.trigger="addConnection()">
@@ -11,7 +11,7 @@
 </h6>
 
 <div if.bind="!dataConnectionViewModels.length" class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <p class="text-muted">
+    <p class="text-muted user-select-none">
         No connections
     </p>
 </div>

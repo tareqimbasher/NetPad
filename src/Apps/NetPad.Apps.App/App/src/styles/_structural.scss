@@ -28,6 +28,8 @@ body {
 }
 
 .tabs {
+    user-select: none;
+
     .nav-item {
         color: var(--tab-inactive-text-color);
         background: var(--tab-background);

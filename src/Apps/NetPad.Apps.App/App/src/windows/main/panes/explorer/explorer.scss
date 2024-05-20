@@ -3,7 +3,6 @@
 explorer {
     display: flex;
     flex-direction: column;
-    background: var(--explorer-pane-background);
 
     .list-group .list-group-item {
         border-right: none;

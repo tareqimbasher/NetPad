@@ -6,10 +6,10 @@ pane-host {
     .ribbon {
         display: flex;
         background: var(--pane-ribbon-background);
+        user-select: none;
 
         .pane-tag {
             font-size: 0.9rem;
-            user-select: none;
             display: flex;
             align-items: center;
 
@@ -26,6 +26,8 @@ pane-host {
     .pane-toolbar {
         z-index: 1;
         box-shadow: var(--box-shadow-bottom);
+        user-select: none;
+        background: var(--pane-toolbar-background);
 
         > .pane-toolbar-composed {
             margin-left: 0.5rem;
@@ -34,6 +36,8 @@ pane-host {
     }
 
     .content {
+        background: var(--pane-background);
+
         .content-container > * {
             flex-grow: 1;
             min-width: 0;
