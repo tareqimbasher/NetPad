@@ -16,6 +16,7 @@ public static class DotNetFrameworkVersionUtil
         { 6, DotNetFrameworkVersion.DotNet6 },
         { 7, DotNetFrameworkVersion.DotNet7 },
         { 8, DotNetFrameworkVersion.DotNet8 },
+        { 9, DotNetFrameworkVersion.DotNet9 },
     };
 
     private static readonly Dictionary<DotNetFrameworkVersion, int> _sdkVersionMapReverse = _sdkVersionMap
@@ -28,6 +29,7 @@ public static class DotNetFrameworkVersionUtil
             DotNetFrameworkVersion.DotNet6 => "net6.0",
             DotNetFrameworkVersion.DotNet7 => "net7.0",
             DotNetFrameworkVersion.DotNet8 => "net8.0",
+            DotNetFrameworkVersion.DotNet9 => "net9.0",
             _ => throw new ArgumentOutOfRangeException(nameof(frameworkVersion), frameworkVersion, $"Unknown framework version: {frameworkVersion}")
         };
     }
@@ -39,6 +41,7 @@ public static class DotNetFrameworkVersionUtil
             "net6.0" => DotNetFrameworkVersion.DotNet6,
             "net7.0" => DotNetFrameworkVersion.DotNet7,
             "net8.0" => DotNetFrameworkVersion.DotNet8,
+            "net9.0" => DotNetFrameworkVersion.DotNet9,
             _ => null
         };
 
@@ -47,7 +50,7 @@ public static class DotNetFrameworkVersionUtil
 
     public static bool IsSdkVersionSupported(SemanticVersion sdkVersion)
     {
-        return sdkVersion.Major is >= 6 and <= 8;
+        return sdkVersion.Major is >= 6 and <= 9;
     }
 
     public static bool IsSupported(this DotNetSdkVersion sdkVersion)
@@ -93,6 +96,7 @@ public static class DotNetFrameworkVersionUtil
             DotNetFrameworkVersion.DotNet6 => LanguageVersion.CSharp10,
             DotNetFrameworkVersion.DotNet7 => LanguageVersion.CSharp11,
             DotNetFrameworkVersion.DotNet8 => LanguageVersion.CSharp12,
+            DotNetFrameworkVersion.DotNet9 => LanguageVersion.Preview,
             _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unhandled .NET framework version")
         };
     }

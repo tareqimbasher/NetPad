@@ -165,7 +165,7 @@ public static class SystemAssemblies
         }
 
         return root.GetDirectories()
-            .Select(d => Version.TryParse(d.Name, out var version)
+            .Select(d => SemanticVersion.TryParse(d.Name, out var version)
                 ? new { Directory = d, Version = version }
                 : null)
             .Where(d => d != null && d.Version.Major == targetMajorVersion)

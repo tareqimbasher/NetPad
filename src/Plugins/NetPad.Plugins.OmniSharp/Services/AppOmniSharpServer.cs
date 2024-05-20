@@ -181,6 +181,8 @@ public class AppOmniSharpServer
             "--loglevel Information",
             //"-z",
 
+            "Sdk:IncludePrereleases=true",
+
             "FileOptions:SystemExcludeSearchPatterns:0=**/.git",
             "FileOptions:SystemExcludeSearchPatterns:1=**/.svn",
             "FileOptions:SystemExcludeSearchPatterns:2=**/.hg",
