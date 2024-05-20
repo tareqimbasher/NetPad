@@ -5,9 +5,7 @@ A cross-platform C# editor and playground.
 [![build](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml)
 [![CodeQL](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml)
 
-|                                               Dark                                                |                                               Light                                                |
-|:-------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
-| ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-dark.png?raw=true) | ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview-main-light.png?raw=true) |
+![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
 
 ## Motivation
 
@@ -32,7 +30,7 @@ As soon as you open NetPad you'll be presented with the editor right away. Write
 
 ## Requirements
 
-The following must be be installed to use NetPad:
+The following must be installed to use NetPad:
 
 * [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or greater)
 
@@ -97,6 +95,7 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
 * Run SQL queries
 * Add NuGet packages
 * Reference assemblies from disk
+* User-defined results styling
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
     * Code Completion (Intellisense)
     * Semantic Highlighting
@@ -127,7 +126,6 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
 * Ability to run a script from the command-line
 * Git tracking of script changes
 * Quality of Life:
-    * User-defined results styling
     * Workspaces/Sessions
 * Plugins & Theming
 
