@@ -66,6 +66,7 @@ module.exports = function (env, {analyze}) {
                 // all of it. The "$" here is so we allow more specific imports like:
                 // import {IQuickInputService} from "monaco-editor/esm/vs/platform/quickinput/common/quickInput"
                 "monaco-editor$": "monaco-editor/esm/vs/editor/editor.api.js",
+                ...getAureliaAliases(production)
             }
         },
         optimization: {
@@ -132,4 +133,34 @@ module.exports = function (env, {analyze}) {
             topLevelAwait: true // Enables us to use await in src/main.ts
         }
     }
+}
+
+function getAureliaAliases(isProduction) {
+    if (isProduction) {
+        return {};
+    }
+
+    return [
+        'aurelia',
+        'fetch-client',
+        'kernel',
+        'metadata',
+        'platform',
+        'platform-browser',
+        'route-recognizer',
+        'router',
+        'router-lite',
+        'runtime',
+        'runtime-html',
+        'testing',
+        'state',
+        'ui-virtualization'
+    ].reduce((map, pkg) => {
+        const name = pkg === 'aurelia' ? pkg : `@aurelia/${pkg}`;
+        try {
+            const packageLocation = require.resolve(name);
+            map[name] = path.resolve(packageLocation, `../../esm/index.dev.mjs`);
+        } catch {/**/}
+        return map;
+    }, {});
 }
