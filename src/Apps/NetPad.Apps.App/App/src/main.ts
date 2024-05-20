@@ -1,4 +1,5 @@
-import Aurelia, {AppTask, ColorOptions, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
+import Aurelia, {AppTask, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
+import {CustomElementType} from "@aurelia/runtime-html";
 import {DialogDefaultConfiguration} from "@aurelia/dialog";
 import "bootstrap";
 import "./styles/main.scss";
@@ -62,7 +63,7 @@ const builder = Aurelia.register(
     }),
 
     LogConfig.register({
-        colorOptions: ColorOptions.colors,
+        colorOptions: "colors",
         level: Env.isProduction ? LogLevel.info : LogLevel.debug,
         sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
         rules: [
@@ -162,7 +163,7 @@ builder.container.get(Settings).init(settings.toJSON());
 // Start the app
 const entryPoint = appTasks.configureAndGetAppEntryPoint(builder);
 
-const app = builder.app(entryPoint);
+const app = builder.app(entryPoint as CustomElementType);
 
 await app.start();
 
