@@ -1,13 +1,14 @@
 using System;
 using System.Linq;
 using NetPad.Common;
+using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.DotNet;
 using NetPad.Scripts;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Compilation.Tests.CSharp;
+namespace NetPad.Domain.Tests.Compilation.CSharp;
 
 public class CSharpCodeParserTests
 {

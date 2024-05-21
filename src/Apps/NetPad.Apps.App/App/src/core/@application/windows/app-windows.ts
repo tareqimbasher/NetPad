@@ -7,8 +7,8 @@ class AppWindow {
 }
 
 export interface IAppLifecycleEvent {
-    type: "app-activated" | "app-deactivated";
     appName: string;
+    type: "app-activated" | "app-deactivated";
 }
 
 export class AppWindows implements IDisposable {
@@ -21,7 +21,10 @@ export class AppWindows implements IDisposable {
 
         this.broadcastChannel = new BroadcastChannel("windows");
         this.broadcastChannel.onmessage = (msg) => {
-            if (!msg.data) return;
+            if (!msg.data) {
+                return;
+            }
+
             const event = msg.data as IAppLifecycleEvent;
 
             if (event.type === "app-activated") {
@@ -30,7 +33,9 @@ export class AppWindows implements IDisposable {
             } else if (event.type === "app-deactivated") {
                 this.logger.debug("App deactivated: ", event.appName);
                 const ixApp = this.items.findIndex(x => x.name === event.appName);
-                if (ixApp >= 0) this.items.splice(ixApp, 1);
+                if (ixApp >= 0) {
+                    this.items.splice(ixApp, 1);
+                }
             }
         }
     }

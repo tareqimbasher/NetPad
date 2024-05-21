@@ -1,7 +1,10 @@
-import {IPaneHostViewStateController, Pane, PaneHostOrientation, PaneHostViewMode} from "@application";
-import {Util} from "@common";
 import {Constructable, IHydratedParentController} from "aurelia";
+import {IPaneHostViewStateController, KeyCombo, Pane, PaneHostOrientation, PaneHostViewMode} from "@application";
+import {DisposableCollection, KeyCode, Util} from "@common";
 
+/**
+ * Hosts a set of panes. A PaneHost can host any number of panes. A pane cannot exist in multiple PaneHosts at once.
+ */
 export class PaneHost {
     public readonly id: string;
     public readonly orientation: PaneHostOrientation = PaneHostOrientation.Right;
@@ -11,6 +14,8 @@ export class PaneHost {
     protected _active: Pane | undefined;
 
     private readonly panes: Set<Pane>;
+    private hideKeyBinding = new KeyCombo().withShiftKey().withKey(KeyCode.Escape);
+    private disposables = new DisposableCollection();
 
     constructor(
         orientation: PaneHostOrientation,
@@ -21,6 +26,9 @@ export class PaneHost {
         this.panes = new Set<Pane>();
     }
 
+    /**
+     * The active pane within this pane host.
+     */
     public get active(): Pane | null | undefined {
         return this._active;
     }
@@ -35,6 +43,21 @@ export class PaneHost {
 
     private attached(initiator: IHydratedParentController) {
         this.element = initiator.host;
+
+        if (this.element) {
+            const tabKeysHandler = (ev: Event) => {
+                if (this.hideKeyBinding.matches(ev as KeyboardEvent)) {
+                    this.collapse();
+                }
+            };
+
+            this.element.addEventListener("keydown", tabKeysHandler);
+            this.disposables.add(() => this.element?.removeEventListener("keydown", tabKeysHandler));
+        }
+    }
+
+    private detached() {
+        this.disposables.dispose();
     }
 
     public toggle(pane?: Pane) {
@@ -66,6 +89,11 @@ export class PaneHost {
             && (!pane || this._active === pane);
 
         if (!shouldCollapse) return;
+
+        if (this.orientation === PaneHostOrientation.FloatingWindow) {
+            window.close();
+            return;
+        }
 
         this.viewStateController.collapse(this);
         this.viewMode = PaneHostViewMode.Collapsed;

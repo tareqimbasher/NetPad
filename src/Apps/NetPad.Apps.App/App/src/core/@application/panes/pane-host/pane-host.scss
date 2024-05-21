@@ -1,7 +1,8 @@
-$ribbon-width: 20px;
+$ribbon-width: 23px;
 
 pane-host {
     display: flex;
+    outline: none;
 
     .ribbon {
         display: flex;
@@ -23,36 +24,17 @@ pane-host {
         }
     }
 
-    .pane-toolbar {
-        z-index: 1;
-        box-shadow: var(--box-shadow-bottom);
-        user-select: none;
-        background: var(--pane-toolbar-background);
-
-        > .pane-toolbar-composed {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
-        }
-    }
-
-    .content {
+    .pane-content {
         background: var(--pane-background);
-
-        .content-container > * {
-            flex-grow: 1;
-            min-width: 0;
-            display: flex;
-        }
-    }
-
-    .pane-collapser {
-        font-size: 17px;
-        line-height: 100%;
     }
 }
 
-pane-host.left,
-pane-host.right {
+pane-host.orientation-floatingwindow {
+    height: 100%;
+}
+
+pane-host.orientation-left,
+pane-host.orientation-right {
     flex-direction: row;
     min-width: $ribbon-width;
 
@@ -72,12 +54,12 @@ pane-host.right {
         }
     }
 
-    .content {
+    .pane-content {
         min-width: 0;
     }
 }
 
-pane-host.left {
+pane-host.orientation-left {
     .pane-tag {
         transform: rotate(180deg);
 
@@ -87,7 +69,8 @@ pane-host.left {
     }
 }
 
-pane-host.bottom {
+pane-host.orientation-bottom,
+pane-host.orientation-floatingwindow {
     flex-direction: column-reverse;
     min-height: $ribbon-width;
 
@@ -106,7 +89,7 @@ pane-host.bottom {
         }
     }
 
-    .content {
+    .pane-content {
         min-height: 0;
     }
 }

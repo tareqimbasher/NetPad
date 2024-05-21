@@ -61,6 +61,10 @@
     input.rename-input {
         color: var(--text-color);
     }
+
+    .focused-text {
+        background: var(--border-contrast-color);
+    }
 }
 
 .theme-netpad-dark {

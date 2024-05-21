@@ -1,7 +1,7 @@
 <template show.bind="show">
-    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" spellcheck="false" value.bind="searchText & debounce"/>
-    <span class="found-count ${!!searchText && !results.length ? 'none-found' : ''}" style="white-space: nowrap">
-        ${(!searchText || !results.length) ? 'No results' : (currentResultNumber + ' of ' + results.length)}
+    <input ref="txtSearch" type="text" class="form-control" placeholder="Find" spellcheck="false" value.bind="searchText & debounce:200"/>
+    <span class="found-count ${!!searchText && !current.searchResults.elements.length ? 'none-found' : ''}" style="white-space: nowrap">
+        ${(!searchText || !current.searchResults.elements.length) ? 'No results' : (current.searchResults.currentResultNumber + ' of ' + current.searchResults.elements.length)}
     </span>
 
     <i class="action-icon up-icon ms-5"

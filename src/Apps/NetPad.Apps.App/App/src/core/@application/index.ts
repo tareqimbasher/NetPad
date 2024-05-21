@@ -21,6 +21,8 @@ export * from "./value-converters/lang-logo-value-converter";
 export * from "./events/action-events";
 export * from "./events/event-bus";
 export * from "./events/signalr-ipc-gateway";
+export * from "./events/script-code-updating-event";
+export * from "./events/script-code-updated-event";
 
 export * from "./background-services/ibackground-service";
 
@@ -51,7 +53,6 @@ export * from "./editor/providers/builtin-sql-completion-provider";
 export * from "./context-menu/context-menu-options";
 export * from "./context-menu/context-menu";
 export * from "./find-text-box/find-text-box";
-export * from "./find-text-box/find-text-box-options";
 export * from "./tables/resizable-table";
 
 export * from "./data-connections/data-connection-name/data-connection-name";

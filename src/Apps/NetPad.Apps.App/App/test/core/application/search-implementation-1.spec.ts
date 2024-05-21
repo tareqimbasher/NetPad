@@ -1,5 +1,4 @@
 ﻿import {SearchImplementation1} from "@application/find-text-box/search-implementations/search-implementation-1";
-import {FindTextBoxOptions} from "@application/find-text-box/find-text-box-options";
 
 const runTest = (initialHtml: string, searchForText: string, expectedHtml: string) => {
     const fragment = document.createDocumentFragment();
@@ -7,10 +6,9 @@ const runTest = (initialHtml: string, searchForText: string, expectedHtml: strin
     p.innerHTML = initialHtml;
     fragment.appendChild(p);
 
-    const searchImplementation = new SearchImplementation1(
-        new FindTextBoxOptions(fragment as unknown as HTMLElement, "p"));
+    const searchImplementation = new SearchImplementation1();
 
-    const results = searchImplementation.search(searchForText);
+    const results = searchImplementation.search(fragment as unknown as HTMLElement, searchForText, "p");
 
     if (initialHtml === expectedHtml)
         expect(results.length).toBe(0);

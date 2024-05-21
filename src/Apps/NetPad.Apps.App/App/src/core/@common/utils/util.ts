@@ -219,7 +219,7 @@ export class Util {
      * @param immediate If true, will execute func immediately and then waits for the interval before func can be executed again.
      */
     public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
-        let timeout: number | undefined;
+        let timeout: NodeJS.Timeout | undefined;
         let isImmediateCall: boolean | undefined = false;
 
         return (...args: unknown[]) => {
@@ -232,9 +232,9 @@ export class Util {
 
             const callNow = immediate && isImmediateCall;
 
-            if (timeout) PLATFORM.clearTimeout(timeout);
+            if (timeout) clearTimeout(timeout);
 
-            timeout = PLATFORM.setTimeout(later, waitMs);
+            timeout = setTimeout(later, waitMs);
 
             if (callNow) func.call(thisArg, ...args);
         };

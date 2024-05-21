@@ -1,13 +1,15 @@
-import {PaneAction, PaneHost, Shortcut} from "@application";
+import {ILogger, resolve} from "aurelia";
+import {PaneHost, PaneHostOrientation, PaneHostViewMode, Shortcut} from "@application";
 
 export abstract class Pane {
     protected _name: string;
     protected _host?: PaneHost;
     protected _shortcut?: Shortcut;
-    protected _actions: PaneAction[] = [];
+    protected logger: ILogger;
 
     protected constructor(name: string, public readonly icon?: string, public readonly showNameInHeader: boolean = true) {
         this._name = name;
+        this.logger = resolve(ILogger).scopeTo((this as Record<string, unknown>).constructor.name)
     }
 
     public get name(): string {
@@ -22,8 +24,17 @@ export abstract class Pane {
         return this._shortcut;
     }
 
-    public get actions(): PaneAction[] {
-        return this._actions;
+    public get isOpen(): boolean {
+        return this.host?.viewMode === PaneHostViewMode.Expanded
+            && this.host?.active === this;
+    }
+
+    public get orientation(): PaneHostOrientation | undefined {
+        return this.host?.orientation;
+    }
+
+    public get isWindow(): boolean {
+        return this.host?.orientation === PaneHostOrientation.FloatingWindow;
     }
 
     public setHost(paneHost: PaneHost) {

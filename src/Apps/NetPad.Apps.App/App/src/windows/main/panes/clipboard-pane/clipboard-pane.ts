@@ -10,11 +10,6 @@ export class ClipboardPane extends Pane {
     constructor() {
         super("Clipboard", "clipboard-icon");
         this.history = new Set<string>();
-        this._actions.push(new PaneAction(
-            '<i class="clear-output-icon me-3"></i> Clear all',
-            "Remove all entries",
-            () => this.history.clear())
-        );
     }
 
     public get viewableHistory(): Set<string> | Array<string> {

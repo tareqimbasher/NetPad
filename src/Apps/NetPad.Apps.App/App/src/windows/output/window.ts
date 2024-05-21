@@ -1,103 +1,63 @@
-import {IContainer} from "aurelia";
+import {customElement, watch} from "aurelia";
 import {ISession} from "@domain";
-import {watch} from "@aurelia/runtime-html";
-import {OutputView} from "../main/output-view/output-view";
-import {ResultsView} from "../main/output-view/results-view/results-view";
-import {SqlView} from "../main/output-view/sql-view/sql-view";
-import {WindowBase} from "@application/windows/window-base";
+import {FloatingPaneWindowBase, windowTemplate} from "@application/windows/floating-pane-window-base";
+import {OutputPane} from "../main/panes";
+import {IOutputModelDto} from "../main/panes/output-pane/output-model";
 
-export class Window extends WindowBase {
-    private _outputViews = new Map<string, OutputView>();
-    private active?: OutputView;
-
-    constructor(
-        @ISession private readonly session: ISession,
-        @IContainer private readonly container: IContainer
-    ) {
-        super();
-
-        document.title = "Output";
-    }
-
-    public get outputViews() {
-        return [...this._outputViews.values()];
+@customElement({
+    name: 'floating-window',
+    template: windowTemplate
+})
+export class Window extends FloatingPaneWindowBase<OutputPane> {
+    constructor(@ISession private readonly session: ISession) {
+        super(OutputPane, "Output");
     }
 
     public async binding() {
         await this.session.initialize();
-    }
+        this.updateTitle();
 
-    public attached() {
-        this.updateOutputViews();
-
-        type OutputBroadcastMessage = {name: string, html: string};
-
-        // Get outputs from main window
-        const bc = new BroadcastChannel("output");
+        // Get outputs from output pane in main window
+        const bc = new BroadcastChannel("output-window");
         bc.onmessage = (ev) => {
-            const data = ev.data;
-            if (!Array.isArray(data)) return;
-
-            for (const item of data) {
-                const scriptId = item.scriptId;
-                const resultsOutputHtml = item.output.find((x: OutputBroadcastMessage) => x.name === nameof(ResultsView)).html;
-                const sqlOutputHtml = item.output.find((x: OutputBroadcastMessage) => x.name === nameof(SqlView)).html;
-
-                if (!scriptId) return;
-
-                const outputView = this._outputViews.get(scriptId);
-                if (!outputView) return;
-
-                if (resultsOutputHtml) {
-                    const resultsView = outputView.toolbar.options.tabs
-                        .find(x => x.view instanceof ResultsView)?.view;
-                    if (!resultsView) return;
-                    resultsView.setHtml(resultsOutputHtml);
-                }
-
-                if (sqlOutputHtml) {
-                    const sqlView = outputView.toolbar.options.tabs
-                        .find(x => x.view instanceof SqlView)?.view;
-                    if (!sqlView) return;
-                    sqlView.setHtml(sqlOutputHtml);
-                }
+            const dtos = ev.data as IOutputModelDto[];
+            if (!dtos || !Array.isArray(dtos) || dtos.length === 0) {
+                return;
             }
+
+            for (const dto of dtos) {
+                const scriptId = dto.scriptId;
+
+                const model = this.pane.outputModels.get(scriptId);
+
+                if (!model) {
+                    continue;
+                }
+
+                model.inputRequest = dto.inputRequest;
+
+                model.resultsDumpContainer.setHtml(dto.resultsDumpContainer.html);
+                model.resultsDumpContainer.lastOutputOrder = dto.resultsDumpContainer.lastOutputOrder;
+                model.resultsDumpContainer.scrollOnOutput = dto.resultsDumpContainer.scrollOnOutput;
+                model.resultsDumpContainer.textWrap = dto.resultsDumpContainer.textWrap;
+
+                model.sqlDumpContainer.setHtml(dto.sqlDumpContainer.html);
+                model.sqlDumpContainer.lastOutputOrder = dto.sqlDumpContainer.lastOutputOrder;
+                model.sqlDumpContainer.scrollOnOutput = dto.sqlDumpContainer.scrollOnOutput;
+                model.sqlDumpContainer.textWrap = dto.sqlDumpContainer.textWrap;
+            }
+
+            // We only need this message once
+            bc.close();
         };
 
         bc.postMessage("send-outputs");
     }
 
-    @watch<Window>(vm => vm.session.environments.length)
-    private updateOutputViews() {
-        const added = this.session.environments.filter(e => !this._outputViews.has(e.script.id));
-        const removed = [...this._outputViews.keys()]
-            .filter(id => !this.session.environments.some(e => e.script.id === id));
-
-        for (const id of removed) {
-            this._outputViews.delete(id);
-        }
-
-        for (const environment of added) {
-            const view = this.container.get(OutputView);
-            view.environment = environment;
-
-            this._outputViews.set(environment.script.id, view);
-        }
-
-        this.activeChanged();
-    }
-
     @watch<Window>(vm => vm.session.active)
-    private activeChanged() {
-        if (this.session.active) {
-            const view = this._outputViews.get(this.session.active.script.id);
-            if (view) {
-                this.active = view;
-                document.title = `${this.session.active?.script.name} - Output`;
-                return;
-            }
-        }
-
-        this.active = undefined;
+    private updateTitle() {
+        document.title = !this.session.active
+            ? this.windowName
+            : `${this.session.active.script.name} - ${this.windowName}`;
     }
 }

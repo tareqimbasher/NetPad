@@ -24,7 +24,7 @@ tab-bar {
         align-items: center;
         white-space: nowrap;
         font-size: 0.925rem;
-        cursor: pointer;
+        cursor: default;
         background: var(--tab-background);
 
         &:not(:last-child) {
@@ -93,8 +93,8 @@ tab-bar {
 
         &.new-tab {
             margin-left: 1px;
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
+            padding-left: 0.45rem;
+            padding-right: 0.25rem;
             background-color: transparent;
         }
     }

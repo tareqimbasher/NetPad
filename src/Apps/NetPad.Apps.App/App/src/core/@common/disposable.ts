@@ -2,10 +2,10 @@ export interface IDisposable {
     dispose(): void;
 }
 
-export abstract class WithDisposables implements IDisposable {
+export class DisposableCollection implements IDisposable {
     private readonly disposables: (() => void)[] = [];
 
-    public addDisposable(disposable: IDisposable | (() => void)) {
+    public add(disposable: IDisposable | (() => void)) {
         if (disposable instanceof Function) {
             this.disposables.push(disposable);
         } else {
@@ -25,5 +25,17 @@ export abstract class WithDisposables implements IDisposable {
                 console.error("Error while disposing", disposable, ex);
             }
         }
+    }
+}
+
+export abstract class WithDisposables implements IDisposable {
+    private readonly disposables = new DisposableCollection();
+
+    public addDisposable(disposable: IDisposable | (() => void)) {
+        this.disposables.add(disposable);
+    }
+
+    public dispose() {
+        this.disposables.dispose();
     }
 }

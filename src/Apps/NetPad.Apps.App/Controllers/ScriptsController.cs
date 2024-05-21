@@ -8,6 +8,7 @@ using NetPad.CQs;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Dtos;
+using NetPad.Exceptions;
 using NetPad.Runtimes;
 using NetPad.Scripts;
 using NetPad.UiInterop;
@@ -184,7 +185,7 @@ public class ScriptsController : ControllerBase
 
     private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
     {
-        var environment = await _mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true));
-        return environment!;
+        return await _mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true))
+            ?? throw new ScriptNotFoundException(id);
     }
 }

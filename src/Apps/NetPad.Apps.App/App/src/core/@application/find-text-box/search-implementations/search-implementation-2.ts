@@ -1,29 +1,24 @@
-import {FindTextBoxOptions} from "@application";
 import {SearchImplementation} from "@application/find-text-box/search-implementations/search-implementation";
 
 export class SearchImplementation2 extends SearchImplementation {
-    constructor(private readonly options: FindTextBoxOptions) {
-        super();
-    }
-
-    private removeAllSearchResults() {
-        this.options.rootElement.querySelectorAll(".text-search-result")
+    private removeAllSearchResults(searchElement: Element) {
+        searchElement.querySelectorAll(".text-search-result")
             .forEach(el => {
                 el.replaceWith(el.textContent || "");
             });
 
-        this.options.rootElement.normalize();
+        searchElement.normalize();
     }
 
-    public search(searchText: string): HTMLElement[] {
-        this.removeAllSearchResults();
+    public search(searchElement: Element, searchText: string, searchableChildElementsQuerySelector: string): HTMLElement[] {
+        this.removeAllSearchResults(searchElement);
         if (!searchText) {
             return [];
         }
 
         searchText = this.normalizeSearchText(searchText);
 
-        const searchable = Array.from(this.options.rootElement.querySelectorAll(this.options.searchableElementsQuerySelector)) as HTMLElement[];
+        const searchable = Array.from(searchElement.querySelectorAll(searchableChildElementsQuerySelector)) as HTMLElement[];
 
         for (let iSearchableElement = 0; iSearchableElement < searchable.length; iSearchableElement++) {
             const element = searchable[iSearchableElement];
@@ -70,6 +65,6 @@ export class SearchImplementation2 extends SearchImplementation {
             }
         }
 
-        return Array.from(this.options.rootElement.querySelectorAll(".text-search-result")) as HTMLElement[];
+        return Array.from(searchElement.querySelectorAll(".text-search-result")) as HTMLElement[];
     }
 }

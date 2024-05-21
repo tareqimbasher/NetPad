@@ -1,4 +1,36 @@
-﻿<au-compose class="d-flex flex-grow-height-restricted"
-            repeat.for="view of outputViews"
-            component.bind="view"
-            show.bind="view.environment === session.active"></au-compose>
+﻿<import from="./components/results-view/results-view"></import>
+<import from="./components/sql-view/sql-view"></import>
+
+<template tabindex="0">
+    <pane-toolbar>
+        <div class="tabs">
+            <div repeat.for="tab of tabs"
+                 class="tab-button ${activeTab === tab.name ? 'active' : ''}"
+                 click.trigger="activeTab = tab.name"
+                 title.bind="tab.keyBinding.asString">
+                ${tab.name}
+            </div>
+        </div>
+
+        <div au-slot="right"
+             id="resultsOutputPaneToolbarRightPortal"
+             show.bind="activeTab === 'Results'"></div>
+
+        <div au-slot="right"
+             id="sqlOutputPaneToolbarRightPortal"
+             show.bind="activeTab === 'SQL'"></div>
+
+        <div au-slot="right-end" if.bind="!$parent.isWindow">
+            <i class="icon-button pop-out-icon text-gray"
+               click.trigger="openExternalOutputWindow()"
+               title="Pop Out"></i>
+        </div>
+    </pane-toolbar>
+
+    <div class="flex-fill overflow-auto d-flex">
+        <results-view model.bind="current" show.bind="activeTab === 'Results'"></results-view>
+        <sql-view model.bind="current" show.bind="activeTab === 'SQL'"></sql-view>
+
+        <find-text-box component.ref="findTextBox"></find-text-box>
+    </div>
+</template>

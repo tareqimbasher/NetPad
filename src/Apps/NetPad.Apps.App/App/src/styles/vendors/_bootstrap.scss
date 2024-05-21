@@ -133,7 +133,8 @@ textarea.form-control {
         color: var(--text-color);
     }
 
-    .dropdown-item:hover {
+    .dropdown-item:hover,
+    .dropdown-item:focus {
         background: var(--hover-color);
     }
 

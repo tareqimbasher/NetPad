@@ -38,13 +38,22 @@ hr {
     color: var(--border-color);
 }
 
+div:focus-visible {
+    outline: none;
+}
+
 kbd {
     background: var(--kbd-background-color);
 }
 
 .clickable,
 %clickable {
-    cursor: pointer;
+    cursor: default;
+}
+
+%text-semibold,
+.text-semibold {
+    font-weight: 600;
 }
 
 .text-clickable {
@@ -65,6 +74,22 @@ kbd {
 
     &.active {
         color: var(--active-color);
+    }
+}
+
+.icon-button {
+    @extend %clickable;
+    padding: 0.45rem 0.5rem;
+    vertical-align: middle;
+    line-height: 1rem;
+
+    &:hover {
+        background: var(--hover-color);
+        border-radius: 5px;
+    }
+
+    &.active {
+        color: var(--active-color) !important;
     }
 }
 

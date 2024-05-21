@@ -185,6 +185,25 @@ public class ElectronWindowService : IUiWindowService
         await ShowModalWindowAsync(window, 0.67, 0.8);
     }
 
+    public async Task OpenCodeWindowAsync()
+    {
+        const string windowName = "code";
+
+        if (_windowManager.FocusExistingWindowIfOpen(windowName))
+        {
+            return;
+        }
+
+        var window = await _windowManager.CreateWindowAsync(windowName, true, new BrowserWindowOptions
+        {
+            Title = "Code",
+            AutoHideMenuBar = true,
+            Show = false
+        });
+
+        await ShowModalWindowAsync(window, 0.67, 0.8);
+    }
+
     private async Task ShowModalWindowAsync(BrowserWindow window, double height, double width)
     {
         var mainWindowPosition = await ElectronUtil.MainWindow.GetBoundsAsync();

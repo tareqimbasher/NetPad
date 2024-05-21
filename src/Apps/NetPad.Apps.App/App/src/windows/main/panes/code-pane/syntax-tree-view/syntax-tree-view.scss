@@ -1,0 +1,67 @@
+@import "~styles/colors";
+
+syntax-tree-view {
+    tree-node{
+        position: relative;
+    }
+
+    .nesting-line {
+        position: absolute;
+        left: 3.5px;
+        top: 20px;
+        bottom: 0;
+        width: 1px;
+        background: var(--border-color);
+    }
+
+    .node-expander {
+        transition: rotate 0.1s;
+
+        &.collapsed {
+            rotate: -90deg;
+        }
+    }
+
+    .tree-node-header {
+        cursor: default;
+
+        &:hover {
+            background-color: var(--hover-color);
+        }
+    }
+
+    tree-node tree-node {
+        margin-left: 1.5rem;
+    }
+
+    syntax-trivia,
+    .value-trivia {
+        margin-left: 3rem;
+    }
+
+    .tree-node-header-right {
+        font-family: monospace;
+        margin-left: auto;
+    }
+
+    .value-text {
+        @extend %text-teal;
+    }
+
+    .char-span {
+        color: grey;
+        min-width: 8rem;
+        display: inline-block;
+        text-align: right;
+    }
+
+    .tree-node-header:hover {
+        .tree-node-header-right {
+            color: var(--text-color);
+        }
+    }
+}
+
+.theme-netpad-light syntax-tree-view .value-text {
+    color: #000000 !important;
+}

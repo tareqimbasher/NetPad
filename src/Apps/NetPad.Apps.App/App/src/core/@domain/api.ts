@@ -377,6 +377,61 @@ export class AssembliesApiClient extends ApiClientBase implements IAssembliesApi
     }
 }
 
+export interface ICodeApiClient {
+
+    getSyntaxTree(scriptId: string, signal?: AbortSignal | undefined): Promise<SyntaxNodeOrTokenSlim>;
+}
+
+export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        super();
+        this.http = http ? http : <any>window;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    getSyntaxTree(scriptId: string, signal?: AbortSignal | undefined): Promise<SyntaxNodeOrTokenSlim> {
+        let url_ = this.baseUrl + "/code/{scriptId}/syntax-tree";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetSyntaxTree(_response);
+        });
+    }
+
+    protected processGetSyntaxTree(response: Response): Promise<SyntaxNodeOrTokenSlim> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SyntaxNodeOrTokenSlim.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<SyntaxNodeOrTokenSlim>(<any>null);
+    }
+}
+
 export interface IDataConnectionsApiClient {
 
     openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
@@ -2406,6 +2461,8 @@ export class TypesApiClient extends ApiClientBase implements ITypesApiClient {
 export interface IWindowApiClient {
 
     openOutputWindow(signal?: AbortSignal | undefined): Promise<void>;
+
+    openCodeWindow(signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
@@ -2436,6 +2493,37 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
     }
 
     protected processOpenOutputWindow(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    openCodeWindow(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/window/open-code-window";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processOpenCodeWindow(_response);
+        });
+    }
+
+    protected processOpenCodeWindow(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -3094,6 +3182,283 @@ export class PackageReference extends Reference implements IPackageReference {
 export interface IPackageReference extends IReference {
     packageId: string;
     version: string;
+}
+
+export class SyntaxNodeOrTokenSlim implements ISyntaxNodeOrTokenSlim {
+    isToken!: boolean;
+    isNode!: boolean;
+    kind!: SyntaxKind;
+    span!: LinePositionSpan;
+    isMissing!: boolean;
+    valueText?: string | undefined;
+    leadingTrivia!: SyntaxTriviaSlim[];
+    trailingTrivia!: SyntaxTriviaSlim[];
+    children!: SyntaxNodeOrTokenSlim[];
+
+    constructor(data?: ISyntaxNodeOrTokenSlim) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.span = new LinePositionSpan();
+            this.leadingTrivia = [];
+            this.trailingTrivia = [];
+            this.children = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.isToken = _data["isToken"];
+            this.isNode = _data["isNode"];
+            this.kind = _data["kind"];
+            this.span = _data["span"] ? LinePositionSpan.fromJS(_data["span"]) : new LinePositionSpan();
+            this.isMissing = _data["isMissing"];
+            this.valueText = _data["valueText"];
+            if (Array.isArray(_data["leadingTrivia"])) {
+                this.leadingTrivia = [] as any;
+                for (let item of _data["leadingTrivia"])
+                    this.leadingTrivia!.push(SyntaxTriviaSlim.fromJS(item));
+            }
+            if (Array.isArray(_data["trailingTrivia"])) {
+                this.trailingTrivia = [] as any;
+                for (let item of _data["trailingTrivia"])
+                    this.trailingTrivia!.push(SyntaxTriviaSlim.fromJS(item));
+            }
+            if (Array.isArray(_data["children"])) {
+                this.children = [] as any;
+                for (let item of _data["children"])
+                    this.children!.push(SyntaxNodeOrTokenSlim.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SyntaxNodeOrTokenSlim {
+        data = typeof data === 'object' ? data : {};
+        let result = new SyntaxNodeOrTokenSlim();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["isToken"] = this.isToken;
+        data["isNode"] = this.isNode;
+        data["kind"] = this.kind;
+        data["span"] = this.span ? this.span.toJSON() : <any>undefined;
+        data["isMissing"] = this.isMissing;
+        data["valueText"] = this.valueText;
+        if (Array.isArray(this.leadingTrivia)) {
+            data["leadingTrivia"] = [];
+            for (let item of this.leadingTrivia)
+                data["leadingTrivia"].push(item.toJSON());
+        }
+        if (Array.isArray(this.trailingTrivia)) {
+            data["trailingTrivia"] = [];
+            for (let item of this.trailingTrivia)
+                data["trailingTrivia"].push(item.toJSON());
+        }
+        if (Array.isArray(this.children)) {
+            data["children"] = [];
+            for (let item of this.children)
+                data["children"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): SyntaxNodeOrTokenSlim {
+        const json = this.toJSON();
+        let result = new SyntaxNodeOrTokenSlim();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISyntaxNodeOrTokenSlim {
+    isToken: boolean;
+    isNode: boolean;
+    kind: SyntaxKind;
+    span: LinePositionSpan;
+    isMissing: boolean;
+    valueText?: string | undefined;
+    leadingTrivia: SyntaxTriviaSlim[];
+    trailingTrivia: SyntaxTriviaSlim[];
+    children: SyntaxNodeOrTokenSlim[];
+}
+
+export type SyntaxKind = "None" | "List" | "TildeToken" | "ExclamationToken" | "DollarToken" | "PercentToken" | "CaretToken" | "AmpersandToken" | "AsteriskToken" | "OpenParenToken" | "CloseParenToken" | "MinusToken" | "PlusToken" | "EqualsToken" | "OpenBraceToken" | "CloseBraceToken" | "OpenBracketToken" | "CloseBracketToken" | "BarToken" | "BackslashToken" | "ColonToken" | "SemicolonToken" | "DoubleQuoteToken" | "SingleQuoteToken" | "LessThanToken" | "CommaToken" | "GreaterThanToken" | "DotToken" | "QuestionToken" | "HashToken" | "SlashToken" | "DotDotToken" | "SlashGreaterThanToken" | "LessThanSlashToken" | "XmlCommentStartToken" | "XmlCommentEndToken" | "XmlCDataStartToken" | "XmlCDataEndToken" | "XmlProcessingInstructionStartToken" | "XmlProcessingInstructionEndToken" | "BarBarToken" | "AmpersandAmpersandToken" | "MinusMinusToken" | "PlusPlusToken" | "ColonColonToken" | "QuestionQuestionToken" | "MinusGreaterThanToken" | "ExclamationEqualsToken" | "EqualsEqualsToken" | "EqualsGreaterThanToken" | "LessThanEqualsToken" | "LessThanLessThanToken" | "LessThanLessThanEqualsToken" | "GreaterThanEqualsToken" | "GreaterThanGreaterThanToken" | "GreaterThanGreaterThanEqualsToken" | "SlashEqualsToken" | "AsteriskEqualsToken" | "BarEqualsToken" | "AmpersandEqualsToken" | "PlusEqualsToken" | "MinusEqualsToken" | "CaretEqualsToken" | "PercentEqualsToken" | "QuestionQuestionEqualsToken" | "GreaterThanGreaterThanGreaterThanToken" | "GreaterThanGreaterThanGreaterThanEqualsToken" | "BoolKeyword" | "ByteKeyword" | "SByteKeyword" | "ShortKeyword" | "UShortKeyword" | "IntKeyword" | "UIntKeyword" | "LongKeyword" | "ULongKeyword" | "DoubleKeyword" | "FloatKeyword" | "DecimalKeyword" | "StringKeyword" | "CharKeyword" | "VoidKeyword" | "ObjectKeyword" | "TypeOfKeyword" | "SizeOfKeyword" | "NullKeyword" | "TrueKeyword" | "FalseKeyword" | "IfKeyword" | "ElseKeyword" | "WhileKeyword" | "ForKeyword" | "ForEachKeyword" | "DoKeyword" | "SwitchKeyword" | "CaseKeyword" | "DefaultKeyword" | "TryKeyword" | "CatchKeyword" | "FinallyKeyword" | "LockKeyword" | "GotoKeyword" | "BreakKeyword" | "ContinueKeyword" | "ReturnKeyword" | "ThrowKeyword" | "PublicKeyword" | "PrivateKeyword" | "InternalKeyword" | "ProtectedKeyword" | "StaticKeyword" | "ReadOnlyKeyword" | "SealedKeyword" | "ConstKeyword" | "FixedKeyword" | "StackAllocKeyword" | "VolatileKeyword" | "NewKeyword" | "OverrideKeyword" | "AbstractKeyword" | "VirtualKeyword" | "EventKeyword" | "ExternKeyword" | "RefKeyword" | "OutKeyword" | "InKeyword" | "IsKeyword" | "AsKeyword" | "ParamsKeyword" | "ArgListKeyword" | "MakeRefKeyword" | "RefTypeKeyword" | "RefValueKeyword" | "ThisKeyword" | "BaseKeyword" | "NamespaceKeyword" | "UsingKeyword" | "ClassKeyword" | "StructKeyword" | "InterfaceKeyword" | "EnumKeyword" | "DelegateKeyword" | "CheckedKeyword" | "UncheckedKeyword" | "UnsafeKeyword" | "OperatorKeyword" | "ExplicitKeyword" | "ImplicitKeyword" | "YieldKeyword" | "PartialKeyword" | "AliasKeyword" | "GlobalKeyword" | "AssemblyKeyword" | "ModuleKeyword" | "TypeKeyword" | "FieldKeyword" | "MethodKeyword" | "ParamKeyword" | "PropertyKeyword" | "TypeVarKeyword" | "GetKeyword" | "SetKeyword" | "AddKeyword" | "RemoveKeyword" | "WhereKeyword" | "FromKeyword" | "GroupKeyword" | "JoinKeyword" | "IntoKeyword" | "LetKeyword" | "ByKeyword" | "SelectKeyword" | "OrderByKeyword" | "OnKeyword" | "EqualsKeyword" | "AscendingKeyword" | "DescendingKeyword" | "NameOfKeyword" | "AsyncKeyword" | "AwaitKeyword" | "WhenKeyword" | "OrKeyword" | "AndKeyword" | "NotKeyword" | "WithKeyword" | "InitKeyword" | "RecordKeyword" | "ManagedKeyword" | "UnmanagedKeyword" | "RequiredKeyword" | "ScopedKeyword" | "FileKeyword" | "ElifKeyword" | "EndIfKeyword" | "RegionKeyword" | "EndRegionKeyword" | "DefineKeyword" | "UndefKeyword" | "WarningKeyword" | "ErrorKeyword" | "LineKeyword" | "PragmaKeyword" | "HiddenKeyword" | "ChecksumKeyword" | "DisableKeyword" | "RestoreKeyword" | "ReferenceKeyword" | "InterpolatedStringStartToken" | "InterpolatedStringEndToken" | "InterpolatedVerbatimStringStartToken" | "LoadKeyword" | "NullableKeyword" | "EnableKeyword" | "WarningsKeyword" | "AnnotationsKeyword" | "VarKeyword" | "UnderscoreToken" | "OmittedTypeArgumentToken" | "OmittedArraySizeExpressionToken" | "EndOfDirectiveToken" | "EndOfDocumentationCommentToken" | "EndOfFileToken" | "BadToken" | "IdentifierToken" | "NumericLiteralToken" | "CharacterLiteralToken" | "StringLiteralToken" | "XmlEntityLiteralToken" | "XmlTextLiteralToken" | "XmlTextLiteralNewLineToken" | "InterpolatedStringToken" | "InterpolatedStringTextToken" | "SingleLineRawStringLiteralToken" | "MultiLineRawStringLiteralToken" | "Utf8StringLiteralToken" | "Utf8SingleLineRawStringLiteralToken" | "Utf8MultiLineRawStringLiteralToken" | "EndOfLineTrivia" | "WhitespaceTrivia" | "SingleLineCommentTrivia" | "MultiLineCommentTrivia" | "DocumentationCommentExteriorTrivia" | "SingleLineDocumentationCommentTrivia" | "MultiLineDocumentationCommentTrivia" | "DisabledTextTrivia" | "PreprocessingMessageTrivia" | "IfDirectiveTrivia" | "ElifDirectiveTrivia" | "ElseDirectiveTrivia" | "EndIfDirectiveTrivia" | "RegionDirectiveTrivia" | "EndRegionDirectiveTrivia" | "DefineDirectiveTrivia" | "UndefDirectiveTrivia" | "ErrorDirectiveTrivia" | "WarningDirectiveTrivia" | "LineDirectiveTrivia" | "PragmaWarningDirectiveTrivia" | "PragmaChecksumDirectiveTrivia" | "ReferenceDirectiveTrivia" | "BadDirectiveTrivia" | "SkippedTokensTrivia" | "ConflictMarkerTrivia" | "XmlElement" | "XmlElementStartTag" | "XmlElementEndTag" | "XmlEmptyElement" | "XmlTextAttribute" | "XmlCrefAttribute" | "XmlNameAttribute" | "XmlName" | "XmlPrefix" | "XmlText" | "XmlCDataSection" | "XmlComment" | "XmlProcessingInstruction" | "TypeCref" | "QualifiedCref" | "NameMemberCref" | "IndexerMemberCref" | "OperatorMemberCref" | "ConversionOperatorMemberCref" | "CrefParameterList" | "CrefBracketedParameterList" | "CrefParameter" | "IdentifierName" | "QualifiedName" | "GenericName" | "TypeArgumentList" | "AliasQualifiedName" | "PredefinedType" | "ArrayType" | "ArrayRankSpecifier" | "PointerType" | "NullableType" | "OmittedTypeArgument" | "ParenthesizedExpression" | "ConditionalExpression" | "InvocationExpression" | "ElementAccessExpression" | "ArgumentList" | "BracketedArgumentList" | "Argument" | "NameColon" | "CastExpression" | "AnonymousMethodExpression" | "SimpleLambdaExpression" | "ParenthesizedLambdaExpression" | "ObjectInitializerExpression" | "CollectionInitializerExpression" | "ArrayInitializerExpression" | "AnonymousObjectMemberDeclarator" | "ComplexElementInitializerExpression" | "ObjectCreationExpression" | "AnonymousObjectCreationExpression" | "ArrayCreationExpression" | "ImplicitArrayCreationExpression" | "StackAllocArrayCreationExpression" | "OmittedArraySizeExpression" | "InterpolatedStringExpression" | "ImplicitElementAccess" | "IsPatternExpression" | "RangeExpression" | "ImplicitObjectCreationExpression" | "AddExpression" | "SubtractExpression" | "MultiplyExpression" | "DivideExpression" | "ModuloExpression" | "LeftShiftExpression" | "RightShiftExpression" | "LogicalOrExpression" | "LogicalAndExpression" | "BitwiseOrExpression" | "BitwiseAndExpression" | "ExclusiveOrExpression" | "EqualsExpression" | "NotEqualsExpression" | "LessThanExpression" | "LessThanOrEqualExpression" | "GreaterThanExpression" | "GreaterThanOrEqualExpression" | "IsExpression" | "AsExpression" | "CoalesceExpression" | "SimpleMemberAccessExpression" | "PointerMemberAccessExpression" | "ConditionalAccessExpression" | "UnsignedRightShiftExpression" | "MemberBindingExpression" | "ElementBindingExpression" | "SimpleAssignmentExpression" | "AddAssignmentExpression" | "SubtractAssignmentExpression" | "MultiplyAssignmentExpression" | "DivideAssignmentExpression" | "ModuloAssignmentExpression" | "AndAssignmentExpression" | "ExclusiveOrAssignmentExpression" | "OrAssignmentExpression" | "LeftShiftAssignmentExpression" | "RightShiftAssignmentExpression" | "CoalesceAssignmentExpression" | "UnsignedRightShiftAssignmentExpression" | "UnaryPlusExpression" | "UnaryMinusExpression" | "BitwiseNotExpression" | "LogicalNotExpression" | "PreIncrementExpression" | "PreDecrementExpression" | "PointerIndirectionExpression" | "AddressOfExpression" | "PostIncrementExpression" | "PostDecrementExpression" | "AwaitExpression" | "IndexExpression" | "ThisExpression" | "BaseExpression" | "ArgListExpression" | "NumericLiteralExpression" | "StringLiteralExpression" | "CharacterLiteralExpression" | "TrueLiteralExpression" | "FalseLiteralExpression" | "NullLiteralExpression" | "DefaultLiteralExpression" | "Utf8StringLiteralExpression" | "TypeOfExpression" | "SizeOfExpression" | "CheckedExpression" | "UncheckedExpression" | "DefaultExpression" | "MakeRefExpression" | "RefValueExpression" | "RefTypeExpression" | "QueryExpression" | "QueryBody" | "FromClause" | "LetClause" | "JoinClause" | "JoinIntoClause" | "WhereClause" | "OrderByClause" | "AscendingOrdering" | "DescendingOrdering" | "SelectClause" | "GroupClause" | "QueryContinuation" | "Block" | "LocalDeclarationStatement" | "VariableDeclaration" | "VariableDeclarator" | "EqualsValueClause" | "ExpressionStatement" | "EmptyStatement" | "LabeledStatement" | "GotoStatement" | "GotoCaseStatement" | "GotoDefaultStatement" | "BreakStatement" | "ContinueStatement" | "ReturnStatement" | "YieldReturnStatement" | "YieldBreakStatement" | "ThrowStatement" | "WhileStatement" | "DoStatement" | "ForStatement" | "ForEachStatement" | "UsingStatement" | "FixedStatement" | "CheckedStatement" | "UncheckedStatement" | "UnsafeStatement" | "LockStatement" | "IfStatement" | "ElseClause" | "SwitchStatement" | "SwitchSection" | "CaseSwitchLabel" | "DefaultSwitchLabel" | "TryStatement" | "CatchClause" | "CatchDeclaration" | "CatchFilterClause" | "FinallyClause" | "LocalFunctionStatement" | "CompilationUnit" | "GlobalStatement" | "NamespaceDeclaration" | "UsingDirective" | "ExternAliasDirective" | "FileScopedNamespaceDeclaration" | "AttributeList" | "AttributeTargetSpecifier" | "Attribute" | "AttributeArgumentList" | "AttributeArgument" | "NameEquals" | "ClassDeclaration" | "StructDeclaration" | "InterfaceDeclaration" | "EnumDeclaration" | "DelegateDeclaration" | "BaseList" | "SimpleBaseType" | "TypeParameterConstraintClause" | "ConstructorConstraint" | "ClassConstraint" | "StructConstraint" | "TypeConstraint" | "ExplicitInterfaceSpecifier" | "EnumMemberDeclaration" | "FieldDeclaration" | "EventFieldDeclaration" | "MethodDeclaration" | "OperatorDeclaration" | "ConversionOperatorDeclaration" | "ConstructorDeclaration" | "BaseConstructorInitializer" | "ThisConstructorInitializer" | "DestructorDeclaration" | "PropertyDeclaration" | "EventDeclaration" | "IndexerDeclaration" | "AccessorList" | "GetAccessorDeclaration" | "SetAccessorDeclaration" | "AddAccessorDeclaration" | "RemoveAccessorDeclaration" | "UnknownAccessorDeclaration" | "ParameterList" | "BracketedParameterList" | "Parameter" | "TypeParameterList" | "TypeParameter" | "IncompleteMember" | "ArrowExpressionClause" | "Interpolation" | "InterpolatedStringText" | "InterpolationAlignmentClause" | "InterpolationFormatClause" | "ShebangDirectiveTrivia" | "LoadDirectiveTrivia" | "TupleType" | "TupleElement" | "TupleExpression" | "SingleVariableDesignation" | "ParenthesizedVariableDesignation" | "ForEachVariableStatement" | "DeclarationPattern" | "ConstantPattern" | "CasePatternSwitchLabel" | "WhenClause" | "DiscardDesignation" | "RecursivePattern" | "PropertyPatternClause" | "Subpattern" | "PositionalPatternClause" | "DiscardPattern" | "SwitchExpression" | "SwitchExpressionArm" | "VarPattern" | "ParenthesizedPattern" | "RelationalPattern" | "TypePattern" | "OrPattern" | "AndPattern" | "NotPattern" | "SlicePattern" | "ListPattern" | "DeclarationExpression" | "RefExpression" | "RefType" | "ThrowExpression" | "ImplicitStackAllocArrayCreationExpression" | "SuppressNullableWarningExpression" | "NullableDirectiveTrivia" | "FunctionPointerType" | "FunctionPointerParameter" | "FunctionPointerParameterList" | "FunctionPointerCallingConvention" | "InitAccessorDeclaration" | "WithExpression" | "WithInitializerExpression" | "RecordDeclaration" | "DefaultConstraint" | "PrimaryConstructorBaseType" | "FunctionPointerUnmanagedCallingConventionList" | "FunctionPointerUnmanagedCallingConvention" | "RecordStructDeclaration" | "ExpressionColon" | "LineDirectivePosition" | "LineSpanDirectiveTrivia" | "InterpolatedSingleLineRawStringStartToken" | "InterpolatedMultiLineRawStringStartToken" | "InterpolatedRawStringEndToken" | "ScopedType" | "CollectionExpression" | "ExpressionElement" | "SpreadElement";
+
+export class LinePositionSpan implements ILinePositionSpan {
+    start!: LinePosition;
+    end!: LinePosition;
+    _start!: LinePosition;
+    _end!: LinePosition;
+
+    constructor(data?: ILinePositionSpan) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.start = new LinePosition();
+            this.end = new LinePosition();
+            this._start = new LinePosition();
+            this._end = new LinePosition();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.start = _data["start"] ? LinePosition.fromJS(_data["start"]) : new LinePosition();
+            this.end = _data["end"] ? LinePosition.fromJS(_data["end"]) : new LinePosition();
+            this._start = _data["_start"] ? LinePosition.fromJS(_data["_start"]) : new LinePosition();
+            this._end = _data["_end"] ? LinePosition.fromJS(_data["_end"]) : new LinePosition();
+        }
+    }
+
+    static fromJS(data: any): LinePositionSpan {
+        data = typeof data === 'object' ? data : {};
+        let result = new LinePositionSpan();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["start"] = this.start ? this.start.toJSON() : <any>undefined;
+        data["end"] = this.end ? this.end.toJSON() : <any>undefined;
+        data["_start"] = this._start ? this._start.toJSON() : <any>undefined;
+        data["_end"] = this._end ? this._end.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): LinePositionSpan {
+        const json = this.toJSON();
+        let result = new LinePositionSpan();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ILinePositionSpan {
+    start: LinePosition;
+    end: LinePosition;
+    _start: LinePosition;
+    _end: LinePosition;
+}
+
+export class LinePosition implements ILinePosition {
+    line!: number;
+    character!: number;
+    _line!: number;
+    _character!: number;
+
+    constructor(data?: ILinePosition) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.line = _data["line"];
+            this.character = _data["character"];
+            this._line = _data["_line"];
+            this._character = _data["_character"];
+        }
+    }
+
+    static fromJS(data: any): LinePosition {
+        data = typeof data === 'object' ? data : {};
+        let result = new LinePosition();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["line"] = this.line;
+        data["character"] = this.character;
+        data["_line"] = this._line;
+        data["_character"] = this._character;
+        return data;
+    }
+
+    clone(): LinePosition {
+        const json = this.toJSON();
+        let result = new LinePosition();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ILinePosition {
+    line: number;
+    character: number;
+    _line: number;
+    _character: number;
+}
+
+export class SyntaxTriviaSlim implements ISyntaxTriviaSlim {
+    kind!: SyntaxKind;
+    span!: LinePositionSpan;
+    displayValue?: string | undefined;
+
+    constructor(data?: ISyntaxTriviaSlim) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.span = new LinePositionSpan();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.kind = _data["kind"];
+            this.span = _data["span"] ? LinePositionSpan.fromJS(_data["span"]) : new LinePositionSpan();
+            this.displayValue = _data["displayValue"];
+        }
+    }
+
+    static fromJS(data: any): SyntaxTriviaSlim {
+        data = typeof data === 'object' ? data : {};
+        let result = new SyntaxTriviaSlim();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kind"] = this.kind;
+        data["span"] = this.span ? this.span.toJSON() : <any>undefined;
+        data["displayValue"] = this.displayValue;
+        return data;
+    }
+
+    clone(): SyntaxTriviaSlim {
+        const json = this.toJSON();
+        let result = new SyntaxTriviaSlim();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISyntaxTriviaSlim {
+    kind: SyntaxKind;
+    span: LinePositionSpan;
+    displayValue?: string | undefined;
 }
 
 export abstract class DataConnection implements IDataConnection {
@@ -3869,7 +4234,7 @@ export interface IPackageIdentity {
     version: string;
 }
 
-export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8";
+export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
 
 export class ScriptSummary implements IScriptSummary {
     id!: string;

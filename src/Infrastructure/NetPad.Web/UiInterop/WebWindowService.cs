@@ -73,4 +73,13 @@ public class WebWindowService : IUiWindowService
 
         await _ipcService.SendAsync(command);
     }
+
+    public async Task OpenCodeWindowAsync()
+    {
+        var command = new OpenWindowCommand("code");
+        command.Options.Height = 2 / 3.0;
+        command.Options.Width = 4 / 5.0;
+
+        await _ipcService.SendAsync(command);
+    }
 }

@@ -56,15 +56,18 @@
     </div>
 </template>
 
-<h6>
-    <b class="ps-3 user-select-none">Scripts</b>
-    <i class="action-icon tree-expand-all-icon float-end me-2"
-       title="Expand All"
-       click.trigger="expandAllFolders(rootScriptFolder)"></i>
-    <i class="action-icon tree-collapse-all-icon float-end me-3"
-       title="Collapse All"
-       click.trigger="collapseAllFolders(rootScriptFolder)"></i>
-    <hr class="m-0 mt-2" style="height: 2px"/>
-</h6>
+<div class="d-flex align-items-center justify-content-between">
+    <span class="ps-3 user-select-none text-semibold">Scripts</span>
+
+    <div class="d-flex align-items-center gap-2">
+        <i class="icon-button tree-expand-all-icon"
+           title="Expand All"
+           click.trigger="expandAllFolders(rootScriptFolder)"></i>
+        <i class="icon-button tree-collapse-all-icon"
+           title="Collapse All"
+           click.trigger="collapseAllFolders(rootScriptFolder)"></i>
+    </div>
+</div>
+<hr class="m-0 mt-2" style="height: 2px"/>
 
 <script-folder folder.bind="rootScriptFolder" vm.bind="$this"></script-folder>

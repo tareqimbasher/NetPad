@@ -20,4 +20,10 @@ public class WindowController : ControllerBase
     {
         await _uiWindowService.OpenOutputWindowAsync();
     }
+
+    [HttpPatch("open-code-window")]
+    public async Task OpenCodeWindow()
+    {
+        await _uiWindowService.OpenCodeWindowAsync();
+    }
 }

@@ -1,7 +1,9 @@
-<template class="${orientation.toLowerCase()} overflow-hidden"
+<template class="orientation-${orientation.toLowerCase()} overflow-hidden"
           show.bind="panes.size"
-          data-id.bind="id">
-    <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}">
+          data-id.bind="id"
+          tabindex="0">
+    <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}"
+         if.bind="orientation !== 'FloatingWindow'">
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="toggle(pane)"
@@ -10,39 +12,12 @@
             <span>${pane.name}</span>
         </div>
     </div>
-    <div class="content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
-        <div class="pane-toolbar d-flex align-items-center p-2">
-            <div class="text-truncate me-2 fw-semibold" if.bind="active.showNameInHeader">
-                ${active.name | truncate:30}
-            </div>
-
-            <div class="flex-grow-1 pane-toolbar-composed" if.bind="active.toolbar">
-                <au-compose component.bind="active.toolbar"></au-compose>
-            </div>
-
-            <div class="justify-content-end ms-auto">
-                <span class="me-2" if.bind="active.actions.length">
-                    <i class="settings-icon action-icon pe-3"
-                       title="Actions"
-                       data-bs-toggle="dropdown"></i>
-                    <ul class="dropdown-menu">
-                        <li repeat.for="action of active.actions"
-                            title.bind="action.hoverText"
-                            click.trigger="action.click()">
-                            <button class="dropdown-item" innerHTML.bind="action.text"></button>
-                        </li>
-                    </ul>
-                </span>
-
-                <i class="action-icon pane-collapse-icon pane-collapser"
-                   click.trigger="collapse()"
-                   title="Hide"></i>
-            </div>
-        </div>
+    <div class="pane-content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
         <au-compose repeat.for="pane of panes"
                     component.bind="pane"
                     show.bind="pane === active"
-                    class="content-container flex-fill overflow-x-auto d-flex">
+                    class="flex-fill overflow-x-auto d-flex flex-column"
+                    containerless>
         </au-compose>
     </div>
 </template>

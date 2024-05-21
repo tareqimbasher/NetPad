@@ -3,6 +3,7 @@ import {IHttpClient} from "@aurelia/fetch-client";
 import {IOmniSharpApiClient, OmniSharpApiClient} from "./api";
 import {Semaphore, Util} from "@common";
 import {IEventBus} from "@domain";
+import {ScriptCodeUpdatedEvent, ScriptCodeUpdatingEvent} from "@application";
 
 export interface IOmniSharpService extends IOmniSharpApiClient {
 }
@@ -22,13 +23,8 @@ export class OmniSharpService extends OmniSharpApiClient implements IOmniSharpSe
 
     constructor(@IEventBus private readonly eventBus: IEventBus, baseUrl?: string, @IHttpClient http?: IHttpClient) {
         super(baseUrl, http);
-
-        this.eventBus.subscribe("script-code-update-request", (status: string) => {
-            if (status === "started")
-                this.currentCodeBufferUpdates++;
-            else
-                this.currentCodeBufferUpdates--;
-        });
+        this.eventBus.subscribe(ScriptCodeUpdatingEvent, msg => this.currentCodeBufferUpdates++);
+        this.eventBus.subscribe(ScriptCodeUpdatedEvent, msg => this.currentCodeBufferUpdates--);
     }
 
     protected override async makeFetchCall(url: string, options: RequestInit, fetchCall: () => Promise<Response>): Promise<Response> {

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using NetPad.CodeAnalysis;
+using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.DotNet;
@@ -9,7 +9,7 @@ using NetPad.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NetPad.Compilation.Tests.CSharp;
+namespace NetPad.Domain.Tests.Compilation.CSharp;
 
 public class CSharpCodeCompilerTests
 {
@@ -80,28 +80,6 @@ public class CSharpCodeCompilerTests
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
 
-    [Theory]
-    [InlineData(DotNetFrameworkVersion.DotNet2, null)]
-    [InlineData(DotNetFrameworkVersion.DotNet3, null)]
-    [InlineData(DotNetFrameworkVersion.DotNet5, null)]
-    [InlineData(DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10)]
-    [InlineData(DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11)]
-    [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
-    public void Compiler_Uses_Correct_CSharp_LanguageVersion(DotNetFrameworkVersion targetFrameworkVersion, LanguageVersion? expectedLangVersion)
-    {
-        var compiler = CreateCSharpCodeCompiler();
-
-        if (expectedLangVersion == null)
-        {
-            Assert.ThrowsAny<Exception>(() => compiler.GetParseOptions(targetFrameworkVersion, OptimizationLevel.Debug));
-        }
-        else
-        {
-            CSharpParseOptions parseOptions = compiler.GetParseOptions(targetFrameworkVersion, OptimizationLevel.Debug);
-            Assert.Equal(expectedLangVersion, parseOptions.LanguageVersion);
-        }
-    }
-
     [Fact]
     public void Can_Compile_CSharp8_Features()
     {
@@ -154,7 +132,7 @@ public class CSharpCodeCompilerTests
 
     private CSharpCodeCompiler CreateCSharpCodeCompiler()
     {
-        return new CSharpCodeCompiler(new DotNetInfo(new Settings()));
+        return new CSharpCodeCompiler(new DotNetInfo(new Settings()), new CodeAnalysisService());
     }
 
     private string GetProgram(string code, params string[] additionalNamespaces)

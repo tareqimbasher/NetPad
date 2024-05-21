@@ -17,6 +17,17 @@ public static class StringUtil
     public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
         string.Join(separator, collection);
 
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("str")]
+    public static string? Truncate(this string? str, int maxLength, bool withTrailingDots = false)
+    {
+        if (maxLength < 0 || str == null || str.Length <= maxLength)
+        {
+            return str;
+        }
+
+        return withTrailingDots ? $"{str[..maxLength]}..." : str[..maxLength];
+    }
+
     public static string RemoveLeadingBOMString(string str) =>
         str.StartsWith(_bomString, StringComparison.Ordinal) ? str.Remove(0, _bomString.Length) : str;
 

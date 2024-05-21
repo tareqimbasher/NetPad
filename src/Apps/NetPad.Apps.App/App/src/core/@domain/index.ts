@@ -12,6 +12,7 @@ export * from "./window/window-service";
 export * from "./window/window-state";
 export * from "./sessions/session";
 export * from "./scripts/script-service";
+export * from "./code/code-service";
 export * from "./assemblies/assembly-service";
 export * from "./data-connections/data-connection-service";
 export * from "./data-connections/data-connection-store";

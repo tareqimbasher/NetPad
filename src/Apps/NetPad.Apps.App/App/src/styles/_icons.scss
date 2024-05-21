@@ -68,7 +68,7 @@ button > .icon-base {
 
 .delete-icon {
     @extend %icon-base;
-    @extend .fa-trash;
+    @extend .fa-times;
 }
 
 .refresh-icon {
@@ -167,6 +167,26 @@ button > .icon-base {
     @extend .fa-caret-left;
 }
 
+.angle-down-icon {
+    @extend %icon-base;
+    @extend .fa-angle-down;
+}
+
+.angle-up-icon {
+    @extend %icon-base;
+    @extend .fa-angle-up;
+}
+
+.angle-right-icon {
+    @extend %icon-base;
+    @extend .fa-angle-right;
+}
+
+.angle-left-icon {
+    @extend %icon-base;
+    @extend .fa-angle-left;
+}
+
 .angles-down-icon {
     @extend %icon-base;
     @extend .fa-angles-down;
@@ -229,7 +249,7 @@ button > .icon-base {
 
 .pop-out-icon {
     @extend %icon-base;
-    @extend .fa-arrow-up-right-from-square;
+    @extend .fa-window-maximize;
 }
 
 .html-icon {
@@ -434,12 +454,34 @@ button > .icon-base {
 
 .clear-output-icon {
     @extend %icon-base;
-    @extend .fa-broom;
+    @extend .fa-ban;
+}
+
+.navigate-top-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-right-to-bracket;
+    transform: rotate(-90deg);
+}
+
+.navigate-up-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-up;
+}
+
+.navigate-down-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-down;
+}
+
+.navigate-bottom-icon {
+    @extend %icon-base;
+    @extend .fa-arrow-right-to-bracket;
+    transform: rotate(90deg);
 }
 
 .scroll-on-output-icon {
     @extend %icon-base;
-    @extend .fa-arrows-down-to-line;
+    @extend .fa-angles-down;
 }
 
 .add-package-icon {

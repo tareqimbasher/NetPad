@@ -1,11 +1,19 @@
+<pane-toolbar>
+    <span class="text-semibold">Clipboard</span>
+    <div au-slot="right">
+        <i class="icon-button clear-output-icon"
+           click.trigger="history.clear()"
+           title="Clear History"></i>
+    </div>
+</pane-toolbar>
 <div if.bind="history.size" class="list-group flex-fill min-w-0">
-    <div class="d-flex align-items-center p-2">
+    <div class="d-flex align-items-center p-3">
         <input type="text"
                class="form-control"
                placeholder="Search..."
                value.bind="searchTerm"
                spellcheck="false"/>
-        <i class="action-icon case-sensitive-icon ms-3 me-3 ${caseSensitiveSearch ? 'active' : ''}"
+        <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
             title="Match case"></i>
     </div>
@@ -18,7 +26,7 @@
         </span>
         <span class="ms-2">
             <i class="check-circle-icon text-success" if.bind="selected === entry"></i>
-            <i class="action-icon delete-icon" else
+            <i class="icon-button delete-icon" else
                title="Delete"
                click.trigger="removeEntry(entry)"></i>
         </span>

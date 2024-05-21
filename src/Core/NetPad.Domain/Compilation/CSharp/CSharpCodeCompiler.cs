@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Text;
+using NetPad.CodeAnalysis;
 using NetPad.DotNet;
 using NetPad.IO;
 
@@ -15,10 +15,12 @@ namespace NetPad.Compilation.CSharp;
 public class CSharpCodeCompiler : ICodeCompiler
 {
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly ICodeAnalysisService _codeAnalysisService;
 
-    public CSharpCodeCompiler(IDotNetInfo dotNetInfo)
+    public CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService codeAnalysisService)
     {
         _dotNetInfo = dotNetInfo;
+        _codeAnalysisService = codeAnalysisService;
     }
 
     public CompilationResult Compile(CompilationInput input)
@@ -30,7 +32,8 @@ public class CSharpCodeCompiler : ICodeCompiler
         var compilation = CreateCompilation(input, assemblyName);
 
         using var stream = new MemoryStream();
-        var result = compilation.Emit(stream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
+        var result = compilation.Emit(stream,
+            options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
 
         stream.Seek(0, SeekOrigin.Begin);
         var assemblyBytes = stream.ToArray();
@@ -45,10 +48,10 @@ public class CSharpCodeCompiler : ICodeCompiler
 
     private CSharpCompilation CreateCompilation(CompilationInput input, string assemblyName)
     {
-        // Parse code
-        SourceText sourceCode = SourceText.From(input.Code);
-        CSharpParseOptions parseOptions = GetParseOptions(input.TargetFrameworkVersion, input.OptimizationLevel);
-        SyntaxTree syntaxTree = SyntaxFactory.ParseSyntaxTree(sourceCode, parseOptions);
+        SyntaxTree syntaxTree = _codeAnalysisService.GetSyntaxTree(
+            input.Code,
+            input.TargetFrameworkVersion,
+            input.OptimizationLevel);
 
         // Build references
         var assemblyLocations = SystemAssemblies.GetAssemblyLocations(_dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
@@ -81,15 +84,6 @@ public class CSharpCodeCompiler : ICodeCompiler
         return references.ToArray();
     }
 
-    public CSharpParseOptions GetParseOptions(DotNetFrameworkVersion targetFrameworkVersion, OptimizationLevel optimizationLevel)
-    {
-        return CSharpParseOptions.Default
-            .WithLanguageVersion(targetFrameworkVersion.GetLatestSupportedCSharpLanguageVersion())
-            // TODO investigate using SourceKind.Script (see cs-scripts branch)
-            .WithKind(SourceCodeKind.Regular)
-            .WithPreprocessorSymbols(PreprocessorSymbols.For(optimizationLevel));
-    }
-
     private static string GetCompiledFileExtension(OutputKind outputKind)
     {
         return outputKind switch
@@ -101,9 +95,8 @@ public class CSharpCodeCompiler : ICodeCompiler
             OutputKind.WindowsRuntimeApplication => ".winmdobj",
             OutputKind.NetModule => ".netmodule",
             _ => throw new ArgumentOutOfRangeException(nameof(outputKind), outputKind, null)
-
         };
 
-        static string ExeExtension () => PlatformUtil.IsWindowsPlatform() ? ".exe" : string.Empty;
+        static string ExeExtension() => PlatformUtil.IsWindowsPlatform() ? ".exe" : string.Empty;
     }
 }

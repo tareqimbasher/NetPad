@@ -77,6 +77,8 @@ export const configureAndGetAppEntryPoint = (builder: IAurelia) => {
         bootstrapperCtor = require("./windows/main/main").Bootstrapper;
     else if (windowName === "output")
         bootstrapperCtor = require("./windows/output/main").Bootstrapper;
+    else if (windowName === "code")
+        bootstrapperCtor = require("./windows/code/main").Bootstrapper;
     else if (windowName === "settings")
         bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
     else if (windowName === "script-config")

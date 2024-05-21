@@ -1,0 +1,63 @@
+pane-toolbar {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    box-shadow: var(--box-shadow-bottom);
+    user-select: none;
+    background: var(--pane-toolbar-background);
+    flex-grow: 0;
+    width: 100%;
+    padding: 0.25rem 0.35rem;
+
+    .pane-toolbar-right {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        gap: 0.5rem;
+    }
+
+    .dropdown-toggle {
+        cursor: default;
+        padding: 0.45rem 0.5rem;
+        vertical-align: middle;
+        line-height: 1rem;
+
+        &:hover {
+            background: var(--hover-color);
+            border-radius: 5px;
+        }
+    }
+
+    .tabs {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        height: 100%;
+
+        .tab-button {
+            padding: 0.25rem 0.6rem;
+            font-weight: 600;
+
+            &:not(:last-child) {
+                margin-right: 0.35rem;
+            }
+
+            &:hover {
+                background: var(--hover-color);
+            }
+
+            &.active {
+                background: var(--hover-color);
+                color: var(--active-color);
+            }
+
+            //background: var(--tab-background);
+            //color: var(--tab-inactive-text-color);
+
+            //&.active {
+            //    background: var(--tab-active-background);
+            //    color: var(--tab-active-text-color);
+            //}
+        }
+    }
+}

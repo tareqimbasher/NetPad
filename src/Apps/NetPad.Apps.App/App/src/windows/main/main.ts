@@ -1,7 +1,9 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
+    CodeService,
     DataConnectionService,
     IAppService,
+    ICodeService,
     IDataConnectionService,
     IScriptService,
     ScriptService,
@@ -36,6 +38,7 @@ import {DialogUtil} from "@application/dialogs/dialog-util";
 import {MainMenuBackgroundService} from "@application/background-services/main-menu-background-service";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 import {IMainMenuService, MainMenuService} from "@application/main-menu/main-menu-service";
+import {PaneToolbar} from "@application/panes/pane-toolbar";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -48,6 +51,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(AppWindows, AppWindows),
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(ITextEditorService, TextEditorService),
+            Registration.singleton(ICodeService, CodeService),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
             Registration.singleton(IBackgroundService, MainMenuBackgroundService),
@@ -64,6 +68,7 @@ export class Bootstrapper implements IWindowBootstrapper {
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
             Registration.singleton(IExcelService, ExcelService),
             PaneHost,
+            PaneToolbar,
             DataConnectionName,
 
             // App startup task

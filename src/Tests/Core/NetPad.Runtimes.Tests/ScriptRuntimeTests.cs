@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Assemblies;
+using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.IO;
@@ -31,6 +32,7 @@ public class ScriptRuntimeTests : TestBase
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
         services.AddTransient<DefaultInMemoryScriptRuntimeFactory>();
         services.AddTransient<IPackageProvider, NullPackageProvider>();
+        services.AddTransient<ICodeAnalysisService, CodeAnalysisService>();
     }
 
     public static IEnumerable<object[]> ConsoleOutputTestData => new[]

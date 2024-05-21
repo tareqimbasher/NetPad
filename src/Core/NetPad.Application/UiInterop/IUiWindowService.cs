@@ -9,4 +9,5 @@ public interface IUiWindowService
     Task OpenScriptConfigWindowAsync(Script script, string? tab = null);
     Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false);
     Task OpenOutputWindowAsync();
+    Task OpenCodeWindowAsync();
 }

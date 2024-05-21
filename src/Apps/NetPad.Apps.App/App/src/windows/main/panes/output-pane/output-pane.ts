@@ -1,113 +1,229 @@
-﻿import {IShortcutManager, Pane, PaneAction, ShortcutIds} from "@application";
-import {ISession, IWindowService, Settings} from "@domain";
+﻿import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {IContainer, PLATFORM} from "aurelia";
-import {OutputView} from "../../output-view/output-view";
+import {FindTextBox, IShortcutManager, KeyCombo, Pane, ShortcutIds} from "@application";
+import {
+    HtmlErrorScriptOutput,
+    HtmlRawScriptOutput,
+    HtmlResultsScriptOutput,
+    HtmlSqlScriptOutput,
+    IEventBus,
+    ISession,
+    IWindowService,
+    PromptUserForInputCommand,
+    ScriptEnvironment,
+    ScriptOutputEmittedEvent,
+    Settings
+} from "@domain";
 import {AppWindows} from "@application/windows/app-windows";
+import {OutputModel} from "./output-model";
+import {DisposableCollection, KeyCode} from "@common";
 
 export class OutputPane extends Pane {
-    public toolbar: unknown | undefined;
-    private _outputViews = new Map<string, OutputView>();
+    public outputModels = new Map<string, OutputModel>();
+    private current?: OutputModel;
+    private disposables = new DisposableCollection();
+    private findTextBox: FindTextBox;
+    private activeTab = "Results";
+    private tabs = [
+        {
+            name: "Results",
+            keyBinding: new KeyCombo().withAltKey().withKey(KeyCode.Digit1),
+        },
+        {
+            name: "SQL",
+            keyBinding: new KeyCombo().withAltKey().withKey(KeyCode.Digit2),
+        },
+    ]
 
-    constructor(@ISession public readonly session: ISession,
-                @IWindowService private readonly windowService: IWindowService,
-                @IContainer private readonly container: IContainer,
-                private readonly appWindows: AppWindows,
-                @IShortcutManager private readonly shortcutManager: IShortcutManager,
-                private readonly settings: Settings) {
+    constructor(
+        private readonly element: Element,
+        @ISession public readonly session: ISession,
+        @IWindowService private readonly windowService: IWindowService,
+        @IEventBus private eventBus: IEventBus,
+        @IShortcutManager shortcutManager: IShortcutManager,
+        private readonly appWindows: AppWindows,
+        private readonly settings: Settings
+    ) {
         super("Output", "output-icon", false);
-
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
-
-        this._actions.push(new PaneAction(
-            '<i class="pop-out-icon me-3"></i> Pop out',
-            "Pop out into a new window",
-            async () => {
-                this.hide();
-                await this.windowService.openOutputWindow();
-            }
-        ))
     }
 
-    public get outputViews() {
-        return [...this._outputViews.values()];
+    public bound() {
+        this.setCurrentOutputModel(this.session.active);
     }
 
     public attached() {
-        this.updateOutputViews();
-        PLATFORM.queueMicrotask(() => this.activateIfApplicable());
+        this.listenForOutputMessages();
 
-        const bc = new BroadcastChannel("output");
-        bc.onmessage = (ev) => {
-            if (ev.data !== "send-outputs") return;
+        if (!this.isWindow) {
+            this.listenForExternalOutputWindowMessages();
+        }
 
-            const outputs = this.outputViews.map(ov => {
-                return {
-                    scriptId: ov.environment.script.id,
-                    output: ov.toolbar.options.tabs.map(t => {
-                        return {
-                            name: t.view.constructor.name,
-                            html: t.view.getOutputHtml()
-                        };
-                    })
-                };
-            });
-
-            bc.postMessage(outputs);
+        const tabKeysHandler = (ev: Event) => {
+            const match = this.tabs.find(t => t.keyBinding.matches(ev as KeyboardEvent));
+            if (match) {
+                this.activeTab = match.name;
+            }
         };
+
+        this.element.addEventListener("keydown", tabKeysHandler);
+        this.disposables.add(() => this.element.removeEventListener("keydown", tabKeysHandler));
+
+        PLATFORM.queueMicrotask(() => this.activatePaneIfApplicable());
     }
 
-    @watch<OutputPane>(vm => vm.session.environments.length)
-    private updateOutputViews() {
-        const added = this.session.environments.filter(e => !this._outputViews.has(e.script.id));
-        const removed = [...this._outputViews.keys()]
-            .filter(id => !this.session.environments.some(e => e.script.id === id));
+    private listenForOutputMessages() {
+        this.disposables.add(
+            this.eventBus.subscribeToServer(ScriptOutputEmittedEvent, msg => {
+                if (!msg.output) {
+                    return;
+                }
 
-        for (const id of removed) {
-            this._outputViews.delete(id);
-        }
+                const model = this.outputModels.get(msg.scriptId);
+                if (!model) {
+                    this.logger.warn(`Got output for script ${msg.scriptId} but no model found for it. Message: `, msg);
+                    return;
+                }
 
-        for (const environment of added) {
-            const view = this.container.get(OutputView);
-            view.environment = environment;
+                if ([nameof(HtmlResultsScriptOutput), nameof(HtmlErrorScriptOutput), nameof(HtmlRawScriptOutput)].indexOf(msg.outputType) >= 0) {
+                    model.resultsDumpContainer.appendOutput(msg.output);
+                } else if (msg.outputType === nameof(HtmlSqlScriptOutput)) {
+                    model.sqlDumpContainer.appendOutput(msg.output);
+                } else {
+                    this.logger.warn(`Got output for script ${msg.scriptId} but message type ${msg.outputType} is unhandled. Message: `, msg);
+                }
+            })
+        );
 
-            this._outputViews.set(environment.script.id, view);
-        }
+        this.disposables.add(
+            this.eventBus.subscribeToServer(PromptUserForInputCommand, msg => {
+                const model = this.outputModels.get(msg.scriptId);
+                if (!model) {
+                    this.logger.warn(`Got user input command for script ${msg.scriptId} but no model found for it. Message: `, msg);
+                    return;
+                }
 
-        this.activeChanged();
+                model.inputRequest = {
+                    commandId: msg.id
+                };
+
+                setTimeout(() => {
+                    (this.element.querySelector(".user-input-container input") as HTMLInputElement)?.focus();
+                }, 50);
+            })
+        );
     }
 
     @watch<OutputPane>(vm => vm.session.active)
-    private activeChanged() {
-        if (this.session.active) {
-            const view = this._outputViews.get(this.session.active.script.id);
-            if (view) {
-                this.toolbar = view.toolbar;
-                return;
+    private setCurrentOutputModel(active?: ScriptEnvironment | null) {
+        let newCurrent: OutputModel | undefined = undefined;
+
+        if (active) {
+            let model = this.outputModels.get(active.script.id);
+
+            if (!model) {
+                model = new OutputModel(active, this.settings);
+                this.outputModels.set(active.script.id, model);
             }
+
+            newCurrent = model;
         }
 
-        this.toolbar = undefined;
+        this.current = newCurrent;
+
+        if (this.current) {
+            this.findTextBox.registerSearchableElement(
+                this.current.resultsDumpContainer.element,
+                ".null, .property-value, .property-name, .text, .group > .title");
+
+            this.findTextBox.registerSearchableElement(
+                this.current.sqlDumpContainer.element,
+                ".text, .sql-keyword, .query-time, .query-params, .logger-name, .not-special");
+
+            this.setFindTextBoxSearchableElement();
+        }
+    }
+
+    @watch<OutputPane>(vm => vm.session.environments.length)
+    private destroyUnneededOutputModels() {
+        const environments = this.session.environments;
+
+        const removed = [...this.outputModels.keys()]
+            .filter(id => !environments.some(e => e.script.id === id));
+
+        for (const id of removed) {
+            const model = this.outputModels.get(id);
+
+            if (model) {
+                this.findTextBox.unregisterSearchableElement(model.resultsDumpContainer.element);
+                this.findTextBox.unregisterSearchableElement(model.sqlDumpContainer.element);
+
+                model.destroy();
+                this.outputModels.delete(id);
+            }
+        }
+    }
+
+    @watch<OutputPane>(vm => vm.activeTab)
+    private setFindTextBoxSearchableElement() {
+        PLATFORM.queueMicrotask(() => {
+            if (!this.current) {
+                return;
+            }
+
+            if (this.activeTab === 'Results') {
+                this.findTextBox.setCurrent(this.current.resultsDumpContainer.element);
+            } else {
+                this.findTextBox.setCurrent(this.current.sqlDumpContainer.element);
+            }
+        });
     }
 
     @watch<OutputPane>(vm => vm.session.active?.status)
-    private activateIfApplicable() {
-        if (this.appWindows.items.find(x => x.name === "output")) return;
+    private activatePaneIfApplicable() {
+        if (this.appWindows.items.find(x => x.name === "output")) {
+            return;
+        }
 
         if (this.settings.results.openOnRun && this.session.active?.status === "Running") {
             this.activate();
         }
     }
 
-    @watch<OutputPane>(vm => vm.appWindows.items.map(x => x.name))
-    private activateIfPopoutWindowClosed(newValue: string, oldValue: string) {
-        const existedInOld = oldValue.indexOf("output") >= 0;
-        const existsInNew = newValue.indexOf("output") >= 0;
+    private async openExternalOutputWindow() {
+        this.hide();
+        await this.windowService.openOutputWindow();
+    }
 
-        if (existedInOld && !existsInNew) {
+    @watch<OutputPane>(vm => vm.appWindows.items.map(x => x.name))
+    private reactToExternalWindowState(currentWindowNames: string, previousWindowNames: string) {
+        if (this.isWindow) {
+            return;
+        }
+
+        const wasOpen = previousWindowNames.indexOf("output") >= 0;
+        const currentlyOpen = currentWindowNames.indexOf("output") >= 0;
+        const hostHasAnActivePaneOpen = this.host?.active;
+
+        if (wasOpen && !currentlyOpen && !hostHasAnActivePaneOpen) {
             this.activate();
-        } else if (existsInNew) {
+        } else if (currentlyOpen) {
             this.hide();
         }
+    }
+
+    private listenForExternalOutputWindowMessages() {
+        // External window will request current outputs
+        const bc = new BroadcastChannel("output-window");
+
+        bc.onmessage = (ev) => {
+            if (ev.data !== "send-outputs") {
+                return;
+            }
+
+            bc.postMessage([...this.outputModels.values()].map(m => m.toDto()));
+        };
+
+        this.disposables.add(() => bc.close());
     }
 }

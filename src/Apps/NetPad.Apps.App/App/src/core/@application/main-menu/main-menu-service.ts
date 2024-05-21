@@ -2,7 +2,7 @@ import {DI} from "aurelia";
 import {IMenuItem} from "./imenu-item";
 import {System} from "@common";
 import {ISettingsService, IWindowService} from "@domain";
-import {IShortcutManager, ShortcutIds} from "@application";
+import {IPaneManager, IShortcutManager, ShortcutIds} from "@application";
 import {ITextEditorService} from "@application/editor/text-editor-service";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
@@ -29,6 +29,7 @@ export class MainMenuService implements IMainMenuService {
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @ITextEditorService private readonly textEditorService: ITextEditorService,
         @IWindowService private readonly windowService: IWindowService,
+        @IPaneManager private readonly paneManager: IPaneManager,
         private readonly dialogUtil: DialogUtil
     ) {
         this._items = [
@@ -216,16 +217,25 @@ export class MainMenuService implements IMainMenuService {
                 text: "View",
                 menuItems: [
                     {
+                        id: "view.explorer",
+                        text: "Explorer",
+                        icon: "explorer-icon",
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
+                    },
+                    {
                         id: "view.output",
                         text: "Output",
                         icon: "output-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openOutput),
                     },
                     {
-                        id: "view.explorer",
-                        text: "Explorer",
-                        icon: "explorer-icon",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.openExplorer),
+                        id: "view.code",
+                        text: "Code",
+                        icon: "code-icon",
+                        click: async () => {
+                            const CodePane = (await import("../../../windows/main/panes")).CodePane;
+                            this.paneManager.toggle(CodePane);
+                        }
                     },
                     {
                         id: "view.namespaces",

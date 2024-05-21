@@ -28,7 +28,6 @@
                 <i case="Error" class="script-status-error-icon icon-xs"
                    title="Error occurred"></i>
             </div>
-
         </div>
         <div class="view-tab-addon ${viewable.isDirty ? 'is-dirty' : ''}">
             <i class="dirty-flag script-status-dirty-icon icon-xs"
@@ -43,7 +42,7 @@
 <div class="view-tab new-tab"
      click.trigger="new()"
      title="${shortcutManager.getShortcutByName('New').toString()}">
-    <i class="add-script-icon"></i>
+    <i class="add-script-icon icon-button"></i>
 </div>
 
 <context-menu options.bind="tabContextMenuOptions"></context-menu>

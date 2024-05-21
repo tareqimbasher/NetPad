@@ -3,7 +3,7 @@ import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation, Toggl
 import {IEventBus} from "@domain";
 
 export interface IPaneManager {
-    createPaneHost(orientation: PaneHostOrientation, viewStateController: IPaneHostViewStateController): PaneHost;
+    createPaneHost(orientation: PaneHostOrientation, viewStateController?: IPaneHostViewStateController): PaneHost;
 
     addPaneToHost<TPane extends Pane>(paneType: Constructable<TPane>, paneHost: PaneHost): TPane;
 
@@ -25,7 +25,15 @@ export class PaneManager implements IPaneManager {
         return this._paneHosts;
     }
 
-    public createPaneHost(orientation: PaneHostOrientation, viewStateController: IPaneHostViewStateController): PaneHost {
+    public createPaneHost(orientation: PaneHostOrientation, viewStateController?: IPaneHostViewStateController): PaneHost {
+        // Use an empty controller if not provided
+        viewStateController ??= {
+            expand: (_) => {
+            },
+            collapse: (_) => {
+            },
+        };
+
         const host = new PaneHost(orientation, viewStateController);
         this._paneHosts.push(host);
         return host;
@@ -41,8 +49,9 @@ export class PaneManager implements IPaneManager {
         if (existing) {
             pane = existing.pane as TPane;
             existing.paneHost.removePane(pane);
-        } else
+        } else {
             pane = this.container.get(paneType) as TPane;
+        }
 
         targetPaneHost.addPane(pane);
 
@@ -71,7 +80,7 @@ export class PaneManager implements IPaneManager {
         return this._paneHosts.find(h => h.hasPane(pane));
     }
 
-    private findPaneAndHostByPaneType<TPane extends Pane>(paneType: Constructable<TPane>): { paneHost: PaneHost, pane: Pane } | null {
+    private findPaneAndHostByPaneType<TPane extends Pane>(paneType: Constructable<TPane>): IPaneInfo | null {
         for (const paneHost of this._paneHosts) {
             const pane = paneHost.getPane(paneType);
             if (pane) {
@@ -84,4 +93,9 @@ export class PaneManager implements IPaneManager {
 
         return null;
     }
+}
+
+interface IPaneInfo {
+    paneHost: PaneHost;
+    pane: Pane;
 }

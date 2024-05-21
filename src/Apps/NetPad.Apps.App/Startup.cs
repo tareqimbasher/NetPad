@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NetPad.Application;
 using NetPad.Assemblies;
 using NetPad.BackgroundServices;
+using NetPad.CodeAnalysis;
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
@@ -75,6 +76,7 @@ public class Startup
         services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
+        services.AddTransient<ICodeAnalysisService, CodeAnalysisService>();
         services.AddTransient<ILogoService, LogoService>();
         services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();

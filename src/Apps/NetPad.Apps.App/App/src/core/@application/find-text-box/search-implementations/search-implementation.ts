@@ -14,6 +14,7 @@ export abstract class SearchImplementation {
      * @param searchHtml The html to search for
      */
     protected findMatchingIndexes(htmlSource: string, searchHtml: string): number[] {
+        htmlSource = htmlSource.toLowerCase();
         const searchTextFoundAtIndexes: number[] = [];
 
         // We need to check if search text is text that can be found in a special symbol.

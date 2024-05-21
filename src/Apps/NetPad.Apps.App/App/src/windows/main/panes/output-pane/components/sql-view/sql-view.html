@@ -1,0 +1,60 @@
+<div ref="dumpContainerWrapper"
+     class="dump-container-wrapper ${dumpContainer.textWrap ? 'text-wrap' : ''}"></div>
+
+<div portal="#sqlOutputPaneToolbarRightPortal" class="d-flex align-items-center gap-3">
+    <div>
+        <span class="dropdown-toggle text-semibold"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              title="Show/Hide EF Core logs.">
+            Log
+            <span show.bind="dumpContainer.logLength">(${dumpContainer.logLength})</span>
+        </span>
+        <ul class="dropdown-menu">
+            <li repeat.for="logger of dumpContainer.loggers">
+                <button class="dropdown-item"
+                        click.trigger="dumpContainer.toggleLogger(logger[0])">
+                    <i class="${logger[1].active ? 'check-icon' : 'invisible check-icon'} me-3"></i>
+                    <span>
+                        ${logger[0]}
+                        <span class="float-end ms-5 badge">${logger[1].count}</span>
+                    </span>
+                </button>
+
+                <div class="dropdown-divider" if.bind="$index === 0"></div>
+            </li>
+        </ul>
+    </div>
+
+    <i class="icon-button navigate-top-icon"
+       click.trigger="dumpContainer.navigationControls.navigateTop()"
+       title="Top"></i>
+
+    <i class="icon-button navigate-up-icon"
+       click.trigger="dumpContainer.navigationControls.navigateUp()"
+       title="Previous"></i>
+
+    <i class="icon-button navigate-down-icon"
+       click.trigger="dumpContainer.navigationControls.navigateDown()"
+       title="Next"></i>
+
+    <i class="icon-button navigate-bottom-icon"
+       click.trigger="dumpContainer.navigationControls.navigateBottom()"
+       title="Bottom"></i>
+
+    <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
+       click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
+       title="Scroll on Output"></i>
+
+    <i class="icon-button text-wrap-icon ${dumpContainer.textWrap ? 'active' : ''}"
+       click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
+       title="Text Wrap"></i>
+
+    <i class="icon-button theme-icon ${dumpContainer.colorize ? 'text-orange' : ''}"
+       click.trigger="dumpContainer.colorize = !dumpContainer.colorize"
+       title="Color output - turn off for better 'Find Text' (CTRL + F) accuracy"></i>
+
+    <i class="icon-button clear-output-icon"
+       click.trigger="dumpContainer.clearOutput()"
+       title="Clear"></i>
+</div>

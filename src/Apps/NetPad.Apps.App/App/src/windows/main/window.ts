@@ -2,7 +2,7 @@ import {IContainer} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {CreateScriptDto, DataConnectionStore, IScriptService, ISession} from "@domain";
 import {MonacoEnvironmentManager, IPaneManager, IShortcutManager, PaneHost, PaneHostOrientation,} from "@application";
-import {ClipboardPane, Explorer, NamespacesPane, OutputPane, PaneHostViewStateController} from "./panes";
+import {ClipboardPane, CodePane, Explorer, NamespacesPane, OutputPane, SplitViewController} from "./panes";
 import {Workbench} from "./workbench";
 import {WindowBase} from "@application/windows/window-base";
 
@@ -41,7 +41,7 @@ export class Window extends WindowBase {
 
         if (!middleContentElement || !workAreaElement) throw new Error("Could not find required elements");
 
-        const sideToSideController = new PaneHostViewStateController(
+        const sideToSideController = new SplitViewController(
             () => [this.leftPaneHost, middleContentElement, this.rightPaneHost],
             "horizontal",
             15
@@ -55,7 +55,7 @@ export class Window extends WindowBase {
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
 
 
-        const topBottomController = new PaneHostViewStateController(
+        const topBottomController = new SplitViewController(
             () => [workAreaElement, this.bottomPaneHost],
             "vertical",
             50
@@ -63,6 +63,7 @@ export class Window extends WindowBase {
 
         this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);
         const outputPane = this.paneManager.addPaneToHost(OutputPane, this.bottomPaneHost);
+        this.paneManager.addPaneToHost(CodePane, this.bottomPaneHost);
 
 
         // Start explorer expanded by default
