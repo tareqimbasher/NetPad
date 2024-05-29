@@ -42,21 +42,32 @@ public class FileSystemSettingsRepository : ISettingsRepository
                 await SaveSettingsAsync(settings);
             }
 
-            settings = JsonSerializer.Deserialize<Settings>(json) ?? throw new Exception("Could not deserialize settings file.");
+            settings = JsonSerializer.Deserialize<Settings>(json) ??
+                       throw new Exception("Could not deserialize settings file.");
         }
 
         settings.DefaultMissingValues();
 
         if (settings.Upgrade())
         {
-            await SaveSettingsAsync(settings);
+            await SaveSettingsAsync(settings, true);
         }
 
         return settings;
     }
 
-    public async Task SaveSettingsAsync(Settings settings)
+    public async Task SaveSettingsAsync(Settings settings, bool backupOld = false)
     {
+        if (backupOld)
+        {
+            File.Copy(_settingsFilePath.Path, Path.Combine(
+                    Path.GetDirectoryName(_settingsFilePath.Path)!,
+                    "Backups",
+                    $"{Path.GetFileNameWithoutExtension(_settingsFilePath.Path)}_backup_{DateTime.Now:s}",
+                    Path.GetExtension(_settingsFilePath.Path)),
+                false);
+        }
+
         var json = JsonSerializer.Serialize(settings, true);
         await File.WriteAllTextAsync(_settingsFilePath.Path, json).ConfigureAwait(false);
     }
