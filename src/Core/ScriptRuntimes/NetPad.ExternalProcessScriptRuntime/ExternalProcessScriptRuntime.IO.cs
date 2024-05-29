@@ -53,6 +53,8 @@ public partial class ExternalProcessScriptRuntime
             {
                 await stdInput.WriteLineAsync(input);
             }
+
+            return;
         }
 
         string type;
