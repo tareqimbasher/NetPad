@@ -41,11 +41,11 @@ public class AppController : ControllerBase
         {
             const string url = "https://api.github.com/repos/tareqimbasher/netpad/releases/latest";
 
-            var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            httpMessage.Headers.Add("User-Agent", "NetPad");
-
             var json = await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
             {
+                var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                httpMessage.Headers.Add("User-Agent", "NetPad");
+
                 var result = await httpClient.SendAsync(httpMessage);
                 return await result.Content.ReadAsStringAsync();
             });
