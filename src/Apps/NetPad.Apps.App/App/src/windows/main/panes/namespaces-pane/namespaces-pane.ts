@@ -23,15 +23,24 @@ export class NamespacesPane extends Pane {
         return `Namespaces (${environment.script.config.namespaces.length})`;
     }
 
-    public attached() {
+    public bound() {
         this.activeScriptEnvironmentChanged();
     }
 
     public async namespacesChanged(newValue: string, oldValue: string) {
-        if (newValue === oldValue) return;
+        // When the initial value of namespaces is set
+        if (oldValue === undefined) {
+            return;
+        }
+
+        if (newValue === oldValue) {
+            return;
+        }
 
         const environment = this.session.active;
-        if (!environment) return;
+        if (!environment) {
+            return;
+        }
 
         let namespaces = this.namespaces
             .split('\n')
@@ -45,22 +54,23 @@ export class NamespacesPane extends Pane {
 
     @watch<NamespacesPane>(vm => vm.session.active)
     public activeScriptEnvironmentChanged() {
-        this.namespaces = this.session.active?.script.config.namespaces.join("\n") + "\n";
+        this.updateLocal(this.session.active?.script.config.namespaces);
         this.lastSet = undefined;
     }
 
+    // This is so that the local value does not update while the user is typing, but we still want to react to
+    // namespace changes as they can be set by other means (ie. through script properties dialog)
     @watch<NamespacesPane>(vm => vm.session.active?.script.config.namespaces)
     public activeScriptEnvironmentNamespacesChanged() {
         const secondsSinceLastLocalUpdate = !this.lastSet ? null : (new Date().getTime() - this.lastSet?.getTime()) / 1000;
 
-        // This is so that the local value does not update while the user is typing
         if (!secondsSinceLastLocalUpdate || secondsSinceLastLocalUpdate >= 2) {
             if (this.session.active)
                 this.updateLocal(this.session.active.script.config.namespaces);
         }
     }
 
-    private updateLocal(namespaces: string[]) {
-        this.namespaces = namespaces.join("\n") + "\n";
+    private updateLocal(namespaces: string[] | undefined) {
+        this.namespaces = (namespaces ?? []).join("\n") + "\n";
     }
 }
