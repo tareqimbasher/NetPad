@@ -11,6 +11,6 @@ public class EmptyCollection : Element
 
     public EmptyCollection(Type collectionType) : base("span")
     {
-        this.AddEscapedText($"0 items ({collectionType.GetReadableName()})");
+        this.AddEscapedText("(0 items)");
     }
 }

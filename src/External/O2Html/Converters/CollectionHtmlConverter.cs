@@ -21,7 +21,14 @@ public class CollectionHtmlConverter : HtmlConverter
         SerializationScope serializationScope,
         HtmlSerializer htmlSerializer)
     {
-        return Convert(obj, type, serializationScope, htmlSerializer).node;
+        var result = Convert(obj, type, serializationScope, htmlSerializer);
+
+        if (result.collectionLength == 0 && serializationScope.Depth > 0 && htmlSerializer.SerializerOptions.DoNotSerializeNonRootEmptyCollections)
+        {
+            return new EmptyCollection(type).AddClass(htmlSerializer.SerializerOptions.CssClasses.EmptyCollection);
+        }
+
+        return result.node;
     }
 
     public override void WriteHtmlWithinTableRow<T>(
@@ -41,7 +48,7 @@ public class CollectionHtmlConverter : HtmlConverter
 
         var result = Convert(obj, type, serializationScope, htmlSerializer);
 
-        if (result.collectionLength == 0 && htmlSerializer.SerializerOptions.DoNotSerializeNonRootEmptyCollections)
+        if (result.collectionLength == 0 && serializationScope.Depth > 0 && htmlSerializer.SerializerOptions.DoNotSerializeNonRootEmptyCollections)
         {
             td.AddChild(new EmptyCollection(type).AddClass(htmlSerializer.SerializerOptions.CssClasses.EmptyCollection));
         }
@@ -138,7 +145,7 @@ public class CollectionHtmlConverter : HtmlConverter
                     {
                         keyValueStr = keyValue.ToString();
                     }
-                    else if( typeCategory == TypeCategory.Collection)
+                    else if (typeCategory == TypeCategory.Collection)
                     {
                         keyValueStr = keyValue.GetType().GetReadableName();
                     }
@@ -167,7 +174,6 @@ public class CollectionHtmlConverter : HtmlConverter
 
                         keyValueStr += "}";
                     }
-
                 }
 
                 keyValueStr = keyValueStr == null

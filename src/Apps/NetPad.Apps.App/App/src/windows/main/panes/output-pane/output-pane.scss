@@ -53,7 +53,10 @@ output-pane {
         }
 
         .empty-collection {
-            @extend %null;
+            color: white;
+            background-color: $table-info-header-bg-color;
+            padding: 0.25rem 0.2rem;
+            display: inline-block;
         }
 
         .group {
@@ -112,14 +115,6 @@ output-pane {
                 }
             }
 
-            td {
-                img,
-                audio,
-                video {
-                    margin: 5px 0;
-                }
-            }
-
             &.titled {
                 border-left: 2px orange solid;
                 margin-top: 0.5rem;
@@ -160,6 +155,7 @@ output-pane {
             }
 
             th {
+                font-weight: 600;
                 line-height: 1;
                 padding: 3px 5px;
                 color: white;
@@ -189,14 +185,8 @@ output-pane {
                 top: -4px; // An extra -1 to account for border of info header
             }
 
-            td {
-                line-height: $font-size + 5;
-                padding: 0 5px;
-
-                > table {
-                    margin-top: 4px !important;
-                    margin-bottom: 4px !important;
-                }
+            td > table {
+                margin: 3px !important;
             }
 
             tbody td {
@@ -208,7 +198,7 @@ output-pane {
             }
 
             .property-name {
-                font-weight: bold;
+                font-weight: 600;
             }
 
             .collapse-actionable {
