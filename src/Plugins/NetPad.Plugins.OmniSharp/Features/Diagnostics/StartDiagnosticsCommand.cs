@@ -2,26 +2,15 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.Diagnostics;
 
-public class StartDiagnosticsCommand : OmniSharpScriptCommand
+public class StartDiagnosticsCommand(Guid scriptId) : OmniSharpScriptCommand(scriptId)
 {
-    public StartDiagnosticsCommand(Guid scriptId) : base(scriptId)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<StartDiagnosticsCommand>
     {
-    }
-
-    public class Handler : IRequestHandler<StartDiagnosticsCommand>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<Unit> Handle(StartDiagnosticsCommand request, CancellationToken cancellationToken)
         {
-            await _server.OmniSharpServer.SendAsync(new OmniSharpDiagnosticRequest
+            await server.OmniSharpServer.SendAsync(new OmniSharpDiagnosticRequest
             {
-                FileName = _server.Project.UserProgramFilePath
+                FileName = server.Project.UserProgramFilePath
             }, cancellationToken);
 
             return Unit.Value;

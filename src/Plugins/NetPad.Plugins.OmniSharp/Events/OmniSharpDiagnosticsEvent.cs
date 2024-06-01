@@ -1,13 +1,7 @@
 namespace NetPad.Plugins.OmniSharp.Events;
 
-public class OmniSharpDiagnosticsEvent
+public class OmniSharpDiagnosticsEvent(Guid scriptId, OmniSharpDiagnosticMessage diagnostics)
 {
-    public OmniSharpDiagnosticsEvent(Guid scriptId, OmniSharpDiagnosticMessage diagnostics)
-    {
-        ScriptId = scriptId;
-        Diagnostics = diagnostics;
-    }
-
-    public Guid ScriptId { get; }
-    public OmniSharpDiagnosticMessage Diagnostics { get; }
+    public Guid ScriptId { get; } = scriptId;
+    public OmniSharpDiagnosticMessage Diagnostics { get; } = diagnostics;
 }

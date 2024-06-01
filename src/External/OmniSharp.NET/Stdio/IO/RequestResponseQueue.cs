@@ -7,12 +7,7 @@ namespace OmniSharp.Stdio.IO
 {
     internal class RequestResponseQueue
     {
-        private readonly ConcurrentDictionary<int, RequestResponsePacketPromise> _promises;
-
-        public RequestResponseQueue()
-        {
-            _promises = new ConcurrentDictionary<int, RequestResponsePacketPromise>();
-        }
+        private readonly ConcurrentDictionary<int, RequestResponsePacketPromise> _promises = new();
 
         public Task<ResponseJsonObject> Enqueue(RequestPacket requestPacket, CancellationToken cancellationToken)
         {

@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.FindUsages;
 
-public class FindUsagesQuery : OmniSharpScriptQuery<OmniSharpFindUsagesRequest, OmniSharpQuickFixResponse?>
+public class FindUsagesQuery(Guid scriptId, OmniSharpFindUsagesRequest input)
+    : OmniSharpScriptQuery<OmniSharpFindUsagesRequest, OmniSharpQuickFixResponse?>(scriptId, input)
 {
-    public FindUsagesQuery(Guid scriptId, OmniSharpFindUsagesRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<FindUsagesQuery, OmniSharpQuickFixResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<FindUsagesQuery, OmniSharpQuickFixResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpQuickFixResponse?> Handle(FindUsagesQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

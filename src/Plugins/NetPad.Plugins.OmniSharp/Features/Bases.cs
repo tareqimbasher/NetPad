@@ -1,4 +1,4 @@
-using NetPad.CQs;
+using NetPad.Apps.CQs;
 
 namespace NetPad.Plugins.OmniSharp.Features;
 
@@ -7,52 +7,27 @@ public interface ITargetSpecificOmniSharpServer
     Guid ScriptId { get; }
 }
 
-public abstract class OmniSharpScriptQuery<TResponse> : Query<TResponse>, ITargetSpecificOmniSharpServer
+public abstract class OmniSharpScriptQuery<TResponse>(Guid scriptId) : Query<TResponse>, ITargetSpecificOmniSharpServer
 {
-    protected OmniSharpScriptQuery(Guid scriptId)
-    {
-        ScriptId = scriptId;
-    }
-
-    public Guid ScriptId { get; }
+    public Guid ScriptId { get; } = scriptId;
 }
 
-public abstract class OmniSharpScriptQuery<TInput, TResponse> : OmniSharpScriptQuery<TResponse>
+public abstract class OmniSharpScriptQuery<TInput, TResponse>(Guid scriptId, TInput input) : OmniSharpScriptQuery<TResponse>(scriptId)
 {
-    protected OmniSharpScriptQuery(Guid scriptId, TInput input) : base(scriptId)
-    {
-        Input = input;
-    }
-
-    public TInput Input { get; }
+    public TInput Input { get; } = input;
 }
 
-public abstract class OmniSharpScriptCommand : Command, ITargetSpecificOmniSharpServer
+public abstract class OmniSharpScriptCommand(Guid scriptId) : Command, ITargetSpecificOmniSharpServer
 {
-    protected OmniSharpScriptCommand(Guid scriptId)
-    {
-        ScriptId = scriptId;
-    }
-
-    public Guid ScriptId { get; }
+    public Guid ScriptId { get; } = scriptId;
 }
 
-public abstract class OmniSharpScriptCommand<TResponse> : Command<TResponse>, ITargetSpecificOmniSharpServer
+public abstract class OmniSharpScriptCommand<TResponse>(Guid scriptId) : Command<TResponse>, ITargetSpecificOmniSharpServer
 {
-    protected OmniSharpScriptCommand(Guid scriptId)
-    {
-        ScriptId = scriptId;
-    }
-
-    public Guid ScriptId { get; }
+    public Guid ScriptId { get; } = scriptId;
 }
 
-public abstract class OmniSharpScriptCommand<TInput, TResponse> : OmniSharpScriptCommand<TResponse>
+public abstract class OmniSharpScriptCommand<TInput, TResponse>(Guid scriptId, TInput input) : OmniSharpScriptCommand<TResponse>(scriptId)
 {
-    protected OmniSharpScriptCommand(Guid scriptId, TInput input) : base(scriptId)
-    {
-        Input = input;
-    }
-
-    public TInput Input { get; }
+    public TInput Input { get; } = input;
 }

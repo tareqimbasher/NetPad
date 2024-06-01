@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.SemanticHighlighting;
 
-public class GetSemanticHighlightsQuery : OmniSharpScriptQuery<OmniSharpSemanticHighlightRequest, OmniSharpSemanticHighlightResponse?>
+public class GetSemanticHighlightsQuery(Guid scriptId, OmniSharpSemanticHighlightRequest input)
+    : OmniSharpScriptQuery<OmniSharpSemanticHighlightRequest, OmniSharpSemanticHighlightResponse?>(scriptId, input)
 {
-    public GetSemanticHighlightsQuery(Guid scriptId, OmniSharpSemanticHighlightRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<GetSemanticHighlightsQuery, OmniSharpSemanticHighlightResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<GetSemanticHighlightsQuery, OmniSharpSemanticHighlightResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpSemanticHighlightResponse?> Handle(GetSemanticHighlightsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpSemanticHighlightResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpSemanticHighlightResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

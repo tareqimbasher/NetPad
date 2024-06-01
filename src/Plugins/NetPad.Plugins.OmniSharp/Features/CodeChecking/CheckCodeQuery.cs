@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeChecking;
 
-public class CheckCodeQuery : OmniSharpScriptQuery<OmniSharpCodeCheckRequest, OmniSharpQuickFixResponse?>
+public class CheckCodeQuery(Guid scriptId, OmniSharpCodeCheckRequest input)
+    : OmniSharpScriptQuery<OmniSharpCodeCheckRequest, OmniSharpQuickFixResponse?>(scriptId, input)
 {
-    public CheckCodeQuery(Guid scriptId, OmniSharpCodeCheckRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<CheckCodeQuery, OmniSharpQuickFixResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<CheckCodeQuery, OmniSharpQuickFixResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpQuickFixResponse?> Handle(CheckCodeQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpQuickFixResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

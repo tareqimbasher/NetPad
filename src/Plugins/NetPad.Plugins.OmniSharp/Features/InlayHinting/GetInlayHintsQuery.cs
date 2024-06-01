@@ -3,21 +3,11 @@ using OmniSharp.Models.V2;
 
 namespace NetPad.Plugins.OmniSharp.Features.InlayHinting;
 
-public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest, OmniSharpInlayHintResponse?>
+public class GetInlayHintsQuery(Guid scriptId, OmniSharpInlayHintRequest input)
+    : OmniSharpScriptQuery<OmniSharpInlayHintRequest, OmniSharpInlayHintResponse?>(scriptId, input)
 {
-    public GetInlayHintsQuery(Guid scriptId, OmniSharpInlayHintRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<GetInlayHintsQuery, OmniSharpInlayHintResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<GetInlayHintsQuery, OmniSharpInlayHintResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpInlayHintResponse?> Handle(GetInlayHintsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
@@ -29,7 +19,7 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
 
             omniSharpRequest.Location = new Location
             {
-                FileName = _server.Project.UserProgramFilePath,
+                FileName = server.Project.UserProgramFilePath,
                 Range = new OmniSharpRange
                 {
                     Start = omniSharpRequest.Location.Range.Start,
@@ -37,7 +27,7 @@ public class GetInlayHintsQuery : OmniSharpScriptQuery<OmniSharpInlayHintRequest
                 }
             };
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpInlayHintResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

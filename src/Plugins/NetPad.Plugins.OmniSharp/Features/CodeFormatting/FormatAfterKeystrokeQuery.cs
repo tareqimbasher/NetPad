@@ -2,26 +2,16 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeFormatting;
 
-public class FormatAfterKeystrokeQuery : OmniSharpScriptQuery<OmniSharpFormatAfterKeystrokeRequest, OmniSharpFormatRangeResponse?>
+public class FormatAfterKeystrokeQuery(Guid scriptId, OmniSharpFormatAfterKeystrokeRequest omniSharpRequest)
+    : OmniSharpScriptQuery<OmniSharpFormatAfterKeystrokeRequest, OmniSharpFormatRangeResponse?>(scriptId, omniSharpRequest)
 {
-    public FormatAfterKeystrokeQuery(Guid scriptId, OmniSharpFormatAfterKeystrokeRequest omniSharpRequest) : base(scriptId, omniSharpRequest)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<FormatAfterKeystrokeQuery, OmniSharpFormatRangeResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<FormatAfterKeystrokeQuery, OmniSharpFormatRangeResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpFormatRangeResponse?> Handle(FormatAfterKeystrokeQuery request, CancellationToken cancellationToken)
         {
-            request.Input.FileName = _server.Project.UserProgramFilePath;
+            request.Input.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpFormatRangeResponse>(request.Input, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpFormatRangeResponse>(request.Input, cancellationToken);
         }
     }
 }

@@ -5,32 +5,18 @@ using NSwag.Generation.Processors.Contexts;
 
 namespace NetPad.Swagger;
 
-internal class IncludeControllersInAssemblies : IOperationProcessor
+internal class IncludeControllersInAssemblies(params Assembly[] assemblies) : IOperationProcessor
 {
-    private readonly Assembly[] _assemblies;
-
-    public IncludeControllersInAssemblies(params Assembly[] assemblies)
-    {
-        _assemblies = assemblies;
-    }
-
     public bool Process(OperationProcessorContext context)
     {
-        return _assemblies.Contains(context.ControllerType.Assembly);
+        return assemblies.Contains(context.ControllerType.Assembly);
     }
 }
 
-internal class ExcludeControllersInAssemblies : IOperationProcessor
+internal class ExcludeControllersInAssemblies(params Assembly[] assemblies) : IOperationProcessor
 {
-    private readonly Assembly[] _assemblies;
-
-    public ExcludeControllersInAssemblies(params Assembly[] assemblies)
-    {
-        _assemblies = assemblies;
-    }
-
     public bool Process(OperationProcessorContext context)
     {
-        return !_assemblies.Contains(context.ControllerType.Assembly);
+        return !assemblies.Contains(context.ControllerType.Assembly);
     }
 }

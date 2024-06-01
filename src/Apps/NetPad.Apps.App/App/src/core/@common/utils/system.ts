@@ -1,5 +1,3 @@
-import * as process from "process";
-
 export class System {
     /**
      * Opens a URL in system-configured default browser.
@@ -15,9 +13,14 @@ export class System {
     }
 
     public static getPlatform() {
-        try {
-            return process.platform;
-        } catch {
+        if (this.isRunningInElectron()) {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                return require("process").platform;
+            } catch {
+                return undefined;
+            }
+        } else {
             return undefined;
         }
     }

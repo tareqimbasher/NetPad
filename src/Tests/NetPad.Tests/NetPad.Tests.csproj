@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-
+        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
-
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,8 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj" />
-        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
     </ItemGroup>
 
 </Project>

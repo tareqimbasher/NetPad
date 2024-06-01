@@ -3,26 +3,16 @@ using MediatR;
 namespace NetPad.Plugins.OmniSharp.Features.Rename;
 
 
-public class RenameQuery : OmniSharpScriptQuery<OmniSharpRenameRequest, RenameResponse?>
+public class RenameQuery(Guid scriptId, OmniSharpRenameRequest omniSharpRequest)
+    : OmniSharpScriptQuery<OmniSharpRenameRequest, RenameResponse?>(scriptId, omniSharpRequest)
 {
-    public RenameQuery(Guid scriptId, OmniSharpRenameRequest omniSharpRequest) : base(scriptId, omniSharpRequest)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<RenameQuery, RenameResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<RenameQuery, RenameResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<RenameResponse?> Handle(RenameQuery request, CancellationToken cancellationToken)
         {
-            request.Input.FileName = _server.Project.UserProgramFilePath;
+            request.Input.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<RenameResponse>(request.Input, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<RenameResponse>(request.Input, cancellationToken);
         }
     }
 }

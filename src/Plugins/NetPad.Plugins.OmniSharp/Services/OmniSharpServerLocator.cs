@@ -3,25 +3,17 @@ using NetPad.Utilities;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
-public class OmniSharpServerLocator : IOmniSharpServerLocator
+public class OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloader omniSharpServerDownloader, ILogger<OmniSharpServerLocator> logger)
+    : IOmniSharpServerLocator
 {
-    private readonly Settings _settings;
-    private readonly IOmniSharpServerDownloader _omniSharpServerDownloader;
-    private readonly ILogger<OmniSharpServerLocator> _logger;
+    private readonly ILogger<OmniSharpServerLocator> _logger = logger;
     private static readonly SemaphoreSlim _downloadLock = new(1);
-
-    public OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloader omniSharpServerDownloader, ILogger<OmniSharpServerLocator> logger)
-    {
-        _settings = settings;
-        _omniSharpServerDownloader = omniSharpServerDownloader;
-        _logger = logger;
-    }
 
     public async Task<OmniSharpServerLocation?> GetServerLocationAsync()
     {
-        if (_settings.OmniSharp.ExecutablePath != null)
+        if (settings.OmniSharp.ExecutablePath != null)
         {
-            return new OmniSharpServerLocation(_settings.OmniSharp.ExecutablePath);
+            return new OmniSharpServerLocation(settings.OmniSharp.ExecutablePath);
         }
 
         var platform = PlatformUtil.GetOSPlatform();
@@ -31,14 +23,14 @@ public class OmniSharpServerLocator : IOmniSharpServerLocator
 
         try
         {
-            var downloadLocation = _omniSharpServerDownloader.GetDownloadedLocation(platform);
+            var downloadLocation = omniSharpServerDownloader.GetDownloadedLocation(platform);
 
             if (downloadLocation != null)
             {
                 return downloadLocation;
             }
 
-            downloadLocation = await _omniSharpServerDownloader.DownloadAsync(platform);
+            downloadLocation = await omniSharpServerDownloader.DownloadAsync(platform);
 
             return downloadLocation;
         }

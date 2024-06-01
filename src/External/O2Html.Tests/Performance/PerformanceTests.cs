@@ -128,40 +128,24 @@ public class PerformanceTests
 
     private class Car
     {
-        public Car()
+        public string Make { get; set; } = GenerateRandomString(10);
+        public string Model { get; set; } = GenerateRandomString(15);
+        public int Year { get; set; } = 2022;
+        public DateTime CreatedDate { get; set; } = new(2022, 1, 1);
+        public List<Feature> Features { get; set; } = new()
         {
-            Make = GenerateRandomString(10);
-            Model = GenerateRandomString(15);
-            Year = 2022;
-            CreatedDate = new DateTime(2022, 1, 1);
-            Features = new List<Feature>
-            {
-                new(),
-                new(),
-                new(),
-                new(),
-                new()
-            };
-        }
-
-        public string Make { get; set; }
-        public string Model { get; set; }
-        public int Year { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public List<Feature> Features { get; set; }
+            new(),
+            new(),
+            new(),
+            new(),
+            new()
+        };
     }
 
     private class Feature
     {
-        public Feature()
-        {
-            Label = GenerateRandomString(15);
-            Description = GenerateRandomString(50);
-            Included = true;
-        }
-
-        public string Label { get; set; }
-        public string Description { get; set; }
-        public bool Included { get; set; }
+        public string Label { get; set; } = GenerateRandomString(15);
+        public string Description { get; set; } = GenerateRandomString(50);
+        public bool Included { get; set; } = true;
     }
 }

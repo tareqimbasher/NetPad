@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using NetPad.Plugins;
+using NetPad.Apps.Plugins;
 using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag;
 using NSwag.CodeGeneration.TypeScript;
@@ -17,7 +16,7 @@ internal static class SwaggerSetup
     {
         services.AddSwaggerDocument(config =>
         {
-            config.Title = "NetPad";
+            config.Title = "NetPad HTTP Interface";
             config.DocumentName = "NetPad";
             config.OperationProcessors.Insert(0, new ExcludeControllersInAssemblies(pluginRegistrations.Select(p => p.Assembly).ToArray()));
 
@@ -29,8 +28,8 @@ internal static class SwaggerSetup
         {
             services.AddSwaggerDocument(config =>
             {
-                config.Title = $"NetPad Plugin - {pluginRegistration.Plugin.Name}";
-                config.DocumentName = config.Title;
+                config.Title = $"Plugin - {pluginRegistration.Plugin.Name}";
+                config.DocumentName = pluginRegistration.Plugin.Id;
                 config.OperationProcessors.Insert(0, new IncludeControllersInAssemblies(pluginRegistration.Assembly));
 
                 string pluginDirName = pluginRegistration.Plugin.Name.Replace(" ", "-");

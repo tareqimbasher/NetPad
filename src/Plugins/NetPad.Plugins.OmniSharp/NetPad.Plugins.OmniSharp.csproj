@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
         <OutputType>Library</OutputType>
     </PropertyGroup>
 
@@ -12,8 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\NetPad.Application\NetPad.Application.csproj"/>
-        <ProjectReference Include="..\..\Core\NetPad.Domain\NetPad.Domain.csproj"/>
+        <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
         <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj"/>
     </ItemGroup>
 

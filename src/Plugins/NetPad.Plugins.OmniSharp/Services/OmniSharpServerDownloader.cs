@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using NetPad.Application;
@@ -7,15 +6,9 @@ using NetPad.Utilities;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
-internal class DownloadProgress : IProgress<float>
+internal class DownloadProgress(IAppStatusMessagePublisher appStatusMessagePublisher) : IProgress<float>
 {
-    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private int _lastValueReported;
-
-    public DownloadProgress(IAppStatusMessagePublisher appStatusMessagePublisher)
-    {
-        _appStatusMessagePublisher = appStatusMessagePublisher;
-    }
 
     public void Report(float value)
     {
@@ -26,23 +19,13 @@ internal class DownloadProgress : IProgress<float>
         }
 
         _lastValueReported = valueToReport;
-        _appStatusMessagePublisher.PublishAsync($"Downloading OmniSharp... [{valueToReport}%]");
+        appStatusMessagePublisher.PublishAsync($"Downloading OmniSharp... [{valueToReport}%]");
     }
 }
 
-public class OmniSharpServerDownloader : IOmniSharpServerDownloader
+public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessagePublisher appStatusMessagePublisher, IConfiguration configuration)
+    : IOmniSharpServerDownloader
 {
-    private readonly HttpClient _httpClient;
-    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
-    private readonly IConfiguration _configuration;
-
-    public OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessagePublisher appStatusMessagePublisher, IConfiguration configuration)
-    {
-        _httpClient = httpClient;
-        _appStatusMessagePublisher = appStatusMessagePublisher;
-        _configuration = configuration;
-    }
-
     public async Task<OmniSharpServerLocation> DownloadAsync(OSPlatform platform)
     {
         try
@@ -63,9 +46,9 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
             var start = DateTime.Now;
 
             using var archiveStream = new MemoryStream();
-            await _httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(_appStatusMessagePublisher));
+            await httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(appStatusMessagePublisher));
 
-            await _appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...");
+            await appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...");
             var zipArchive = new ZipArchive(archiveStream);
             zipArchive.ExtractToDirectory(downloadDir.FullName);
 
@@ -82,13 +65,13 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
                 ProcessUtil.MakeExecutable(downloadedLocation.ExecutablePath);
             }
 
-            await _appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
+            await appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
 
             return downloadedLocation;
         }
         catch
         {
-            await _appStatusMessagePublisher.PublishAsync("OmniSharp download failed", AppStatusMessagePriority.High, true);
+            await appStatusMessagePublisher.PublishAsync("OmniSharp download failed", AppStatusMessagePriority.High, true);
             throw;
         }
     }
@@ -120,7 +103,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
     {
         string settingPath = "OmniSharp:Version";
 
-        return _configuration.GetValue<string>(settingPath)
+        return configuration.GetValue<string>(settingPath)
                ?? throw new Exception($"No configuration value for OmniSharp version at setting path: '{settingPath}'");
     }
 
@@ -133,7 +116,7 @@ public class OmniSharpServerDownloader : IOmniSharpServerDownloader
         string arch = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant();
         string settingPath = $"OmniSharp:DownloadUrls:{platform}:{arch}";
 
-        return _configuration.GetValue<string>(settingPath)
+        return configuration.GetValue<string>(settingPath)
                ?? throw new Exception($"No configuration value for OmniSharp download url at setting path: '{settingPath}'");
     }
 

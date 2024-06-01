@@ -2,12 +2,7 @@
 
 namespace NetPad.Plugins.OmniSharp.Events;
 
-public class OmniSharpServerStoppedEvent : IEvent
+public class OmniSharpServerStoppedEvent(AppOmniSharpServer appOmniSharpServer) : IEvent
 {
-    public OmniSharpServerStoppedEvent(AppOmniSharpServer appOmniSharpServer)
-    {
-        AppOmniSharpServer = appOmniSharpServer;
-    }
-
-    public AppOmniSharpServer AppOmniSharpServer { get; }
+    public AppOmniSharpServer AppOmniSharpServer { get; } = appOmniSharpServer;
 }

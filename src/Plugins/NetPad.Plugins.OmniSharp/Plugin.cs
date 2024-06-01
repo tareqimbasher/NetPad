@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using NetPad.Apps.Plugins;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
 using OmniSharp;
 

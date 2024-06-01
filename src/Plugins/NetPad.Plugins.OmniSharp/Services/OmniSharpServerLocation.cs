@@ -1,14 +1,8 @@
 namespace NetPad.Plugins.OmniSharp.Services;
 
-public class OmniSharpServerLocation
+public class OmniSharpServerLocation(string executablePath)
 {
-    public OmniSharpServerLocation(string executablePath)
-    {
-        ExecutablePath = executablePath;
-        DirectoryPath = new FileInfo(executablePath).DirectoryName ??
-                        throw new Exception($"Could not get directory path from executable path: {executablePath}");
-    }
-
-    public string ExecutablePath { get; }
-    public string DirectoryPath { get; }
+    public string ExecutablePath { get; } = executablePath;
+    public string DirectoryPath { get; } = new FileInfo(executablePath).DirectoryName ??
+                                           throw new Exception($"Could not get directory path from executable path: {executablePath}");
 }

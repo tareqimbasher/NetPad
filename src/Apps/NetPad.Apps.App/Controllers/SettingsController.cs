@@ -1,37 +1,26 @@
 using System.IO;
-using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using NetPad.Apps.CQs;
+using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
-using NetPad.CQs;
-using NetPad.UiInterop;
 
 namespace NetPad.Controllers;
 
 [ApiController]
 [Route("settings")]
-public class SettingsController : ControllerBase
+public class SettingsController(Settings settings, IMediator mediator) : ControllerBase
 {
-    private readonly Settings _settings;
-    private readonly IMediator _mediator;
-
-    public SettingsController(Settings settings, IMediator mediator)
-    {
-        _settings = settings;
-        _mediator = mediator;
-    }
-
     [HttpGet]
     public Settings Get()
     {
-        return _settings;
+        return settings;
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] Settings settings)
+    public async Task<IActionResult> Update([FromBody] Settings update)
     {
-        await _mediator.Send(new UpdateSettingsCommand(settings));
-
+        await mediator.Send(new UpdateSettingsCommand(update));
         return NoContent();
     }
 

@@ -25,7 +25,7 @@ public class OmniSharpProject : DotNetCSharpProject
         )
     {
         _logger = logger;
-        _existingDataConnectionReferences = new HashSet<Reference>();
+        _existingDataConnectionReferences = [];
         _dataConnectionReferencesLock = new SemaphoreSlim(1, 1);
 
         Script = script;
