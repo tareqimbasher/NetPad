@@ -70,7 +70,8 @@ public class InMemoryScriptRunnerTests : TestBase
 
         string? result = null;
         var runtime = GetScriptRuntime(script);
-        runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
+        runtime.AddOutput(new ActionOutputWriter<object>((output, title) =>
+            result = (output as RawScriptOutput)!.Body!.ToString()));
 
         var runResult = await runtime.RunScriptAsync(new RunOptions());
 
@@ -94,7 +95,8 @@ public class InMemoryScriptRunnerTests : TestBase
 
             // Keep result in local variable to test that assembly unloads even if we keep reference to result
             string? result = null;
-            runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
+            runtime.AddOutput(new ActionOutputWriter<object>((output, title) =>
+                result = (output as RawScriptOutput)!.Body!.ToString()));
 
             await runtime.RunScriptAsync(new RunOptions());
 
@@ -114,6 +116,7 @@ public class InMemoryScriptRunnerTests : TestBase
         }
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private InMemoryScriptRunner GetScriptRuntime(Script script, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= ServiceProvider;
@@ -122,6 +125,7 @@ public class InMemoryScriptRunnerTests : TestBase
             .GetRequiredService<InMemoryScriptRunnerFactory>()
             .CreateRunner(script);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     private Script GetScript()
     {

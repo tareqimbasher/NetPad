@@ -58,23 +58,23 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
         /// <summary>
         /// Initializes a new instance of the WeakEventSubscription class.
         /// </summary>
-        /// <param name="destination">Destination object</param>
+        /// <param name="subscriptionToken">Subscription token</param>
         /// <param name="deliveryAction">Delivery action</param>
-        /// <param name="EventFilter">Filter function</param>
-        public WeakEventSubscription(EventSubscriptionToken subscriptionToken, Func<TEvent, Task> deliveryAction, Func<TEvent, bool> EventFilter)
+        /// <param name="eventFilter">Filter function</param>
+        public WeakEventSubscription(EventSubscriptionToken subscriptionToken, Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter)
         {
             if (subscriptionToken == null)
-                throw new ArgumentNullException("subscriptionToken");
+                throw new ArgumentNullException(nameof(subscriptionToken));
 
             if (deliveryAction == null)
-                throw new ArgumentNullException("deliveryAction");
+                throw new ArgumentNullException(nameof(deliveryAction));
 
-            if (EventFilter == null)
-                throw new ArgumentNullException("EventFilter");
+            if (eventFilter == null)
+                throw new ArgumentNullException(nameof(eventFilter));
 
             _subscriptionToken = subscriptionToken;
             _deliveryAction = new WeakReference(deliveryAction);
-            _eventFilter = new WeakReference(EventFilter);
+            _eventFilter = new WeakReference(eventFilter);
         }
     }
 
@@ -112,7 +112,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
         /// <summary>
         /// Initializes a new instance of the EventSubscription class.
         /// </summary>
-        /// <param name="destination">Destination object</param>
+        /// <param name="subscriptionToken">Subscription token</param>
         /// <param name="deliveryAction">Delivery action</param>
         /// <param name="eventFilter">Filter function</param>
         public StrongEventSubscription(EventSubscriptionToken subscriptionToken, Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter)
@@ -217,6 +217,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter) where TEvent : class, IEvent
     {
@@ -232,6 +233,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="proxy">Proxy to use when delivering the Events</param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, IEventProxy proxy)
@@ -248,6 +250,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     public EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences)
@@ -265,6 +268,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <param name="proxy">Proxy to use when delivering the Events</param>
     /// <returns>EventSubscription used to unsubscribing</returns>

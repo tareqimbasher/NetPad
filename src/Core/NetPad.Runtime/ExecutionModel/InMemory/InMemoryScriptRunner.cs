@@ -17,7 +17,7 @@ namespace NetPad.ExecutionModel.InMemory;
 /// <summary>
 /// A script runtime that runs scripts in memory.
 /// </summary>
-[Obsolete("Unmaintained and might be removed.")]
+[Obsolete("Unmaintained. Keeping it for now as it might be reborn as a new execution model that uses Client/Server")]
 public sealed class InMemoryScriptRunner : IScriptRunner
 {
     private readonly Script _script;

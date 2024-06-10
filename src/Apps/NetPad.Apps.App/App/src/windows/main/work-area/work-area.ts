@@ -6,7 +6,7 @@ import {
     IEventBus,
     IScriptService,
     ISession,
-    RunOptionsDto,
+    RunOptions,
     ScriptEnvironment
 } from "@domain";
 import {ViewModelBase} from "@application/view-model-base";
@@ -169,7 +169,7 @@ export class WorkArea extends ViewModelBase {
             },
             run: async () => {
                 const document = viewable.textDocument;
-                const runOptions = new RunOptionsDto();
+                const runOptions = new RunOptions();
 
                 if (document.selection && !document.selection.isEmpty()) {
                     runOptions.specificCodeToRun = document.textModel.getValueInRange(document.selection);

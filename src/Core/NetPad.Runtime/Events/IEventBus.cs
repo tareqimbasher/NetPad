@@ -61,6 +61,7 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter) where TEvent : class, IEvent;
 
@@ -73,6 +74,7 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="proxy">Proxy to use when delivering the Events</param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, IEventProxy proxy) where TEvent : class, IEvent;
@@ -85,6 +87,7 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <returns>EventSubscription used to unsubscribing</returns>
     EventSubscriptionToken Subscribe<TEvent>(Func<TEvent, Task> deliveryAction, Func<TEvent, bool> eventFilter, bool useStrongReferences)
@@ -99,6 +102,7 @@ public interface IEventBus
     /// </summary>
     /// <typeparam name="TEvent">Type of Event</typeparam>
     /// <param name="deliveryAction">Action to invoke when Event is delivered</param>
+    /// <param name="eventFilter"></param>
     /// <param name="useStrongReferences">Use strong references to destination and deliveryAction </param>
     /// <param name="proxy">Proxy to use when delivering the Events</param>
     /// <returns>EventSubscription used to unsubscribing</returns>

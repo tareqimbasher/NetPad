@@ -43,10 +43,13 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             input.OptimizationLevel);
 
         // Build references
-        var assemblyLocations = SystemAssemblies.GetAssemblyLocations(dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
+        var assemblyLocations =
+            FrameworkAssemblies.GetAssemblyLocations(dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
 
         foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
+        {
             assemblyLocations.Add(assemblyReferenceLocation);
+        }
 
         assemblyLocations.Add(typeof(IOutputWriter<>).Assembly.Location);
 
@@ -58,34 +61,36 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             .WithOverflowChecks(true)
             .WithAllowUnsafe(true);
 
-        return CSharpCompilation.Create(assemblyName,
+        return CSharpCompilation.Create(
+            assemblyName,
             new[] { syntaxTree },
             references: references,
             options: compilationOptions);
     }
 
-    private PortableExecutableReference[] BuildMetadataReferences(IEnumerable<byte[]> assemblyImages, HashSet<string> assemblyLocations)
+    private PortableExecutableReference[] BuildMetadataReferences(
+        IEnumerable<byte[]> assemblyImages,
+        HashSet<string> assemblyLocations)
     {
-        var references = assemblyImages.Select(i => MetadataReference.CreateFromImage(i)).ToList();
-
-        references.AddRange(assemblyLocations.Select(location => MetadataReference.CreateFromFile(location)));
-
-        return references.ToArray();
+        return assemblyImages
+            .Select(i => MetadataReference.CreateFromImage(i))
+            .Union(assemblyLocations.Select(loc => MetadataReference.CreateFromFile(loc)))
+            .ToArray();
     }
 
     private static string GetCompiledFileExtension(OutputKind outputKind)
     {
+        var executableExt = PlatformUtil.IsOSWindows() ? ".exe" : string.Empty;
+
         return outputKind switch
         {
             OutputKind.DynamicallyLinkedLibrary => ".dll",
-            OutputKind.ConsoleApplication => ExeExtension(),
-            OutputKind.WindowsApplication => ExeExtension(),
-            OutputKind.WindowsRuntimeMetadata => ExeExtension(),
+            OutputKind.ConsoleApplication => executableExt,
+            OutputKind.WindowsApplication => executableExt,
+            OutputKind.WindowsRuntimeMetadata => executableExt,
             OutputKind.WindowsRuntimeApplication => ".winmdobj",
             OutputKind.NetModule => ".netmodule",
             _ => throw new ArgumentOutOfRangeException(nameof(outputKind), outputKind, null)
         };
-
-        static string ExeExtension() => PlatformUtil.IsOSWindows() ? ".exe" : string.Empty;
     }
 }

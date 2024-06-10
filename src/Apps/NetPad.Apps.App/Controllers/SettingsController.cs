@@ -18,10 +18,9 @@ public class SettingsController(Settings settings, IMediator mediator) : Control
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] Settings settings)
+    public async Task<IActionResult> Update([FromBody] Settings update)
     {
-        await mediator.Send(new UpdateSettingsCommand(settings));
-
+        await mediator.Send(new UpdateSettingsCommand(update));
         return NoContent();
     }
 

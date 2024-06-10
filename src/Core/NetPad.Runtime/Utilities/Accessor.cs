@@ -1,7 +1,7 @@
 namespace NetPad.Utilities;
 
 /// <summary>
-/// A generic wrapper class that wraps a value of type <see cref="T"/>.
+/// A generic wrapper class that wraps a value.
 /// </summary>
 public class Accessor<T>(T value)
 {

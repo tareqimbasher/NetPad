@@ -71,9 +71,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/run")]
-    public async Task Run(Guid id, [FromBody] RunOptionsDto dto)
+    public async Task Run(Guid id, [FromBody] RunOptions options)
     {
-        await mediator.Send(new RunScriptCommand(id, dto.ToRunOptions()));
+        await mediator.Send(new RunScriptCommand(id, options));
     }
 
     [HttpPatch("{id:guid}/stop")]

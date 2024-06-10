@@ -62,9 +62,11 @@ public class ScriptRuntimeConsoleTests : TestBase
         Assert.Equal(expectedOutput, result);
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private InMemoryScriptRunner GetScriptRuntime(Script script)
     {
         return (InMemoryScriptRunner)ServiceProvider.GetRequiredService<InMemoryScriptRunnerFactory>()
             .CreateRunner(script);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

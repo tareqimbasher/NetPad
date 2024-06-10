@@ -14,7 +14,8 @@ public class RunScriptCommand(Guid scriptId, RunOptions runOptions) : Command
     {
         public async Task<Unit> Handle(RunScriptCommand request, CancellationToken cancellationToken)
         {
-            var environment = await mediator.Send(new GetOpenedScriptEnvironmentQuery(request.ScriptId, true));
+            var environment = await mediator.Send(
+                new GetOpenedScriptEnvironmentQuery(request.ScriptId, true));
 
             await environment!.RunAsync(request.RunOptions);
 

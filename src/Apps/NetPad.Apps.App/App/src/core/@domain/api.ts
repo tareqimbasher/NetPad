@@ -1324,7 +1324,7 @@ export interface IScriptsApiClient {
 
     save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void>;
+    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
 
     stop(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1541,14 +1541,14 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(<any>null);
     }
 
-    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void> {
+    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(dto);
+        const content_ = JSON.stringify(options);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -2249,7 +2249,7 @@ export interface ISettingsApiClient {
 
     get(signal?: AbortSignal | undefined): Promise<Settings>;
 
-    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    update(update: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     openSettingsWindow(tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -2302,11 +2302,11 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
         return Promise.resolve<Settings>(<any>null);
     }
 
-    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    update(update: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/settings";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(settings);
+        const content_ = JSON.stringify(update);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -4362,10 +4362,13 @@ export interface ICreateScriptDto {
     runImmediately: boolean;
 }
 
-export class RunOptionsDto implements IRunOptionsDto {
+/** Options that configure the running of a script. */
+export class RunOptions implements IRunOptions {
+    /** If not null, this code will run instead of script code. Typically used to only run code that user has
+highlighted in the editor. */
     specificCodeToRun?: string | undefined;
 
-    constructor(data?: IRunOptionsDto) {
+    constructor(data?: IRunOptions) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -4380,9 +4383,9 @@ export class RunOptionsDto implements IRunOptionsDto {
         }
     }
 
-    static fromJS(data: any): RunOptionsDto {
+    static fromJS(data: any): RunOptions {
         data = typeof data === 'object' ? data : {};
-        let result = new RunOptionsDto();
+        let result = new RunOptions();
         result.init(data);
         return result;
     }
@@ -4393,15 +4396,18 @@ export class RunOptionsDto implements IRunOptionsDto {
         return data;
     }
 
-    clone(): RunOptionsDto {
+    clone(): RunOptions {
         const json = this.toJSON();
-        let result = new RunOptionsDto();
+        let result = new RunOptions();
         result.init(json);
         return result;
     }
 }
 
-export interface IRunOptionsDto {
+/** Options that configure the running of a script. */
+export interface IRunOptions {
+    /** If not null, this code will run instead of script code. Typically used to only run code that user has
+highlighted in the editor. */
     specificCodeToRun?: string | undefined;
 }
 

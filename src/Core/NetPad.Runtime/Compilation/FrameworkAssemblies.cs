@@ -4,15 +4,15 @@ using NetPad.DotNet;
 
 namespace NetPad.Compilation;
 
-record SysAssembliesKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
+record CacheKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
 
-public static class SystemAssemblies
+public static class FrameworkAssemblies
 {
-    private static readonly ConcurrentDictionary<SysAssembliesKey, HashSet<string>> _systemAssembliesLocations = new();
+    private static readonly ConcurrentDictionary<CacheKey, HashSet<string>> _systemAssembliesLocations = new();
 
     public static HashSet<string> GetAssemblyLocations(IDotNetInfo dotNetInfo, DotNetFrameworkVersion dotNetFrameworkVersion, bool includeAspNet)
     {
-        var key = new SysAssembliesKey(dotNetFrameworkVersion, includeAspNet);
+        var key = new CacheKey(dotNetFrameworkVersion, includeAspNet);
 
         return _systemAssembliesLocations.GetOrAdd(
                 key,

@@ -10,6 +10,7 @@ public class InMemoryScriptRunnerFactory(IServiceProvider serviceProvider) : ISc
 {
     public IScriptRunner CreateRunner(Script script)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         return new InMemoryScriptRunner(
             script,
             serviceProvider.CreateScope(),
@@ -18,5 +19,6 @@ public class InMemoryScriptRunnerFactory(IServiceProvider serviceProvider) : ISc
             serviceProvider.GetRequiredService<IPackageProvider>(),
             serviceProvider.GetRequiredService<ILogger<InMemoryScriptRunner>>()
         );
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
