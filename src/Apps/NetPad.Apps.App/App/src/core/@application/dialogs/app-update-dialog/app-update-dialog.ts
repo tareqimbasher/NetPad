@@ -1,18 +1,21 @@
-import {Version} from "@common/data/version";
 import {Dialog} from "../dialog";
-import {IAppService} from "@domain";
+import {IAppService, SemanticVersion} from "@domain";
 import {System} from "@common";
 
 export interface IAppUpdateDialogModel {
-    current: Version,
-    latest: Version
+    current: SemanticVersion,
+    latest: SemanticVersion
 }
 
 export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
     public loading = false;
 
     public get newerVersionExists() {
-        return this.input && this.input.latest.greaterThan(this.input.current);
+        return this.input && (
+            this.input.latest.major > this.input.current.major
+            || this.input.latest.minor > this.input.current.minor
+            || this.input.latest.patch > this.input.current.patch
+        );
     }
 
     constructor(@IAppService private readonly appService: IAppService) {
@@ -27,7 +30,9 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
         this.loading = true;
         this.appService.getCurrentAndLatestVersions()
             .then(versions => {
-                if (versions) this.input = versions;
+                if (versions) {
+                    this.input = versions;
+                }
             })
             .catch(err => {
                 this.logger.error("Error while getting versions", err);

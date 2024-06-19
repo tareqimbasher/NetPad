@@ -27,13 +27,13 @@ public class ScriptEnvironmentTests : TestBase
     }
 
     [Fact]
-    public void RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
+    public async Task RunningScriptWhileItsAlreadyRunning_ThrowsInvalidOperationException()
     {
         var script = ScriptTestHelper.CreateScript();
         var environment = new Mock<ScriptEnvironment>(script, ServiceProvider.CreateScope());
         environment.Setup(e => e.Status).Returns(ScriptStatus.Running);
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync(new RunOptions()));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => environment.Object.RunAsync(new RunOptions()));
     }
 
     [Fact]

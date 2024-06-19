@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <LtsTargetFramework>net8.0</LtsTargetFramework>
+        <DefaultTargetFramework>net8.0</DefaultTargetFramework>
         <EarliestSupportedTargetFramework>net6.0</EarliestSupportedTargetFramework>
         <LangVersion>latest</LangVersion>
         <Deterministic>True</Deterministic>

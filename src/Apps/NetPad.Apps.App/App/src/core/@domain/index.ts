@@ -1,6 +1,7 @@
 export * from "./env";
 export * from "./api";
 export * from "./extensions/abort-controller-extensions";
+export * from "./extensions/semantic-version-extensions";
 
 export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";

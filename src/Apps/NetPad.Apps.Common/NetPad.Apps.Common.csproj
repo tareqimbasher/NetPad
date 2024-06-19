@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
+        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
         <RootNamespace>NetPad.Apps</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
@@ -9,11 +9,11 @@
     <ItemGroup>
         <PackageReference Include="MediatR" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.21" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.19"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.8"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     </ItemGroup>
 
     <ItemGroup>

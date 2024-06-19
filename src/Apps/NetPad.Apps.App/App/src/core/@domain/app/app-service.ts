@@ -1,7 +1,6 @@
 import {DI} from "aurelia";
-import {AppApiClient, AppDependencyCheckResult, IAppApiClient} from "@domain";
+import {AppApiClient, AppDependencyCheckResult, IAppApiClient, SemanticVersion} from "@domain";
 import {Util} from "@common/utils/util";
-import {Version} from "@common/data/version";
 
 export interface IAppService extends IAppApiClient {
     /**
@@ -19,7 +18,7 @@ export interface IAppService extends IAppApiClient {
     /**
      * Gets the current version and latest available version of the app.
      */
-    getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null>;
+    getCurrentAndLatestVersions(): Promise<{ current: SemanticVersion, latest: SemanticVersion } | null>;
 }
 
 export const IAppService = DI.createInterface<IAppService>();
@@ -56,19 +55,20 @@ export class AppService extends AppApiClient implements IAppService {
             return;
         }
 
-        this._appHasUpdate = versions.latest.greaterThan(versions.current);
+        const current = versions.current;
+        const latest = versions.latest;
+
+        this._appHasUpdate = latest.major > current.major
+            || latest.minor > current.minor
+            || latest.patch > current.patch;
     }
 
-    public async getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null> {
+    public async getCurrentAndLatestVersions(): Promise<{ current: SemanticVersion, latest: SemanticVersion } | null> {
         const appId = await this.getIdentifier();
-        const current = new Version(appId.version);
+        const current = appId.version;
 
-        if (current.isEmpty) {
-            return null;
-        }
-
-        const latest = new Version(await this.getLatestVersion());
-        if (latest.isEmpty) {
+        const latest = await this.getLatestVersion();
+        if (!latest) {
             return null;
         }
 

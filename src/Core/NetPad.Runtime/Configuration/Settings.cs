@@ -5,7 +5,7 @@ namespace NetPad.Configuration;
 
 public class Settings : ISettingsOptions
 {
-    public const string LatestSettingsVersion = "1.0";
+    private const string LatestSettingsVersion = "1.0";
 
     public Settings()
     {

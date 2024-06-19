@@ -16,7 +16,7 @@ public class AppIdentifierTests
     [Fact]
     public void AppVersion_ShouldBeVersionOfEntryAssembly()
     {
-        var versionOfEntryAssembly = Assembly.GetEntryAssembly()?.GetName().Version;
+        var versionOfEntryAssembly = new SemanticVersion(Assembly.GetEntryAssembly()?.GetName().Version!);
         Assert.Equal(versionOfEntryAssembly, new AppIdentifier().Version);
     }
 }

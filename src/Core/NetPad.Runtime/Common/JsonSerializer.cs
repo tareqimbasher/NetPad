@@ -16,6 +16,7 @@ public static class JsonSerializer
     {
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.Converters.Add(new JsonStringEnumConverter());
+        // options.Converters.Add(new VersionJsonConverter());
         return options;
     }
 

@@ -16,7 +16,7 @@ internal static class SwaggerSetup
     {
         services.AddSwaggerDocument(config =>
         {
-            config.Title = "NetPad";
+            config.Title = "NetPad HTTP Interface";
             config.DocumentName = "NetPad";
             config.OperationProcessors.Insert(0, new ExcludeControllersInAssemblies(pluginRegistrations.Select(p => p.Assembly).ToArray()));
 
@@ -68,7 +68,7 @@ internal static class SwaggerSetup
                     TypeScriptVersion = 4.4m,
                     EnumStyle = TypeScriptEnumStyle.StringLiteral,
                     GenerateCloneMethod = true,
-                    MarkOptionalProperties = true
+                    MarkOptionalProperties = true,
                 }
             };
 

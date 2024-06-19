@@ -26,7 +26,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
     }
 
     [HttpGet("latest-version")]
-    public async Task<string?> GetLatestVersion([FromServices] HttpClient httpClient)
+    public async Task<SemanticVersion?> GetLatestVersion([FromServices] HttpClient httpClient)
     {
         try
         {
@@ -54,7 +54,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
                 return null;
             }
 
-            return version.ToString();
+            return version;
         }
         catch (Exception ex)
         {

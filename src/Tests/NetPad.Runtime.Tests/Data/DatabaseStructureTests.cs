@@ -46,7 +46,7 @@ public class DatabaseStructureTests
             var schema = structure.GetOrAddSchema(schemaName);
 
             Assert.Equal(schemaName, schema.Name);
-            Assert.Equal(1, structure.Schemas.Count);
+            Assert.Single(structure.Schemas);
             Assert.Equal(schemaName, structure.Schemas.Single().Name);
         }
     }
@@ -87,7 +87,7 @@ public class DatabaseStructureTests
 
             Assert.Equal(name, table.Name);
             Assert.Equal(displayName, table.DisplayName);
-            Assert.Equal(1, structure.Schemas.Count);
+            Assert.Single(structure.Schemas);
             Assert.Equal(name, schema.Tables.Single().Name);
             Assert.Equal(displayName, schema.Tables.Single().DisplayName);
             Assert.Empty(schema.Tables.Single().Columns);
@@ -127,7 +127,7 @@ public class DatabaseStructureTests
             var column = table.GetOrAddColumn(name, "type", "crltype", false, false);
 
             Assert.Equal(name, column.Name);
-            Assert.Equal(1, table.Columns.Count);
+            Assert.Single(table.Columns);
             Assert.Equal(name, table.Columns.Single().Name);
         }
     }

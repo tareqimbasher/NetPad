@@ -7,9 +7,9 @@ namespace NetPad.DotNet;
 
 // This attribute is only used for NSwag polymorphism. Haven't figured out how to use our own STJ-based JsonInheritanceConverter
 // and have NSwag use that when generating its schema.
-[Newtonsoft.Json.JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter), "discriminator")]
+[Newtonsoft.Json.JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter<Reference>), "discriminator")]
 
-[JsonConverter(typeof(JsonInheritanceConverter<Reference>))]
+[System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<Reference>))]
 [KnownType(typeof(AssemblyFileReference))]
 [KnownType(typeof(AssemblyImageReference))]
 [KnownType(typeof(PackageReference))]

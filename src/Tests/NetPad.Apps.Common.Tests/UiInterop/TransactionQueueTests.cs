@@ -22,7 +22,7 @@ public class TransactionQueueTests
     }
 
     [Fact]
-    public void ResponseIsSetCorrectly()
+    public async Task ResponseIsSetCorrectly()
     {
         var messageId = Guid.NewGuid();
         var promise = new ResponsePromise<string>();
@@ -30,6 +30,6 @@ public class TransactionQueueTests
 
         IpcResponseQueue.ResponseReceived(messageId, JsonDocument.Parse("\"Hello world\"").RootElement);
 
-        Assert.Equal("Hello world", promise.Task.Result);
+        Assert.Equal("Hello world", await promise.Task);
     }
 }

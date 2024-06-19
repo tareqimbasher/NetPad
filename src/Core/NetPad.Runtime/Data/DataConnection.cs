@@ -6,8 +6,8 @@ using NJsonSchema.Converters;
 namespace NetPad.Data;
 
 // Only used for NSwag
-[JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
-[System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<DataConnection>))]
+[JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter<DataConnection>), "discriminator")]
+[System.Text.Json.Serialization.JsonConverter(typeof(NetPad.Common.JsonInheritanceConverter<DataConnection>))]
 [KnownType("GetKnownTypes")]
 public abstract class DataConnection(Guid id, string name, DataConnectionType type)
 {

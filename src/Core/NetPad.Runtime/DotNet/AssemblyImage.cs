@@ -14,7 +14,16 @@ public record AssemblyImage
         Image = image;
     }
 
-    public AssemblyName AssemblyName { get; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public AssemblyName AssemblyName { get; private init; }
+
+    public string AssemblyNameString
+    {
+        get => AssemblyName?.FullName ?? string.Empty;
+        private init => AssemblyName = new AssemblyName(value);
+    }
+
     public byte[] Image { get; }
 
     public string ConstructAssemblyFileName()

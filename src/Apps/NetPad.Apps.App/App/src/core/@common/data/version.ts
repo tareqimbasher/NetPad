@@ -33,22 +33,18 @@ export class Version {
         if (this.equals(other)) return false;
 
         if (this.major > other.major) return true;
-        if (this.major < other.major) return false;
 
         if (this.minor > other.minor) return true;
-        if (this.minor < other.minor) return false;
 
         if (this.revision > other.revision) return true;
-        if (this.revision < other.revision) return false;
 
         if (this.build > other.build) return true;
-        if (this.build < other.build) return false;
 
-        return true;
+        return false;
     }
 
     public lessThan(other: Version) {
-        return !this.greaterThan(other);
+        return !this.greaterThan(other) && !this.equals(other);
     }
 
     public equals(other: Version) {

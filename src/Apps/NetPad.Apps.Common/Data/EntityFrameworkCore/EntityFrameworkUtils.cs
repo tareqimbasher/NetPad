@@ -51,7 +51,7 @@ internal static class EntityFrameworkUtils
             foreach (var index in entityType.GetIndexes())
             {
                 table.AddIndex(
-                    index.GetDatabaseName(),
+                    index.GetDatabaseName() ?? index.DisplayName(),
                     index.GetMethod(),
                     index.IsUnique,
                     index.IsClustered() ?? false,

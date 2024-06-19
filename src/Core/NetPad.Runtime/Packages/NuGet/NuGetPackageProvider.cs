@@ -119,7 +119,8 @@ public class NuGetPackageProvider(
         using var sourceCacheContext = new SourceCacheContext();
         var logger = new NuGetNullLogger();
         var cancellationToken = CancellationToken.None;
-        var dependencyContext = DependencyContext.Default;
+        var dependencyContext = DependencyContext.Default
+                                ?? throw new Exception("No DependencyContext set for application");
 
         var packageDependencyTree = await GetPackageDependencyTreeAsync(
             packageIdentity,
@@ -218,7 +219,8 @@ public class NuGetPackageProvider(
         using var sourceCacheContext = new SourceCacheContext();
         var logger = new NuGetNullLogger();
         var cancellationToken = CancellationToken.None;
-        var dependencyContext = DependencyContext.Default;
+        var dependencyContext = DependencyContext.Default
+                                ?? throw new Exception("No DependencyContext set for application");
 
         var packageDependencyTree = await GetPackageDependencyTreeAsync(
             packageIdentity,
@@ -307,7 +309,8 @@ public class NuGetPackageProvider(
                         if (File.Exists(iconPath))
                         {
                             var iconBytes = await File.ReadAllBytesAsync(iconPath);
-                            icon = $"data:image/{Path.GetExtension(iconPath).Trim('.')};base64,{Convert.ToBase64String(iconBytes)}";
+                            icon =
+                                $"data:image/{Path.GetExtension(iconPath).Trim('.')};base64,{Convert.ToBase64String(iconBytes)}";
                         }
                     }
                     catch (Exception ex)
@@ -750,20 +753,35 @@ public class NuGetPackageProvider(
         {
             if (arch == Architecture.X64)
             {
-                rids.AddRange(new[] { "amd64", "win", "x64", "win-x64", "win7", "win7-x64", "win8", "win8-x64", "win81", "win81-x64", "win10", "win10-x64" });
+                rids.AddRange(new[]
+                {
+                    "amd64", "win", "x64", "win-x64", "win7", "win7-x64", "win8", "win8-x64", "win81", "win81-x64",
+                    "win10", "win10-x64"
+                });
             }
             else if (arch == Architecture.X86)
             {
-                rids.AddRange(new[] { "win", "x86", "win-x86", " win7", " win7-x86", " win8", " win8-x86", " win81", " win81-x86", " win10", " win10-x86" });
+                rids.AddRange(new[]
+                {
+                    "win", "x86", "win-x86", " win7", " win7-x86", " win8", " win8-x86", " win81", " win81-x86",
+                    " win10", " win10-x86"
+                });
             }
             else if (arch == Architecture.Arm64)
             {
                 rids.AddRange(new[]
-                    { "win", "arm64", "win-arm64", "win7", "win7-arm64", "win8", "win8-arm64", "win81", "win81-arm64", "win10", "win10-arm64" });
+                {
+                    "win", "arm64", "win-arm64", "win7", "win7-arm64", "win8", "win8-arm64", "win81", "win81-arm64",
+                    "win10", "win10-arm64"
+                });
             }
             else if (arch == Architecture.Arm)
             {
-                rids.AddRange(new[] { "win", "arm", "win-arm", "win7", "win7-arm", "win8", "win8-arm", "win81", "win81-arm", "win10", "win10-arm" });
+                rids.AddRange(new[]
+                {
+                    "win", "arm", "win-arm", "win7", "win7-arm", "win8", "win8-arm", "win81", "win81-arm", "win10",
+                    "win10-arm"
+                });
             }
 
             var osVersion = Environment.OSVersion.Version;

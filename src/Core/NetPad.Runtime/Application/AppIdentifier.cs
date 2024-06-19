@@ -6,12 +6,19 @@ public class AppIdentifier
 {
     public const string AppName = "NetPad";
     public const string AppId = "NETPAD_8C94D5EA-9510-4493-AA43-CADE372ED853";
-    public static readonly Version VERSION;
+    public static readonly SemanticVersion VERSION;
     public static readonly string PRODUCT_VERSION;
 
     static AppIdentifier()
     {
-        VERSION = Assembly.GetEntryAssembly()?.GetName().Version ?? new Version();
+        var assemblyVersion = Assembly.GetEntryAssembly()?.GetName().Version;
+
+        if (assemblyVersion == null)
+        {
+            throw new Exception("Could not find AssemblyVersion");
+        }
+
+        VERSION = new SemanticVersion(assemblyVersion);
 
         var infoVersion = (AssemblyInformationalVersionAttribute?)Assembly.GetEntryAssembly()!
             .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
@@ -21,6 +28,6 @@ public class AppIdentifier
     }
 
     public string Name => AppName;
-    public Version Version => VERSION;
+    public SemanticVersion Version => VERSION;
     public string ProductVersion => PRODUCT_VERSION;
 }
