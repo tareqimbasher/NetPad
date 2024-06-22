@@ -16,7 +16,7 @@ public static class GlobalConsts
     /// <summary>
     /// If a data connection resource cache was created with an app version before this version, it will be invalidated.
     /// </summary>
-    public static SemanticVersion DataConnectionCacheValidOnOrAfterAppVersion { get; } = new(0, 7, 0);
+    public static SemanticVersion DataConnectionCacheValidOnOrAfterAppVersion { get; } = new(0, 7, 0); // NEED TO INCREMENT because ScriptRuntimeServices was renamed
 
     /// <summary>
     /// Retrieves the version of the Entity Framework driver library based on the specified .NET framework version and provider name.

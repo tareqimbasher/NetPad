@@ -244,9 +244,11 @@ public partial class ExternalScriptRunner
 
     private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
     {
+        var frameworkName = _script.Config.UseAspNet ? "Microsoft.AspNetCore.App" : "Microsoft.NETCore.App";
+
         var runtimeVersion = _dotNetInfo.GetDotNetRuntimeVersionsOrThrow()
             .Where(v =>
-                v.FrameworkName == "Microsoft.NETCore.App"
+                v.FrameworkName == frameworkName
                 && v.Version.Major == _script.Config.TargetFrameworkVersion.GetMajorVersion())
             .MaxBy(v => v.Version)?
             .Version;
@@ -257,13 +259,14 @@ public partial class ExternalScriptRunner
 
         var tfm = _script.Config.TargetFrameworkVersion.GetTargetFrameworkMoniker();
         var probingPaths =
-            JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).Distinct());
+            // JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).Distinct());
+            "[]";
 
         return $@"{{
     ""runtimeOptions"": {{
         ""tfm"": ""{tfm}"",
         ""framework"": {{
-            ""name"": ""Microsoft.AspNetCore.App"",
+            ""name"": ""{frameworkName}"",
             ""version"": ""{runtimeVersion}""
         }},
         ""rollForward"": ""Minor"",
