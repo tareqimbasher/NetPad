@@ -40,12 +40,6 @@ public class CollectionHtmlConverter : HtmlConverter
     {
         var td = tr.AddAndGetElement("td").AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
 
-        if (obj == null)
-        {
-            td.AddAndGetNull().AddClass(htmlSerializer.SerializerOptions.CssClasses.Null);
-            return;
-        }
-
         var result = Convert(obj, type, serializationScope, htmlSerializer);
 
         if (result.collectionLength == 0 && serializationScope.Depth > 0 && htmlSerializer.SerializerOptions.DoNotSerializeNonRootEmptyCollections)

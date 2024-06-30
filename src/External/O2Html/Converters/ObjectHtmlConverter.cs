@@ -53,14 +53,6 @@ public class ObjectHtmlConverter : HtmlConverter
 
     public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        if (obj == null)
-        {
-            tr.AddAndGetElement("td")
-                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
-                .AddAndGetNull().AddClass(htmlSerializer.SerializerOptions.CssClasses.Null);
-            return;
-        }
-
         var properties = HtmlSerializer.GetReadableProperties(type);
 
         foreach (var property in properties)
