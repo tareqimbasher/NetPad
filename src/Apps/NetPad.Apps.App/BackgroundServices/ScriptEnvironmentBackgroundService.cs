@@ -1,41 +1,29 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NetPad.CQs;
+using NetPad.Apps.CQs;
+using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Scripts;
+using NetPad.Scripts.Events;
 using NetPad.Services;
-using NetPad.UiInterop;
+using NetPad.Sessions.Events;
 
 namespace NetPad.BackgroundServices;
 
 /// <summary>
 /// Handles automations that occur when a script environment is added to removed from the session.
 /// </summary>
-public class ScriptEnvironmentBackgroundService : BackgroundService
+public class ScriptEnvironmentBackgroundService(
+    IEventBus eventBus,
+    IIpcService ipcService,
+    IAutoSaveScriptRepository autoSaveScriptRepository,
+    ILoggerFactory loggerFactory)
+    : BackgroundService(loggerFactory)
 {
-    private readonly IEventBus _eventBus;
-    private readonly IIpcService _ipcService;
-    private readonly IAutoSaveScriptRepository _autoSaveScriptRepository;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggerFactory _loggerFactory = loggerFactory;
 
-    private readonly Dictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens;
-
-    public ScriptEnvironmentBackgroundService(
-        IEventBus eventBus,
-        IIpcService ipcService,
-        IAutoSaveScriptRepository autoSaveScriptRepository,
-        ILoggerFactory loggerFactory) : base(loggerFactory)
-    {
-        _eventBus = eventBus;
-        _ipcService = ipcService;
-        _autoSaveScriptRepository = autoSaveScriptRepository;
-        _loggerFactory = loggerFactory;
-        _environmentSubscriptionTokens = new Dictionary<Guid, List<IDisposable>>();
-    }
+    private readonly Dictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens = new();
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -46,7 +34,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
     private void ListenToEnvironmentsChanges()
     {
-        _eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
+        eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -54,12 +42,12 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
 
                 var inputReader = new AsyncActionInputReader<string>(
                     // TODO There should be a way to cancel the wait when the environment stops using a CancellationToken
-                    async () => await _ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
+                    async () => await ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
 
                 var outputWriter = new ScriptEnvironmentIpcOutputWriter(
                     environment,
-                    _ipcService,
-                    _eventBus,
+                    ipcService,
+                    eventBus,
                     _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>());
 
                 environment.SetIO(inputReader, outputWriter);
@@ -70,7 +58,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
+        eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -88,17 +76,17 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
             if (scriptId != environment.Script.Id || !environment.Script.IsDirty)
                 return;
 
-            await _autoSaveScriptRepository.SaveAsync(environment.Script);
+            await autoSaveScriptRepository.SaveAsync(environment.Script);
         }).DebounceAsync(3000);
 
-        var scriptPropChangeToken = _eventBus.Subscribe<ScriptPropertyChangedEvent>(ev =>
+        var scriptPropChangeToken = eventBus.Subscribe<ScriptPropertyChangedEvent>(ev =>
         {
             autoSave(ev.ScriptId);
             return Task.CompletedTask;
         });
         AddEnvironmentEventToken(environment, scriptPropChangeToken);
 
-        var scriptConfigPropChangeToken = _eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(ev =>
+        var scriptConfigPropChangeToken = eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(ev =>
         {
             autoSave(ev.ScriptId);
             return Task.CompletedTask;
@@ -110,7 +98,7 @@ public class ScriptEnvironmentBackgroundService : BackgroundService
     {
         if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
         {
-            tokens = new List<IDisposable>();
+            tokens = [];
             _environmentSubscriptionTokens.Add(environment.Script.Id, tokens);
         }
 

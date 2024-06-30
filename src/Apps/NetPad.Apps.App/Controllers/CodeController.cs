@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.CodeAnalysis;

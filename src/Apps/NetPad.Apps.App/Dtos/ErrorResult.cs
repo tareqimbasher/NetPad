@@ -1,13 +1,7 @@
 namespace NetPad.Dtos;
 
-public class ErrorResult
+public class ErrorResult(string message, string? details = null)
 {
-    public ErrorResult(string message, string? details = null)
-    {
-        Message = message;
-        Details = details;
-    }
-
-    public string Message { get; }
-    public string? Details { get; }
+    public string Message { get; } = message;
+    public string? Details { get; } = details;
 }

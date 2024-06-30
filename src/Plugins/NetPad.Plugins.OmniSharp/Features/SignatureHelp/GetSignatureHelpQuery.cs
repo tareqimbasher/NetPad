@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.SignatureHelp;
 
-public class GetSignatureHelpQuery : OmniSharpScriptQuery<OmniSharpSignatureHelpRequest, OmniSharpSignatureHelpResponse?>
+public class GetSignatureHelpQuery(Guid scriptId, OmniSharpSignatureHelpRequest input)
+    : OmniSharpScriptQuery<OmniSharpSignatureHelpRequest, OmniSharpSignatureHelpResponse?>(scriptId, input)
 {
-    public GetSignatureHelpQuery(Guid scriptId, OmniSharpSignatureHelpRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<GetSignatureHelpQuery, OmniSharpSignatureHelpResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<GetSignatureHelpQuery, OmniSharpSignatureHelpResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpSignatureHelpResponse?> Handle(GetSignatureHelpQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpSignatureHelpResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpSignatureHelpResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

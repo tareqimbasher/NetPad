@@ -1,7 +1,5 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using O2Html.Dom;
-using O2Html.Dom.Elements;
 
 namespace O2Html;
 

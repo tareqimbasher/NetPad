@@ -1,0 +1,40 @@
+{
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iisExpress": {
+            "applicationUrl": "http://localhost:18454",
+            "sslPort": 44349
+        }
+    },
+    "profiles": {
+        "Electron.NET App": {
+            "commandName": "Executable",
+            "executablePath": "electronize",
+            "commandLineArgs": "start",
+            "workingDirectory": "."
+        },
+        "ASP.NET Core App (no Electron)": {
+            "commandName": "Project",
+            "launchBrowser": false,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "Generate Swagger Client Code": {
+            "commandName": "Project",
+            "commandLineArgs": "--swagger",
+            "launchBrowser": false,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "IIS Express": {
+            "commandName": "IISExpress",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

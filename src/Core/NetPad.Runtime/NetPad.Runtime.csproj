@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
+        <RootNamespace>NetPad</RootNamespace>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Dumpify" Version="0.6.6" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="6.0.31" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.31" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="NJsonSchema" Version="10.6.6" />
+        <PackageReference Include="NuGet.Protocol" Version="6.6.1"/>
+        <PackageReference Include="NuGet.Resolver" Version="6.6.1"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <NoWarn>1701;1702;CS1591</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <NoWarn>1701;1702;CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="ExecutionModel\External\EmbeddedCode\Program.cs" />
+      <Compile Remove="ExecutionModel\External\EmbeddedCode\SqlAccessCode.cs" />
+      <EmbeddedResource Include="ExecutionModel\External\EmbeddedCode\SqlAccessCode.cs" />
+    </ItemGroup>
+
+</Project>

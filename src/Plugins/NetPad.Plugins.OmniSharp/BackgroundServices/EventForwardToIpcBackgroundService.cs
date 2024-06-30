@@ -1,21 +1,12 @@
+using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
-using NetPad.UiInterop;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
-public class EventForwardToIpcBackgroundService : BackgroundService
+public class EventForwardToIpcBackgroundService(IEventBus eventBus, IIpcService ipcService) : BackgroundService
 {
-    private readonly IEventBus _eventBus;
-    private readonly IIpcService _ipcService;
-    private readonly List<IDisposable> _disposables;
-
-    public EventForwardToIpcBackgroundService(IEventBus eventBus, IIpcService ipcService)
-    {
-        _eventBus = eventBus;
-        _ipcService = ipcService;
-        _disposables = new List<IDisposable>();
-    }
+    private readonly List<IDisposable> _disposables = [];
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -26,7 +17,7 @@ public class EventForwardToIpcBackgroundService : BackgroundService
 
     private void SubscribeAndForwardToIpc<TEvent>() where TEvent : class, IEvent
     {
-        var token = _eventBus.Subscribe<TEvent>(async ev => { await _ipcService.SendAsync(ev); });
+        var token = eventBus.Subscribe<TEvent>(async ev => { await ipcService.SendAsync(ev); });
         _disposables.Add(token);
     }
 

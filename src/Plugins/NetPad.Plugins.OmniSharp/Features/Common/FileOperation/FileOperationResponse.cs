@@ -11,44 +11,22 @@ namespace NetPad.Plugins.OmniSharp.Features.Common.FileOperation;
 [KnownType(typeof(ModifiedFileResponse))]
 [KnownType(typeof(OpenFileResponse))]
 [KnownType(typeof(RenamedFileResponse))]
-public abstract class FileOperationResponse
+public abstract class FileOperationResponse(string fileName, OmniSharpFileModificationType type)
 {
-    public FileOperationResponse(string fileName, OmniSharpFileModificationType type)
-    {
-        FileName = fileName;
-        ModificationType = type;
-    }
+    public string FileName { get; } = fileName;
 
-    public string FileName { get; }
-
-    public OmniSharpFileModificationType ModificationType { get; }
+    public OmniSharpFileModificationType ModificationType { get; } = type;
 }
 
-public class ModifiedFileResponse : FileOperationResponse
+public class ModifiedFileResponse(string fileName) : FileOperationResponse(fileName, OmniSharpFileModificationType.Modified)
 {
-    public ModifiedFileResponse(string fileName)
-        : base(fileName, OmniSharpFileModificationType.Modified)
-    {
-    }
-
     public string Buffer { get; set; } = null!;
     public IEnumerable<OmniSharpLinePositionSpanTextChange> Changes { get; set; } = null!;
 }
 
-public class OpenFileResponse : FileOperationResponse
-{
-    public OpenFileResponse(string fileName) : base(fileName, OmniSharpFileModificationType.Opened)
-    {
-    }
-}
+public class OpenFileResponse(string fileName) : FileOperationResponse(fileName, OmniSharpFileModificationType.Opened);
 
-public class RenamedFileResponse : FileOperationResponse
+public class RenamedFileResponse(string fileName, string newFileName) : FileOperationResponse(fileName, OmniSharpFileModificationType.Renamed)
 {
-    public RenamedFileResponse(string fileName, string newFileName)
-        : base(fileName, OmniSharpFileModificationType.Renamed)
-    {
-        NewFileName = newFileName;
-    }
-
-    public string NewFileName { get; }
+    public string NewFileName { get; } = newFileName;
 }

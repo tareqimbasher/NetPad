@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Common;
 using NetPad.DotNet;
@@ -11,25 +9,18 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("packages")]
-public class PackagesController : ControllerBase
+public class PackagesController(IPackageProvider packageProvider) : ControllerBase
 {
-    private readonly IPackageProvider _packageProvider;
-
-    public PackagesController(IPackageProvider packageProvider)
-    {
-        _packageProvider = packageProvider;
-    }
-
     [HttpGet("cache")]
     public async Task<ActionResult<IEnumerable<CachedPackage>>> GetCachedPackages([FromQuery] bool loadMetadata)
     {
-        return Ok(await _packageProvider.GetCachedPackagesAsync(loadMetadata));
+        return Ok(await packageProvider.GetCachedPackagesAsync(loadMetadata));
     }
 
     [HttpGet("cache/explicitly-installed")]
     public async Task<ActionResult<IEnumerable<CachedPackage>>> GetExplicitlyInstalledCachedPackages([FromQuery] bool loadMetadata)
     {
-        return Ok(await _packageProvider.GetExplicitlyInstalledCachedPackagesAsync(loadMetadata));
+        return Ok(await packageProvider.GetExplicitlyInstalledCachedPackagesAsync(loadMetadata));
     }
 
     [HttpDelete("cache")]
@@ -40,27 +31,27 @@ public class PackagesController : ControllerBase
         if (string.IsNullOrWhiteSpace(packageVersion))
             return BadRequest($"{nameof(packageVersion)} is required.");
 
-        await _packageProvider.DeleteCachedPackageAsync(packageId, packageVersion);
+        await packageProvider.DeleteCachedPackageAsync(packageId, packageVersion);
         return Ok();
     }
 
     [HttpPatch("cache/purge")]
     public async Task<IActionResult> PurgePackageCache()
     {
-        await _packageProvider.PurgePackageCacheAsync();
+        await packageProvider.PurgePackageCacheAsync();
         return Ok();
     }
 
     [HttpGet("versions")]
     public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId, [FromQuery] bool includePrerelease = false)
     {
-        return await _packageProvider.GetPackageVersionsAsync(packageId, includePrerelease);
+        return await packageProvider.GetPackageVersionsAsync(packageId, includePrerelease);
     }
 
     [HttpPost("metadata")]
     public async Task<PackageMetadata[]> GetPackageMetadata([FromBody] PackageIdentity[] packages, CancellationToken cancellationToken)
     {
-        return (await _packageProvider.GetExtendedMetadataAsync(packages, cancellationToken))
+        return (await packageProvider.GetExtendedMetadataAsync(packages, cancellationToken))
             .Values
             .Where(x => x != null)
             .ToArray()!;
@@ -73,7 +64,7 @@ public class PackagesController : ControllerBase
         [FromQuery] int? take = null,
         [FromQuery] bool? includePrerelease = null)
     {
-        var packages = await _packageProvider.SearchPackagesAsync(
+        var packages = await packageProvider.SearchPackagesAsync(
             term,
             skip ?? 0,
             take ?? 30,
@@ -95,11 +86,11 @@ public class PackagesController : ControllerBase
         if (string.IsNullOrWhiteSpace(packageVersion))
             return BadRequest($"{nameof(packageVersion)} is required.");
 
-        var installInfo = await _packageProvider.GetPackageInstallInfoAsync(packageId, packageVersion);
+        var installInfo = await packageProvider.GetPackageInstallInfoAsync(packageId, packageVersion);
 
         if (installInfo?.InstallReason == PackageInstallReason.Explicit) return Ok();
 
-        await _packageProvider.InstallPackageAsync(packageId, packageVersion, dotNetFrameworkVersion ?? GlobalConsts.AppDotNetFrameworkVersion);
+        await packageProvider.InstallPackageAsync(packageId, packageVersion, dotNetFrameworkVersion ?? GlobalConsts.AppDotNetFrameworkVersion);
         return Ok();
     }
 }

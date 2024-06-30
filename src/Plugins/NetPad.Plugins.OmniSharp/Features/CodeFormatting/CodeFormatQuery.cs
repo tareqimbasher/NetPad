@@ -3,27 +3,17 @@ using MediatR;
 namespace NetPad.Plugins.OmniSharp.Features.CodeFormatting;
 
 [Obsolete($"Use {nameof(FormatRangeQuery)} and {nameof(FormatAfterKeystrokeQuery)} instead")]
-public class CodeFormatQuery : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, OmniSharpCodeFormatResponse?>
+public class CodeFormatQuery(Guid scriptId, OmniSharpCodeFormatRequest omniSharpRequest)
+    : OmniSharpScriptQuery<OmniSharpCodeFormatRequest, OmniSharpCodeFormatResponse?>(scriptId, omniSharpRequest)
 {
-    public CodeFormatQuery(Guid scriptId, OmniSharpCodeFormatRequest omniSharpRequest) : base(scriptId, omniSharpRequest)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<CodeFormatQuery, OmniSharpCodeFormatResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<CodeFormatQuery, OmniSharpCodeFormatResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpCodeFormatResponse?> Handle(CodeFormatQuery request, CancellationToken cancellationToken)
         {
-            return await _server.OmniSharpServer.SendAsync<OmniSharpCodeFormatResponse>(new OmniSharpCodeFormatRequest
+            return await server.OmniSharpServer.SendAsync<OmniSharpCodeFormatResponse>(new OmniSharpCodeFormatRequest
             {
                 Buffer = request.Input.Buffer,
-                FileName = _server.Project.UserProgramFilePath
+                FileName = server.Project.UserProgramFilePath
             }, cancellationToken);
         }
     }

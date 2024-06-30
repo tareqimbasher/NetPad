@@ -7,30 +7,20 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeActions;
 
-public class RunCodeActionCommand : OmniSharpScriptCommand<OmniSharpRunCodeActionRequest, RunCodeActionResponse?>
+public class RunCodeActionCommand(Guid scriptId, OmniSharpRunCodeActionRequest input)
+    : OmniSharpScriptCommand<OmniSharpRunCodeActionRequest, RunCodeActionResponse?>(scriptId, input)
 {
-    public RunCodeActionCommand(Guid scriptId, OmniSharpRunCodeActionRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<RunCodeActionCommand, RunCodeActionResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<RunCodeActionCommand, RunCodeActionResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
         private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter = new();
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
 
         public async Task<RunCodeActionResponse?> Handle(RunCodeActionCommand request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            var responseJson = await _server.OmniSharpServer.SendAsync<JsonNode>(omniSharpRequest, cancellationToken);
+            var responseJson = await server.OmniSharpServer.SendAsync<JsonNode>(omniSharpRequest, cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)
             {

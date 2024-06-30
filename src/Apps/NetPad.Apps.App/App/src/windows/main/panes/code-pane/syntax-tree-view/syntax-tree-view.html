@@ -37,7 +37,10 @@
             <i class="fa-fw fa-solid ${syntaxNode.isNode ? 'fa-code-commit text-blue' : 'fa-minus text-yellow'}"
                title="${syntaxNode.isNode ? 'Node' : 'Token'}"></i>
 
-            <span class="${syntaxNode.isMissing ? 'text-danger' : ''}">${syntaxNode.kind}</span>
+            <span class="${syntaxNode.isMissing ? 'text-danger' : ''}"
+                  title.bind="syntaxNode.type">
+                ${syntaxNode.kind}
+            </span>
 
             <span class="tree-node-header-right">
                 <span class="value-text"

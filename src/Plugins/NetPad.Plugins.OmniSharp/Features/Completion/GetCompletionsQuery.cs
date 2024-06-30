@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.Completion;
 
-public class GetCompletionsQuery : OmniSharpScriptQuery<OmniSharpCompletionRequest, OmniSharpCompletionResponse?>
+public class GetCompletionsQuery(Guid scriptId, OmniSharpCompletionRequest omniSharpRequest)
+    : OmniSharpScriptQuery<OmniSharpCompletionRequest, OmniSharpCompletionResponse?>(scriptId, omniSharpRequest)
 {
-    public GetCompletionsQuery(Guid scriptId, OmniSharpCompletionRequest omniSharpRequest) : base(scriptId, omniSharpRequest)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<GetCompletionsQuery, OmniSharpCompletionResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<GetCompletionsQuery, OmniSharpCompletionResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpCompletionResponse?> Handle(GetCompletionsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpCompletionResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpCompletionResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }

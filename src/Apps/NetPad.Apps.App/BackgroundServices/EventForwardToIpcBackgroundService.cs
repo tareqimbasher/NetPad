@@ -1,30 +1,26 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.Application.Events;
+using NetPad.Apps.UiInterop;
+using NetPad.Configuration.Events;
+using NetPad.Data.Events;
 using NetPad.Events;
 using NetPad.Scripts;
-using NetPad.UiInterop;
+using NetPad.Scripts.Events;
+using NetPad.Sessions.Events;
 
 namespace NetPad.BackgroundServices;
 
 /// <summary>
 /// Forwards specific events to IPC clients.
 /// </summary>
-public class EventForwardToIpcBackgroundService : BackgroundService
+public class EventForwardToIpcBackgroundService(
+    IEventBus eventBus,
+    IIpcService ipcService,
+    ILoggerFactory loggerFactory)
+    : BackgroundService(loggerFactory)
 {
-    private readonly IEventBus _eventBus;
-    private readonly IIpcService _ipcService;
-    private readonly Dictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens;
-
-    public EventForwardToIpcBackgroundService(IEventBus eventBus, IIpcService ipcService, ILoggerFactory loggerFactory)
-        : base(loggerFactory)
-    {
-        _eventBus = eventBus;
-        _ipcService = ipcService;
-        _environmentSubscriptionTokens = new Dictionary<Guid, List<EventSubscriptionToken>>();
-    }
+    private readonly Dictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens = new();
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -52,7 +48,7 @@ public class EventForwardToIpcBackgroundService : BackgroundService
 
     private void ForwardEnvironmentLevelEvents()
     {
-        _eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
+        eventBus.Subscribe<EnvironmentsAddedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
             {
@@ -78,7 +74,7 @@ public class EventForwardToIpcBackgroundService : BackgroundService
             return Task.CompletedTask;
         });
 
-        _eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
+        eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             Unsubscribe(ev.Environments);
             return Task.CompletedTask;
@@ -87,20 +83,20 @@ public class EventForwardToIpcBackgroundService : BackgroundService
 
     private void SubscribeAndForwardToIpc<TEvent>() where TEvent : class, IEvent
     {
-        _eventBus.Subscribe<TEvent>(async ev => { await _ipcService.SendAsync(ev); });
+        eventBus.Subscribe<TEvent>(async ev => { await ipcService.SendAsync(ev); });
     }
 
     private void SubscribeAndForwardToIpc<TEvent>(ScriptEnvironment environment, Func<TEvent, bool>? predicate = null)
         where TEvent : class, IScriptEvent
     {
-        var token = _eventBus.Subscribe<TEvent>(async ev =>
+        var token = eventBus.Subscribe<TEvent>(async ev =>
         {
             if (predicate != null && !predicate(ev))
             {
                 return;
             }
 
-            await _ipcService.SendAsync(ev);
+            await ipcService.SendAsync(ev);
         });
 
         AddEnvironmentEventToken(environment, token);
@@ -110,7 +106,7 @@ public class EventForwardToIpcBackgroundService : BackgroundService
     {
         if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
         {
-            tokens = new List<EventSubscriptionToken>();
+            tokens = [];
             _environmentSubscriptionTokens.Add(environment.Script.Id, tokens);
         }
 
@@ -128,7 +124,7 @@ public class EventForwardToIpcBackgroundService : BackgroundService
 
             foreach (var token in tokens)
             {
-                _eventBus.Unsubscribe(token);
+                eventBus.Unsubscribe(token);
             }
 
             _environmentSubscriptionTokens.Remove(environment.Script.Id);

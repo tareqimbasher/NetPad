@@ -1,17 +1,14 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
-using NetPad.Runtimes;
 using NetPad.Scripts;
-using NetPad.UiInterop;
+using NetPad.Scripts.Events;
 using O2Html;
 using Timer = System.Timers.Timer;
 
@@ -31,9 +28,9 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     private readonly Accessor<CancellationTokenSource> _ctsAccessor;
     private readonly ConcurrentQueue<IpcMessage> _sendMessageQueue;
     private readonly Timer _sendMessageQueueTimer;
-    private const int _sendMessageQueueBatchSize = 1000;
-    private const int _processSendMessageQueueEveryMs = 50;
-    private const int _maxUserOutputMessagesPerRun = 10100;
+    private const int SendMessageQueueBatchSize = 1000;
+    private const int ProcessSendMessageQueueEveryMs = 50;
+    private const int MaxUserOutputMessagesPerRun = 10100;
     private int _userOutputMessagesSentThisRun;
     private bool _outputLimitReachedMessageSent;
     private readonly object _outputLimitReachedMessageSendLock = new();
@@ -47,19 +44,19 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         _scriptEnvironment = scriptEnvironment;
         _ipcService = ipcService;
         _logger = logger;
-        _disposables = new List<IDisposable>();
+        _disposables = [];
 
         _ctsAccessor = new Accessor<CancellationTokenSource>(new CancellationTokenSource());
         _sendMessageQueue = new();
 
         _sendMessageQueueTimer = new Timer()
         {
-            Interval = _processSendMessageQueueEveryMs,
+            Interval = ProcessSendMessageQueueEveryMs,
             AutoReset = false,
             Enabled = false
         };
 
-        _sendMessageQueueTimer.Elapsed += async (_, _) => await ProcessSendMessageQueue(_sendMessageQueueBatchSize);
+        _sendMessageQueueTimer.Elapsed += async (_, _) => await ProcessSendMessageQueue(SendMessageQueueBatchSize);
 
         _disposables.Add(eventBus.Subscribe<EnvironmentPropertyChangedEvent>(msg =>
         {
@@ -196,7 +193,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
     private bool HasReachedUserOutputMessageLimitForThisRun()
     {
-        return _userOutputMessagesSentThisRun >= _maxUserOutputMessagesPerRun;
+        return _userOutputMessagesSentThisRun >= MaxUserOutputMessagesPerRun;
     }
 
     private void QueueMessage(ScriptOutput output, bool isCancellable)

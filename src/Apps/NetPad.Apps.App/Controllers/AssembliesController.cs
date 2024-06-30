@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
 using NetPad.Common;
@@ -12,15 +10,8 @@ namespace NetPad.Controllers;
 
 [ApiController]
 [Route("assemblies")]
-public class AssembliesController : ControllerBase
+public class AssembliesController(IPackageProvider packageProvider) : ControllerBase
 {
-    private readonly IPackageProvider _packageProvider;
-
-    public AssembliesController(IPackageProvider packageProvider)
-    {
-        _packageProvider = packageProvider;
-    }
-
     [HttpPatch("namespaces")]
     public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
     {
@@ -36,7 +27,7 @@ public class AssembliesController : ControllerBase
 
         if (reference is PackageReference packageReference)
         {
-            var assets = await _packageProvider.GetCachedPackageAssetsAsync(
+            var assets = await packageProvider.GetCachedPackageAssetsAsync(
                 packageReference.PackageId,
                 packageReference.Version,
                 GlobalConsts.AppDotNetFrameworkVersion);

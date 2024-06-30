@@ -1,29 +1,21 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using NetPad.UiInterop;
+﻿using Microsoft.AspNetCore.Mvc;
+using NetPad.Apps.UiInterop;
 
 namespace NetPad.Controllers;
 
 [ApiController]
 [Route("window")]
-public class WindowController : ControllerBase
+public class WindowController(IUiWindowService uiWindowService) : ControllerBase
 {
-    private readonly IUiWindowService _uiWindowService;
-
-    public WindowController(IUiWindowService uiWindowService)
-    {
-        _uiWindowService = uiWindowService;
-    }
-
     [HttpPatch("open-output-window")]
     public async Task OpenOutputWindow()
     {
-        await _uiWindowService.OpenOutputWindowAsync();
+        await uiWindowService.OpenOutputWindowAsync();
     }
 
     [HttpPatch("open-code-window")]
     public async Task OpenCodeWindow()
     {
-        await _uiWindowService.OpenCodeWindowAsync();
+        await uiWindowService.OpenCodeWindowAsync();
     }
 }

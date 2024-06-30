@@ -1324,7 +1324,7 @@ export interface IScriptsApiClient {
 
     save(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void>;
+    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
 
     stop(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1541,14 +1541,14 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(<any>null);
     }
 
-    run(id: string, dto: RunOptionsDto, signal?: AbortSignal | undefined): Promise<void> {
+    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(dto);
+        const content_ = JSON.stringify(options);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -2249,7 +2249,7 @@ export interface ISettingsApiClient {
 
     get(signal?: AbortSignal | undefined): Promise<Settings>;
 
-    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+    update(update: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     openSettingsWindow(tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -2302,11 +2302,11 @@ export class SettingsApiClient extends ApiClientBase implements ISettingsApiClie
         return Promise.resolve<Settings>(<any>null);
     }
 
-    update(settings: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+    update(update: Settings, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
         let url_ = this.baseUrl + "/settings";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(settings);
+        const content_ = JSON.stringify(update);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -2669,12 +2669,19 @@ export interface IAppDependencyCheckResult {
     isSupportedDotNetEfToolInstalled: boolean;
 }
 
+/** An implementation of semantic versioning (https://semver.org) */
 export class SemanticVersion implements ISemanticVersion {
+    /** The major version number, never negative. */
     major!: number;
+    /** The minor version number, never negative. */
     minor!: number;
+    /** The patch version, -1 if not specified. */
     patch!: number;
+    /** PreReleaseLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     preReleaseLabel?: string | undefined;
+    /** BuildLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     buildLabel?: string | undefined;
+    /** String representation. */
     string!: string;
 
     constructor(data?: ISemanticVersion) {
@@ -2723,12 +2730,19 @@ export class SemanticVersion implements ISemanticVersion {
     }
 }
 
+/** An implementation of semantic versioning (https://semver.org) */
 export interface ISemanticVersion {
+    /** The major version number, never negative. */
     major: number;
+    /** The minor version number, never negative. */
     minor: number;
+    /** The patch version, -1 if not specified. */
     patch: number;
+    /** PreReleaseLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     preReleaseLabel?: string | undefined;
+    /** BuildLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     buildLabel?: string | undefined;
+    /** String representation. */
     string: string;
 }
 
@@ -3188,6 +3202,7 @@ export class SyntaxNodeOrTokenSlim implements ISyntaxNodeOrTokenSlim {
     isToken!: boolean;
     isNode!: boolean;
     kind!: SyntaxKind;
+    type!: string;
     span!: LinePositionSpan;
     isMissing!: boolean;
     valueText?: string | undefined;
@@ -3215,6 +3230,7 @@ export class SyntaxNodeOrTokenSlim implements ISyntaxNodeOrTokenSlim {
             this.isToken = _data["isToken"];
             this.isNode = _data["isNode"];
             this.kind = _data["kind"];
+            this.type = _data["type"];
             this.span = _data["span"] ? LinePositionSpan.fromJS(_data["span"]) : new LinePositionSpan();
             this.isMissing = _data["isMissing"];
             this.valueText = _data["valueText"];
@@ -3248,6 +3264,7 @@ export class SyntaxNodeOrTokenSlim implements ISyntaxNodeOrTokenSlim {
         data["isToken"] = this.isToken;
         data["isNode"] = this.isNode;
         data["kind"] = this.kind;
+        data["type"] = this.type;
         data["span"] = this.span ? this.span.toJSON() : <any>undefined;
         data["isMissing"] = this.isMissing;
         data["valueText"] = this.valueText;
@@ -3281,6 +3298,7 @@ export interface ISyntaxNodeOrTokenSlim {
     isToken: boolean;
     isNode: boolean;
     kind: SyntaxKind;
+    type: string;
     span: LinePositionSpan;
     isMissing: boolean;
     valueText?: string | undefined;
@@ -4234,7 +4252,7 @@ export interface IPackageIdentity {
     version: string;
 }
 
-export type DotNetFrameworkVersion = "DotNet2" | "DotNet3" | "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
+export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
 
 export class ScriptSummary implements IScriptSummary {
     id!: string;
@@ -4344,11 +4362,13 @@ export interface ICreateScriptDto {
     runImmediately: boolean;
 }
 
-export class RunOptionsDto implements IRunOptionsDto {
+/** Options that configure the running of a script. */
+export class RunOptions implements IRunOptions {
+    /** If not null, this code will run instead of script code. Typically used to only run code that user has
+highlighted in the editor. */
     specificCodeToRun?: string | undefined;
-    additionalCode?: SourceCodeDto[] | undefined;
 
-    constructor(data?: IRunOptionsDto) {
+    constructor(data?: IRunOptions) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -4360,17 +4380,12 @@ export class RunOptionsDto implements IRunOptionsDto {
     init(_data?: any) {
         if (_data) {
             this.specificCodeToRun = _data["specificCodeToRun"];
-            if (Array.isArray(_data["additionalCode"])) {
-                this.additionalCode = [] as any;
-                for (let item of _data["additionalCode"])
-                    this.additionalCode!.push(SourceCodeDto.fromJS(item));
-            }
         }
     }
 
-    static fromJS(data: any): RunOptionsDto {
+    static fromJS(data: any): RunOptions {
         data = typeof data === 'object' ? data : {};
-        let result = new RunOptionsDto();
+        let result = new RunOptions();
         result.init(data);
         return result;
     }
@@ -4378,80 +4393,22 @@ export class RunOptionsDto implements IRunOptionsDto {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["specificCodeToRun"] = this.specificCodeToRun;
-        if (Array.isArray(this.additionalCode)) {
-            data["additionalCode"] = [];
-            for (let item of this.additionalCode)
-                data["additionalCode"].push(item.toJSON());
-        }
         return data;
     }
 
-    clone(): RunOptionsDto {
+    clone(): RunOptions {
         const json = this.toJSON();
-        let result = new RunOptionsDto();
+        let result = new RunOptions();
         result.init(json);
         return result;
     }
 }
 
-export interface IRunOptionsDto {
+/** Options that configure the running of a script. */
+export interface IRunOptions {
+    /** If not null, this code will run instead of script code. Typically used to only run code that user has
+highlighted in the editor. */
     specificCodeToRun?: string | undefined;
-    additionalCode?: SourceCodeDto[] | undefined;
-}
-
-export class SourceCodeDto implements ISourceCodeDto {
-    usings?: string[] | undefined;
-    code?: string | undefined;
-
-    constructor(data?: ISourceCodeDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            if (Array.isArray(_data["usings"])) {
-                this.usings = [] as any;
-                for (let item of _data["usings"])
-                    this.usings!.push(item);
-            }
-            this.code = _data["code"];
-        }
-    }
-
-    static fromJS(data: any): SourceCodeDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new SourceCodeDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        if (Array.isArray(this.usings)) {
-            data["usings"] = [];
-            for (let item of this.usings)
-                data["usings"].push(item);
-        }
-        data["code"] = this.code;
-        return data;
-    }
-
-    clone(): SourceCodeDto {
-        const json = this.toJSON();
-        let result = new SourceCodeDto();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ISourceCodeDto {
-    usings?: string[] | undefined;
-    code?: string | undefined;
 }
 
 export type OptimizationLevel = "Debug" | "Release";
@@ -5163,6 +5120,7 @@ export interface IKeyboardShortcutConfiguration {
 
 export type KeyCode = "Unknown" | "Backspace" | "Tab" | "Enter" | "ShiftLeft" | "ShiftRight" | "ControlLeft" | "ControlRight" | "AltLeft" | "AltRight" | "Pause" | "CapsLock" | "Escape" | "Space" | "PageUp" | "PageDown" | "End" | "Home" | "ArrowLeft" | "ArrowUp" | "ArrowRight" | "ArrowDown" | "PrintScreen" | "Insert" | "Delete" | "Digit0" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "Digit5" | "Digit6" | "Digit7" | "Digit8" | "Digit9" | "KeyA" | "KeyB" | "KeyC" | "KeyD" | "KeyE" | "KeyF" | "KeyG" | "KeyH" | "KeyI" | "KeyJ" | "KeyK" | "KeyL" | "KeyM" | "KeyN" | "KeyO" | "KeyP" | "KeyQ" | "KeyR" | "KeyS" | "KeyT" | "KeyU" | "KeyV" | "KeyW" | "KeyX" | "KeyY" | "KeyZ" | "MetaLeft" | "MetaRight" | "ContextMenu" | "Numpad0" | "Numpad1" | "Numpad2" | "Numpad3" | "Numpad4" | "Numpad5" | "Numpad6" | "Numpad7" | "Numpad8" | "Numpad9" | "NumpadMultiply" | "NumpadAdd" | "NumpadSubtract" | "NumpadDecimal" | "NumpadDivide" | "F1" | "F2" | "F3" | "F4" | "F5" | "F6" | "F7" | "F8" | "F9" | "F10" | "F11" | "F12" | "NumLock" | "ScrollLock" | "Semicolon" | "Equal" | "Comma" | "Minus" | "Period" | "Slash" | "Backquote" | "BracketLeft" | "Backslash" | "BracketRight" | "Quote";
 
+/** This should be moved to the OmniSharp plugin */
 export class OmniSharpOptions implements IOmniSharpOptions {
     enabled!: boolean;
     executablePath?: string | undefined;
@@ -5227,6 +5185,7 @@ export class OmniSharpOptions implements IOmniSharpOptions {
     }
 }
 
+/** This should be moved to the OmniSharp plugin */
 export interface IOmniSharpOptions {
     enabled: boolean;
     executablePath?: string | undefined;
@@ -5713,8 +5672,11 @@ export interface IErrorResult {
     details?: string | undefined;
 }
 
+/** A base class for all script output */
 export abstract class ScriptOutput implements IScriptOutput {
+    /** The body of the output. */
     body?: any | undefined;
+    /** The order this output was emitted. A value of 0 indicates no order. */
     order!: number;
 
     constructor(data?: IScriptOutput) {
@@ -5750,11 +5712,15 @@ export abstract class ScriptOutput implements IScriptOutput {
     }
 }
 
+/** A base class for all script output */
 export interface IScriptOutput {
+    /** The body of the output. */
     body?: any | undefined;
+    /** The order this output was emitted. A value of 0 indicates no order. */
     order: number;
 }
 
+/** A base class for script output with an HTML-formatted string as the body. */
 export abstract class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput {
     body?: string | undefined;
 
@@ -5786,10 +5752,12 @@ export abstract class HtmlScriptOutput extends ScriptOutput implements IHtmlScri
     }
 }
 
+/** A base class for script output with an HTML-formatted string as the body. */
 export interface IHtmlScriptOutput extends IScriptOutput {
     body?: string | undefined;
 }
 
+/** Results script output represented as HTML. */
 export class HtmlResultsScriptOutput extends HtmlScriptOutput implements IHtmlResultsScriptOutput {
 
     constructor(data?: IHtmlResultsScriptOutput) {
@@ -5821,9 +5789,11 @@ export class HtmlResultsScriptOutput extends HtmlScriptOutput implements IHtmlRe
     }
 }
 
+/** Results script output represented as HTML. */
 export interface IHtmlResultsScriptOutput extends IHtmlScriptOutput {
 }
 
+/** Error script output represented as HTML. */
 export class HtmlErrorScriptOutput extends HtmlScriptOutput implements IHtmlErrorScriptOutput {
 
     constructor(data?: IHtmlErrorScriptOutput) {
@@ -5855,9 +5825,11 @@ export class HtmlErrorScriptOutput extends HtmlScriptOutput implements IHtmlErro
     }
 }
 
+/** Error script output represented as HTML. */
 export interface IHtmlErrorScriptOutput extends IHtmlScriptOutput {
 }
 
+/** Raw script output represented as HTML. */
 export class HtmlRawScriptOutput extends HtmlScriptOutput implements IHtmlRawScriptOutput {
 
     constructor(data?: IHtmlRawScriptOutput) {
@@ -5889,9 +5861,11 @@ export class HtmlRawScriptOutput extends HtmlScriptOutput implements IHtmlRawScr
     }
 }
 
+/** Raw script output represented as HTML. */
 export interface IHtmlRawScriptOutput extends IHtmlScriptOutput {
 }
 
+/** SQL script output represented as HTML. */
 export class HtmlSqlScriptOutput extends HtmlScriptOutput implements IHtmlSqlScriptOutput {
 
     constructor(data?: IHtmlSqlScriptOutput) {
@@ -5923,6 +5897,7 @@ export class HtmlSqlScriptOutput extends HtmlScriptOutput implements IHtmlSqlScr
     }
 }
 
+/** SQL script output represented as HTML. */
 export interface IHtmlSqlScriptOutput extends IHtmlScriptOutput {
 }
 
@@ -6018,11 +5993,17 @@ export interface IAppStatusMessagePublishedEvent {
     message: AppStatusMessage;
 }
 
+/** Represents a status change in the application. */
 export class AppStatusMessage implements IAppStatusMessage {
+    /** The ID of the script this message relates to. */
     scriptId?: string | undefined;
+    /** The text of this message. */
     text!: string;
+    /** The priority of this message. */
     priority!: AppStatusMessagePriority;
+    /** Whether this status message should be persistant or it should clear out after a timeout. */
     persistant!: boolean;
+    /** The DateTime of when this message was created. */
     createdDate!: Date;
 
     constructor(data?: IAppStatusMessage) {
@@ -6069,11 +6050,17 @@ export class AppStatusMessage implements IAppStatusMessage {
     }
 }
 
+/** Represents a status change in the application. */
 export interface IAppStatusMessage {
+    /** The ID of the script this message relates to. */
     scriptId?: string | undefined;
+    /** The text of this message. */
     text: string;
+    /** The priority of this message. */
     priority: AppStatusMessagePriority;
+    /** Whether this status message should be persistant or it should clear out after a timeout. */
     persistant: boolean;
+    /** The DateTime of when this message was created. */
     createdDate: Date;
 }
 

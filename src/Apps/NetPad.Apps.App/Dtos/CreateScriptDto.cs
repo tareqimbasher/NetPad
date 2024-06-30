@@ -1,5 +1,3 @@
-using System;
-
 namespace NetPad.Dtos;
 
 public class CreateScriptDto

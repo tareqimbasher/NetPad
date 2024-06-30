@@ -1,33 +1,24 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
-using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
+using NetPad.Apps.CQs;
+using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
-using NetPad.CQs;
 using NetPad.Filters;
-using NetPad.UiInterop;
 
 namespace NetPad.Controllers;
 
 [ApiController]
 [Route("app")]
-public class AppController : ControllerBase
+public class AppController(ILogger<AppController> logger) : ControllerBase
 {
-    private readonly ILogger<AppController> _logger;
-
-    public AppController(ILogger<AppController> logger)
-    {
-        _logger = logger;
-    }
-
     [HttpGet("identifier")]
     public AppIdentifier GetIdentifier([FromServices] AppIdentifier appIdentifier)
     {
@@ -67,7 +58,7 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting latest version");
+            logger.LogError(ex, "Error getting latest version");
         }
 
         return null;
@@ -155,7 +146,7 @@ public class AppController : ControllerBase
         {
             var message = log.Message ?? string.Empty;
 
-            foreach (var logOptionalParam in log.OptionalParams ??= Array.Empty<string>())
+            foreach (var logOptionalParam in log.OptionalParams ??= [])
             {
                 message += $" {logOptionalParam}";
             }

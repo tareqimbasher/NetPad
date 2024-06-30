@@ -58,6 +58,7 @@ module.exports = function (env, {analyze}) {
             ],
             fallback: {
                 "fs": false,
+                "process": false,
                 "path": require.resolve("path-browserify"),
             },
             alias: {

@@ -1,0 +1,13 @@
+<Project>
+    <PropertyGroup>
+        <DefaultTargetFramework>net6.0</DefaultTargetFramework>
+        <EarliestSupportedTargetFramework>net6.0</EarliestSupportedTargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Deterministic>True</Deterministic>
+        <Nullable>Enable</Nullable>
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <PackageProjectUrl>https://github.com/tareqimbasher/netpad</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/tareqimbasher/netpad</RepositoryUrl>
+        <Authors>Tareq Imbasher</Authors>
+    </PropertyGroup>
+</Project>

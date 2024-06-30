@@ -2,28 +2,18 @@ using MediatR;
 
 namespace NetPad.Plugins.OmniSharp.Features.CodeActions;
 
-public class GetCodeActionsQuery : OmniSharpScriptQuery<OmniSharpGetCodeActionsRequest, OmniSharpGetCodeActionsResponse?>
+public class GetCodeActionsQuery(Guid scriptId, OmniSharpGetCodeActionsRequest input)
+    : OmniSharpScriptQuery<OmniSharpGetCodeActionsRequest, OmniSharpGetCodeActionsResponse?>(scriptId, input)
 {
-    public GetCodeActionsQuery(Guid scriptId, OmniSharpGetCodeActionsRequest input) : base(scriptId, input)
+    public class Handler(AppOmniSharpServer server) : IRequestHandler<GetCodeActionsQuery, OmniSharpGetCodeActionsResponse?>
     {
-    }
-
-    public class Handler : IRequestHandler<GetCodeActionsQuery, OmniSharpGetCodeActionsResponse?>
-    {
-        private readonly AppOmniSharpServer _server;
-
-        public Handler(AppOmniSharpServer server)
-        {
-            _server = server;
-        }
-
         public async Task<OmniSharpGetCodeActionsResponse?> Handle(GetCodeActionsQuery request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
 
-            omniSharpRequest.FileName = _server.Project.UserProgramFilePath;
+            omniSharpRequest.FileName = server.Project.UserProgramFilePath;
 
-            return await _server.OmniSharpServer.SendAsync<OmniSharpGetCodeActionsResponse>(omniSharpRequest, cancellationToken);
+            return await server.OmniSharpServer.SendAsync<OmniSharpGetCodeActionsResponse>(omniSharpRequest, cancellationToken);
         }
     }
 }
