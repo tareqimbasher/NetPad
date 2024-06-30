@@ -111,6 +111,15 @@ public sealed class HtmlSerializer
 
     public void SerializeWithinTableRow<T>(Element tr, T? obj, Type type, SerializationScope? serializationScope = null)
     {
+        if (obj == null)
+        {
+            tr.AddAndGetElement("td")
+                .AddClass(SerializerOptions.CssClasses.PropertyValue)
+                .AddAndGetNull().AddClass(SerializerOptions.CssClasses.Null);
+
+            return;
+        }
+
         var converter = GetConverter(type);
         if (converter == null)
             throw new HtmlSerializationException($"Could not find a {nameof(HtmlConverter)} for type: {type}");
