@@ -118,7 +118,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             var startInfo = new ProcessStartInfo(
                     _dotNetInfo.LocateDotNetExecutableOrThrow(),
-                    $"{scriptAssemblyFilePath.Path} -- {string.Join(' ', args)}")
+                    $"\"{scriptAssemblyFilePath.Path}\" -- {string.Join(' ', args)}")
                 .CopyCurrentEnvironmentVariables();
 
             if (_options.RedirectIo)
