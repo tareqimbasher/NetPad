@@ -33,7 +33,7 @@ namespace OmniSharp
                 throw new ArgumentNullException(nameof(executablePath));
 
             var args = "-s ";
-            args += (projectPath ?? throw new ArgumentNullException(nameof(projectPath))).Trim();
+            args += $"\"{(projectPath ?? throw new ArgumentNullException(nameof(projectPath))).Trim()}\"";
 
             if (!string.IsNullOrWhiteSpace(additionalArgs))
                 args += " " + additionalArgs;
