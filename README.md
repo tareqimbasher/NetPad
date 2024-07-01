@@ -61,16 +61,17 @@ All Pull Requests, feedback and contributions are welcome!
 Also a special thanks to the NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">sponsors</a>. Sponsorships
 help pay for builds and helps me maintain this project.
 
-<a href="https://github.com/hamedwiz"><img src="https://github.com/hamedwiz.png" width="50px" alt="hamedwiz" /></a>&nbsp;&nbsp;
-<a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>&nbsp;&nbsp;
 <a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>&nbsp;&nbsp;
+<a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>&nbsp;&nbsp;
 <a href="https://github.com/jdonohoo"><img src="https://github.com/jdonohoo.png" width="50px" alt="jdonohoo" /></a>&nbsp;&nbsp;
 <a href="https://github.com/ChristopherHaws"><img src="https://github.com/ChristopherHaws.png" width="50px" alt="ChristopherHaws" /></a>&nbsp;&nbsp;
+<a href="https://github.com/smashedtoatoms"><img src="https://github.com/smashedtoatoms.png" width="50px" alt="smashedtoatoms" /></a>&nbsp;&nbsp;
+<a href="https://github.com/pelsedyr"><img src="https://github.com/pelsedyr.png" width="50px" alt="pelsedyr" /></a>&nbsp;&nbsp;
 
 If you like NetPad, please consider [sponsoring](https://github.com/sponsors/tareqimbasher) it with a cup of coffee ($5)
 a month, every bit helps me maintain this project and deliver more features. Thank you :heart:
 
-Join our new [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
+Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
 
 ## Wiki
 
@@ -95,6 +96,7 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
 * Run SQL queries
 * Add NuGet packages
 * Reference assemblies from disk
+* Syntax Tree Visualizer
 * User-defined results styling
 * Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
     * Code Completion (Intellisense)
@@ -119,8 +121,7 @@ See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troublesh
 * Hyperlink driven Lazy-loading of results, and a DataGrid view
 * Benchmark your code
 * Referencing other scripts
-* View your code's Syntax Tree
-* View your code as IL
+* IL Visualizer
 * Export a script as a "ready to run" .NET app
 * Export a script as a C# project
 * Ability to run a script from the command-line
