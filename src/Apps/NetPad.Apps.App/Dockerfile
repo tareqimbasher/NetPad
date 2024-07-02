@@ -30,6 +30,7 @@ COPY ["Apps/NetPad.Apps.Common/NetPad.Apps.Common.csproj", "Apps/NetPad.Apps.Com
 COPY ["Apps/NetPad.Apps.Shells.Web/NetPad.Apps.Shells.Web.csproj", "Apps/NetPad.Apps.Shells.Web/"]
 COPY ["Plugins/NetPad.Plugins.OmniSharp/NetPad.Plugins.OmniSharp.csproj", "Plugins/NetPad.Plugins.OmniSharp/"]
 COPY ["External/OmniSharp.NET/OmniSharp.NET.csproj", "External/OmniSharp.NET/"]
+COPY ["Directory.Build.props", "."]
 RUN dotnet restore "Apps/NetPad.Apps.App/NetPad.Apps.App.csproj"
 COPY . .
 WORKDIR "/src/Apps/NetPad.Apps.App"
