@@ -1,5 +1,5 @@
 import {KeyCode} from "@common";
-import {CreateScriptDto, IScriptService, ISettingsService} from "@domain";
+import {CreateScriptDto, IScriptService, ISettingsService} from "@application";
 import {Shortcut} from "./shortcut";
 import {ITextEditorService} from "../editor/text-editor-service";
 

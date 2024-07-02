@@ -1,15 +1,16 @@
 import * as appTasks from "./main.tasks";
 import {IContainer, ILogger} from "aurelia";
-import {IEventBus, IIpcGateway} from "@domain";
-import {IAppLifecycleEvent} from "@application/windows/app-windows";
 import {
     AppActivatedEvent,
     AppActivatingEvent,
     AppCreatedEvent,
     AppCreatingEvent,
     AppDeactivatedEvent,
-    AppDeactivatingEvent
+    AppDeactivatingEvent,
+    IEventBus,
+    IIpcGateway
 } from "@application";
+import {IAppLifecycleEvent} from "@application/windows/app-windows";
 
 /**
  * Actions that run at specific points in the app's lifecycle

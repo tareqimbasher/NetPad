@@ -1,4 +1,4 @@
-import {IEventBus, ISession} from "@domain";
+import {IEventBus, ISession} from "@application";
 import {IContainer} from "aurelia";
 
 export class ShortcutActionExecutionContext {

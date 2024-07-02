@@ -5,10 +5,10 @@ import {
     IAssemblyService,
     IPackageService,
     IScriptService,
+    IWindowBootstrapper,
     PackageService,
     ScriptService
-} from "@domain";
-import {IWindowBootstrapper} from "@application";
+} from "@application";
 
 export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;

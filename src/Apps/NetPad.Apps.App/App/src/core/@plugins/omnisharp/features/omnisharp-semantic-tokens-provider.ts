@@ -1,6 +1,11 @@
 import {CancellationToken, editor, Emitter, IEvent, languages, Range} from "monaco-editor";
-import {IEventBus, ScriptConfigPropertyChangedEvent} from "@domain";
-import {MonacoEditorUtil, IDocumentRangeSemanticTokensProvider, IDocumentSemanticTokensProvider} from "@application";
+import {
+    IDocumentRangeSemanticTokensProvider,
+    IDocumentSemanticTokensProvider,
+    IEventBus,
+    MonacoEditorUtil,
+    ScriptConfigPropertyChangedEvent
+} from "@application";
 import * as api from "../api";
 import {Converter} from "../utils";
 import {SemanticTokens} from "../types";

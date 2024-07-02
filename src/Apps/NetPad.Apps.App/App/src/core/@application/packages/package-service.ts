@@ -1,4 +1,4 @@
-import {IPackagesApiClient, PackagesApiClient} from "@domain";
+import {IPackagesApiClient, PackagesApiClient} from "@application";
 import {DI} from "aurelia";
 
 export interface IPackageService extends IPackagesApiClient {}

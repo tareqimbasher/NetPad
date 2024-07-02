@@ -1,4 +1,4 @@
-﻿import {IPackageService} from "@domain";
+﻿import {IPackageService} from "@application";
 import {bindable} from "aurelia";
 import {PackageExtendedMetadataLoader} from "../package-extended-metadata-loader";
 import {IPackageWithExtendedMetadata} from "../ipackage-with-extended-metadata";

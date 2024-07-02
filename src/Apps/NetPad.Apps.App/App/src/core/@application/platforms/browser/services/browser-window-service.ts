@@ -1,4 +1,4 @@
-import {IWindowService, WindowApiClient, WindowState} from "@domain";
+import {IWindowService, WindowApiClient, WindowState} from "@application";
 import {PlatformNotSupportedError} from "@common";
 
 export class BrowserWindowService extends WindowApiClient implements IWindowService {

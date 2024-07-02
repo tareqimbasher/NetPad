@@ -1,5 +1,13 @@
-import {IAppService, ISession, ISettingsService, IWindowService, Settings, WindowState} from "@domain";
-import {IShortcutManager, ViewModelBase} from "@application";
+import {
+    IAppService,
+    ISession,
+    ISettingsService,
+    IShortcutManager,
+    IWindowService,
+    Settings,
+    ViewModelBase,
+    WindowState
+} from "@application";
 import {Util} from "@common";
 import {ILogger} from "aurelia";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";

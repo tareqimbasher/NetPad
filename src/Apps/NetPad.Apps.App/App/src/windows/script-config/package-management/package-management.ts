@@ -1,9 +1,15 @@
 import Split from "split.js";
-import {CachedPackage, IAppService, IPackageService, PackageMetadata, PackageReference} from "@domain";
+import {
+    CachedPackage,
+    IAppService,
+    IPackageService,
+    PackageMetadata,
+    PackageReference,
+    ViewModelBase
+} from "@application";
 import {ConfigStore} from "../config-store";
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {ViewModelBase} from "@application";
 import {PackageExtendedMetadataLoader} from "./package-extended-metadata-loader";
 import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
 

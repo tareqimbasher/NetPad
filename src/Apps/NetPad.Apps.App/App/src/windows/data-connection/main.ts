@@ -1,7 +1,7 @@
 import {Aurelia, Registration} from "aurelia";
 import {Window} from "./window";
 import {IWindowBootstrapper} from "@application";
-import {DataConnectionService, IDataConnectionService} from "@domain";
+import {DataConnectionService, IDataConnectionService} from "@application";
 
 export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;

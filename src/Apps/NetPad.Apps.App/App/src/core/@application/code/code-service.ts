@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {ICodeApiClient, CodeApiClient} from "@domain";
+import {CodeApiClient, ICodeApiClient} from "@application";
 
 export interface ICodeService extends ICodeApiClient {
 }

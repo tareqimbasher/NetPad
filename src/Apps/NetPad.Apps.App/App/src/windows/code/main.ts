@@ -1,4 +1,6 @@
 import {
+    CodeService,
+    ICodeService,
     IPaneManager,
     IShortcutManager,
     IWindowBootstrapper,
@@ -9,7 +11,6 @@ import {
 import {Window} from "./window";
 import {Aurelia, Registration} from "aurelia";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
-import {CodeService, ICodeService} from "@domain";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 
 export class Bootstrapper implements IWindowBootstrapper {

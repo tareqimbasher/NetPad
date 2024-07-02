@@ -1,7 +1,7 @@
 ﻿import {IContainer, ILogger} from "aurelia";
 import {ViewableObject, ViewableObjectType} from "./viewable-object";
 import {Viewer} from "./viewer";
-import {IEventBus, IScriptService} from "@domain";
+import {IEventBus, IScriptService} from "@application";
 import {Util} from "@common";
 import {Workbench} from "../../workbench";
 

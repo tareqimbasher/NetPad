@@ -1,6 +1,6 @@
 import {observable} from "@aurelia/runtime";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
-import {DatabaseConnection, IDataConnectionService} from "@domain";
+import {DatabaseConnection, IDataConnectionService} from "@application";
 
 export interface IDatabaseComponentOptions {
     allowSelectDatabaseFile: boolean;

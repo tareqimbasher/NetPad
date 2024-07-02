@@ -1,6 +1,6 @@
 import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {Settings} from "@domain";
+import {Settings} from "@application";
 import {IMainMenuService} from "@application/main-menu/main-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 

@@ -1,27 +1,25 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
-    CodeService,
-    DataConnectionService,
-    IAppService,
-    ICodeService,
-    IDataConnectionService,
-    IScriptService,
-    ScriptService,
-    Settings,
-} from "@domain";
-import {
     BuiltinActionProvider,
     BuiltinCSharpCompletionProvider,
     BuiltinSqlCompletionProvider,
+    CodeService,
     DataConnectionName,
+    DataConnectionService,
     IActionProvider,
+    IAppService,
     IBackgroundService,
+    ICodeService,
     ICompletionItemProvider,
+    IDataConnectionService,
     IPaneManager,
+    IScriptService,
     IShortcutManager,
     IWindowBootstrapper,
     PaneHost,
     PaneManager,
+    ScriptService,
+    Settings,
     ShortcutManager,
 } from "@application";
 import {Window} from "./window";

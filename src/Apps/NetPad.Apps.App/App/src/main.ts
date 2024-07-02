@@ -7,36 +7,34 @@ import "@common/globals";
 import {AppMutationObserver} from "@common";
 import {
     AppService,
+    ConsoleLogSink,
+    ContextMenu,
+    DateTimeValueConverter,
     Env,
+    EventBus,
+    ExternalLinkCustomAttribute,
+    FindTextBox,
     IAppService,
+    IBackgroundService,
     IEventBus,
     IIpcGateway,
     ISession,
     ISettingsService,
-    Session,
-    Settings,
-    SettingsService,
-} from "@domain";
-import {
-    ConsoleLogSink,
-    ContextMenu,
-    DateTimeValueConverter,
-    EventBus,
-    ExternalLinkCustomAttribute,
-    FindTextBox,
-    IBackgroundService,
     LangLogoValueConverter,
     LogConfig,
     PlatformsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
+    Session,
+    Settings,
+    SettingsService,
     SignalRIpcGateway,
     SortValueConverter,
     TakeValueConverter,
     TextToHtmlValueConverter,
     TooltipCustomAttribute,
     TruncateValueConverter,
-    YesNoValueConverter
+    YesNoValueConverter,
 } from "@application";
 import * as appTasks from "./main.tasks";
 import {AppLifeCycle} from "./main.app-lifecycle";

@@ -1,6 +1,6 @@
 import {ipcRenderer, IpcRendererEvent} from "electron";
 import {ILogger} from "aurelia";
-import {ChannelInfo, IpcMessageBatch, IIpcGateway} from "@domain";
+import {ChannelInfo, IIpcGateway, IpcMessageBatch} from "@application";
 import {IDisposable, SubscriptionToken} from "@common";
 
 /**

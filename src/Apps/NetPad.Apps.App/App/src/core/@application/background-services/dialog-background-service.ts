@@ -9,7 +9,7 @@ import {
     IIpcGateway,
     PromptUserCommand,
     YesNoCancel
-} from "@domain";
+} from "@application";
 import {IBackgroundService} from "./ibackground-service";
 import {
     AppDependenciesCheckDialog

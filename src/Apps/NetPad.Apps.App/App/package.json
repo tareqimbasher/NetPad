@@ -32,8 +32,6 @@
         "moduleNameMapper": {
             "@common/(.*)": "<rootDir>/src/core/@common/$1",
             "@common": "<rootDir>/src/core/@common",
-            "@domain/(.*)": "<rootDir>/src/core/@domain/$1",
-            "@domain": "<rootDir>/src/core/@domain",
             "@application/(.*)": "<rootDir>/src/core/@application/$1",
             "@application": "<rootDir>/src/core/@application"
         },

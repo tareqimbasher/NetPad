@@ -11,7 +11,7 @@ import {
     ScriptEnvironment,
     ScriptPropertyChangedEvent,
     SessionApiClient
-} from "@domain";
+} from "@application";
 
 export interface ISession extends ISessionApiClient {
     environments: ReadonlyArray<ScriptEnvironment>;

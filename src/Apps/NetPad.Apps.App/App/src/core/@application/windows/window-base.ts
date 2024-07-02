@@ -1,6 +1,5 @@
-import {ILogger, resolve, IObserverLocator} from "aurelia";
-import {Settings} from "@domain";
-import {ViewModelBase} from "@application";
+import {ILogger, IObserverLocator, resolve} from "aurelia";
+import {Settings, ViewModelBase} from "@application";
 
 export abstract class WindowBase extends ViewModelBase {
     protected readonly settings: Readonly<Settings> = resolve(Settings);

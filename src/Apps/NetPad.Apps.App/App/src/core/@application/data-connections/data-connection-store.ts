@@ -4,7 +4,7 @@ import {
     DataConnectionSavedEvent,
     IDataConnectionService,
     IEventBus
-} from "@domain";
+} from "@application";
 import {ILogger} from "aurelia";
 
 export class DataConnectionStore {

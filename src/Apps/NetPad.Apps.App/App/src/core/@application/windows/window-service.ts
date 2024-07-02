@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {IWindowApiClient} from "@domain";
+import {IWindowApiClient} from "@application";
 import {WindowState} from "./window-state";
 
 export interface IWindowService extends IWindowApiClient {

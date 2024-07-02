@@ -1,7 +1,16 @@
 import {IContainer} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {CreateScriptDto, DataConnectionStore, IScriptService, ISession} from "@domain";
-import {MonacoEnvironmentManager, IPaneManager, IShortcutManager, PaneHost, PaneHostOrientation,} from "@application";
+import {
+    CreateScriptDto,
+    DataConnectionStore,
+    IPaneManager,
+    IScriptService,
+    ISession,
+    IShortcutManager,
+    MonacoEnvironmentManager,
+    PaneHost,
+    PaneHostOrientation
+} from "@application";
 import {ClipboardPane, CodePane, Explorer, NamespacesPane, OutputPane, SplitViewController} from "./panes";
 import {Workbench} from "./workbench";
 import {WindowBase} from "@application/windows/window-base";

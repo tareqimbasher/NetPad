@@ -1,7 +1,6 @@
 import {CancellationToken, editor, Emitter, IEvent, languages} from "monaco-editor";
-import {MonacoEditorUtil, IFoldingRangeProvider} from "@application";
+import {IEventBus, IFoldingRangeProvider, MonacoEditorUtil} from "@application";
 import * as api from "../api";
-import {IEventBus} from "@domain";
 import {FeatureProvider} from "./feature-provider";
 
 export class OmnisharpFoldingProvider extends FeatureProvider implements IFoldingRangeProvider {

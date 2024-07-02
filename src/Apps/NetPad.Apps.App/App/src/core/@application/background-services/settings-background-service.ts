@@ -1,5 +1,5 @@
 import {IDisposable} from "@common";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
 import {IBackgroundService} from "./ibackground-service";
 
 /**

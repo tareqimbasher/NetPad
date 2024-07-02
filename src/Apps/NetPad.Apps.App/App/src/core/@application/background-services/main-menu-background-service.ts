@@ -1,6 +1,5 @@
 import {IDisposable} from "@common";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
-import {ClickMenuItemEvent, IBackgroundService} from "@application";
+import {ClickMenuItemEvent, IBackgroundService, IEventBus} from "@application";
 import {IMainMenuService} from "@application/main-menu/main-menu-service";
 
 export class MainMenuBackgroundService implements IBackgroundService {

@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {AssembliesApiClient, IAssembliesApiClient} from "@domain";
+import {AssembliesApiClient, IAssembliesApiClient} from "@application";
 
 export interface IAssemblyService extends IAssembliesApiClient {}
 

@@ -1,19 +1,23 @@
 ﻿import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {FindTextBox, IShortcutManager, KeyCombo, Pane, ShortcutIds} from "@application";
 import {
+    FindTextBox,
     HtmlErrorScriptOutput,
     HtmlRawScriptOutput,
     HtmlResultsScriptOutput,
     HtmlSqlScriptOutput,
     IEventBus,
     ISession,
+    IShortcutManager,
     IWindowService,
+    KeyCombo,
+    Pane,
     PromptUserForInputCommand,
     ScriptEnvironment,
     ScriptOutputEmittedEvent,
-    Settings
-} from "@domain";
+    Settings,
+    ShortcutIds
+} from "@application";
 import {AppWindows} from "@application/windows/app-windows";
 import {OutputModel} from "./output-model";
 import {DisposableCollection, KeyCode} from "@common";

@@ -1,8 +1,7 @@
 import {DI} from "aurelia";
 import {IMenuItem} from "./imenu-item";
 import {System} from "@common";
-import {ISettingsService, IWindowService} from "@domain";
-import {IPaneManager, IShortcutManager, ShortcutIds} from "@application";
+import {IPaneManager, ISettingsService, IShortcutManager, IWindowService, ShortcutIds} from "@application";
 import {ITextEditorService} from "@application/editor/text-editor-service";
 import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";

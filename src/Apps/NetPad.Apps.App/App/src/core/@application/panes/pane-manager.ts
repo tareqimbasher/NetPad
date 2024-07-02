@@ -1,6 +1,12 @@
 import {Constructable, DI, IContainer} from "aurelia";
-import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation, TogglePaneEvent} from "@application";
-import {IEventBus} from "@domain";
+import {
+    IEventBus,
+    IPaneHostViewStateController,
+    Pane,
+    PaneHost,
+    PaneHostOrientation,
+    TogglePaneEvent
+} from "@application";
 
 export interface IPaneManager {
     createPaneHost(orientation: PaneHostOrientation, viewStateController?: IPaneHostViewStateController): PaneHost;

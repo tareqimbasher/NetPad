@@ -1,5 +1,5 @@
 import {ipcRenderer} from "electron";
-import {IWindowService, WindowApiClient, WindowState} from "@domain";
+import {IWindowService, WindowApiClient, WindowState} from "@application";
 import {ElectronIpcEventNames} from "../electron-ipc-event-names";
 
 export class ElectronWindowService extends WindowApiClient implements IWindowService {

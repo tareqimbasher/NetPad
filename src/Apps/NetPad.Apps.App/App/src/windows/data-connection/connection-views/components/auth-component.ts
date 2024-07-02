@@ -1,5 +1,5 @@
 import {watch} from "@aurelia/runtime-html";
-import {DatabaseConnection, IDataConnectionService} from "@domain";
+import {DatabaseConnection, IDataConnectionService} from "@application";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
 
 export class AuthComponent implements IDataConnectionViewComponent {

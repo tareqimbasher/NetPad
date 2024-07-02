@@ -1,5 +1,5 @@
 ﻿import * as monaco from "monaco-editor";
-import {Settings} from "@domain";
+import {Settings} from "@application";
 import {MonacoThemeInfo} from "./monaco-theme-info";
 
 export class MonacoThemeManager {

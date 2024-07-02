@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {AppApiClient, AppDependencyCheckResult, IAppApiClient} from "@domain";
+import {AppApiClient, AppDependencyCheckResult, IAppApiClient} from "@application";
 import {Util} from "@common/utils/util";
 import {Version} from "@common/data/version";
 

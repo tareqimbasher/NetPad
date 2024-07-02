@@ -7,8 +7,9 @@ import {
     IScriptService,
     ISession,
     RunOptions,
+    RunScriptEvent,
     ScriptEnvironment
-} from "@domain";
+} from "@application";
 import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
@@ -16,7 +17,6 @@ import {
     IViewableAppScriptDocumentCommands,
     ViewableAppScriptDocument
 } from "./viewers/text-document-viewer/viewable-text-document";
-import {RunScriptEvent} from "@application";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 

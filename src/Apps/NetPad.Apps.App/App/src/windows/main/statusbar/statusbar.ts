@@ -4,11 +4,11 @@ import {
     IEventBus,
     ISession,
     ISettingsService,
+    IShortcutManager,
     ScriptEnvironment,
     Settings,
-} from "@domain";
+} from "@application";
 import {PLATFORM} from "aurelia";
-import {IShortcutManager} from "@application";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";

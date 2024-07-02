@@ -1,4 +1,4 @@
-import {PackageMetadata} from "@domain";
+import {PackageMetadata} from "@application";
 
 export interface IPackageWithExtendedMetadata extends PackageMetadata {
     isExtMetaLoaded: boolean;

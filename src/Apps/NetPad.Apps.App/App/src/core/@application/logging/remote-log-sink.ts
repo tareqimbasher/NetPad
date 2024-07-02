@@ -1,5 +1,5 @@
 ﻿import {DefaultLogEvent, ILogEvent, ISink} from "@aurelia/kernel";
-import {Env, IAppService, LogLevel, RemoteLogMessage} from "@domain";
+import {Env, IAppService, LogLevel, RemoteLogMessage} from "@application";
 import {BufferedQueue} from "@common";
 import {LogConfig} from "./log-config";
 

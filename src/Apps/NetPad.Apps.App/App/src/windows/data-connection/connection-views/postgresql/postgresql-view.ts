@@ -1,4 +1,4 @@
-import {DataConnection, IDataConnectionService, PostgreSqlDatabaseConnection} from "@domain";
+import {DataConnection, IDataConnectionService, PostgreSqlDatabaseConnection} from "@application";
 import {HostAndPortComponent} from "../components/host-and-port-component";
 import {AuthComponent} from "../components/auth-component";
 import {DatabaseComponent} from "../components/database-component";

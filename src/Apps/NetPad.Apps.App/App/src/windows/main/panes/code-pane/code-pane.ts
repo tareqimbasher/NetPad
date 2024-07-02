@@ -1,6 +1,5 @@
 import {watch} from "@aurelia/runtime-html";
-import {Pane} from "@application";
-import {IWindowService} from "@domain";
+import {IWindowService, Pane} from "@application";
 import {AppWindows} from "@application/windows/app-windows";
 
 export class CodePane extends Pane {

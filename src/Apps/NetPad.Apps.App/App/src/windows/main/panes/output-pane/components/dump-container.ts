@@ -1,5 +1,5 @@
-import {ScriptOutput, Settings} from "@domain";
-import {DisposableCollection, IDisposable, KeyCode, SubscriptionToken, Util} from "@common";
+import {ScriptOutput, Settings} from "@application";
+import {DisposableCollection, IDisposable, KeyCode, Util} from "@common";
 import {ResultControls} from "./result-controls";
 import {NavigationControls} from "./navigation-controls";
 

@@ -1,5 +1,5 @@
 import {IAurelia, ILogger, Registration} from "aurelia";
-import {IWindowService} from "@domain";
+import {IWindowService} from "@application";
 import {IPlatform} from "../iplatform";
 import {BrowserDialogBackgroundService} from "./services/browser-dialog-background-service";
 import {BrowserWindowBackgroundService} from "./services/browser-window-background-service";

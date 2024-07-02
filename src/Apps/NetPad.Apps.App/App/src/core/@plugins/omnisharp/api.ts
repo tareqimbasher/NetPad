@@ -8,7 +8,7 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 import {IHttpClient} from "@aurelia/fetch-client";
-import {ApiClientBase} from "@domain/api-client-base";
+import {ApiClientBase} from "@application/api-client-base";
 
 
 export interface IOmniSharpApiClient {
@@ -93,7 +93,7 @@ export class OmniSharpApiClient extends ApiClientBase implements IOmniSharpApiCl
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {

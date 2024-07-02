@@ -1,6 +1,6 @@
 import {Version} from "@common/data/version";
 import {Dialog} from "../dialog";
-import {IAppService} from "@domain";
+import {IAppService} from "@application";
 import {System} from "@common";
 
 export interface IAppUpdateDialogModel {

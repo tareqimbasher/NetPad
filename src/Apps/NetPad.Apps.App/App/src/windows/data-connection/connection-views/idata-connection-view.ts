@@ -1,4 +1,4 @@
-import {DataConnection} from "@domain";
+import {DataConnection} from "@application";
 
 export interface IDataConnectionView {
     readonly connection: DataConnection;

@@ -1,5 +1,5 @@
 import {bindable} from "aurelia";
-import {Env} from "@domain";
+import {Env} from "@application";
 import {System} from "@common";
 
 /**

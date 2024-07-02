@@ -1,5 +1,5 @@
 import {bindable} from "aurelia";
-import {Settings} from "@domain";
+import {Settings} from "@application";
 
 export class GeneralSettings {
     @bindable public settings: Settings;

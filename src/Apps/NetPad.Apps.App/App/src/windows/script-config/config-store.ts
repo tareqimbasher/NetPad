@@ -1,4 +1,4 @@
-import {Reference, Script} from "@domain";
+import {Reference, Script} from "@application";
 
 interface ITab {
     route: string;

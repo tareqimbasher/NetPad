@@ -1,7 +1,6 @@
 import {IContainer} from "aurelia";
-import {ISettingsService, Settings} from "@domain";
+import {ISettingsService, MonacoEnvironmentManager, Settings} from "@application";
 import {WindowBase} from "@application/windows/window-base";
-import {MonacoEnvironmentManager} from "@application";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;

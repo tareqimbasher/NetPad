@@ -1,5 +1,5 @@
 import {watch} from "@aurelia/runtime-html";
-import {ChannelInfo, IIpcGateway, ScriptStatus} from "@domain";
+import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
 import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
 import {KeyCode, System, Util} from "@common";
 import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";

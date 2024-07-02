@@ -1,5 +1,5 @@
 import {KeyCode} from "@common";
-import {IKeyboardShortcutConfiguration} from "@domain";
+import {IKeyboardShortcutConfiguration} from "@application";
 
 /**
  * A combination of keyboard keys.

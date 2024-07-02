@@ -1,5 +1,5 @@
 import {DI} from "aurelia";
-import {DataConnectionsApiClient, IDataConnectionsApiClient} from "@domain";
+import {DataConnectionsApiClient, IDataConnectionsApiClient} from "@application";
 
 export interface IDataConnectionService extends IDataConnectionsApiClient {}
 

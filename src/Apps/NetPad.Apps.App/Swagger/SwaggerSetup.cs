@@ -21,7 +21,7 @@ internal static class SwaggerSetup
             config.OperationProcessors.Insert(0, new ExcludeControllersInAssemblies(pluginRegistrations.Select(p => p.Assembly).ToArray()));
 
             config.PostProcess = GenerateTypeScriptClientCode(
-                Path.Combine(webHostEnvironment.ContentRootPath, "App", "src", "core", "@domain", "api.ts"));
+                Path.Combine(webHostEnvironment.ContentRootPath, "App", "src", "core", "@application", "api.ts"));
         });
 
         foreach (var pluginRegistration in pluginRegistrations)
