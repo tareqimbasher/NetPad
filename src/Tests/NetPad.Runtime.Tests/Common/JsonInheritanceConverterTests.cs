@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NetPad.Common;
+using NJsonSchema.Converters;
 using Xunit;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
