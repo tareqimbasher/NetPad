@@ -32,11 +32,10 @@ namespace OmniSharp
             if (executablePath == null)
                 throw new ArgumentNullException(nameof(executablePath));
 
-            var args = "-s ";
-            args += $"\"{(projectPath ?? throw new ArgumentNullException(nameof(projectPath))).Trim()}\"";
+            var projectArgs = "-s ";
+            projectArgs += (projectPath ?? throw new ArgumentNullException(nameof(projectPath))).Trim();
 
-            if (!string.IsNullOrWhiteSpace(additionalArgs))
-                args += " " + additionalArgs;
+            var args = $"{additionalArgs} {projectArgs}";
 
             var config = new OmniSharpStdioServerConfiguration(executablePath, args.Trim(), dotNetSdkRootDirectoryPath);
 
