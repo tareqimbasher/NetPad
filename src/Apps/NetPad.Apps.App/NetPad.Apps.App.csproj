@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿    <Project Sdk="Microsoft.NET.Sdk.Web">
     <PropertyGroup>
         <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
         <RootNamespace>NetPad</RootNamespace>
@@ -30,6 +30,9 @@
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
         <Content Remove="App\dist\**" />
         <None Remove="App\dist\**" />
+        <Content Include="..\..\.dockerignore">
+          <Link>.dockerignore</Link>
+        </Content>
         <Content Include="electron.manifest.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -55,9 +58,9 @@
     </Target>
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' " />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" Condition="'$(SKIP_SPA_BUILD)' != 'true' "/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" Condition=" '$(SKIP_SPA_BUILD)' != 'true' And  '$(TARGET)' != 'web' " />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(SKIP_SPA_BUILD)' != 'true' And  '$(BuildServerSideRenderer)' == 'true' " />
         <!-- Include the newly-built files in the publish output -->
         <ItemGroup>
             <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
