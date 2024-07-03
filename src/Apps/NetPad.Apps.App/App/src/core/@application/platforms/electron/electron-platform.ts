@@ -2,9 +2,9 @@ import {IAurelia, Registration} from "aurelia";
 import {IBackgroundService, IIpcGateway, IWindowService} from "@application";
 import {IPlatform} from "../iplatform";
 import {ElectronWindowService} from "./services/electron-window-service";
+import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
 import {ElectronEventSync} from "./services/electron-event-sync";
 import {ElectronEventHandlerBackgroundService} from "./services/electron-event-handler-background-service";
-import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
 
 /**
  * Configurations for when the app is running in Electron.

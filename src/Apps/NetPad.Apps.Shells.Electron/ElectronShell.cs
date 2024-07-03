@@ -23,7 +23,6 @@ public class ElectronShell : IShell
         services.AddSingleton<WindowManager>();
         services.AddTransient<IUiWindowService, ElectronWindowService>();
         services.AddTransient<IUiDialogService, ElectronDialogService>();
-        services.AddTransient<IIpcService, ElectronIpcService>();
 
         services.AddHostedService<NotificationBackgroundService>();
     }

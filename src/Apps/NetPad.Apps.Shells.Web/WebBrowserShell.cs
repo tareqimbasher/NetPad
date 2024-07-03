@@ -17,7 +17,6 @@ public class WebBrowserShell : IShell
     {
         services.AddTransient<IUiWindowService, WebWindowService>();
         services.AddTransient<IUiDialogService, WebDialogService>();
-        services.AddTransient<IIpcService, SignalRIpcService>();
     }
 
     public void Initialize(IApplicationBuilder app, IHostEnvironment env)

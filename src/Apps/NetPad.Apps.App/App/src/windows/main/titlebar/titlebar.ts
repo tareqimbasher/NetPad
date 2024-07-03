@@ -49,6 +49,7 @@ export class Titlebar extends ViewModelBase {
         const handler = () => this.updateWindowState();
         window.addEventListener("resize", handler);
         this.addDisposable(() => window.removeEventListener("resize", handler));
+        // TODO when a window is un-maximized (restored), the handler might not execute on the 'resize' event, depending on OS
 
         document.addEventListener("visibilitychange", handler);
         this.addDisposable(() => document.removeEventListener("visibilitychange", handler));
