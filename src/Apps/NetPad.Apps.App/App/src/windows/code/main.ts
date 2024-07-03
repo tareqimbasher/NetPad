@@ -1,5 +1,4 @@
 import {
-    CodeService,
     ICodeService,
     IPaneManager,
     IShortcutManager,
@@ -12,6 +11,7 @@ import {Window} from "./window";
 import {Aurelia, Registration} from "aurelia";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
+import {CodeService} from "@application/code/code-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;

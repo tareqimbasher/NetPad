@@ -1,27 +1,49 @@
 ﻿import {IAurelia, IContainer, ILogger} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {Env, IBackgroundService, IWindowBootstrapperConstructor} from "@application";
+import {IPlatform} from "@application/platforms/iplatform";
 
-export const configureFetchClient = (container: IContainer) => {
-    const client = container.get(IHttpClient);
-    const logger = container.get(ILogger).scopeTo("http-client");
+export const configureAndGetPlatform = async (builder: IAurelia) => {
+    const platformType = Env.isRunningInElectron()
+        ? (await import("@application/platforms/electron/electron-platform")).ElectronPlatform
+        : (await import("@application/platforms/browser/browser-platform")).BrowserPlatform;
 
-    const isAbortError = (error: unknown) => error instanceof Error && error.name?.startsWith("AbortError");
+    const platform = new platformType() as IPlatform;
 
-    client.configure(config =>
-        config
-            .useStandardConfiguration()
-            .withInterceptor({
-                requestError(error: unknown): Request | Response | Promise<Request | Response> {
-                    if (!isAbortError(error)) logger.error("Request Error", error);
-                    throw error;
-                },
-                responseError(error: unknown, request?: Request): Response | Promise<Response> {
-                    if (!isAbortError(error)) logger.error("Response Error", error);
-                    throw error;
-                }
-            })
-    );
+    platform.configure(builder);
+
+    return platform;
+}
+
+export const configureAndGetAppEntryPoint = async (builder: IAurelia) => {
+    const startupOptions = builder.container.get(URLSearchParams);
+
+    // Determine which window we need to bootstrap and use
+    let windowName = startupOptions.get("win");
+    if (!windowName && !Env.isRunningInElectron())
+        windowName = "main";
+
+    let bootstrapperCtor: IWindowBootstrapperConstructor;
+
+    if (windowName === "main")
+        bootstrapperCtor = (await import("./windows/main/main")).Bootstrapper;
+    else if (windowName === "output")
+        bootstrapperCtor = (await import("./windows/output/main")).Bootstrapper;
+    else if (windowName === "code")
+        bootstrapperCtor = (await import("./windows/code/main")).Bootstrapper;
+    else if (windowName === "settings")
+        bootstrapperCtor = (await import("./windows/settings/main")).Bootstrapper;
+    else if (windowName === "script-config")
+        bootstrapperCtor = (await import("./windows/script-config/main")).Bootstrapper;
+    else if (windowName === "data-connection")
+        bootstrapperCtor = (await import("./windows/data-connection/main")).Bootstrapper;
+    else
+        throw new Error(`Unrecognized window: ${windowName}`);
+
+    const bootstrapper = new bootstrapperCtor(builder.container.get(ILogger));
+    bootstrapper.registerServices(builder);
+
+    return bootstrapper.getEntry();
 }
 
 export const startBackgroundServices = async (container: IContainer) => {
@@ -61,35 +83,24 @@ export const stopBackgroundServices = async (container: IContainer) => {
     }
 };
 
-export const configureAndGetAppEntryPoint = (builder: IAurelia) => {
-    const startupOptions = builder.container.get(URLSearchParams);
+export const configureFetchClient = (container: IContainer) => {
+    const client = container.get(IHttpClient);
+    const logger = container.get(ILogger).scopeTo("http-client");
 
-    // Determine which window we need to bootstrap and use
-    let windowName = startupOptions.get("win");
-    if (!windowName && !Env.isRunningInElectron())
-        windowName = "main";
+    const isAbortError = (error: unknown) => error instanceof Error && error.name?.startsWith("AbortError");
 
-    let bootstrapperCtor: IWindowBootstrapperConstructor;
-
-    /* eslint-disable @typescript-eslint/no-var-requires */
-    if (windowName === "main")
-        bootstrapperCtor = require("./windows/main/main").Bootstrapper;
-    else if (windowName === "output")
-        bootstrapperCtor = require("./windows/output/main").Bootstrapper;
-    else if (windowName === "code")
-        bootstrapperCtor = require("./windows/code/main").Bootstrapper;
-    else if (windowName === "settings")
-        bootstrapperCtor = require("./windows/settings/main").Bootstrapper;
-    else if (windowName === "script-config")
-        bootstrapperCtor = require("./windows/script-config/main").Bootstrapper;
-    else if (windowName === "data-connection")
-        bootstrapperCtor = require("./windows/data-connection/main").Bootstrapper;
-    else
-        throw new Error(`Unrecognized window: ${windowName}`);
-    /* eslint-enable @typescript-eslint/no-var-requires */
-
-    const bootstrapper = new bootstrapperCtor(builder.container.get(ILogger));
-    bootstrapper.registerServices(builder);
-
-    return bootstrapper.getEntry();
+    client.configure(config =>
+        config
+            .useStandardConfiguration()
+            .withInterceptor({
+                requestError(error: unknown): Request | Response | Promise<Request | Response> {
+                    if (!isAbortError(error)) logger.error("Request Error", error);
+                    throw error;
+                },
+                responseError(error: unknown, request?: Request): Response | Promise<Response> {
+                    if (!isAbortError(error)) logger.error("Response Error", error);
+                    throw error;
+                }
+            })
+    );
 }

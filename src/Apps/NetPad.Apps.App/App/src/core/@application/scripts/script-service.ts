@@ -1,16 +1,11 @@
-import {DI} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {
     IEventBus,
-    IScriptsApiClient,
-    ScriptCodeUpdatedEvent,
-    ScriptCodeUpdatingEvent,
+    IScriptService,
     ScriptsApiClient
 } from "@application";
-
-export interface IScriptService extends IScriptsApiClient {}
-
-export const IScriptService = DI.createInterface<IScriptService>();
+import {ScriptCodeUpdatingEvent} from "@application/events/script-code-updating-event";
+import {ScriptCodeUpdatedEvent} from "@application/events/script-code-updated-event";
 
 export class ScriptService extends ScriptsApiClient implements IScriptService {
 

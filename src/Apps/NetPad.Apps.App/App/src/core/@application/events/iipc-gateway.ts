@@ -1,6 +1,6 @@
 import {DI} from "aurelia";
 import {IDisposable} from "@common";
-import {ChannelInfo} from "@application";
+import {ChannelInfo} from "./channel-info";
 
 /**
  * Provides an interface to interact with an external process.

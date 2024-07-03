@@ -1,4 +1,4 @@
-import {Pane, PaneAction} from "@application";
+import {Pane} from "@application";
 
 export class ClipboardPane extends Pane {
     public history: Set<string>;

@@ -1,14 +1,9 @@
 import {Aurelia, Registration} from "aurelia";
 import {Window} from "./window";
-import {
-    AssemblyService,
-    IAssemblyService,
-    IPackageService,
-    IScriptService,
-    IWindowBootstrapper,
-    PackageService,
-    ScriptService
-} from "@application";
+import {IAssemblyService, IPackageService, IScriptService, IWindowBootstrapper,} from "@application";
+import {AssemblyService} from "@application/assemblies/assembly-service";
+import {PackageService} from "@application/packages/package-service";
+import {ScriptService} from "@application/scripts/script-service";
 
 export class Bootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;

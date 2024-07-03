@@ -73,7 +73,7 @@ export class OmnisharpDiagnosticsProvider extends FeatureProvider implements IDi
             setMarkers(markers);
         });
 
-        await this.omnisharpService.startDiagnostics(scriptId, new AbortController().signalFromDefaultTimeout());
+        await this.omnisharpService.startDiagnostics(scriptId, MonacoEditorUtil.abortSignalFrom(10000));
     }
 
     private getDisplay(quickFix: api.DiagnosticLocation, severity: MarkerSeverity | "hidden") {

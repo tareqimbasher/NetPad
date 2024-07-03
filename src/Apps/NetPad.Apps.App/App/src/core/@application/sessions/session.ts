@@ -1,4 +1,4 @@
-import {DI, ILogger} from "aurelia";
+import {ILogger} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {
     ActiveEnvironmentChangedEvent,
@@ -6,24 +6,12 @@ import {
     EnvironmentsAddedEvent,
     EnvironmentsRemovedEvent,
     IEventBus,
-    ISessionApiClient,
+    ISession,
     ScriptConfigPropertyChangedEvent,
     ScriptEnvironment,
     ScriptPropertyChangedEvent,
     SessionApiClient
 } from "@application";
-
-export interface ISession extends ISessionApiClient {
-    environments: ReadonlyArray<ScriptEnvironment>;
-
-    get active(): ScriptEnvironment | null | undefined;
-
-    initialize(): Promise<void>;
-
-    getScriptName(scriptId: string): string | undefined;
-}
-
-export const ISession = DI.createInterface<ISession>();
 
 export class Session extends SessionApiClient implements ISession {
     public readonly environments: ScriptEnvironment[] = [];

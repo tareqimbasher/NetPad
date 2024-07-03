@@ -20,7 +20,7 @@ export async function findUsages(
         line: lineNumber,
         column: column,
         applyChangesTogether: false
-    }), new AbortController().signalFrom(token));
+    }), MonacoEditorUtil.abortSignalFrom(10000, token));
 
     if (!response || !response.quickFixes) {
         return null;

@@ -104,7 +104,7 @@ export class OmniSharpCodeActionProvider extends FeatureProvider implements ICod
 
         const versionBeforeRequest = model.getVersionId();
 
-        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, new AbortController().signalFromDefaultTimeout());
+        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, MonacoEditorUtil.abortSignalFrom(10000));
 
         if (!response || !response.changes || versionBeforeRequest !== model.getVersionId()) {
             return;

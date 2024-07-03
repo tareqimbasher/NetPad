@@ -1,10 +1,4 @@
-import {DI} from "aurelia";
-import {CodeApiClient, ICodeApiClient} from "@application";
-
-export interface ICodeService extends ICodeApiClient {
-}
-
-export const ICodeService = DI.createInterface<ICodeService>();
+import {CodeApiClient, ICodeService} from "@application";
 
 export class CodeService extends CodeApiClient implements ICodeService {
 }

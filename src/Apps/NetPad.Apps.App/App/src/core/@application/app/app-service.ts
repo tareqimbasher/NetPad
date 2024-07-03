@@ -1,28 +1,7 @@
-import {DI} from "aurelia";
-import {AppApiClient, AppDependencyCheckResult, IAppApiClient} from "@application";
+import {AppApiClient, AppDependencyCheckResult} from "@application";
 import {Util} from "@common/utils/util";
 import {Version} from "@common/data/version";
-
-export interface IAppService extends IAppApiClient {
-    /**
-     * Returns true if there is a newer version than the version
-     * of the currently running app; otherwise, false.
-     */
-    get appHasUpdate(): boolean;
-
-
-    /**
-     * Checks if there is an update for the app.
-     */
-    checkForUpdates(): Promise<void>;
-
-    /**
-     * Gets the current version and latest available version of the app.
-     */
-    getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null>;
-}
-
-export const IAppService = DI.createInterface<IAppService>();
+import {IAppService} from "@application";
 
 export class AppService extends AppApiClient implements IAppService {
     public get appHasUpdate() {
@@ -59,7 +38,7 @@ export class AppService extends AppApiClient implements IAppService {
         this._appHasUpdate = versions.latest.greaterThan(versions.current);
     }
 
-    public async getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null> {
+    public async getCurrentAndLatestVersions(): Promise<{ current: Version, latest: Version } | null> {
         const appId = await this.getIdentifier();
         const current = new Version(appId.version);
 

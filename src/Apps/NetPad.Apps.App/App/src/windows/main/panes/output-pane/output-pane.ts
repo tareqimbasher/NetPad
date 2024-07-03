@@ -1,7 +1,6 @@
 ﻿import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
-    FindTextBox,
     HtmlErrorScriptOutput,
     HtmlRawScriptOutput,
     HtmlResultsScriptOutput,
@@ -21,6 +20,7 @@ import {
 import {AppWindows} from "@application/windows/app-windows";
 import {OutputModel} from "./output-model";
 import {DisposableCollection, KeyCode} from "@common";
+import {FindTextBox} from "@application/find-text-box/find-text-box";
 
 export class OutputPane extends Pane {
     public outputModels = new Map<string, OutputModel>();

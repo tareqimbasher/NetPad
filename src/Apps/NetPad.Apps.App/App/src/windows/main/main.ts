@@ -1,11 +1,5 @@
 import {AppTask, Aurelia, IContainer, ILogger, Registration} from "aurelia";
 import {
-    BuiltinActionProvider,
-    BuiltinCSharpCompletionProvider,
-    BuiltinSqlCompletionProvider,
-    CodeService,
-    DataConnectionName,
-    DataConnectionService,
     IActionProvider,
     IAppService,
     IBackgroundService,
@@ -18,7 +12,6 @@ import {
     IWindowBootstrapper,
     PaneHost,
     PaneManager,
-    ScriptService,
     Settings,
     ShortcutManager,
 } from "@application";
@@ -37,6 +30,13 @@ import {MainMenuBackgroundService} from "@application/background-services/main-m
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 import {IMainMenuService, MainMenuService} from "@application/main-menu/main-menu-service";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
+import {CodeService} from "@application/code/code-service";
+import {DataConnectionService} from "@application/data-connections/data-connection-service";
+import {ScriptService} from "@application/scripts/script-service";
+import {DataConnectionName} from "@application/data-connections/data-connection-name/data-connection-name";
+import {BuiltinActionProvider} from "@application/editor/providers/builtin-action-provider";
+import {BuiltinCSharpCompletionProvider} from "@application/editor/providers/builtin-csharp-completion-provider";
+import {BuiltinSqlCompletionProvider} from "@application/editor/providers/builtin-sql-completion-provider";
 
 export class Bootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {

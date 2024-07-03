@@ -2,7 +2,9 @@ import {DI} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {IOmniSharpApiClient, OmniSharpApiClient} from "./api";
 import {Semaphore, Util} from "@common";
-import {IEventBus, ScriptCodeUpdatedEvent, ScriptCodeUpdatingEvent} from "@application";
+import {IEventBus} from "@application";
+import {ScriptCodeUpdatingEvent} from "@application/events/script-code-updating-event";
+import {ScriptCodeUpdatedEvent} from "@application/events/script-code-updated-event";
 
 export interface IOmniSharpService extends IOmniSharpApiClient {
 }
