@@ -38,7 +38,7 @@ import {BuiltinActionProvider} from "@application/editor/providers/builtin-actio
 import {BuiltinCSharpCompletionProvider} from "@application/editor/providers/builtin-csharp-completion-provider";
 import {BuiltinSqlCompletionProvider} from "@application/editor/providers/builtin-sql-completion-provider";
 
-export class Bootstrapper implements IWindowBootstrapper {
+export class MainWindowBootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
     }
 

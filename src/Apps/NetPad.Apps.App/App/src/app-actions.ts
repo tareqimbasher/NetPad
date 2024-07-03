@@ -43,29 +43,32 @@ export const configureAndGetPlatform = async (builder: IAurelia) => {
 export const configureAndGetAppEntryPoint = async (builder: IAurelia) => {
     const startupOptions = builder.container.get(URLSearchParams);
 
-    // Determine which window we need to bootstrap and use
+    // Determine which window needs to be bootstrapped using the 'win' query parameter of the current window
     let windowName = startupOptions.get("win");
-    if (!windowName && !Env.isRunningInElectron())
+
+    if (!windowName && !Env.isRunningInElectron()) {
         windowName = "main";
+    }
 
     let bootstrapperCtor: IWindowBootstrapperConstructor;
 
     if (windowName === "main")
-        bootstrapperCtor = (await import("./windows/main/main")).Bootstrapper;
-    else if (windowName === "output")
-        bootstrapperCtor = (await import("./windows/output/main")).Bootstrapper;
-    else if (windowName === "code")
-        bootstrapperCtor = (await import("./windows/code/main")).Bootstrapper;
-    else if (windowName === "settings")
-        bootstrapperCtor = (await import("./windows/settings/main")).Bootstrapper;
+        bootstrapperCtor = (await import("./windows/main/main-window-bootstrapper")).MainWindowBootstrapper;
     else if (windowName === "script-config")
-        bootstrapperCtor = (await import("./windows/script-config/main")).Bootstrapper;
+        bootstrapperCtor = (await import("./windows/script-config/script-config-window-bootstrapper")).ScriptConfigWindowBootstrapper;
     else if (windowName === "data-connection")
-        bootstrapperCtor = (await import("./windows/data-connection/main")).Bootstrapper;
+        bootstrapperCtor = (await import("./windows/data-connection/data-connection-window-bootstrapper")).DataConnectionWindowBootstrapper;
+    else if (windowName === "settings")
+        bootstrapperCtor = (await import("./windows/settings/settings-window-bootstrapper")).SettingsWindowBootstrapper;
+    else if (windowName === "output")
+        bootstrapperCtor = (await import("./windows/output/output-window-bootstrapper")).OutputWindowBootstrapper;
+    else if (windowName === "code")
+        bootstrapperCtor = (await import("./windows/code/code-window-bootstrapper")).CodeWindowBootstrapper;
     else
         throw new Error(`Unrecognized window: ${windowName}`);
 
     const bootstrapper = new bootstrapperCtor(builder.container.get(ILogger));
+
     bootstrapper.registerServices(builder);
 
     return bootstrapper.getEntry();

@@ -5,7 +5,7 @@ import {AssemblyService} from "@application/assemblies/assembly-service";
 import {PackageService} from "@application/packages/package-service";
 import {ScriptService} from "@application/scripts/script-service";
 
-export class Bootstrapper implements IWindowBootstrapper {
+export class ScriptConfigWindowBootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;
 
     public registerServices(app: Aurelia): void {

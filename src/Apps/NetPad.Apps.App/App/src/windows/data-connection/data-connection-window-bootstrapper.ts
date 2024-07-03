@@ -3,7 +3,7 @@ import {Window} from "./window";
 import {IDataConnectionService, IWindowBootstrapper} from "@application";
 import {DataConnectionService} from "@application/data-connections/data-connection-service";
 
-export class Bootstrapper implements IWindowBootstrapper {
+export class DataConnectionWindowBootstrapper implements IWindowBootstrapper {
     public getEntry = () => Window;
 
     public registerServices(app: Aurelia): void {
