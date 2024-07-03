@@ -12,7 +12,7 @@ export class Util {
         });
     }
 
-    public static dateToString(date: Date, format: string): string {
+    public static dateToFormattedString(date: Date, format: string): string {
         if (!date || !format) return "";
 
         return format.replaceAll("yyyy", date.getFullYear().toString())

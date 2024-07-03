@@ -3,7 +3,7 @@ import {Env} from "@application";
 import {System} from "@common";
 
 /**
- * A custom attribute that removes the element it's applied on from the DOM on unsupported platforms.
+ * A custom attribute that removes the element it's applied to from the DOM on unsupported platforms.
  * Usage: <div platforms="Electron"></a> will only keep this element in the DOM when the platform is Electron.
  *
  * The value of the platforms attribute must be a comma delimited string.

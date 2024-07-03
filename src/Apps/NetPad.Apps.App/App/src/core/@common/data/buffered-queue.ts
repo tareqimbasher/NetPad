@@ -1,6 +1,6 @@
 export interface IBufferedQueueOptions<T> {
     /**
-     * Time in milliseconds after which to flush the queue. If not set, the queue is not flushed
+     * Time in milliseconds after which to flush the queue. If not set, the queue is not flushed.
      */
     flushOnInterval?: number;
 
@@ -18,8 +18,7 @@ export interface IBufferedQueueOptions<T> {
 }
 
 /**
- * A data structure that aggregates items in a collection, and then when flushed, removes all the items in the collection
- * and calls a defined function, passing it the removed items.
+ * A collection that gets flushed when a threshold is reached as defined by the options.
  */
 export class BufferedQueue<T> {
     private items: T[];

@@ -1,6 +1,6 @@
 export class ApiClientBase {
     /**
-     * When overriden, intercepts the fetch call.
+     * When overriden, intercepts the fetch call an ApiClient makes.
      * @param url Request url.
      * @param options Request options.
      * @param fetchCall The default fetch call.

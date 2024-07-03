@@ -5,12 +5,12 @@ import {
     AlertUserCommand,
     ChannelInfo,
     ConfirmWithUserCommand,
+    IBackgroundService,
     IEventBus,
     IIpcGateway,
     PromptUserCommand,
     YesNoCancel
 } from "@application";
-import {IBackgroundService} from "./ibackground-service";
 import {
     AppDependenciesCheckDialog
 } from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";

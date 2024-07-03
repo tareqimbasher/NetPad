@@ -5,6 +5,9 @@ using NetPad.Common;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
 
+/// <summary>
+/// Pushes messages to connected clients using Electron's IpcMain.
+/// </summary>
 public class ElectronIpcService(ILogger<ElectronIpcService> logger) : IIpcService
 {
     public async Task SendAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : class
