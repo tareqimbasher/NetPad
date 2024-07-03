@@ -1,8 +1,29 @@
-﻿import {IAurelia, IContainer, ILogger} from "aurelia";
+﻿import {IAurelia, IContainer, ILogger, LogLevel} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
-import {Env, IBackgroundService, IWindowBootstrapperConstructor} from "@application";
+import {
+    Env,
+    IBackgroundService,
+    ILoggerRule,
+    ISettingsService,
+    IWindowBootstrapperConstructor,
+    Settings
+} from "@application";
 import {IPlatform} from "@application/platforms/iplatform";
 
+/**
+ * Loads main app settings.
+ */
+export const loadAppSettings = async (builder: IAurelia) => {
+    const settings = builder.container.get(Settings);
+    const settingsService = builder.container.get(ISettingsService);
+    const latestSettings = await settingsService.get();
+
+    settings.init(latestSettings.toJSON());
+}
+
+/**
+ * Selects and configures the proper platform.
+ */
 export const configureAndGetPlatform = async (builder: IAurelia) => {
     const platformType = Env.isRunningInElectron()
         ? (await import("@application/platforms/electron/electron-platform")).ElectronPlatform
@@ -15,6 +36,10 @@ export const configureAndGetPlatform = async (builder: IAurelia) => {
     return platform;
 }
 
+/**
+ * Selects and configures the correct app entry point. An entry point is a view-model representing the window
+ * that will be the entry point for the Aurelia app.
+ */
 export const configureAndGetAppEntryPoint = async (builder: IAurelia) => {
     const startupOptions = builder.container.get(URLSearchParams);
 
@@ -104,3 +129,47 @@ export const configureFetchClient = (container: IContainer) => {
             })
     );
 }
+
+export const logRules: ILoggerRule[] = [
+    {
+        loggerRegex: new RegExp(/AppLifeCycle/),
+        logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
+    },
+    ...(Env.isDebug ? [
+            // When in dev mode these loggers can get a bit chatty, increase their min level.
+            {
+                loggerRegex: new RegExp(/.\.ComponentLifecycle/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/ShortcutManager/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/ViewerHost/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/ContextMenu/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/SignalRIpcGateway/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/ElectronIpcGateway/),
+                logLevel: LogLevel.warn
+            },
+            {
+                loggerRegex: new RegExp(/ElectronEventSync/),
+                logLevel: LogLevel.warn
+            },
+            {
+                // Aurelia's own debug messages when evaluating HTML case expressions
+                loggerRegex: new RegExp(/^Case-#/),
+                logLevel: LogLevel.warn
+            },
+        ] : []
+    ),
+];

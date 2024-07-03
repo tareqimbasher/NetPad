@@ -1,4 +1,4 @@
-import * as appTasks from "./main.tasks";
+import * as appActions from "./app-actions";
 import {IContainer, ILogger} from "aurelia";
 import {
     AppActivatedEvent,
@@ -41,8 +41,8 @@ export class AppLifeCycle {
     public async activating(): Promise<void> {
         this.logger.debug("App activating...");
 
-        appTasks.configureFetchClient(this.container);
-        await appTasks.startBackgroundServices(this.container);
+        appActions.configureFetchClient(this.container);
+        await appActions.startBackgroundServices(this.container);
 
         this.eventBus.publish(new AppActivatingEvent());
     }
@@ -64,7 +64,7 @@ export class AppLifeCycle {
         this.logger.debug("App deactivating...");
         this.eventBus.publish(new AppDeactivatingEvent());
 
-        await appTasks.stopBackgroundServices(this.container);
+        await appActions.stopBackgroundServices(this.container);
 
         const ipcGateways = this.container.getAll(IIpcGateway);
         for (const ipcGateway of ipcGateways) {

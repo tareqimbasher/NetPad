@@ -39,6 +39,12 @@ class LogConfigRegistration implements IRegistry {
     }
 }
 
+export interface ILoggerRule {
+    loggerRegex: RegExp;
+    logLevel: LogLevel;
+}
+
+
 interface ILoggingConfigurationOptions extends ILogConfig {
     $console: IConsoleLike;
 
@@ -51,6 +57,8 @@ interface ILoggingConfigurationOptions extends ILogConfig {
      * Rules that configure log levels for loggers by matching the logger name.
      * If multiple rules match the logger name, the last rule
      * that matches will be respected.
+     *
+     * The logLevel defines the level below which messages will be suppressed.
      */
-    rules: { loggerRegex: RegExp, logLevel: LogLevel }[];
+    rules: ILoggerRule[];
 }
