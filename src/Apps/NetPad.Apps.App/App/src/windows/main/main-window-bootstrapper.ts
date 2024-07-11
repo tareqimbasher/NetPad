@@ -24,7 +24,6 @@ import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
-import {ExcelService, IExcelService} from "@application/data/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {MainMenuBackgroundService} from "@application/background-services/main-menu-background-service";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
@@ -64,7 +63,6 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IActionProvider, BuiltinActionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
-            Registration.singleton(IExcelService, ExcelService),
             PaneHost,
             PaneToolbar,
             DataConnectionName,

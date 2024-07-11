@@ -1,16 +1,15 @@
 import {watch} from "@aurelia/runtime-html";
-import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
-import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
 import {KeyCode, System, Util} from "@common";
-import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";
+import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
+import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
+import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
     private txtUserInput: HTMLInputElement;
 
-    constructor(@IExcelService private readonly excelService: IExcelService,
-                @IIpcGateway private readonly ipcGateway: IIpcGateway,
+    constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
                 private readonly dialogUtil: DialogUtil,
     ) {
         super();
@@ -86,7 +85,7 @@ export class ResultsView extends OutputViewBase {
             }
         }
 
-        const workbook = this.excelService.export(elementsToExport, exportOptions);
+        const workbook = ExcelService.export(elementsToExport, exportOptions);
 
         if (exportOptions.includeCode) {
             const worksheet = workbook.addWorksheet("Code");

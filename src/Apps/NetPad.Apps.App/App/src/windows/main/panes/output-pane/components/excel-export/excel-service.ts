@@ -1,4 +1,3 @@
-import {DI} from "aurelia";
 import * as Excel from "exceljs";
 
 export interface IExcelExportOptions {
@@ -10,19 +9,13 @@ export interface IExcelExportOptions {
     headerForegroundColor?: string,
 }
 
-export interface IExcelService {
-    export(elements: Element[], options?: IExcelExportOptions): Excel.Workbook;
-}
-
-export const IExcelService = DI.createInterface<IExcelService>();
-
 interface IWritePosition {
     row: number;
     column: number;
 }
 
-export class ExcelService implements IExcelService {
-    public export(elements: Element[], options?: IExcelExportOptions) {
+export class ExcelService {
+    public static export(elements: Element[], options?: IExcelExportOptions) {
         options ??= {};
 
         const workbook = new Excel.Workbook();
@@ -66,7 +59,7 @@ export class ExcelService implements IExcelService {
         return workbook;
     }
 
-    private writeTable(worksheet: Excel.Worksheet, table: HTMLTableElement, position: IWritePosition, options: IExcelExportOptions) {
+    private static writeTable(worksheet: Excel.Worksheet, table: HTMLTableElement, position: IWritePosition, options: IExcelExportOptions) {
         if (!table || (!table.tHead?.rows.length && (!table.tBodies.length || !table.tBodies[0].rows.length))) return;
 
         const widths = this.getColumnWidths(table);
@@ -148,7 +141,7 @@ export class ExcelService implements IExcelService {
         }
     }
 
-    private getColumnWidths(table: HTMLTableElement): { iColumn: number, width: number }[] {
+    private static getColumnWidths(table: HTMLTableElement): { iColumn: number, width: number }[] {
         if (!table || !table.tHead || !table.tHead.rows.length || !table.tBodies) return [];
 
         return Array.from(table.tHead.rows[0].cells)
@@ -177,7 +170,7 @@ export class ExcelService implements IExcelService {
             });
     }
 
-    private getTableWidth(table: HTMLTableElement): number {
+    private static getTableWidth(table: HTMLTableElement): number {
         if (!table || !table.tHead || !table.tBodies) return 0;
         let total = table.tHead && table.tHead.rows && table.tHead.rows.length > 0 ? table.tHead.rows[0].childElementCount : 0;
 
@@ -205,7 +198,7 @@ export class ExcelService implements IExcelService {
         return total;
     }
 
-    private styleCell(tableCell: HTMLTableCellElement, worksheetCell: Excel.Cell, options: IExcelExportOptions) {
+    private static styleCell(tableCell: HTMLTableCellElement, worksheetCell: Excel.Cell, options: IExcelExportOptions) {
         if (tableCell.tagName === "TH") {
             if (options.headerForegroundColor) {
                 worksheetCell.style.font = {
@@ -225,7 +218,7 @@ export class ExcelService implements IExcelService {
         }
     }
 
-    private getTextContent(element: Element) {
+    private static getTextContent(element: Element) {
         element.querySelectorAll("br").forEach(x => x.replaceWith("\n"));
         return element.textContent;
     }

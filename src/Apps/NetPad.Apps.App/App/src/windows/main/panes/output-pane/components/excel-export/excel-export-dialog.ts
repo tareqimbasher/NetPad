@@ -1,5 +1,5 @@
 import {Dialog} from "@application/dialogs/dialog";
-import {IExcelExportOptions} from "@application/data/excel-service";
+import {IExcelExportOptions} from "./excel-service";
 
 interface IColorOption {
     text?: string,
