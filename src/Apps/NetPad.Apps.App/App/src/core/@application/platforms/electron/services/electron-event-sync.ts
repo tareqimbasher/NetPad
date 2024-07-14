@@ -1,19 +1,19 @@
 import {Constructable, ILogger} from "aurelia";
 import {WithDisposables} from "@common";
-import {AppActivatedEvent, ChannelInfo, ClickMenuItemEvent, IBackgroundService, IEventBus} from "@application";
+import {AppActivatedEvent, ChannelInfo, IBackgroundService, IEventBus} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
 
 /**
- * This forwards events between the main Electron process and the app's EventBus.
+ * Forwards events between the main Electron process and the app's EventBus.
  */
 export class ElectronEventSync extends WithDisposables implements IBackgroundService {
     /**
-     * IPC events from Electron's main process to forward to app's EventBus.
+     * IPC events from Electron's main process that should be forwarded to application's EventBus.
      */
-    private mainToEventBus: Constructable[] = [ClickMenuItemEvent];
+    private mainToEventBus: Constructable[] = []; // Empty, no events need to be forwarded currently.
 
     /**
-     * Events from the app's EventBus to forward to Electron's main process.
+     * Events from application EventBus that should be forwarded to the Electron main process.
      */
     private eventBusToMain: Constructable[] = [AppActivatedEvent];
 

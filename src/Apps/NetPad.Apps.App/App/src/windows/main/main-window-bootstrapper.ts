@@ -25,7 +25,6 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
 import {DialogUtil} from "@application/dialogs/dialog-util";
-import {MainMenuBackgroundService} from "@application/background-services/main-menu-background-service";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 import {IMainMenuService, MainMenuService} from "@application/main-menu/main-menu-service";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
@@ -51,7 +50,6 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(ICodeService, CodeService),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
-            Registration.singleton(IBackgroundService, MainMenuBackgroundService),
             Registration.singleton(IWorkAreaService, WorkAreaService),
             Registration.singleton(IMainMenuService, MainMenuService),
             Registration.singleton(IStatusbarService, StatusbarService),

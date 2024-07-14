@@ -4,8 +4,7 @@ import {ChannelInfo, IIpcGateway, IpcMessageBatch} from "@application";
 import {IDisposable, SubscriptionToken} from "@common";
 
 /**
- * The main mode of communication with the Electron main process. All interaction with the
- * Electron main process should occur through this gateway.
+ * An abstraction of the Electron IpcRenderer. Sends and receives messages from the Electron main process.
  */
 export class ElectronIpcGateway implements IIpcGateway {
     private readonly logger: ILogger;

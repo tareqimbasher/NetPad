@@ -1,30 +1,39 @@
 import {ipcRenderer} from "electron";
-import {IWindowService, WindowApiClient, WindowState} from "@application";
+import {IHttpClient} from "@aurelia/fetch-client";
+import {ChannelInfo, IWindowService, WindowApiClient, WindowState} from "@application";
 import {ElectronIpcEventNames} from "../electron-ipc-event-names";
+import {ElectronIpcGateway} from "./electron-ipc-gateway";
 
+/**
+ * IWindowService implementation that sends window control events to Electron's main process.
+ */
 export class ElectronWindowService extends WindowApiClient implements IWindowService {
+    constructor(private readonly electronIpcGateway: ElectronIpcGateway, baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        super(baseUrl, http);
+    }
+
     public async getState(): Promise<WindowState> {
         const state = await ipcRenderer.invoke(ElectronIpcEventNames.getWindowState) as WindowState;
         return new WindowState(state.viewStatus, state.isAlwaysOnTop);
     }
 
     maximize(): Promise<void> {
-        return ipcRenderer.invoke(ElectronIpcEventNames.maximize);
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.maximize));
     }
 
     minimize(): Promise<void> {
-        return ipcRenderer.invoke(ElectronIpcEventNames.minimize);
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.minimize));
     }
 
     toggleDeveloperTools(): Promise<void> {
-        return ipcRenderer.invoke(ElectronIpcEventNames.toggleDeveloperTools);
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.toggleDeveloperTools));
     }
 
     toggleAlwaysOnTop(): Promise<void> {
-        return ipcRenderer.invoke(ElectronIpcEventNames.toggleAlwaysOnTop);
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.toggleAlwaysOnTop));
     }
 
     toggleFullScreen(): Promise<void> {
-        return ipcRenderer.invoke(ElectronIpcEventNames.toggleFullScreen);
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.toggleFullScreen));
     }
 }

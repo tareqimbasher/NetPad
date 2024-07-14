@@ -1,25 +1,18 @@
 import {IContainer} from "aurelia";
 import {WithDisposables} from "@common";
-import {ChannelInfo, IBackgroundService, IShortcutManager, Shortcut} from "@application";
+import {ChannelInfo, ClickMenuItemEvent, IBackgroundService, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
 import {IMainMenuService} from "@application/main-menu/main-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 
 /**
- * Handles top-level IPC events sent by Electron's main process.
+ * Handles IPC events sent by the Electron main process related to the native main menu.
  */
-export class ElectronEventHandlerBackgroundService extends WithDisposables implements IBackgroundService {
-    private readonly shortcutManager?: IShortcutManager;
+export class NativeMainMenuEventHandler extends WithDisposables implements IBackgroundService {
     private readonly mainMenuService?: IMainMenuService;
 
     constructor(private readonly electronIpcGateway: ElectronIpcGateway, @IContainer container: IContainer) {
         super();
-
-        try {
-            this.shortcutManager = container.get(IShortcutManager);
-        } catch {
-            // ignore, no shortcuts
-        }
 
         try {
             this.mainMenuService = container.get(IMainMenuService);
@@ -29,6 +22,14 @@ export class ElectronEventHandlerBackgroundService extends WithDisposables imple
     }
 
     public start(): Promise<void> {
+        // Handle native menu click events
+        if (this.mainMenuService) {
+            this.addDisposable(this.electronIpcGateway.subscribe(new ChannelInfo(ClickMenuItemEvent), (event: ClickMenuItemEvent) => {
+                this.mainMenuService?.clickMenuItem(event.menuItemId);
+            }));
+        }
+
+        // Handle native menu bootstrap
         const bootstrapChannel = new ChannelInfo("main-menu-bootstrap");
 
         const sendBootstrapDataToMain = () => {
