@@ -1,4 +1,4 @@
-import {Dialog} from "../dialog";
+import {Dialog} from "@application/dialogs/dialog";
 
 export interface IPromptDialogModel {
     message?: string;

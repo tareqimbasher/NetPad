@@ -11,11 +11,12 @@ import {
     PromptUserCommand,
     YesNoCancel
 } from "@application";
-import {
-    AppDependenciesCheckDialog
-} from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
+import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
+/**
+ * Listens and reacts to dialog-related commands pushed by the Backend application.
+ */
 export class DialogBackgroundService extends WithDisposables implements IBackgroundService {
     private logger: ILogger;
 

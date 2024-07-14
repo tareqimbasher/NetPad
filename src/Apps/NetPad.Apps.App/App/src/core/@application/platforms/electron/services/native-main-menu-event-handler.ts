@@ -2,7 +2,7 @@ import {IContainer} from "aurelia";
 import {WithDisposables} from "@common";
 import {ChannelInfo, ClickMenuItemEvent, IBackgroundService, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
-import {IMainMenuService} from "@application/main-menu/main-menu-service";
+import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 
 /**

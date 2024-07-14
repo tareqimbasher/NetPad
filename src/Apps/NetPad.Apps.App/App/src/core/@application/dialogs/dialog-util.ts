@@ -1,10 +1,10 @@
 import {Constructable} from "aurelia";
 import {IDialogService} from "@aurelia/dialog";
 import {Dialog} from "./dialog";
-import {IPromptDialogModel, PromptDialog} from "./prompt-dialog/prompt-dialog";
+import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
 
 export class DialogUtil {
-    
+
     constructor(@IDialogService private readonly dialogService: IDialogService) {
     }
 

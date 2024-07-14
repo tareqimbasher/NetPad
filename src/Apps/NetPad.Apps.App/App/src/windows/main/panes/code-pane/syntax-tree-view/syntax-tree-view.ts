@@ -12,7 +12,7 @@ import {
     ViewModelBase
 } from "@application";
 import {LeakyMap, Util} from "@common";
-import {ITextEditorService} from "@application/editor/text-editor-service";
+import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {ScriptCodeUpdatedEvent} from "@application/events/script-code-updated-event";
 
 interface ISyntaxNodeOrTokenViewModel extends ISyntaxNodeOrTokenSlim {

@@ -1,7 +1,7 @@
 import {KeyCode} from "@common";
 import {CreateScriptDto, IScriptService, ISettingsService} from "@application";
 import {Shortcut} from "./shortcut";
-import {ITextEditorService} from "../editor/text-editor-service";
+import {ITextEditorService} from "../editor/itext-editor-service";
 
 export enum ShortcutIds {
     openCommandPalette = "shortcut.commandpalette.open",

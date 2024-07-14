@@ -1,5 +1,5 @@
-﻿import {Dialog} from "../dialog";
-import {DialogUtil} from "../dialog-util";
+﻿import {Dialog} from "@application/dialogs/dialog";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class QuickTipsDialog extends Dialog<void> {
     private static currentVersion = "2"; // Increment this to re-trigger this popup to show as first time

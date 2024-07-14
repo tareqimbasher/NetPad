@@ -10,7 +10,8 @@ import {
 import {Window} from "./window";
 import {Aurelia, Registration} from "aurelia";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
-import {ITextEditorService, TextEditorService} from "@application/editor/text-editor-service";
+import {ITextEditorService} from "@application/editor/itext-editor-service";
+import {TextEditorService} from "@application/editor/text-editor-service";
 import {CodeService} from "@application/code/code-service";
 
 export class CodeWindowBootstrapper implements IWindowBootstrapper {

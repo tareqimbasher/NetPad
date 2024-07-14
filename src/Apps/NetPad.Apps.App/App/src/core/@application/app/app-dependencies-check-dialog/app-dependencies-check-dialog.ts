@@ -1,5 +1,5 @@
-﻿import {Dialog} from "../dialog";
-import {AppDependencyCheckResult, IAppService, SemanticVersion} from "@application";
+﻿import {AppDependencyCheckResult, IAppService, SemanticVersion} from "@application";
+import {Dialog} from "@application/dialogs/dialog";
 
 export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;

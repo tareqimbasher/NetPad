@@ -1,5 +1,5 @@
 import {Version} from "@common/data/version";
-import {Dialog} from "../dialog";
+import {Dialog} from "@application/dialogs/dialog";
 import {IAppService} from "@application";
 import {System} from "@common";
 

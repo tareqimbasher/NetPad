@@ -1,24 +1,10 @@
-import {DI} from "aurelia";
-import {IMenuItem} from "./imenu-item";
 import {System} from "@common";
+import {IMenuItem} from "./imenu-item";
 import {IPaneManager, ISettingsService, IShortcutManager, IWindowService, ShortcutIds} from "@application";
-import {ITextEditorService} from "@application/editor/text-editor-service";
-import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
+import {ITextEditorService} from "@application/editor/itext-editor-service";
+import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
-
-export const IMainMenuService = DI.createInterface<MainMenuService>();
-
-export interface IMainMenuService {
-    items: ReadonlyArray<IMenuItem>;
-
-    addItem(item: IMenuItem): void;
-
-    removeItem(item: IMenuItem): void;
-
-    clickMenuItem(item: IMenuItem): Promise<void>;
-
-    clickMenuItem(id: string): Promise<void>;
-}
+import {IMainMenuService} from "./imain-menu-service";
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];

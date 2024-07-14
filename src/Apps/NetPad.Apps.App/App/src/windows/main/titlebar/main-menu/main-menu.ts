@@ -1,7 +1,7 @@
 import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {Settings} from "@application";
-import {IMainMenuService} from "@application/main-menu/main-menu-service";
+import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 
 interface ITopLevelMenuItem {

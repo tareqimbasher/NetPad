@@ -1,12 +1,6 @@
 import {DI, IContainer} from "aurelia";
 import {ITextEditor} from "./text-editor";
-
-export const ITextEditorService = DI.createInterface<ITextEditorService>();
-
-export interface ITextEditorService {
-    get active(): ITextEditor | undefined;
-    create(host: HTMLElement): ITextEditor;
-}
+import {ITextEditorService} from "./itext-editor-service";
 
 export class TextEditorService implements ITextEditorService {
     private _active?: ITextEditor;

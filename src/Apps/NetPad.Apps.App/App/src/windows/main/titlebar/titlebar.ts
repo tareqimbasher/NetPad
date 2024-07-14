@@ -10,7 +10,7 @@ import {
 } from "@application";
 import {Util} from "@common";
 import {ILogger} from "aurelia";
-import {AppUpdateDialog} from "@application/dialogs/app-update-dialog/app-update-dialog";
+import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Titlebar extends ViewModelBase {

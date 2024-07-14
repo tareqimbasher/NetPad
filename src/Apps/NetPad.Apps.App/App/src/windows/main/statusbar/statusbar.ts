@@ -9,16 +9,14 @@ import {
     Settings,
 } from "@application";
 import {PLATFORM} from "aurelia";
-import {
-    AppDependenciesCheckDialog
-} from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
-import {QuickTipsDialog} from "@application/dialogs/quick-tips-dialog/quick-tips-dialog";
+import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
+import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Statusbar {
     public appStatusMessage: IAppStatusMessage | null;
-    public lastPersistantPriorityMessage: IAppStatusMessage | null;
+    public lastPersistentPriorityMessage: IAppStatusMessage | null;
 
     constructor(private readonly workbench: Workbench,
                 private readonly settings: Settings,
@@ -59,15 +57,15 @@ export class Statusbar {
             }
 
             if (this.appStatusMessage.persistant) {
-                this.lastPersistantPriorityMessage = this.appStatusMessage;
+                this.lastPersistentPriorityMessage = this.appStatusMessage;
                 return;
             }
 
             clearMsgTask = PLATFORM.setTimeout(() => {
                 clearMsgTask = null;
 
-                this.appStatusMessage = this.lastPersistantPriorityMessage
-                    ? this.lastPersistantPriorityMessage
+                this.appStatusMessage = this.lastPersistentPriorityMessage
+                    ? this.lastPersistentPriorityMessage
                     : null;
             }, 30000);
         });

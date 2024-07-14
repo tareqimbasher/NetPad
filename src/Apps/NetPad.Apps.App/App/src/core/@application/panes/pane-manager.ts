@@ -7,18 +7,7 @@ import {
     PaneHostOrientation,
     TogglePaneEvent
 } from "@application";
-
-export interface IPaneManager {
-    createPaneHost(orientation: PaneHostOrientation, viewStateController?: IPaneHostViewStateController): PaneHost;
-
-    addPaneToHost<TPane extends Pane>(paneType: Constructable<TPane>, paneHost: PaneHost): TPane;
-
-    toggle(pane: Pane): void;
-
-    toggle(paneType: unknown): void;
-}
-
-export const IPaneManager = DI.createInterface<IPaneManager>();
+import {IPaneManager} from "./ipane-manager";
 
 export class PaneManager implements IPaneManager {
     private _paneHosts: PaneHost[] = [];

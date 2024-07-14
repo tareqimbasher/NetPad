@@ -61,6 +61,7 @@ export * from "./editor/monaco/monaco-editor-util";
 export * from "./editor/providers/interfaces";
 
 // Panes
+export * from "./panes/ipane-manager";
 export * from "./panes/pane-manager";
 export * from "./panes/pane-host/pane-host";
 export * from "./panes/pane-host-orientation";
