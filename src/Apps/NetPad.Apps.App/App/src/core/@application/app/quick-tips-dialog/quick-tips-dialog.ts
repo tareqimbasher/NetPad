@@ -12,7 +12,7 @@ export class QuickTipsDialog extends Dialog<void> {
 
     public static showIfFirstVisit(dialogUtil: DialogUtil) {
         if (!this.didUserVisitLatestVersion()) {
-            return dialogUtil.toggle(QuickTipsDialog);
+            return dialogUtil.open(QuickTipsDialog);
         }
 
         return Promise.resolve();

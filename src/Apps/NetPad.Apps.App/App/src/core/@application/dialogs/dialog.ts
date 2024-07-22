@@ -1,9 +1,9 @@
-﻿import {resolve, ILogger, Constructable} from "aurelia";
+﻿import {ILogger, resolve} from "aurelia";
+import {IDialogDom} from "@aurelia/dialog";
 import {ViewModelBase} from "@application/view-model-base";
-import {DialogOpenResult, IDialogDom, IDialogService} from "@aurelia/dialog";
+import {OpenDialogs} from "./open-dialogs";
 
 export abstract class Dialog<TInput> extends ViewModelBase {
-    public static instances = new Map<string, DialogOpenResult>();
     protected input?: TInput;
     protected readonly dialogDom: IDialogDom = resolve(IDialogDom);
 
@@ -43,7 +43,7 @@ export abstract class Dialog<TInput> extends ViewModelBase {
             event.preventDefault();
         }
 
-        const instance = Dialog.instances.get((this as Record<string, unknown>).constructor.name);
+        const instance = OpenDialogs.get(this.constructor.name);
 
         if (!instance) {
             return undefined;
@@ -53,39 +53,12 @@ export abstract class Dialog<TInput> extends ViewModelBase {
     }
 
     protected async cancel() {
-        const instance = Dialog.instances.get((this as Record<string, unknown>).constructor.name);
+        const instance = OpenDialogs.get(this.constructor.name);
 
         if (!instance) {
             return undefined;
         }
 
         return instance.dialog.cancel();
-    }
-
-    public async toggle<TDialog extends typeof Dialog<TOptions> | Constructable, TOptions>(
-        dialogService: IDialogService,
-        dialogComponent: TDialog,
-        model?: unknown) {
-
-        const key = dialogComponent.name;
-
-        let instance = Dialog.instances.get(key);
-
-        if (instance) {
-            return instance.dialog.cancel();
-        } else {
-            instance = await dialogService.open({
-                component: () => dialogComponent,
-                model: model
-            });
-
-            Dialog.instances.set(key, instance);
-
-            instance.dialog.closed.then(result => {
-                Dialog.instances.delete(key);
-            });
-
-            return instance.dialog.closed;
-        }
     }
 }

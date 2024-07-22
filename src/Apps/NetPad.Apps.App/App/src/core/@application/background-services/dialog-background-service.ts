@@ -70,6 +70,6 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     }
 
     private async alertUserAboutMissingAppDependencies(command: AlertUserAboutMissingAppDependencies) {
-        await this.dialogUtil.toggle(AppDependenciesCheckDialog, command.dependencyCheckResult);
+        await this.dialogUtil.open(AppDependenciesCheckDialog, command.dependencyCheckResult);
     }
 }

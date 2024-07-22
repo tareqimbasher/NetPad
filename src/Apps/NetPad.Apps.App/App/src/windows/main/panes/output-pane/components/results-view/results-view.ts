@@ -63,8 +63,12 @@ export class ResultsView extends OutputViewBase {
             return;
         }
 
-        const result = await this.dialogUtil.toggle(ExcelExportDialog);
-        if (result.status !== "ok") return;
+        const result = await this.dialogUtil.open(ExcelExportDialog);
+
+        if (result?.status !== "ok") {
+            return;
+        }
+
         const exportOptions = result.value as IExcelExportOptions;
 
         const elementsToExport: Element[] = [];

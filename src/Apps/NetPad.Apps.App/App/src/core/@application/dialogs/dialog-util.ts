@@ -1,37 +1,102 @@
 import {Constructable} from "aurelia";
-import {IDialogService} from "@aurelia/dialog";
+import {DialogCloseResult, IDialogService} from "@aurelia/dialog";
 import {Dialog} from "./dialog";
 import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
+import {OpenDialogs} from "./open-dialogs";
 
 export class DialogUtil {
 
     constructor(@IDialogService private readonly dialogService: IDialogService) {
     }
 
-    public prompt(options: IPromptDialogModel) {
-        return this.toggle(PromptDialog, options);
+    public async prompt(options: IPromptDialogModel): Promise<DialogCloseResult> {
+        const openResult = await this.open(PromptDialog, options, true);
+
+        if (!openResult) {
+            throw new Error("Error opening prompt with message: " + options.message)
+        }
+
+        return openResult;
     }
 
-    public async toggle<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(dialogComponent: TDialog, input?: TDialog extends typeof Dialog<infer U> ? U : unknown) {
+    /**
+     * Opens a dialog (a class that extends Dialog<>).
+     * @param dialogComponent The dialog type to open.
+     * @param input Input object to be passed to dialog when activated.
+     * @param allowMultiple By default only one instance of a particular dialog type is opened, if this is true,
+     * multiple dialogs of this dialog type will be allowed to be opened simultaneously.
+     */
+    public async open<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(
+        dialogComponent: TDialog,
+        input?: TDialog extends typeof Dialog<infer U> ? U : unknown,
+        allowMultiple?: boolean
+    ): Promise<DialogCloseResult | undefined> {
         const key = dialogComponent.name;
 
-        let instance = Dialog.instances.get(key);
-
-        if (instance) {
-            return instance.dialog.cancel();
-        } else {
-            instance = await this.dialogService.open({
+        if (allowMultiple) {
+            const openResult = await this.dialogService.open({
                 component: () => dialogComponent,
                 model: input
             });
 
-            Dialog.instances.set(key, instance);
+            return openResult.dialog.closed;
+        }
 
-            instance.dialog.closed.then(result => {
-                Dialog.instances.delete(key);
-            });
+        let openResult = OpenDialogs.get(key);
 
-            return instance.dialog.closed;
+        if (openResult) {
+            return;
+        }
+
+        openResult = await this.dialogService.open({
+            component: () => dialogComponent,
+            model: input
+        });
+
+        OpenDialogs.set(key, openResult);
+
+        openResult.dialog.closed.then(result => {
+            OpenDialogs.delete(key);
+        });
+
+        return openResult.dialog.closed;
+    }
+
+    /**
+     * Closes a dialog if it is currently opened.
+     * @param dialogComponent The dialog type to close.
+     * */
+    public async close<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(dialogComponent: TDialog) {
+        const key = dialogComponent.name;
+
+        const openResult = OpenDialogs.get(key);
+
+        if (!openResult) {
+            return;
+        }
+
+        OpenDialogs.delete(key);
+
+        return openResult.dialog.cancel();
+    }
+
+    public async closeAll(): Promise<void> {
+        await this.dialogService.closeAll();
+        OpenDialogs.clear();
+    }
+
+    public async toggle<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(
+        dialogComponent: TDialog,
+        input?: TDialog extends typeof Dialog<infer U> ? U : unknown
+    ): Promise<void> {
+        const key = dialogComponent.name;
+
+        const openResult = OpenDialogs.get(key);
+
+        if (openResult) {
+            await this.close(dialogComponent);
+        } else {
+            await this.open(dialogComponent, input);
         }
     }
 }
