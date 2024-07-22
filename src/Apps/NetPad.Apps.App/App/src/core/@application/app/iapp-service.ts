@@ -9,7 +9,6 @@ export interface IAppService extends IAppApiClient {
      */
     get appHasUpdate(): boolean;
 
-
     /**
      * Checks if there is an update for the app.
      */

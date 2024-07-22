@@ -1,9 +1,10 @@
 import {IContainer} from "aurelia";
 import {WithDisposables} from "@common";
-import {ChannelInfo, ClickMenuItemEvent, IBackgroundService, Shortcut} from "@application";
+import {ChannelInfo, IBackgroundService, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
+import {ClickMenuItemCommand} from "@application/main-menu/click-menu-item-command";
 
 /**
  * Handles IPC events sent by the Electron main process related to the native main menu.
@@ -24,7 +25,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
     public start(): Promise<void> {
         // Handle native menu click events
         if (this.mainMenuService) {
-            this.addDisposable(this.electronIpcGateway.subscribe(new ChannelInfo(ClickMenuItemEvent), (event: ClickMenuItemEvent) => {
+            this.addDisposable(this.electronIpcGateway.subscribe(new ChannelInfo(ClickMenuItemCommand), (event: ClickMenuItemCommand) => {
                 this.mainMenuService?.clickMenuItem(event.menuItemId);
             }));
         }

@@ -1,11 +1,7 @@
 import {IHttpClient} from "@aurelia/fetch-client";
-import {
-    IEventBus,
-    IScriptService,
-    ScriptsApiClient
-} from "@application";
-import {ScriptCodeUpdatingEvent} from "@application/events/script-code-updating-event";
-import {ScriptCodeUpdatedEvent} from "@application/events/script-code-updated-event";
+import {IEventBus, IScriptService, ScriptsApiClient} from "@application";
+import {ScriptCodeUpdatingEvent} from "@application/scripts/script-code-updating-event";
+import {ScriptCodeUpdatedEvent} from "@application/scripts/script-code-updated-event";
 
 export class ScriptService extends ScriptsApiClient implements IScriptService {
 

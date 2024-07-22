@@ -11,7 +11,6 @@ export * from "./api";
 export * from "./events/channel-info";
 export * from "./events/ievent-bus";
 export * from "./events/iipc-gateway";
-export * from "./events/action-events";
 
 // Services
 export * from "./app/iapp-service";
