@@ -10,20 +10,21 @@ import {
     IEventBus,
     IIpcGateway
 } from "@application";
-import {IAppLifecycleEvent} from "@application/windows/app-windows";
+import {IAppWindowEvent} from "@application/windows/app-windows";
 
 /**
  * Actions that run at specific points in the app's lifecycle
  */
 export class AppLifeCycle {
-    constructor(@ILogger private readonly logger: ILogger,
+    constructor(private readonly startupParams: URLSearchParams,
+                @ILogger private readonly logger: ILogger,
                 @IEventBus private readonly eventBus: IEventBus,
                 @IContainer private readonly container: IContainer) {
         this.logger = this.logger.scopeTo(nameof(AppLifeCycle));
     }
 
     public async creating(): Promise<void> {
-        this.logger.debug("App being created with options:", this.container.get(URLSearchParams).toString());
+        this.logger.debug("App being created with options:", this.startupParams.toString());
         this.eventBus.publish(new AppCreatingEvent());
 
         await this.container.get(IIpcGateway).start();
@@ -51,9 +52,9 @@ export class AppLifeCycle {
         this.logger.debug("App activated");
 
         const bc = new BroadcastChannel("windows");
-        bc.postMessage(<IAppLifecycleEvent>{
-            type: "app-activated",
-            appName: this.container.get(URLSearchParams).get("win")
+        bc.postMessage(<IAppWindowEvent>{
+            type: "activated",
+            windowName: this.startupParams.get("win")
         });
         bc.close();
 
@@ -77,9 +78,9 @@ export class AppLifeCycle {
         this.logger.debug("App deactivated");
 
         const bc = new BroadcastChannel("windows");
-        bc.postMessage(<IAppLifecycleEvent>{
-            type: "app-deactivated",
-            appName: this.container.get(URLSearchParams).get("win")
+        bc.postMessage(<IAppWindowEvent>{
+            type: "deactivated",
+            windowName: this.startupParams.get("win")
         });
         bc.close();
 

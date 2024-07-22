@@ -6,9 +6,9 @@ class AppWindow {
     }
 }
 
-export interface IAppLifecycleEvent {
-    appName: string;
-    type: "app-activated" | "app-deactivated";
+export interface IAppWindowEvent {
+    windowName: string;
+    type: "activated" | "deactivated";
 }
 
 export class AppWindows implements IDisposable {
@@ -25,17 +25,19 @@ export class AppWindows implements IDisposable {
                 return;
             }
 
-            const event = msg.data as IAppLifecycleEvent;
+            const event = msg.data as IAppWindowEvent;
 
-            if (event.type === "app-activated") {
-                this.logger.debug("App activated: ", event.appName);
-                this.items.push(new AppWindow(event.appName));
-            } else if (event.type === "app-deactivated") {
-                this.logger.debug("App deactivated: ", event.appName);
-                const ixApp = this.items.findIndex(x => x.name === event.appName);
+            this.logger.debug(`AppWindow event from window: '${event.windowName}'. Event: '${event.type}'`);
+
+            if (event.type === "activated") {
+                this.items.push(new AppWindow(event.windowName));
+            } else if (event.type === "deactivated") {
+                const ixApp = this.items.findIndex(x => x.name === event.windowName);
                 if (ixApp >= 0) {
                     this.items.splice(ixApp, 1);
                 }
+            } else {
+                this.logger.error(`App window event is not handled: ${event.type}`);
             }
         }
     }
