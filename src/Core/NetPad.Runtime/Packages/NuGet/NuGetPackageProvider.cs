@@ -929,7 +929,7 @@ public class NuGetPackageProvider(
         packageMetadata.Version ??= latestVersion?.Version.ToString();
 
         packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ??
-                                                 (await GetPackageVersionsAsync(packageMetadata.PackageId, false))
+                                                 (await GetPackageVersionsAsync(packageMetadata.PackageId, searchMetadata.Identity.Version.IsPrerelease))
                                                  .MaxBy(NuGetVersion.Parse);
     }
 
