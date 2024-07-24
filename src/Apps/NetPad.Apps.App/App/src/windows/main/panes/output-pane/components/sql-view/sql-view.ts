@@ -1,5 +1,5 @@
 import {watch} from "@aurelia/runtime-html";
-import {ScriptStatus} from "@domain";
+import {ScriptStatus} from "@application";
 import {OutputViewBase} from "../output-view-base";
 
 export class SqlView extends OutputViewBase {

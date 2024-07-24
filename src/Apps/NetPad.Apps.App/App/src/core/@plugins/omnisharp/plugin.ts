@@ -1,6 +1,5 @@
 import {IContainer, Registration} from "aurelia";
 import * as monaco from "monaco-editor";
-import {Settings} from "@domain";
 import {
     ICodeActionProvider,
     ICodeLensProvider,
@@ -19,7 +18,8 @@ import {
     IOnTypeFormattingEditProvider,
     IReferenceProvider,
     IRenameProvider,
-    ISignatureHelpProvider
+    ISignatureHelpProvider,
+    Settings
 } from "@application";
 import {Actions} from "./actions";
 import {IOmniSharpService, OmniSharpService} from "./omnisharp-service";

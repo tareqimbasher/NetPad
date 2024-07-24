@@ -1,4 +1,4 @@
-import {ScriptEnvironment, ScriptSummary} from "@domain";
+import {ScriptEnvironment, ScriptSummary} from "@application";
 
 export class ScriptViewModel extends ScriptSummary {
     constructor(summary: ScriptSummary) {

@@ -66,6 +66,7 @@ public class Startup
         services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
         services.AddTransient<ILogoService, LogoService>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
+        services.AddTransient<IIpcService, SignalRIpcService>();
 
         // Script services
         services.AddTransient<ScriptService>();
@@ -162,10 +163,6 @@ public class Startup
 
         // Allow Shell to add/modify any service registrations it needs
         Program.Shell.ConfigureServices(services);
-
-        // We want to always use SignalR for IPC, overriding Electron's IPC service
-        // This should come after the Shell adds its services so it overrides it
-        services.AddTransient<IIpcService, SignalRIpcService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

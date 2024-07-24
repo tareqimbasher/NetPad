@@ -7,11 +7,13 @@ import {
     ISession,
     ISyntaxNodeOrTokenSlim,
     LinePositionSpan,
-    SyntaxNodeOrTokenSlim
-} from "@domain";
-import {Pane, ScriptCodeUpdatedEvent, ViewModelBase} from "@application";
+    Pane,
+    SyntaxNodeOrTokenSlim,
+    ViewModelBase
+} from "@application";
 import {LeakyMap, Util} from "@common";
-import {ITextEditorService} from "@application/editor/text-editor-service";
+import {ITextEditorService} from "@application/editor/itext-editor-service";
+import {ScriptCodeUpdatedEvent} from "@application/scripts/script-code-updated-event";
 
 interface ISyntaxNodeOrTokenViewModel extends ISyntaxNodeOrTokenSlim {
     collapsed?: boolean;

@@ -1,6 +1,5 @@
-// We must force tsc to interpret this file as a module, resolves
+// We must force tsc to interpret this file as a module, resolves the following:
 // "Augmentations for the global scope can only be directly nested in external modules or ambient module declarations."
-// error
 export {}
 
 declare global {

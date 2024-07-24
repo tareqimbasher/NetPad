@@ -3,7 +3,7 @@ import {AppMenuItemWalker, IAppMenuItem, IAppShortcut} from "./models";
 
 const isMac = process.platform === "darwin";
 
-export class ClickMenuItemEvent {
+export class ClickMenuItemCommand {
     constructor(public readonly menuItemId: string) {
     }
 }
@@ -198,7 +198,7 @@ export class MainMenuManager {
     }
 
     private static async sendMenuItemToRenderer(menuItemId: string, browserWindow: Electron.BrowserWindow) {
-        browserWindow.webContents.send(ClickMenuItemEvent.name, new ClickMenuItemEvent(menuItemId));
+        browserWindow.webContents.send(ClickMenuItemCommand.name, new ClickMenuItemCommand(menuItemId));
     }
 
     private static getAccelerator(shortcut: IAppShortcut): string {

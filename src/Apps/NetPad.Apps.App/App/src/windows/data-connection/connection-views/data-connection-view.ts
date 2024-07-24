@@ -5,7 +5,7 @@ import {
     MsSqlServerDatabaseConnection,
     PostgreSqlDatabaseConnection,
     SQLiteDatabaseConnection
-} from "@domain";
+} from "@application";
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
 import {Util} from "@common";

@@ -1,4 +1,4 @@
-import {ScriptKind} from "@domain";
+import {ScriptKind} from "@application";
 
 export class LangLogoValueConverter {
     public toView(scriptKind: ScriptKind): string | null {

@@ -1,6 +1,6 @@
 import {bindable} from "aurelia";
 import {observable} from "@aurelia/runtime";
-import {EntityFrameworkDatabaseConnection, ScaffoldOptions} from "@domain";
+import {EntityFrameworkDatabaseConnection, ScaffoldOptions} from "@application";
 
 export class ScaffoldingOptions {
     @bindable public connection?: EntityFrameworkDatabaseConnection;

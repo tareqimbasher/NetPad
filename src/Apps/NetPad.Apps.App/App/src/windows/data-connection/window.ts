@@ -1,5 +1,5 @@
 import {watch} from "@aurelia/runtime-html";
-import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@domain";
+import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@application";
 import {WindowBase} from "@application/windows/window-base";
 import {System, Util} from "@common";
 import {IDataConnectionView} from "./connection-views/idata-connection-view";

@@ -1,4 +1,4 @@
-import Aurelia, {AppTask, IContainer, ILogger, LogLevel, Registration} from 'aurelia';
+import Aurelia, {AppTask, ILogger, LogLevel, Registration} from 'aurelia';
 import {CustomElementType} from "@aurelia/runtime-html";
 import {DialogDefaultConfiguration} from "@aurelia/dialog";
 import "bootstrap";
@@ -6,47 +6,43 @@ import "./styles/main.scss";
 import "@common/globals";
 import {AppMutationObserver} from "@common";
 import {
-    AppService,
-    Env,
-    IAppService,
-    IEventBus,
-    IIpcGateway,
-    ISession,
-    ISettingsService,
-    Session,
-    Settings,
-    SettingsService,
-} from "@domain";
-import {
     ConsoleLogSink,
     ContextMenu,
     DateTimeValueConverter,
-    EventBus,
+    Env,
     ExternalLinkCustomAttribute,
-    FindTextBox,
+    IAppService,
     IBackgroundService,
+    IEventBus,
+    ISession,
+    ISettingsService,
     LangLogoValueConverter,
     LogConfig,
     PlatformsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
-    SignalRIpcGateway,
+    Settings,
     SortValueConverter,
     TakeValueConverter,
     TextToHtmlValueConverter,
     TooltipCustomAttribute,
     TruncateValueConverter,
-    YesNoValueConverter
+    YesNoValueConverter,
 } from "@application";
-import * as appTasks from "./main.tasks";
-import {AppLifeCycle} from "./main.app-lifecycle";
-import {IPlatform} from "@application/platforms/iplatform";
+import * as appActions from "./app-actions";
+import {AppLifeCycle} from "./app-life-cycle";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
+import {AppService} from "@application/app/app-service";
+import {SettingsService} from "@application/configuration/settings-service";
+import {Session} from "@application/sessions/session";
+import {EventBus} from "@application/events/event-bus";
+import {FindTextBox} from "@application/find-text-box/find-text-box";
 
-// Register common dependencies shared for all windows/apps
+// Register common dependencies shared across entire application (all windows)
 const builder = Aurelia.register(
     Registration.instance(String, window.location.origin),
     Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
+    Registration.singleton(AppLifeCycle, AppLifeCycle),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
     Registration.singleton(IEventBus, EventBus),
@@ -55,118 +51,59 @@ const builder = Aurelia.register(
     Registration.singleton(AppMutationObserver, AppMutationObserver),
     Registration.singleton(IBackgroundService, SettingsBackgroundService),
 
-    // The default main IPC gateway the app will use. Can be configured for each platform separately
-    Registration.singleton(IIpcGateway, SignalRIpcGateway),
+    LogConfig.register({
+        colorOptions: "colors",
+        level: Env.isProduction ? LogLevel.info : LogLevel.debug,
+        sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
+        rules: appActions.logRules
+    }),
+
+    // Globally registered custom attributes
+    ExternalLinkCustomAttribute,
+    PlatformsCustomAttribute,
+    TooltipCustomAttribute,
+
+    // Globally registered value converters
+    DateTimeValueConverter,
+    LangLogoValueConverter,
+    SortValueConverter,
+    SanitizeHtmlValueConverter,
+    TakeValueConverter,
+    TextToHtmlValueConverter,
+    TruncateValueConverter,
+    YesNoValueConverter,
+
+    // Globally registered custom elements
+    ContextMenu,
+    FindTextBox,
 
     DialogDefaultConfiguration.customize((config) => {
         config.lock = true;
     }),
 
-    LogConfig.register({
-        colorOptions: "colors",
-        level: Env.isProduction ? LogLevel.info : LogLevel.debug,
-        sinks: Env.RemoteLoggingEnabled ? [ConsoleLogSink, RemoteLogSink] : [ConsoleLogSink],
-        rules: [
-            {
-                loggerRegex: new RegExp(/AppLifeCycle/),
-                logLevel: Env.isProduction ? LogLevel.warn : LogLevel.debug
-            },
-            ...(Env.isDebug
-                // These guys can get a bit chatty at debug level. Should move to .env
-                ? [
-                    {
-                        // Aurelia's own debug messages when evaluating HTML case expressions
-                        loggerRegex: new RegExp(/^Case-#/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/.\.ComponentLifecycle/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/ShortcutManager/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/ViewerHost/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/ContextMenu/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/SignalRIpcGateway/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/ElectronIpcGateway/),
-                        logLevel: LogLevel.warn
-                    },
-                    {
-                        loggerRegex: new RegExp(/ElectronEventSync/),
-                        logLevel: LogLevel.warn
-                    },
-                ]
-                : []),
-
-        ]
-    }),
-
-    // Global Custom Attributes
-    ExternalLinkCustomAttribute,
-    PlatformsCustomAttribute,
-    TooltipCustomAttribute,
-
-    // Global Value Converters
-    DateTimeValueConverter,
-    TakeValueConverter,
-    SortValueConverter,
-    TextToHtmlValueConverter,
-    SanitizeHtmlValueConverter,
-    YesNoValueConverter,
-    TruncateValueConverter,
-    LangLogoValueConverter,
-
-    // Global Custom Elements
-    ContextMenu,
-    FindTextBox,
+    // Register app lifecycle actions
+    AppTask.creating(AppLifeCycle, async (appLifeCycle) => appLifeCycle.creating()),
+    AppTask.hydrating(AppLifeCycle, async (appLifeCycle) => appLifeCycle.hydrating()),
+    AppTask.hydrated(AppLifeCycle, async (appLifeCycle) => appLifeCycle.hydrated()),
+    AppTask.activating(AppLifeCycle, async (appLifeCycle) => appLifeCycle.activating()),
+    AppTask.activated(AppLifeCycle, async (appLifeCycle) => appLifeCycle.activated()),
+    AppTask.deactivating(AppLifeCycle, async (appLifeCycle) => appLifeCycle.deactivating()),
+    AppTask.deactivated(AppLifeCycle, async (appLifeCycle) => appLifeCycle.deactivated()),
 );
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
 
-// Configure app lifecycle actions
-const appLifeCycle = new AppLifeCycle(logger, builder.container.get(IEventBus));
-builder.register(
-    AppTask.creating(IContainer, async (container) => appLifeCycle.creating(container)),
-    AppTask.hydrating(IContainer, async (container) => appLifeCycle.hydrating(container)),
-    AppTask.hydrated(IContainer, async (container) => appLifeCycle.hydrated(container)),
-    AppTask.activating(IContainer, async (container) => appLifeCycle.activating(container)),
-    AppTask.activated(IContainer, async (container) => appLifeCycle.activated(container)),
-    AppTask.deactivating(IContainer, async (container) => appLifeCycle.deactivating(container)),
-    AppTask.deactivated(IContainer, async (container) => appLifeCycle.deactivated(container)),
-);
-
 // Configure the proper platform
-const platformType = Env.isRunningInElectron()
-    ? (await import("@application/platforms/electron/electron-platform")).ElectronPlatform
-    : (await import("@application/platforms/browser/browser-platform")).BrowserPlatform;
-
-const platform = new platformType() as IPlatform;
-logger.debug(`Configuring platform: ${platform.constructor.name}`);
-platform.configure(builder);
-
-// Load app settings
-const settings = await builder.container.get(ISettingsService).get();
-builder.container.get(Settings).init(settings.toJSON());
+const platform = await appActions.configureAndGetPlatform(builder);
+logger.debug(`Configured platform: ${platform.constructor.name}`);
 
 // Start the app
-const entryPoint = appTasks.configureAndGetAppEntryPoint(builder);
+await appActions.loadAppSettings(builder);
 
+const entryPoint = await appActions.configureAndGetAppEntryPoint(builder);
 const app = builder.app(entryPoint as CustomElementType);
-
-await app.start();
 
 window.addEventListener("unload", () => app.stop(true));
 
+await app.start();
 logger.debug("App started");

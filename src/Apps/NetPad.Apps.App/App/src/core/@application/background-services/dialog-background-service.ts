@@ -5,17 +5,18 @@ import {
     AlertUserCommand,
     ChannelInfo,
     ConfirmWithUserCommand,
+    IBackgroundService,
     IEventBus,
     IIpcGateway,
     PromptUserCommand,
     YesNoCancel
-} from "@domain";
-import {IBackgroundService} from "./ibackground-service";
-import {
-    AppDependenciesCheckDialog
-} from "@application/dialogs/app-dependencies-check-dialog/app-dependencies-check-dialog";
+} from "@application";
+import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
+/**
+ * Listens and reacts to dialog-related commands pushed by the Backend application.
+ */
 export class DialogBackgroundService extends WithDisposables implements IBackgroundService {
     private logger: ILogger;
 
@@ -69,6 +70,6 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     }
 
     private async alertUserAboutMissingAppDependencies(command: AlertUserAboutMissingAppDependencies) {
-        await this.dialogUtil.toggle(AppDependenciesCheckDialog, command.dependencyCheckResult);
+        await this.dialogUtil.open(AppDependenciesCheckDialog, command.dependencyCheckResult);
     }
 }

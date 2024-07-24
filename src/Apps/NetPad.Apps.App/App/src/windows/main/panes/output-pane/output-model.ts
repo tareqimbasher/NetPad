@@ -1,5 +1,5 @@
 import {DisposableCollection} from "@common";
-import {ScriptEnvironment, Settings} from "@domain";
+import {ScriptEnvironment, Settings} from "@application";
 import {DumpContainer} from "./components/dump-container";
 import {SqlViewDumpContainer} from "./components/sql-view/sql-view-dump-container";
 

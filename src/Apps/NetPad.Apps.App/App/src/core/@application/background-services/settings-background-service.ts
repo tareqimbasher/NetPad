@@ -1,9 +1,9 @@
 import {IDisposable} from "@common";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
 import {IBackgroundService} from "./ibackground-service";
 
 /**
- * Used to sync the Settings singleton from changes upstream.
+ * Used to update the main app Settings singleton when settings change.
  */
 export class SettingsBackgroundService implements IBackgroundService {
     private settingsUpdatedEventSubscription: IDisposable;

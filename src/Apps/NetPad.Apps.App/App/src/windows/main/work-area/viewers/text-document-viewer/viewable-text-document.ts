@@ -1,5 +1,5 @@
 import {IViewableObjectCommands, ViewableObject, ViewableObjectType} from "../viewable-object";
-import {IEventBus, ScriptConfigPropertyChangedEvent, ScriptEnvironment, ScriptKind,} from "@domain";
+import {IEventBus, ScriptConfigPropertyChangedEvent, ScriptEnvironment, ScriptKind,} from "@application";
 import {TextLanguage} from "@application/editor/text-language";
 import {TextDocument} from "@application/editor/text-document";
 

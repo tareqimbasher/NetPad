@@ -1,24 +1,13 @@
-import {Constructable, DI, IContainer} from "aurelia";
-import {IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation, TogglePaneEvent} from "@application";
-import {IEventBus} from "@domain";
-
-export interface IPaneManager {
-    createPaneHost(orientation: PaneHostOrientation, viewStateController?: IPaneHostViewStateController): PaneHost;
-
-    addPaneToHost<TPane extends Pane>(paneType: Constructable<TPane>, paneHost: PaneHost): TPane;
-
-    toggle(pane: Pane): void;
-
-    toggle(paneType: unknown): void;
-}
-
-export const IPaneManager = DI.createInterface<IPaneManager>();
+import {Constructable, IContainer} from "aurelia";
+import {IEventBus, IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation} from "@application";
+import {IPaneManager} from "./ipane-manager";
+import {TogglePaneCommand} from "@application/panes/toggle-pane-command";
 
 export class PaneManager implements IPaneManager {
     private _paneHosts: PaneHost[] = [];
 
     constructor(@IContainer private readonly container: IContainer, @IEventBus private readonly eventBus: IEventBus) {
-        eventBus.subscribe(TogglePaneEvent, message => this.toggle(message.paneType));
+        eventBus.subscribe(TogglePaneCommand, message => this.toggle(message.paneType));
     }
 
     public get paneHosts(): ReadonlyArray<PaneHost> {

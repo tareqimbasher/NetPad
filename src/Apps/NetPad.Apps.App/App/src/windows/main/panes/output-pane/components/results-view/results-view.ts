@@ -1,16 +1,15 @@
 import {watch} from "@aurelia/runtime-html";
-import {ChannelInfo, IIpcGateway, ScriptStatus} from "@domain";
-import {IExcelExportOptions, IExcelService} from "@application/data/excel-service";
 import {KeyCode, System, Util} from "@common";
-import {ExcelExportDialog} from "../excel-export-dialog/excel-export-dialog";
+import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
+import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
+import {ExcelService, IExcelExportOptions} from "../excel-export/excel-service";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
     private txtUserInput: HTMLInputElement;
 
-    constructor(@IExcelService private readonly excelService: IExcelService,
-                @IIpcGateway private readonly ipcGateway: IIpcGateway,
+    constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
                 private readonly dialogUtil: DialogUtil,
     ) {
         super();
@@ -64,8 +63,12 @@ export class ResultsView extends OutputViewBase {
             return;
         }
 
-        const result = await this.dialogUtil.toggle(ExcelExportDialog);
-        if (result.status !== "ok") return;
+        const result = await this.dialogUtil.open(ExcelExportDialog);
+
+        if (result?.status !== "ok") {
+            return;
+        }
+
         const exportOptions = result.value as IExcelExportOptions;
 
         const elementsToExport: Element[] = [];
@@ -86,7 +89,7 @@ export class ResultsView extends OutputViewBase {
             }
         }
 
-        const workbook = this.excelService.export(elementsToExport, exportOptions);
+        const workbook = ExcelService.export(elementsToExport, exportOptions);
 
         if (exportOptions.includeCode) {
             const worksheet = workbook.addWorksheet("Code");
@@ -99,7 +102,7 @@ export class ResultsView extends OutputViewBase {
 
         const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
         System.downloadFile(
-            `${this.model.environment.script.name}_${Util.dateToString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
+            `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             buffer.toString('base64')
         );
@@ -110,7 +113,7 @@ export class ResultsView extends OutputViewBase {
             return;
         }
 
-        const name = `${this.model.environment.script.name}_${Util.dateToString(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
+        const name = `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
 
         const metas = [...new Set<string>(
             Array.from(document.head.querySelectorAll("meta"))

@@ -1,5 +1,5 @@
 import {bindable} from "aurelia";
-import {DataConnection} from "@domain";
+import {DataConnection} from "@application";
 
 export class DataConnectionName {
     @bindable public connection: DataConnection;

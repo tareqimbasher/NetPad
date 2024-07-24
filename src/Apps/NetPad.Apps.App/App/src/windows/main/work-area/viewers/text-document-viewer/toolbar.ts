@@ -6,12 +6,13 @@ import {
     IAppService,
     IEventBus,
     IScriptService,
+    IShortcutManager,
     OptimizationLevel,
     Script,
     ScriptEnvironment,
-    ScriptKind
-} from "@domain";
-import {IShortcutManager, ViewModelBase} from "@application";
+    ScriptKind,
+    ViewModelBase
+} from "@application";
 import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-document";
 
 export class Toolbar extends ViewModelBase {

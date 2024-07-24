@@ -7,7 +7,7 @@ import {IKeybindingService} from "monaco-editor/esm/vs/platform/keybinding/commo
 // @ts-ignore
 import {StandaloneServices} from "monaco-editor/esm/vs/editor/standalone/browser/standaloneServices";
 /* eslint-enable @typescript-eslint/ban-ts-comment */
-import {Settings} from "@domain";
+import {Settings} from "@application";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 
 export class MonacoEditorUtil {
@@ -43,5 +43,34 @@ export class MonacoEditorUtil {
         editor.updateOptions(monacoOptions);
 
         await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]);
+    }
+
+    /**
+     * Creates an abort signal from a Cancellation Token and a timeout.
+     * @param timeout Signal will be aborted after specified timeout (in milliseconds) even if token is not cancelled.
+     * @param token A cancellation token that when cancelled will abort the signal. If none provided, the signal will be aborted based off timeout alone.
+     */
+    public static abortSignalFrom(timeout: number, token?: monaco.CancellationToken): AbortSignal {
+        const abortController = new AbortController();
+
+        if (timeout === undefined || timeout === null || timeout < 0) {
+            timeout = 10000;
+        }
+
+        if (token) {
+            const cts = new monaco.CancellationTokenSource(token);
+            token = cts.token;
+
+            const timeoutHandle = setTimeout(() => cts.cancel(), timeout);
+
+            token.onCancellationRequested(() => {
+                clearTimeout(timeoutHandle);
+                abortController.abort();
+            });
+        } else {
+            setTimeout(() => abortController.abort(), timeout);
+        }
+
+        return abortController.signal;
     }
 }

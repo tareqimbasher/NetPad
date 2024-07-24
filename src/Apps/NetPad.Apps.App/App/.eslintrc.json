@@ -28,7 +28,7 @@
     },
     "overrides": [
         {
-            "files": ["src/core/@domain/api.ts", "src/core/@plugins/omnisharp/api.ts"],
+            "files": ["src/core/@application/api.ts", "src/core/@plugins/omnisharp/api.ts"],
             "rules": {
                 "@typescript-eslint/ban-ts-comment": "off"
             }

@@ -1,7 +1,6 @@
 import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
-import {IShortcutManager, Pane, ShortcutIds} from "@application";
-import {IScriptService, ISession} from "@domain";
+import {IScriptService, ISession, IShortcutManager, Pane, ShortcutIds} from "@application";
 import {Util} from "@common";
 
 export class NamespacesPane extends Pane {

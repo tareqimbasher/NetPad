@@ -1,5 +1,5 @@
-import {ResizableTable} from "@application";
 import {WithDisposables} from "@common";
+import {ResizableTable} from "@application/tables/resizable-table";
 
 export class ResultControls extends WithDisposables {
     constructor(private readonly resultsElement: HTMLElement) {

@@ -2,8 +2,17 @@ import {bindable, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import dragula from "dragula";
 import {Util} from "@common";
-import {CreateScriptDto, IScriptService, ISession, Script, Settings} from "@domain";
-import {ContextMenuOptions, IShortcutManager, ShortcutIds, ViewModelBase} from "@application";
+import {
+    ContextMenuOptions,
+    CreateScriptDto,
+    IScriptService,
+    ISession,
+    IShortcutManager,
+    Script,
+    Settings,
+    ShortcutIds,
+    ViewModelBase
+} from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
 import {ViewerHost} from "../viewers/viewer-host";
 import {ViewableAppScriptDocument} from "../viewers/text-document-viewer/viewable-text-document";

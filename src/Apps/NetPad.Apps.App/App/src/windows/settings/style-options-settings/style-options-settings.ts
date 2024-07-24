@@ -1,8 +1,7 @@
 ﻿import {bindable, ILogger} from "aurelia";
-import {Settings} from "@domain";
+import {MonacoEditorUtil, Settings} from "@application";
 import * as monaco from "monaco-editor";
 import {watch} from "@aurelia/runtime-html";
-import {MonacoEditorUtil} from "@application";
 
 export class StyleOptionsSettings {
     @bindable public settings: Settings;

@@ -1,6 +1,6 @@
 ﻿import {Viewer} from "../viewer";
 import {ViewableObject} from "../viewable-object";
-import {IEventBus, IScriptService} from "@domain";
+import {IEventBus, IScriptService} from "@application";
 import {ITextEditor} from "@application/editor/text-editor";
 import {ILogger} from "aurelia";
 import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-document";

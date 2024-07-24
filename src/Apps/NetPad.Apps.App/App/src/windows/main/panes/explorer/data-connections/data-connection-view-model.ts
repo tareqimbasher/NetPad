@@ -4,7 +4,7 @@ import {
     DataConnection,
     DataConnectionResourceComponent,
     IDataConnectionService
-} from "@domain";
+} from "@application";
 
 export class DataConnectionViewModel {
     private resourcesBeingLoaded = new Set<DataConnectionResourceComponent>();

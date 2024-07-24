@@ -1,6 +1,12 @@
 import {CancellationToken, editor, IRange, languages, Position} from "monaco-editor";
-import {IScriptService, ISession} from "@domain";
-import {MonacoEditorUtil, ICommandProvider, ICompletionItemProvider, TextLanguage} from "@application";
+import {
+    ICommandProvider,
+    ICompletionItemProvider,
+    IScriptService,
+    ISession,
+    MonacoEditorUtil,
+    TextLanguage
+} from "@application";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";

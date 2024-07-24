@@ -1,5 +1,5 @@
 import {DumpContainer} from "../dump-container";
-import {Settings} from "@domain";
+import {Settings} from "@application";
 import {Colorizer} from "./colorizer";
 
 interface ILoggerInfo {

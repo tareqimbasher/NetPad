@@ -2,7 +2,7 @@ import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
 import * as path from "path";
 import Split from "split.js";
-import {AssemblyFileReference, IAssemblyService, Reference} from "@domain";
+import {AssemblyFileReference, IAssemblyService, Reference} from "@application";
 import {ConfigStore} from "../config-store";
 
 export class ReferenceManagement {

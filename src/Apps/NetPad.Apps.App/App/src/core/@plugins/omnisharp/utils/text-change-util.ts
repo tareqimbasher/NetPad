@@ -1,7 +1,6 @@
 import {editor} from "monaco-editor";
 import {Util} from "@common";
-import {IScriptService, ISession} from "@domain";
-import {MonacoEditorUtil} from "@application";
+import {IScriptService, ISession, MonacoEditorUtil} from "@application";
 import {LinePositionSpanTextChange} from "../api";
 import {Converter} from "./converter";
 

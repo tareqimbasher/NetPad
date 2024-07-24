@@ -1,5 +1,5 @@
 import {Constructable, IContainer, ILogger} from "aurelia";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
 import {Shortcut} from "./shortcut";
 import {ShortcutActionExecutionContext} from "./shortcut-action-execution-context";
 import {BuiltinShortcuts} from "./builtin-shortcuts";

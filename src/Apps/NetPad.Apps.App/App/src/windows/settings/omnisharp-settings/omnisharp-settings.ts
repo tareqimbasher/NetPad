@@ -1,4 +1,4 @@
-import {Settings} from "@domain";
+import {Settings} from "@application";
 import {bindable} from "aurelia";
 
 export class OmniSharpSettings {

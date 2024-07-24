@@ -1,6 +1,6 @@
 ﻿/**
  * Allows restricting concurrent access to a block of code to a limited number of
- * accessors at one time.
+ * accessors at once.
  */
 export class Semaphore {
     private count: number;

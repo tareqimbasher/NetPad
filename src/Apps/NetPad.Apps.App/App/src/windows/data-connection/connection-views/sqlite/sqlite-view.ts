@@ -1,5 +1,10 @@
 import {Constructable} from "aurelia";
-import {DataConnection, IDataConnectionService, MsSqlServerDatabaseConnection, SQLiteDatabaseConnection} from "@domain";
+import {
+    DataConnection,
+    IDataConnectionService,
+    MsSqlServerDatabaseConnection,
+    SQLiteDatabaseConnection
+} from "@application";
 import {AuthComponent} from "../components/auth-component";
 import {DatabaseComponent} from "../components/database-component";
 import {DataConnectionView} from "../data-connection-view";

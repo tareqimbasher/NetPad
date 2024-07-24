@@ -2,6 +2,12 @@ import {bindable, ILogger} from "aurelia";
 import {Tooltip} from "bootstrap";
 import {ViewModelBase} from "@application";
 
+/**
+ * Adds a Bootstrap tooltip to an element. Usage:
+ *
+ * <div tooltip="Tooltip text"></div> or
+ * <div tooltip.bind="person.name"></div>
+ * */
 export class TooltipCustomAttribute extends ViewModelBase {
     @bindable text?: string;
 

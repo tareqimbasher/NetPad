@@ -2,12 +2,12 @@ import {WithDisposables} from "@common";
 import {
     ChannelInfo,
     ConfirmSaveCommand,
+    IBackgroundService,
     IEventBus,
     IIpcGateway,
     RequestNewScriptNameCommand,
     YesNoCancel
-} from "@domain";
-import {IBackgroundService} from "@application";
+} from "@application";
 
 /**
  * This is utilized for the Browser app, not the Electron app.

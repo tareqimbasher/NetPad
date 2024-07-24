@@ -1,6 +1,6 @@
 import {Constructable, EventAggregator, ILogger} from "aurelia";
-import {ChannelInfo, IEventBus, IIpcGateway} from "@domain";
-import {IDisposable, Util} from "@common";
+import {ChannelInfo, IEventBus, IIpcGateway} from "@application";
+import {IDisposable} from "@common";
 
 /**
  * The main event message bus for the application.

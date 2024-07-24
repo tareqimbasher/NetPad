@@ -22,7 +22,7 @@ import {
     ISignatureHelpProvider
 } from "../providers/interfaces";
 import {KeyCodeNum} from "@common";
-import {IEventBus, Settings, SettingsUpdatedEvent} from "@domain";
+import {IEventBus, Settings, SettingsUpdatedEvent} from "@application";
 import {ShortcutIds} from "@application/shortcuts/builtin-shortcuts";
 import {MonacoThemeManager} from "./monaco-theme-manager";
 

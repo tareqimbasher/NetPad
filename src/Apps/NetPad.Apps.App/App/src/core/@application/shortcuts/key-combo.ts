@@ -1,5 +1,5 @@
 import {KeyCode} from "@common";
-import {IKeyboardShortcutConfiguration} from "@domain";
+import {IKeyboardShortcutConfiguration} from "@application";
 
 /**
  * A combination of keyboard keys.
@@ -126,37 +126,20 @@ export class KeyCombo {
             shift = keyOrEventOrCombo.shiftKey;
             meta = keyOrEventOrCombo.metaKey;
         } else if (keyOrEventOrCombo instanceof KeyCombo) {
-            return (
-                this.key === keyOrEventOrCombo.key &&
-                this.ctrl === keyOrEventOrCombo.ctrl &&
-                this.alt === keyOrEventOrCombo.alt &&
-                this.shift === keyOrEventOrCombo.shift &&
-                this.meta === keyOrEventOrCombo.meta
-            );
+            key = keyOrEventOrCombo.key;
+            ctrl = keyOrEventOrCombo.ctrl;
+            alt = keyOrEventOrCombo.alt;
+            shift = keyOrEventOrCombo.shift;
+            meta = keyOrEventOrCombo.meta;
+        } else {
+            key = keyOrEventOrCombo;
         }
 
-        return this.matchesKeyCombo(key, ctrl ?? false, alt ?? false, shift ?? false, meta ?? false);
-    }
-
-    public matchesKeyCombo(
-        key: KeyCode | undefined | null,
-        ctrl: boolean,
-        alt: boolean,
-        shift: boolean,
-        meta: boolean
-    ): boolean {
-        if (!key) return false;
-
-        if (this.key) {
-            return (
-                this.key === key &&
-                this.ctrl === ctrl &&
-                this.alt === alt &&
-                this.shift === shift &&
-                this.meta === meta
-            );
-        } else
-            return false;
+        return this.key === key
+            && (this.ctrl === ctrl ?? false)
+            && (this.alt === alt ?? false)
+            && (this.shift === shift ?? false)
+            && (this.meta === meta ?? false);
     }
 
     public get asArray(): string[] {

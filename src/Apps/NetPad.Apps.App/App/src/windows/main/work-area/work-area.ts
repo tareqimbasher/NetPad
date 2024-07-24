@@ -8,7 +8,7 @@ import {
     ISession,
     RunOptions,
     ScriptEnvironment
-} from "@domain";
+} from "@application";
 import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
@@ -16,9 +16,9 @@ import {
     IViewableAppScriptDocumentCommands,
     ViewableAppScriptDocument
 } from "./viewers/text-document-viewer/viewable-text-document";
-import {RunScriptEvent} from "@application";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {RunScriptCommand} from "@application/scripts/run-script-command";
 
 export class WorkArea extends ViewModelBase {
     constructor(
@@ -59,7 +59,7 @@ export class WorkArea extends ViewModelBase {
         }
 
         this.addDisposable(
-            this.eventBus.subscribe(RunScriptEvent, async msg => {
+            this.eventBus.subscribe(RunScriptCommand, async msg => {
                 const scriptId = msg.scriptId ?? this.workbench.workAreaService.viewerHosts.active?.activeViewable?.id;
 
                 if (!scriptId) return;

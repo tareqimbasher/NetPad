@@ -1,6 +1,5 @@
 ﻿import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {FindTextBox, IShortcutManager, KeyCombo, Pane, ShortcutIds} from "@application";
 import {
     HtmlErrorScriptOutput,
     HtmlRawScriptOutput,
@@ -8,15 +7,20 @@ import {
     HtmlSqlScriptOutput,
     IEventBus,
     ISession,
+    IShortcutManager,
     IWindowService,
+    KeyCombo,
+    Pane,
     PromptUserForInputCommand,
     ScriptEnvironment,
     ScriptOutputEmittedEvent,
-    Settings
-} from "@domain";
+    Settings,
+    ShortcutIds
+} from "@application";
 import {AppWindows} from "@application/windows/app-windows";
 import {OutputModel} from "./output-model";
 import {DisposableCollection, KeyCode} from "@common";
+import {FindTextBox} from "@application/find-text-box/find-text-box";
 
 export class OutputPane extends Pane {
     public outputModels = new Map<string, OutputModel>();

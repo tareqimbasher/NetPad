@@ -11,7 +11,7 @@ describe("Util", () => {
         });
     });
 
-    describe("dateToString", () => {
+    describe("dateToFormattedString", () => {
         test.each([
             [new Date("2020-03-15 4:35:13"), "yyyy", "2020"],
             [new Date("2020-03-15 4:35:13"), "MM", "03"],
@@ -45,7 +45,7 @@ describe("Util", () => {
             [new Date("2020-03-15 4:35:03:1"), "f", "1"],
         ])("given date %p and format %p, should return %p",
             (date, format, expectedFormattedDateString) => {
-                expect(Util.dateToString(date, format)).toBe(expectedFormattedDateString);
+                expect(Util.dateToFormattedString(date, format)).toBe(expectedFormattedDateString);
             });
     });
 

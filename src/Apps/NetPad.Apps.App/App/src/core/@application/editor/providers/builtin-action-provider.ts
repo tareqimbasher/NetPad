@@ -1,7 +1,6 @@
 import {IContainer} from "aurelia";
 import * as monaco from "monaco-editor";
-import {MonacoEditorUtil, IActionProvider} from "@application";
-import {IScriptService, ISession, Script, ScriptKind} from "@domain";
+import {IActionProvider, IScriptService, ISession, MonacoEditorUtil, Script, ScriptKind} from "@application";
 
 export class BuiltinActionProvider implements IActionProvider {
     constructor(@IContainer private readonly container: IContainer) {

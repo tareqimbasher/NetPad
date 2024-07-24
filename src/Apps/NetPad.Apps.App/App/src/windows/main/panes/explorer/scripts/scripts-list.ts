@@ -8,10 +8,10 @@ import {
     ScriptDirectoryChangedEvent,
     ScriptEnvironment,
     ScriptSummary,
-    Settings
-} from "@domain";
+    Settings,
+    ViewModelBase
+} from "@application";
 import {Util} from "@common";
-import {ViewModelBase} from "@application";
 import {ILogger} from "aurelia";
 import {ScriptFolderViewModel} from "./script-folder-view-model";
 import {ScriptViewModel} from "./script-view-model";

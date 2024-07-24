@@ -4,7 +4,7 @@ using NetPad.Apps.CQs;
 namespace NetPad.Apps.UiInterop;
 
 /// <summary>
-/// An IPC service that uses SignalR to communicate with external processes/clients.
+/// Pushes messages to connected clients using SignalR.
 /// </summary>
 public class SignalRIpcService(IHubContext<IpcHub> hubContext) : IIpcService
 {

@@ -1,6 +1,5 @@
 import {CancellationToken, editor, languages, Range} from "monaco-editor";
-import {IScriptService, ISession} from "@domain";
-import {MonacoEditorUtil, ICodeActionProvider, ICommandProvider} from "@application";
+import {ICodeActionProvider, ICommandProvider, IScriptService, ISession, MonacoEditorUtil} from "@application";
 import {Converter, TextChangeUtil} from "../utils";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
@@ -105,7 +104,7 @@ export class OmniSharpCodeActionProvider extends FeatureProvider implements ICod
 
         const versionBeforeRequest = model.getVersionId();
 
-        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, new AbortController().signalFromDefaultTimeout());
+        const response = await this.omnisharpService.runCodeAction(scriptId, runRequest, MonacoEditorUtil.abortSignalFrom(10000));
 
         if (!response || !response.changes || versionBeforeRequest !== model.getVersionId()) {
             return;

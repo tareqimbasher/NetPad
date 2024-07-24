@@ -1,6 +1,7 @@
 import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
+    ContextMenuOptions,
     CreateScriptDto,
     DataConnectionResourcesUpdatedEvent,
     DataConnectionResourcesUpdateFailedEvent,
@@ -11,9 +12,9 @@ import {
     IDataConnectionService,
     IEventBus,
     IScriptService,
-    ISession
-} from "@domain";
-import {ContextMenuOptions, ViewModelBase} from "@application";
+    ISession,
+    ViewModelBase
+} from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 

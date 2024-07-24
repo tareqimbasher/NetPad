@@ -22,8 +22,6 @@
         "noPropertyAccessFromIndexSignature": true,
         "pretty": true,
         "paths": {
-            "@domain": ["core/@domain"],
-            "@domain/*": ["core/@domain/*"],
             "@common": ["core/@common"],
             "@common/*": ["core/@common/*"],
             "@application": ["core/@application"],

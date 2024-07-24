@@ -1,6 +1,5 @@
 import {CancellationTokenSource, editor, MarkerSeverity, MarkerTag} from "monaco-editor";
-import {IEventBus, Settings} from "@domain";
-import {MonacoEditorUtil, IDiagnosticsProvider} from "@application";
+import {IDiagnosticsProvider, IEventBus, MonacoEditorUtil, Settings} from "@application";
 import * as api from "../api";
 import {FeatureProvider} from "./feature-provider";
 
@@ -74,7 +73,7 @@ export class OmnisharpDiagnosticsProvider extends FeatureProvider implements IDi
             setMarkers(markers);
         });
 
-        await this.omnisharpService.startDiagnostics(scriptId, new AbortController().signalFromDefaultTimeout());
+        await this.omnisharpService.startDiagnostics(scriptId, MonacoEditorUtil.abortSignalFrom(10000));
     }
 
     private getDisplay(quickFix: api.DiagnosticLocation, severity: MarkerSeverity | "hidden") {

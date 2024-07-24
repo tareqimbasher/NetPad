@@ -1,7 +1,7 @@
 import {KeyCode} from "@common";
-import {CreateScriptDto, IScriptService, ISettingsService} from "@domain";
+import {CreateScriptDto, IScriptService, ISettingsService} from "@application";
 import {Shortcut} from "./shortcut";
-import {ITextEditorService} from "../editor/text-editor-service";
+import {ITextEditorService} from "../editor/itext-editor-service";
 
 export enum ShortcutIds {
     openCommandPalette = "shortcut.commandpalette.open",
@@ -100,7 +100,7 @@ export const BuiltinShortcuts = [
 
     new Shortcut(ShortcutIds.runDocument, "Run")
         .withKey(KeyCode.F5)
-        .firesEvent(async () => new (await import("@application/events/action-events")).RunScriptEvent())
+        .firesEvent(async () => new (await import("@application/scripts/run-script-command")).RunScriptCommand())
         .captureDefaultKeyCombo()
         .configurable()
         .enabled(),
@@ -127,10 +127,10 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.KeyR)
         .firesEvent(async () => {
-            const TogglePaneEvent = (await import("@application/events/action-events")).TogglePaneEvent;
+            const TogglePaneCommand = (await import("@application/panes/toggle-pane-command")).TogglePaneCommand;
             const OutputPane = (await import("../../../windows/main/panes")).OutputPane;
 
-            return new TogglePaneEvent(OutputPane);
+            return new TogglePaneCommand(OutputPane);
         })
         .captureDefaultKeyCombo()
         .configurable()
@@ -140,10 +140,10 @@ export const BuiltinShortcuts = [
         .withAltKey()
         .withKey(KeyCode.KeyE)
         .firesEvent(async () => {
-            const TogglePaneEvent = (await import("@application/events/action-events")).TogglePaneEvent;
+            const TogglePaneCommand = (await import("@application/panes/toggle-pane-command")).TogglePaneCommand;
             const Explorer = (await import("../../../windows/main/panes")).Explorer;
 
-            return new TogglePaneEvent(Explorer);
+            return new TogglePaneCommand(Explorer);
         })
         .captureDefaultKeyCombo()
         .configurable()
@@ -153,10 +153,10 @@ export const BuiltinShortcuts = [
         .withAltKey()
         .withKey(KeyCode.KeyN)
         .firesEvent(async () => {
-            const TogglePaneEvent = (await import("@application/events/action-events")).TogglePaneEvent;
+            const TogglePaneCommand = (await import("@application/panes/toggle-pane-command")).TogglePaneCommand;
             const NamespacesPane = (await import("../../../windows/main/panes")).NamespacesPane;
 
-            return new TogglePaneEvent(NamespacesPane);
+            return new TogglePaneCommand(NamespacesPane);
         })
         .captureDefaultKeyCombo()
         .configurable()

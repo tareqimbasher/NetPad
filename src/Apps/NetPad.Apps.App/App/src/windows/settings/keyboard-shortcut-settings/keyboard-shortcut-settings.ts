@@ -1,6 +1,12 @@
 import {bindable, ILogger} from "aurelia";
-import {KeyboardShortcutConfiguration, Settings} from "@domain";
-import {BuiltinShortcuts, KeyCombo, Shortcut, ViewModelBase} from "@application";
+import {
+    BuiltinShortcuts,
+    KeyboardShortcutConfiguration,
+    KeyCombo,
+    Settings,
+    Shortcut,
+    ViewModelBase
+} from "@application";
 import {KeyCode} from "@common";
 
 export class KeyboardShortcutSettings extends ViewModelBase {

@@ -1,4 +1,4 @@
-﻿import {IPackageService, PackageIdentity} from "@domain";
+﻿import {IPackageService, PackageIdentity} from "@application";
 import {IPackageWithExtendedMetadata} from "./ipackage-with-extended-metadata";
 
 export class PackageExtendedMetadataLoader {

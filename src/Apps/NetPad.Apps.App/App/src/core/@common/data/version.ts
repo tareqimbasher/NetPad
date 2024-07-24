@@ -1,5 +1,5 @@
 /**
- * Represents a semver version
+ * Represents a semver version.
  */
 export class Version {
     public major = 0;

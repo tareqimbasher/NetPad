@@ -1,5 +1,5 @@
 import {customElement, watch} from "aurelia";
-import {ISession} from "@domain";
+import {ISession} from "@application";
 import {FloatingPaneWindowBase, windowTemplate} from "@application/windows/floating-pane-window-base";
 import {CodePane} from "../main/panes";
 

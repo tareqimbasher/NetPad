@@ -2,8 +2,7 @@ import {DI, ILogger} from "aurelia";
 import {IHydratedController, watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {WithDisposables} from "@common";
-import {IEventBus, Settings} from "@domain";
-import {MonacoEditorUtil, ViewModelBase} from "@application";
+import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application";
 import {TextEditorFocusedEvent} from "./events";
 import {TextDocument} from "./text-document";
 

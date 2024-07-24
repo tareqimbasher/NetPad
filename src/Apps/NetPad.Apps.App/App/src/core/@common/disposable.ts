@@ -18,7 +18,7 @@ export class DisposableCollection implements IDisposable {
             const disposable = this.disposables.shift();
 
             try {
-                if (disposable !== undefined) {
+                if (typeof disposable === "function") {
                     disposable();
                 }
             } catch (ex) {
