@@ -1,0 +1,23 @@
+[package]
+name = "NetPad"
+version = "0.8.0"
+description = "A cross-platform C# editor and playground"
+authors = ["Tareq Imbasher"]
+license = "MIT"
+repository = "https://github.com/tareqimbasher/NetPad"
+edition = "2021"
+rust-version = "1.70"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-beta.19", features = ["config-json5"] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.0.0-beta.24", features = ["config-json5"] }

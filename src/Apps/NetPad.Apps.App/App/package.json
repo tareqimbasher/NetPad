@@ -19,6 +19,7 @@
         "start": "webpack serve",
         "start-web": "webpack serve --env target=web",
         "build": "rimraf dist && webpack --env production",
+        "build-web": "rimraf dist && webpack --env production --env target=web",
         "analyze": "rimraf dist && webpack --env production --analyze",
         "test": "jest",
         "precommit": "npm run lint && jest"
