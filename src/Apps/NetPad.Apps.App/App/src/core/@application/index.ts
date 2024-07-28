@@ -32,7 +32,7 @@ export * from "./logging/log-config";
 
 // Custom HTML attributes
 export * from "./attributes/external-link-attribute";
-export * from "./attributes/platforms-attribute";
+export * from "./attributes/shells-attribute";
 export * from "./attributes/tooltip-attribute";
 
 // Custom value converters

@@ -18,7 +18,7 @@ import {
     ISettingsService,
     LangLogoValueConverter,
     LogConfig,
-    PlatformsCustomAttribute,
+    ShellsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
     Settings,
@@ -60,7 +60,7 @@ const builder = Aurelia.register(
 
     // Globally registered custom attributes
     ExternalLinkCustomAttribute,
-    PlatformsCustomAttribute,
+    ShellsCustomAttribute,
     TooltipCustomAttribute,
 
     // Globally registered value converters
@@ -93,9 +93,9 @@ const builder = Aurelia.register(
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
 
-// Configure the proper platform
-const platform = await appActions.configureAndGetPlatform(builder);
-logger.debug(`Configured platform: ${platform.constructor.name}`);
+// Configure the proper shell
+const shell = await appActions.configureAndGetShell(builder);
+logger.debug(`Configured for shell: ${shell.constructor.name}`);
 
 // Start the app
 await appActions.loadAppSettings(builder);

@@ -8,7 +8,7 @@ import {
     IWindowBootstrapperConstructor,
     Settings
 } from "@application";
-import {IPlatform} from "@application/platforms/iplatform";
+import {IShell} from "@application/shells/ishell";
 
 /**
  * Loads main app settings.
@@ -22,18 +22,18 @@ export const loadAppSettings = async (builder: IAurelia) => {
 }
 
 /**
- * Selects and configures the proper platform.
+ * Selects and configures the proper shell.
  */
-export const configureAndGetPlatform = async (builder: IAurelia) => {
-    const platformType = Env.isRunningInElectron()
-        ? (await import("@application/platforms/electron/electron-platform")).ElectronPlatform
-        : (await import("@application/platforms/browser/browser-platform")).BrowserPlatform;
+export const configureAndGetShell = async (builder: IAurelia) => {
+    const shellType = Env.isRunningInElectron()
+        ? (await import("@application/shells/electron/electron-shell")).ElectronShell
+        : (await import("@application/shells/browser/browser-shell")).BrowserShell;
 
-    const platform = new platformType() as IPlatform;
+    const shell = new shellType() as IShell;
 
-    platform.configure(builder);
+    shell.configure(builder);
 
-    return platform;
+    return shell;
 }
 
 /**

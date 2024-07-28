@@ -28,7 +28,7 @@ This includes the time it took to start the host process.">
     <i class="app-deps-check-icon action-icon"
        click.trigger="showAppDepsCheckDialog()"
        title="App Dependencies Check"
-       platforms="Electron"></i>
+       shells="electron"></i>
     <i class="theme-icon action-icon"
        click.trigger="settingsService.toggleTheme()"
        title="Toggle Theme"></i>
@@ -38,6 +38,6 @@ This includes the time it took to start the host process.">
        title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
     <i class="settings-icon action-icon"
        click.trigger="settingsService.openSettingsWindow()"
-       platforms="Browser"
+       shells="browser"
        title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
 </div>
