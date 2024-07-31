@@ -1,5 +1,12 @@
 import {Constructable, IHydratedParentController} from "aurelia";
-import {IPaneHostViewStateController, KeyCombo, Pane, PaneHostOrientation, PaneHostViewMode} from "@application";
+import {
+    IPaneHostViewStateController,
+    IWindowService,
+    KeyCombo,
+    Pane,
+    PaneHostOrientation,
+    PaneHostViewMode
+} from "@application";
 import {DisposableCollection, KeyCode, Util} from "@common";
 
 /**
@@ -19,7 +26,8 @@ export class PaneHost {
 
     constructor(
         orientation: PaneHostOrientation,
-        private readonly viewStateController: IPaneHostViewStateController
+        private readonly viewStateController: IPaneHostViewStateController,
+        private readonly windowService: IWindowService
     ) {
         this.id = Util.newGuid();
         this.orientation = orientation;
@@ -35,10 +43,6 @@ export class PaneHost {
 
     public get viewMode(): PaneHostViewMode {
         return this._viewMode;
-    }
-
-    protected set viewMode(value) {
-        this._viewMode = value;
     }
 
     private attached(initiator: IHydratedParentController) {
@@ -80,7 +84,7 @@ export class PaneHost {
 
         if (this.viewMode !== PaneHostViewMode.Expanded) {
             this.viewStateController.expand(this);
-            this.viewMode = PaneHostViewMode.Expanded;
+            this._viewMode = PaneHostViewMode.Expanded;
         }
     }
 
@@ -91,12 +95,12 @@ export class PaneHost {
         if (!shouldCollapse) return;
 
         if (this.orientation === PaneHostOrientation.FloatingWindow) {
-            window.close();
+            this.windowService.close();
             return;
         }
 
         this.viewStateController.collapse(this);
-        this.viewMode = PaneHostViewMode.Collapsed;
+        this._viewMode = PaneHostViewMode.Collapsed;
         this._active = undefined;
     }
 

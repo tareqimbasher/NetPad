@@ -23,27 +23,6 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     </ItemGroup>
-    <ItemGroup>
-        <!-- Don't publish the SPA source files, but do show them in the project files list -->
-        <Content Remove="$(SpaRoot)**" />
-        <None Remove="$(SpaRoot)**" />
-        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-        <Content Remove="App\dist\**" />
-        <None Remove="App\dist\**" />
-        <Content Include="electron.manifest.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="electron.manifest.dev.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-        <Content Update="appsettings.Development.json">
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-        <Content Update="appsettings.Local.json">
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
         <!-- Ensure Node.js is installed -->
         <Exec Command="node --version" ContinueOnError="true">
@@ -56,7 +35,8 @@
     <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
         <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
         <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" Condition=" '$(WebBuild)' != 'true' " />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build-web" Condition=" '$(WebBuild)' == 'true' " />
         <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' " />
         <!-- Include the newly-built files in the publish output -->
         <ItemGroup>
@@ -73,15 +53,39 @@
         <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
         <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Shells.Electron\NetPad.Apps.Shells.Electron.csproj" />
+        <ProjectReference Include="..\NetPad.Apps.Shells.Tauri\NetPad.Apps.Shells.Tauri.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Shells.Web\NetPad.Apps.Shells.Web.csproj" />
         <ProjectReference Include="..\..\Plugins\NetPad.Plugins.OmniSharp\NetPad.Plugins.OmniSharp.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
     </ItemGroup>
     <ItemGroup>
+        <Content Remove="$(SpaRoot)**" />
+        <None Remove="$(SpaRoot)**" />
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+        <Content Remove="App\dist\**" />
+        <None Remove="App\dist\**" />
         <Compile Remove="App\dist\**" />
-        <EmbeddedResource Remove="App\dist\**"/>
+        <EmbeddedResource Remove="App\dist\**" />
+        <Content Include="electron.manifest.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="electron.manifest.dev.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
         <Content Update="ElectronHostHook\**\*.*">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
+        <Content Update="appsettings.Development.json">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+        <Content Update="appsettings.Local.json">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+        <Content Remove="tauri-app\src-tauri\target\**" />
+        <None Remove="tauri-app\src-tauri\target\**" />
+        <Compile Remove="tauri-app\src-tauri\target\**" />
+        <EmbeddedResource Remove="tauri-app\src-tauri\target\**" />
     </ItemGroup>
+    
 </Project>

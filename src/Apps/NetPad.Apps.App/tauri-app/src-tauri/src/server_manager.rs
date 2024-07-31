@@ -26,6 +26,7 @@ impl ServerManager {
             .unwrap();
 
         let mut cmd = Command::new(server_path);
+        cmd.arg("--tauri");
         cmd.current_dir(working_dir);
 
         match self.child.borrow_mut() {

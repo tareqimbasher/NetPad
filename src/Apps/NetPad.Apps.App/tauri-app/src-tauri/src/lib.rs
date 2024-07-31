@@ -8,7 +8,10 @@ struct ServerManagerState {
 }
 
 #[tauri::command]
-fn start_server(server_manager_state: State<ServerManagerState>, app_handle: tauri::AppHandle) -> Result<String, String> {
+fn start_server(
+    server_manager_state: State<ServerManagerState>,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
     let am = server_manager_state
         .server_manager_mutex
         .lock()
@@ -28,13 +31,25 @@ fn stop_server(server_manager_state: State<ServerManagerState>) -> Result<String
 }
 
 #[tauri::command]
-fn restart_server(server_manager_state: State<ServerManagerState>, app_handle: tauri::AppHandle) -> Result<String, String> {
+fn restart_server(
+    server_manager_state: State<ServerManagerState>,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
     let am = server_manager_state
         .server_manager_mutex
         .lock()
         .unwrap()
         .restart_backend(&app_handle);
     am
+}
+
+#[tauri::command]
+fn toggle_devtools(webview_window: tauri::WebviewWindow) {
+  if webview_window.is_devtools_open() {
+    webview_window.close_devtools();
+  } else {
+    webview_window.open_devtools();
+  }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -45,6 +60,7 @@ pub fn run() {
     };
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(sms)
         .setup(move |app| {
             if cfg!(not(debug_assertions)) {
@@ -56,11 +72,16 @@ pub fn run() {
                     .start_backend(app.handle())
                     .expect("Backend start failed");
             }
+
+            // let window = app.get_webview_window("main").unwrap();
+            // window.open_devtools();
+            // window.close_devtools();
+
             Ok(())
         })
         .on_window_event(move |window, event| match event {
             WindowEvent::Destroyed => {
-                if cfg!(not(debug_assertions)) {
+                if cfg!(not(debug_assertions)) && window.label() == "main" {
                     let state: State<ServerManagerState> = window.state();
                     state
                         .server_manager_mutex
@@ -75,7 +96,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             start_server,
             stop_server,
-            restart_server
+            restart_server,
+            toggle_devtools
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

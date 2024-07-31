@@ -2,13 +2,14 @@ using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 using NetPad.Scripts;
 
-namespace NetPad.Apps.Shells.Web.UiInterop;
+namespace NetPad.Apps.Shells.Tauri.UiInterop;
 
-public class WebWindowService(IIpcService ipcService) : IUiWindowService
+public class TauriWindowService(IIpcService ipcService) : IUiWindowService
 {
     public Task OpenMainWindowAsync()
     {
-        throw new PlatformNotSupportedException();
+        // Tauri opens the main window automatically
+        return Task.CompletedTask;
     }
 
     public async Task OpenSettingsWindowAsync(string? tab = null)
@@ -25,8 +26,8 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
     {
         var command = new OpenWindowCommand(WindowIds.ScriptConfig);
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        command.Options.Height = 0.67;
+        command.Options.Width = 0.8;
 
         command.Metadata.Add("script-id", script.Id);
         if (tab != null) command.Metadata.Add("tab", tab);
@@ -42,8 +43,8 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
         }
 
         var command = new OpenWindowCommand(WindowIds.DataConnection);
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        command.Options.Height = 0.4;
+        command.Options.Width = 0.5;
 
         if (dataConnectionId != null)
         {
@@ -61,8 +62,8 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenOutputWindowAsync()
     {
         var command = new OpenWindowCommand(WindowIds.Output);
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        command.Options.Height = 0.67;
+        command.Options.Width = 0.8;
 
         await ipcService.SendAsync(command);
     }
@@ -70,8 +71,8 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenCodeWindowAsync()
     {
         var command = new OpenWindowCommand(WindowIds.Code);
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        command.Options.Height = 0.67;
+        command.Options.Width = 0.8;
 
         await ipcService.SendAsync(command);
     }

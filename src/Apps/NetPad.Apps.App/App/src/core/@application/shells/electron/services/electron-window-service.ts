@@ -22,6 +22,11 @@ export class ElectronWindowService extends WindowApiClient implements IWindowSer
         return new WindowState(state.viewStatus, state.isAlwaysOnTop);
     }
 
+    public close(): Promise<void> {
+        window.close();
+        return Promise.resolve();
+    }
+
     maximize(): Promise<void> {
         return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.maximize));
     }

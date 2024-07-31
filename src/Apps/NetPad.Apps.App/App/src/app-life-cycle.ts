@@ -11,12 +11,13 @@ import {
     IIpcGateway
 } from "@application";
 import {IAppWindowEvent} from "@application/windows/app-windows";
+import {WindowParams} from "@application/windows/window-params";
 
 /**
  * Actions that run at specific points in the app's lifecycle
  */
 export class AppLifeCycle {
-    constructor(private readonly startupParams: URLSearchParams,
+    constructor(private readonly windowParams: WindowParams,
                 @ILogger private readonly logger: ILogger,
                 @IEventBus private readonly eventBus: IEventBus,
                 @IContainer private readonly container: IContainer) {
@@ -24,7 +25,7 @@ export class AppLifeCycle {
     }
 
     public async creating(): Promise<void> {
-        this.logger.debug("App being created with options:", this.startupParams.toString());
+        this.logger.debug("App being created with options:", this.windowParams.toString());
         this.eventBus.publish(new AppCreatingEvent());
 
         await this.container.get(IIpcGateway).start();
@@ -54,7 +55,7 @@ export class AppLifeCycle {
         const bc = new BroadcastChannel("windows");
         bc.postMessage(<IAppWindowEvent>{
             type: "activated",
-            windowName: this.startupParams.get("win")
+            windowName: this.windowParams.window
         });
         bc.close();
 
@@ -80,7 +81,7 @@ export class AppLifeCycle {
         const bc = new BroadcastChannel("windows");
         bc.postMessage(<IAppWindowEvent>{
             type: "deactivated",
-            windowName: this.startupParams.get("win")
+            windowName: this.windowParams.window
         });
         bc.close();
 

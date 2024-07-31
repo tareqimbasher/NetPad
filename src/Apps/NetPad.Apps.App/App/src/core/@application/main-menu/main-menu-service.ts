@@ -71,7 +71,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         id: "file.exit",
                         text: "Exit",
-                        click: async () => window.close()
+                        click: async () => this.windowService.close()
                     }
                 ]
             },

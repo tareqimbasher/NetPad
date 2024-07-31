@@ -1,5 +1,6 @@
 import {bindable} from "aurelia";
-import {Env} from "@application/env";
+import {ShellType} from "@application/windows/shell-type";
+import {WindowParams} from "@application/windows/window-params";
 
 /**
  * A custom attribute that removes the element it's applied to from the DOM on unsupported shells.
@@ -7,26 +8,25 @@ import {Env} from "@application/env";
  *
  * The value of the shells attribute must be a comma seperated string.
  * Possible values (case-insensitive):
- *      - electron
  *      - browser
+ *      - electron
+ *      - tauri
  *
  * Prepending any of these values with "!" signifies "NOT". ie. !electron = show element on all shells except Electron.
  */
 export class ShellsCustomAttribute {
     @bindable requirements?: string;
 
-    constructor(private readonly element: Element) {
+    constructor(private readonly element: Element, private readonly windowParams: WindowParams) {
     }
 
     public bound() {
-        const currentShell = Env.isRunningInElectron() ? "electron" : "browser";
-
-        if (!ShellsCustomAttribute.areRequirementsMet(this.requirements, currentShell)) {
+        if (!ShellsCustomAttribute.areRequirementsMet(this.requirements, this.windowParams.shell)) {
             this.element.remove();
         }
     }
 
-    public static areRequirementsMet(requirements: string | undefined, currentShell: "browser" | "electron"): boolean {
+    public static areRequirementsMet(requirements: string | undefined, currentShell: ShellType): boolean {
         if (!requirements) {
             return true;
         }
@@ -35,22 +35,22 @@ export class ShellsCustomAttribute {
             .split(",")
             .map(x => x.trim().toLowerCase());
 
-        const allowedShells = new Set<string>();
-        const disallowedShells = new Set<string>();
+        const whitelist = new Set<string>();
+        const blacklist = new Set<string>();
 
-        shellRequirements.forEach(sh => {
-            if (sh.startsWith('!')) {
-                disallowedShells.add(sh.slice(1));
+        for (const shell of shellRequirements) {
+            if (shell.startsWith('!')) {
+                blacklist.add(shell.slice(1));
             } else {
-                allowedShells.add(sh);
+                whitelist.add(shell);
             }
-        });
+        }
 
-        if (disallowedShells.has(currentShell)) {
+        if (blacklist.has(currentShell)) {
             return false;
         }
 
-        if (allowedShells.size > 0 && !allowedShells.has(currentShell)) {
+        if (whitelist.size > 0 && !whitelist.has(currentShell)) {
             return false;
         }
 

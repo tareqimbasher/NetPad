@@ -3,27 +3,49 @@
     "version": "0.8.0",
     "identifier": "com.netpad.app",
     "build": {
-        "devUrl": "http://localhost:57940",
         "beforeDevCommand": {
             "script": "npm run start-web",
             "cwd": "../../App"
         },
-        "beforeBuildCommand": "",
-        "frontendDist": "http://localhost:57930"
+        "devUrl": "http://localhost:57940?shell=tauri",
+        "beforeBuildCommand": "dotnet publish ../NetPad.Apps.App.csproj -r linux-x64 -c \"Release\" /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --no-self-contained",
+        "frontendDist": "http://localhost:57930?shell=tauri"
     },
     "app": {
         "windows": [
             {
+                "label": "main",
                 "title": "NetPad",
                 "maximized": true,
-                "width": 1400,
+                "width": 1200,
                 "height": 800,
                 "resizable": true,
-                "fullscreen": false
+                "fullscreen": false,
+                "decorations": false
             }
         ],
         "security": {
-            "csp": null
+            "csp": null,
+            "capabilities": [
+                {
+                    "identifier": "inline",
+                    "description": "test",
+                    "windows": [
+                        "*"
+                    ],
+                    "permissions": [
+                        "webview:allow-create-webview-window",
+                        "window:allow-close",
+                        "window:allow-maximize",
+                        "window:allow-unmaximize",
+                        "window:allow-minimize",
+                        "window:allow-unminimize",
+                        "window:allow-set-always-on-top",
+                        "window:allow-start-dragging"
+                    ]
+                },
+                "default"
+            ]
         }
     },
     "bundle": {

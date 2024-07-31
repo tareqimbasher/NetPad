@@ -28,7 +28,12 @@
         "testEnvironment": "jsdom",
         "transform": {
             "\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub",
-            "\\.(ts|html)$": ["@aurelia/ts-jest", { "isolatedModules": true }]
+            "\\.(ts|html)$": [
+                "@aurelia/ts-jest",
+                {
+                    "isolatedModules": true
+                }
+            ]
         },
         "moduleNameMapper": {
             "@common/(.*)": "<rootDir>/src/core/@common/$1",
@@ -46,6 +51,8 @@
         "@fortawesome/fontawesome-free": "^6.4.0",
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
+        "@tauri-apps/api": "^2.0.0-beta.16",
+        "@tauri-apps/plugin-dialog": "^2.0.0-beta.7",
         "aurelia": "2.0.0-beta.14",
         "bootstrap": "^5.2.3",
         "dragula": "^3.7.3",

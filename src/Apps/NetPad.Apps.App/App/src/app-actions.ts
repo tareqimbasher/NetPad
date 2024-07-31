@@ -1,4 +1,4 @@
-﻿import {IAurelia, IContainer, ILogger, LogLevel} from "aurelia";
+﻿import {Constructable, IAurelia, IContainer, ILogger, LogLevel} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {
     Env,
@@ -9,6 +9,8 @@ import {
     Settings
 } from "@application";
 import {IShell} from "@application/shells/ishell";
+import {WindowParams} from "@application/windows/window-params";
+import {WindowId} from "@application/windows/window-id";
 
 /**
  * Loads main app settings.
@@ -25,9 +27,17 @@ export const loadAppSettings = async (builder: IAurelia) => {
  * Selects and configures the proper shell.
  */
 export const configureAndGetShell = async (builder: IAurelia) => {
-    const shellType = Env.isRunningInElectron()
-        ? (await import("@application/shells/electron/electron-shell")).ElectronShell
-        : (await import("@application/shells/browser/browser-shell")).BrowserShell;
+    const windowParams = builder.container.get(WindowParams);
+
+    let shellType: Constructable<IShell>;
+
+    if (windowParams.shell === "electron") {
+        shellType = (await import("@application/shells/electron/electron-shell")).ElectronShell;
+    } else if (windowParams.shell === "tauri") {
+        shellType = (await import("@application/shells/tauri/tauri-shell")).TauriShell;
+    } else {
+        shellType = (await import("@application/shells/browser/browser-shell")).BrowserShell;
+    }
 
     const shell = new shellType() as IShell;
 
@@ -41,31 +51,26 @@ export const configureAndGetShell = async (builder: IAurelia) => {
  * that will be the entry point for the Aurelia app.
  */
 export const configureAndGetAppEntryPoint = async (builder: IAurelia) => {
-    const startupOptions = builder.container.get(URLSearchParams);
+    const windowParams = builder.container.get(WindowParams);
 
-    // Determine which window needs to be bootstrapped using the 'win' query parameter of the current window
-    let windowName = startupOptions.get("win");
-
-    if (!windowName && !Env.isRunningInElectron()) {
-        windowName = "main";
-    }
+    const windowId = windowParams.window;
 
     let bootstrapperCtor: IWindowBootstrapperConstructor;
 
-    if (windowName === "main")
+    if (windowId === WindowId.Main)
         bootstrapperCtor = (await import("./windows/main/main-window-bootstrapper")).MainWindowBootstrapper;
-    else if (windowName === "script-config")
-        bootstrapperCtor = (await import("./windows/script-config/script-config-window-bootstrapper")).ScriptConfigWindowBootstrapper;
-    else if (windowName === "data-connection")
-        bootstrapperCtor = (await import("./windows/data-connection/data-connection-window-bootstrapper")).DataConnectionWindowBootstrapper;
-    else if (windowName === "settings")
+    else if (windowId === WindowId.Settings)
         bootstrapperCtor = (await import("./windows/settings/settings-window-bootstrapper")).SettingsWindowBootstrapper;
-    else if (windowName === "output")
+    else if (windowId === WindowId.ScriptConfig)
+        bootstrapperCtor = (await import("./windows/script-config/script-config-window-bootstrapper")).ScriptConfigWindowBootstrapper;
+    else if (windowId === WindowId.DataConnection)
+        bootstrapperCtor = (await import("./windows/data-connection/data-connection-window-bootstrapper")).DataConnectionWindowBootstrapper;
+    else if (windowId === WindowId.Output)
         bootstrapperCtor = (await import("./windows/output/output-window-bootstrapper")).OutputWindowBootstrapper;
-    else if (windowName === "code")
+    else if (windowId === WindowId.Code)
         bootstrapperCtor = (await import("./windows/code/code-window-bootstrapper")).CodeWindowBootstrapper;
     else
-        throw new Error(`Unrecognized window: ${windowName}`);
+        throw new Error(`Unrecognized window: ${windowId}`);
 
     const bootstrapper = new bootstrapperCtor(builder.container.get(ILogger));
 
@@ -99,14 +104,19 @@ export const stopBackgroundServices = async (container: IContainer) => {
     for (const backgroundService of backgroundServices) {
         try {
             backgroundService.stop();
+        } catch (ex) {
+            if (ex instanceof Error)
+                logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+        }
 
+        try {
             const dispose = backgroundService["dispose" as keyof typeof backgroundService];
             if (typeof dispose === "function") {
                 backgroundService["dispose" as keyof typeof backgroundService]();
             }
         } catch (ex) {
             if (ex instanceof Error)
-                logger.error(`Error stopping background service ${backgroundService.constructor.name}. ${ex.toString()}`);
+                logger.error(`Error disposing background service ${backgroundService.constructor.name}. ${ex.toString()}`);
         }
     }
 };

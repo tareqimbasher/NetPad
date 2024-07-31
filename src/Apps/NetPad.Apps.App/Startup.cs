@@ -50,6 +50,7 @@ public class Startup
         Console.WriteLine($"   - Environment: {webHostEnvironment.EnvironmentName}");
         Console.WriteLine($"   - WebRootPath: {webHostEnvironment.WebRootPath}");
         Console.WriteLine($"   - ContentRootPath: {webHostEnvironment.ContentRootPath}");
+        Console.WriteLine($"   - Shell: {Program.Shell.GetType().Name}");
     }
 
     public IConfiguration Configuration { get; }

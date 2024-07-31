@@ -6,6 +6,11 @@ export class BrowserWindowService extends WindowApiClient implements IWindowServ
         throw new PlatformNotSupportedError();
     }
 
+    public close(): Promise<void> {
+        window.close();
+        return Promise.resolve();
+    }
+
     public maximize(): Promise<void> {
         throw new PlatformNotSupportedError();
     }

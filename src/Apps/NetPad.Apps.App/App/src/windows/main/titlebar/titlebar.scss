@@ -10,6 +10,7 @@ titlebar {
     gap: 0.5rem;
     align-items: stretch;
     user-select: none;
+    cursor: default;
     -webkit-app-region: drag;
 
     .titlebar-icon {
@@ -22,14 +23,19 @@ titlebar {
         }
     }
 
+    main-menu {
+        z-index: 1000;
+    }
+
     .title {
         position: absolute;
         font-size: 0.9rem;
         display: flex;
         align-items: center;
+        justify-content: center;
         height: 100%;
-        left: 50%;
-        transform: translate(-50%, 0);
+        width: 100%;
+        left: 0;
     }
 
     .window-controls {

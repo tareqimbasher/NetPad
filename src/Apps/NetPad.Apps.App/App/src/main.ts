@@ -31,6 +31,7 @@ import {
 } from "@application";
 import * as appActions from "./app-actions";
 import {AppLifeCycle} from "./app-life-cycle";
+import {WindowParams} from "@application/windows/window-params";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 import {AppService} from "@application/app/app-service";
 import {SettingsService} from "@application/configuration/settings-service";
@@ -40,8 +41,8 @@ import {FindTextBox} from "@application/find-text-box/find-text-box";
 
 // Register common dependencies shared across entire application (all windows)
 const builder = Aurelia.register(
+    Registration.instance(WindowParams, new WindowParams(new URLSearchParams(window.location.search))),
     Registration.instance(String, window.location.origin),
-    Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
     Registration.singleton(AppLifeCycle, AppLifeCycle),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),

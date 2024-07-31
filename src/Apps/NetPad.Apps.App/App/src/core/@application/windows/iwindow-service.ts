@@ -5,6 +5,8 @@ import {WindowState} from "./window-state";
 export interface IWindowService extends IWindowApiClient {
     getState(): Promise<WindowState>;
 
+    close(): Promise<void>;
+
     maximize(): Promise<void>;
 
     minimize(): Promise<void>;
