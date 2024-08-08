@@ -17,6 +17,16 @@ internal class ActionTextWriter(Action<string?, bool> write) : TextWriter
         write(value, true);
     }
 
+    public override void Write(char value)
+    {
+        write(value.ToString(), false);
+    }
+
+    public override void WriteLine(char value)
+    {
+        write(value.ToString(), true);
+    }
+
     public override void WriteLine()
     {
         write("\n", false);
