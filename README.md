@@ -244,7 +244,7 @@ cd Apps/NetPad.Apps.App
 dotnet watch run --environment Development
 ```
 
-and access the app via your web browser, ex: `http://localhost:57930`
+and access the app via your web browser, ex: `http://localhost:57940`
 
 ## Packaging :package:
 
