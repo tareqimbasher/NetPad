@@ -10,11 +10,13 @@ public class EnumTests
     {
         var values = Enum.GetNames<ScriptKind>();
 
-        Assert.Equal([
+        IEnumerable<string> expectValues =
+        [
             "Expression",
             "Program",
             "SQL"
-        ], values);
+        ];
+        Assert.Equal(expectValues, values);
     }
 
     [Fact]
@@ -22,11 +24,13 @@ public class EnumTests
     {
         var values = Enum.GetNames<ScriptStatus>();
 
-        Assert.Equal([
+        IEnumerable<string> expectValues =
+        [
             "Ready",
             "Running",
             "Stopping",
             "Error"
-        ], values);
+        ];
+        Assert.Equal(expectValues, values);
     }
 }

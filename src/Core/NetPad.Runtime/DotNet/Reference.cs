@@ -1,13 +1,12 @@
 using System;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using NetPad.Common;
+using NJsonSchema.Converters;
 
 namespace NetPad.DotNet;
 
 // This attribute is only used for NSwag polymorphism. Haven't figured out how to use our own STJ-based JsonInheritanceConverter
 // and have NSwag use that when generating its schema.
-[Newtonsoft.Json.JsonConverter(typeof(NJsonSchema.Converters.JsonInheritanceConverter), "discriminator")]
 
 [JsonConverter(typeof(JsonInheritanceConverter<Reference>))]
 [KnownType(typeof(AssemblyFileReference))]
