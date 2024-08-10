@@ -99,3 +99,8 @@
         <span class="font-monospace">${trivia.displayValue || trivia.kind}</span>
     </div>
 </template>
+
+<div class="p-3" if.bind="semanticModel">
+    <h5>Semantic Model</h5>
+    <pre>${JSON.stringify(semanticModel, null, 2)}</pre>
+</div>

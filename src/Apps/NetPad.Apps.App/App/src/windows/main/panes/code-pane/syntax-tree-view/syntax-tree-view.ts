@@ -22,6 +22,7 @@ interface ISyntaxNodeOrTokenViewModel extends ISyntaxNodeOrTokenSlim {
 interface ICacheItem {
     tree: SyntaxNodeOrTokenSlim | null;
     code: string;
+    semanticModel: any | null;
 }
 
 export class SyntaxTreeView extends ViewModelBase {
@@ -30,6 +31,7 @@ export class SyntaxTreeView extends ViewModelBase {
     private decoratorCollection?: monaco.editor.IEditorDecorationsCollection;
     private error?: string;
     private showCharSpans = false;
+    private semanticModel: any | null = null;
 
     @bindable public pane: Pane;
 
@@ -43,7 +45,11 @@ export class SyntaxTreeView extends ViewModelBase {
 
     public attached() {
         this.loadSyntaxTree();
-        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, () => this.loadSyntaxTree()));
+        this.loadSemanticModel();
+        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, () => {
+            this.loadSyntaxTree();
+            this.loadSemanticModel();
+        }));
     }
 
     private onMouseLeave() {
@@ -132,11 +138,13 @@ export class SyntaxTreeView extends ViewModelBase {
     @watch<SyntaxTreeView>(vm => vm.pane.isOpen)
     private paneViewModeChanged() {
         this.loadSyntaxTree();
+        this.loadSemanticModel();
     }
 
     @watch<SyntaxTreeView>(vm => vm.session.active)
     private activeScriptChanged() {
         this.loadSyntaxTree();
+        this.loadSemanticModel();
     }
 
     private loadSyntaxTree = Util.debounce(this, async () => {
@@ -178,10 +186,59 @@ export class SyntaxTreeView extends ViewModelBase {
 
             this.cache.set(script.id, {
                 tree: current,
-                code: code
+                code: code,
+                semanticModel: this.semanticModel
             });
 
             this.setCurrent(current);
+        },
+        500,
+        true);
+
+    private loadSemanticModel = Util.debounce(this, async () => {
+            if (!this.pane.isOpen) {
+                return;
+            }
+
+            this.error = undefined;
+
+            const script = this.session.active?.script;
+            if (!script) {
+                this.semanticModel = null;
+                return;
+            }
+
+            const code = script.code;
+
+            if (!code || !code.trim()) {
+                this.semanticModel = null;
+                return;
+            }
+
+            const cached = this.cache.get(script.id);
+            if (cached && cached.code === code) {
+                this.semanticModel = cached.semanticModel;
+                return;
+            }
+
+            let semanticModel: any | null;
+
+            try {
+                semanticModel = await this.codeService.getSemanticModel(script.id);
+            } catch (ex) {
+                this.logger.error("Error getting semantic model", ex);
+                this.semanticModel = null;
+                this.error = "Could not load semantic model. The model might be too complex."
+                return;
+            }
+
+            this.cache.set(script.id, {
+                tree: this.current,
+                code: code,
+                semanticModel: semanticModel
+            });
+
+            this.semanticModel = semanticModel;
         },
         500,
         true);

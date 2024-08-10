@@ -45,4 +45,34 @@ public class CodeController : ControllerBase
 
         return new JsonResult(tree, JsonSerializerOptions);
     }
+
+    [HttpGet("{scriptId:guid}/semantic-model")]
+    public ActionResult<SemanticModel?> GetSemanticModel(
+        Guid scriptId,
+        [FromServices] ICodeAnalysisService codeAnalysisService,
+        [FromServices] ISession session)
+    {
+        var env = session.Get(scriptId);
+
+        if (env == null)
+        {
+            throw new ScriptNotFoundException(scriptId);
+        }
+
+        var script = env.Script;
+
+        if (string.IsNullOrWhiteSpace(script.Code))
+        {
+            return Ok(null);
+        }
+
+        var semanticModel = codeAnalysisService.GetSemanticModel(
+            script.Code,
+            script.Config.TargetFrameworkVersion,
+            script.Config.OptimizationLevel,
+            HttpContext.RequestAborted
+        );
+
+        return new JsonResult(semanticModel, JsonSerializerOptions);
+    }
 }

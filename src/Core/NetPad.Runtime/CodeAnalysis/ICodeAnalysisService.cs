@@ -16,4 +16,10 @@ public interface ICodeAnalysisService
         DotNetFrameworkVersion targetFrameworkVersion,
         OptimizationLevel optimizationLevel,
         CancellationToken cancellationToken = default);
+
+    SemanticModel GetSemanticModel(
+        string code,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        OptimizationLevel optimizationLevel,
+        CancellationToken cancellationToken = default);
 }

@@ -44,6 +44,21 @@ public class CodeAnalysisService : ICodeAnalysisService
         return Build(root, cancellationToken);
     }
 
+    public SemanticModel GetSemanticModel(
+        string code,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        OptimizationLevel optimizationLevel,
+        CancellationToken cancellationToken = default)
+    {
+        var syntaxTree = GetSyntaxTree(code, targetFrameworkVersion, optimizationLevel, cancellationToken);
+
+        var compilation = CSharpCompilation.Create("SemanticModelCompilation")
+            .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
+            .AddSyntaxTrees(syntaxTree);
+
+        return compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
+    }
+
     private static SyntaxNodeOrTokenSlim Build(SyntaxNodeOrToken nodeOrToken, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
