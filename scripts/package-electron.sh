@@ -57,6 +57,11 @@ if ! command -v electronize &> /dev/null; then
     exit 1
 fi
 
+if ! command -v osslsigncode &> /dev/null; then
+    echo "Could not find 'osslsigncode'."
+    exit 1
+fi
+
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 APP_DIR=$(cd "$SCRIPT_DIR/../src/Apps/NetPad.Apps.App" && pwd)
 PACKAGES_SOURCE_DIR="$APP_DIR/bin/Desktop"
@@ -116,6 +121,12 @@ package() {
 
     echo "   - Copying: $filename"
     mv "$filename" "$PACKAGES_DEST_DIR/$filename"
+
+    if [[ $filename == *.exe* ]]; then
+      echo "   - Signing: $filename"
+      osslsigncode sign -certs "$SIGN_CERT_PATH" -key "$SIGN_CERT_PASS" -in "$PACKAGES_DEST_DIR/$filename" -out "$PACKAGES_DEST_DIR/$filename.signed"
+      mv "$PACKAGES_DEST_DIR/$filename.signed" "$PACKAGES_DEST_DIR/$filename"
+    fi
   done
 }
 
