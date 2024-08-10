@@ -18,6 +18,10 @@ export enum ShortcutIds {
     openExplorer = "shortcut.explorer.open",
     openNamespaces = "shortcut.namespaces.open",
     reloadWindow = "shortcut.window.reload",
+    vimMode = "shortcut.vim.mode",
+    vimSave = "shortcut.vim.save",
+    vimQuit = "shortcut.vim.quit",
+    vimSaveQuit = "shortcut.vim.savequit",
 }
 
 export const BuiltinShortcuts = [
@@ -167,6 +171,66 @@ export const BuiltinShortcuts = [
         .withShiftKey()
         .withKey(KeyCode.KeyR)
         .hasAction(() => window.location.reload())
+        .captureDefaultKeyCombo()
+        .configurable()
+        .enabled(),
+
+    new Shortcut(ShortcutIds.vimMode, "Toggle Vim Mode")
+        .withKey(KeyCode.Escape)
+        .hasAction(ctx => {
+            const editor = ctx.container.get(ITextEditorService).active?.monaco;
+
+            if (!editor) return;
+
+            editor.focus();
+            editor.trigger("", "toggleVimMode", null);
+        })
+        .captureDefaultKeyCombo()
+        .configurable()
+        .enabled(),
+
+    new Shortcut(ShortcutIds.vimSave, "Vim Save")
+        .withKey(KeyCode.Colon)
+        .withKey(KeyCode.KeyW)
+        .hasAction(ctx => {
+            const editor = ctx.container.get(ITextEditorService).active?.monaco;
+
+            if (!editor) return;
+
+            editor.focus();
+            editor.trigger("", "vimSave", null);
+        })
+        .captureDefaultKeyCombo()
+        .configurable()
+        .enabled(),
+
+    new Shortcut(ShortcutIds.vimQuit, "Vim Quit")
+        .withKey(KeyCode.Colon)
+        .withKey(KeyCode.KeyQ)
+        .hasAction(ctx => {
+            const editor = ctx.container.get(ITextEditorService).active?.monaco;
+
+            if (!editor) return;
+
+            editor.focus();
+            editor.trigger("", "vimQuit", null);
+        })
+        .captureDefaultKeyCombo()
+        .configurable()
+        .enabled(),
+
+    new Shortcut(ShortcutIds.vimSaveQuit, "Vim Save and Quit")
+        .withKey(KeyCode.Colon)
+        .withKey(KeyCode.KeyW)
+        .withKey(KeyCode.KeyQ)
+        .hasAction(ctx => {
+            const editor = ctx.container.get(ITextEditorService).active?.monaco;
+
+            if (!editor) return;
+
+            editor.focus();
+            editor.trigger("", "vimSaveQuit", null);
+        })
         .captureDefaultKeyCombo()
         .configurable()
         .enabled(),
