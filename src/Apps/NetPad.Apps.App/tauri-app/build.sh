@@ -6,14 +6,21 @@ then
     nvm use 18
 fi
 
-echo "Building .NET App"
-cd ../
-dotnet publish -r linux-x64 -c "Release" --no-self-contained /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     platform=Linux;;
+    Darwin*)    platform=Mac;;
+    *)          platform="${unameOut}"
+esac
 
-echo "Building Tauri App"
-cd tauri-app
-npx tauri build
+echo "Detected platform: ${platform}"
 
-
+if [ "${platform}" == "Linux" ]; then
+    echo "Building Tauri app for Linux..."
+    npx tauri build -c src-tauri/tauri.conf.linux.json5
+elif [ "${platform}" == "Mac" ]; then
+    echo "Building Tauri app for Mac..."
+    # npx tauri build -c src-tauri/tauri.conf.macos.json5
+fi
 
 #export WEBKIT_DISABLE_DMABUF_RENDERER=1

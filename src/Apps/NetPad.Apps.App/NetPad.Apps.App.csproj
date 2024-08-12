@@ -59,13 +59,19 @@
         <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
     </ItemGroup>
     <ItemGroup>
+        <Content Update="appsettings.Development.json">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+        <Content Update="appsettings.Local.json">
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
         <Content Remove="$(SpaRoot)**" />
         <None Remove="$(SpaRoot)**" />
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-        <Content Remove="App\dist\**" />
-        <None Remove="App\dist\**" />
         <Compile Remove="App\dist\**" />
+        <Content Remove="App\dist\**" />
         <EmbeddedResource Remove="App\dist\**" />
+        <None Remove="App\dist\**" />
         <Content Include="electron.manifest.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -76,16 +82,22 @@
         <Content Update="ElectronHostHook\**\*.*">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <Content Update="appsettings.Development.json">
+        <Content Update="tauri-app\**\*.*">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <Content Update="appsettings.Local.json">
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-        <Content Remove="tauri-app\src-tauri\target\**" />
-        <None Remove="tauri-app\src-tauri\target\**" />
         <Compile Remove="tauri-app\src-tauri\target\**" />
+        <Content Remove="tauri-app\src-tauri\target\**" />
         <EmbeddedResource Remove="tauri-app\src-tauri\target\**" />
+        <None Remove="tauri-app\src-tauri\target\**" />
+        <Compile Remove="tauri-app\src-tauri\gen\**" />
+        <Content Remove="tauri-app\src-tauri\gen\**" />
+        <EmbeddedResource Remove="tauri-app\src-tauri\gen\**" />
+        <None Remove="tauri-app\src-tauri\gen\**" />
+        <Compile Remove="tauri-app\src-tauri\capabilities\**" />
+        <Content Remove="tauri-app\src-tauri\capabilities\**" />
+        <EmbeddedResource Remove="tauri-app\src-tauri\capabilities\**" />
+        <None Remove="tauri-app\src-tauri\capabilities\**" />
     </ItemGroup>
     
 </Project>

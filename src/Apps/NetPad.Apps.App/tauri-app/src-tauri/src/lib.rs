@@ -1,15 +1,17 @@
-pub mod server_manager;
-use server_manager::ServerManager;
+use dotnet_server_manager::DotNetServerManager;
 use std::sync::Mutex;
 use tauri::{Manager, State, WindowEvent};
+use tauri_plugin_log::{Target, TargetKind};
 
-struct ServerManagerState {
-    server_manager_mutex: Mutex<ServerManager>,
+pub mod dotnet_server_manager;
+
+struct DotNetServerManagerState {
+    server_manager_mutex: Mutex<DotNetServerManager>,
 }
 
 #[tauri::command]
 fn start_server(
-    server_manager_state: State<ServerManagerState>,
+    server_manager_state: State<DotNetServerManagerState>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     let am = server_manager_state
@@ -21,7 +23,7 @@ fn start_server(
 }
 
 #[tauri::command]
-fn stop_server(server_manager_state: State<ServerManagerState>) -> Result<String, String> {
+fn stop_server(server_manager_state: State<DotNetServerManagerState>) -> Result<String, String> {
     let am = server_manager_state
         .server_manager_mutex
         .lock()
@@ -32,7 +34,7 @@ fn stop_server(server_manager_state: State<ServerManagerState>) -> Result<String
 
 #[tauri::command]
 fn restart_server(
-    server_manager_state: State<ServerManagerState>,
+    server_manager_state: State<DotNetServerManagerState>,
     app_handle: tauri::AppHandle,
 ) -> Result<String, String> {
     let am = server_manager_state
@@ -45,50 +47,52 @@ fn restart_server(
 
 #[tauri::command]
 fn toggle_devtools(webview_window: tauri::WebviewWindow) {
-  if webview_window.is_devtools_open() {
-    webview_window.close_devtools();
-  } else {
-    webview_window.open_devtools();
-  }
+    if webview_window.is_devtools_open() {
+        webview_window.close_devtools();
+    } else {
+        webview_window.open_devtools();
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let server_manager = ServerManager::new();
-    let sms = ServerManagerState {
+    let server_manager = DotNetServerManager::new();
+    let server_manager_state = DotNetServerManagerState {
         server_manager_mutex: Mutex::new(server_manager),
     };
 
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .clear_targets()
+                .target(Target::new(TargetKind::Stdout))
+                .build(),
+        )
         .plugin(tauri_plugin_dialog::init())
-        .manage(sms)
+        .manage(server_manager_state)
         .setup(move |app| {
             if cfg!(not(debug_assertions)) {
-                let state: State<ServerManagerState> = app.state();
+                let state: State<DotNetServerManagerState> = app.state();
                 state
                     .server_manager_mutex
                     .lock()
                     .unwrap()
                     .start_backend(app.handle())
-                    .expect("Backend start failed");
+                    .expect("Failed to start .NET server");
             }
-
-            // let window = app.get_webview_window("main").unwrap();
-            // window.open_devtools();
-            // window.close_devtools();
 
             Ok(())
         })
         .on_window_event(move |window, event| match event {
             WindowEvent::Destroyed => {
                 if cfg!(not(debug_assertions)) && window.label() == "main" {
-                    let state: State<ServerManagerState> = window.state();
+                    let state: State<DotNetServerManagerState> = window.state();
                     state
                         .server_manager_mutex
                         .lock()
                         .unwrap()
                         .terminate_backend()
-                        .expect("Failed to terminate backend on window destroyed event");
+                        .expect("Failed to terminate .NET server on 'main' window destroyed event");
                 }
             }
             _ => {}

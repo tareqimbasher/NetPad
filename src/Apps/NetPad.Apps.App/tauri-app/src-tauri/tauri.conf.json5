@@ -8,7 +8,6 @@
             "cwd": "../../App"
         },
         "devUrl": "http://localhost:57940?shell=tauri",
-        "beforeBuildCommand": "dotnet publish ../NetPad.Apps.App.csproj -r linux-x64 -c \"Release\" /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --no-self-contained",
         "frontendDist": "http://localhost:57930?shell=tauri"
     },
     "app": {
@@ -34,14 +33,14 @@
                         "*"
                     ],
                     "permissions": [
-                        "webview:allow-create-webview-window",
-                        "window:allow-close",
-                        "window:allow-maximize",
-                        "window:allow-unmaximize",
-                        "window:allow-minimize",
-                        "window:allow-unminimize",
-                        "window:allow-set-always-on-top",
-                        "window:allow-start-dragging"
+                        "core:webview:allow-create-webview-window",
+                        "core:window:allow-close",
+                        "core:window:allow-maximize",
+                        "core:window:allow-unmaximize",
+                        "core:window:allow-minimize",
+                        "core:window:allow-unminimize",
+                        "core:window:allow-set-always-on-top",
+                        "core:window:allow-start-dragging"
                     ]
                 },
                 "default"
@@ -57,10 +56,7 @@
             "icons/128x128@2x.png",
             "icons/icon.icns",
             "icons/icon.ico"
-        ],
-        "resources": {
-            "../../bin/Release/net6.0/linux-x64/publish": "resources/netpad-server"
-        }
+        ]
     },
     "$schema": "../node_modules/@tauri-apps/cli/schema.json"
 }
