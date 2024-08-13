@@ -13,7 +13,6 @@ import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 
 export class TextDocumentViewer extends Viewer {
     public editor: ITextEditor;
-    public editorHost: HTMLElement;
 
     constructor(
         host: ViewerHost,
@@ -26,8 +25,6 @@ export class TextDocumentViewer extends Viewer {
     }
 
     public attached() {
-        this.editor = this.workbench.textEditorService.create(this.editorHost);
-
         if (this.viewable && (!this.editor.active || this.editor.active.id !== this.viewable.id)) {
             this.open(this.viewable as ViewableTextDocument);
         }
