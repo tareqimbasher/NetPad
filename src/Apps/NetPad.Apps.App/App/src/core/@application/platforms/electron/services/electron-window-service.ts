@@ -1,6 +1,6 @@
 import {ipcRenderer} from "electron";
 import {IHttpClient} from "@aurelia/fetch-client";
-import {ChannelInfo, IWindowService, WindowApiClient, WindowState} from "@application";
+import {ChannelInfo, IWindowService, IWindowState, WindowApiClient, WindowState, WindowViewStatus} from "@application";
 import {ElectronIpcEventNames} from "../electron-ipc-event-names";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
 
@@ -13,7 +13,12 @@ export class ElectronWindowService extends WindowApiClient implements IWindowSer
     }
 
     public async getState(): Promise<WindowState> {
-        const state = await ipcRenderer.invoke(ElectronIpcEventNames.getWindowState) as WindowState;
+        const state = await ipcRenderer.invoke(ElectronIpcEventNames.getWindowState) as IWindowState;
+
+        if (!state) {
+            return new WindowState(WindowViewStatus.Unknown, false);
+        }
+
         return new WindowState(state.viewStatus, state.isAlwaysOnTop);
     }
 

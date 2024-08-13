@@ -1,5 +1,5 @@
 import {BrowserWindow, ipcMain} from "electron";
-import {WindowState, WindowViewStatus} from "./models";
+import {IWindowState, WindowViewStatus} from "./models";
 
 export class IpcEventNames {
     public static readonly getWindowState = "get-window-state";
@@ -23,7 +23,10 @@ export class WindowControlsManager {
                 else
                     viewStatus = WindowViewStatus.UnMaximized;
 
-                return new WindowState(viewStatus, window.isAlwaysOnTop());
+                return <IWindowState>{
+                    viewStatus: viewStatus,
+                    isAlwaysOnTop: window.isAlwaysOnTop()
+                };
             }],
             [IpcEventNames.maximize, window => window.isMaximized() ? window.unmaximize() : window.maximize()],
             [IpcEventNames.minimize, window => window.isMinimized() ? window.restore() : window.minimize()],
@@ -34,10 +37,16 @@ export class WindowControlsManager {
 
         for (const [eventName, handler] of handlers) {
             ipcMain.handle(eventName, event => {
-                const window = this.getBrowserWindow(event);
-                if (!window) return;
+                try {
+                    const window = this.getBrowserWindow(event);
+                    if (!window) {
+                        return;
+                    }
 
-                return handler(window);
+                    return handler(window);
+                } catch (e) {
+                    console.error(`Error while handling event: '${eventName}'`, e);
+                }
             });
         }
     }

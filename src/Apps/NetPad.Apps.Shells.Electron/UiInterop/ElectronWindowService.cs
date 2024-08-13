@@ -66,8 +66,17 @@ public class ElectronWindowService(
 
         window.OnClose += async () =>
         {
-            trivialDataStore.Set("main-window.bounds",
-                new WindowState(await window.GetBoundsAsync(), await window.IsMaximizedAsync()));
+            try
+            {
+                var bounds = await window.GetBoundsAsync();
+                var isMaximized = await window.IsMaximizedAsync();
+
+                trivialDataStore.Set("main-window.bounds", new WindowState(bounds, isMaximized));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while saving window state on close.");
+            }
         };
     }
 
