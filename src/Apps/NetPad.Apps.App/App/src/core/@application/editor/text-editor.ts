@@ -1,10 +1,10 @@
 import {DI, ILogger} from "aurelia";
-import {IHydratedController, watch} from "@aurelia/runtime-html";
+import {watch} from "@aurelia/runtime-html";
 import * as monaco from "monaco-editor";
 import {WithDisposables} from "@common";
 import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application";
-import {TextEditorFocusedEvent} from "./events";
 import {TextDocument} from "./text-document";
+import {ITextEditorService} from "./itext-editor-service";
 
 export const ITextEditor = DI.createInterface<ITextEditor>();
 
@@ -13,7 +13,6 @@ export interface ITextEditor extends WithDisposables {
     position?: monaco.Position | null;
     active?: TextDocument | null;
 
-    bind(host: HTMLElement): void;
     open(document: TextDocument): void;
     close(documentId: string): void;
     focus(): void;
@@ -23,37 +22,16 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
     public monaco: monaco.editor.IStandaloneCodeEditor;
     public position?: monaco.Position | null;
     public active?: TextDocument | null;
-    private element: HTMLElement;
 
+    private monacoEditorElement: HTMLElement;
     private viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>();
 
     constructor(
-        readonly settings: Settings,
+        private readonly settings: Settings,
+        @ITextEditorService private readonly textEditorService: ITextEditorService,
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
-    }
-
-    binding(initiator: IHydratedController) {
-        if (!initiator.host) {
-            this.logger.error("Host is null or undefined");
-            throw new Error("Host is null or undefined");
-        }
-
-        this.element = initiator.host;
-    }
-
-    public bind(host: HTMLElement) {
-        if (this.element)
-            throw new Error("Host HTMLElement is already set");
-
-        if (!host)
-            throw new Error("Host HTMLElement is null or undefined");
-
-        this.element = host;
-
-        this.ensureEditorInitialized();
-        this.addDisposable(() => this.active = null);
     }
 
     public open(document: TextDocument) {
@@ -98,7 +76,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
     private initializeEditor() {
         if (this.monaco) return;
 
-        this.monaco = monaco.editor.create(this.element as HTMLElement, {
+        this.monaco = monaco.editor.create(this.monacoEditorElement, {
             model: null,
             "semanticHighlighting.enabled": true,
             formatOnType: true,
@@ -109,7 +87,15 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         this.updateEditorSettings();
 
         this.addDisposable(this.monaco.onDidFocusEditorText(() => {
-            this.eventBus.publish(new TextEditorFocusedEvent(this));
+            if (this.textEditorService.active !== this) {
+                this.textEditorService.active = this;
+            }
+        }));
+
+        this.addDisposable(this.monaco.onDidDispose(() => {
+            if (this.textEditorService.active === this) {
+                this.textEditorService.active = undefined;
+            }
         }));
 
         this.addDisposable(
@@ -121,9 +107,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
         );
 
         this.addDisposable(
-            this.monaco.onDidChangeCursorPosition(ev => {
-                this.position = ev.position;
-            })
+            this.monaco.onDidChangeCursorPosition(ev => this.position = ev.position)
         );
 
         this.addDisposable(
