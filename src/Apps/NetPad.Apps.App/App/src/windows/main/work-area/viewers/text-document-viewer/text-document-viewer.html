@@ -1,5 +1,6 @@
 ﻿<template drop.trigger="itemDropped($event)">
     <import from="./toolbar"></import>
+    <import from="core/@application/editor/text-editor"></import>
 
     <toolbar viewable.bind="viewable" if.bind="viewable.environment"></toolbar>
 
@@ -9,8 +10,8 @@
              title="This scripts targets a data connection that contains Production data. Be careful!">
         </div>
 
-        <div ref="editorHost" class="flex-grow-height-restricted min-w-0">
-            <au-compose component.bind="editor"></au-compose>
+        <div class="flex-grow-1 min-w-0 d-flex flex-column">
+            <text-editor component.ref="editor"></text-editor>
         </div>
     </div>
 </template>
