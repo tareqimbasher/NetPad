@@ -5,7 +5,12 @@ export enum WindowViewStatus {
     "Maximized" = "Maximized",
 }
 
-export class WindowState {
+export interface IWindowState {
+    viewStatus: WindowViewStatus;
+    isAlwaysOnTop: boolean;
+}
+
+export class WindowState implements IWindowState {
     constructor(public viewStatus: WindowViewStatus, public isAlwaysOnTop: boolean) {
     }
 
