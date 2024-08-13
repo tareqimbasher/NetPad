@@ -48,8 +48,7 @@ public class OmniSharpServerCatalog(
 
         var server = new AppOmniSharpServer(
             environment,
-            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
-            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
+            serviceScope.ServiceProvider.GetRequiredService<OmniSharpServerBuilder>(),
             serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>(),
             serviceScope.ServiceProvider.GetRequiredService<Settings>(),
             serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),

@@ -37,11 +37,11 @@ covers features most commonly used and to introduce a few new useful ones.
 
 The following must be installed to use NetPad:
 
-* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or greater)
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v8 or greater)
 
 Additional requirements only if you plan to create and use database connections:
 
-* [.NET 6 Runtime](https://dotnet.microsoft.com/en-us/download) (not needed if .NET 6 SDK is
+* [.NET 8 Runtime](https://dotnet.microsoft.com/en-us/download) (not needed if .NET 8 SDK is
   installed)
 * [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
 
@@ -241,7 +241,7 @@ npm run start-web
 
 ```
 cd Apps/NetPad.Apps.App
-dotnet watch run --environment Development
+dotnet watch run --environment Development  
 ```
 
 and access the app via your web browser, ex: `http://localhost:57940`
@@ -265,6 +265,25 @@ electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest 
 ```
 
 Packaged files can be found in the `bin/Desktop` folder.
+
+## Packaging as Docker image
+
+### Build base NetPad image
+```shell
+cd ./src
+docker build -f ./Apps/NetPad.Apps.App/Dockerfile . -t netpad
+docker run -v ~/.local/share/NetPad:/root/.local/share/NetPad -p 57930:57930 netpad
+```
+
+### Add .NET SDK
+Prepare a new dockerfile and add SDK to container:
+
+```dockerfile
+FROM netpad
+RUN apk add dotnet6-sdk
+RUN wget .... | bash -c
+RUN ...
+```
 
 ###### Notes
 

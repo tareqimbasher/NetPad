@@ -181,7 +181,7 @@ public class Startup
 
 #if DEBUG
         app.UseOpenApi();
-        app.UseSwaggerUi3();
+        app.UseSwaggerUi();
 #else
         app.UseSpaStaticFiles();
 #endif
