@@ -31,13 +31,18 @@ public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MyS
         Assert.Equal(expected, connectionString);
     }
 
-    public static IEnumerable<object[]> ConnectionStringTestData // TODO: nyvall Add more test data
-    {
-        get
-        {
-            yield return new object[] { "localhost", "1234", "db name", "user id", "password", null!, "Server=localhost;Port=1234;Database=db name;Uid=user id;Pwd=password;" };
-        }
-    }
+    public static IEnumerable<object?[]> ConnectionStringTestData =>
+    [
+        ["localhost", "port", "db name", "user id", "password", null, "Server=localhost;Port=port;Database=db name;Uid=user id;Pwd=password;"],
+        [null, "port", "db name", "user id", "password", null, "Server=;Port=port;Database=db name;Uid=user id;Pwd=password;"],
+        ["localhost", null, "db name", "user id", "password", null, "Server=localhost;Database=db name;Uid=user id;Pwd=password;"],
+        ["localhost", "port", null, "user id", "password", null, "Server=localhost;Port=port;Database=;Uid=user id;Pwd=password;"],
+        ["localhost", "port", "db name", null, "password", null, "Server=localhost;Port=port;Database=db name;Pwd=password;"],
+        ["localhost", "port", "db name", "user id", null, null, "Server=localhost;Port=port;Database=db name;Uid=user id;"],
+        ["localhost", "port", "db name", null, null, null, "Server=localhost;Port=port;Database=db name;"],
+        ["localhost", "port", "db name", null, null, "Server=new host:new port", "Server=new host:new port;Database=db name;"],
+        new[] { "localhost", "port", "db name", null, null, "Server=new host;Command Timeout=300", "Server=new host;Database=db name;Command Timeout=300;" },
+    ];
 
     protected override EntityFrameworkDatabaseConnection CreateConnection()
     {
