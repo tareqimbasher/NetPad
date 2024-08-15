@@ -64,5 +64,6 @@ public class TypesController : ControllerBase
         public MsSqlServerDatabaseConnection? MsSqlServerDatabaseConnection { get; set; }
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
         public SQLiteDatabaseConnection? SQLiteDatabaseConnection { get; set; }
+        public MySqlDatabaseConnection? MySqlDatabaseConnection { get; set; }
     }
 }

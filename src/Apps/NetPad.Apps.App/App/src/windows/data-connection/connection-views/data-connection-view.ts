@@ -4,7 +4,8 @@ import {
     DataConnection,
     MsSqlServerDatabaseConnection,
     PostgreSqlDatabaseConnection,
-    SQLiteDatabaseConnection
+    SQLiteDatabaseConnection,
+    MySqlDatabaseConnection
 } from "@application";
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
@@ -57,6 +58,8 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
             connection.type = "PostgreSQL";
         } else if (ctor.name === SQLiteDatabaseConnection.name) {
             connection.type = "SQLite";
+        } else if (ctor.name === MySqlDatabaseConnection.name) {
+            connection.type = "MySQL";
         } else {
             throw new Error("Unhandled data connection type: " + ctor.name);
         }
