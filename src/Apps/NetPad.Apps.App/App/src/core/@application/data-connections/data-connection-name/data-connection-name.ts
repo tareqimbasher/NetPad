@@ -13,7 +13,7 @@ export class DataConnectionName {
             case "SQLite":
                 return "/img/sqlite.png";
             case "MySQL":
-                return "/img/mysql.jpg"; // TODO: nyvall Replace this with a png image
+                return "/img/mysql.png";
             default:
                 return "";
         }

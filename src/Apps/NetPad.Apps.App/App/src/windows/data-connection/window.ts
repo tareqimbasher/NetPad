@@ -38,7 +38,7 @@ export class Window extends WindowBase {
                 type: "PostgreSQL"
             },
             {
-                label: '<img src="/img/mysql.jpg" class="connection-type-logo"/> MySQL', // TODO: nyvall Replace this with a png image
+                label: '<img src="/img/mysql.png" class="connection-type-logo"/> MySQL',
                 type: "MySQL"
             }
         ];
