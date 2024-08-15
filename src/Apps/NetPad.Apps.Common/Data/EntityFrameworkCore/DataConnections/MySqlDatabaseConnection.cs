@@ -60,7 +60,7 @@ public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOption
         await using DatabaseContext context = CreateDbContext(passwordProtector);
         await using DbCommand command = context.Database.GetDbConnection().CreateCommand();
 
-        command.CommandText = "select schema_name from information_schema.schemata;"; // TODO: nyvall Check this query
+        command.CommandText = "select schema_name from information_schema.schemata;";
         await context.Database.OpenConnectionAsync();
 
         await using DbDataReader result = await command.ExecuteReaderAsync();
