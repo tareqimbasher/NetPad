@@ -67,6 +67,19 @@ public static class GlobalConsts
             };
         }
 
+        if (providerName == "Pomelo.EntityFrameworkCore.MySql") // TODO: nyvall Check that the versions are correct
+        {
+            return dotNetFrameworkVersion switch
+            {
+                DotNetFrameworkVersion.DotNet6 => "6.0.0",
+                DotNetFrameworkVersion.DotNet7 => "7.0.0",
+                DotNetFrameworkVersion.DotNet8 => "8.0.0",
+                DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3",
+                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion,
+                    $"Unsupported framework version: {dotNetFrameworkVersion}")
+            };
+        }
+
         throw new InvalidOperationException($"Could not determine version for provider: '{providerName}' and .NET version: '{dotNetFrameworkVersion}'");
     }
 }

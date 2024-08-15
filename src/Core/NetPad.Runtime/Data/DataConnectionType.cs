@@ -5,4 +5,5 @@ public enum DataConnectionType
     MSSQLServer,
     PostgreSQL,
     SQLite,
+    MySQL
 }
