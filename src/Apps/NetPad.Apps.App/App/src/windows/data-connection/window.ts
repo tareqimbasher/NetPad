@@ -6,6 +6,7 @@ import {IDataConnectionView} from "./connection-views/idata-connection-view";
 import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
+import {MysqlView} from "./connection-views/mysql/mysql-view";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -36,6 +37,10 @@ export class Window extends WindowBase {
                 label: '<img src="/img/postgresql2.png" class="connection-type-logo"/> PostgreSQL',
                 type: "PostgreSQL"
             },
+            {
+                label: '<img src="/img/mysql.png" class="connection-type-logo"/> MySQL',
+                type: "MySQL"
+            }
         ];
 
         // Until we implement a way to add a SQLite file in the browser, this option will only be available in Electron app
@@ -150,6 +155,10 @@ export class Window extends WindowBase {
 
         if (connectionType === "SQLite") {
             return new SqliteView(connection, this.dataConnectionService);
+        }
+
+        if (connectionType === "MySQL") {
+            return new MysqlView(connection, this.dataConnectionService);
         }
 
         return undefined;

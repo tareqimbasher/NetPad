@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MsSqlServerDatabaseSchemaChangeDetectionStrategy>();
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, PostgreSqlDatabaseSchemaChangeDetectionStrategy>();
         services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, SQLiteDatabaseSchemaChangeDetectionStrategy>();
+        services.AddTransient<IDataConnectionSchemaChangeDetectionStrategy, MySqlDatabaseSchemaChangeDetectionStrategy>();
 
         return builder;
     }
