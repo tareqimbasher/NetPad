@@ -7,11 +7,9 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 internal class PomeloDatabaseConnection(
     Func<(string? host, string? port, string? databaseName, string? userId, string? password, string? connectionStringAugment)> getConnectionDetails)
 {
-    private readonly Func<(string? host, string? port, string? databaseName, string? userId, string? password, string? connectionStringAugment)> _getConnectionDetails = getConnectionDetails;
-
     internal string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        var (host, port, databaseName, userId, password, connectionStringAugment) = _getConnectionDetails();
+        var (host, port, databaseName, userId, password, connectionStringAugment) = getConnectionDetails();
 
         ConnectionStringBuilder connectionStringBuilder = [];
 
