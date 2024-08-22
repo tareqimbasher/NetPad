@@ -206,10 +206,7 @@ public class DotNetCSharpProject
         });
     }
 
-    /// <summary>
-    /// Runs 'dotnet restore' on project.
-    /// </summary>
-    public virtual async Task RestoreAsync()
+    public async Task RestoreAsync()
     {
         EnsurePackageCacheDirectoryExists();
 
@@ -226,6 +223,34 @@ public class DotNetCSharpProject
         {
             await process.WaitForExitAsync();
         }
+    }
+
+    public async Task<DotNetCliResult> BuildAsync()
+    {
+        EnsurePackageCacheDirectoryExists();
+
+        var startInfo = new ProcessStartInfo(
+            _dotNetInfo.LocateDotNetExecutableOrThrow(),
+            $"build \"{ProjectFilePath}\"")
+        {
+            UseShellExecute = false,
+            WorkingDirectory = ProjectDirectoryPath,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true
+        };
+
+        using var process = Process.Start(startInfo);
+
+        if (process == null)
+        {
+            return new DotNetCliResult(false, $"Failed to start dotnet with args: {startInfo.Arguments}");
+        }
+
+        await process.WaitForExitAsync();
+
+        var output = await process.StandardOutput.ReadToEndAsync();
+
+        return new DotNetCliResult(process.ExitCode == 0, output);
     }
 
     /// <summary>

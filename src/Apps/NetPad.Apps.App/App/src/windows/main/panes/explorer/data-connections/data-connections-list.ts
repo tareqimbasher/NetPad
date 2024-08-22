@@ -230,7 +230,6 @@ export class DataConnectionsList extends ViewModelBase {
 
     private async copyToClipboard(text: string) {
         await navigator.clipboard.writeText(text);
-        alert("Copied to clipboard!");
     }
 
     private getElementOrParentDataConnectionId(element: Element) {

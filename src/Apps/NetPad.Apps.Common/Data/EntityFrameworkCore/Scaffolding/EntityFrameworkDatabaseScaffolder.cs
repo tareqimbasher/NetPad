@@ -54,7 +54,7 @@ public class EntityFrameworkDatabaseScaffolder
 
         try
         {
-            await RunEfCoreToolsAsync();
+            await ScaffoldDatabaseAsync();
 
             var model = await GetScaffoldedModelAsync();
 
@@ -68,7 +68,7 @@ public class EntityFrameworkDatabaseScaffolder
         }
     }
 
-    private async Task RunEfCoreToolsAsync()
+    private async Task ScaffoldDatabaseAsync()
     {
         await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"
 class Program
@@ -92,6 +92,13 @@ class Program
             ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
         ));
 
+        var result = await _project.BuildAsync();
+
+        if (!result.Succeeded)
+        {
+            throw new Exception("Failed to scaffold database. Error building project: " + result.Output);
+        }
+
         Directory.CreateDirectory(_dbModelOutputDirPath);
 
         await RunEfScaffoldAsync();
@@ -112,7 +119,8 @@ class Program
             $"--context {DbContextName}",
             "--namespace \"\"", // Instructs tool to not wrap code in any namespace
             "--force",
-            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}\"" // Relative to proj dir
+            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}\"", // Relative to proj dir
+            "--no-build",
         };
 
         if (_connection.ScaffoldOptions?.NoPluralize == true)
@@ -163,8 +171,12 @@ class Program
 
         if (!startResult.Started)
         {
-            throw new Exception(
-                $"Scaffolding process failed with exit code: {exitCode}. dotnet-ef tool output:\n{outputs.JoinToString("\n")}");
+            throw new Exception("Scaffolding process failed to start");
+        }
+
+        if (exitCode != 0)
+        {
+            throw new Exception($"Scaffolding process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
         }
     }
 
@@ -201,8 +213,12 @@ class Program
 
         if (!startResult.Started)
         {
-            throw new Exception(
-                $"Scaffolding process failed with exit code: {exitCode}. dotnet-ef tool output:\n{outputs.JoinToString("\n")}");
+            throw new Exception("Optimization of scaffolded model process failed to start");
+        }
+
+        if (exitCode != 0)
+        {
+            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
         }
     }
 
