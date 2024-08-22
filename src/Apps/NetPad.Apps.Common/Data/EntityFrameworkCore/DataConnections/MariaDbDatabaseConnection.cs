@@ -4,12 +4,12 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
-public sealed class MySqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
+public sealed class MariaDbDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
 {
     private readonly PomeloDatabaseConnection _pomeloDatabaseConnection;
 
-    public MySqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-        : base(id, name, DataConnectionType.MySQL, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
+    public MariaDbDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+        : base(id, name, DataConnectionType.MariaDB, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
     {
         _pomeloDatabaseConnection = new(() => (
             Host, 
@@ -20,7 +20,7 @@ public sealed class MySqlDatabaseConnection : EntityFrameworkRelationalDatabaseC
             ConnectionStringAugment));
     }
 
-    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector) =>
+    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector) => 
         _pomeloDatabaseConnection.GetConnectionString(passwordProtector);
 
     public override async Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector) =>

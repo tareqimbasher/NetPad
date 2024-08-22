@@ -65,5 +65,6 @@ public class TypesController : ControllerBase
         public PostgreSqlDatabaseConnection? PostgreSqlDatabaseConnection { get; set; }
         public SQLiteDatabaseConnection? SQLiteDatabaseConnection { get; set; }
         public MySqlDatabaseConnection? MySqlDatabaseConnection { get; set; }
+        public MariaDbDatabaseConnection? MariaDbDatabaseConnection { get; set; }
     }
 }

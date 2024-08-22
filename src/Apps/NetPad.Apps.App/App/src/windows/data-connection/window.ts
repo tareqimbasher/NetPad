@@ -7,6 +7,7 @@ import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
+import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -40,6 +41,10 @@ export class Window extends WindowBase {
             {
                 label: '<img src="/img/mysql.png" class="connection-type-logo"/> MySQL',
                 type: "MySQL"
+            },
+            {
+                label: '<img src="/img/mariadb.png" class="connection-type-logo"/> MariaDB',
+                type: "MariaDB"
             }
         ];
 
@@ -159,6 +164,10 @@ export class Window extends WindowBase {
 
         if (connectionType === "MySQL") {
             return new MysqlView(connection, this.dataConnectionService);
+        }
+
+        if (connectionType === "MariaDB") {
+            return new MariaDbView(connection, this.dataConnectionService);
         }
 
         return undefined;
