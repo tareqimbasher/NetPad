@@ -1,35 +1,73 @@
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
-public sealed class MySqlDatabaseConnection : EntityFrameworkRelationalDatabaseConnection
+public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MySQL, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
 {
-    private readonly PomeloDatabaseConnection _pomeloDatabaseConnection;
-
-    public MySqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-        : base(id, name, DataConnectionType.MySQL, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
+    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
-        _pomeloDatabaseConnection = new(() => (
-            Host, 
-            Port, 
-            DatabaseName, 
-            UserId, 
-            Password, 
-            ConnectionStringAugment));
+        ConnectionStringBuilder connectionStringBuilder = [];
+
+        string host = Host ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(Port))
+        {
+            host += $";Port={Port}";
+        }
+
+        connectionStringBuilder.TryAdd("Server", host);
+        connectionStringBuilder.TryAdd("Database", DatabaseName);
+
+        if (UserId != null)
+        {
+            connectionStringBuilder.TryAdd("Uid", UserId);
+        }
+
+        if (Password != null)
+        {
+            connectionStringBuilder.TryAdd("Pwd", passwordProtector.Unprotect(Password));
+        }
+
+        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
+        {
+            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
+        }
+
+        return connectionStringBuilder.Build();
     }
 
-    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector) =>
-        _pomeloDatabaseConnection.GetConnectionString(passwordProtector);
+    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
+    {
+        var connectionString = GetConnectionString(passwordProtector);
 
-    public override async Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector) =>
-        await _pomeloDatabaseConnection.ConfigureDbContextOptionsAsync(builder, passwordProtector);
+        var serverVersion = MySqlServerVersion.AutoDetect(connectionString);
+
+        builder.UseMySql(connectionString, serverVersion);
+
+        return Task.CompletedTask;
+    }
 
     public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
         await using DatabaseContext context = CreateDbContext(passwordProtector);
+        await using DbCommand command = context.Database.GetDbConnection().CreateCommand();
 
-        return await _pomeloDatabaseConnection.GetDatabasesAsync(passwordProtector, context);
+        command.CommandText = "select schema_name from information_schema.schemata;";
+        await context.Database.OpenConnectionAsync();
+
+        await using DbDataReader result = await command.ExecuteReaderAsync();
+
+        List<string> databases = [];
+
+        while (await result.ReadAsync())
+        {
+            databases.Add((string)result["schema_name"]);
+        }
+
+        return databases;
     }
 }
