@@ -5,6 +5,7 @@ import {WithDisposables} from "@common";
 import {IEventBus, MonacoEditorUtil, Settings, ViewModelBase} from "@application";
 import {TextEditorFocusedEvent} from "./events";
 import {TextDocument} from "./text-document";
+import {initVimMode, VimMode} from "monaco-vim";
 
 export const ITextEditor = DI.createInterface<ITextEditor>();
 
@@ -17,6 +18,8 @@ export interface ITextEditor extends WithDisposables {
     open(document: TextDocument): void;
     close(documentId: string): void;
     focus(): void;
+    enableVimMode(): void;
+    disableVimMode(): void;
 }
 
 export class TextEditor extends ViewModelBase implements ITextEditor {
@@ -24,6 +27,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
     public position?: monaco.Position | null;
     public active?: TextDocument | null;
     private element: HTMLElement;
+    private vimMode?: VimMode;
 
     private viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>();
 
@@ -88,6 +92,19 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
 
     public focus() {
         setTimeout(() => this.monaco.focus(), 50);
+    }
+
+    public enableVimMode() {
+        if (!this.vimMode) {
+            this.vimMode = initVimMode(this.monaco, this.element);
+        }
+    }
+
+    public disableVimMode() {
+        if (this.vimMode) {
+            this.vimMode.dispose();
+            this.vimMode = undefined;
+        }
     }
 
     private ensureEditorInitialized() {
