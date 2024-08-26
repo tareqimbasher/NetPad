@@ -132,10 +132,7 @@ electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest 
 Packaged files can be found in the `bin/Desktop` folder.
 
 > [!NOTE]
-> To Build flatpak files the flatpak` and `flatpak-builder` packages need to be installed.
-> On Linux, the `/scripts/package-electron.sh` script can be used
-     > to package the Electron app, in which case packaged files can be found in
-     > the `/dist/` folder.
+> To Build `flatpak` files the `flatpak` and `flatpak-builder` packages need to be installed. On Linux, the `/scripts/package-electron.sh` script can be used to package the Electron app, in which case packaged files can be found in the `/dist/` folder.
 
 See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
 for additional CLI options when packaging the app,
@@ -165,4 +162,4 @@ If you have any questions, feel free to open an issue or contact us at our [Disc
 At our Discord, you can find the latest announcements, troubleshooting, ideas and feedback, and more.
 
 ## Acknowledgments
-<div style="display: flex; align-items: center; gap: 7px">Thank you for your contributions and helping make<img width="20px" src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/><b>NetPad</b> better!</div>
+<div style="display: flex; align-items: center; gap: 7px">Thank you for your contributions and helping make <img width="20px" src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/><b>NetPad</b> better!</div>
