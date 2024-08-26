@@ -69,7 +69,7 @@ npm start
 Install the Electron.NET CLI tool
 
 > [!IMPORTANT]
-> To be able to run the elextronize command with Electron.NET CLI, you need to have .NET 6 SDK installed.
+> To be able to run the electronize command with Electron.NET CLI, you need to have .NET 6 SDK installed.
 
 ```bash
 dotnet tool install ElectronNET.CLI -g
