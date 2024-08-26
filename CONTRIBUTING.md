@@ -1,5 +1,4 @@
-
-#  <div style="display: flex; align-items: center; gap: 7px">Contributing to<img src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/>NetPad</div>
+<h1>Contributing to&nbsp;<img src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true" width="32" height="32" style="vertical-align: middle;"/>&nbsp;NetPad</h1>
 
 Last updated: August 25th, 2024 :book:
 
@@ -162,4 +161,4 @@ If you have any questions, feel free to open an issue or contact us at our [Disc
 At our Discord, you can find the latest announcements, troubleshooting, ideas and feedback, and more.
 
 ## Acknowledgments
-<div style="display: flex; align-items: center; gap: 7px">Thank you for your contributions and helping make <img width="20px" src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/><b>NetPad</b> better!</div>
+<div style="display: flex; align-items: center;">Thank you for your contributions and helping make&nbsp;<img width="20px" style="padding: 0 7;" src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/>&nbsp;<b>NetPad</b> better!</div>
