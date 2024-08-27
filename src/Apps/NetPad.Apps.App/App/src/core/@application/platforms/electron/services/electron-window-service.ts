@@ -30,6 +30,18 @@ export class ElectronWindowService extends WindowApiClient implements IWindowSer
         return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.minimize));
     }
 
+    zoomIn(): Promise<void> {
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.zoomIn));
+    }
+
+    zoomOut(): Promise<void> {
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.zoomOut));
+    }
+
+    resetZoom(): Promise<void> {
+        return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.resetZoom));
+    }
+
     toggleDeveloperTools(): Promise<void> {
         return this.electronIpcGateway.send(new ChannelInfo(ElectronIpcEventNames.toggleDeveloperTools));
     }

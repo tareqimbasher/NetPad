@@ -9,6 +9,12 @@ export interface IWindowService extends IWindowApiClient {
 
     minimize(): Promise<void>;
 
+    zoomIn(): Promise<void>;
+
+    zoomOut(): Promise<void>;
+
+    resetZoom(): Promise<void>;
+
     toggleFullScreen(): Promise<void>;
 
     toggleAlwaysOnTop(): Promise<void>;
