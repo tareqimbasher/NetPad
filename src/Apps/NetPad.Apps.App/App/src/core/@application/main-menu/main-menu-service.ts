@@ -246,16 +246,19 @@ export class MainMenuService implements IMainMenuService {
                     {
                         text: "Zoom In",
                         icon: "zoom-in-icon",
-                        helpText: "Ctrl + +",
+                        helpText: "Ctrl + =",
+                        click: async () => this.windowService.zoomIn(),
                     },
                     {
                         text: "Zoom Out",
                         icon: "zoom-out-icon",
                         helpText: "Ctrl + -",
+                        click: async () => this.windowService.zoomOut()
                     },
                     {
                         text: "Reset Zoom",
                         helpText: "Ctrl + 0",
+                        click: async () => this.windowService.resetZoom()
                     },
                     {
                         text: "Toggle Full Screen",
