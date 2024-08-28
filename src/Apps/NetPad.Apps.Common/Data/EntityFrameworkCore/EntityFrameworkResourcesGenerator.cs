@@ -23,7 +23,7 @@ internal class EntityFrameworkResourcesGenerator(
 {
     public async Task<DataConnectionSourceCode> GenerateSourceCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
+        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
         {
             return new DataConnectionSourceCode();
         }
@@ -49,7 +49,7 @@ internal class EntityFrameworkResourcesGenerator(
 
     public async Task<AssemblyImage?> GenerateAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
+        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
         {
             return null;
         }
@@ -74,8 +74,10 @@ internal class EntityFrameworkResourcesGenerator(
 
     public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
+        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
+        {
             return [];
+        }
 
         var references = new List<Reference>();
 

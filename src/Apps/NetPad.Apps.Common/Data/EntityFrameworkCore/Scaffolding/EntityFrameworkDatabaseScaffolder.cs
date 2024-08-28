@@ -96,7 +96,7 @@ class Program
 
         if (!result.Succeeded)
         {
-            throw new Exception("Failed to scaffold database. Error building project: " + result.Output);
+            throw new Exception($"Failed to scaffold database. Error building project. {result.FormattedOutput}");
         }
 
         Directory.CreateDirectory(_dbModelOutputDirPath);
@@ -162,8 +162,9 @@ class Program
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
+        var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
 
         var exitCode = await startResult.WaitForExitTask;
 
@@ -176,7 +177,9 @@ class Program
 
         if (exitCode != 0)
         {
-            throw new Exception($"Scaffolding process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
+            throw new Exception($"Scaffolding process failed with exit code: {exitCode}.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
     }
 
@@ -204,8 +207,9 @@ class Program
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
+        var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
 
         var exitCode = await startResult.WaitForExitTask;
 
@@ -218,7 +222,9 @@ class Program
 
         if (exitCode != 0)
         {
-            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
+            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode}.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
     }
 

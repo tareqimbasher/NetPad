@@ -236,7 +236,8 @@ public class DotNetCSharpProject
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath,
             CreateNoWindow = true,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
 
         using var process = Process.Start(startInfo);
@@ -249,8 +250,9 @@ public class DotNetCSharpProject
         await process.WaitForExitAsync();
 
         var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
 
-        return new DotNetCliResult(process.ExitCode == 0, output);
+        return new DotNetCliResult(process.ExitCode == 0, output, error);
     }
 
     /// <summary>

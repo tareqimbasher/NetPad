@@ -1,29 +1,13 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
 internal static class EntityFrameworkUtils
 {
-    public static bool IsEntityFrameworkDataConnection(
-        this DataConnection dataConnection,
-        [MaybeNullWhen(false)] out EntityFrameworkDatabaseConnection entityFrameworkDatabaseConnection)
-    {
-        if (dataConnection is EntityFrameworkDatabaseConnection ef)
-        {
-            entityFrameworkDatabaseConnection = ef;
-            return true;
-        }
-
-        entityFrameworkDatabaseConnection = null;
-        return false;
-    }
-
     public static DatabaseStructure GetDatabaseStructure(this DbContext dbContext)
     {
         var dbSets = dbContext.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
