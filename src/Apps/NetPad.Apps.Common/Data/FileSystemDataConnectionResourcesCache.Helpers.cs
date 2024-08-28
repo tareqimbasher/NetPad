@@ -6,7 +6,7 @@ using NetPad.DotNet;
 
 namespace NetPad.Apps.Data;
 
-public partial class FileSystemDataConnectionResourcesCache
+public sealed partial class FileSystemDataConnectionResourcesCache
 {
     private async Task<DataConnectionResources?> GetCached(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
@@ -77,19 +77,6 @@ public partial class FileSystemDataConnectionResourcesCache
         logger.LogTrace("Found that data connection {DataConnectionId} schema has changed, removing cached resources", dataConnection.Id);
         await RemoveCachedResourcesAsync(dataConnection.Id);
         return null;
-
-    }
-
-    private DataConnectionResources CreateAndMemCacheResources(
-        DataConnection dataConnection,
-        DotNetFrameworkVersion targetFrameworkVersion,
-        DateTime recentAsOf)
-    {
-        return _memoryCache
-            .GetOrAdd(dataConnection.Id, static _ => new ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>())
-            .GetOrAdd(targetFrameworkVersion,
-                static (_, inputs) => new DataConnectionResources(inputs.DataConnection, inputs.RecentAsOf),
-                new CreateResourcesInputs(dataConnection, recentAsOf));
     }
 
     private DataConnectionResources UpdateMemCacheAndGetCachedValue(DataConnectionResources resources, DotNetFrameworkVersion targetFrameworkVersion)
@@ -99,9 +86,7 @@ public partial class FileSystemDataConnectionResourcesCache
             .AddOrUpdate(targetFrameworkVersion, resources, (_, existing) => existing.UpdateFrom(resources));
     }
 
-    private record CreateResourcesInputs(DataConnection DataConnection, DateTime RecentAsOf);
-
-    private async Task OnResourceGeneratedAsync(DataConnectionResources resources, DotNetFrameworkVersion targetFrameworkVersion, DataConnectionResourceComponent component)
+    private async Task OnResourceGeneratedAsync(DataConnectionResources resources, DotNetFrameworkVersion targetFrameworkVersion)
     {
         var dataConnection = resources.DataConnection;
 
@@ -121,20 +106,16 @@ public partial class FileSystemDataConnectionResourcesCache
 
         try
         {
-            await dataConnectionResourcesRepository.SaveAsync(resources, targetFrameworkVersion, component);
+            await dataConnectionResourcesRepository.SaveAsync(resources, targetFrameworkVersion);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error saving {ResourceComponent} resource for data connection {DataConnectionId} for .NET framework version {DotNetFramework} to repository",
-                component,
+            logger.LogError(ex, "Error saving resources for data connection {DataConnectionId} for .NET framework version {DotNetFramework} to repository",
                 dataConnection.Id,
-                component);
+                targetFrameworkVersion);
         }
 
-        _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(
-            dataConnection,
-            resources,
-            component));
+        _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatedEvent(dataConnection, targetFrameworkVersion, resources));
     }
 
     private async Task<bool?> DidSchemaChangeAsync(DataConnection dataConnection)

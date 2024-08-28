@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NetPad.Data;
 
 /// <summary>
@@ -8,7 +6,7 @@ namespace NetPad.Data;
 /// </summary>
 public class FakeDataConnectionPasswordProtector : IDataConnectionPasswordProtector
 {
-    public byte[] Protect(byte[] plaintext) => Encoding.UTF8.GetBytes("<hidden>");
+    public byte[] Protect(byte[] plaintext) => "<hidden>"u8.ToArray();
 
     public string Protect(string plaintext) => "<hidden>";
 

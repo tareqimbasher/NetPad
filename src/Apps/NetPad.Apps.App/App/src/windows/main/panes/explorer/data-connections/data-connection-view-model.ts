@@ -2,13 +2,11 @@ import {
     ApiException,
     DatabaseStructure,
     DataConnection,
-    DataConnectionResourceComponent,
     IDataConnectionService
 } from "@application";
 
 export class DataConnectionViewModel {
-    private resourcesBeingLoaded = new Set<DataConnectionResourceComponent>();
-
+    public loadingResources = false;
     public loadingStructure = false
     public expanded = false;
     public structure?: DatabaseStructure;
@@ -20,9 +18,8 @@ export class DataConnectionViewModel {
     }
 
     public get loadingMessage(): string | null {
-        if (this.resourcesBeingLoaded.size > 0) {
-            const onlyLoadingAssembly = this.resourcesBeingLoaded.size == 1 && Array.from(this.resourcesBeingLoaded)[0] === "Assembly";
-            return onlyLoadingAssembly ? "Compiling" : "Scaffolding";
+        if (this.loadingResources) {
+            return "Scaffolding";
         }
 
         if (this.schemaValidationRunning) {
@@ -66,22 +63,22 @@ export class DataConnectionViewModel {
             .finally(() => this.loadingStructure = false);
     }
 
-    public resourceBeingLoaded(component: DataConnectionResourceComponent) {
-        this.resourcesBeingLoaded.add(component);
+    public resourcesAreLoading() {
+        this.loadingResources = true;
     }
 
-    public resourceCompletedLoading(component: DataConnectionResourceComponent) {
-        this.resourcesBeingLoaded.delete(component);
+    public resourcesCompletedLoading() {
+        this.loadingResources = false;
         this.error = null;
 
-        // If structure was previously fetched and this is last resource being loaded
-        if (this.structure && this.resourcesBeingLoaded.size === 0) {
+        // If structure was previously fetched and resources were renewed, fetch it again
+        if (this.structure) {
             this.getDatabaseStructure();
         }
     }
 
-    public resourceFailedLoading(component: DataConnectionResourceComponent, error: string | undefined) {
-        this.resourcesBeingLoaded.delete(component);
+    public resourcesFailedLoading(error: string | undefined) {
+        this.loadingResources = false;
         this.error = error || "Error";
     }
 

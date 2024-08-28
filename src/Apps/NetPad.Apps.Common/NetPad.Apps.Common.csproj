@@ -22,4 +22,8 @@
       <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Data\EntityFrameworkCore\EmbeddedCode\DatabaseStructureEmbedded.cs" />
+    </ItemGroup>
+
 </Project>

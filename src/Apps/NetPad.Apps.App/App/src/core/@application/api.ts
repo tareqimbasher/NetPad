@@ -101,7 +101,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -761,7 +761,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -840,7 +840,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -2168,7 +2168,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -3881,9 +3881,7 @@ export interface IDatabaseTableColumn {
 
 export class DatabaseIndex implements IDatabaseIndex {
     name!: string;
-    type?: string | undefined;
     isUnique!: boolean;
-    isClustered!: boolean;
     columns!: string[];
 
     constructor(data?: IDatabaseIndex) {
@@ -3901,9 +3899,7 @@ export class DatabaseIndex implements IDatabaseIndex {
     init(_data?: any) {
         if (_data) {
             this.name = _data["name"];
-            this.type = _data["type"];
             this.isUnique = _data["isUnique"];
-            this.isClustered = _data["isClustered"];
             if (Array.isArray(_data["columns"])) {
                 this.columns = [] as any;
                 for (let item of _data["columns"])
@@ -3922,9 +3918,7 @@ export class DatabaseIndex implements IDatabaseIndex {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
-        data["type"] = this.type;
         data["isUnique"] = this.isUnique;
-        data["isClustered"] = this.isClustered;
         if (Array.isArray(this.columns)) {
             data["columns"] = [];
             for (let item of this.columns)
@@ -3943,9 +3937,7 @@ export class DatabaseIndex implements IDatabaseIndex {
 
 export interface IDatabaseIndex {
     name: string;
-    type?: string | undefined;
     isUnique: boolean;
-    isClustered: boolean;
     columns: string[];
 }
 
@@ -6594,7 +6586,7 @@ export interface IDataConnectionDeletedEvent {
 
 export class DataConnectionResourcesUpdatingEvent implements IDataConnectionResourcesUpdatingEvent {
     dataConnection!: DataConnection;
-    updatingComponent!: DataConnectionResourceComponent;
+    dotNetFrameworkVersion!: DotNetFrameworkVersion;
 
     constructor(data?: IDataConnectionResourcesUpdatingEvent) {
         if (data) {
@@ -6608,7 +6600,7 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
     init(_data?: any) {
         if (_data) {
             this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
-            this.updatingComponent = _data["updatingComponent"];
+            this.dotNetFrameworkVersion = _data["dotNetFrameworkVersion"];
         }
     }
 
@@ -6622,7 +6614,7 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
-        data["updatingComponent"] = this.updatingComponent;
+        data["dotNetFrameworkVersion"] = this.dotNetFrameworkVersion;
         return data;
     }
 
@@ -6636,14 +6628,12 @@ export class DataConnectionResourcesUpdatingEvent implements IDataConnectionReso
 
 export interface IDataConnectionResourcesUpdatingEvent {
     dataConnection: DataConnection;
-    updatingComponent: DataConnectionResourceComponent;
+    dotNetFrameworkVersion: DotNetFrameworkVersion;
 }
-
-export type DataConnectionResourceComponent = "SourceCode" | "Assembly" | "RequiredReferences";
 
 export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResourcesUpdatedEvent {
     dataConnection!: DataConnection;
-    updatedComponent!: DataConnectionResourceComponent;
+    targetFrameworkVersion!: DotNetFrameworkVersion;
 
     constructor(data?: IDataConnectionResourcesUpdatedEvent) {
         if (data) {
@@ -6657,7 +6647,7 @@ export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResou
     init(_data?: any) {
         if (_data) {
             this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
-            this.updatedComponent = _data["updatedComponent"];
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
         }
     }
 
@@ -6671,7 +6661,7 @@ export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResou
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
-        data["updatedComponent"] = this.updatedComponent;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
         return data;
     }
 
@@ -6685,12 +6675,12 @@ export class DataConnectionResourcesUpdatedEvent implements IDataConnectionResou
 
 export interface IDataConnectionResourcesUpdatedEvent {
     dataConnection: DataConnection;
-    updatedComponent: DataConnectionResourceComponent;
+    targetFrameworkVersion: DotNetFrameworkVersion;
 }
 
 export class DataConnectionResourcesUpdateFailedEvent implements IDataConnectionResourcesUpdateFailedEvent {
     dataConnection!: DataConnection;
-    failedComponent!: DataConnectionResourceComponent;
+    dotNetFrameworkVersion!: DotNetFrameworkVersion;
     error?: string | undefined;
 
     constructor(data?: IDataConnectionResourcesUpdateFailedEvent) {
@@ -6705,7 +6695,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
     init(_data?: any) {
         if (_data) {
             this.dataConnection = _data["dataConnection"] ? DataConnection.fromJS(_data["dataConnection"]) : <any>undefined;
-            this.failedComponent = _data["failedComponent"];
+            this.dotNetFrameworkVersion = _data["dotNetFrameworkVersion"];
             this.error = _data["error"];
         }
     }
@@ -6720,7 +6710,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["dataConnection"] = this.dataConnection ? this.dataConnection.toJSON() : <any>undefined;
-        data["failedComponent"] = this.failedComponent;
+        data["dotNetFrameworkVersion"] = this.dotNetFrameworkVersion;
         data["error"] = this.error;
         return data;
     }
@@ -6735,7 +6725,7 @@ export class DataConnectionResourcesUpdateFailedEvent implements IDataConnection
 
 export interface IDataConnectionResourcesUpdateFailedEvent {
     dataConnection: DataConnection;
-    failedComponent: DataConnectionResourceComponent;
+    dotNetFrameworkVersion: DotNetFrameworkVersion;
     error?: string | undefined;
 }
 
@@ -7711,6 +7701,41 @@ export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatab
 export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
+export class SQLiteDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements ISQLiteDatabaseConnection {
+
+    constructor(data?: ISQLiteDatabaseConnection) {
+        super(data);
+        this._discriminator = "SQLiteDatabaseConnection";
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): SQLiteDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new SQLiteDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): SQLiteDatabaseConnection {
+        const json = this.toJSON();
+        let result = new SQLiteDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISQLiteDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
 export class MySqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMySqlDatabaseConnection {
 
     constructor(data?: IMySqlDatabaseConnection) {
@@ -7748,7 +7773,7 @@ export interface IMySqlDatabaseConnection extends IEntityFrameworkRelationalData
 
 export class MariaDbDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMariaDbDatabaseConnection {
 
-    constructor(data?: IMariaDbDatabaseConnection ) {
+    constructor(data?: IMariaDbDatabaseConnection) {
         super(data);
         this._discriminator = "MariaDbDatabaseConnection";
     }
@@ -7779,41 +7804,6 @@ export class MariaDbDatabaseConnection extends EntityFrameworkRelationalDatabase
 }
 
 export interface IMariaDbDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
-}
-
-export class SQLiteDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements ISQLiteDatabaseConnection {
-
-    constructor(data?: ISQLiteDatabaseConnection) {
-        super(data);
-        this._discriminator = "SQLiteDatabaseConnection";
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-    }
-
-    static fromJS(data: any): SQLiteDatabaseConnection {
-        data = typeof data === 'object' ? data : {};
-        let result = new SQLiteDatabaseConnection();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): SQLiteDatabaseConnection {
-        const json = this.toJSON();
-        let result = new SQLiteDatabaseConnection();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ISQLiteDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
 export interface FileResponse {

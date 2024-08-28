@@ -48,6 +48,11 @@ public class DotNetCSharpProject
     public string ProjectDirectoryPath { get; }
 
     /// <summary>
+    /// The bin directory of this project.
+    /// </summary>
+    public string BinDirectoryPath => Path.Combine(ProjectDirectoryPath, "bin");
+
+    /// <summary>
     /// The path to the project file.
     /// </summary>
     public string ProjectFilePath { get; }
@@ -188,21 +193,28 @@ public class DotNetCSharpProject
     {
         await ModifyProjectFileAsync(root =>
         {
-            var projectProperties = root.Elements("PropertyGroup").FirstOrDefault();
+            var propertyGroups = root.Elements("PropertyGroup").ToArray();
 
-            if (projectProperties == null)
+            if (propertyGroups.Length == 0)
             {
                 throw new FormatException("Project XML file is not formatted correctly. Could not find a \"PropertyGroup\" XML node.");
             }
 
-            var property = projectProperties.Elements(propertyName).FirstOrDefault();
-            if (property == null)
+            XElement? property;
+
+            foreach (var projectProperties in propertyGroups)
             {
-                property = new XElement(propertyName);
-                projectProperties.Add(property);
+                property = projectProperties.Elements(propertyName).FirstOrDefault();
+
+                if (property != null)
+                {
+                    property.SetValue(value ?? string.Empty);
+                    return;
+                }
             }
 
-            property.SetValue(value ?? string.Empty);
+            property = new XElement(propertyName);
+            propertyGroups[0].Add(property);
         });
     }
 
@@ -225,13 +237,20 @@ public class DotNetCSharpProject
         }
     }
 
-    public async Task<DotNetCliResult> BuildAsync()
+    public async Task<DotNetCliResult> BuildAsync(params string[] additionalArgs)
     {
         EnsurePackageCacheDirectoryExists();
 
-        var startInfo = new ProcessStartInfo(
-            _dotNetInfo.LocateDotNetExecutableOrThrow(),
-            $"build \"{ProjectFilePath}\"")
+        List<string> args = ["build"];
+
+        if (additionalArgs.Length > 0)
+        {
+            args.AddRange(additionalArgs);
+        }
+
+        args.Add($"\"{ProjectFilePath}\"");
+
+        var startInfo = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(), string.Join(" ", args))
         {
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath,
@@ -247,10 +266,47 @@ public class DotNetCSharpProject
             return new DotNetCliResult(false, $"Failed to start dotnet with args: {startInfo.Arguments}");
         }
 
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
+
         await process.WaitForExitAsync();
+
+        return new DotNetCliResult(process.ExitCode == 0, output, error);
+    }
+
+    public async Task<DotNetCliResult> RunAsync(params string[] additionalArgs)
+    {
+        EnsurePackageCacheDirectoryExists();
+
+        List<string> args = ["run"];
+
+        if (additionalArgs.Length > 0)
+        {
+            args.AddRange(additionalArgs);
+        }
+
+        args.Add($"\"{ProjectFilePath}\"");
+
+        var startInfo = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(), string.Join(" ", args))
+        {
+            UseShellExecute = false,
+            WorkingDirectory = ProjectDirectoryPath,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        using var process = Process.Start(startInfo);
+
+        if (process == null)
+        {
+            return new DotNetCliResult(false, $"Failed to start dotnet with args: {startInfo.Arguments}");
+        }
 
         var output = await process.StandardOutput.ReadToEndAsync();
         var error = await process.StandardError.ReadToEndAsync();
+
+        await process.WaitForExitAsync();
 
         return new DotNetCliResult(process.ExitCode == 0, output, error);
     }

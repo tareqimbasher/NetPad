@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace NetPad.DotNet;
@@ -67,12 +68,24 @@ public static class DotNetFrameworkVersionUtil
 
     public static DotNetFrameworkVersion GetFrameworkVersion(string targetFrameworkMoniker)
     {
-        return _tfmToFrameworkVersion.TryGetValue(targetFrameworkMoniker, out var frameworkVersion)
-            ? frameworkVersion
+        return TryGetFrameworkVersion(targetFrameworkMoniker, out var frameworkVersion)
+            ? frameworkVersion.Value
             : throw new ArgumentOutOfRangeException(
                 nameof(targetFrameworkMoniker),
                 targetFrameworkMoniker,
                 $"Unknown target framework moniker (TFM): {targetFrameworkMoniker}");
+    }
+
+    public static bool TryGetFrameworkVersion(string targetFrameworkMoniker, [NotNullWhen(true)] out DotNetFrameworkVersion? frameworkVersion)
+    {
+        if (_tfmToFrameworkVersion.TryGetValue(targetFrameworkMoniker, out var version))
+        {
+            frameworkVersion = version;
+            return true;
+        }
+
+        frameworkVersion = null;
+        return false;
     }
 
     public static DotNetFrameworkVersion GetFrameworkVersion(this DotNetRuntimeVersion runtimeVersion)

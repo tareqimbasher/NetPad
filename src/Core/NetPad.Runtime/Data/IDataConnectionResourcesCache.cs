@@ -10,6 +10,13 @@ public interface IDataConnectionResourcesCache
     Task<bool> HasCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion);
 
     /// <summary>
+    /// Gets a list of <see cref="DotNetFrameworkVersion"/>s that have cached resources for a data connection.
+    /// </summary>
+    /// <param name="dataConnectionId"></param>
+    /// <returns></returns>
+    Task<IList<DotNetFrameworkVersion>> GetCachedDotNetFrameworkVersions(Guid dataConnectionId);
+
+    /// <summary>
     /// Removes all cached resources for data connection.
     /// </summary>
     Task RemoveCachedResourcesAsync(Guid dataConnectionId);
@@ -20,17 +27,10 @@ public interface IDataConnectionResourcesCache
     Task RemoveCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion);
 
     /// <summary>
-    /// Gets compiled assembly needed to use connect and use data connection.
+    /// Gets resource assets needed to use data connection on the target .NET framework.
     /// </summary>
-    Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion);
-
-    /// <summary>
-    /// Gets generated source code needed to use data connection.
-    /// </summary>
-    Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion);
-
-    /// <summary>
-    /// Gets the references required to compile a working application for data connection.
-    /// </summary>
-    Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion);
+    /// <param name="dataConnection"></param>
+    /// <param name="targetFrameworkVersion"></param>
+    /// <returns></returns>
+    Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion);
 }

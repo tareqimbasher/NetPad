@@ -7,19 +7,19 @@ using NetPad.Events;
 
 namespace NetPad.Apps.Data;
 
-public partial class FileSystemDataConnectionResourcesCache(
+public sealed partial class FileSystemDataConnectionResourcesCache(
     IDataConnectionResourcesRepository dataConnectionResourcesRepository,
     IDataConnectionSchemaChangeDetectionStrategyFactory dataConnectionSchemaChangeDetectionStrategyFactory,
     IDataConnectionResourcesGeneratorFactory dataConnectionResourcesGeneratorFactory,
     IEventBus eventBus,
     ILogger<FileSystemDataConnectionResourcesCache> logger)
-    : IDataConnectionResourcesCache
+    : IDataConnectionResourcesCache, IDisposable
 {
+    record ResourceGenerationLock(Guid DataConnectionId, DotNetFrameworkVersion TargetFrameworkVersion);
+
+    private readonly ConcurrentDictionary<ResourceGenerationLock, SemaphoreSlim> _resourceGenerationLocks = new();
     private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>> _memoryCache = new();
 
-    private readonly SemaphoreSlim _sourceCodeTaskLock = new(1, 1);
-    private readonly SemaphoreSlim _assemblyTaskLock = new(1, 1);
-    private readonly SemaphoreSlim _requiredReferencesLock = new(1, 1);
 
     public async Task<bool> HasCachedResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion targetFrameworkVersion)
     {
@@ -37,6 +37,16 @@ public partial class FileSystemDataConnectionResourcesCache(
                 targetFrameworkVersion);
             return false;
         }
+    }
+
+    public async Task<IList<DotNetFrameworkVersion>> GetCachedDotNetFrameworkVersions(Guid dataConnectionId)
+    {
+        if (_memoryCache.TryGetValue(dataConnectionId, out var frameworks))
+        {
+            return frameworks.Keys.ToArray();
+        }
+
+        return await dataConnectionResourcesRepository.GetCachedDotNetFrameworkVersionsAsync(dataConnectionId);
     }
 
     public async Task RemoveCachedResourcesAsync(Guid dataConnectionId)
@@ -73,171 +83,55 @@ public partial class FileSystemDataConnectionResourcesCache(
         }
     }
 
-    public async Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
         DataConnectionResources? resources;
 
-        if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.SourceCode != null)
+        if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null)
         {
-            return await resources.SourceCode;
+            return resources;
         }
 
-        await _sourceCodeTaskLock.WaitAsync();
+        var lckKey = new ResourceGenerationLock(dataConnection.Id, targetFrameworkVersion);
+        var lck = _resourceGenerationLocks.GetOrAdd(lckKey, static _ => new SemaphoreSlim(1, 1));
+
+        await lck.WaitAsync();
 
         try
         {
             // Double check after acquiring lock
-            if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.SourceCode != null)
+            if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null)
             {
-                return await resources.SourceCode;
+                return resources;
             }
 
-            resources ??= CreateAndMemCacheResources(dataConnection, targetFrameworkVersion, DateTime.UtcNow);
+            logger.LogTrace("Generating data connection resources for: {DataConnectionId}", dataConnection.Id);
+            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, targetFrameworkVersion));
 
-            logger.LogTrace("Generating data connection {DataConnectionId} SourceCode resource", dataConnection.Id);
-            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.SourceCode));
+            var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
 
-            resources.SourceCode = Task.Run(async () =>
-            {
-                var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GenerateSourceCodeAsync(dataConnection, targetFrameworkVersion);
-            });
+            resources = await generator.GenerateResourcesAsync(dataConnection, targetFrameworkVersion);
 
-            _ = resources.SourceCode.ContinueWith(async task =>
-            {
-                if (task.Status == TaskStatus.RanToCompletion)
-                {
-                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.SourceCode);
-                }
-                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
-                {
-                    // If an error occurred, null the task so the next time its called we try again
-                    resources.SourceCode = null;
+            await OnResourceGeneratedAsync(resources, targetFrameworkVersion);
 
-                    _ = eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
-                        dataConnection,
-                        DataConnectionResourceComponent.SourceCode,
-                        task.Exception));
-                }
-            });
+            UpdateMemCacheAndGetCachedValue(resources, targetFrameworkVersion);
+
+            return resources;
         }
         finally
         {
-            _sourceCodeTaskLock.Release();
+            lck.Release();
         }
-
-        return await resources.SourceCode;
     }
 
-    public async Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public void Dispose()
     {
-        DataConnectionResources? resources;
-
-        if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.Assembly != null)
+        foreach (var lockKey in _resourceGenerationLocks.Keys)
         {
-            return await resources.Assembly;
-        }
-
-        await _assemblyTaskLock.WaitAsync();
-
-        try
-        {
-            // Double check after acquiring lock
-            if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.Assembly != null)
+            if (_resourceGenerationLocks.TryRemove(lockKey, out var semaphore))
             {
-                return await resources.Assembly;
+                semaphore.Dispose();
             }
-
-            resources ??= CreateAndMemCacheResources(dataConnection, targetFrameworkVersion, DateTime.UtcNow);
-
-            logger.LogTrace("Generating data connection {DataConnectionId} Assembly resource", dataConnection.Id);
-            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.Assembly));
-
-            resources.Assembly = Task.Run(async () =>
-            {
-                var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GenerateAssemblyAsync(dataConnection, targetFrameworkVersion);
-            });
-
-            _ = resources.Assembly.ContinueWith(async task =>
-            {
-                if (task.Status == TaskStatus.RanToCompletion)
-                {
-                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.Assembly);
-                }
-                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
-                {
-                    // If an error occurred, null the task so the next time its called we try again
-                    resources.Assembly = null;
-
-                    _ = eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
-                        dataConnection,
-                        DataConnectionResourceComponent.Assembly,
-                        task.Exception));
-                }
-            });
         }
-        finally
-        {
-            _assemblyTaskLock.Release();
-        }
-
-        return await resources.Assembly;
-    }
-
-    public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
-    {
-        DataConnectionResources? resources;
-
-        if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.RequiredReferences != null)
-        {
-            return await resources.RequiredReferences;
-        }
-
-        await _requiredReferencesLock.WaitAsync();
-
-        try
-        {
-            // Double check after acquiring lock
-            if ((resources = await GetCached(dataConnection, targetFrameworkVersion)) != null && resources.RequiredReferences != null)
-            {
-                return await resources.RequiredReferences;
-            }
-
-            resources ??= CreateAndMemCacheResources(dataConnection, targetFrameworkVersion, DateTime.UtcNow);
-
-            logger.LogTrace("Generating data connection {DataConnectionId} RequiredReferences resources", dataConnection.Id);
-            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, DataConnectionResourceComponent.RequiredReferences));
-
-            resources.RequiredReferences = Task.Run(async () =>
-            {
-                var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
-                return await generator.GetRequiredReferencesAsync(dataConnection, targetFrameworkVersion);
-            });
-
-            _ = resources.RequiredReferences.ContinueWith(async task =>
-            {
-                if (task.Status == TaskStatus.RanToCompletion)
-                {
-                    await OnResourceGeneratedAsync(resources, targetFrameworkVersion, DataConnectionResourceComponent.RequiredReferences);
-                }
-                else if (task.Status is TaskStatus.Faulted or TaskStatus.Canceled)
-                {
-                    // If an error occurred, null the task so the next time its called we try again
-                    resources.RequiredReferences = null;
-
-                    _ = eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(
-                        dataConnection,
-                        DataConnectionResourceComponent.RequiredReferences,
-                        task.Exception));
-                }
-            });
-        }
-        finally
-        {
-            _requiredReferencesLock.Release();
-        }
-
-        return await resources.RequiredReferences;
     }
 }

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace NetPad.DotNet;
 
-public record AssemblyImage
+public class AssemblyImage
 {
     public AssemblyImage(AssemblyName assemblyName, byte[] image)
     {
@@ -12,6 +12,12 @@ public record AssemblyImage
 
         AssemblyName = assemblyName ?? throw new ArgumentNullException(nameof(assemblyName));
         Image = image;
+    }
+
+    public AssemblyImage(string assemblyFilePath)
+    {
+        AssemblyName = AssemblyName.GetAssemblyName(assemblyFilePath);
+        Image = File.ReadAllBytes(assemblyFilePath);
     }
 
     public AssemblyName AssemblyName { get; }
@@ -39,6 +45,12 @@ public record AssemblyImage
 
     public override int GetHashCode()
     {
-        return AssemblyName.FullName.GetHashCode();
+        unchecked // Overflow is fine, just wrap
+        {
+            int hash = 17;
+            hash = hash * 23 + AssemblyName.FullName.GetHashCode();
+            hash = hash * 23 + Image.GetHashCode();
+            return hash;
+        }
     }
 }

@@ -156,21 +156,21 @@ export class DataConnectionsList extends ViewModelBase {
         this.eventBus.subscribeToServer(DataConnectionResourcesUpdatingEvent, msg => {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
-                vm.resourceBeingLoaded(msg.updatingComponent);
+                vm.resourcesAreLoading();
             }
         });
 
         this.eventBus.subscribeToServer(DataConnectionResourcesUpdatedEvent, msg => {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
-                vm.resourceCompletedLoading(msg.updatedComponent);
+                vm.resourcesCompletedLoading();
             }
         });
 
         this.eventBus.subscribeToServer(DataConnectionResourcesUpdateFailedEvent, msg => {
             const vm = this.dataConnectionViewModels.find(v => v.connection.id == msg.dataConnection.id);
             if (vm) {
-                vm.resourceFailedLoading(msg.failedComponent, msg.error);
+                vm.resourcesFailedLoading(msg.error);
             }
         });
 

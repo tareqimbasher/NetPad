@@ -1,11 +1,19 @@
+using System.Text.Json.Serialization;
+
 namespace NetPad.Data;
 
 public class DatabaseStructure(string databaseName)
 {
-    private readonly List<DatabaseSchema> _schemas = [];
+    private List<DatabaseSchema> _schemas = [];
 
-    public string DatabaseName { get; } = databaseName;
-    public IReadOnlyList<DatabaseSchema> Schemas => _schemas;
+    [JsonInclude] public string DatabaseName { get; private set; } = databaseName;
+
+    [JsonInclude]
+    public IReadOnlyList<DatabaseSchema> Schemas
+    {
+        get => _schemas;
+        private set => _schemas = (List<DatabaseSchema>)value;
+    }
 
     public DatabaseSchema GetOrAddSchema(string? name)
     {
@@ -23,10 +31,16 @@ public class DatabaseStructure(string databaseName)
 
 public class DatabaseSchema(string? name = null)
 {
-    private readonly List<DatabaseTable> _tables = [];
+    private List<DatabaseTable> _tables = [];
 
-    public string? Name { get; } = name;
-    public IReadOnlyList<DatabaseTable> Tables => _tables;
+    [JsonInclude] public string? Name { get; private set; } = name;
+
+    [JsonInclude]
+    public IReadOnlyList<DatabaseTable> Tables
+    {
+        get => _tables;
+        private set => _tables = (List<DatabaseTable>)value;
+    }
 
     public DatabaseTable GetOrAddTable(string name, string displayName)
     {
@@ -44,15 +58,33 @@ public class DatabaseSchema(string? name = null)
 
 public class DatabaseTable(string name, string displayName)
 {
-    private readonly List<DatabaseTableColumn> _columns = [];
-    private readonly List<DatabaseIndex> _indexes = [];
-    private readonly List<DatabaseTableNavigation> _navigations = [];
+    private List<DatabaseTableColumn> _columns = [];
+    private List<DatabaseIndex> _indexes = [];
+    private List<DatabaseTableNavigation> _navigations = [];
 
-    public string Name { get; } = name;
-    public string DisplayName { get; } = displayName;
-    public IReadOnlyList<DatabaseTableColumn> Columns => _columns;
-    public IReadOnlyList<DatabaseIndex> Indexes => _indexes;
-    public IReadOnlyList<DatabaseTableNavigation> Navigations => _navigations;
+    [JsonInclude] public string Name { get; private set; } = name;
+    [JsonInclude] public string DisplayName { get; private set; } = displayName;
+
+    [JsonInclude]
+    public IReadOnlyList<DatabaseTableColumn> Columns
+    {
+        get => _columns;
+        private set => _columns = (List<DatabaseTableColumn>)value;
+    }
+
+    [JsonInclude]
+    public IReadOnlyList<DatabaseIndex> Indexes
+    {
+        get => _indexes;
+        private set => _indexes = (List<DatabaseIndex>)value;
+    }
+
+    [JsonInclude]
+    public IReadOnlyList<DatabaseTableNavigation> Navigations
+    {
+        get => _navigations;
+        private set => _navigations = (List<DatabaseTableNavigation>)value;
+    }
 
     public DatabaseTableColumn GetOrAddColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
     {
@@ -67,9 +99,9 @@ public class DatabaseTable(string name, string displayName)
         return column;
     }
 
-    public DatabaseIndex AddIndex(string name, string? type, bool isUnique, bool isClustered, string[] columns)
+    public DatabaseIndex AddIndex(string name, bool isUnique, string[] columns)
     {
-        var index = new DatabaseIndex(name, type, isUnique, isClustered, columns);
+        var index = new DatabaseIndex(name, isUnique, columns);
         _indexes.Add(index);
         return index;
     }
@@ -84,12 +116,12 @@ public class DatabaseTable(string name, string displayName)
 
 public class DatabaseTableColumn(string name, string type, string clrType, bool isPrimaryKey, bool isForeignKey)
 {
-    public string Name { get; } = name;
-    public string Type { get; } = type;
-    public string ClrType { get; } = clrType;
-    public bool IsPrimaryKey { get; } = isPrimaryKey;
-    public bool IsForeignKey { get; } = isForeignKey;
-    public int? Order { get; private set; }
+    [JsonInclude] public string Name { get; private set; } = name;
+    [JsonInclude] public string Type { get; private set; } = type;
+    [JsonInclude] public string ClrType { get; private set; } = clrType;
+    [JsonInclude] public bool IsPrimaryKey { get; private set; } = isPrimaryKey;
+    [JsonInclude] public bool IsForeignKey { get; private set; } = isForeignKey;
+    [JsonInclude] public int? Order { get; private set; }
 
     public void SetOrder(int? order)
     {
@@ -102,16 +134,14 @@ public class DatabaseTableColumn(string name, string type, string clrType, bool 
 
 public class DatabaseTableNavigation(string name, string target, string? clrType)
 {
-    public string Name { get; } = name;
-    public string Target { get; } = target;
-    public string? ClrType { get; } = clrType;
+    [JsonInclude] public string Name { get; private set; } = name;
+    [JsonInclude] public string Target { get; private set; } = target;
+    [JsonInclude] public string? ClrType { get; private set; } = clrType;
 }
 
-public class DatabaseIndex(string name, string? type, bool isUnique, bool isClustered, string[] columns)
+public class DatabaseIndex(string name, bool isUnique, string[] columns)
 {
-    public string Name { get; } = name;
-    public string? Type { get; } = type;
-    public bool IsUnique { get; } = isUnique;
-    public bool IsClustered { get; } = isClustered;
-    public string[] Columns { get; } = columns;
+    [JsonInclude] public string Name { get; private set; } = name;
+    [JsonInclude] public bool IsUnique { get; private set; } = isUnique;
+    [JsonInclude] public string[] Columns { get; private set; } = columns;
 }

@@ -100,12 +100,10 @@
                                         <div class="list-group-item db-index"
                                              if.bind="table.indexes.length"
                                              repeat.for="index of table.indexes"
-                                             title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}\nClustered: ${index.isClustered}">
+                                             title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}">
                                             <div class="display-text">
                                                 <div class="row-icon"><i class="db-index-icon icon-xs"></i></div>
                                                 ${index.name}
-                                                <span class="extra-info text-muted"
-                                                      if.bind="index.type">(${index.type})</span>
                                             </div>
                                         </div>
                                     </div>

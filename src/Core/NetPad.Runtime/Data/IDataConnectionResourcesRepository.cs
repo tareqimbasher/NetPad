@@ -5,8 +5,9 @@ namespace NetPad.Data;
 public interface IDataConnectionResourcesRepository
 {
     Task<bool> HasResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion dotNetFrameworkVersion);
+    Task<IList<DotNetFrameworkVersion>> GetCachedDotNetFrameworkVersionsAsync(Guid dataConnectionId);
     Task<DataConnectionResources?> GetAsync(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion);
-    Task SaveAsync(DataConnectionResources resources, DotNetFrameworkVersion dotNetFrameworkVersion, DataConnectionResourceComponent? resourceComponent);
+    Task SaveAsync(DataConnectionResources resources, DotNetFrameworkVersion dotNetFrameworkVersion);
     Task DeleteAsync(Guid dataConnectionId);
     Task DeleteAsync(Guid dataConnectionId, DotNetFrameworkVersion dotNetFrameworkVersion);
 

@@ -27,19 +27,20 @@ public class AnyDatabaseProviderTransform : IScaffoldedModelTransform
             "DbContextOptions<TContext>");
 
         // Add a non-generic DbContext that inherits from the new generic DbContext
-        sb.AppendLine($@"
-public partial class {dbContextFile.ClassName} : {dbContextFile.ClassName}<{dbContextFile.ClassName}>
-{{
-    public {dbContextFile.ClassName}()
-    {{
-    }}
+        sb.Insert(0, $$"""
+                       public partial class {{dbContextFile.ClassName}} : {{dbContextFile.ClassName}}<{{dbContextFile.ClassName}}>
+                       {
+                           public {{dbContextFile.ClassName}}()
+                           {
+                           }
 
-    public {dbContextFile.ClassName}(DbContextOptions<{dbContextFile.ClassName}> options)
-        : base(options)
-    {{
-    }}
-}}
-");
+                           public {{dbContextFile.ClassName}}(DbContextOptions<{{dbContextFile.ClassName}}> options)
+                               : base(options)
+                           {
+                           }
+                       }
+
+                       """);
 
         // If a compiled model was generated, make generic modification on compiled model
         var compiledModel = model.DbContextCompiledModelFile;

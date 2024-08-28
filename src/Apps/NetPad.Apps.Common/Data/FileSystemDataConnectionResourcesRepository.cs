@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Configuration;
@@ -7,7 +6,7 @@ using NetPad.DotNet;
 
 namespace NetPad.Apps.Data;
 
-public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataConnectionResourcesRepository> logger)
+public sealed class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataConnectionResourcesRepository> logger)
     : IDataConnectionResourcesRepository
 {
     private static readonly SemaphoreSlim _fsLock = new(1, 1);
@@ -17,6 +16,34 @@ public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataC
     public Task<bool> HasResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         return Task.FromResult(GetInfoFile(GetResourcesCacheDirectory(dataConnectionId, dotNetFrameworkVersion)).Exists);
+    }
+
+    public Task<IList<DotNetFrameworkVersion>> GetCachedDotNetFrameworkVersionsAsync(Guid dataConnectionId)
+    {
+        IList<DotNetFrameworkVersion> result;
+
+        var cacheDir = GetResourcesCacheDirectory(dataConnectionId);
+
+        if (!cacheDir.Exists)
+        {
+            result = Array.Empty<DotNetFrameworkVersion>();
+        }
+        else
+        {
+            var list = new List<DotNetFrameworkVersion>();
+
+            foreach (var tfmDir in cacheDir.GetDirectories())
+            {
+                if (DotNetFrameworkVersionUtil.TryGetFrameworkVersion(tfmDir.Name, out var frameworkVersion))
+                {
+                    list.Add(frameworkVersion.Value);
+                }
+            }
+
+            result = list;
+        }
+
+        return Task.FromResult(result);
     }
 
     public async Task<DataConnectionResources?> GetAsync(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion)
@@ -41,23 +68,26 @@ public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataC
                 if (assemblyFile.Exists)
                 {
                     logger.LogTrace("Loaded data connection {DataConnectionId} Assembly resource from disk", dataConnection.Id);
-                    var assemblyName = AssemblyName.GetAssemblyName(assemblyFile.FullName);
-                    var bytes = await File.ReadAllBytesAsync(assemblyFile.FullName);
-
-                    cached.Assembly = Task.FromResult<AssemblyImage?>(new AssemblyImage(assemblyName, bytes));
+                    cached.Assembly = new AssemblyImage(assemblyFile.FullName);
                 }
             }
 
             if (info.SourceCode != null)
             {
                 logger.LogTrace("Loaded data connection {DataConnectionId} SourceCode resource from disk", dataConnection.Id);
-                cached.SourceCode = Task.FromResult(info.SourceCode);
+                cached.SourceCode = info.SourceCode;
             }
 
             if (info.RequiredReferences != null)
             {
                 logger.LogTrace("Loaded data connection {DataConnectionId} RequiredReferences resource from disk", dataConnection.Id);
-                cached.RequiredReferences = Task.FromResult(info.RequiredReferences);
+                cached.RequiredReferences = info.RequiredReferences;
+            }
+
+            if (info.DatabaseStructure != null)
+            {
+                logger.LogTrace("Loaded data connection {DataConnectionId} RequiredReferences resource from disk", dataConnection.Id);
+                cached.DatabaseStructure = info.DatabaseStructure;
             }
 
             return cached;
@@ -68,10 +98,7 @@ public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataC
         }
     }
 
-    public async Task SaveAsync(
-        DataConnectionResources resources,
-        DotNetFrameworkVersion dotNetFrameworkVersion,
-        DataConnectionResourceComponent? resourceComponent)
+    public async Task SaveAsync(DataConnectionResources resources, DotNetFrameworkVersion dotNetFrameworkVersion)
     {
         await _fsLock.WaitAsync();
 
@@ -86,55 +113,58 @@ public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataC
 
             info.RecentAsOf = resources.RecentAsOf;
 
-            if (resourceComponent is null or DataConnectionResourceComponent.Assembly)
+            // Update Assembly
+            var assembly = resources.Assembly;
+            if (assembly == null)
             {
-                AssemblyImage? assembly;
-
-                if (resources.Assembly == null || (assembly = await resources.Assembly) == null)
+                info.AssemblyFileName = null;
+                foreach (var file in dir.GetFiles().Where(f => f.Extension.EqualsIgnoreCase(".dll")))
                 {
-                    info.AssemblyFileName = null;
-                    foreach (var file in dir.GetFiles().Where(f => f.Extension.EqualsIgnoreCase(".dll")))
-                    {
-                        file.Delete();
-                    }
-                }
-                else
-                {
-                    logger.LogTrace("Saving data connection {DataConnectionId} Assembly resource to disk", dataConnectionId);
-                    var assemblyFileName = assembly.ConstructAssemblyFileName();
-                    info.AssemblyFileName = assemblyFileName;
-                    await File.WriteAllBytesAsync(Path.Combine(dir.FullName, assemblyFileName), assembly.Image);
+                    file.Delete();
                 }
             }
-
-            if (resourceComponent is null or DataConnectionResourceComponent.SourceCode)
+            else
             {
-                DataConnectionSourceCode? sourceCode;
-
-                if (resources.SourceCode == null || (sourceCode = await resources.SourceCode) == null || sourceCode.IsEmpty())
-                {
-                    info.SourceCode = null;
-                }
-                else
-                {
-                    logger.LogTrace("Saving data connection {DataConnectionId} SourceCode resource to disk", dataConnectionId);
-                    info.SourceCode = sourceCode;
-                }
+                logger.LogTrace("Saving data connection {DataConnectionId} Assembly resource to disk", dataConnectionId);
+                var assemblyFileName = assembly.ConstructAssemblyFileName();
+                info.AssemblyFileName = assemblyFileName;
+                await File.WriteAllBytesAsync(Path.Combine(dir.FullName, assemblyFileName), assembly.Image);
             }
 
-            if (resourceComponent is null or DataConnectionResourceComponent.RequiredReferences)
+            // Update source code
+            var sourceCode = resources.SourceCode;
+            if (sourceCode == null || sourceCode.IsEmpty())
             {
-                Reference[]? references;
+                info.SourceCode = null;
+            }
+            else
+            {
+                logger.LogTrace("Saving data connection {DataConnectionId} SourceCode resource to disk", dataConnectionId);
+                info.SourceCode = sourceCode;
+            }
 
-                if (resources.RequiredReferences == null || (references = await resources.RequiredReferences) == null || !references.Any())
-                {
-                    info.RequiredReferences = null;
-                }
-                else
-                {
-                    logger.LogTrace("Saving data connection {DataConnectionId} RequiredReferences resource to disk", dataConnectionId);
-                    info.RequiredReferences = references;
-                }
+            // Update required references
+            var references = resources.RequiredReferences;
+            if (references == null || references.Length == 0)
+            {
+                info.RequiredReferences = null;
+            }
+            else
+            {
+                logger.LogTrace("Saving data connection {DataConnectionId} RequiredReferences resource to disk", dataConnectionId);
+                info.RequiredReferences = references;
+            }
+
+            // Update database structure
+            var databaseStructure = resources.DatabaseStructure;
+            if (databaseStructure == null)
+            {
+                info.DatabaseStructure = null;
+            }
+            else
+            {
+                logger.LogTrace("Saving data connection {DataConnectionId} DatabaseStructure resource to disk", dataConnectionId);
+                info.DatabaseStructure = databaseStructure;
             }
 
             var infoFile = GetInfoFile(dir);
@@ -306,13 +336,17 @@ public class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataC
     /// <summary>
     /// Represents Info file contents saved on disk.
     /// </summary>
-    private class DiskCachedDataConnectionResourcesInfo
+    public class DiskCachedDataConnectionResourcesInfo
     {
         public DateTime RecentAsOf { get; set; }
         public string? AssemblyFileName { get; set; }
         public DataConnectionSourceCode? SourceCode { get; set; }
         public Reference[]? RequiredReferences { get; set; }
+        public DatabaseStructure? DatabaseStructure { get; set; }
 
-        public bool IsEmpty() => AssemblyFileName == null && SourceCode?.IsEmpty() != false && RequiredReferences?.Any() != true;
+        public bool IsEmpty() => AssemblyFileName == null
+                                 && SourceCode?.IsEmpty() != false
+                                 && RequiredReferences?.Length > 0 != true
+                                 && DatabaseStructure == null;
     }
 }
