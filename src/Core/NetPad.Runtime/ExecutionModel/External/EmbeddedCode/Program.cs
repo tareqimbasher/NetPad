@@ -1,10 +1,9 @@
-using System.Diagnostics;
-using System.Reflection;
-using NetPad.ExecutionModel.External.Interface;
 using NetPad.Presentation;
 
+// ReSharper disable RedundantNameQualifier
+
 /// <summary>
-/// Meant to be injected into script code so it can initialize <see cref="ExternalProcessDumpSink"/>.
+/// Meant to be injected into script code so it can initialize <see cref="NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink"/>.
 /// The class name must be "Program" and must be partial. This is so we augment the base "Program" class
 /// .NET will implicitly wrap top-level statements within. Code in the constructor will be called by the runtime
 /// before a script's code is executed.
@@ -13,7 +12,7 @@ using NetPad.Presentation;
 /// </summary>
 public partial class Program
 {
-    public static readonly UserScript UserScript = new(
+    public static readonly NetPad.ExecutionModel.External.Interface.UserScript UserScript = new(
         new Guid("SCRIPT_ID"),
         "SCRIPT_NAME",
         "SCRIPT_LOCATION");
@@ -24,7 +23,7 @@ public partial class Program
 
         if (args.Contains("-help"))
         {
-            ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
 
             PrintHelp();
 
@@ -35,7 +34,7 @@ public partial class Program
 
         if (args.Contains("-html"))
         {
-            ExternalProcessDumpSink.Instance.UseHtmlOutput();
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput();
         }
         else
         {
@@ -43,15 +42,15 @@ public partial class Program
 
             if (args.Contains("-text"))
             {
-                ExternalProcessDumpSink.Instance.UseTextOutput(useConsoleColors);
+                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseTextOutput(useConsoleColors);
             }
             else
             {
-                ExternalProcessDumpSink.Instance.UseConsoleOutput(useConsoleColors);
+                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(useConsoleColors);
             }
         }
 
-        DumpExtension.UseSink(ExternalProcessDumpSink.Instance);
+        DumpExtension.UseSink(NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance);
 
         // Use "NetPad.Utilities" qualifier because NetPad.Utilities is a global using in NetPad.Runtime, but not in running script
         if (NetPad.Utilities.PlatformUtil.IsOSWindows())
@@ -62,7 +61,7 @@ public partial class Program
 
     private static void PrintHelp()
     {
-        var currentAssemblyPath = Assembly.GetExecutingAssembly().Location;
+        var currentAssemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         if (Environment.CurrentDirectory.Length > 1)
         {
             currentAssemblyPath = "." + currentAssemblyPath.Replace(Environment.CurrentDirectory, string.Empty);
@@ -102,11 +101,11 @@ Options:
             return;
         }
 
-        Process? parentProcess = null;
+        System.Diagnostics.Process? parentProcess = null;
 
         try
         {
-            parentProcess = Process.GetProcessById(parentProcessId);
+            parentProcess = System.Diagnostics.Process.GetProcessById(parentProcessId);
             parentProcess.EnableRaisingEvents = true;
         }
         catch
