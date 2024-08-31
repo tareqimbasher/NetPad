@@ -5,169 +5,240 @@ using Microsoft.Extensions.Logging;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.CodeAnalysis;
+using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.Embedded;
 using NetPad.IO;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 
-public class EntityFrameworkDatabaseScaffolder
+public class EntityFrameworkDatabaseScaffolder(
+    IDataConnectionPasswordProtector dataConnectionPasswordProtector,
+    IDotNetInfo dotNetInfo,
+    Settings settings,
+    ILogger<EntityFrameworkDatabaseScaffolder> logger)
 {
-    private readonly DotNetFrameworkVersion _targetFrameworkVersion;
-    private readonly EntityFrameworkDatabaseConnection _connection;
-    private readonly IDataConnectionPasswordProtector _dataConnectionPasswordProtector;
-    private readonly IDotNetInfo _dotNetInfo;
-    private readonly ILogger<EntityFrameworkDatabaseScaffolder> _logger;
-    private readonly DotNetCSharpProject _project;
-    private readonly string _dbModelOutputDirPath;
-
     // Should be names that are unlikely to conflict with scaffolded entity names
     public const string DbContextName = "GeneratedDatabaseContext";
     public const string DbContextCompiledModelName = "GeneratedDatabaseContextModel";
 
-    public EntityFrameworkDatabaseScaffolder(
-        DotNetFrameworkVersion targetFrameworkVersion,
-        EntityFrameworkDatabaseConnection connection,
-        IDataConnectionPasswordProtector dataConnectionPasswordProtector,
-        IDotNetInfo dotNetInfo,
-        Settings settings,
-        ILogger<EntityFrameworkDatabaseScaffolder> logger)
+    public async Task<ScaffoldResult> ScaffoldAsync(EntityFrameworkDatabaseConnection connection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        _targetFrameworkVersion = targetFrameworkVersion;
-        _connection = connection;
-        _dataConnectionPasswordProtector = dataConnectionPasswordProtector;
-        _dotNetInfo = dotNetInfo;
-        _logger = logger;
-        _project = new DotNetCSharpProject(
-            _dotNetInfo,
-            AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString()).Path,
-            "database",
-            Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
-
-        _dbModelOutputDirPath = Path.Combine(_project.ProjectDirectoryPath, "DbModel");
-    }
-
-    public async Task<ScaffoldedDatabaseModel> ScaffoldAsync()
-    {
-        await _project.CreateAsync(_targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp, true);
+        var project = await InitProjectAsync(connection, targetFrameworkVersion);
 
         try
         {
-            await ScaffoldDatabaseAsync();
+            var buildResult = await project.BuildAsync();
 
-            var model = await GetScaffoldedModelAsync();
+            if (!buildResult.Succeeded)
+            {
+                throw new Exception($"Failed to scaffold database. Error building project. {buildResult.FormattedOutput}");
+            }
 
-            DoTransforms(model);
+            var dbModelOutputDirPath = Path.Combine(project.ProjectDirectoryPath, "DbModel");
 
-            return model;
+            Directory.CreateDirectory(dbModelOutputDirPath);
+
+            await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath, dbModelOutputDirPath);
+
+            if (connection.ScaffoldOptions?.OptimizeDbContext == true)
+            {
+                await RunEfOptimizeAsync(project.ProjectDirectoryPath, dbModelOutputDirPath);
+            }
+
+            var model = await GetScaffoldedModelAsync(dbModelOutputDirPath);
+
+            DoTransforms(model, connection);
+
+            await WriteTransformedModelAsync(model);
+
+            buildResult = await project.BuildAsync("-c Release");
+
+            if (!buildResult.Succeeded)
+            {
+                throw new Exception($"Failed to complete scaffold process. Error building scaffolded project. {buildResult.FormattedOutput}");
+            }
+
+            var assemblyFilePath = Directory.GetFiles(
+                    Path.Combine(project.BinDirectoryPath, "Release"),
+                    $"{Path.GetFileNameWithoutExtension(project.ProjectFilePath)}.dll",
+                    SearchOption.AllDirectories)
+                .FirstOrDefault();
+
+            if (assemblyFilePath == null)
+            {
+                throw new Exception("Failed to complete scaffold process. Could not find output assembly.");
+            }
+
+            var databaseStructure = await GetDatabaseStructureAsync(project, model.DbContextFile.ClassName);
+
+            return new ScaffoldResult(model, new AssemblyImage(assemblyFilePath), databaseStructure);
         }
         finally
         {
-            await _project.DeleteAsync();
+            await project.DeleteAsync();
         }
     }
 
-    private async Task ScaffoldDatabaseAsync()
+    private async Task<DatabaseStructure?> GetDatabaseStructureAsync(DotNetCSharpProject project, string dbContextClassName)
     {
-        await File.WriteAllTextAsync(Path.Combine(_project.ProjectDirectoryPath, "Program.cs"), @"
-class Program
-{
-    static void Main()
-    {
-    }
-}");
-
-        await _project.AddReferenceAsync(new PackageReference(
-            _connection.EntityFrameworkProviderName,
-            _connection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(_targetFrameworkVersion, _connection.EntityFrameworkProviderName)
-            ?? throw new Exception($"Could not find a version of {_connection.EntityFrameworkProviderName} to install")
-        ));
-
-        await _project.AddReferenceAsync(new PackageReference(
-            "Microsoft.EntityFrameworkCore.Design",
-            "Microsoft.EntityFrameworkCore.Design",
-            await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(_targetFrameworkVersion)
-            ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
-        ));
-
-        var result = await _project.BuildAsync();
-
-        if (!result.Succeeded)
+        try
         {
-            throw new Exception("Failed to scaffold database. Error building project: " + result.Output);
+            await project.SetProjectPropertyAsync("OutputType", "Exe");
+
+            var embeddedUtilCode = AssemblyUtil.ReadEmbeddedResource(typeof(EntityFrameworkDatabaseUtil).Assembly, "DatabaseStructureEmbedded.cs");
+
+            await File.WriteAllTextAsync(Path.Combine(project.ProjectDirectoryPath, "EntityFrameworkDatabaseUtil.cs"), embeddedUtilCode);
+
+            await File.WriteAllTextAsync(
+                Path.Combine(project.ProjectDirectoryPath, "Program.cs"),
+                $$"""
+                  using System;
+                  using System.Text.Json;
+                  using System.Text.Json.Serialization;
+
+                  class Program
+                  {
+                      static void Main()
+                      {
+                          var dbStructure = NetPad.Embedded.EntityFrameworkDatabaseUtil.GetDatabaseStructure(new {{dbContextClassName}}());
+
+                          var json = JsonSerializer.Serialize(dbStructure, new JsonSerializerOptions
+                          {
+                              PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                              Converters = { new JsonStringEnumConverter() }
+                          });
+
+                          Console.WriteLine(json);
+                      }
+                  }
+                  """);
+
+            var result = await project.RunAsync("-c Release", "--property WarningLevel=0", "/clp:ErrorsOnly");
+
+            if (!result.Succeeded)
+            {
+                logger.LogError("Failed to get database structure. Run failed with output: {Output}", result.FormattedOutput);
+            }
+
+            var json = result.Output;
+
+            try
+            {
+                return JsonSerializer.Deserialize<DatabaseStructure>(json);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "Ran database structure generation successfully but failed to deserialize output. JSON: {Json}",
+                    json);
+                return null;
+            }
         }
-
-        Directory.CreateDirectory(_dbModelOutputDirPath);
-
-        await RunEfScaffoldAsync();
-
-        if (_connection.ScaffoldOptions?.OptimizeDbContext == true)
+        catch (Exception ex)
         {
-            await RunEfOptimizeAsync();
+            logger.LogError(ex, "Failed to get database structure");
+            return null;
         }
     }
 
-    private async Task RunEfScaffoldAsync()
+    private async Task<DotNetCSharpProject> InitProjectAsync(EntityFrameworkDatabaseConnection connection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        var argList = new List<string>()
+        var project = new DotNetCSharpProject(
+            dotNetInfo,
+            AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString()).Path,
+            $"DataConnection_{connection.Id}",
+            Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
+
+        await project.CreateAsync(targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp, true);
+
+        try
+        {
+            await project.AddReferenceAsync(new PackageReference(
+                connection.EntityFrameworkProviderName,
+                connection.EntityFrameworkProviderName,
+                await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, connection.EntityFrameworkProviderName)
+                ?? throw new Exception($"Could not find a version of {connection.EntityFrameworkProviderName} to install")
+            ));
+
+            await project.AddReferenceAsync(new PackageReference(
+                "Microsoft.EntityFrameworkCore.Design",
+                "Microsoft.EntityFrameworkCore.Design",
+                await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(targetFrameworkVersion)
+                ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
+            ));
+        }
+        catch
+        {
+            await project.DeleteAsync();
+            throw;
+        }
+
+        return project;
+    }
+
+    private async Task RunEfScaffoldAsync(EntityFrameworkDatabaseConnection connection, string projectDirectoryPath, string dbModelOutputDirPath)
+    {
+        var argList = new List<string>
         {
             "dbcontext scaffold",
-            $"\"{_connection.GetConnectionString(_dataConnectionPasswordProtector)}\"",
-            _connection.EntityFrameworkProviderName,
+            $"\"{connection.GetConnectionString(dataConnectionPasswordProtector)}\"",
+            connection.EntityFrameworkProviderName,
             $"--context {DbContextName}",
             "--namespace \"\"", // Instructs tool to not wrap code in any namespace
             "--force",
-            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}\"", // Relative to proj dir
+            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{dbModelOutputDirPath.Replace(projectDirectoryPath, "").Trim('/')}\"", // Relative to proj dir
             "--no-build",
         };
 
-        if (_connection.ScaffoldOptions?.NoPluralize == true)
+        if (connection.ScaffoldOptions?.NoPluralize == true)
         {
             argList.Add("--no-pluralize");
         }
 
-        if (_connection.ScaffoldOptions?.UseDatabaseNames == true)
+        if (connection.ScaffoldOptions?.UseDatabaseNames == true)
         {
             argList.Add("--use-database-names");
         }
 
-        if (_connection.ScaffoldOptions?.Schemas.Length > 0)
+        if (connection.ScaffoldOptions?.Schemas.Length > 0)
         {
-            argList.AddRange(_connection.ScaffoldOptions.Schemas.Select(schema => $"--schema \"{schema}\""));
+            argList.AddRange(connection.ScaffoldOptions.Schemas.Select(schema => $"--schema \"{schema}\""));
         }
 
-        if (_connection.ScaffoldOptions?.Tables.Length > 0)
+        if (connection.ScaffoldOptions?.Tables.Length > 0)
         {
-            argList.AddRange(_connection.ScaffoldOptions.Tables.Select(table => $"--table \"{table}\""));
+            argList.AddRange(connection.ScaffoldOptions.Tables.Select(table => $"--table \"{table}\""));
         }
 
-        var dotnetEfToolExe = _dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
+        var dotnetEfToolExe = dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
         var args = string.Join(" ", argList);
 
-        _logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
+        logger.LogDebug("Calling '{DotNetEfToolExe}' with args: '{Args}'", dotnetEfToolExe, args);
 
         var startInfo = new ProcessStartInfo(dotnetEfToolExe, args)
-            .WithWorkingDirectory(_project.ProjectDirectoryPath)
+            .WithWorkingDirectory(projectDirectoryPath)
             .WithRedirectIO()
             .WithNoUi()
             .CopyCurrentEnvironmentVariables();
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
         // it will fail as dotnet-ef depends on dotnet
-        var dotnetExeDir = _dotNetInfo.LocateDotNetRootDirectory();
+        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
         startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
+        var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
 
         var exitCode = await startResult.WaitForExitTask;
 
-        _logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", exitCode);
+        logger.LogDebug("Call to dotnet scaffold completed with exit code: '{ExitCode}'", exitCode);
 
         if (!startResult.Started)
         {
@@ -176,40 +247,43 @@ class Program
 
         if (exitCode != 0)
         {
-            throw new Exception($"Scaffolding process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
+            throw new Exception($"Scaffolding process failed with exit code: {exitCode}.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
     }
 
-    private async Task RunEfOptimizeAsync()
+    private async Task RunEfOptimizeAsync(string projectDirectoryPath, string dbModelOutputDirPath)
     {
-        var argList = new List<string>()
+        var argList = new List<string>
         {
             "dbcontext optimize",
             "--namespace \"\"",
-            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{_dbModelOutputDirPath.Replace(_project.ProjectDirectoryPath, "").Trim('/')}/CompiledModels\"" // Relative to proj dir
+            $"--output-dir \"{(PlatformUtil.IsOSWindows() ? "." : "")}{dbModelOutputDirPath.Replace(projectDirectoryPath, "").Trim('/')}/CompiledModels\"" // Relative to proj dir
         };
 
-        var dotnetEfToolExe = _dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
+        var dotnetEfToolExe = dotNetInfo.LocateDotNetEfToolExecutableOrThrow();
         var args = string.Join(" ", argList);
 
         var startInfo = new ProcessStartInfo(dotnetEfToolExe, args)
-            .WithWorkingDirectory(_project.ProjectDirectoryPath)
+            .WithWorkingDirectory(projectDirectoryPath)
             .WithRedirectIO()
             .WithNoUi()
             .CopyCurrentEnvironmentVariables();
 
-        var dotnetExeDir = _dotNetInfo.LocateDotNetRootDirectory();
+        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
         startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
+        var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
 
         var exitCode = await startResult.WaitForExitTask;
 
-        _logger.LogDebug("Call to dotnet optimize completed with exit code: '{ExitCode}'", exitCode);
+        logger.LogDebug("Call to dotnet optimize completed with exit code: '{ExitCode}'", exitCode);
 
         if (!startResult.Started)
         {
@@ -218,32 +292,51 @@ class Program
 
         if (exitCode != 0)
         {
-            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode} and output: " + outputs.JoinToString("\n"));
+            throw new Exception($"Optimization of scaffolded model process failed with exit code: {exitCode}.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
     }
 
-    private async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync()
+    private async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync(string dbModelOutputDirPath)
     {
-        var projectDir = new DirectoryInfo(_dbModelOutputDirPath);
+        var projectDir = new DirectoryInfo(dbModelOutputDirPath);
         if (!projectDir.Exists)
             throw new InvalidOperationException("Scaffolding has not occurred yet.");
 
-        var files = new DirectoryInfo(_dbModelOutputDirPath).GetFiles("*.cs", SearchOption.AllDirectories);
+        var files = new DirectoryInfo(dbModelOutputDirPath).GetFiles("*.cs", SearchOption.AllDirectories);
 
-        if (!files.Any())
+        if (files.Length == 0)
         {
             throw new InvalidOperationException("No scaffolded files found in output dir.");
         }
 
-        var model = new ScaffoldedDatabaseModel();
+        var sourceFiles = new SourceCodeCollection<ScaffoldedSourceFile>();
+        ScaffoldedSourceFile? dbContextFile = null;
+        ScaffoldedSourceFile? dbContextCompiledModelFile = null;
 
         foreach (var file in files)
         {
             var sourceFile = await ParseScaffoldedSourceFileAsync(file);
-            model.AddFile(sourceFile);
+            sourceFiles.Add(sourceFile);
+
+            if (sourceFile.IsDbContext)
+            {
+                dbContextFile = sourceFile;
+            }
+
+            if (sourceFile.IsDbContextCompiledModel)
+            {
+                dbContextCompiledModelFile = sourceFile;
+            }
         }
 
-        return model;
+        if (dbContextFile == null)
+        {
+            throw new Exception("No scaffolded DbContext file found in output dir.");
+        }
+
+        return new ScaffoldedDatabaseModel(sourceFiles, dbContextFile, dbContextCompiledModelFile);
     }
 
     private async Task<ScaffoldedSourceFile> ParseScaffoldedSourceFileAsync(FileInfo file)
@@ -274,13 +367,21 @@ class Program
         return sourceFile;
     }
 
-    private void DoTransforms(ScaffoldedDatabaseModel model)
+    private void DoTransforms(ScaffoldedDatabaseModel model, EntityFrameworkDatabaseConnection connection)
     {
         new AnyDatabaseProviderTransform().Transform(model);
 
-        if (_connection is PostgreSqlDatabaseConnection)
+        if (connection is PostgreSqlDatabaseConnection)
         {
             new PostgresSqlTransform().Transform(model);
+        }
+    }
+
+    private async Task WriteTransformedModelAsync(ScaffoldedDatabaseModel model)
+    {
+        foreach (var file in model.SourceFiles)
+        {
+            await File.WriteAllTextAsync(file.Path, file.ToCodeString());
         }
     }
 }

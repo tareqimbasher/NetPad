@@ -128,29 +128,22 @@ public partial class ExternalScriptRunner
 
         var targetFrameworkVersion = _script.Config.TargetFrameworkVersion;
 
-        var connectionCode = await _dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(
-            dataConnection,
-            targetFrameworkVersion);
+        var connectionResources = await _dataConnectionResourcesCache.GetResourcesAsync(dataConnection, targetFrameworkVersion);
 
-        if (connectionCode.ApplicationCode.Any())
+        var applicationCode = connectionResources.SourceCode?.ApplicationCode;
+        if (applicationCode?.Count > 0)
         {
-            code.AddRange(connectionCode.ApplicationCode);
+            code.AddRange(applicationCode);
         }
 
-        var connectionAssembly = await _dataConnectionResourcesCache.GetAssemblyAsync(
-            dataConnection,
-            targetFrameworkVersion);
-
+        var connectionAssembly = connectionResources.Assembly;
         if (connectionAssembly != null)
         {
             references.Add(new AssemblyImageReference(connectionAssembly));
         }
 
-        var requiredReferences = await _dataConnectionResourcesCache.GetRequiredReferencesAsync(
-            dataConnection,
-            targetFrameworkVersion);
-
-        if (requiredReferences.Any())
+        var requiredReferences = connectionResources.RequiredReferences;
+        if (requiredReferences?.Length > 0)
         {
             references.AddRange(requiredReferences);
         }

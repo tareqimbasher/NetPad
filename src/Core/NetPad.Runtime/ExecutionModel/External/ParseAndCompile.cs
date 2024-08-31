@@ -19,18 +19,18 @@ internal static class ParseAndCompile
         // Try adding ".Dump();" to dump the result of an expression
         code =>
         {
-            var trimmedCode = code.Trim();
+            var fixedCode = code.Trim();
 
-            if (!trimmedCode.EndsWith(";") && !trimmedCode.EndsWith(".Dump()"))
+            if (!fixedCode.EndsWith(";") && !fixedCode.EndsWith(".Dump()"))
             {
-                return (true, $"({trimmedCode}).Dump();");
+                fixedCode = $"({fixedCode}).Dump();";
+                return (true, fixedCode);
             }
 
             return (false, code);
         },
 
         // Try adding ";" to execute an expression
-
         code =>
         {
             var trimmedCode = code.Trim();

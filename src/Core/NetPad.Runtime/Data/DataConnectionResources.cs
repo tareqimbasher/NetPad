@@ -6,9 +6,11 @@ public class DataConnectionResources(DataConnection dataConnection, DateTime rec
 {
     public DataConnection DataConnection { get; } = dataConnection;
     public DateTime RecentAsOf { get; private set; } = recentAsOf;
-    public Task<DataConnectionSourceCode>? SourceCode { get; set; }
-    public Task<AssemblyImage?>? Assembly { get; set; }
-    public Task<Reference[]>? RequiredReferences { get; set; }
+
+    public DataConnectionSourceCode? SourceCode { get; set; }
+    public AssemblyImage? Assembly { get; set; }
+    public Reference[]? RequiredReferences { get; set; }
+    public DatabaseStructure? DatabaseStructure { get; set; }
 
     public DataConnectionResources UpdateRecentAsOf(DateTime dateTime)
     {
@@ -22,6 +24,7 @@ public class DataConnectionResources(DataConnection dataConnection, DateTime rec
         SourceCode = other.SourceCode;
         Assembly = other.Assembly;
         RequiredReferences = other.RequiredReferences;
+        DatabaseStructure = other.DatabaseStructure;
         return this;
     }
 }

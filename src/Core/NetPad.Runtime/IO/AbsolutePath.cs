@@ -12,7 +12,8 @@ public abstract record AbsolutePath
                     ? throw new ArgumentException("Path contains illegal characters")
                     : System.IO.Path.GetFullPath(path.Trim());
 
-    public override string ToString() => Path;
+    // This method is sealed so derived records inherit it. Otherwise compiler will generate its own ToString() implementation for derived record types.
+    public sealed override string ToString() => Path;
     public abstract bool Exists();
     public abstract void DeleteIfExists();
 }

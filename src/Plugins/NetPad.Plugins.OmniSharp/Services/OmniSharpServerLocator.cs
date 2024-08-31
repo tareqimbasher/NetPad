@@ -3,8 +3,8 @@ using NetPad.Utilities;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
-public class OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloader omniSharpServerDownloader, ILogger<OmniSharpServerLocator> logger)
-    : IOmniSharpServerLocator
+public sealed class OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloader omniSharpServerDownloader, ILogger<OmniSharpServerLocator> logger)
+    : IOmniSharpServerLocator, IDisposable
 {
     private readonly ILogger<OmniSharpServerLocator> _logger = logger;
     private static readonly SemaphoreSlim _downloadLock = new(1);
@@ -38,5 +38,10 @@ public class OmniSharpServerLocator(Settings settings, IOmniSharpServerDownloade
         {
             _downloadLock.Release();
         }
+    }
+
+    public void Dispose()
+    {
+        _downloadLock.Dispose();
     }
 }

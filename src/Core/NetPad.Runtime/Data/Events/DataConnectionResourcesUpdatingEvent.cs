@@ -1,12 +1,10 @@
+using NetPad.DotNet;
 using NetPad.Events;
 
 namespace NetPad.Data.Events;
 
-public class DataConnectionResourcesUpdatingEvent(
-    DataConnection dataConnection,
-    DataConnectionResourceComponent updatingComponent)
-    : IEvent
+public class DataConnectionResourcesUpdatingEvent(DataConnection dataConnection, DotNetFrameworkVersion dotNetFrameworkVersion) : IEvent
 {
     public DataConnection DataConnection { get; } = dataConnection;
-    public DataConnectionResourceComponent UpdatingComponent { get; } = updatingComponent;
+    public DotNetFrameworkVersion DotNetFrameworkVersion { get; } = dotNetFrameworkVersion;
 }

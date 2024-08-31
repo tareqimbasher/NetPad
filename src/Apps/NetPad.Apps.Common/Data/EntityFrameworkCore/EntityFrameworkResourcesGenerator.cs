@@ -1,119 +1,69 @@
 using System.Text;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
-using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
-using NetPad.Packages;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
 internal class EntityFrameworkResourcesGenerator(
-    Lazy<IDataConnectionResourcesCache> dataConnectionResourcesCache,
-    ICodeCompiler codeCompiler,
-    IPackageProvider packageProvider,
     IDataConnectionPasswordProtector dataConnectionPasswordProtector,
     IDotNetInfo dotNetInfo,
     Settings settings,
     ILoggerFactory loggerFactory)
     : IDataConnectionResourcesGenerator
 {
-    public async Task<DataConnectionSourceCode> GenerateSourceCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<DataConnectionResources> GenerateResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
+        if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
         {
-            return new DataConnectionSourceCode();
+            return new DataConnectionResources(dataConnection, DateTime.UtcNow);
         }
 
         var scaffolder = new EntityFrameworkDatabaseScaffolder(
-            targetFrameworkVersion,
-            efDbConnection,
             dataConnectionPasswordProtector,
             dotNetInfo,
             settings,
             loggerFactory.CreateLogger<EntityFrameworkDatabaseScaffolder>());
 
-        var model = await scaffolder.ScaffoldAsync();
+        var result = await scaffolder.ScaffoldAsync(efDbConnection, targetFrameworkVersion);
 
-        var applicationCode = GenerateApplicationCode(efDbConnection, model);
+        var applicationCode = GenerateApplicationCode(efDbConnection, result.Model.DbContextFile.ClassName, result.Model.DbContextFile.Code.ToCodeString());
 
-        return new DataConnectionSourceCode
+        var sourceCode = new DataConnectionSourceCode
         {
-            DataAccessCode = new SourceCodeCollection(model.SourceFiles),
             ApplicationCode = applicationCode
+        };
+
+        var requiredReferences = await GetRequiredReferencesAsync(efDbConnection, targetFrameworkVersion);
+
+        return new DataConnectionResources(dataConnection, DateTime.UtcNow)
+        {
+            SourceCode = sourceCode,
+            Assembly = result.Assembly,
+            RequiredReferences = requiredReferences,
+            DatabaseStructure = result.DatabaseStructure
         };
     }
 
-    public async Task<AssemblyImage?> GenerateAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    private static async Task<Reference[]> GetRequiredReferencesAsync(EntityFrameworkDatabaseConnection connection,
+        DotNetFrameworkVersion targetFrameworkVersion)
     {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
-        {
-            return null;
-        }
-
-        var sourceCode = await dataConnectionResourcesCache.Value.GetSourceGeneratedCodeAsync(dataConnection, targetFrameworkVersion);
-
-        if (!sourceCode.DataAccessCode.Any())
-        {
-            return null;
-        }
-
-        var result = await CompileNewAssemblyAsync(targetFrameworkVersion, efDbConnection, sourceCode.DataAccessCode);
-
-        if (!result.Success)
-        {
-            throw new Exception("Could not compile data connection assembly. " +
-                                $"Compilation failed with the following diagnostics: \n{string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))}");
-        }
-
-        return new AssemblyImage(result.AssemblyName, result.AssemblyBytes);
+        return
+        [
+            new PackageReference(
+                connection.EntityFrameworkProviderName,
+                connection.EntityFrameworkProviderName,
+                await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, connection.EntityFrameworkProviderName)
+                ?? throw new Exception($"Could not find a version for EntityFramework provider: '{connection.EntityFrameworkProviderName}'")
+            )
+        ];
     }
 
-    public async Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
-    {
-        if (!dataConnection.IsEntityFrameworkDataConnection(out var efDbConnection))
-            return [];
-
-        var references = new List<Reference>();
-
-        references.Add(new PackageReference(
-            efDbConnection.EntityFrameworkProviderName,
-            efDbConnection.EntityFrameworkProviderName,
-            await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, efDbConnection.EntityFrameworkProviderName)
-            ?? throw new Exception($"Could not find a version for entity framework provider: '{efDbConnection.EntityFrameworkProviderName}'")
-        ));
-
-        return references.ToArray();
-    }
-
-    private async Task<CompilationResult> CompileNewAssemblyAsync(
-        DotNetFrameworkVersion targetFrameworkVersion,
-        EntityFrameworkDatabaseConnection efConnection,
-        SourceCodeCollection sourceCode)
-    {
-        var assemblyFileReferences = new HashSet<string>();
-
-        var requiredReferences = await GetRequiredReferencesAsync(efConnection, targetFrameworkVersion);
-        assemblyFileReferences.AddRange((await requiredReferences.GetAssetsAsync(targetFrameworkVersion, packageProvider))
-            .Where(a => a.IsAssembly())
-            .Select(a => a.Path));
-
-        var code = sourceCode.ToCodeString();
-
-        return codeCompiler.Compile(new CompilationInput(
-                code,
-                targetFrameworkVersion,
-                null,
-                assemblyFileReferences)
-            .WithOutputKind(OutputKind.DynamicallyLinkedLibrary)
-            .WithAssemblyName($"DataConnection_{efConnection.Id}")
-        );
-    }
-
-    private SourceCodeCollection GenerateApplicationCode(EntityFrameworkDatabaseConnection efDbConnection, ScaffoldedDatabaseModel model)
+    private static SourceCodeCollection GenerateApplicationCode(EntityFrameworkDatabaseConnection efDbConnection, string dbContextClassName,
+        string dbContextCode)
     {
         // We want to add utility code to a partial Program class that can be used to augment the Program class in scripts.
         // The goal is to accomplish the following items, mainly for convenience while writing scripts:
@@ -132,81 +82,79 @@ internal class EntityFrameworkResourcesGenerator(
         // 1. Make the Program class inherit the generated DbContext
         // The program class here will merge with the Program class generated
         // in our Script top-level program
-        var dbContext = model.DbContextFile;
-        code.AppendLine($"public partial class Program : {dbContext.ClassName}<Program>")
-            .AppendLine(
-                $$"""
+        code.AppendLine(
+            $$"""
+              public partial class Program : {{dbContextClassName}}<Program>
+              {
+                  public Program()
                   {
-                      public Program()
-                      {
-                      }
+                  }
 
-                      public Program(DbContextOptions<Program> options) : base(options)
-                      {
-                      }
+                  public Program(DbContextOptions<Program> options) : base(options)
+                  {
+                  }
 
-                      protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-                      {
-                          optionsBuilder
-                              .EnableSensitiveDataLogging()
-                              .LogTo(
-                                  output =>
-                                  {
-                                      DumpExtension.Sink.SqlWrite(output + "\n");
-                                  }
-                              );
+                  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+                  {
+                      optionsBuilder
+                          .EnableSensitiveDataLogging()
+                          .LogTo(
+                              output =>
+                              {
+                                  DumpExtension.Sink.SqlWrite(output + "\n");
+                              }
+                          );
 
-                          base.OnConfiguring(optionsBuilder);
-                          {{(efDbConnection.ScaffoldOptions?.OptimizeDbContext == true
-                              ? $"optionsBuilder.UseModel({EntityFrameworkDatabaseScaffolder.DbContextCompiledModelName}.Instance);"
-                              : string.Empty)}}
+                      base.OnConfiguring(optionsBuilder);
+                      {{(efDbConnection.ScaffoldOptions?.OptimizeDbContext == true
+                          ? $"optionsBuilder.UseModel({EntityFrameworkDatabaseScaffolder.DbContextCompiledModelName}.Instance);"
+                          : string.Empty)}}
 
-                          OnConfiguringPartial(optionsBuilder);
-                      }
+                      OnConfiguringPartial(optionsBuilder);
+                  }
 
-                      /// <summary>
-                      /// Implement this partial method to configure 'OnConfiguring'.
-                      /// </summary>
-                      partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder);
+                  /// <summary>
+                  /// Implement this partial method to configure 'OnConfiguring'.
+                  /// </summary>
+                  partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder);
 
-                      /// <summary>
-                      /// Calls DataContext.SaveChanges();
-                      /// </summary>
-                      public static int SaveChanges()
-                      {
-                          return DataContext.SaveChanges();
-                      }
+                  /// <summary>
+                  /// Calls DataContext.SaveChanges();
+                  /// </summary>
+                  public static int SaveChanges()
+                  {
+                      return DataContext.SaveChanges();
+                  }
 
-                      /// <summary>
-                      /// Calls DataContext.SaveChangesAsync(CancellationToken cancellationToken);
-                      /// </summary>
-                      public static Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-                      {
-                          return DataContext.SaveChangesAsync(cancellationToken);
-                      }
-                  """);
+                  /// <summary>
+                  /// Calls DataContext.SaveChangesAsync(CancellationToken cancellationToken);
+                  /// </summary>
+                  public static Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+                  {
+                      return DataContext.SaveChangesAsync(cancellationToken);
+                  }
+              """);
 
         // 2. Add the DbContext property
-        code
-            .AppendLine($@"
-    private static Program? _program;
+        code.AppendLine($"""
 
-    /// <summary>
-    /// The DbContext instance used to access the database.
-    /// </summary>
-    public static {dbContext.ClassName}<Program> DataContext => _program ??= new Program();
-");
+                             private static Program? _program;
+
+                             /// <summary>
+                             /// The DbContext instance used to access the database.
+                             /// </summary>
+                             public static {dbContextClassName}<Program> DataContext => _program ??= new Program();
+
+                         """);
 
 
-        var dbContextCodeLines = dbContext.Code.Value!.Split(Environment.NewLine).ToList();
+        var dbContextCodeLines = dbContextCode.Split(Environment.NewLine).ToList();
 
         // 3. Add properties for all the generated DbSet's
         var programProperties = new List<string>();
 
-        for (var iLine = 0; iLine < dbContextCodeLines.Count; iLine++)
+        foreach (var line in dbContextCodeLines)
         {
-            var line = dbContextCodeLines[iLine];
-
             // We only need DbSet property lines
             if (!line.Contains("public virtual DbSet<")) continue;
 
@@ -217,15 +165,13 @@ internal class EntityFrameworkResourcesGenerator(
             var entityType = parts[0].SubstringBetween("<", ">");
             var propertyName = parts[1];
 
-            programProperties.Add($@"
-    /// <summary>
-    /// The {propertyName} table (DbSet).
-    /// </summary>
-    public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{propertyName};");
+            programProperties.Add($"""
+                                       /// <summary>
+                                       /// The {propertyName} table (DbSet).
+                                       /// </summary>
+                                       public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{propertyName};
+                                   """);
         }
-
-        // Replace the DbContext code since we modified it above when renaming properties
-        dbContext.Code.Update(dbContextCodeLines.JoinToString(Environment.NewLine));
 
         code.AppendJoin(Environment.NewLine, programProperties)
             .AppendLine()
@@ -234,6 +180,6 @@ internal class EntityFrameworkResourcesGenerator(
         var applicationCode = new SourceCode(code.ToString());
         applicationCode.AddUsing("Microsoft.EntityFrameworkCore");
 
-        return new SourceCodeCollection(new[] { applicationCode });
+        return new SourceCodeCollection([applicationCode]);
     }
 }

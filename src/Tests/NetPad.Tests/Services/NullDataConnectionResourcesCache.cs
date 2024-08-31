@@ -10,6 +10,11 @@ public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
         return Task.FromResult(false);
     }
 
+    public Task<IList<DotNetFrameworkVersion>> GetCachedDotNetFrameworkVersions(Guid dataConnectionId)
+    {
+        return Task.FromResult<IList<DotNetFrameworkVersion>>(Array.Empty<DotNetFrameworkVersion>());
+    }
+
     public Task RemoveCachedResourcesAsync(Guid dataConnectionId)
     {
         return Task.CompletedTask;
@@ -20,18 +25,8 @@ public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
         return Task.CompletedTask;
     }
 
-    public Task<AssemblyImage?> GetAssemblyAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
     {
-        return Task.FromResult<AssemblyImage?>(null);
-    }
-
-    public Task<DataConnectionSourceCode> GetSourceGeneratedCodeAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
-    {
-        return Task.FromResult(new DataConnectionSourceCode());
-    }
-
-    public Task<Reference[]> GetRequiredReferencesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
-    {
-        return Task.FromResult(Array.Empty<Reference>());
+        return Task.FromResult(new DataConnectionResources(dataConnection, DateTime.UtcNow));
     }
 }

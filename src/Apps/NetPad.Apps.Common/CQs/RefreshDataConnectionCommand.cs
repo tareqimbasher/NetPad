@@ -32,7 +32,7 @@ public class RefreshDataConnectionCommand(Guid id) : Command
             var targetFramework = currentActiveScriptTargetFrameworkVersion
                                   ?? dotNetInfo.GetLatestSupportedDotNetSdkVersionOrThrow().GetFrameworkVersion();
 
-            await dataConnectionResourcesCache.GetAssemblyAsync(connection, targetFramework);
+            await dataConnectionResourcesCache.GetResourcesAsync(connection, targetFramework);
 
             return Unit.Value;
         }

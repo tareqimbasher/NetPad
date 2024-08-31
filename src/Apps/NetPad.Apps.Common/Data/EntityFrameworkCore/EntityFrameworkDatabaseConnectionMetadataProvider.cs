@@ -1,16 +1,13 @@
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
-using NetPad.Assemblies;
 using NetPad.Common;
+using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.DotNet;
+using NetPad.Sessions;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
-internal class EntityFrameworkDatabaseConnectionMetadataProvider(
-    IDataConnectionResourcesCache dataConnectionResourcesCache,
-    IAssemblyLoader assemblyLoader,
-    IDataConnectionPasswordProtector dataConnectionPasswordProtector)
+internal class EntityFrameworkDatabaseConnectionMetadataProvider(IDataConnectionResourcesCache dataConnectionResourcesCache, ISession session)
     : IDatabaseConnectionMetadataProvider
 {
     public async Task<DatabaseStructure> GetDatabaseStructureAsync(DatabaseConnection databaseConnection)
@@ -20,57 +17,28 @@ internal class EntityFrameworkDatabaseConnectionMetadataProvider(
             throw new ArgumentException("Cannot get structure except on Entity Framework database connections", nameof(databaseConnection));
         }
 
-        await using var dbContext = await CreateDbContextAsync(dbConnection);
+        DotNetFrameworkVersion target;
 
-        if (dbContext == null)
+        // If we have something scaffolded already, use that.
+        var available = await dataConnectionResourcesCache.GetCachedDotNetFrameworkVersions(databaseConnection.Id);
+        if (available.Count > 0)
         {
-            return new DatabaseStructure(dbConnection.DatabaseName ?? string.Empty);
+            target = available.Max();
+        }
+        // If we are going to scaffold to get structure, prioritize the active script's framework version.
+        // This will generate resources for the user's currently opened script which the user will likely run after they've inspected the structure.
+        else if (session.Active != null)
+        {
+            target = session.Active.Script.Config.TargetFrameworkVersion;
+        }
+        else
+        {
+            target = GlobalConsts.AppDotNetFrameworkVersion;
         }
 
-        return dbContext.GetDatabaseStructure();
-    }
+        var resources = await dataConnectionResourcesCache.GetResourcesAsync(dbConnection, target);
 
-    private async Task<DbContext?> CreateDbContextAsync(EntityFrameworkDatabaseConnection dbConnection)
-    {
-        var assemblyImage = await dataConnectionResourcesCache.GetAssemblyAsync(dbConnection, GlobalConsts.AppDotNetFrameworkVersion);
-
-        if (assemblyImage == null)
-        {
-            return null;
-        }
-
-        var assembly = assemblyLoader.LoadFrom(assemblyImage.Image);
-
-        var dbContextType = assembly.GetExportedTypes().FirstOrDefault(x => typeof(DbContext).IsAssignableFrom(x) && x.BaseType != typeof(DbContext));
-        if (dbContextType == null)
-        {
-            throw new Exception("Could not find a type in data connection assembly of type DbContext.");
-        }
-
-        var dbContextOptionsBuilderType = typeof(DbContextOptionsBuilder<>).MakeGenericType(dbContextType);
-        var dbContextOptionsBuilder = Activator.CreateInstance(dbContextOptionsBuilderType) as DbContextOptionsBuilder;
-        if (dbContextOptionsBuilder == null)
-        {
-            throw new Exception($"Could not create DbContextOptionsBuilder<> for DbContext of type {dbContextType.FullName}.");
-        }
-
-        await dbConnection.ConfigureDbContextOptionsAsync(dbContextOptionsBuilder, dataConnectionPasswordProtector);
-
-        var ctor = dbContextType
-            .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(c => c.GetParameters().Length == 1);
-        if (ctor == null)
-        {
-            throw new Exception($"Could not create find the right constructor on DbContext of type {dbContextType.FullName}.");
-        }
-
-        var dbContext = ctor.Invoke([dbContextOptionsBuilder.Options]) as DbContext;
-
-        if (dbContext == null)
-        {
-            throw new Exception($"Could not create a DbContext of type {dbContextType.FullName}.");
-        }
-
-        return dbContext;
+        return resources.DatabaseStructure ??
+               throw new Exception($"Could not get database structure during scaffolding. Check the logs at: {AppDataProvider.LogDirectoryPath}");
     }
 }

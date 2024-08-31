@@ -327,7 +327,12 @@ public class AppOmniSharpServer(
 
         Subscribe<DataConnectionResourcesUpdatedEvent>(ev =>
         {
-            if (environment.Script.DataConnection == null || ev.DataConnection.Id != environment.Script.DataConnection.Id) return Task.CompletedTask;
+            if (environment.Script.DataConnection == null
+                || ev.DataConnection.Id != environment.Script.DataConnection.Id
+                || ev.TargetFrameworkVersion != environment.Script.Config.TargetFrameworkVersion)
+            {
+                return Task.CompletedTask;
+            }
 
             var dataConnection = ev.DataConnection;
 
@@ -394,39 +399,33 @@ public class AppOmniSharpServer(
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
     {
+        var connectionResources = dataConnection == null
+            ? null
+            : await dataConnectionResourcesCache.GetResourcesAsync(dataConnection, environment.Script.Config.TargetFrameworkVersion);
+
         List<Reference> references = [];
 
-        if (dataConnection != null)
+        if (connectionResources?.RequiredReferences?.Length > 0)
         {
-            references.AddRange(
-                await dataConnectionResourcesCache.GetRequiredReferencesAsync(dataConnection, environment.Script.Config.TargetFrameworkVersion));
+            references.AddRange(connectionResources.RequiredReferences);
+        }
 
-            var assembly = await dataConnectionResourcesCache.GetAssemblyAsync(dataConnection, environment.Script.Config.TargetFrameworkVersion);
-            if (assembly != null)
-                references.Add(new AssemblyImageReference(assembly));
+        if (connectionResources?.Assembly != null)
+        {
+            references.Add(new AssemblyImageReference(connectionResources.Assembly));
         }
 
         await Project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
-
-        var sourceCode = dataConnection == null
-            ? null
-            : dataConnectionResourcesCache.GetSourceGeneratedCodeAsync(dataConnection, environment.Script.Config.TargetFrameworkVersion);
-        await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(sourceCode);
+        await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(connectionResources?.SourceCode);
 
         // Needed to trigger diagnostics and semantic highlighting for script file
         await Task.Delay(1000);
         await UpdateOmniSharpCodeBufferAsync();
     }
 
-    private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(Task<DataConnectionSourceCode>? sourceCodeTask)
+    private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(DataConnectionSourceCode? sourceCode)
     {
-        DataConnectionSourceCode? sourceCode = null;
-        if (sourceCodeTask != null)
-        {
-            sourceCode = await sourceCodeTask;
-        }
-
         string? dataConnectionProgramCode = null;
 
         if (sourceCode != null)

@@ -290,7 +290,8 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = exeName,
-                    Arguments = "--version"
+                    Arguments = "--version",
+                    RedirectStandardOutput = true
                 }.CopyCurrentEnvironmentVariables());
 
                 path = process?.MainModule?.FileName;
@@ -389,7 +390,8 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = exeName,
-                Arguments = "--version"
+                Arguments = "--version",
+                RedirectStandardOutput = true
             }.CopyCurrentEnvironmentVariables());
 
             var path = process?.MainModule?.FileName;
