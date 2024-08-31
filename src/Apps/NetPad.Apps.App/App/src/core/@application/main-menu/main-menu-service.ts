@@ -246,8 +246,7 @@ export class MainMenuService implements IMainMenuService {
                     {
                         text: "Zoom In",
                         icon: "zoom-in-icon",
-                        helpText: "Ctrl + =",
-                        click: async () => this.windowService.zoomIn(),
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomIn),
                     },
                     {
                         text: "Zoom Out",

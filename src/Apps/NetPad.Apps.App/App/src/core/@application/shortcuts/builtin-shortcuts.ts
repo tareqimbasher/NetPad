@@ -1,5 +1,5 @@
 import {KeyCode} from "@common";
-import {CreateScriptDto, IScriptService, ISettingsService} from "@application";
+import {CreateScriptDto, IScriptService, ISettingsService, IWindowService} from "@application";
 import {Shortcut} from "./shortcut";
 import {ITextEditorService} from "../editor/itext-editor-service";
 
@@ -18,6 +18,7 @@ export enum ShortcutIds {
     openExplorer = "shortcut.explorer.open",
     openNamespaces = "shortcut.namespaces.open",
     reloadWindow = "shortcut.window.reload",
+    zoomIn = "shortcut.window.zoomIn",
 }
 
 export const BuiltinShortcuts = [
@@ -169,5 +170,13 @@ export const BuiltinShortcuts = [
         .hasAction(() => window.location.reload())
         .captureDefaultKeyCombo()
         .configurable()
+        .enabled(),
+
+    new Shortcut(ShortcutIds.zoomIn, "Zoom In")
+        .withCtrlKey()
+        .withKey(KeyCode.Equal)
+        .hasAction((ctx) => ctx.container.get(IWindowService).zoomIn())
+        .captureDefaultKeyCombo()
+        .configurable(false)
         .enabled(),
 ];
