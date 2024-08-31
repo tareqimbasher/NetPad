@@ -5,6 +5,9 @@ export class IpcEventNames {
     public static readonly getWindowState = "get-window-state";
     public static readonly maximize = "maximize";
     public static readonly minimize = "minimize";
+    public static readonly zoomIn = "zoom-in";
+    public static readonly zoomOut = "zoom-out";
+    public static readonly resetZoom = "reset-zoom";
     public static readonly toggleFullScreen = "toggle-full-screen";
     public static readonly toggleAlwaysOnTop = "toggle-always-on-top";
     public static readonly toggleDeveloperTools = "toggle-developer-tools";
@@ -30,6 +33,15 @@ export class WindowControlsManager {
             }],
             [IpcEventNames.maximize, window => window.isMaximized() ? window.unmaximize() : window.maximize()],
             [IpcEventNames.minimize, window => window.isMinimized() ? window.restore() : window.minimize()],
+            [IpcEventNames.zoomIn, window => {
+                const currentZoomFactor = window.webContents.getZoomFactor();
+                window.webContents.setZoomFactor(currentZoomFactor + 0.1);
+            }],
+            [IpcEventNames.zoomOut, window => {
+                const currentZoomFactor = window.webContents.getZoomFactor();
+                window.webContents.setZoomFactor(currentZoomFactor - 0.1);
+            }],
+            [IpcEventNames.resetZoom, window => window.webContents.setZoomFactor(1)],
             [IpcEventNames.toggleFullScreen, window => window.setFullScreen(!window.isFullScreen())],
             [IpcEventNames.toggleAlwaysOnTop, window => window.setAlwaysOnTop(!window.isAlwaysOnTop(), "normal")],
             [IpcEventNames.toggleDeveloperTools, window => window.webContents.toggleDevTools()],

@@ -14,6 +14,18 @@ export class BrowserWindowService extends WindowApiClient implements IWindowServ
         throw new PlatformNotSupportedError();
     }
 
+    public zoomIn(): Promise<void> {
+        throw new PlatformNotSupportedError();
+    }
+
+    public zoomOut(): Promise<void> {
+        throw new PlatformNotSupportedError();
+    }
+
+    public resetZoom(): Promise<void> {
+        throw new PlatformNotSupportedError();
+    }
+
     public toggleDeveloperTools(): Promise<void> {
         throw new PlatformNotSupportedError();
     }
