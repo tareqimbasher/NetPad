@@ -1,8 +1,10 @@
+using System.Text;
 using Microsoft.CodeAnalysis;
 using NetPad.Common;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Exceptions;
+using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Apps.Scripts;
@@ -67,6 +69,113 @@ public static class ScriptSerializer
 
         // Parse code
         var code = string.Join("\n", lines.Skip(ixCodeMarker + 1));
+
+        var script = new Script(id, name, scriptData.Config.ToScriptConfig(dotNetInfo), code);
+
+        if (scriptData.DataConnection != null)
+        {
+            var connection = await dataConnectionRepository.GetAsync(scriptData.DataConnection.Id);
+
+            if (connection == null)
+            {
+                // TODO create a new connection
+            }
+
+            if (connection != null)
+                script.SetDataConnection(connection);
+        }
+
+        return script;
+    }
+
+    public static async Task<Script> DeserializeAsync(string name, FilePath filePath, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
+    {
+        Guid? id = null;
+        string? config = null;
+        bool codeStarted = false;
+        var codeBuilder = new StringBuilder();
+
+        int iLine = -1;
+        foreach (var line in File.ReadLines(filePath.Path))
+        {
+            iLine++;
+
+            if (iLine == 0 && Guid.TryParse(line, out var parsedId))
+            {
+                id = parsedId;
+                continue;
+            }
+
+            if (!codeStarted && line.StartsWith('{'))
+            {
+                config = line;
+                continue;
+            }
+
+            codeStarted = true;
+
+            if (line == "#Code")
+            {
+                continue;
+            }
+
+            codeBuilder.AppendLine(line);
+        }
+
+        id ??= Guid.NewGuid();
+        config ??= "{}";
+        var code = codeBuilder.ToString();
+
+        var scriptData = DeserializeScriptData(config) ?? throw new InvalidScriptFormatException(name, "Could not deserialize config data");
+
+        var script = new Script(id.Value, name, scriptData.Config.ToScriptConfig(dotNetInfo), code);
+
+        if (scriptData.DataConnection != null)
+        {
+            var connection = await dataConnectionRepository.GetAsync(scriptData.DataConnection.Id);
+
+            if (connection == null)
+            {
+                // TODO create a new connection
+            }
+
+            if (connection != null)
+                script.SetDataConnection(connection);
+        }
+
+        return script;
+    }
+
+    public static async Task<Script> DeserializeAsync3(string name, string data, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
+    {
+        var lines = data.Split("\n").ToArray();
+
+        // Parse ID
+        bool foundId = true;
+        if (!Guid.TryParse(lines[0], out var id) || id == default)
+        {
+            //throw new InvalidScriptFormatException(name, "Invalid or non-existent ID.");
+            foundId = false;
+            id = Guid.NewGuid();
+        }
+
+        int ixCodeMarker = Array.FindIndex(lines, l => l.Trim() == "#Code");
+        if (ixCodeMarker < 0)
+            throw new InvalidScriptFormatException(name, "The script is missing #Code identifier.");
+
+        // Parse script data (skip first line (ID) and take up to code marker)
+        int configDataStartLine = foundId ? 1 : 0;
+        int configDataEndLine = ixCodeMarker;
+        var scriptDataStr = string.Join("\n", lines[configDataStartLine..configDataEndLine]).Trim();
+        if (string.IsNullOrWhiteSpace(scriptDataStr))
+        {
+            scriptDataStr = "{}";
+        }
+
+        var scriptData = DeserializeScriptData(scriptDataStr) ?? throw new InvalidScriptFormatException(name, "Could not deserialize config data");
+
+        // Parse code
+        var code = string.Join("\n", lines[(ixCodeMarker + 1)..]);
 
         var script = new Script(id, name, scriptData.Config.ToScriptConfig(dotNetInfo), code);
 

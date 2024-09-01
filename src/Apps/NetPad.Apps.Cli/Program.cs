@@ -8,9 +8,12 @@ using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.Apps.Scripts;
 using NetPad.Configuration;
 using NetPad.ExecutionModel;
+using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Packages.NuGet;
+using NetPad.Presentation;
 using NetPad.Scripts;
+using Spectre.Console;
 
 var serviceProvider = BuildServiceProvider();
 
@@ -88,13 +91,31 @@ async Task<int> RunScriptAsync(string scriptPath)
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[red]Could not load script. {ex.Message}[/]");
+        AnsiConsole.MarkupLineInterpolated($"[red]Could not load script. {ex.Message}[/]");
         return 1;
     }
 
     using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
-    await new ScriptEnvironment(script, scope).RunAsync(new RunOptions());
+    var scriptEnv = new ScriptEnvironment(script, scope);
+
+    scriptEnv.SetIO(new ActionInputReader<string>(Console.ReadLine), new ActionOutputWriter<object>((o, t) =>
+    {
+        if (o is ErrorScriptOutput errorScriptOutput)
+        {
+            if (errorScriptOutput.Body != null)
+            {
+                string text = errorScriptOutput.Body.ToString()!;
+                AnsiConsole.MarkupLineInterpolated($"[red]{text}[/]");
+            }
+
+            return;
+        }
+
+        Console.WriteLine($"{o}");
+    }));
+
+    await scriptEnv.RunAsync(new RunOptions());
 
     return 0;
 }

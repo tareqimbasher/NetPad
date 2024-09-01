@@ -3,6 +3,7 @@ using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Exceptions;
+using NetPad.IO;
 using NetPad.Scripts;
 
 namespace NetPad.Apps.Scripts;
@@ -86,19 +87,15 @@ public class FileSystemScriptRepository : IScriptRepository
 
     public async Task<Script> GetAsync(string path)
     {
-        // Basic protection against malicious calls
-        if (!path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
-            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
-
         var fileInfo = new FileInfo(path);
 
         if (!fileInfo.Exists)
             throw new ScriptNotFoundException(path);
 
-        var data = await File.ReadAllTextAsync(path).ConfigureAwait(false);
+        //var data = await File.ReadAllTextAsync(path).ConfigureAwait(false);
 
         var name = Script.GetNameFromPath(path);
-        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
+        var script = await ScriptSerializer.DeserializeAsync(name, new FilePath(path), _dataConnectionRepository, _dotNetInfo);
         script.SetPath(path);
 
         return script;
