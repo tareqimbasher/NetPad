@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json.schemastore.org/launchsettings.json",
+    "profiles": {
+        "NetPad.Apps.Cli": {
+            "commandName": "Project",
+            "environmentVariables": {
+            }
+        },
+        "run": {
+            "commandName": "Project",
+            "commandLineArgs": "run",
+            "environmentVariables": {
+            }
+        },
+        "list": {
+            "commandName": "Project",
+            "commandLineArgs": "list",
+            "environmentVariables": {
+            }
+        },
+        "logs": {
+            "commandName": "Project",
+            "commandLineArgs": "logs ls",
+            "environmentVariables": {
+            }
+        }
+    }
+}

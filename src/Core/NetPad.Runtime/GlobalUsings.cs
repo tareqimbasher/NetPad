@@ -8,5 +8,6 @@ global using NetPad.Utilities;
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.App")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.ScriptHost")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("netpad-script-host")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("npad")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.Common")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Runtime.Tests")]

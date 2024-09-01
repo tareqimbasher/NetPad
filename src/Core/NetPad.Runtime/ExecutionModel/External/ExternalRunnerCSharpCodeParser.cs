@@ -75,11 +75,13 @@ public class ExternalRunnerCSharpCodeParser : ICodeParser
 
     internal static string GetEmbeddedBootstrapperProgram()
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly, "EmbeddedCode.Program.cs");
+        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly,
+            "ExecutionModel.External.EmbeddedCode.Program.cs");
     }
 
     internal static string GetEmbeddedSqlProgram()
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly, "EmbeddedCode.SqlAccessCode.cs");
+        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly,
+            "ExecutionModel.External.EmbeddedCode.SqlAccessCode.cs");
     }
 }

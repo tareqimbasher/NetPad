@@ -75,11 +75,13 @@ public class ClientServerCSharpCodeParser : ICodeParser
 
     public static string GetEmbeddedBootstrapperProgram()
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ClientServerCSharpCodeParser).Assembly, "EmbeddedCode.Program.cs");
+        return AssemblyUtil.ReadEmbeddedResource(typeof(ClientServerCSharpCodeParser).Assembly,
+            "ExecutionModel.ClientServer.EmbeddedCode.Program.cs");
     }
 
     public static string GetEmbeddedSqlProgram()
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ClientServerCSharpCodeParser).Assembly, "EmbeddedCode.SqlAccessCode.cs");
+        return AssemblyUtil.ReadEmbeddedResource(typeof(ClientServerCSharpCodeParser).Assembly,
+            "ExecutionModel.ClientServer.EmbeddedCode.SqlAccessCode.cs");
     }
 }

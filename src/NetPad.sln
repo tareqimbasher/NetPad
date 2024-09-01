@@ -28,6 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\build.yml = ..\.github\workflows\build.yml
 		..\README.md = ..\README.md
+		..\docs\SPA App.md = ..\docs\SPA App.md
+		..\.github\workflows\codeql-analysis.yml = ..\.github\workflows\codeql-analysis.yml
 		..\scripts\package-electron.sh = ..\scripts\package-electron.sh
 		..\Directory.Build.props = ..\Directory.Build.props
 		..\global.json = ..\global.json
@@ -52,6 +54,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Apps.ScriptHost", "Apps\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj", "{96A977F5-3BD1-4A1C-9BD5-BF6196C00CFA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Apps.App.Tests", "Tests\NetPad.Apps.App.Tests\NetPad.Apps.App.Tests.csproj", "{E2092EFB-505A-491D-B0D5-B3F837AD5FDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetPad.Apps.Cli", "Apps\NetPad.Apps.Cli\NetPad.Apps.Cli.csproj", "{8CCF9C37-4EE8-43B9-9188-4904A92EAF14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +123,10 @@ Global
 		{E2092EFB-505A-491D-B0D5-B3F837AD5FDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2092EFB-505A-491D-B0D5-B3F837AD5FDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2092EFB-505A-491D-B0D5-B3F837AD5FDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CCF9C37-4EE8-43B9-9188-4904A92EAF14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+        {8CCF9C37-4EE8-43B9-9188-4904A92EAF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+        {8CCF9C37-4EE8-43B9-9188-4904A92EAF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+        {8CCF9C37-4EE8-43B9-9188-4904A92EAF14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F297CA80-61A8-4EB2-AAAD-15AE3BA86675} = {69D2D0EE-EE9A-49C5-8739-87AE0CB5D2A7}
@@ -136,5 +144,6 @@ Global
 		{EEED9701-410E-4A11-9530-0C3BF988456E} = {7944C576-A700-41AE-8617-91FC05098F74}
 		{96A977F5-3BD1-4A1C-9BD5-BF6196C00CFA} = {7944C576-A700-41AE-8617-91FC05098F74}
 		{E2092EFB-505A-491D-B0D5-B3F837AD5FDC} = {6DD496D9-D5F3-4985-854C-165CD1B2691E}
+		{8CCF9C37-4EE8-43B9-9188-4904A92EAF14} = {7944C576-A700-41AE-8617-91FC05098F74}
 	EndGlobalSection
 EndGlobal

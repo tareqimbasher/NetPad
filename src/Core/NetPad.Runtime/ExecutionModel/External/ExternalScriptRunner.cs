@@ -106,7 +106,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             var args = _options.ProcessCliArgs.Contains("-parent")
                 ? _options.ProcessCliArgs
-                : _options.ProcessCliArgs.Union(new[] { "-parent", Environment.ProcessId.ToString() }).ToArray();
+                : _options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
 
             var startInfo = new ProcessStartInfo(
                     _dotNetInfo.LocateDotNetExecutableOrThrow(),

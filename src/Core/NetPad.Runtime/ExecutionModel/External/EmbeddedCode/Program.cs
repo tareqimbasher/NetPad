@@ -1,4 +1,5 @@
 using NetPad.Presentation;
+
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable InvokeAsExtensionMethod
 
@@ -20,13 +21,17 @@ public partial class Program
     static Program()
     {
         var args = System.Environment.GetCommandLineArgs();
+        bool verbose = System.Linq.Enumerable.Contains(args, "-verbose");
 
-        if (System.Linq.Enumerable.Contains(args, "--help"))
+        if (verbose)
+        {
+            System.Console.WriteLine("Args: " + string.Join(" ", args));
+        }
+
+        if (System.Linq.Enumerable.Contains(args, "-help"))
         {
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
-
             PrintHelp();
-
             System.Environment.Exit(0);
         }
 
@@ -34,19 +39,24 @@ public partial class Program
 
         if (System.Linq.Enumerable.Contains(args, "-html"))
         {
+            if (verbose) System.Console.WriteLine("Output: HTML");
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput();
         }
         else
         {
-            bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "--no-color");
+            bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "-no-color");
 
             if (System.Linq.Enumerable.Contains(args, "-text"))
             {
-                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseTextOutput(useConsoleColors);
+                if (verbose) System.Console.WriteLine("Output: Text");
+                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseTextOutput(
+                    useConsoleColors);
             }
             else
             {
-                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(useConsoleColors);
+                if (verbose) System.Console.WriteLine("Output: Console");
+                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
+                    useConsoleColors);
             }
         }
 
@@ -56,6 +66,11 @@ public partial class Program
         if (NetPad.Utilities.PlatformUtil.IsOSWindows())
         {
             NetPad.Utilities.WindowsNative.DisableWindowsErrorReporting();
+        }
+
+        if (verbose)
+        {
+            System.Console.WriteLine();
         }
     }
 
