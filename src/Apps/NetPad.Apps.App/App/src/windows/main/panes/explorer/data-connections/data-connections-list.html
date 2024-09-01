@@ -24,7 +24,7 @@
              data-connection-id="${connectionViewModel.connection.id}">
 
             <div class="list-group">
-                <div class="list-group-item d-flex align-items-center justify-content-between data-connection">
+                <div class="list-group-item data-connection d-flex align-items-center justify-content-between pe-2">
                     <div class="d-flex align-items-center text-truncate flex-grow-1">
                         <i class="${connectionViewModel.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
                            click.trigger="connectionViewModel.toggleExpand()"></i>
@@ -34,20 +34,19 @@
                                               dragstart.trigger="connectionDragged($event)"
                                               data-connection-id="${connectionViewModel.connection.id}"></data-connection-name>
                     </div>
-                    <span class="pe-2">
-                        <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
-                            ${connectionViewModel.loadingMessage}...
-                        </span>
-                        <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
-                              if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
-                              title.bind="'(Click to copy to clipboard)\n\n' + connectionViewModel.error"
-                              click.trigger="copyToClipboard(connectionViewModel.error)">
-                            ${connectionViewModel.error}
-                        </span>
-                        <span class="badge bg-orange text-white rounded-pill ms-2"
-                              if.bind="connectionViewModel.connection.containsProductionData">
-                            Production
-                        </span>
+                    <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
+                        ${connectionViewModel.loadingMessage}...
+                    </span>
+                    <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
+                          if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
+                          title.bind="'(Click to copy to clipboard)\n\n' + connectionViewModel.error"
+                          click.trigger="copyErrorToClipboard(connectionViewModel)">
+                        ${connectionViewModel.error}
+                    </span>
+                    <span class="badge bg-orange text-white rounded-pill ms-2"
+                          if.bind="connectionViewModel.connection.containsProductionData"
+                          title="Production">
+                        P
                     </span>
                 </div>
 

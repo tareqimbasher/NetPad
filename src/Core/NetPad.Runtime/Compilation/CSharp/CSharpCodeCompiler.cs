@@ -21,8 +21,7 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
         var compilation = CreateCompilation(input, assemblyName);
 
         using var stream = new MemoryStream();
-        var result = compilation.Emit(stream,
-            options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
+        var result = compilation.Emit(stream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
 
         stream.Seek(0, SeekOrigin.Begin);
         var assemblyBytes = stream.ToArray();
@@ -62,9 +61,10 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
         return CSharpCompilation.Create(
             assemblyName,
-            new[] { syntaxTree },
-            references: references,
-            options: compilationOptions);
+            syntaxTrees: new[] { syntaxTree },
+            options: compilationOptions,
+            references: references
+        );
     }
 
     private PortableExecutableReference[] BuildMetadataReferences(

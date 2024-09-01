@@ -27,7 +27,8 @@
     <div class="group" title="The .NET SDK to use for this script.">
         <b>SDK:</b>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
-                value.bind="targetFrameworkVersion">
+                value.bind="targetFrameworkVersion"
+                disabled.bind="environment.status === 'Running'">
             <option value="" disabled></option>
             <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
                 .NET ${framework.replace('DotNet', '')}

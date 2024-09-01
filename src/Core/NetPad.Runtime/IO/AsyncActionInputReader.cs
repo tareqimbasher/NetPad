@@ -4,8 +4,8 @@ public class AsyncActionInputReader<TInput>(Func<Task<TInput?>> action) : IInput
 {
     public static AsyncActionInputReader<TInput> Null => new(() => Task.FromResult<TInput?>(default));
 
-    public async Task<TInput?> ReadAsync()
+    public Task<TInput?> ReadAsync()
     {
-        return await action();
+        return action();
     }
 }

@@ -4,13 +4,13 @@ public class AsyncActionOutputWriter<TOutput>(Func<TOutput?, string?, Task> acti
 {
     public static AsyncActionOutputWriter<TOutput> Null => new((_, _) => Task.CompletedTask);
 
-    public async Task WriteAsync(TOutput? output, string? title = null, CancellationToken cancellationToken = default)
+    public Task WriteAsync(TOutput? output, string? title = null, CancellationToken cancellationToken = default)
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return;
+            return Task.FromCanceled(cancellationToken);
         }
 
-        await action(output, title);
+        return action(output, title);
     }
 }

@@ -228,8 +228,13 @@ export class DataConnectionsList extends ViewModelBase {
             .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
     }
 
-    private async copyToClipboard(text: string) {
-        await navigator.clipboard.writeText(text);
+    private async copyErrorToClipboard(vm: DataConnectionViewModel) {
+        if (!vm.error) {
+            return;
+        }
+
+        await navigator.clipboard.writeText(vm.error);
+        vm.error = null;
     }
 
     private getElementOrParentDataConnectionId(element: Element) {

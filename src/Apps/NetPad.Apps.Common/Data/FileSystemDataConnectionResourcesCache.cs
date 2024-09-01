@@ -118,6 +118,12 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
 
             return resources;
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error generating data connection resources for: {DataConnectionId}", dataConnection.Id);
+            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdateFailedEvent(dataConnection, targetFrameworkVersion, ex));
+            throw;
+        }
         finally
         {
             lck.Release();
