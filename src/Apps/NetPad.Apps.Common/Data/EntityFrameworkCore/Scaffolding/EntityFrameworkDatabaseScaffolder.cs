@@ -156,19 +156,9 @@ public class EntityFrameworkDatabaseScaffolder(
 
         try
         {
-            await project.AddReferenceAsync(new PackageReference(
-                connection.EntityFrameworkProviderName,
-                connection.EntityFrameworkProviderName,
-                await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, connection.EntityFrameworkProviderName)
-                ?? throw new Exception($"Could not find a version of {connection.EntityFrameworkProviderName} to install")
-            ));
+            var references = EntityFrameworkPackageUtils.GetRequiredReferences(connection, targetFrameworkVersion, true);
 
-            await project.AddReferenceAsync(new PackageReference(
-                "Microsoft.EntityFrameworkCore.Design",
-                "Microsoft.EntityFrameworkCore.Design",
-                await EntityFrameworkPackageUtils.GetEntityFrameworkDesignVersionAsync(targetFrameworkVersion)
-                ?? throw new Exception("Could not find a version of Microsoft.EntityFrameworkCore.Design to install")
-            ));
+            await project.AddReferencesAsync(references);
         }
         catch
         {

@@ -37,29 +37,15 @@ internal class EntityFrameworkResourcesGenerator(
             ApplicationCode = applicationCode
         };
 
-        var requiredReferences = await GetRequiredReferencesAsync(efDbConnection, targetFrameworkVersion);
+        var requiredReferences = EntityFrameworkPackageUtils.GetRequiredReferences(efDbConnection, targetFrameworkVersion);
 
-        return new DataConnectionResources(dataConnection, DateTime.UtcNow)
+        return new DataConnectionResources(efDbConnection, DateTime.UtcNow)
         {
             SourceCode = sourceCode,
             Assembly = result.Assembly,
             RequiredReferences = requiredReferences,
             DatabaseStructure = result.DatabaseStructure
         };
-    }
-
-    private static async Task<Reference[]> GetRequiredReferencesAsync(EntityFrameworkDatabaseConnection connection,
-        DotNetFrameworkVersion targetFrameworkVersion)
-    {
-        return
-        [
-            new PackageReference(
-                connection.EntityFrameworkProviderName,
-                connection.EntityFrameworkProviderName,
-                await EntityFrameworkPackageUtils.GetEntityFrameworkProviderVersionAsync(targetFrameworkVersion, connection.EntityFrameworkProviderName)
-                ?? throw new Exception($"Could not find a version for EntityFramework provider: '{connection.EntityFrameworkProviderName}'")
-            )
-        ];
     }
 
     private static SourceCodeCollection GenerateApplicationCode(EntityFrameworkDatabaseConnection efDbConnection, string dbContextClassName,
