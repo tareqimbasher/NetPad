@@ -1,6 +1,6 @@
 using NetPad.Presentation;
-
 // ReSharper disable RedundantNameQualifier
+// ReSharper disable InvokeAsExtensionMethod
 
 /// <summary>
 /// Meant to be injected into script code so it can initialize <see cref="NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink"/>.
@@ -13,34 +13,34 @@ using NetPad.Presentation;
 public partial class Program
 {
     public static readonly NetPad.ExecutionModel.External.Interface.UserScript UserScript = new(
-        new Guid("SCRIPT_ID"),
+        new System.Guid("SCRIPT_ID"),
         "SCRIPT_NAME",
         "SCRIPT_LOCATION");
 
     static Program()
     {
-        var args = Environment.GetCommandLineArgs();
+        var args = System.Environment.GetCommandLineArgs();
 
-        if (args.Contains("-help"))
+        if (System.Linq.Enumerable.Contains(args, "--help"))
         {
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
 
             PrintHelp();
 
-            Environment.Exit(0);
+            System.Environment.Exit(0);
         }
 
         TerminateProcessOnParentExit(args);
 
-        if (args.Contains("-html"))
+        if (System.Linq.Enumerable.Contains(args, "-html"))
         {
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput();
         }
         else
         {
-            bool useConsoleColors = !args.Contains("-no-color");
+            bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "--no-color");
 
-            if (args.Contains("-text"))
+            if (System.Linq.Enumerable.Contains(args, "-text"))
             {
                 NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseTextOutput(useConsoleColors);
             }
@@ -62,13 +62,13 @@ public partial class Program
     private static void PrintHelp()
     {
         var currentAssemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
-        if (Environment.CurrentDirectory.Length > 1)
+        if (System.Environment.CurrentDirectory.Length > 1)
         {
-            currentAssemblyPath = "." + currentAssemblyPath.Replace(Environment.CurrentDirectory, string.Empty);
+            currentAssemblyPath = "." + currentAssemblyPath.Replace(System.Environment.CurrentDirectory, string.Empty);
         }
 
-        Console.WriteLine($"{UserScript.Name}");
-        Console.WriteLine($@"
+        System.Console.WriteLine($"{UserScript.Name}");
+        System.Console.WriteLine($@"
 Usage:
     dotnet {currentAssemblyPath} [-console|-text|-html] [OPTIONS]
 
@@ -86,7 +86,7 @@ Options:
 
     private static void TerminateProcessOnParentExit(string[] args)
     {
-        var parentIx = Array.IndexOf(args, "-parent");
+        var parentIx = System.Array.IndexOf(args, "-parent");
 
         if (parentIx < 0)
         {
@@ -96,8 +96,8 @@ Options:
 
         if (args.Length < parentIx + 1 || !int.TryParse(args[parentIx + 1], out var parentProcessId))
         {
-            Console.Error.WriteLine("Invalid parent process ID");
-            Environment.Exit(1);
+            System.Console.Error.WriteLine("Invalid parent process ID");
+            System.Environment.Exit(1);
             return;
         }
 
@@ -115,12 +115,12 @@ Options:
 
         if (parentProcess != null)
         {
-            parentProcess.Exited += (_, _) => Environment.Exit(1);
+            parentProcess.Exited += (_, _) => System.Environment.Exit(1);
         }
         else
         {
-            Console.Error.WriteLine($"Parent process {parentProcessId} is not running");
-            Environment.Exit(1);
+            System.Console.Error.WriteLine($"Parent process {parentProcessId} is not running");
+            System.Environment.Exit(1);
         }
     }
 }
