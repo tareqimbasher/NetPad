@@ -82,22 +82,6 @@
         <Content Update="ElectronHostHook\**\*.*">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <Content Update="tauri-app\**\*.*">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-        </Content>
-        <Compile Remove="tauri-app\src-tauri\target\**" />
-        <Content Remove="tauri-app\src-tauri\target\**" />
-        <EmbeddedResource Remove="tauri-app\src-tauri\target\**" />
-        <None Remove="tauri-app\src-tauri\target\**" />
-        <Compile Remove="tauri-app\src-tauri\gen\**" />
-        <Content Remove="tauri-app\src-tauri\gen\**" />
-        <EmbeddedResource Remove="tauri-app\src-tauri\gen\**" />
-        <None Remove="tauri-app\src-tauri\gen\**" />
-        <Compile Remove="tauri-app\src-tauri\capabilities\**" />
-        <Content Remove="tauri-app\src-tauri\capabilities\**" />
-        <EmbeddedResource Remove="tauri-app\src-tauri\capabilities\**" />
-        <None Remove="tauri-app\src-tauri\capabilities\**" />
     </ItemGroup>
-    
+
 </Project>

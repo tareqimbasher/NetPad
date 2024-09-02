@@ -5,7 +5,7 @@
     "build": {
         "beforeDevCommand": {
             "script": "npm run start-web",
-            "cwd": "../../App"
+            "cwd": "../../../NetPad.Apps.App/App"
         },
         "devUrl": "http://localhost:57940?shell=tauri",
         "frontendDist": "http://localhost:57930?shell=tauri"
