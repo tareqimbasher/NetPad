@@ -75,11 +75,15 @@ public class DotNetCSharpProject
     /// <param name="outputType">The output type of the project.</param>
     /// <param name="sdkPack">The SDK pack to use for this project.</param>
     /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
+    /// <param name="enableNullable">If true, will enable nullable checks.</param>
+    /// <param name="enableImplicitUsings">If true, will enable implicit usings.</param>
     public virtual async Task CreateAsync(
         DotNetFrameworkVersion targetDotNetFrameworkVersion,
         ProjectOutputType outputType,
         DotNetSdkPack sdkPack = DotNetSdkPack.NetApp,
-        bool deleteExisting = false)
+        bool deleteExisting = false,
+        bool enableNullable = true,
+        bool enableImplicitUsings = true)
     {
         if (deleteExisting)
         {
@@ -95,8 +99,8 @@ public class DotNetCSharpProject
     <PropertyGroup>
         <OutputType>{dotnetOutputType}</OutputType>
         <TargetFramework>{targetDotNetFrameworkVersion.GetTargetFrameworkMoniker()}</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <Nullable>{(enableNullable ? "enable" : "disable")}</Nullable>
+        <ImplicitUsings>{(enableImplicitUsings ? "enable" : "disable")}</ImplicitUsings>
     </PropertyGroup>
 
 </Project>

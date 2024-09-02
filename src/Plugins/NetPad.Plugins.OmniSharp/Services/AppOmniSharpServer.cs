@@ -40,8 +40,6 @@ public class AppOmniSharpServer(
 
     private IOmniSharpStdioServer? _omniSharpServer;
 
-    // ReSharper disable once ContextualLoggerProblem
-
     public Guid ScriptId => environment.Script.Id;
 
     public OmniSharpProject Project { get; } = new(environment.Script, dotNetInfo, settings, scriptProjectLogger);
@@ -61,7 +59,9 @@ public class AppOmniSharpServer(
             environment.Script.Config.TargetFrameworkVersion,
             ProjectOutputType.Executable,
             environment.Script.Config.UseAspNet ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp,
-            true);
+            true,
+            true,
+            false);
 
         await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
 
