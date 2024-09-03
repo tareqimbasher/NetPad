@@ -1,4 +1,6 @@
 use std::borrow::BorrowMut;
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 use std::process::{Child, Command};
 use std::sync::Mutex;
 use tauri::path::BaseDirectory;
@@ -18,7 +20,7 @@ impl DotNetServerManager {
     }
 
     pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<String, String> {
-        let server_path = app_handle
+        let executable_path = app_handle
             .path()
             .resolve(
                 "resources/netpad-server/NetPad.Apps.App",
@@ -32,14 +34,19 @@ impl DotNetServerManager {
             .unwrap();
 
         log::info!(
-            "Starting backend at path: '{}' with working dir: '{}'",
-            server_path.display(),
+            "Starting .NET server backend at path: '{}' with working dir: '{}'",
+            executable_path.display(),
             working_dir.display()
         );
 
-        let mut cmd = Command::new(server_path);
+        let mut cmd = Command::new(executable_path);
         cmd.arg("--tauri");
-        cmd.current_dir(working_dir);
+        cmd.current_dir(dunce::canonicalize(working_dir).unwrap());
+        #[cfg(target_os = "windows")]
+        {
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
 
         match self.child.borrow_mut() {
             Some(c) => {
@@ -49,9 +56,7 @@ impl DotNetServerManager {
                 Ok(msg)
             }
             None => {
-                let child = cmd.spawn();
-
-                match child {
+                match cmd.spawn() {
                     Ok(c) => {
                         let pid = c.id();
                         self.child = Some(c);
@@ -75,7 +80,8 @@ impl DotNetServerManager {
             Some(child) => {
                 let pid = child.id().to_string();
 
-                if cfg!(unix) {
+                #[cfg(unix)]
+                {
                     log::info!("Sending SIGTERM to .NET server process with PID: {pid}");
                     Command::new("kill")
                         .args(["-s", "SIGTERM", &pid])
@@ -83,10 +89,15 @@ impl DotNetServerManager {
                         .expect("Error stopping .NET server process. Failed to spawn 'kill'")
                         .wait()
                         .expect("Error stopping .NET server process. Failed while waiting for kill to complete");
-                } else if cfg!(windows) {
+                }
+
+                #[cfg(windows)]
+                {
                     log::info!("Using taskkill on .NET server process with PID: {pid}");
+                    const CREATE_NO_WINDOW: u32 = 0x08000000;
                     Command::new("taskkill")
                         .args(["/PID", &pid, "/F"])
+                        .creation_flags(CREATE_NO_WINDOW)
                         .spawn()
                         .expect("Error stopping .NET server process. Failed to spawn 'taskkill'")
                         .wait()
