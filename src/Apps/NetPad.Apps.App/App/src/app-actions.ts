@@ -26,9 +26,7 @@ export const loadAppSettings = async (builder: IAurelia) => {
 /**
  * Selects and configures the proper shell.
  */
-export const configureAndGetShell = async (builder: IAurelia) => {
-    const windowParams = builder.container.get(WindowParams);
-
+export const configureAndGetShell = async (builder: IAurelia, windowParams: WindowParams) => {
     let shellType: Constructable<IShell>;
 
     if (windowParams.shell === "electron") {
@@ -41,7 +39,7 @@ export const configureAndGetShell = async (builder: IAurelia) => {
 
     const shell = new shellType() as IShell;
 
-    shell.configure(builder);
+    shell.configure(builder, windowParams);
 
     return shell;
 }
@@ -50,9 +48,7 @@ export const configureAndGetShell = async (builder: IAurelia) => {
  * Selects and configures the correct app entry point. An entry point is a view-model representing the window
  * that will be the entry point for the Aurelia app.
  */
-export const configureAndGetAppEntryPoint = async (builder: IAurelia) => {
-    const windowParams = builder.container.get(WindowParams);
-
+export const configureAndGetAppEntryPoint = async (builder: IAurelia, windowParams: WindowParams) => {
     const windowId = windowParams.window;
 
     let bootstrapperCtor: IWindowBootstrapperConstructor;

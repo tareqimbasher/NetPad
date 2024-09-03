@@ -1,5 +1,5 @@
-import {app, BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions} from "electron";
-import {AppMenuItemWalker, IAppMenuItem, IAppShortcut} from "./models";
+import {BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions} from "electron";
+import {AppMenuItemWalker, IAppMenuItem} from "./models";
 
 const isMac = process.platform === "darwin";
 
@@ -63,10 +63,10 @@ export class MainMenuManager {
             return {type: "separator"};
         }
 
-        return {
+        return <MenuItemConstructorOptions>{
             id: id,
             label: item.text,
-            accelerator: item.shortcut ? this.getAccelerator(item.shortcut) : item.helpText?.replaceAll(" ", "") || undefined,
+            accelerator: this.getAccelerator(item),
             click: async (menuItem, browserWindow) => await this.sendMenuItemToRenderer(menuItem.id, browserWindow)
         };
     }
@@ -76,7 +76,7 @@ export class MainMenuManager {
             // { role: 'appMenu' }
             ...(isMac
                 ? [{
-                    label: app.name,
+                    label: "NetPad",
                     submenu: <MenuItemConstructorOptions[]>[
                         {role: 'about'},
                         {type: "separator"},
@@ -120,6 +120,7 @@ export class MainMenuManager {
                         ? [
                             {role: 'pasteAndMatchStyle'},
                             {role: 'delete'},
+                            {type: "separator"},
                             {role: 'selectAll'},
                             {type: "separator"},
                             {
@@ -154,37 +155,23 @@ export class MainMenuManager {
             {
                 label: 'View',
                 submenu: [
-                    this.fromAppMenuItem("view.output"),
                     this.fromAppMenuItem("view.explorer"),
+                    this.fromAppMenuItem("view.output"),
+                    this.fromAppMenuItem("view.code"),
                     this.fromAppMenuItem("view.namespaces"),
                     {type: "separator"},
                     {role: 'reload'},
                     {role: 'forceReload'},
                     {role: 'toggleDevTools'},
                     {type: "separator"},
-                    {role: 'resetZoom'},
                     {role: 'zoomIn'},
                     {role: 'zoomOut'},
+                    {role: 'resetZoom'},
                     {type: "separator"},
                     {role: 'togglefullscreen'}
                 ]
             },
-            // { role: 'windowMenu' }
-            {
-                label: 'Window',
-                submenu: <MenuItemConstructorOptions[]>[
-                    {role: 'minimize'},
-                    {role: 'zoom'},
-                    ...(isMac
-                        ? [
-                            {type: "separator"},
-                            {role: 'front'},
-                            {type: "separator"},
-                            {role: 'window'}
-                        ]
-                        : [])
-                ]
-            },
+            { role: 'windowMenu' },
             {
                 role: 'help',
                 submenu: [
@@ -201,25 +188,29 @@ export class MainMenuManager {
         browserWindow.webContents.send(ClickMenuItemCommand.name, new ClickMenuItemCommand(menuItemId));
     }
 
-    private static getAccelerator(shortcut: IAppShortcut): string {
-        const combo = [...shortcut.keyCombo];
-        let accelerator: string[] = [];
+    private static getAccelerator(menuItem: IAppMenuItem): string | undefined {
+        if (menuItem.shortcut) {
+            const combo = [...menuItem.shortcut.keyCombo];
+            const accelerator: string[] = [];
 
-        for (const part of combo) {
-            const lower = part.toLowerCase();
-            if (lower === "meta") {
-                accelerator.push("Meta");
-            } else if (lower === "alt") {
-                accelerator.push("Alt");
-            } else if (lower === "ctrl") {
-                accelerator.push("CmdOrCtrl");
-            } else if (lower === "shift") {
-                accelerator.push("Shift");
-            } else {
-                accelerator.push(part);
+            for (const part of combo) {
+                const lower = part.toLowerCase();
+                if (lower === "meta") {
+                    accelerator.push("Meta");
+                } else if (lower === "alt") {
+                    accelerator.push("Alt");
+                } else if (lower === "ctrl") {
+                    accelerator.push("CmdOrCtrl");
+                } else if (lower === "shift") {
+                    accelerator.push("Shift");
+                } else {
+                    accelerator.push(part);
+                }
             }
+
+            return accelerator.join("+");
         }
 
-        return accelerator.join("+");
+        return menuItem.helpText?.replaceAll(" ", "");
     }
 }

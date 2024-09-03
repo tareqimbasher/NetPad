@@ -17,7 +17,7 @@ echo "Detected platform: ${platform}"
 
 if [ "${platform}" == "Linux" ]; then
     echo "Building Tauri app for Linux..."
-    npx tauri build -c src-tauri/tauri.conf.linux.json5
+    npx tauri build -c src-tauri/tauri.conf.linux-x64.json5
 elif [ "${platform}" == "Mac" ]; then
     echo "Building Tauri app for Mac..."
     # npx tauri build -c src-tauri/tauri.conf.macos.json5

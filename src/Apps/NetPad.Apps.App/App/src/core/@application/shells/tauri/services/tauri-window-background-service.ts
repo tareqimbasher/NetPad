@@ -3,8 +3,8 @@ import {IDisposable} from "@common";
 import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
 import {WindowId} from "@application/windows/window-id";
 import {ShellType} from "@application/windows/shell-type";
-import {Window} from "@tauri-apps/api/window"
-import {WebviewWindow} from "@tauri-apps/api/webviewWindow"
+import {Window as TauriWindow} from "@tauri-apps/api/window"
+import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow"
 
 /**
  * This is utilized for the Tauri app, not the Electron app
@@ -39,7 +39,9 @@ export class TauriWindowBackgroundService implements IBackgroundService {
             queryParams.append(key, command.metadata[key]);
         }
 
-        const url = `${window.location.origin}?${queryParams.toString()}`;
+        const currentWindow = window;
+
+        const url = `${currentWindow.location.origin}?${queryParams.toString()}`;
 
         const options = command.options;
         const height = options.height > 1 ? options.height : screen.height * options.height;
@@ -48,18 +50,17 @@ export class TauriWindowBackgroundService implements IBackgroundService {
         let x: number;
         let y: number;
 
-        const mainWin = window;
-        if (mainWin.top) {
-            x = mainWin.top.outerWidth / 2 + mainWin.top.screenX - (width / 2);
-            y = mainWin.top.outerHeight / 2 + mainWin.top.screenY - (height / 2);
+        if (currentWindow.top) {
+            x = currentWindow.top.outerWidth / 2 + currentWindow.top.screenX - (width / 2);
+            y = currentWindow.top.outerHeight / 2 + currentWindow.top.screenY - (height / 2);
         } else {
             x = screen.width / 2 - (width / 2);
             y = screen.height / 2 - (height / 2);
         }
 
-        const parent = Window.getByLabel(WindowId.Main) ?? Window.getCurrent();
+        const parent = await TauriWindow.getByLabel(WindowId.Main) ?? TauriWindow.getCurrent();
 
-        const appWindow = new WebviewWindow(command.windowName, {
+        const appWindow = new TauriWebviewWindow(command.windowName, {
             url: url,
             parent: parent,
             height: height,

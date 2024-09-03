@@ -1,0 +1,10 @@
+{
+    "build": {
+        "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r win-x64 -c \"Release\" /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --no-self-contained"
+    },
+    "bundle": {
+        "resources": {
+            "../../../NetPad.Apps.App/bin/Release/net6.0/win-x64/publish": "resources/netpad-server"
+        }
+    }
+}

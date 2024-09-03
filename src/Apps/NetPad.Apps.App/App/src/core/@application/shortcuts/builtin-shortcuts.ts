@@ -19,6 +19,8 @@ export enum ShortcutIds {
     openNamespaces = "shortcut.namespaces.open",
     reloadWindow = "shortcut.window.reload",
     zoomIn = "shortcut.window.zoomIn",
+    zoomOut = "shortcut.window.zoomOut",
+    zoomReset = "shortcut.window.zoomReset",
 }
 
 export const BuiltinShortcuts = [
@@ -176,6 +178,22 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.Equal)
         .hasAction((ctx) => ctx.container.get(IWindowService).zoomIn())
+        .captureDefaultKeyCombo()
+        .configurable(false)
+        .enabled(),
+
+    new Shortcut(ShortcutIds.zoomOut, "Zoom Out")
+        .withCtrlKey()
+        .withKey(KeyCode.Minus)
+        .hasAction((ctx) => ctx.container.get(IWindowService).zoomOut())
+        .captureDefaultKeyCombo()
+        .configurable(false)
+        .enabled(),
+
+    new Shortcut(ShortcutIds.zoomReset, "Zoom Reset")
+        .withCtrlKey()
+        .withKey(KeyCode.Digit0)
+        .hasAction((ctx) => ctx.container.get(IWindowService).resetZoom())
         .captureDefaultKeyCombo()
         .configurable(false)
         .enabled(),

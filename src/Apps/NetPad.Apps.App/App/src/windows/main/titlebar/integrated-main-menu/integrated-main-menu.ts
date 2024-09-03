@@ -10,7 +10,7 @@ interface ITopLevelMenuItem {
     isOpen: boolean;
 }
 
-export class MainMenu {
+export class IntegratedMainMenu {
     private openCounter = 0;
     private topLevelMenuItems: ITopLevelMenuItem[];
     private visible: boolean;
@@ -65,7 +65,7 @@ export class MainMenu {
         });
     }
 
-    @watch<MainMenu>(vm => vm.settings.appearance.titlebar.mainMenuVisibility)
+    @watch<IntegratedMainMenu>(vm => vm.settings.appearance.titlebar.mainMenuVisibility)
     private menuVisibilityChanged(change: "open" | "close", topLevelMenuItem: ITopLevelMenuItem) {
         if (change === "open") {
             this.visible = true;

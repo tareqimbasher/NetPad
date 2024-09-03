@@ -8,13 +8,14 @@ import {
 } from "@application";
 import {WindowBase} from "@application/windows/window-base";
 import {WindowParams} from "@application/windows/window-params";
-import {System, Util} from "@common";
+import {Util} from "@common";
 import {IDataConnectionView} from "./connection-views/idata-connection-view";
 import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
 import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
+import {ShellType} from "@application/windows/shell-type";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -56,8 +57,8 @@ export class Window extends WindowBase {
             }
         ];
 
-        // Until we implement a way to add a SQLite file in the browser, this option will only be available in Electron app
-        if (System.isRunningInElectron()) {
+        // Until we implement a way to add a SQLite file in the browser, this option will not be available to browser shell
+        if (windowParams.shell !== ShellType.Browser) {
             this.connectionTypes.push({
                 label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
                 type: "SQLite"

@@ -1,49 +1,11 @@
-use dotnet_server_manager::DotNetServerManager;
+use dotnet_server_manager::{
+    restart_server, start_server, stop_server, DotNetServerManager, DotNetServerManagerState,
+};
 use std::sync::Mutex;
 use tauri::{Manager, State, WindowEvent};
 use tauri_plugin_log::{Target, TargetKind};
 
 pub mod dotnet_server_manager;
-
-struct DotNetServerManagerState {
-    server_manager_mutex: Mutex<DotNetServerManager>,
-}
-
-#[tauri::command]
-fn start_server(
-    server_manager_state: State<DotNetServerManagerState>,
-    app_handle: tauri::AppHandle,
-) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .start_backend(&app_handle);
-    am
-}
-
-#[tauri::command]
-fn stop_server(server_manager_state: State<DotNetServerManagerState>) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .terminate_backend();
-    am
-}
-
-#[tauri::command]
-fn restart_server(
-    server_manager_state: State<DotNetServerManagerState>,
-    app_handle: tauri::AppHandle,
-) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .restart_backend(&app_handle);
-    am
-}
 
 #[tauri::command]
 fn toggle_devtools(webview_window: tauri::WebviewWindow) {
@@ -98,10 +60,10 @@ pub fn run() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
+            toggle_devtools,
             start_server,
             stop_server,
             restart_server,
-            toggle_devtools
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

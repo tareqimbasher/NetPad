@@ -2,6 +2,7 @@
 import {Env, IAppService, LogLevel, RemoteLogMessage} from "@application";
 import {BufferedQueue} from "@common";
 import {LogConfig} from "./log-config";
+import {WindowParams} from "@application/windows/window-params";
 
 /**
  * Sends log events to the backend application.
@@ -10,13 +11,13 @@ export class RemoteLogSink implements ISink {
     public readonly handleEvent: (event: ILogEvent) => void;
     private queue: BufferedQueue<RemoteLogMessage>;
 
-    constructor(@IAppService appService: IAppService, logConfig: LogConfig) {
+    constructor(@IAppService appService: IAppService, private readonly windowParams: WindowParams, logConfig: LogConfig) {
 
         this.queue = new BufferedQueue<RemoteLogMessage>({
             flushOnSize: 10,
             flushOnInterval: 10 * 1000,
             onFlush: async (items: RemoteLogMessage[]) => {
-                await appService.sendRemoteLog(Env.isRunningInElectron() ? "ElectronApp" : "WebApp", items);
+                await appService.sendRemoteLog(windowParams.shell === "electron" ? "ElectronApp" : "WebApp", items);
             }
         });
 

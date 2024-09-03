@@ -1,4 +1,3 @@
-import {IContainer} from "aurelia";
 import {WithDisposables} from "@common";
 import {ChannelInfo, IBackgroundService, Shortcut} from "@application";
 import {ElectronIpcGateway} from "./electron-ipc-gateway";
@@ -10,38 +9,23 @@ import {ClickMenuItemCommand} from "@application/main-menu/click-menu-item-comma
  * Handles IPC events sent by the Electron main process related to the native main menu.
  */
 export class NativeMainMenuEventHandler extends WithDisposables implements IBackgroundService {
-    private readonly mainMenuService?: IMainMenuService;
-
-    constructor(private readonly electronIpcGateway: ElectronIpcGateway, @IContainer container: IContainer) {
+    constructor(private readonly electronIpcGateway: ElectronIpcGateway, @IMainMenuService private readonly mainMenuService: IMainMenuService) {
         super();
-
-        try {
-            this.mainMenuService = container.get(IMainMenuService);
-        } catch {
-            // ignore, no main menu
-        }
     }
 
     public start(): Promise<void> {
         // Handle native menu click events
-        if (this.mainMenuService) {
-            this.addDisposable(this.electronIpcGateway.subscribe(new ChannelInfo(ClickMenuItemCommand), (event: ClickMenuItemCommand) => {
-                this.mainMenuService?.clickMenuItem(event.menuItemId);
-            }));
-        }
+        this.addDisposable(this.electronIpcGateway.subscribe(new ChannelInfo(ClickMenuItemCommand), (event: ClickMenuItemCommand) => {
+            this.mainMenuService?.clickMenuItem(event.menuItemId);
+        }));
 
         // Handle native menu bootstrap
         const bootstrapChannel = new ChannelInfo("main-menu-bootstrap");
 
         const sendBootstrapDataToMain = () => {
-            // If no main menu service is registered for the app/window then don't send the event to main process
-            if (!this.mainMenuService) {
-                return;
-            }
-
             try {
                 this.electronIpcGateway.send(bootstrapChannel, {
-                    menuItems: this.mainMenuService.items.map(i => this.mapToMenuItemDto(i))
+                    menuItems: this.mainMenuService!.items.map(i => this.mapToMenuItemDto(i))
                 });
             } catch (err) {
                 // ignore, Main process event handler might not be setup yet.

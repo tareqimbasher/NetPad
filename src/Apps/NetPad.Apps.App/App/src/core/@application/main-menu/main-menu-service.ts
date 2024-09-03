@@ -79,6 +79,7 @@ export class MainMenuService implements IMainMenuService {
                 text: "Edit",
                 menuItems: [
                     {
+                        id: "edit.undo",
                         text: "Undo",
                         icon: "undo-icon",
                         click: async () => this.textEditorService.active?.monaco
@@ -86,6 +87,7 @@ export class MainMenuService implements IMainMenuService {
                         helpText: "Ctrl + Z"
                     },
                     {
+                        id: "edit.redo",
                         text: "Redo",
                         icon: "redo-icon",
                         click: async () => this.textEditorService.active?.monaco
@@ -96,30 +98,11 @@ export class MainMenuService implements IMainMenuService {
                         isDivider: true
                     },
                     {
-                        text: "Cut",
-                        icon: "cut-icon",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.clipboardCutAction", null)
-                    },
-                    {
-                        text: "Copy",
-                        icon: "copy-icon",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.clipboardCopyAction", null)
-                    },
-                    {
-                        text: "Delete",
-                        icon: "backspace-icon",
-                        click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "deleteRight", null)
-                    },
-                    {
-                        isDivider: true
-                    },
-                    {
+                        id: "edit.selectAll",
                         text: "Select All",
                         click: async () => this.textEditorService.active?.monaco
-                            .trigger(null, "editor.action.selectAll", null)
+                            .trigger(null, "editor.action.selectAll", null),
+                        helpText: "Ctrl + A"
                     },
                     {
                         isDivider: true
@@ -232,10 +215,12 @@ export class MainMenuService implements IMainMenuService {
                         isDivider: true
                     },
                     {
+                        id: "view.reload",
                         text: "Reload",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.reloadWindow),
                     },
                     {
+                        id: "view.toggleDeveloperTools",
                         text: "Toggle Developer Tools",
                         click: async () => this.windowService.toggleDeveloperTools(),
                         helpText: "Ctrl + Shift + I",
@@ -244,22 +229,26 @@ export class MainMenuService implements IMainMenuService {
                         isDivider: true
                     },
                     {
+                        id: "view.zoomIn",
                         text: "Zoom In",
                         icon: "zoom-in-icon",
-                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomIn),
+                        // shortcut: this.shortcutManager.getShortcut("zoomIn"),
+                        click: async () => this.windowService.zoomIn()
                     },
                     {
+                        id: "view.zoomOut",
                         text: "Zoom Out",
                         icon: "zoom-out-icon",
-                        helpText: "Ctrl + -",
-                        click: async () => this.windowService.zoomOut()
+                        shortcut: this.shortcutManager.getShortcut(ShortcutIds.zoomOut),
                     },
                     {
+                        id: "view.resetZoom",
                         text: "Reset Zoom",
                         helpText: "Ctrl + 0",
                         click: async () => this.windowService.resetZoom()
                     },
                     {
+                        id: "view.toggleFullScreen",
                         text: "Toggle Full Screen",
                         click: async () => this.windowService.toggleFullScreen(),
                         helpText: "F11",

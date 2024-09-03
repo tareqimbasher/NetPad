@@ -40,8 +40,9 @@ import {EventBus} from "@application/events/event-bus";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
 
 // Register common dependencies shared across entire application (all windows)
+const windowParams = new WindowParams(new URLSearchParams(window.location.search));
 const builder = Aurelia.register(
-    Registration.instance(WindowParams, new WindowParams(new URLSearchParams(window.location.search))),
+    Registration.instance(WindowParams, windowParams),
     Registration.instance(String, window.location.origin),
     Registration.singleton(AppLifeCycle, AppLifeCycle),
     Registration.instance(Settings, new Settings()),
@@ -93,15 +94,14 @@ const builder = Aurelia.register(
 );
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
+await appActions.loadAppSettings(builder);
 
 // Configure the proper shell
-const shell = await appActions.configureAndGetShell(builder);
+const shell = await appActions.configureAndGetShell(builder, windowParams);
 logger.debug(`Configured for shell: ${shell.constructor.name}`);
 
 // Start the app
-await appActions.loadAppSettings(builder);
-
-const entryPoint = await appActions.configureAndGetAppEntryPoint(builder);
+const entryPoint = await appActions.configureAndGetAppEntryPoint(builder, windowParams);
 const app = builder.app(entryPoint as CustomElementType);
 
 window.addEventListener("unload", () => app.stop(true));
