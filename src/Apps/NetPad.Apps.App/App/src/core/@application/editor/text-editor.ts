@@ -103,6 +103,7 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
             "semanticHighlighting.enabled": true,
             formatOnType: true,
             formatOnPaste: true,
+            automaticLayout: true,
         });
 
         this.updateEditorSettings();
@@ -136,18 +137,10 @@ export class TextEditor extends ViewModelBase implements ITextEditor {
 
         this.focus();
 
-        const ob = new ResizeObserver(() => this.updateEditorLayout());
-        ob.observe(this.element);
-        this.addDisposable(() => ob.disconnect());
-
         this.addDisposable(() => {
             this.viewStates.clear();
             this.monaco.dispose();
         });
-    }
-
-    private updateEditorLayout() {
-        this.monaco.layout();
     }
 
     @watch<TextEditor>(vm => vm.settings.appearance.theme)

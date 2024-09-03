@@ -2,6 +2,7 @@ data-connections-list {
     padding-top: 0.25rem;
     display: flex;
     flex-direction: column;
+    cursor: default;
 
     .data-connection-structure-tree {
         > .list-group {

@@ -4,6 +4,7 @@ scripts-list {
     padding-top: 0.25rem;
     display: flex;
     flex-direction: column;
+    cursor: default;
 
     > script-folder {
         overflow: auto;

@@ -8,6 +8,7 @@ pane-host {
         display: flex;
         background: var(--pane-ribbon-background);
         user-select: none;
+        cursor: default;
 
         .pane-tag {
             font-size: 0.9rem;

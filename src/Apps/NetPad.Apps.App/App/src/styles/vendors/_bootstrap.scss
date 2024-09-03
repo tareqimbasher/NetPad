@@ -31,6 +31,10 @@ $tooltip-padding-x: $spacer * 1;
 // Should be the last line after overrides
 @import "~bootstrap/scss/bootstrap";
 
+.btn, button.btn {
+    cursor: default;
+}
+
 a.btn-link:hover {
     cursor: pointer;
 }

@@ -8,6 +8,7 @@ pane-toolbar {
     flex-grow: 0;
     width: 100%;
     padding: 0.25rem 0.35rem;
+    cursor: default;
 
     .pane-toolbar-right {
         display: flex;
