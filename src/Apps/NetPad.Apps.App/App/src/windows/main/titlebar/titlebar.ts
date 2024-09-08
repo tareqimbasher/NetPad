@@ -29,6 +29,7 @@ export class Titlebar extends ViewModelBase {
         super(logger);
 
         this.updateWindowState = Util.debounce(this, async () => {
+            return;
             this.windowState = await this.windowService.getState();
         }, 500, true);
     }
