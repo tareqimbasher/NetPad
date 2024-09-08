@@ -4,3 +4,7 @@ export interface IStatusbarItem {
     hoverText?: string,
     click?: () => Promise<void>,
 }
+
+export interface IStatusbarItemNew {
+    readonly position: "left" | "right";
+}

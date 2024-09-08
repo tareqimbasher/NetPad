@@ -1,0 +1,43 @@
+﻿@import "~styles/variables";
+
+vim-statusbar {
+    display: flex;
+    align-items: center;
+
+    .vim-mode-info {
+        margin-right: 0.5rem;
+        font-weight: 600;
+    }
+
+    .vim-sec-info {
+        display: flex;
+        align-items: center;
+        height: calc($statusbar-height - 6px);
+
+        > span {
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            height: calc($statusbar-height - 6px);
+            padding-left: 0.45rem;
+            padding-right: 0.45rem;
+            color: var(--text-color);
+            background-color: var(--form-control-background-color);
+            border-color: var(--border-color);
+
+            &:focus {
+                color: var(--text-color);
+                background-color: var(--form-control-background-color);
+                border: none;
+                outline: none;
+            }
+
+            &[disabled],
+            &[disabled="true"] {
+                background-color: var(--form-control-disabled-background-color);
+            }
+        }
+    }
+}

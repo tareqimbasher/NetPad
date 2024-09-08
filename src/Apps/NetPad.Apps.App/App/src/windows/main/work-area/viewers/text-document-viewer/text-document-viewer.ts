@@ -1,8 +1,8 @@
-﻿import {Viewer} from "../viewer";
+﻿import {ILogger} from "aurelia";
+import {Viewer} from "../viewer";
 import {ViewableObject} from "../viewable-object";
 import {IEventBus, IScriptService} from "@application";
 import {ITextEditor} from "@application/editor/text-editor";
-import {ILogger} from "aurelia";
 import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-document";
 import {ViewerHost} from "../viewer-host";
 import {IStatusbarItem} from "../../../statusbar/istatusbar-item";
@@ -10,6 +10,7 @@ import {Workbench} from "../../../workbench";
 import {DndType} from "@application/dnd/dnd-type";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
+import {VimStatusbar} from "@application/editor/vim-statusbar";
 
 export class TextDocumentViewer extends Viewer {
     public editor: ITextEditor;
@@ -32,6 +33,9 @@ export class TextDocumentViewer extends Viewer {
         const item = new TextEditorCursorPositionStatusbarItem(this.editor);
         this.workbench.statusbarService.addItem(item);
         this.addDisposable(() => this.workbench.statusbarService.removeItem(item));
+
+        this.workbench.statusbarService.addItemNew(VimStatusbar);
+        this.addDisposable(() => this.workbench.statusbarService.removeItemNew(VimStatusbar));
     }
 
     public override canOpen(viewableDocument: ViewableObject): boolean {

@@ -6,6 +6,10 @@
 This includes the time it took to start the host process.">
         (Took: ${activeEnvironment.runDurationMilliseconds}ms)
     </span>
+
+    <div repeat.for="item of workbench.statusbarService.itemsNew" class="statusbar-item">
+        <au-compose component.bind="item"></au-compose>
+    </div>
 </div>
 <div class="middle-column">
     <div class="active-app-status-message text-truncate-1-line" show.bind="appStatusMessage">
