@@ -5,7 +5,8 @@
 
     <au-slot name="right-end"></au-slot>
 
-    <i class="icon-button ${$parent.isWindow ? 'fa-solid fa-times fa-lg' : 'pane-collapse-icon'}"
+    <i class="icon-button pane-collapse-icon"
+       if.bind="!$parent.isWindow"
        click.trigger="$parent.hide()"
-       title="${$parent.isWindow ? 'Close' : 'Hide'} (Shift + Esc)"></i>
+       title="Hide (Shift + Esc)"></i>
 </div>
