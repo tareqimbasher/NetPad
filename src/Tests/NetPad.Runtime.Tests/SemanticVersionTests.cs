@@ -34,6 +34,22 @@ public class SemanticVersionTests
             Assert.Equal(expectedBuildLabel, result?.BuildLabel);
         }
 
+        [Theory]
+        [InlineData("1.2.3", false)]
+        [InlineData("1.2.3+0", false)]
+        [InlineData("1.2.3+321", false)]
+        [InlineData("1.2.3+XYZ", false)]
+        [InlineData("1.2.3-alpha", true)]
+        [InlineData("1.2.3-alpha+0", true)]
+        [InlineData("1.2.3-alpha+321", true)]
+        [InlineData("1.2.3-alpha+XYZ", true)]
+        public void PrereleaseSemanticVersionsAreIdentified(string version, bool expectedIsPrerelease)
+        {
+            var semanticVersion = SemanticVersion.Parse(version);
+
+            Assert.Equal(expectedIsPrerelease, semanticVersion.IsPrerelease);
+        }
+
         public static IEnumerable<object?[]> GetDotNetVersionTestData()
         {
             return new[]

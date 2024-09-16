@@ -109,7 +109,11 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         try
         {
-            await _runner.Value.StopScriptAsync();
+            if (_runner.IsValueCreated)
+            {
+                await _runner.Value.StopScriptAsync();
+            }
+
             await _outputWriter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
             await SetStatusAsync(ScriptStatus.Ready);
         }

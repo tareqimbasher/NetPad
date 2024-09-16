@@ -238,16 +238,18 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
         return _dotNetSdkVersions;
     }
 
-    public DotNetSdkVersion GetLatestSupportedDotNetSdkVersionOrThrow()
+    public DotNetSdkVersion GetLatestSupportedDotNetSdkVersionOrThrow(bool includePrerelease = false)
     {
-        var latestSupported = GetLatestSupportedDotNetSdkVersion();
+        var latestSupported = GetLatestSupportedDotNetSdkVersion(includePrerelease);
 
         return latestSupported ?? throw new Exception("Could not find any supported .NET SDKs");
     }
 
-    public DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion()
+    public DotNetSdkVersion? GetLatestSupportedDotNetSdkVersion(bool includePrerelease = false)
     {
-        return GetDotNetSdkVersions().Where(v => v.IsSupported()).MaxBy(x => x.Version);
+        return GetDotNetSdkVersions()
+            .Where(v => v.IsSupported() && (includePrerelease || !v.Version.IsPrerelease))
+            .MaxBy(x => x.Version);
     }
 
 

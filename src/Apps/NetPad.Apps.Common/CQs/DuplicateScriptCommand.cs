@@ -21,7 +21,7 @@ public class DuplicateScriptCommand(Script script) : Command<Script>
         public async Task<Script> Handle(DuplicateScriptCommand request, CancellationToken cancellationToken)
         {
             var name = scriptNameGenerator.Generate(request.Script.Name);
-            var script = await scriptRepository.CreateAsync(name);
+            var script = await scriptRepository.CreateAsync(name, request.Script.Config.TargetFrameworkVersion);
             await eventBus.PublishAsync(new ScriptCreatedEvent(script));
 
             script.SetDataConnection(request.Script.DataConnection);

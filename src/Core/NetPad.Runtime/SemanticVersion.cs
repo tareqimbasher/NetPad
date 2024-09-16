@@ -182,6 +182,11 @@ public sealed class SemanticVersion : IComparable, IComparable<SemanticVersion>,
     public string? BuildLabel { get; }
 
     /// <summary>
+    /// Whether the version is a prerelease.
+    /// </summary>
+    public bool IsPrerelease => PreReleaseLabel != null;
+
+    /// <summary>
     /// String representation.
     /// </summary>
     public string String => ToString();

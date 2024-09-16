@@ -73,13 +73,12 @@ public class FileSystemScriptRepository : IScriptRepository
         return Task.FromResult<IEnumerable<ScriptSummary>>(summaries);
     }
 
-    public Task<Script> CreateAsync(string name)
+    public Task<Script> CreateAsync(string name, DotNetFrameworkVersion targetFrameworkVersion)
     {
         var script = new Script(
             Guid.NewGuid(),
             name,
-            new ScriptConfig(ScriptKind.Program,
-                _dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion() ?? GlobalConsts.AppDotNetFrameworkVersion));
+            new ScriptConfig(ScriptKind.Program, targetFrameworkVersion));
 
         return Task.FromResult(script);
     }
