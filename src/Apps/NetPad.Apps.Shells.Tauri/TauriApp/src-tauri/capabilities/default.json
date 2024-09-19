@@ -1,21 +1,32 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "enables the default permissions",
-  "windows": [
-    "*"
-  ],
-  "permissions": [
-    "core:path:default",
-    "core:event:default",
-    "core:window:default",
-    "core:webview:default",
-    "core:app:default",
-    "core:resources:default",
-    "core:image:default",
-    "core:menu:default",
-    "core:tray:default",
-    "dialog:default",
-    "log:default"
-  ]
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "default capabilities for all windows",
+    "windows": [
+        "*"
+    ],
+    "remote": {
+        "urls": [
+            "http://localhost:57930"
+        ]
+    },
+    "permissions": [
+        "core:path:default",
+        "core:event:default",
+        "core:window:default",
+        "core:webview:default",
+        "core:app:default",
+        "core:menu:default",
+        "dialog:default",
+        "log:default",
+        "core:window:allow-close",
+        "core:window:allow-maximize",
+        "core:window:allow-unmaximize",
+        "core:window:allow-minimize",
+        "core:window:allow-unminimize",
+        "core:window:allow-set-always-on-top",
+        "core:window:allow-start-dragging",
+        "core:window:allow-set-decorations",
+        "core:webview:allow-create-webview-window"
+    ]
 }

@@ -17,6 +17,20 @@ public class TauriShell : IShell
     {
         services.AddTransient<IUiWindowService, TauriWindowService>();
         services.AddTransient<IUiDialogService, TauriDialogService>();
+
+        // Tauri shell has a loader (index.html) that checks when .NET backend has started
+        // This loader page needs to be able to make an HTTP request to the backend to confirm it has started.
+        services.AddCors(options => options.AddPolicy(
+            "AllowTauriShell",
+            policy => policy.WithOrigins(
+                "tauri://localhost",        // Linux/macOS
+                "http://tauri.localhost"    // Windows
+            )));
+    }
+
+    public void ConfigureRequestPipeline(IApplicationBuilder app, IHostEnvironment env)
+    {
+        app.UseCors("AllowTauriShell");
     }
 
     public void Initialize(IApplicationBuilder app, IHostEnvironment env)

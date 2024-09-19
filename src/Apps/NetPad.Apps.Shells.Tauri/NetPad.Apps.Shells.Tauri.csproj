@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
+        <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -15,17 +19,17 @@
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <Compile Remove="TauriApp\src-tauri\target\**" />
-        <Content Remove="TauriApp\src-tauri\target\**" />
-        <EmbeddedResource Remove="TauriApp\src-tauri\target\**" />
-        <None Remove="TauriApp\src-tauri\target\**" />
-        <Compile Remove="TauriApp\src-tauri\gen\**" />
-        <Content Remove="TauriApp\src-tauri\gen\**" />
-        <EmbeddedResource Remove="TauriApp\src-tauri\gen\**" />
-        <None Remove="TauriApp\src-tauri\gen\**" />
-        <Compile Remove="TauriApp\src-tauri\capabilities\**" />
-        <Content Remove="TauriApp\src-tauri\capabilities\**" />
-        <EmbeddedResource Remove="TauriApp\src-tauri\capabilities\**" />
+        <Compile Remove="TauriApp\src-tauri\target\**"/>
+        <Content Remove="TauriApp\src-tauri\target\**"/>
+        <EmbeddedResource Remove="TauriApp\src-tauri\target\**"/>
+        <None Remove="TauriApp\src-tauri\target\**"/>
+        <Compile Remove="TauriApp\src-tauri\gen\**"/>
+        <Content Remove="TauriApp\src-tauri\gen\**"/>
+        <EmbeddedResource Remove="TauriApp\src-tauri\gen\**"/>
+        <None Remove="TauriApp\src-tauri\gen\**"/>
+        <Compile Remove="TauriApp\src-tauri\capabilities\**"/>
+        <Content Remove="TauriApp\src-tauri\capabilities\**"/>
+        <EmbeddedResource Remove="TauriApp\src-tauri\capabilities\**"/>
     </ItemGroup>
 
 </Project>

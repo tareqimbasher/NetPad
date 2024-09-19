@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<!--
+The purpose of this page is to wait for the .NET backend to start before forwarding user to the main NetPad screen.
+Sometimes Tauri will start and render the first physical window before the .NET backend has had time to start
+listening to requests, which causes the webview within Tauri to complain that the server is not responding and not load.
+
+Another benefit to having this loader page is that Tauri will show a white screen by default until the initial
+request to load the webview page is finished. This results in a noticeable white "flash." Having this page should
+remove that flash and improve user experience.
+ -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NetPad</title>
+    <style>
+        html, body {
+            height: 100%;
+            min-height: 100%;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #222222;
+            color: #dcdcdc;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: -100px;
+        }
+
+        #error {
+            display: none;
+            text-align: center;
+            line-height: 2rem;
+
+            .error-header {
+                color: salmon;
+            }
+        }
+
+        #loader {
+            display: block;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 1s linear infinite
+        }
+
+        #loader::before, #loader::after {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 5px solid #FFF;
+            animation: prixClipFix 2s linear infinite;
+        }
+
+        #loader::after {
+            inset: 8px;
+            transform: rotate3d(90, 90, 0, 180deg);
+            border-color: #9440de;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg)
+            }
+            100% {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes prixClipFix {
+            0% {
+                clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0)
+            }
+            50% {
+                clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0)
+            }
+            75%, 100% {
+                clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 100% 100%, 100% 100%)
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="content">
+    <span id="loader"></span>
+    <div id="error">
+        <h1 class="error-header">Oops..</h1>
+        <p id="error-details"></p>
+    </div>
+</div>
+
+<script>
+    const testUrl = "http://localhost:57930/app/identifier";
+    const forwardUrl = "http://localhost:57930?shell=tauri";
+    const maxWaitMs = 30000;
+    let waitMs = 0;
+    let tries = 0;
+    let totalWaitMs = 0;
+
+    function checkBackendStarted() {
+        tries++;
+        totalWaitMs += waitMs;
+
+        fetch(testUrl)
+            .then(() => window.location = forwardUrl)
+            .catch(() => {
+                if (totalWaitMs >= maxWaitMs) {
+                    console.log(`Backend did not start after ${tries} tries. Total wait time: ${totalWaitMs}ms. Will stop trying.`);
+                    document.getElementById("loader").remove();
+                    document.getElementById("error").style.display = "block";
+                    document.getElementById("error-details").innerHTML =
+                        `NetPad backend did not start after waiting for ${totalWaitMs}ms.<br/>Will stop trying.`;
+                    return;
+                }
+
+                waitMs += tries <= 10 ? 10 : 50;
+                console.log(`Backend is not ready yet. Will check again in ${waitMs}ms.`);
+                setTimeout(() => checkBackendStarted(), waitMs);
+            });
+    }
+
+    checkBackendStarted();
+</script>
+</body>
+</html>
