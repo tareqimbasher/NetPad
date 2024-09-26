@@ -1,8 +1,8 @@
 import {ILogger} from "aurelia";
-import {IDisposable} from "@common";
-import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
-import {WindowId} from "@application/windows/window-id";
+import {DisposableCollection} from "@common";
+import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
 import {ShellType} from "@application/windows/shell-type";
+import {WindowId} from "@application/windows/window-id";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
 import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow"
 
@@ -11,7 +11,7 @@ import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow
  * This enables the ability to open new windows when running the Tauri app.
  */
 export class TauriWindowBackgroundService implements IBackgroundService {
-    private openWindowCommandToken: IDisposable;
+    private disposables = new DisposableCollection();
 
     constructor(@IEventBus private readonly eventBus: IEventBus,
                 @ILogger private readonly logger: ILogger) {
@@ -19,14 +19,17 @@ export class TauriWindowBackgroundService implements IBackgroundService {
     }
 
     public start(): Promise<void> {
-        this.openWindowCommandToken = this.eventBus.subscribeToServer(OpenWindowCommand, msg => {
-            const _ = this.openWindow(msg);
-        });
+        this.disposables.add(
+            this.eventBus.subscribeToServer(OpenWindowCommand, msg => this.openWindow(msg))
+        );
+
+        this.listenForTitleChanges();
+
         return Promise.resolve(undefined);
     }
 
     public stop(): void {
-        this.openWindowCommandToken.dispose();
+        this.disposables.dispose();
     }
 
     private async openWindow(command: OpenWindowCommand) {
@@ -60,8 +63,9 @@ export class TauriWindowBackgroundService implements IBackgroundService {
 
         const parent = await TauriWindow.getByLabel(WindowId.Main) ?? TauriWindow.getCurrent();
 
-        const appWindow = new TauriWebviewWindow(command.windowName, {
+        const _ = new TauriWebviewWindow(command.windowName, {
             url: url,
+            title: "",
             parent: parent,
             height: height,
             width: width,
@@ -69,7 +73,37 @@ export class TauriWindowBackgroundService implements IBackgroundService {
             y: y,
             center: true,
         });
+    }
 
-        const _ = appWindow.once('tauri://error', (e) => this.logger.error("appWindow error", e));
+    private listenForTitleChanges() {
+        const setWindowTitle = async (newTitle: string | null) => {
+            const win = TauriWindow.getCurrent();
+            const currentTitle = await win.title()
+
+            if (newTitle === currentTitle) {
+                return;
+            }
+
+            await win.setTitle(newTitle || "");
+        }
+
+        this.eventBus.subscribeOnce(AppActivatedEvent, async () => {
+            const titleElement = document.querySelector("title");
+
+            if (!titleElement) {
+                return;
+            }
+
+            const observer = new MutationObserver(async (mutations) => {
+                const newTitle = (mutations[0].target as HTMLTitleElement).innerText;
+                await setWindowTitle(newTitle);
+            });
+
+            observer.observe(titleElement, {subtree: true, characterData: true, childList: true});
+
+            this.disposables.add(() => observer.disconnect());
+
+            setWindowTitle(titleElement.innerText);
+        });
     }
 }

@@ -7,6 +7,7 @@ import {Menu, MenuItemOptions, PredefinedMenuItemOptions, Submenu} from "@tauri-
 import {Window} from "@tauri-apps/api/window"
 import {MenuItem} from "@tauri-apps/api/menu/menuItem";
 import {PredefinedMenuItem} from "@tauri-apps/api/menu/predefinedMenuItem";
+import {invoke} from "@tauri-apps/api/core";
 
 /**
  * Manages the Tauri main menu.
@@ -33,7 +34,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                 .map(x => [x.id!, x])
         );
 
-        const isMac = System.getPlatform() === "darwin";
+        const isMac = await invoke("get_os_type") === "macos";
 
         const menu = await Menu.new({
             items: [

@@ -2,13 +2,21 @@ use dotnet_server_manager::{
     restart_server, start_server, stop_server, DotNetServerManager, DotNetServerManagerState,
 };
 use std::sync::Mutex;
-use tauri::{Manager, State, WindowEvent};
+use tauri::{
+    AppHandle, Error, Listener, Manager, State, Url, WebviewUrl, WebviewWindow, WindowEvent,
+};
+use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_log::{Target, TargetKind};
 
 pub mod dotnet_server_manager;
 
 #[tauri::command]
-fn toggle_devtools(webview_window: tauri::WebviewWindow) {
+fn get_os_type() -> String {
+    std::env::consts::OS.to_string()
+}
+
+#[tauri::command]
+async fn toggle_devtools(webview_window: WebviewWindow) {
     if webview_window.is_devtools_open() {
         webview_window.close_devtools();
     } else {
@@ -60,6 +68,7 @@ pub fn run() {
             _ => {}
         })
         .invoke_handler(tauri::generate_handler![
+            get_os_type,
             toggle_devtools,
             start_server,
             stop_server,
