@@ -7,14 +7,13 @@ export class Window extends WindowBase {
     public script: Script;
 
     constructor(
-        private readonly windowParams: WindowParams,
         private readonly configStore: ConfigStore,
         @ISession private readonly session: ISession,
         @IWindowService private readonly windowService: IWindowService,
         @IScriptService private readonly scriptService: IScriptService) {
         super();
 
-        let tabIndex = this.configStore.tabs.findIndex(t => t.route === this.windowParams.get("tab"));
+        let tabIndex = this.configStore.tabs.findIndex(t => t.route === WindowParams.get("tab"));
         if (tabIndex < 0)
             tabIndex = 0;
 
@@ -22,7 +21,7 @@ export class Window extends WindowBase {
     }
 
     public async binding() {
-        const scriptId = this.windowParams.get("script-id");
+        const scriptId = WindowParams.get("script-id");
         if (!scriptId) throw new Error("No script ID provided");
 
         const environment = await this.session.getEnvironment(scriptId);

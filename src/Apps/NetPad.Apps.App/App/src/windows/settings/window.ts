@@ -17,7 +17,6 @@ export class Window extends WindowBase {
     ];
 
     constructor(
-        private readonly windowParams: WindowParams,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IWindowService private readonly windowService: IWindowService,
         @IContainer private readonly container: IContainer) {
@@ -25,7 +24,7 @@ export class Window extends WindowBase {
 
         document.title = "Settings";
 
-        let tabIndex = this.tabs.findIndex(t => t.route === this.windowParams.get("tab"));
+        let tabIndex = this.tabs.findIndex(t => t.route === WindowParams.get("tab"));
         if (tabIndex < 0)
             tabIndex = 0;
 

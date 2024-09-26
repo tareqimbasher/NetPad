@@ -12,7 +12,7 @@ import {WindowId} from "@application/windows/window-id";
  * Configurations for when the app is running in Electron.
  */
 export class ElectronShell implements IShell {
-    public configure(appBuilder: IAurelia, windowParams: WindowParams) {
+    public configure(appBuilder: IAurelia) {
         appBuilder.register(
             Registration.singleton(IBackgroundService, ElectronEventSync),
             Registration.transient(IWindowService, ElectronWindowService),
@@ -21,7 +21,7 @@ export class ElectronShell implements IShell {
 
         const settings = appBuilder.container.get(Settings);
 
-        if (settings.appearance.titlebar.type === "Native" && windowParams.window === WindowId.Main) {
+        if (settings.appearance.titlebar.type === "Native" && WindowParams.window === WindowId.Main) {
             appBuilder.register(Registration.singleton(IBackgroundService, NativeMainMenuEventHandler));
         }
     }

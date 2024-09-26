@@ -17,11 +17,11 @@ import {WindowParams} from "@application/windows/window-params";
 export class ShellsCustomAttribute {
     @bindable requirements?: string;
 
-    constructor(private readonly element: Element, private readonly windowParams: WindowParams) {
+    constructor(private readonly element: Element) {
     }
 
     public bound() {
-        if (!ShellsCustomAttribute.areRequirementsMet(this.requirements, this.windowParams.shell)) {
+        if (!ShellsCustomAttribute.areRequirementsMet(this.requirements, WindowParams.shell)) {
             this.element.remove();
         }
     }

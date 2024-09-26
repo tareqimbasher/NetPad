@@ -6,12 +6,12 @@ import {TauriWindowBackgroundService} from "@application/shells/tauri/services/t
 import {TauriDialogBackgroundService} from "@application/shells/tauri/services/tauri-dialog-background-service";
 import {TauriWindowService} from "@application/shells/tauri/services/tauri-window-service";
 import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
-import {WindowParams} from "@application/windows/window-params";
-import {WindowId} from "@application/windows/window-id";
 import {Window} from "@tauri-apps/api/window"
+import {WindowId} from "@application/windows/window-id";
+import {WindowParams} from "@application/windows/window-params";
 
 export class TauriShell implements IShell {
-    public configure(appBuilder: IAurelia, windowParams: WindowParams): void {
+    public configure(appBuilder: IAurelia): void {
         appBuilder.register(
             Registration.transient(IBackgroundService, TauriDialogBackgroundService),
             Registration.transient(IBackgroundService, TauriWindowBackgroundService),
@@ -19,8 +19,7 @@ export class TauriShell implements IShell {
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
         );
 
-
-        if (windowParams.window === WindowId.Main) {
+        if (WindowParams.window === WindowId.Main) {
             const settings = appBuilder.container.get(Settings);
 
             if (settings.appearance.titlebar.type === "Native") {

@@ -2,12 +2,11 @@ import {ILogger} from "aurelia";
 import {DisposableCollection} from "@common";
 import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
 import {ShellType} from "@application/windows/shell-type";
-import {WindowId} from "@application/windows/window-id";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
-import {WebviewWindow as TauriWebviewWindow} from "@tauri-apps/api/webviewWindow"
+import {invoke} from "@tauri-apps/api/core";
 
 /**
- * This is utilized for the Tauri app, not the Electron app
+ * This is utilized for the Tauri app.
  * This enables the ability to open new windows when running the Tauri app.
  */
 export class TauriWindowBackgroundService implements IBackgroundService {
@@ -61,17 +60,16 @@ export class TauriWindowBackgroundService implements IBackgroundService {
             y = screen.height / 2 - (height / 2);
         }
 
-        const parent = await TauriWindow.getByLabel(WindowId.Main) ?? TauriWindow.getCurrent();
-
-        const _ = new TauriWebviewWindow(command.windowName, {
-            url: url,
+        invoke("create_window_from_js", {
+            label: command.windowName,
             title: "",
-            parent: parent,
-            height: height,
+            url: url,
             width: width,
+            height: height,
             x: x,
             y: y,
-            center: true,
+        }).catch(err => {
+            this.logger.error(`Error opening '${command.windowName}' window`, err);
         });
     }
 
@@ -87,23 +85,23 @@ export class TauriWindowBackgroundService implements IBackgroundService {
             await win.setTitle(newTitle || "");
         }
 
-        this.eventBus.subscribeOnce(AppActivatedEvent, async () => {
+        this.eventBus.subscribeOnce(AppActivatedEvent, () => {
             const titleElement = document.querySelector("title");
 
             if (!titleElement) {
                 return;
             }
 
-            const observer = new MutationObserver(async (mutations) => {
+            const observer = new MutationObserver((mutations) => {
                 const newTitle = (mutations[0].target as HTMLTitleElement).innerText;
-                await setWindowTitle(newTitle);
+                const _ = setWindowTitle(newTitle);
             });
 
             observer.observe(titleElement, {subtree: true, characterData: true, childList: true});
 
             this.disposables.add(() => observer.disconnect());
 
-            setWindowTitle(titleElement.innerText);
+            const _ = setWindowTitle(titleElement.innerText);
         });
     }
 }

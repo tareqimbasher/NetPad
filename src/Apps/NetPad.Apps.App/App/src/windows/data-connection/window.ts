@@ -29,7 +29,6 @@ export class Window extends WindowBase {
     private nameField: HTMLInputElement;
 
     constructor(
-        private readonly windowParams: WindowParams,
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @IWindowService private readonly windowService: IWindowService
     ) {
@@ -58,7 +57,7 @@ export class Window extends WindowBase {
         ];
 
         // Until we implement a way to add a SQLite file in the browser, this option will not be available to browser shell
-        if (windowParams.shell !== ShellType.Browser) {
+        if (WindowParams.shell !== ShellType.Browser) {
             this.connectionTypes.push({
                 label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
                 type: "SQLite"
@@ -67,8 +66,8 @@ export class Window extends WindowBase {
     }
 
     private getStartupParams() {
-        const dataConnectionId = this.windowParams.get("data-connection-id");
-        const copy = this.windowParams.get("copy")?.toLowerCase() === "true";
+        const dataConnectionId = WindowParams.get("data-connection-id");
+        const copy = WindowParams.get("copy")?.toLowerCase() === "true";
 
         return {
             createNew: !dataConnectionId || copy,

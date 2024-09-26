@@ -23,6 +23,7 @@
         "dialog:allow-message",
         "dialog:allow-open",
         "dialog:allow-save",
+        "shell:allow-open",
         "core:window:allow-close",
         "core:window:allow-maximize",
         "core:window:allow-unmaximize",
