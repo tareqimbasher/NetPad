@@ -26,7 +26,7 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
     {
         var command = new OpenWindowCommand(WindowIds.ScriptConfig);
-        command.Options.Height = 0.67;
+        command.Options.Height = 0.75;
         command.Options.Width = 0.8;
 
         command.Metadata.Add("script-id", script.Id);
@@ -43,7 +43,7 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
         }
 
         var command = new OpenWindowCommand(WindowIds.DataConnection);
-        command.Options.Height = 0.4;
+        command.Options.Height = 0.5;
         command.Options.Width = 0.5;
 
         if (dataConnectionId != null)

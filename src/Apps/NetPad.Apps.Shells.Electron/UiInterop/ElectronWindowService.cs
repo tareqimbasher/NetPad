@@ -118,7 +118,7 @@ public class ElectronWindowService(
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.67, 0.8);
+        await ShowModalWindowAsync(window, 0.75, 0.8);
     }
 
     public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
@@ -154,7 +154,7 @@ public class ElectronWindowService(
             Show = false
         }, queryParams.ToArray());
 
-        await ShowModalWindowAsync(window, 0.4, 0.5);
+        await ShowModalWindowAsync(window, 0.5, 0.5);
     }
 
     public async Task OpenOutputWindowAsync()
