@@ -1,0 +1,22 @@
+.ask-dialog {
+    width: 400px;
+    padding: 1.5rem;
+
+    .title {
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .message {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .buttons {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.375rem;
+    }
+}

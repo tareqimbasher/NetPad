@@ -5,9 +5,10 @@ import {
     IBackgroundService,
     IEventBus,
     IIpcGateway,
-    RequestNewScriptNameCommand,
+    RequestScriptSavePathCommand,
     YesNoCancel
 } from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 /**
  * This is utilized for the Browser app, not the Electron app.
@@ -15,7 +16,8 @@ import {
  */
 export class BrowserDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,
-                @IIpcGateway readonly ipcGateway: IIpcGateway
+                @IIpcGateway readonly ipcGateway: IIpcGateway,
+                private readonly dialogUtil: DialogUtil
     ) {
         super();
     }
@@ -28,8 +30,8 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
         );
 
         this.addDisposable(
-            this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => {
-                await this.requestNewScriptName(msg);
+            this.eventBus.subscribeToServer(RequestScriptSavePathCommand, async msg => {
+                await this.requestScriptSavePath(msg);
             })
         );
 
@@ -41,13 +43,31 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
     }
 
     private async confirmSave(command: ConfirmSaveCommand) {
-        const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
+        const response = await this.dialogUtil.ask({
+            title: "Unsaved Changes",
+            message: command.message,
+            buttons: [
+                {
+                    text: "Yes",
+                    isPrimary: true
+                },
+                {
+                    text: "No",
+                },
+                {
+                    text: "Cancel",
+                }
+            ]
+        });
+
+        const answer = response.value;
+        const ync: YesNoCancel = answer === "Yes" ? "Yes" : answer === "No" ? "No" : "Cancel";
 
         await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, ync);
     }
 
-    private async requestNewScriptName(command: RequestNewScriptNameCommand) {
-        const newName = prompt("Name:", command.currentScriptName);
+    private async requestScriptSavePath(command: RequestScriptSavePathCommand) {
+        const newName = prompt("Script name:", command.scriptName);
 
         await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, newName || null);
     }

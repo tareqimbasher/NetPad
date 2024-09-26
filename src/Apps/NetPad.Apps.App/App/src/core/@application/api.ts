@@ -2681,6 +2681,8 @@ export class SemanticVersion implements ISemanticVersion {
     preReleaseLabel?: string | undefined;
     /** BuildLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     buildLabel?: string | undefined;
+    /** Whether the version is a prerelease. */
+    isPrerelease!: boolean;
     /** String representation. */
     string!: string;
 
@@ -2700,6 +2702,7 @@ export class SemanticVersion implements ISemanticVersion {
             this.patch = _data["patch"];
             this.preReleaseLabel = _data["preReleaseLabel"];
             this.buildLabel = _data["buildLabel"];
+            this.isPrerelease = _data["isPrerelease"];
             this.string = _data["string"];
         }
     }
@@ -2718,6 +2721,7 @@ export class SemanticVersion implements ISemanticVersion {
         data["patch"] = this.patch;
         data["preReleaseLabel"] = this.preReleaseLabel;
         data["buildLabel"] = this.buildLabel;
+        data["isPrerelease"] = this.isPrerelease;
         data["string"] = this.string;
         return data;
     }
@@ -2742,6 +2746,8 @@ export interface ISemanticVersion {
     preReleaseLabel?: string | undefined;
     /** BuildLabel position in the SymVer string 'major.minor.patch-PreReleaseLabel+BuildLabel'. */
     buildLabel?: string | undefined;
+    /** Whether the version is a prerelease. */
+    isPrerelease: boolean;
     /** String representation. */
     string: string;
 }
@@ -5369,7 +5375,7 @@ export class Types implements ITypes {
     dataConnectionSchemaValidationCompletedEvent?: DataConnectionSchemaValidationCompletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
-    requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
@@ -5419,7 +5425,7 @@ export class Types implements ITypes {
             this.dataConnectionSchemaValidationCompletedEvent = _data["dataConnectionSchemaValidationCompletedEvent"] ? DataConnectionSchemaValidationCompletedEvent.fromJS(_data["dataConnectionSchemaValidationCompletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
-            this.requestNewScriptNameCommand = _data["requestNewScriptNameCommand"] ? RequestNewScriptNameCommand.fromJS(_data["requestNewScriptNameCommand"]) : <any>undefined;
+            this.requestScriptSavePath = _data["requestScriptSavePath"] ? RequestScriptSavePathCommand.fromJS(_data["requestScriptSavePath"]) : <any>undefined;
             this.alertUserCommand = _data["alertUserCommand"] ? AlertUserCommand.fromJS(_data["alertUserCommand"]) : <any>undefined;
             this.confirmWithUserCommand = _data["confirmWithUserCommand"] ? ConfirmWithUserCommand.fromJS(_data["confirmWithUserCommand"]) : <any>undefined;
             this.promptUserCommand = _data["promptUserCommand"] ? PromptUserCommand.fromJS(_data["promptUserCommand"]) : <any>undefined;
@@ -5469,7 +5475,7 @@ export class Types implements ITypes {
         data["dataConnectionSchemaValidationCompletedEvent"] = this.dataConnectionSchemaValidationCompletedEvent ? this.dataConnectionSchemaValidationCompletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
-        data["requestNewScriptNameCommand"] = this.requestNewScriptNameCommand ? this.requestNewScriptNameCommand.toJSON() : <any>undefined;
+        data["requestScriptSavePath"] = this.requestScriptSavePath ? this.requestScriptSavePath.toJSON() : <any>undefined;
         data["alertUserCommand"] = this.alertUserCommand ? this.alertUserCommand.toJSON() : <any>undefined;
         data["confirmWithUserCommand"] = this.confirmWithUserCommand ? this.confirmWithUserCommand.toJSON() : <any>undefined;
         data["promptUserCommand"] = this.promptUserCommand ? this.promptUserCommand.toJSON() : <any>undefined;
@@ -5519,7 +5525,7 @@ export interface ITypes {
     dataConnectionSchemaValidationCompletedEvent?: DataConnectionSchemaValidationCompletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
-    requestNewScriptNameCommand?: RequestNewScriptNameCommand | undefined;
+    requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
     promptUserCommand?: PromptUserCommand | undefined;
@@ -7091,44 +7097,48 @@ export abstract class CommandOfString extends CommandBase implements ICommandOfS
 export interface ICommandOfString extends ICommandBase {
 }
 
-export class RequestNewScriptNameCommand extends CommandOfString implements IRequestNewScriptNameCommand {
-    currentScriptName!: string;
+export class RequestScriptSavePathCommand extends CommandOfString implements IRequestScriptSavePathCommand {
+    scriptName!: string;
+    defaultPath?: string | undefined;
 
-    constructor(data?: IRequestNewScriptNameCommand) {
+    constructor(data?: IRequestScriptSavePathCommand) {
         super(data);
     }
 
     init(_data?: any) {
         super.init(_data);
         if (_data) {
-            this.currentScriptName = _data["currentScriptName"];
+            this.scriptName = _data["scriptName"];
+            this.defaultPath = _data["defaultPath"];
         }
     }
 
-    static fromJS(data: any): RequestNewScriptNameCommand {
+    static fromJS(data: any): RequestScriptSavePathCommand {
         data = typeof data === 'object' ? data : {};
-        let result = new RequestNewScriptNameCommand();
+        let result = new RequestScriptSavePathCommand();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["currentScriptName"] = this.currentScriptName;
+        data["scriptName"] = this.scriptName;
+        data["defaultPath"] = this.defaultPath;
         super.toJSON(data);
         return data;
     }
 
-    clone(): RequestNewScriptNameCommand {
+    clone(): RequestScriptSavePathCommand {
         const json = this.toJSON();
-        let result = new RequestNewScriptNameCommand();
+        let result = new RequestScriptSavePathCommand();
         result.init(json);
         return result;
     }
 }
 
-export interface IRequestNewScriptNameCommand extends ICommandOfString {
-    currentScriptName: string;
+export interface IRequestScriptSavePathCommand extends ICommandOfString {
+    scriptName: string;
+    defaultPath?: string | undefined;
 }
 
 export class AlertUserCommand extends Command implements IAlertUserCommand {

@@ -55,7 +55,7 @@ public class TypesController : ControllerBase
         public DataConnectionSchemaValidationCompletedEvent? DataConnectionSchemaValidationCompletedEvent { get; set; }
         public OpenWindowCommand? OpenWindowCommand { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
-        public RequestNewScriptNameCommand? RequestNewScriptNameCommand { get; set; }
+        public RequestScriptSavePathCommand? RequestScriptSavePath { get; set; }
         public AlertUserCommand? AlertUserCommand { get; set; }
         public ConfirmWithUserCommand? ConfirmWithUserCommand { get; set; }
         public PromptUserCommand? PromptUserCommand { get; set; }

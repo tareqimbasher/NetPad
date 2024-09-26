@@ -13,7 +13,7 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
     public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
     {
         var result = await ElectronNET.API.Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
-            new MessageBoxOptions($"You have unsaved changes. Do you want to save '{script.Name}'?")
+            new MessageBoxOptions($"'{script.Name}' has unsaved changes. Do you want to save?")
             {
                 Title = "Save?",
                 Buttons = ["Yes", "No", "Cancel"],
@@ -35,12 +35,16 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
         });
 
         if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
+        {
             return null;
+        }
 
         path = path.TrimEnd(Path.PathSeparator);
 
         if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+        {
             path += Script.STANDARD_EXTENSION;
+        }
 
         return path;
     }

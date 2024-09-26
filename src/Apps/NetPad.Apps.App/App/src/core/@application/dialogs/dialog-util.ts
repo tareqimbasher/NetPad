@@ -1,16 +1,27 @@
 import {Constructable} from "aurelia";
 import {DialogCloseResult, IDialogService} from "@aurelia/dialog";
 import {Dialog} from "./dialog";
-import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
 import {OpenDialogs} from "./open-dialogs";
+import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
+import {AskDialog, IAskDialogModel} from "../app/ask-dialog/ask-dialog";
 
 export class DialogUtil {
 
     constructor(@IDialogService private readonly dialogService: IDialogService) {
     }
 
+    public async ask(options: IAskDialogModel): Promise<DialogCloseResult> {
+        const openResult = await this.open(AskDialog, options);
+
+        if (!openResult) {
+            throw new Error("Error opening ask with message: " + options.message)
+        }
+
+        return openResult;
+    }
+
     public async prompt(options: IPromptDialogModel): Promise<DialogCloseResult> {
-        const openResult = await this.open(PromptDialog, options, true);
+        const openResult = await this.open(PromptDialog, options);
 
         if (!openResult) {
             throw new Error("Error opening prompt with message: " + options.message)
@@ -28,19 +39,9 @@ export class DialogUtil {
      */
     public async open<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(
         dialogComponent: TDialog,
-        input?: TDialog extends typeof Dialog<infer U> ? U : unknown,
-        allowMultiple?: boolean
+        input?: TDialog extends typeof Dialog<infer U> ? U : unknown
     ): Promise<DialogCloseResult | undefined> {
         const key = dialogComponent.name;
-
-        if (allowMultiple) {
-            const openResult = await this.dialogService.open({
-                component: () => dialogComponent,
-                model: input
-            });
-
-            return openResult.dialog.closed;
-        }
 
         let openResult = OpenDialogs.get(key);
 

@@ -6,7 +6,7 @@ import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
  * This enables the ability to open new windows when running the browser app.
  */
 export class BrowserWindowBackgroundService implements IBackgroundService {
-    private openWindowCommandToken: IDisposable;
+    private openWindowCommandToken?: IDisposable;
 
     constructor(@IEventBus readonly eventBus: IEventBus) {
     }
@@ -19,7 +19,9 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
     }
 
     public stop(): void {
-        this.openWindowCommandToken.dispose();
+        if (this.openWindowCommandToken) {
+            this.openWindowCommandToken.dispose();
+        }
     }
 
     private openWindow(command: OpenWindowCommand) {

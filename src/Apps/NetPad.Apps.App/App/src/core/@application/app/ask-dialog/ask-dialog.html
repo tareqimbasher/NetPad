@@ -1,0 +1,14 @@
+<template class="ask-dialog">
+    <div class="title" if.bind="input.title">${input.title}</div>
+    <div class="message">${input.message}</div>
+
+    <div class="buttons">
+        <button repeat.for="btn of input.buttons"
+                class="btn ${btn.isPrimary ? 'btn-primary' : 'btn-secondary'}"
+                click.trigger="ok(btn.value === undefined ? btn.text : btn.value)"
+                tabindex="0"
+                data-is-primary="${btn.isPrimary}">
+            ${btn.text}
+        </button>
+    </div>
+</template>

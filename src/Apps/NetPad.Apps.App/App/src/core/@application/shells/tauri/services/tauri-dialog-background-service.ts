@@ -5,10 +5,11 @@ import {
     IBackgroundService,
     IEventBus,
     IIpcGateway,
-    RequestNewScriptNameCommand,
+    RequestScriptSavePathCommand,
     YesNoCancel
 } from "@application";
-import {ask, } from '@tauri-apps/plugin-dialog'
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {save} from '@tauri-apps/plugin-dialog'
 
 /**
  * This is utilized for the Browser app, not the Electron app.
@@ -16,7 +17,8 @@ import {ask, } from '@tauri-apps/plugin-dialog'
  */
 export class TauriDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,
-                @IIpcGateway readonly ipcGateway: IIpcGateway
+                @IIpcGateway readonly ipcGateway: IIpcGateway,
+                private readonly dialogUtil: DialogUtil
     ) {
         super();
     }
@@ -29,8 +31,8 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
         );
 
         this.addDisposable(
-            this.eventBus.subscribeToServer(RequestNewScriptNameCommand, async msg => {
-                await this.requestNewScriptName(msg);
+            this.eventBus.subscribeToServer(RequestScriptSavePathCommand, async msg => {
+                await this.requestScriptSavePath(msg);
             })
         );
 
@@ -42,15 +44,42 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
     }
 
     private async confirmSave(command: ConfirmSaveCommand) {
-        const yes = await ask(command.message, {kind: "info", title: "Closing Script"});
-        const ync: YesNoCancel = yes ? "Yes" : "No";
+        const response = await this.dialogUtil.ask({
+            title: "Unsaved Changes",
+            message: command.message,
+            buttons: [
+                {
+                    text: "Yes",
+                    isPrimary: true
+                },
+                {
+                    text: "No",
+                },
+                {
+                    text: "Cancel",
+                }
+            ]
+        });
+
+        const answer = response.value;
+        const ync: YesNoCancel = answer === "Yes" ? "Yes" : answer === "No" ? "No" : "Cancel";
 
         await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, ync);
     }
 
-    private async requestNewScriptName(command: RequestNewScriptNameCommand) {
-        const newName = prompt("Name:", command.currentScriptName);
+    private async requestScriptSavePath(command: RequestScriptSavePathCommand) {
+        const path = await save({
+            title: "Save Script",
+            canCreateDirectories: true,
+            defaultPath: command.defaultPath,
+            filters: [
+                {
+                    name: "NetPad Script",
+                    extensions: ["netpad"]
+                }
+            ]
+        })
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, newName || null);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, path || null);
     }
 }

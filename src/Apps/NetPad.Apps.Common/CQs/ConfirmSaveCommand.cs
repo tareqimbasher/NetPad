@@ -5,5 +5,5 @@ namespace NetPad.Apps.CQs;
 
 public class ConfirmSaveCommand(Script script) : Command<YesNoCancel>
 {
-    public string Message { get; } = $"You have unsaved changes. Do you want to save '{script.Name}'?";
+    public string Message { get; } = $"'{script.Name}' has unsaved changes. Do you want to save?";
 }

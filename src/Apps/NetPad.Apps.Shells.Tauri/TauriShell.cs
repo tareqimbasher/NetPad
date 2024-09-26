@@ -39,6 +39,5 @@ public class TauriShell : IShell
 
     public void ShowErrorDialog(string title, string content)
     {
-        throw new NotImplementedException();
     }
 }
