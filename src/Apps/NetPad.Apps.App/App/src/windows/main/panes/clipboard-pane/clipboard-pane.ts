@@ -41,15 +41,20 @@ export class ClipboardPane extends Pane {
     }
 
     private addHistory() {
-        navigator.clipboard.readText().then(s => {
-            if (!s || !s.trim()) return;
-            this.history.add(s);
+        // Using setTimeout prevents error:
+        // NotAllowedError: The request is not allowed by the user agent or the platform in the
+        // current context, possibly because the user denied permission
+        setTimeout(() => {
+            navigator.clipboard.readText().then(s => {
+                if (!s || !s.trim()) return;
+                this.history.add(s);
 
-            if (this.history.size > this.maxHistorySize) {
-                Array.from(this.history)
-                    .slice(0, this.history.size - this.maxHistorySize)
-                    .forEach(e => this.history.delete(e));
-            }
-        });
+                if (this.history.size > this.maxHistorySize) {
+                    Array.from(this.history)
+                        .slice(0, this.history.size - this.maxHistorySize)
+                        .forEach(e => this.history.delete(e));
+                }
+            });
+        }, 0);
     }
 }
