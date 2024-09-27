@@ -22,11 +22,11 @@ export class System {
         }
     }
 
-    public static downloadFile(fileName: string, mimeType = "text/plain", base64: string) {
+    public static downloadFile(fileName: string, mimeType = "text/plain", data: Uint8Array) {
         const downloadLink = document.createElement("A") as HTMLAnchorElement;
         try {
             downloadLink.download = fileName;
-            downloadLink.href = `data:${mimeType};base64,${base64}`;
+            downloadLink.href = URL.createObjectURL(new Blob([data], {type: mimeType}));
             downloadLink.target = '_blank';
             downloadLink.click();
         } finally {
@@ -38,7 +38,7 @@ export class System {
         const downloadLink = document.createElement("A") as HTMLAnchorElement;
         try {
             downloadLink.download = fileName;
-            downloadLink.href = `data:${mimeType};charset=utf-8,${encodeURIComponent(text)}`;
+            downloadLink.href = URL.createObjectURL(new Blob([text], {type: mimeType}));
             downloadLink.target = '_blank';
             downloadLink.click();
         } finally {

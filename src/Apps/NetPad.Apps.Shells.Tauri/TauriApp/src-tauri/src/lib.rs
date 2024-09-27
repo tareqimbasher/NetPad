@@ -1,10 +1,12 @@
 use dotnet_server_manager::{
     restart_server, start_server, stop_server, DotNetServerManager, DotNetServerManagerState,
 };
-use std::sync::Mutex;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use tauri::webview::DownloadEvent;
 use tauri::{
-    AppHandle, Error, Manager, State, Url, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
-    WindowEvent,
+    AppHandle, Emitter, Error, Manager, State, Url, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder, WindowEvent,
 };
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
@@ -39,25 +41,27 @@ pub fn run() {
                     .expect("Failed to start .NET server");
             }
 
-            open_window(
+            create_window(
                 app.handle(),
-                None,
-                "main".into(),
-                "NetPad".into(),
-                WebviewUrl::App("index.html".into()),
-                1200f64,
-                800f64,
-                true,
-                None,
-                false,
-                false,
-                true,
+                WindowCreationOptions {
+                    parent: None,
+                    label: "main".into(),
+                    title: "NetPad".into(),
+                    url: WebviewUrl::App("index.html".into()),
+                    width: 1200f64,
+                    height: 800f64,
+                    maximize: true,
+                    position: None,
+                    center: false,
+                    decorations: false,
+                    disable_drag_drop: true,
+                },
             )?;
 
             Ok(())
         })
-        .on_window_event(move |window, event| match event {
-            WindowEvent::Destroyed => {
+        .on_window_event(move |window, event| {
+            if let WindowEvent::Destroyed = event {
                 if cfg!(not(debug_assertions)) && window.label() == "main" {
                     let state: State<DotNetServerManagerState> = window.state();
                     state
@@ -68,11 +72,10 @@ pub fn run() {
                         .expect("Failed to terminate .NET server on 'main' window destroyed event");
                 }
             }
-            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             get_os_type,
-            open_window_cmd,
+            create_window_from_js,
             toggle_devtools,
             start_server,
             stop_server,
@@ -87,70 +90,103 @@ fn get_os_type() -> String {
     std::env::consts::OS.to_string()
 }
 
-fn open_window(
-    app_handle: &AppHandle,
-    parent: Option<WebviewWindow>,
-    label: String,
-    title: String,
-    url: WebviewUrl,
-    width: f64,
-    height: f64,
-    maximized: bool,
-    position: Option<(f64, f64)>,
-    center: bool,
-    decorations: bool,
-    disable_drag_drop: bool,
-) -> Result<(), Error> {
-    let app_handle_clone = app_handle.clone();
+fn create_window(app_handle: &AppHandle, options: WindowCreationOptions) -> Result<WebviewWindow, Error> {
+    let download_memory = Arc::new(Mutex::new(DownloadShortTermMemory::default()));
 
-    let mut builder = WebviewWindowBuilder::new(app_handle, label, url)
-        .title(title)
-        .inner_size(width, height)
-        .maximized(maximized)
-        .decorations(decorations)
-        .on_navigation(move |url| {
-            // Reroute non app URLs to system browser
-            if url.scheme() == "tauri" {
-                return true;
+    let mut builder = WebviewWindowBuilder::new(app_handle, options.label, options.url)
+        .title(options.title)
+        .inner_size(options.width, options.height)
+        .maximized(options.maximize)
+        .decorations(options.decorations)
+        .on_download({
+            let app_handle = app_handle.clone();
+            move |_webview, event| {
+                match event {
+                    DownloadEvent::Requested { url, destination } => {
+                        let mut abs_path = app_handle.path().download_dir().unwrap();
+                        abs_path.push(&destination);
+
+                        let mut memory = download_memory.lock().unwrap();
+                        memory.file_path = Some(abs_path.clone());
+
+                        *destination = abs_path;
+                    }
+                    DownloadEvent::Finished { url, path, success } => {
+                        if success {
+                            let memory = download_memory.lock().unwrap();
+
+                            let path_str = memory
+                                .file_path
+                                .as_ref()
+                                .and_then(|p| {
+                                    dunce::canonicalize(p)
+                                        .ok()
+                                        .and_then(|p| p.into_os_string().into_string().ok())
+                                })
+                                .unwrap_or_default();
+
+                            app_handle
+                                .emit_to("main", "download-finished", &path_str)
+                                .ok();
+
+                            if !path_str.is_empty() {
+                                app_handle.shell().open(path_str, None).ok();
+                            }
+                        }
+                    }
+                    _ => (),
+                }
+                // let the download start
+                true
             }
+        })
+        .on_navigation({
+            let app_handle = app_handle.clone();
+            move |url| {
+                // Reroute non app URLs to system browser
+                if url.scheme() == "tauri" {
+                    return true;
+                }
 
-            if url.host_str() == Some("localhost") {
-                return if cfg!(dev) {
-                    url.port() == Some(57940)
-                } else {
-                    url.port() == Some(57930)
-                };
+                if url.host_str() == Some("localhost") {
+                    return if cfg!(dev) {
+                        url.port() == Some(57940)
+                    } else {
+                        url.port() == Some(57930)
+                    };
+                }
+
+                app_handle.shell().open(url.to_string(), None).ok();
+
+                false
             }
-
-            app_handle_clone.shell().open(url.to_string(), None).ok();
-
-            return false;
         });
 
-    if parent.is_some() {
-        builder = builder.parent(&parent.unwrap())?;
+    if let Some(parent) = options.parent {
+        builder = builder.parent(&parent)?;
     }
 
-    if let Some(pos) = position {
-        builder = builder.position(pos.0, pos.1);
+    if let Some(position) = options.position {
+        builder = builder.position(position.0, position.1);
     }
 
-    if disable_drag_drop {
+    if options.disable_drag_drop {
         builder = builder.disable_drag_drop_handler();
     }
 
     let window = builder.build()?;
 
-    if center {
+    if options.center {
         window.center()?;
     }
 
-    Ok(())
+    Ok(window)
 }
 
 /// Command to open a window from JavaScript
+#[allow(clippy::too_many_arguments)]
 #[tauri::command(async)]
-async fn open_window_cmd(
+async fn create_window_from_js(
     app_handle: AppHandle,
     calling_window: WebviewWindow,
     label: String,
@@ -161,19 +197,21 @@ async fn open_window_cmd(
     x: f64,
     y: f64,
 ) -> Result<(), Error> {
-    open_window(
+    create_window(
         &app_handle,
-        Some(calling_window),
-        label,
-        title,
-        url,
-        width,
-        height,
-        false,
-        Some((x, y)),
-        true,
-        true,
-        false,
+        WindowCreationOptions {
+            parent: Some(calling_window),
+            label,
+            title,
+            url,
+            width,
+            height,
+            maximize: false,
+            position: Some((x, y)),
+            center: true,
+            decorations: true,
+            disable_drag_drop: false,
+        },
     )?;
     Ok(())
 }
@@ -185,4 +223,27 @@ async fn toggle_devtools(webview_window: WebviewWindow) {
     } else {
         webview_window.open_devtools();
     }
+}
+
+struct WindowCreationOptions {
+    parent: Option<WebviewWindow>,
+    label: String,
+    title: String,
+    url: WebviewUrl,
+    width: f64,
+    height: f64,
+    maximize: bool,
+    position: Option<(f64, f64)>,
+    center: bool,
+    decorations: bool,
+    disable_drag_drop: bool,
+}
+
+/// Used to store the path to the last downloaded file
+///
+/// Needed because WebviewWindowBuilder.on_download hook's Finished event does not always
+/// return the path the file was downloaded to.
+#[derive(Default)]
+struct DownloadShortTermMemory {
+    file_path: Option<PathBuf>,
 }

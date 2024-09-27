@@ -10,6 +10,7 @@ import {
 } from "@application";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {save} from '@tauri-apps/plugin-dialog'
+import {listen} from '@tauri-apps/api/event';
 
 /**
  * This is utilized for the Browser app, not the Electron app.
@@ -35,6 +36,17 @@ export class TauriDialogBackgroundService extends WithDisposables implements IBa
                 await this.requestScriptSavePath(msg);
             })
         );
+
+        listen<string>('download-finished', (event) => {
+            const fileSavePath = event.payload;
+
+            if (fileSavePath) {
+                alert("File successfully saved to:\n" + fileSavePath);
+            } else {
+                alert("File successfully saved to your Downloads folder.")
+            }
+
+        }).then(unlisten => this.addDisposable(unlisten));
 
         return Promise.resolve(undefined);
     }
