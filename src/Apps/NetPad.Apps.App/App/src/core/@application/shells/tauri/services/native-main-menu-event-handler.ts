@@ -1,6 +1,6 @@
 import {ILogger} from "aurelia";
-import {System, WithDisposables} from "@common";
-import {IBackgroundService, IShortcutManager, Shortcut} from "@application";
+import {WithDisposables} from "@common";
+import {IBackgroundService, IShortcutManager} from "@application";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 import {Menu, MenuItemOptions, PredefinedMenuItemOptions, Submenu} from "@tauri-apps/api/menu"
@@ -82,6 +82,12 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                         await this.fromAppMenuItem(appMenuItems, "edit.undo"),
                         await this.fromAppMenuItem(appMenuItems, "edit.redo"),
                         await PredefinedMenuItem.new({item: "Separator"}),
+                        ...!isMac ? [] : [
+                            await PredefinedMenuItem.new({item: "Cut"}),
+                            await PredefinedMenuItem.new({item: "Copy"}),
+                            await PredefinedMenuItem.new({item: "Paste"}),
+                            await PredefinedMenuItem.new({item: "Separator"}),
+                        ],
                         await this.fromAppMenuItem(appMenuItems, "edit.selectAll"),
                         await PredefinedMenuItem.new({item: "Separator"}),
                         await this.fromAppMenuItem(appMenuItems, "edit.find"),
@@ -130,7 +136,11 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
             ].filter(x => x)
         });
 
-        await menu.setAsWindowMenu(Window.getCurrent());
+        if (isMac) {
+            await menu.setAsAppMenu();
+        } else {
+            await menu.setAsWindowMenu(Window.getCurrent());
+        }
     }
 
     public stop(): void {
