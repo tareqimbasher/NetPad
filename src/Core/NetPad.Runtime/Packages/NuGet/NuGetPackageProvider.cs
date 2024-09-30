@@ -846,6 +846,7 @@ public class NuGetPackageProvider(
         return rids
             .Where(rid => !string.IsNullOrWhiteSpace(rid))
             .Distinct()
+            .Reverse()
             .ToArray();
     }
 
