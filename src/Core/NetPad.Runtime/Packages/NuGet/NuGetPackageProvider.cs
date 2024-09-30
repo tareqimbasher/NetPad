@@ -54,14 +54,24 @@ public class NuGetPackageProvider(
         foreach (var resource in resources)
         {
             var searchResource = await resource;
-            IEnumerable<IPackageSearchMetadata>? searchResults = await searchResource.SearchAsync(
-                term,
-                filter,
-                skip,
-                take,
-                NuGetNullLogger.Instance,
-                cancellationToken ?? CancellationToken.None
-            ).ConfigureAwait(false);
+            IEnumerable<IPackageSearchMetadata>? searchResults;
+
+            try
+            {
+                searchResults = await searchResource.SearchAsync(
+                    term,
+                    filter,
+                    skip,
+                    take,
+                    NuGetNullLogger.Instance,
+                    cancellationToken ?? CancellationToken.None
+                ).ConfigureAwait(false);
+            }
+            catch (FatalProtocolException)
+            {
+                // ignore, might be a private feed
+                continue;
+            }
 
             foreach (var searchResult in searchResults)
             {
@@ -86,12 +96,22 @@ public class NuGetPackageProvider(
         foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
         {
             var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
-            var versions = (await resource.GetAllVersionsAsync(
-                    packageId,
-                    sourceCacheContext,
-                    NuGetNullLogger.Instance,
-                    CancellationToken.None))
-                .ToArray();
+            NuGetVersion[] versions;
+
+            try
+            {
+                versions = (await resource.GetAllVersionsAsync(
+                        packageId,
+                        sourceCacheContext,
+                        NuGetNullLogger.Instance,
+                        CancellationToken.None))
+                    .ToArray();
+            }
+            catch (FatalProtocolException)
+            {
+                // ignore, might be private feed
+                continue;
+            }
 
             if (versions.Any())
             {
@@ -116,7 +136,7 @@ public class NuGetPackageProvider(
         var repositories = sourceRepositoryProvider.GetRepositories();
 
         using var sourceCacheContext = new SourceCacheContext();
-        var logger = new NuGetNullLogger();
+        var nugetLogger = new NuGetNullLogger();
         var cancellationToken = CancellationToken.None;
         var dependencyContext = DependencyContext.Default
                                 ?? throw new Exception("No DependencyContext set for application");
@@ -127,16 +147,16 @@ public class NuGetPackageProvider(
             repositories,
             dependencyContext,
             sourceCacheContext,
-            logger,
+            nugetLogger,
             cancellationToken
         );
 
         var packagesToInstall = GetPackagesToInstallAsync(
             packageDependencyTree,
             sourceRepositoryProvider,
-            logger);
+            nugetLogger);
 
-        await InstallPackagesAsync(packageIdentity, packagesToInstall, sourceCacheContext, logger, cancellationToken);
+        await InstallPackagesAsync(packageIdentity, packagesToInstall, sourceCacheContext, nugetLogger, cancellationToken);
     }
 
     public Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
@@ -216,7 +236,7 @@ public class NuGetPackageProvider(
 
         var nugetFramework = NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker());
         using var sourceCacheContext = new SourceCacheContext();
-        var logger = new NuGetNullLogger();
+        var nugetLogger = new NuGetNullLogger();
         var cancellationToken = CancellationToken.None;
         var dependencyContext = DependencyContext.Default
                                 ?? throw new Exception("No DependencyContext set for application");
@@ -227,7 +247,7 @@ public class NuGetPackageProvider(
             GetSourceRepositoryProvider().GetRepositories(),
             dependencyContext,
             sourceCacheContext,
-            logger,
+            nugetLogger,
             cancellationToken
         );
 
@@ -370,7 +390,7 @@ public class NuGetPackageProvider(
         IEnumerable<SourceRepository> repositories,
         DependencyContext hostDependencies,
         SourceCacheContext cacheContext,
-        INugetLogger logger,
+        INugetLogger nugetLogger,
         CancellationToken cancellationToken)
     {
         var packageDependencyTree = new PackageDependencyTree(package);
@@ -379,12 +399,22 @@ public class NuGetPackageProvider(
         {
             // Get the dependency info for the package.
             var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>();
-            var dependencyInfo = await dependencyInfoResource.ResolvePackage(
-                package,
-                framework,
-                cacheContext,
-                logger,
-                cancellationToken);
+            SourcePackageDependencyInfo? dependencyInfo;
+
+            try
+            {
+                dependencyInfo = await dependencyInfoResource.ResolvePackage(
+                    package,
+                    framework,
+                    cacheContext,
+                    nugetLogger,
+                    cancellationToken);
+            }
+            catch (FatalProtocolException)
+            {
+                // ignore, might be private feed
+                continue;
+            }
 
             // No info for the package in this repository.
             if (dependencyInfo == null)
@@ -411,7 +441,7 @@ public class NuGetPackageProvider(
                     repositories,
                     hostDependencies,
                     cacheContext,
-                    logger,
+                    nugetLogger,
                     cancellationToken);
 
                 packageDependencyTree.Dependencies.Add(depDependencyTree);
@@ -426,7 +456,7 @@ public class NuGetPackageProvider(
     private IEnumerable<SourcePackageDependencyInfo> GetPackagesToInstallAsync(
         PackageDependencyTree packageDependencyTree,
         SourceRepositoryProvider sourceRepositoryProvider,
-        INugetLogger logger)
+        INugetLogger nugetLogger)
     {
         var allPackages = packageDependencyTree.GetAllPackages();
 
@@ -439,7 +469,7 @@ public class NuGetPackageProvider(
             [],
             allPackages,
             sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
-            logger);
+            nugetLogger);
 
         var resolver = new PackageResolver();
 
@@ -457,7 +487,7 @@ public class NuGetPackageProvider(
         NugetPackageIdentity explicitPackageToInstallIdentity,
         IEnumerable<SourcePackageDependencyInfo> packagesToInstall,
         SourceCacheContext sourceCacheContext,
-        INugetLogger logger,
+        INugetLogger nugetLogger,
         CancellationToken cancellationToken)
     {
         await appStatusMessagePublisher.PublishAsync(
@@ -482,7 +512,7 @@ public class NuGetPackageProvider(
                         packageToInstall,
                         new PackageDownloadContext(sourceCacheContext),
                         GetNuGetCacheDirectoryPath(),
-                        logger,
+                        nugetLogger,
                         cancellationToken);
 
                     /*
@@ -581,11 +611,21 @@ public class NuGetPackageProvider(
                     return;
                 }
 
-                var metadata = await resource.GetMetadataAsync(
-                    new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
-                    sourceCacheContext,
-                    NuGetNullLogger.Instance,
-                    cancellationToken);
+                IPackageSearchMetadata? metadata;
+
+                try
+                {
+                    metadata = await resource.GetMetadataAsync(
+                        new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
+                        sourceCacheContext,
+                        NuGetNullLogger.Instance,
+                        cancellationToken);
+                }
+                catch (FatalProtocolException)
+                {
+                    // ignore, might be private feed
+                    return;
+                }
 
                 if (metadata == null)
                 {
@@ -644,11 +684,21 @@ public class NuGetPackageProvider(
                     continue;
                 }
 
-                var metadata = await resource.GetMetadataAsync(
-                    new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
-                    sourceCacheContext,
-                    NuGetNullLogger.Instance,
-                    cancellationTokenSource.Token);
+                IPackageSearchMetadata? metadata;
+
+                try
+                {
+                    metadata = await resource.GetMetadataAsync(
+                        new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
+                        sourceCacheContext,
+                        NuGetNullLogger.Instance,
+                        cancellationTokenSource.Token);
+                }
+                catch (FatalProtocolException)
+                {
+                    // ignore, might be private feed
+                    continue;
+                }
 
                 if (metadata == null)
                 {
