@@ -1,23 +1,27 @@
-use dotnet_server_manager::{
-    restart_server, start_server, stop_server, DotNetServerManager, DotNetServerManagerState,
-};
+mod commands;
+mod dotnet_server_manager;
+mod errors;
+
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::webview::DownloadEvent;
+
 use tauri::{
-    AppHandle, Emitter, Error, Manager, State, Url, WebviewUrl, WebviewWindow,
+    webview::DownloadEvent, AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindow,
     WebviewWindowBuilder, WindowEvent,
 };
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_shell::ShellExt;
 
-pub mod dotnet_server_manager;
+use crate::commands::{create_window_command, get_os_type, toggle_devtools};
+use crate::dotnet_server_manager::{DotNetServerManager, DotNetServerManagerState};
+use crate::errors::Result;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    let server_manager = DotNetServerManager::new();
+pub fn run() -> Result<()> {
+    errors::init()?;
+
     let server_manager_state = DotNetServerManagerState {
-        server_manager_mutex: Mutex::new(server_manager),
+        server_manager_mutex: Mutex::new(DotNetServerManager::default()),
     };
 
     tauri::Builder::default()
@@ -74,23 +78,33 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            create_window_command,
             get_os_type,
-            create_window_from_js,
             toggle_devtools,
-            start_server,
-            stop_server,
-            restart_server,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .run(tauri::generate_context!())?;
+
+    Ok(())
 }
 
-#[tauri::command]
-fn get_os_type() -> String {
-    std::env::consts::OS.to_string()
+pub struct WindowCreationOptions {
+    pub parent: Option<WebviewWindow>,
+    pub label: String,
+    pub title: String,
+    pub url: WebviewUrl,
+    pub width: f64,
+    pub height: f64,
+    pub maximize: bool,
+    pub position: Option<(f64, f64)>,
+    pub center: bool,
+    pub decorations: bool,
+    pub disable_drag_drop: bool,
 }
 
-fn create_window(app_handle: &AppHandle, options: WindowCreationOptions) -> Result<WebviewWindow, Error> {
+pub fn create_window(
+    app_handle: &AppHandle,
+    options: WindowCreationOptions,
+) -> Result<WebviewWindow> {
     let download_memory = Arc::new(Mutex::new(DownloadShortTermMemory::default()));
 
     let mut builder = WebviewWindowBuilder::new(app_handle, options.label, options.url)
@@ -103,8 +117,10 @@ fn create_window(app_handle: &AppHandle, options: WindowCreationOptions) -> Resu
             move |_webview, event| {
                 match event {
                     DownloadEvent::Requested { url, destination } => {
+                        let _ = url; // to appease clippy
+
                         let mut abs_path = app_handle.path().download_dir().unwrap();
-                        abs_path.push(&destination);
+                        abs_path.push(destination.clone());
 
                         let mut memory = download_memory.lock().unwrap();
                         memory.file_path = Some(abs_path.clone());
@@ -112,6 +128,9 @@ fn create_window(app_handle: &AppHandle, options: WindowCreationOptions) -> Resu
                         *destination = abs_path;
                     }
                     DownloadEvent::Finished { url, path, success } => {
+                        let _ = url; // to appease clippy
+                        let _ = path;
+
                         if success {
                             let memory = download_memory.lock().unwrap();
 
@@ -181,62 +200,6 @@ fn create_window(app_handle: &AppHandle, options: WindowCreationOptions) -> Resu
     }
 
     Ok(window)
-}
-
-/// Command to open a window from JavaScript
-#[allow(clippy::too_many_arguments)]
-#[tauri::command(async)]
-async fn create_window_from_js(
-    app_handle: AppHandle,
-    calling_window: WebviewWindow,
-    label: String,
-    title: String,
-    url: WebviewUrl,
-    width: f64,
-    height: f64,
-    x: f64,
-    y: f64,
-) -> Result<(), Error> {
-    create_window(
-        &app_handle,
-        WindowCreationOptions {
-            parent: Some(calling_window),
-            label,
-            title,
-            url,
-            width,
-            height,
-            maximize: false,
-            position: Some((x, y)),
-            center: true,
-            decorations: true,
-            disable_drag_drop: false,
-        },
-    )?;
-    Ok(())
-}
-
-#[tauri::command]
-async fn toggle_devtools(webview_window: WebviewWindow) {
-    if webview_window.is_devtools_open() {
-        webview_window.close_devtools();
-    } else {
-        webview_window.open_devtools();
-    }
-}
-
-struct WindowCreationOptions {
-    parent: Option<WebviewWindow>,
-    label: String,
-    title: String,
-    url: WebviewUrl,
-    width: f64,
-    height: f64,
-    maximize: bool,
-    position: Option<(f64, f64)>,
-    center: bool,
-    decorations: bool,
-    disable_drag_drop: bool,
 }
 
 /// Used to store the path to the last downloaded file

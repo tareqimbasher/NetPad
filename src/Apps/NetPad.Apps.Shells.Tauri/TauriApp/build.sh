@@ -20,7 +20,7 @@ if [ "${platform}" == "Linux" ]; then
     npx tauri build -c src-tauri/tauri.conf.linux-x64.json5
 elif [ "${platform}" == "Mac" ]; then
     echo "Building Tauri app for Mac..."
-    # npx tauri build -c src-tauri/tauri.conf.macos.json5
+    npx tauri build -c src-tauri/tauri.conf.macos.json5 --target aarch64-apple-darwin
 fi
 
-#export WEBKIT_DISABLE_DMABUF_RENDERER=1
+# npx tauri build -c src-tauri/tauri.conf.win.json5 --target x86_64-pc-windows-gnu

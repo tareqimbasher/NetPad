@@ -3,7 +3,6 @@ name = "NetPad"
 version = "0.8.0"
 description = "A cross-platform C# editor and playground"
 authors = ["Tareq Imbasher"]
-license = "MIT"
 repository = "https://github.com/tareqimbasher/NetPad"
 edition = "2021"
 rust-version = "1.70"
@@ -19,8 +18,13 @@ tauri-build = { version = "2.0.0-rc.2", features = ["config-json5"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.0.0-rc.15", features = ["config-json5", "devtools"] }
+tauri = { version = "2.0.0-rc.16", features = ["config-json5", "devtools"] }
 tauri-plugin-dialog = "2.0.0-rc.7"
 tauri-plugin-log = "2.0.0-rc.2"
 tauri-plugin-shell = "2.0.0-rc.3"
 dunce = "1.0.5"
+thiserror = "1.0.64"
+color-eyre = { version =  "0.6.3", default-features = false }
+better-panic = "0.3.0"
+human-panic = "2.0.1"
+url = "2.5.2"

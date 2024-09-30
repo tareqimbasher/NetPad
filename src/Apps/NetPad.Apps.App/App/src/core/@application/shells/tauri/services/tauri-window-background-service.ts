@@ -60,7 +60,7 @@ export class TauriWindowBackgroundService implements IBackgroundService {
             y = screen.height / 2 - (height / 2);
         }
 
-        invoke("create_window_from_js", {
+        invoke("create_window_command", {
             label: command.windowName,
             title: "",
             url: url,

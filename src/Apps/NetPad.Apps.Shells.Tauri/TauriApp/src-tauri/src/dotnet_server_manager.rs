@@ -3,23 +3,21 @@ use std::borrow::BorrowMut;
 use std::os::windows::process::CommandExt;
 use std::process::{Child, Command};
 use std::sync::Mutex;
+
 use tauri::path::BaseDirectory;
-use tauri::{Manager, State};
+use tauri::Manager;
 
 pub struct DotNetServerManagerState {
     pub server_manager_mutex: Mutex<DotNetServerManager>,
 }
 
+#[derive(Default)]
 pub struct DotNetServerManager {
     child: Option<Child>,
 }
 
 impl DotNetServerManager {
-    pub fn new() -> DotNetServerManager {
-        DotNetServerManager { child: None }
-    }
-
-    pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<String, String> {
+    pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<(), String> {
         let executable_path = app_handle
             .path()
             .resolve(
@@ -50,32 +48,26 @@ impl DotNetServerManager {
 
         match self.child.borrow_mut() {
             Some(c) => {
-                let pid = c.id();
-                let msg = format!("Requested to start .NET server process but it has already been created. PID: {pid}");
-                log::warn!("{msg}");
-                Ok(msg)
+                log::warn!("Requested to start .NET server process but it has already been created. PID: {}", c.id());
+                Ok(())
             }
-            None => {
-                match cmd.spawn() {
-                    Ok(c) => {
-                        let pid = c.id();
-                        self.child = Some(c);
-                        let msg =
-                            format!(".NET server process started successfully with PID: {pid}");
-                        log::info!("{msg}");
-                        Ok(msg)
-                    }
-                    Err(e) => {
-                        let msg = format!(".NET server process failed to start: {e}");
-                        log::error!("{msg}");
-                        Err(msg)
-                    }
+            None => match cmd.spawn() {
+                Ok(c) => {
+                    let pid = c.id();
+                    self.child = Some(c);
+                    log::info!(".NET server process started successfully with PID: {}", pid);
+                    Ok(())
                 }
-            }
+                Err(e) => {
+                    let msg = format!(".NET server process failed to start: {e}");
+                    log::error!("{msg}");
+                    Err(msg)
+                }
+            },
         }
     }
 
-    pub fn terminate_backend(&mut self) -> Result<String, String> {
+    pub fn terminate_backend(&mut self) -> Result<(), String> {
         match self.child.borrow_mut() {
             Some(child) => {
                 let pid = child.id().to_string();
@@ -105,68 +97,12 @@ impl DotNetServerManager {
                 }
 
                 self.child = None;
-                let msg = format!(".NET server process terminated. PID was: {pid}");
-                log::info!("{msg}");
-                Ok(msg)
+                log::info!(".NET server process terminated. PID was: {pid}");
             }
             _ => {
-                let msg = "Requested to terminate .NET server process but it is not running";
-                log::warn!("{msg}");
-                Ok(msg.into())
+                log::warn!("Requested to terminate .NET server process but it is not running");
             }
         }
+        Ok(())
     }
-
-    pub fn restart_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<String, String> {
-        log::info!("Restarting .NET server process");
-        let terminate_result = self.terminate_backend();
-        match terminate_result {
-            Ok(_) => {
-                self.start_backend(app_handle).unwrap();
-                Ok(".NET server was restarted successfully".into())
-            }
-            Err(e) => {
-                log::error!("{e}");
-                return Err(e);
-            }
-        }
-    }
-}
-
-#[tauri::command]
-pub fn start_server(
-    server_manager_state: State<DotNetServerManagerState>,
-    app_handle: tauri::AppHandle,
-) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .start_backend(&app_handle);
-    am
-}
-
-#[tauri::command]
-pub fn stop_server(
-    server_manager_state: State<DotNetServerManagerState>,
-) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .terminate_backend();
-    am
-}
-
-#[tauri::command]
-pub fn restart_server(
-    server_manager_state: State<DotNetServerManagerState>,
-    app_handle: tauri::AppHandle,
-) -> Result<String, String> {
-    let am = server_manager_state
-        .server_manager_mutex
-        .lock()
-        .unwrap()
-        .restart_backend(&app_handle);
-    am
 }
