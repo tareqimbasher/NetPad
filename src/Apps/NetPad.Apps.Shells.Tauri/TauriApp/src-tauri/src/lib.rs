@@ -162,21 +162,24 @@ pub fn create_window(
         .on_navigation({
             let app_handle = app_handle.clone();
             move |url| {
-                // Reroute non app URLs to system browser
-                if url.scheme() == "tauri" {
+                // Allow loading HTML bundled with Tauri app (loader/index.html)
+                // Linux/macOS scheme: tauri
+                // Windows host: tauri.localhost
+                if url.scheme() == "tauri" || url.host_str() == Some("tauri.localhost") {
                     return true;
                 }
 
+                // Allow when loader/index.html reroutes to SPA app hosted by .NET server
                 if url.host_str() == Some("localhost") {
                     return if cfg!(dev) {
                         url.port() == Some(57940)
                     } else {
-                        url.port() == Some(57930)
+                        url.port() == Some(57950)
                     };
                 }
 
+                // Reroute other URLs to system browser
                 app_handle.shell().open(url.to_string(), None).ok();
-
                 false
             }
         });

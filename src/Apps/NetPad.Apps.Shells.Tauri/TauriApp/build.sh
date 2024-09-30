@@ -23,4 +23,5 @@ elif [ "${platform}" == "Mac" ]; then
     npx tauri build -c src-tauri/tauri.conf.macos.json5 --target aarch64-apple-darwin
 fi
 
+# Windows:
 # npx tauri build -c src-tauri/tauri.conf.win.json5 --target x86_64-pc-windows-gnu

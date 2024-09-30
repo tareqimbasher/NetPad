@@ -1,7 +1,8 @@
 {
-    "productName": "NetPad",
+    "productName": "NetPad vNext",
     "version": "0.8.0",
-    "identifier": "com.netpad.app",
+    "mainBinaryName": "NetPad vNext",
+    "identifier": "dev.netpad.vnext",
     "build": {
         "beforeDevCommand": {
             "script": "npm run start-web",
@@ -21,6 +22,13 @@
     "bundle": {
         "active": true,
         "targets": "all",
+        "windows": {
+            "nsis": {
+                "template": "./windows/nsis-installer.nsi",
+                "installerIcon": "icons/icon.ico",
+                "installMode": "currentUser",
+            }
+        },
         "icon": [
             "icons/32x32.png",
             "icons/128x128.png",
