@@ -1,6 +1,7 @@
 import {IContainer} from "aurelia";
-import {ISettingsService, MonacoEnvironmentManager, Settings} from "@application";
+import {ISettingsService, IWindowService, MonacoEnvironmentManager, Settings} from "@application";
 import {WindowBase} from "@application/windows/window-base";
+import {WindowParams} from "@application/windows/window-params";
 
 export class Window extends WindowBase {
     public editableSettings: Settings;
@@ -16,14 +17,14 @@ export class Window extends WindowBase {
     ];
 
     constructor(
-        private readonly startupOptions: URLSearchParams,
-        @ISettingsService readonly settingsService: ISettingsService,
+        @ISettingsService private readonly settingsService: ISettingsService,
+        @IWindowService private readonly windowService: IWindowService,
         @IContainer private readonly container: IContainer) {
         super();
 
         document.title = "Settings";
 
-        let tabIndex = this.tabs.findIndex(t => t.route === this.startupOptions.get("tab"));
+        let tabIndex = this.tabs.findIndex(t => t.route === WindowParams.get("tab"));
         if (tabIndex < 0)
             tabIndex = 0;
 
@@ -59,11 +60,11 @@ export class Window extends WindowBase {
             return;
         }
 
-        window.close();
+        await this.windowService.close();
     }
 
-    public close() {
-        window.close();
+    public async close() {
+        await this.windowService.close();
     }
 
     public async showAppDataFolder() {

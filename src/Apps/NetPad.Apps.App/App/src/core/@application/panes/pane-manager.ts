@@ -1,5 +1,12 @@
 import {Constructable, IContainer} from "aurelia";
-import {IEventBus, IPaneHostViewStateController, Pane, PaneHost, PaneHostOrientation} from "@application";
+import {
+    IEventBus,
+    IPaneHostViewStateController,
+    IWindowService,
+    Pane,
+    PaneHost,
+    PaneHostOrientation
+} from "@application";
 import {IPaneManager} from "./ipane-manager";
 import {TogglePaneCommand} from "@application/panes/toggle-pane-command";
 
@@ -23,7 +30,7 @@ export class PaneManager implements IPaneManager {
             },
         };
 
-        const host = new PaneHost(orientation, viewStateController);
+        const host = new PaneHost(orientation, viewStateController, this.container.get(IWindowService));
         this._paneHosts.push(host);
         return host;
     }

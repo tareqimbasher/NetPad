@@ -1,0 +1,41 @@
+{
+    "productName": "NetPad vNext",
+    "version": "0.8.0",
+    "mainBinaryName": "NetPad vNext",
+    "identifier": "dev.netpad.vnext",
+    "build": {
+        "beforeDevCommand": {
+            "script": "npm run start-web",
+            "cwd": "../../../NetPad.Apps.App/App"
+        },
+        "devUrl": "http://localhost:57940?shell=tauri",
+        "frontendDist": "./loader"
+    },
+    "app": {
+        "security": {
+            "csp": null,
+            "capabilities": [
+                "default"
+            ]
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "windows": {
+            "nsis": {
+                "template": "./windows/nsis-installer.nsi",
+                "installerIcon": "icons/icon.ico",
+                "installMode": "currentUser",
+            }
+        },
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ]
+    },
+    "$schema": "../node_modules/@tauri-apps/cli/config.schema.json"
+}

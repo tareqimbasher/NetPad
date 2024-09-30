@@ -27,7 +27,7 @@ public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo)
             return existing.Window;
         }
 
-        var url = $"{hostInfo.HostUrl}?win={windowName}";
+        var url = $"{hostInfo.HostUrl}?win={windowName}&shell=electron";
 
         if (queryParams.Any())
         {

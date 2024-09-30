@@ -50,6 +50,7 @@ public class Startup
         Console.WriteLine($"   - Environment: {webHostEnvironment.EnvironmentName}");
         Console.WriteLine($"   - WebRootPath: {webHostEnvironment.WebRootPath}");
         Console.WriteLine($"   - ContentRootPath: {webHostEnvironment.ContentRootPath}");
+        Console.WriteLine($"   - Shell: {Program.Shell.GetType().Name}");
     }
 
     public IConfiguration Configuration { get; }
@@ -167,8 +168,6 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        var services = app.ApplicationServices;
-
 #if DEBUG
         app.UseDeveloperExceptionPage();
 #else
@@ -186,28 +185,8 @@ public class Startup
         app.UseSpaStaticFiles();
 #endif
 
-        // Set host url
-        var hostInfo = services.GetRequiredService<HostInfo>();
-        hostInfo.SetWorkingDirectory(env.ContentRootPath);
+        InitializeHostInfo(app, env);
 
-        var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
-
-        if (serverAddresses == null || !serverAddresses.Any())
-        {
-            throw new Exception("No server urls specified. Specify the url with the '--urls' parameter");
-        }
-
-        var url = serverAddresses.FirstOrDefault(a => a.StartsWith("https:")) ??
-                  serverAddresses.FirstOrDefault(a => a.StartsWith("http:"));
-
-        if (url == null)
-        {
-            throw new Exception("No server urls specified that start with 'http' or 'https'");
-        }
-
-        hostInfo.SetHostUrl(url);
-
-        // Add middlewares
         app.UseMiddleware<ExceptionHandlerMiddleware>();
 
         // Initialize plugins
@@ -215,6 +194,8 @@ public class Startup
         pluginManager.ConfigurePlugins(app, env);
 
         app.UseRouting();
+
+        Program.Shell.ConfigureRequestPipeline(app, env);
 
         app.UseEndpoints(endpoints =>
         {
@@ -234,5 +215,28 @@ public class Startup
         });
 
         Program.Shell.Initialize(app, env);
+    }
+
+    private static void InitializeHostInfo(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        var hostInfo = app.ApplicationServices.GetRequiredService<HostInfo>();
+        hostInfo.SetWorkingDirectory(env.ContentRootPath);
+
+        var serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+
+        if (serverAddresses == null || !serverAddresses.Any())
+        {
+            throw new Exception("No server urls specified. Specify the url with the '--urls' parameter");
+        }
+
+        var url = serverAddresses.FirstOrDefault(a => a.StartsWith("https:")) ??
+                  serverAddresses.FirstOrDefault(a => a.StartsWith("http:"));
+
+        if (url == null)
+        {
+            throw new Exception("No server urls specified that start with 'http' or 'https'");
+        }
+
+        hostInfo.SetHostUrl(url);
     }
 }

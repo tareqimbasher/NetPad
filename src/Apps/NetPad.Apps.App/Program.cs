@@ -9,6 +9,7 @@ using NetPad.Application;
 using NetPad.Apps;
 using NetPad.Apps.Shells;
 using NetPad.Apps.Shells.Electron;
+using NetPad.Apps.Shells.Tauri;
 using NetPad.Apps.Shells.Web;
 using NetPad.Configuration;
 using NetPad.Swagger;
@@ -36,7 +37,6 @@ public static class Program
     {
         try
         {
-            Console.WriteLine("Starting host...");
             var host = CreateHostBuilder(args).Build();
             _ = host.RunAsync();
 
@@ -83,14 +83,13 @@ public static class Program
     {
         try
         {
-            // Select a shell
-            Shell = args.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT"))
-                ? new ElectronShell()
-                : new WebBrowserShell();
+            Shell = CreateShell(args);
 
-            var host = CreateHostBuilder(args).Build();
+            var builder = CreateHostBuilder(args);
 
-            Console.WriteLine($"Starting app. Shell: {Shell.GetType().Name}");
+            builder.ConfigureServices(s => s.AddSingleton(Shell));
+
+            var host = builder.Build();
 
             host.Run();
             return 0;
@@ -113,6 +112,21 @@ public static class Program
         {
             Log.CloseAndFlush();
         }
+    }
+
+    private static IShell CreateShell(string[] args)
+    {
+        if (args.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT")))
+        {
+            return new ElectronShell();
+        }
+
+        if (args.Any(a => a.EqualsIgnoreCase("--tauri")))
+        {
+            return new TauriShell();
+        }
+
+        return new WebBrowserShell();
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -19,6 +19,7 @@
         "start": "webpack serve",
         "start-web": "webpack serve --env target=web",
         "build": "rimraf dist && webpack --env production",
+        "build-web": "rimraf dist && webpack --env production --env target=web",
         "analyze": "rimraf dist && webpack --env production --analyze",
         "test": "jest",
         "precommit": "npm run lint && jest"
@@ -27,7 +28,12 @@
         "testEnvironment": "jsdom",
         "transform": {
             "\\.(css|less|sass|scss|styl|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "jest-transform-stub",
-            "\\.(ts|html)$": ["@aurelia/ts-jest", { "isolatedModules": true }]
+            "\\.(ts|html)$": [
+                "@aurelia/ts-jest",
+                {
+                    "isolatedModules": true
+                }
+            ]
         },
         "moduleNameMapper": {
             "@common/(.*)": "<rootDir>/src/core/@common/$1",
@@ -45,6 +51,9 @@
         "@fortawesome/fontawesome-free": "^6.4.0",
         "@microsoft/signalr": "^6.0.7",
         "@popperjs/core": "^2.11.5",
+        "@tauri-apps/api": "^2.0.0-rc.6",
+        "@tauri-apps/plugin-dialog": "^2.0.0-rc.1",
+        "@tauri-apps/plugin-shell": "^2.0.0-rc.1",
         "aurelia": "2.0.0-beta.14",
         "bootstrap": "^5.2.3",
         "dragula": "^3.7.3",

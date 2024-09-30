@@ -13,8 +13,8 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
 
     public async Task OpenSettingsWindowAsync(string? tab = null)
     {
-        var command = new OpenWindowCommand("settings");
-        command.Options.Height = 0.5;
+        var command = new OpenWindowCommand(WindowIds.Settings);
+        command.Options.Height = 0.67;
         command.Options.Width = 0.5;
 
         if (tab != null) command.Metadata.Add("tab", tab);
@@ -24,9 +24,9 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
 
     public async Task OpenScriptConfigWindowAsync(Script script, string? tab = null)
     {
-        var command = new OpenWindowCommand("script-config");
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        var command = new OpenWindowCommand(WindowIds.ScriptConfig);
+        command.Options.Height = 0.75;
+        command.Options.Width = 0.8;
 
         command.Metadata.Add("script-id", script.Id);
         if (tab != null) command.Metadata.Add("tab", tab);
@@ -41,9 +41,9 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
             throw new ArgumentException("Data connection id must be provided when copying a connection.");
         }
 
-        var command = new OpenWindowCommand("data-connection");
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        var command = new OpenWindowCommand(WindowIds.DataConnection);
+        command.Options.Height = 0.5;
+        command.Options.Width = 0.5;
 
         if (dataConnectionId != null)
         {
@@ -60,18 +60,18 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
 
     public async Task OpenOutputWindowAsync()
     {
-        var command = new OpenWindowCommand("output");
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        var command = new OpenWindowCommand(WindowIds.Output);
+        command.Options.Height = 0.67;
+        command.Options.Width = 0.8;
 
         await ipcService.SendAsync(command);
     }
 
     public async Task OpenCodeWindowAsync()
     {
-        var command = new OpenWindowCommand("code");
-        command.Options.Height = 2 / 3.0;
-        command.Options.Width = 4 / 5.0;
+        var command = new OpenWindowCommand(WindowIds.Code);
+        command.Options.Height = 0.67;
+        command.Options.Width = 0.8;
 
         await ipcService.SendAsync(command);
     }

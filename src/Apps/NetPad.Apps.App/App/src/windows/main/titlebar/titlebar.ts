@@ -65,8 +65,8 @@ export class Titlebar extends ViewModelBase {
         this.updateWindowState();
     }
 
-    public close() {
-        window.close();
+    public async close() {
+        await this.windowService.close();
     }
 
     public async toggleWindowAlwaysOnTop() {

@@ -1,0 +1,88 @@
+@import "~styles/colors";
+
+integrated-main-menu {
+    -webkit-app-region: no-drag;
+
+    .top-level-menu-item > .menu-item-label {
+        padding: 5px 8px;
+
+        &:hover {
+            background: var(--hover-color);
+        }
+    }
+
+    .dropdown-menu {
+        min-width: 285px;
+        max-width: 600px;
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
+
+        .dropdown-item {
+            display: flex;
+
+            &:hover {
+                background: var(--context-menu-item-hover-background);
+
+                .menu-item-shortcut {
+                    color: var(--text-color) !important;
+                }
+            }
+
+            &.view-only:hover {
+                background-color: transparent;
+            }
+        }
+    }
+
+    .menu-item-icon {
+        width: 25px;
+        text-align: center;
+    }
+
+    .menu-item-label {
+        flex-grow: 1;
+        padding-left: 0.25rem;
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    .menu-item-help-text {
+        text-align: right;
+        margin-left: 4rem;
+        color: $text-muted;
+    }
+
+    .dropdown:not(.top-level-menu-item):hover > .dropdown-menu {
+        display: block;
+        margin-top: 0; /* remove the gap so it doesn't close */
+        top: 0;
+        right: -285px;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .main-menu-icon {
+        font-size: 1.35rem;
+    }
+
+    .action-icon {
+        width: 30px;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &:not(:last-child) {
+            margin-right: 0.5rem;
+        }
+
+        &:hover {
+            background: var(--hover-color);
+        }
+    }
+}

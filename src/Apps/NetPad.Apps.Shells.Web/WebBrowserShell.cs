@@ -19,13 +19,15 @@ public class WebBrowserShell : IShell
         services.AddTransient<IUiDialogService, WebDialogService>();
     }
 
+    public void ConfigureRequestPipeline(IApplicationBuilder app, IHostEnvironment env)
+    {
+    }
+
     public void Initialize(IApplicationBuilder app, IHostEnvironment env)
     {
-        // Do nothing.
     }
 
     public void ShowErrorDialog(string title, string content)
     {
-        // Do nothing. Not supported on this platform
     }
 }

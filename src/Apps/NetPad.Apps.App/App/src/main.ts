@@ -18,7 +18,7 @@ import {
     ISettingsService,
     LangLogoValueConverter,
     LogConfig,
-    PlatformsCustomAttribute,
+    ShellsCustomAttribute,
     RemoteLogSink,
     SanitizeHtmlValueConverter,
     Settings,
@@ -31,6 +31,7 @@ import {
 } from "@application";
 import * as appActions from "./app-actions";
 import {AppLifeCycle} from "./app-life-cycle";
+import {WindowParams} from "@application/windows/window-params";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 import {AppService} from "@application/app/app-service";
 import {SettingsService} from "@application/configuration/settings-service";
@@ -38,10 +39,11 @@ import {Session} from "@application/sessions/session";
 import {EventBus} from "@application/events/event-bus";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
 
+WindowParams.init(new URLSearchParams(window.location.search));
+
 // Register common dependencies shared across entire application (all windows)
 const builder = Aurelia.register(
     Registration.instance(String, window.location.origin),
-    Registration.instance(URLSearchParams, new URLSearchParams(window.location.search)),
     Registration.singleton(AppLifeCycle, AppLifeCycle),
     Registration.instance(Settings, new Settings()),
     Registration.singleton(IAppService, AppService),
@@ -60,7 +62,7 @@ const builder = Aurelia.register(
 
     // Globally registered custom attributes
     ExternalLinkCustomAttribute,
-    PlatformsCustomAttribute,
+    ShellsCustomAttribute,
     TooltipCustomAttribute,
 
     // Globally registered value converters
@@ -92,14 +94,13 @@ const builder = Aurelia.register(
 );
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
-
-// Configure the proper platform
-const platform = await appActions.configureAndGetPlatform(builder);
-logger.debug(`Configured platform: ${platform.constructor.name}`);
-
-// Start the app
 await appActions.loadAppSettings(builder);
 
+// Configure the proper shell
+const shell = await appActions.configureAndGetShell(builder);
+logger.debug(`Configured for shell: ${shell.constructor.name}`);
+
+// Start the app
 const entryPoint = await appActions.configureAndGetAppEntryPoint(builder);
 const app = builder.app(entryPoint as CustomElementType);
 

@@ -13,11 +13,11 @@ export class ExternalLinkCustomAttribute extends ViewModelBase {
     }
 
     public attached() {
-        const handler = async (event: Event) => {
+        const handler = (event: Event) => {
             if (this.element.tagName !== "A" || !this.element.getAttribute("href"))
                 return true;
 
-            await this.openLinkExternally(event);
+            this.openLinkExternally(event);
             return false;
         };
 
@@ -25,12 +25,14 @@ export class ExternalLinkCustomAttribute extends ViewModelBase {
         this.addDisposable(() => this.element.removeEventListener("click", handler));
     }
 
-    private async openLinkExternally(event: Event): Promise<void> {
+    private openLinkExternally(event: Event) {
         event.preventDefault();
 
         const href = this.element.getAttribute("href");
-        if (!href) return;
+        if (!href) {
+            return;
+        }
 
-        await System.openUrlInBrowser(href);
+        System.openUrlInBrowser(href);
     }
 }

@@ -8,9 +8,7 @@ export interface IMainMenuService {
 
     removeItem(item: IMenuItem): void;
 
-    clickMenuItem(item: IMenuItem): Promise<void>;
-
-    clickMenuItem(id: string): Promise<void>;
+    clickMenuItem(item: IMenuItem | string): Promise<void>;
 }
 
 export const IMainMenuService = DI.createInterface<IMainMenuService>();

@@ -1,0 +1,40 @@
+{
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "default capabilities for all windows",
+    "windows": [
+        "*"
+    ],
+    "remote": {
+        "urls": [
+            "http://localhost:57950"
+        ]
+    },
+    "permissions": [
+        "core:path:default",
+        "core:event:default",
+        "core:window:default",
+        "core:webview:default",
+        "core:app:default",
+        "core:menu:default",
+        "log:default",
+        "dialog:allow-ask",
+        "dialog:allow-confirm",
+        "dialog:allow-message",
+        "dialog:allow-open",
+        "dialog:allow-save",
+        "shell:allow-open",
+        "core:window:allow-close",
+        "core:window:allow-maximize",
+        "core:window:allow-unmaximize",
+        "core:window:allow-minimize",
+        "core:window:allow-unminimize",
+        "core:window:allow-title",
+        "core:window:allow-set-title",
+        "core:window:allow-set-always-on-top",
+        "core:window:allow-start-dragging",
+        "core:window:allow-set-decorations",
+        "core:window:allow-set-fullscreen",
+        "core:webview:allow-create-webview-window"
+    ]
+}

@@ -1,13 +1,21 @@
 import {watch} from "@aurelia/runtime-html";
-import {DatabaseConnection, DataConnection, DataConnectionType, IDataConnectionService,} from "@application";
+import {
+    DatabaseConnection,
+    DataConnection,
+    DataConnectionType,
+    IDataConnectionService,
+    IWindowService,
+} from "@application";
 import {WindowBase} from "@application/windows/window-base";
-import {System, Util} from "@common";
+import {WindowParams} from "@application/windows/window-params";
+import {Util} from "@common";
 import {IDataConnectionView} from "./connection-views/idata-connection-view";
 import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
 import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
+import {ShellType} from "@application/windows/shell-type";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -21,8 +29,8 @@ export class Window extends WindowBase {
     private nameField: HTMLInputElement;
 
     constructor(
-        private readonly startupOptions: URLSearchParams,
-        @IDataConnectionService private readonly dataConnectionService: IDataConnectionService
+        @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
+        @IWindowService private readonly windowService: IWindowService
     ) {
         super();
 
@@ -48,8 +56,8 @@ export class Window extends WindowBase {
             }
         ];
 
-        // Until we implement a way to add a SQLite file in the browser, this option will only be available in Electron app
-        if (System.isRunningInElectron()) {
+        // Until we implement a way to add a SQLite file in the browser, this option will not be available to browser shell
+        if (WindowParams.shell !== ShellType.Browser) {
             this.connectionTypes.push({
                 label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
                 type: "SQLite"
@@ -58,8 +66,8 @@ export class Window extends WindowBase {
     }
 
     private getStartupParams() {
-        const dataConnectionId = this.startupOptions.get("data-connection-id");
-        const copy = this.startupOptions.get("copy")?.toLowerCase() === "true";
+        const dataConnectionId = WindowParams.get("data-connection-id");
+        const copy = WindowParams.get("copy")?.toLowerCase() === "true";
 
         return {
             createNew: !dataConnectionId || copy,
@@ -212,7 +220,7 @@ export class Window extends WindowBase {
             }
 
             await this.dataConnectionService.save(connection);
-            window.close();
+            await this.windowService.close();
         } catch (ex) {
             const errorMsg = ex instanceof Error ? ex.toString() : "Unknown error";
             alert("Could not save the connection: " + errorMsg);
@@ -220,8 +228,8 @@ export class Window extends WindowBase {
         }
     }
 
-    public cancel() {
-        window.close();
+    public async cancel() {
+        await this.windowService.close();
     }
 
     @watch<Window>(vm => vm.connectionView?.connection.name)

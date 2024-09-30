@@ -101,10 +101,11 @@ export class ResultsView extends OutputViewBase {
         }
 
         const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
+
         System.downloadFile(
             `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            buffer.toString('base64')
+            buffer
         );
     }
 
