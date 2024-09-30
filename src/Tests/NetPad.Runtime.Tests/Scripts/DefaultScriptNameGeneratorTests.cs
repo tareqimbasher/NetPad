@@ -73,23 +73,44 @@ public class DefaultScriptNameGeneratorTests(ITestOutputHelper testOutputHelper)
     }
 
     [Theory]
-    // Adds number when no number at end
     [InlineData(new[] { "BaseName" }, "BaseName", "BaseName 1")]
     [InlineData(new[] { "Base Name" }, "Base Name", "Base Name 1")]
 
-    // Increments number at the end
+    public async Task AddsNumberWhenExistingHaveNoNumbersAtEnd(string[] existingScriptNames, string baseName, string expectedNewScriptName)
+    {
+        await Run(existingScriptNames, baseName, expectedNewScriptName);
+    }
+
+    [Theory]
     [InlineData(new[] { "Base Name 1" }, "Base Name", "Base Name 2")]
     [InlineData(new[] { "Base Name 1", "Base Name 1 1" }, "Base Name", "Base Name 2")]
+    [InlineData(new[] { "Base Name 1", "Base Name 1 2" }, "Base Name", "Base Name 2")]
+    [InlineData(new[] { "Base Name 1 1" }, "Base Name", "Base Name 1")]
+    [InlineData(new[] { "Base Name 1", "Base Name 1 1" }, "Base Name 1 1", "Base Name 1 1 1")]
+    public async Task IncrementsNumber(string[] existingScriptNames, string baseName, string expectedNewScriptName)
+    {
+        await Run(existingScriptNames, baseName, expectedNewScriptName);
+    }
 
-    // Fills in available "number slots"
-    [InlineData(new[] { "Base Name 1", "Base Name 3" }, "Base Name", "Base Name 2")]
-
-    // Adds number even if base name ends with number
     [InlineData(new[] { "Base Name 1" }, "Base Name 1", "Base Name 1 1")]
     [InlineData(new[] { "Base Name 2" }, "Base Name 2", "Base Name 2 1")]
     [InlineData(new[] { "Base Name 1", "Base Name 1 1" }, "Base Name 1", "Base Name 1 2")]
     [InlineData(new[] { "Base Name 1", "Base Name 1 1 1" }, "Base Name 1 1", "Base Name 1 1 2")]
-    public async Task WhenSessionIsNotEmpty_GeneratesNameUsingProvidedBaseName2(string[] existingScriptNames, string baseName, string expectedNewScriptName)
+    [Theory]
+    public async Task AddsNumberIfBaseNameEndsWithNumber(string[] existingScriptNames, string baseName, string expectedNewScriptName)
+    {
+        await Run(existingScriptNames, baseName, expectedNewScriptName);
+    }
+
+    [Theory]
+    [InlineData(new[] { "Base Name 1", "Base Name 3" }, "Base Name", "Base Name 4")]
+    [InlineData(new[] { "Base Name", "Base Name 3" }, "Base Name", "Base Name 4")]
+    public async Task UsesNextHighestNumber(string[] existingScriptNames, string baseName, string expectedNewScriptName)
+    {
+        await Run(existingScriptNames, baseName, expectedNewScriptName);
+    }
+
+    private async Task Run(string[] existingScriptNames, string baseName, string expectedNewScriptName)
     {
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var generator = new DefaultScriptNameGenerator(session);

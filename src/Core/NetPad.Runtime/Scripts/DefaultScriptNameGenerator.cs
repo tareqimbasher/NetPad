@@ -6,15 +6,24 @@ public class DefaultScriptNameGenerator(ISession session) : IScriptNameGenerator
 {
     public string Generate(string baseName = "Script")
     {
-        var existingScriptNames = session.Environments.Select(e => e.Script.Name).ToHashSet();
-        string newName;
-        var num = 0;
+        var max = session.Environments
+                .Where(e => e.Script.Name.StartsWith($"{baseName} "))
+                .Select(e =>
+                {
+                    var suffix = e.Script.Name[(baseName.Length + 1)..].Trim();
+                    var parts = suffix.Split(' ');
 
-        do
-        {
-            newName = $"{baseName} {++num}";
-        } while (existingScriptNames.Contains(newName));
+                    // Suffix must be a number (can be "11" but can't be "1 1")
+                    if (parts.Length == 1 && int.TryParse(parts[0], out var num))
+                    {
+                        return num;
+                    }
 
-        return newName;
+                    return 0;
+                })
+                .DefaultIfEmpty(0)
+                .Max();
+
+        return $"{baseName} {max + 1}";
     }
 }
