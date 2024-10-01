@@ -1,4 +1,5 @@
 {
+    "mainBinaryName": "netpad-vnext",
     "build": {
         "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r linux-x64 -c \"Release\" /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --no-self-contained"
     },

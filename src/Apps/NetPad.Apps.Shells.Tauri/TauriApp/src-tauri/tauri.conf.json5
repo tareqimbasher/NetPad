@@ -21,6 +21,11 @@
     },
     "bundle": {
         "active": true,
+        "publisher": "Tareq Imbasher",
+        "copyright": "Copyright © 2021 Tareq Imbasher",
+        "homepage": "https://github.com/tareqimbasher/NetPad",
+        "shortDescription": "A cross-platform C# editor and playground",
+        "category": "DeveloperTool",
         "targets": "all",
         "windows": {
             "nsis": {

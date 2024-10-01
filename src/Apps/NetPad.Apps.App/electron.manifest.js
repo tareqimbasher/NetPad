@@ -5,8 +5,8 @@
 const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
-    copyright: "Copyright © 2024 Tareq Imbasher",
-    buildVersion: "0.7.2",
+    copyright: "Copyright © 2021 Tareq Imbasher",
+    buildVersion: "0.8.0",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"
@@ -73,7 +73,7 @@ const electronBuilderConfig = {
     },
     win: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
-        icon: "../../../wwwroot/favicon.ico",
+        icon: "../../../wwwroot/favicon-256x256.ico",
         target: [
             {
                 target: "nsis"
