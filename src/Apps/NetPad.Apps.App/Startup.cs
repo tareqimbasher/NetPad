@@ -50,7 +50,7 @@ public class Startup
         Console.WriteLine($"   - Environment: {webHostEnvironment.EnvironmentName}");
         Console.WriteLine($"   - WebRootPath: {webHostEnvironment.WebRootPath}");
         Console.WriteLine($"   - ContentRootPath: {webHostEnvironment.ContentRootPath}");
-        Console.WriteLine($"   - Shell: {Program.Shell.GetType().Name}");
+        Console.WriteLine($"   - Shell: {Program.Shell?.GetType().Name}");
     }
 
     public IConfiguration Configuration { get; }
@@ -163,7 +163,7 @@ public class Startup
 #endif
 
         // Allow Shell to add/modify any service registrations it needs
-        Program.Shell.ConfigureServices(services);
+        Program.Shell?.ConfigureServices(services);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -195,7 +195,7 @@ public class Startup
 
         app.UseRouting();
 
-        Program.Shell.ConfigureRequestPipeline(app, env);
+        Program.Shell?.ConfigureRequestPipeline(app, env);
 
         app.UseEndpoints(endpoints =>
         {
@@ -214,7 +214,7 @@ public class Startup
 #endif
         });
 
-        Program.Shell.Initialize(app, env);
+        Program.Shell?.Initialize(app, env);
     }
 
     private static void InitializeHostInfo(IApplicationBuilder app, IWebHostEnvironment env)

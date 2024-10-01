@@ -18,18 +18,42 @@ pub struct DotNetServerManager {
 
 impl DotNetServerManager {
     pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<(), String> {
-        let executable_path = app_handle
+        let exe_ext = if std::env::consts::OS == "windows" {
+            ".exe"
+        } else {
+            ""
+        };
+
+        let mut executable_path = app_handle
             .path()
             .resolve(
-                "resources/netpad-server/NetPad.Apps.App",
+                format!("resources/netpad-server/NetPad.Apps.App{exe_ext}"),
                 BaseDirectory::Resource,
             )
             .unwrap();
 
-        let working_dir = app_handle
-            .path()
-            .resolve("resources/netpad-server", BaseDirectory::Resource)
-            .unwrap();
+        if !executable_path.exists() {
+            // If running standalone app and resources folder is in same dir as executable
+            if let Ok(current_exe) = std::env::current_exe() {
+                executable_path = current_exe;
+                executable_path.pop();
+                executable_path.push("resources");
+                executable_path.push("netpad-server");
+                executable_path.push(format!("NetPad.Apps.App{exe_ext}"));
+            }
+
+            if !executable_path.exists() {
+                let msg = format!(
+                    ".NET server executable was not found at path: '{}'",
+                    executable_path.display()
+                );
+                log::error!("{msg}");
+                return Err(msg);
+            }
+        }
+
+        let mut working_dir = executable_path.clone();
+        working_dir.pop();
 
         log::info!(
             "Starting .NET server backend at path: '{}' with working dir: '{}'",
@@ -39,6 +63,8 @@ impl DotNetServerManager {
 
         let mut cmd = Command::new(executable_path);
         cmd.arg("--tauri");
+        cmd.arg("--parent-pid");
+        cmd.arg(std::process::id().to_string());
         cmd.current_dir(dunce::canonicalize(working_dir).unwrap());
         #[cfg(target_os = "windows")]
         {

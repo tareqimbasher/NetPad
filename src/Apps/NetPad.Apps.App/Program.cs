@@ -8,9 +8,6 @@ using Microsoft.Extensions.Hosting;
 using NetPad.Application;
 using NetPad.Apps;
 using NetPad.Apps.Shells;
-using NetPad.Apps.Shells.Electron;
-using NetPad.Apps.Shells.Tauri;
-using NetPad.Apps.Shells.Web;
 using NetPad.Configuration;
 using NetPad.Swagger;
 using Serilog;
@@ -19,21 +16,48 @@ namespace NetPad;
 
 public static class Program
 {
-    internal static IShell Shell { get; private set; } = null!;
-    private static bool _isSwaggerCodeGenMode;
+    internal static IShell? Shell;
 
-    public static async Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] rawArgs)
     {
-        if (args.Contains("--swagger"))
+        ProgramExitCode result;
+        var args = new ProgramArgs(rawArgs);
+
+        if (args.RunMode == RunMode.SwaggerGen)
         {
-            _isSwaggerCodeGenMode = true;
-            return await GenerateSwaggerClientCodeAsync(args);
+            result = await GenerateSwaggerClientCodeAsync(args);
+        }
+        else
+        {
+            try
+            {
+                RunApp(args);
+                result = ProgramExitCode.Success;
+            }
+            catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
+            {
+                Console.WriteLine($"Another instance is already running. {ioException.Message}");
+                Shell?.ShowErrorDialog(
+                    $"{AppIdentifier.AppName} Already Running",
+                    $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
+                result =  ProgramExitCode.PortUnavailable;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
+                Log.Fatal(ex, "Host terminated unexpectedly");
+                result =  ProgramExitCode.UnexpectedError;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
-        return RunApp(args);
+        return (int)result;
     }
 
-    private static async Task<int> GenerateSwaggerClientCodeAsync(string[] args)
+    private static async Task<ProgramExitCode> GenerateSwaggerClientCodeAsync(ProgramArgs args)
     {
         try
         {
@@ -65,83 +89,61 @@ public static class Program
                 {
                     var content = await response.Content.ReadAsStringAsync();
                     Console.WriteLine(content);
-                    return 1;
+                    return ProgramExitCode.SwaggerGenError;
                 }
             }
 
             await host.StopAsync();
-            return 0;
+            return ProgramExitCode.Success;
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return 1;
+            return ProgramExitCode.SwaggerGenError;
         }
     }
 
-    private static int RunApp(string[] args)
+    private static void RunApp(ProgramArgs args)
     {
-        try
+        if (args.ParentPid.HasValue)
         {
-            Shell = CreateShell(args);
-
-            var builder = CreateHostBuilder(args);
-
-            builder.ConfigureServices(s => s.AddSingleton(Shell));
-
-            var host = builder.Build();
-
-            host.Run();
-            return 0;
+            ParentProcessTracker.ExitWhenParentProcessExists(args.ParentPid.Value);
         }
-        catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
+
+        Shell = args.CreateShell();
+
+        var builder = CreateHostBuilder(args);
+
+        builder.ConfigureServices(s => s.AddSingleton(Shell));
+
+        var host = builder.Build();
+
+        if (args.ParentPid.HasValue)
         {
-            Console.WriteLine($"Another instance is already running. {ioException.Message}");
-            Shell.ShowErrorDialog(
-                $"{AppIdentifier.AppName} Already Running",
-                $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
-            return 1;
+            ParentProcessTracker.SetThisHost(host);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
-            Log.Fatal(ex, "Host terminated unexpectedly");
-            return 1;
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
+
+        host.Run();
     }
 
-    private static IShell CreateShell(string[] args)
-    {
-        if (args.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT")))
-        {
-            return new ElectronShell();
-        }
-
-        if (args.Any(a => a.EqualsIgnoreCase("--tauri")))
-        {
-            return new TauriShell();
-        }
-
-        return new WebBrowserShell();
-    }
-
-    private static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
+    private static IHostBuilder CreateHostBuilder(ProgramArgs args) =>
+        Host.CreateDefaultBuilder(args.Raw)
             .ConfigureAppConfiguration(config => { config.AddJsonFile("appsettings.Local.json", true); })
             .UseSerilog((ctx, config) => { ConfigureLogging(config, ctx.Configuration); })
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                if (_isSwaggerCodeGenMode)
+                if (args.RunMode == RunMode.SwaggerGen)
                 {
                     webBuilder.UseStartup<SwaggerCodeGenerationStartup>();
                 }
                 else
                 {
-                    Shell.ConfigureWebHost(webBuilder, args);
+                    if (Shell == null)
+                    {
+                        throw new Exception("Shell has not been initialized");
+                    }
+
+                    Shell.ConfigureWebHost(webBuilder, args.Raw);
                     webBuilder.UseStartup<Startup>();
                 }
             });
