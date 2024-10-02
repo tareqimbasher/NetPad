@@ -81,7 +81,12 @@ const electronBuilderConfig = {
             {
                 target: "zip"
             }
-        ]
+        ],
+        sign: {
+            certificateFile: process.env.SIGN_CERT_PATH,
+            certificatePassword: process.env.SIGN_CERT_PASS,
+            signToolPath: "osslsigncode"
+        }
     },
     pacman: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
