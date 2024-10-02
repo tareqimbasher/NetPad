@@ -60,12 +60,7 @@ fi
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 APP_DIR=$(cd "$SCRIPT_DIR/../src/Apps/NetPad.Apps.App" && pwd)
 PACKAGES_SOURCE_DIR="$APP_DIR/bin/Desktop"
-PACKAGES_DEST_DIR="$SCRIPT_DIR/../dist"
-
-printf "%b" "${GREEN}# SCRIPT_DIR:           $SCRIPT_DIR${ENDCOLOR}\n"
-printf "%b" "${GREEN}# APP_DIR:              $APP_DIR${ENDCOLOR}\n"
-printf "%b" "${GREEN}# PACKAGES_SOURCE_DIR:  $PACKAGES_SOURCE_DIR${ENDCOLOR}\n"
-printf "%b" "${GREEN}# PACKAGES_DEST_DIR:    $PACKAGES_DEST_DIR${ENDCOLOR}\n"
+PACKAGES_DEST_DIR="$SCRIPT_DIR/../dist/electron"
 
 if [ -z "$SCRIPT_DIR" ]; then
   echo "Could not determine script dir"
@@ -86,6 +81,11 @@ if [ -z "$PACKAGES_DEST_DIR" ]; then
   echo "Could not determine destination package dir"
   exit 1
 fi
+
+printf "%b" "${GREEN}# SCRIPT_DIR:           $SCRIPT_DIR${ENDCOLOR}\n"
+printf "%b" "${GREEN}# APP_DIR:              $APP_DIR${ENDCOLOR}\n"
+printf "%b" "${GREEN}# PACKAGES_SOURCE_DIR:  $PACKAGES_SOURCE_DIR${ENDCOLOR}\n"
+printf "%b" "${GREEN}# PACKAGES_DEST_DIR:    $PACKAGES_DEST_DIR${ENDCOLOR}\n"
 
 # Create the DEST directory
 if [[ "$clean" == "true" ]]; then
@@ -134,7 +134,7 @@ if [[ -z $os ]] || [[ $os == "osx" ]]; then
   package osx
 fi
 
-if [[ -z $os ]] || [[ $os == "osx-arm" ]]; then
-  printf "%b" "${GREEN}\n# OSX ARM packages\n${ENDCOLOR}"
-  package "custom osx-arm64;mac /electron-arch arm64"
-fi
+#if [[ -z $os ]] || [[ $os == "osx-arm" ]]; then
+#  printf "%b" "${GREEN}\n# OSX ARM packages\n${ENDCOLOR}"
+#  package "custom osx-arm64;mac /electron-arch arm64"
+#fi
