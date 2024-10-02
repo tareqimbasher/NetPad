@@ -79,7 +79,7 @@ the Wiki.
 
 ## Contribution
 
-All Pull Requests, feedback and contributions are welcome!
+All Pull Requests, feedback and contributions are welcome! Please read the [Contributing guidelines](./CONTRIBUTING.md) for more information about how to contribute and build/run the project.
 
 Also a special thanks to the NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">
 sponsors</a>. Sponsorships help pay for macOS builds and helps me maintain this project.
@@ -174,113 +174,12 @@ and SignalR.
 
 ## Build
 
-This section describes how to build and run NetPad from source.
-NetPad can be run as an Electron desktop app or as a web application
-accessed with a web browser.
-
-### Requirements
-
-* Node v16+ (npm v8+)
-* .NET SDK 7.x
-* EF Core tools 5.x or later
-
-### NetPad as an Electron desktop app
-
-#### 1. Run the SPA
-
-```
-# Install dependencies
-cd src/Apps/NetPad.Apps.App/ElectronHostHook
-npm install
-
-cd ../App
-npm install
-
-# Start the development web server
-npm start
-```
-
-#### 2. Run the .NET app
-
-Install the Electron.NET CLI tool:
-
-```
-dotnet tool install ElectronNET.CLI -g
-```
-
-Start the app:
-
-```
-cd src/Apps/NetPad.Apps.App
-
-# Start in watch mode (remove '/watch' to run without watch mode)
-electronize start /watch /manifest electron.manifest.dev.js
-
-# For macOS ARM, append the following to the 'electronize start' command
-/target custom "osx-arm64;mac" /electron-arch arm64
-```
-
-###### Note
-
-> Only the very first `electronize start` is slow. Later runs are much faster.
-
-### NetPad as a Web app (accessed from a browser)
-
-#### 1. Run the SPA
-
-```
-# Install dependencies
-cd Apps/NetPad.Apps.App/App
-npm install
-
-# Start the development web server
-npm run start-web
-```
-
-#### 2. Run the .NET app
-
-```
-cd Apps/NetPad.Apps.App
-dotnet watch run --environment Development
-```
-
-and access the app via your web browser, ex: `http://localhost:57940`
-
-## Packaging :package:
-
-The Electron app is built and packaged using
-[electron-builder](https://www.electron.build/). Configuration is in the `electron.manifest.js`
-file.
-
-Build the app for the desired platform from the root directory of the `NetPad.Apps.App` project:
-
-```
-# For x64:
-electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
-electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
-electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
-
-# For macOS ARM:
-electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
-```
-
-Packaged files can be found in the `bin/Desktop` folder.
-
-###### Notes
-
-> 1. To build flatpak files the `flatpak` and `flatpak-builder` packages need to be installed.
-> 2. On Linux, the `/scripts/package-electron.sh` script can be used
-     > to package the Electron app, in which case packaged files can be found in
-     > the `/dist/` folder.
-
-
-See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
-for additional CLI options when packaging the app,
-and [electron-builder](https://www.electron.build/) for additional configuration
-options.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for instructions on how to build and run NetPad from
+source. NetPad can be ran as an Electron desktop app or as a web application accessed with a web browser.
 
 ## Resources :books::
 
 * Docs: [Go](https://github.com/tareqimbasher/NetPad/tree/main/docs)
 * More on SPA app startup and running
   tests: [Go](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Apps.App/App)
+* Build: [Go](./CONTRIBUTING.md#manually-start-the-project)
