@@ -37,12 +37,10 @@ covers features most commonly used and to introduce a few new useful ones.
 
 The following must be installed to use NetPad:
 
-* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or greater)
+* [.NET SDK](https://dotnet.microsoft.com/en-us/download) (v6 or later)
 
-Additional requirements only if you plan to create and use database connections:
+Additional requirement if you plan to create and use database connections:
 
-* [.NET 6 Runtime](https://dotnet.microsoft.com/en-us/download) (not needed if .NET 6 SDK is
-  installed)
 * [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
 
 ## Download
@@ -81,7 +79,7 @@ the Wiki.
 
 All Pull Requests, feedback and contributions are welcome! Please read the [Contributing guidelines](./CONTRIBUTING.md) for more information about how to contribute and build/run the project.
 
-Also a special thanks to the NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">
+A special thanks to NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">
 sponsors</a>. Sponsorships help pay for macOS builds and helps me maintain this project.
 
 <a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>
@@ -91,8 +89,6 @@ sponsors</a>. Sponsorships help pay for macOS builds and helps me maintain this 
 <a href="https://github.com/jdonohoo"><img src="https://github.com/jdonohoo.png" width="50px" alt="jdonohoo" /></a>
 &nbsp;&nbsp;
 <a href="https://github.com/ChristopherHaws"><img src="https://github.com/ChristopherHaws.png" width="50px" alt="ChristopherHaws" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/smashedtoatoms"><img src="https://github.com/smashedtoatoms.png" width="50px" alt="smashedtoatoms" /></a>
 &nbsp;&nbsp;
 <a href="https://github.com/pelsedyr"><img src="https://github.com/pelsedyr.png" width="50px" alt="pelsedyr" /></a>
 &nbsp;&nbsp;
@@ -120,7 +116,7 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the
 * Reference assemblies from disk
 * Syntax Tree Visualizer
 * User-defined results styling
-* Monaco Editor & OmniSharp offer an editor experience similar to Visual Studio Code:
+* LSP powered by OmniSharp:
     * Code Completion (Intellisense)
     * Semantic Highlighting
     * CodeLens
@@ -139,18 +135,17 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the
 ## Roadmap :construction:
 
 * Debugging
-* Support for more database providers
+* Support for more database providers (Oracle, Mongo...etc)
 * Hyperlink driven Lazy-loading of results, and a DataGrid view
 * Benchmark your code
 * Referencing other scripts
+* Ability to run a script from the command-line
 * IL Visualizer
 * Export a script as a "ready to run" .NET app
 * Export a script as a C# project
-* Ability to run a script from the command-line
 * Git tracking of script changes
-* Quality of Life:
-    * Workspaces/Sessions
-* Plugins & Theming
+* Workspaces/Sessions
+* Plugins
 
 <br/>
 <br/>
@@ -166,8 +161,8 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the
 
 ### How it works
 
-NetPad runs an ASP.NET web app that hosts a web-based user interface. It can be
-packaged as an Electron desktop app or served and accessed on any browser.
+NetPad runs an ASP.NET web app that hosts a web user interface. It can be
+packaged as a desktop app or served and accessed on any browser.
 
 Communication between the user interface and the ASP.NET backend occurs via HTTP
 and SignalR.
@@ -175,7 +170,7 @@ and SignalR.
 ## Build
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for instructions on how to build and run NetPad from
-source. NetPad can be ran as an Electron desktop app or as a web application accessed with a web browser.
+source. NetPad can be run as a desktop app or as a web application accessed with a web browser.
 
 ## Resources :books::
 

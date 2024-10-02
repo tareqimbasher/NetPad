@@ -23,11 +23,13 @@ Thank you for considering contributing to **NetPad**! We’re excited to have yo
 - [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) the repository, [create a branch](https://git-scm.com/docs/git-checkout), make your [changes](https://stackoverflow.com/questions/76776374/how-do-i-add-commit-and-push-code-to-git-using-git-bash-command-at-once#answer-76776375), and submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) to the `main` branch.
 
 ## Submitting Changes
-- **Branching Strategy**: Create a feature branch for your work. For example, `feat/my-new-feature`.
+- **Branching Strategy**: Create a branch for your work
+  - For new features or changes use the `feat/` prefix, example: `feat/my-new-feature`
+  - For bugs or fixes use the `fix` prefix, example: `fix/my-fix`
 - **Commit Messages**: Follow this format: `Add contributing guidelines`.
 - **Pull Requests**: Ensure your PR includes **tests** and follows our coding standards. A small **description** of the changes as well as the **issue number** (if applicable).
 
-### Pull request example :arrow_down:
+#### Pull request example :arrow_down:
 
 > Added contributing guidelines to make it easier for new contributors to get started.
 >
@@ -38,14 +40,14 @@ Thank you for considering contributing to **NetPad**! We’re excited to have yo
 
 ## Creating a Development Environment
 ### Prerequisites
-- [Node](https://nodejs.org/en/download/prebuilt-installer/current) v16+ (npm v8+)
+- [Node](https://nodejs.org/en/download/prebuilt-installer/current) v18.20+ (npm v10.7+)
 - [.NET](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) SDK 7.x
 - [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
 
 ### Manually Start the Project
 1. Fork and clone the repository and navigate to the project directory.
 ```bash
-git clone https://github.com/<Your github username>/NetPad.git && cd NetPad
+git clone https://github.com/tareqimbasher/NetPad.git && cd NetPad
 ```
 
 #### NetPad as an Electron desktop app :wrench:
@@ -77,7 +79,7 @@ dotnet tool install ElectronNET.CLI -g
 3. Start the app
 
 > [!NOTE]
-> Only the very first `electronize start` is slow. Later runs are much faster!
+> The very first `electronize start` is slow. Later runs are much faster!
 
 ```bash
 cd src/Apps/NetPad.Apps.App/
