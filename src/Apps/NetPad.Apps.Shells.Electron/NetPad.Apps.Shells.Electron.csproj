@@ -9,8 +9,4 @@
         <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="ElectronNET.API" Version="23.6.1" />
-    </ItemGroup>
-
 </Project>
