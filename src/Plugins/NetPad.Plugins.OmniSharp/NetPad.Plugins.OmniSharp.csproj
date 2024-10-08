@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OmniSharp.Abstractions" Version="1.39.6"/>
+        <PackageReference Include="OmniSharp.Abstractions" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
         <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
-        <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj"/>
+        <ProjectReference Include="..\..\External\OmniSharp.NET\OmniSharp.NET.csproj" />
     </ItemGroup>
 
 </Project>
