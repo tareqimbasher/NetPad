@@ -156,7 +156,7 @@ Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the
 ## Tech Stack :computer:
 
 * .NET
-* Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
+* Electron.NET ([github](https://github.com/theolivenbaum/electron-sharp/))
 * Aurelia 2 ([docs](https://docs.aurelia.io/))
 
 ### How it works

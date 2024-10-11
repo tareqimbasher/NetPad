@@ -1,6 +1,6 @@
-const electronNetConfig = require("./electron.manifest.js");
+const ElectronSharpConfig = require("./electron.manifest.js");
 
 // Development environment specific configuration
-electronNetConfig.environment = "Development";
+ElectronSharpConfig.environment = "Development";
 
-module.exports = electronNetConfig;
+module.exports = ElectronSharpConfig;
