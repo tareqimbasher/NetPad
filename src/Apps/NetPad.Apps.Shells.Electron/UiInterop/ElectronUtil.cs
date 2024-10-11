@@ -1,8 +1,8 @@
-using ElectronNET.API;
+using ElectronSharp.API;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
 
 public static class ElectronUtil
 {
-    public static BrowserWindow MainWindow => ElectronNET.API.Electron.WindowManager.BrowserWindows.First();
+    public static BrowserWindow MainWindow => ElectronSharp.API.Electron.WindowManager.BrowserWindows.First();
 }
