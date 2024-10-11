@@ -26,12 +26,7 @@ public class FileSystemInfoHtmlConverter : ObjectHtmlConverter
         nameof(FileSystemInfo.LastAccessTimeUtc),
         nameof(FileSystemInfo.LastWriteTime),
         nameof(FileSystemInfo.LastWriteTimeUtc),
-#if NET6_0_OR_GREATER
-        nameof(FileSystemInfo.LinkTarget),
-#endif
-#if NET7_0_OR_GREATER
         nameof(FileSystemInfo.UnixFileMode),
-#endif
         nameof(DirectoryInfo.Parent),
         nameof(FileInfo.Directory),
     };

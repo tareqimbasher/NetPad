@@ -9,4 +9,8 @@
         <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="ElectronSharp.API" />
+    </ItemGroup>
+
 </Project>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
+        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
         <AssemblyVersion>1.0.0</AssemblyVersion>

@@ -8,12 +8,9 @@
 
     <ItemGroup>
         <PackageReference Include="Dumpify" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
         <PackageReference Include="Microsoft.Extensions.DependencyModel" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
         <PackageReference Include="Newtonsoft.Json" />
         <PackageReference Include="NJsonSchema" />
         <PackageReference Include="NuGet.Protocol" />
