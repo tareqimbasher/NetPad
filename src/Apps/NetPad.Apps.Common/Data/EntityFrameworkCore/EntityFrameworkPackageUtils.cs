@@ -26,8 +26,6 @@ public static class EntityFrameworkPackageUtils
         {
             var version = dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                DotNetFrameworkVersion.DotNet7 => "7.0.20",
                 DotNetFrameworkVersion.DotNet8 => "8.0.8",
                 DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3.24172.4",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -39,8 +37,6 @@ public static class EntityFrameworkPackageUtils
             {
                 version = dotNetFrameworkVersion switch
                 {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
                     DotNetFrameworkVersion.DotNet8 => "8.0.8",
                     DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3.24172.4",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -53,8 +49,6 @@ public static class EntityFrameworkPackageUtils
         {
             var version = dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                DotNetFrameworkVersion.DotNet7 => "7.0.20",
                 DotNetFrameworkVersion.DotNet8 => "8.0.8",
                 DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3.24172.4",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -66,8 +60,6 @@ public static class EntityFrameworkPackageUtils
             {
                 version = dotNetFrameworkVersion switch
                 {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.33",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
                     DotNetFrameworkVersion.DotNet8 => "8.0.5",
                     DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3.24172.4",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -80,8 +72,6 @@ public static class EntityFrameworkPackageUtils
         {
             var version = dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.29",
-                DotNetFrameworkVersion.DotNet7 => "7.0.18",
                 DotNetFrameworkVersion.DotNet8 => "8.0.4",
                 DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -93,8 +83,6 @@ public static class EntityFrameworkPackageUtils
             {
                 version = dotNetFrameworkVersion switch
                 {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.29",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.18",
                     DotNetFrameworkVersion.DotNet8 => "8.0.4",
                     DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.3.24172.4",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -107,8 +95,6 @@ public static class EntityFrameworkPackageUtils
         {
             var version = dotNetFrameworkVersion switch
             {
-                DotNetFrameworkVersion.DotNet6 => "6.0.3",
-                DotNetFrameworkVersion.DotNet7 => "7.0.0",
                 DotNetFrameworkVersion.DotNet8 => "8.0.2",
                 DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.1",
                 _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
@@ -120,8 +106,6 @@ public static class EntityFrameworkPackageUtils
             {
                 version = dotNetFrameworkVersion switch
                 {
-                    DotNetFrameworkVersion.DotNet6 => "6.0.28",
-                    DotNetFrameworkVersion.DotNet7 => "7.0.2",
                     DotNetFrameworkVersion.DotNet8 => "8.0.2",
                     DotNetFrameworkVersion.DotNet9 => "9.0.0-preview.1.24081.2",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")

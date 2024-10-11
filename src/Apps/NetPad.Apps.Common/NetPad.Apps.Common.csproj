@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="MediatR" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
@@ -16,6 +17,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
         <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <ItemGroup>

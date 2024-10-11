@@ -11,9 +11,6 @@ public static class DotNetFrameworkVersionUtil
 
     private static readonly Dictionary<int, DotNetFrameworkVersion> _majorToFrameworkVersion = new()
     {
-        { 5, DotNetFrameworkVersion.DotNet5 },
-        { 6, DotNetFrameworkVersion.DotNet6 },
-        { 7, DotNetFrameworkVersion.DotNet7 },
         { 8, DotNetFrameworkVersion.DotNet8 },
         { 9, DotNetFrameworkVersion.DotNet9 },
     };
@@ -23,9 +20,6 @@ public static class DotNetFrameworkVersionUtil
 
     private static readonly Dictionary<DotNetFrameworkVersion, string> _frameworkVersionToTfm = new()
     {
-        { DotNetFrameworkVersion.DotNet5, "net5.0" },
-        { DotNetFrameworkVersion.DotNet6, "net6.0" },
-        { DotNetFrameworkVersion.DotNet7, "net7.0" },
         { DotNetFrameworkVersion.DotNet8, "net8.0" },
         { DotNetFrameworkVersion.DotNet9, "net9.0" },
     };
@@ -35,9 +29,6 @@ public static class DotNetFrameworkVersionUtil
 
     private static readonly Dictionary<DotNetFrameworkVersion, LanguageVersion> _frameworkVersionToLangVersion = new()
     {
-        { DotNetFrameworkVersion.DotNet5, LanguageVersion.CSharp9 },
-        { DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10 },
-        { DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11 },
         { DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12 },
         { DotNetFrameworkVersion.DotNet9, LanguageVersion.Preview },
     };

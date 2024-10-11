@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="NJsonSchema" />
         <PackageReference Include="OmniSharp.Abstractions" />
     </ItemGroup>
 

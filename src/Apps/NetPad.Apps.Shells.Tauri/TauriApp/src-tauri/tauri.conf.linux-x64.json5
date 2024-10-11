@@ -5,7 +5,7 @@
     },
     "bundle": {
         "resources": {
-            "../../../NetPad.Apps.App/bin/Release/net6.0/linux-x64/publish": "resources/netpad-server"
+            "../../../NetPad.Apps.App/bin/Release/net8.0/linux-x64/publish": "resources/netpad-server"
         }
     }
 }
