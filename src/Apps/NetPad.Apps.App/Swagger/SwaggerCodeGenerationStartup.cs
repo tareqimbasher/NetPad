@@ -78,7 +78,7 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
         app.UseDeveloperExceptionPage();
 
         app.UseOpenApi();
-        app.UseSwaggerUi3();
+        app.UseSwaggerUi();
 
         // Set host url
         var hostInfo = services.GetRequiredService<HostInfo>();

@@ -39,7 +39,7 @@ internal static class EntityFrameworkDatabaseUtil
             foreach (var index in entityType.GetIndexes())
             {
                 table.AddIndex(
-                    index.GetDatabaseName(),
+                    index.GetDatabaseName() ?? index.DisplayName(),
                     index.IsUnique,
                     index.Properties.Select(p => p.Name).ToArray());
             }

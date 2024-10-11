@@ -1,12 +1,11 @@
 using System.Runtime.Serialization;
 using NetPad.Common;
 using Newtonsoft.Json;
-using NJsonSchema.Converters;
 
 namespace NetPad.Plugins.OmniSharp.Features.Common.FileOperation;
 
 // Only used for NSwag
-[JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
+[JsonConverter(typeof(JsonInheritanceConverter<FileOperationResponse>), "discriminator")]
 [System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<FileOperationResponse>))]
 [KnownType(typeof(ModifiedFileResponse))]
 [KnownType(typeof(OpenFileResponse))]
