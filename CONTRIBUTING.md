@@ -100,8 +100,11 @@ electronize start /watch /manifest electron.manifest.dev.js
 
 ```bash
 # Install dependencies
-cd src/Apps/NetPad.Apps.App/
+cd src/Apps/NetPad.Apps.App/App/
 npm install
+
+# Start the development web server
+npm run start-web
 ```
 
 2. Start the development web server
