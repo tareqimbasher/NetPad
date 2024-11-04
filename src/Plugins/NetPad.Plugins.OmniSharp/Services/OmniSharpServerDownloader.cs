@@ -60,7 +60,7 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
                 throw new Exception($"Could not find executable in download dir '{downloadDir.FullName}'");
             }
 
-            if (platform != OSPlatform.Windows)
+            if (platform != OSPlatform.Windows && downloadedLocation.ExecutablePath is { Length: > 0 })
             {
                 ProcessUtil.MakeExecutable(downloadedLocation.ExecutablePath);
             }
@@ -85,15 +85,16 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
         }
 
         var executableFileName = GetExecutableFileName(platform);
+        var entryDllFile = new FileInfo(Path.Combine(downloadDir.FullName, GetEntryDllFileName()));
 
         var executableFile = new FileInfo(Path.Combine(downloadDir.FullName, executableFileName));
 
-        if (!executableFile.Exists)
+        if (!executableFile.Exists && !entryDllFile.Exists)
         {
             return null;
         }
 
-        return new OmniSharpServerLocation(executableFile.FullName);
+        return new OmniSharpServerLocation(executableFile.FullName, entryDllFile.FullName);
     }
 
     private DirectoryInfo GetDownloadRootDirectory() => new(Path.Combine(AppDataProvider.AppDataDirectoryPath.Path, "OmniSharp"));
@@ -123,5 +124,10 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
     private string GetExecutableFileName(OSPlatform platform)
     {
         return platform == OSPlatform.Windows ? "OmniSharp.exe" : "OmniSharp";
+    }
+
+    private string GetEntryDllFileName()
+    {
+        return "OmniSharp.dll";
     }
 }

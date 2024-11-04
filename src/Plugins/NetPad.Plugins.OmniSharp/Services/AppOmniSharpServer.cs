@@ -24,8 +24,7 @@ namespace NetPad.Plugins.OmniSharp.Services;
 /// </summary>
 public class AppOmniSharpServer(
     ScriptEnvironment environment,
-    IOmniSharpServerFactory omniSharpServerFactory,
-    IOmniSharpServerLocator omniSharpServerLocator,
+    OmniSharpServerBuilder omniSharpServerBuilder,
     IDataConnectionResourcesCache dataConnectionResourcesCache,
     Settings settings,
     ICodeParser codeParser,
@@ -145,59 +144,7 @@ public class AppOmniSharpServer(
 
     private async Task StartOmniSharpServerAsync()
     {
-        var omnisharpServerLocation = await omniSharpServerLocator.GetServerLocationAsync();
-        var executablePath = omnisharpServerLocation?.ExecutablePath;
-
-        if (!IsValidServerExecutablePath(executablePath))
-        {
-            throw new Exception($"Server executable path: {executablePath} is not valid");
-        }
-
-        string args = new[]
-        {
-            $"--hostPID {Environment.ProcessId}",
-            "--encoding utf-8",
-            "--loglevel Information",
-            //"-z",
-
-            "Sdk:IncludePrereleases=true",
-
-            "FileOptions:SystemExcludeSearchPatterns:0=**/.git",
-            "FileOptions:SystemExcludeSearchPatterns:1=**/.svn",
-            "FileOptions:SystemExcludeSearchPatterns:2=**/.hg",
-            "FileOptions:SystemExcludeSearchPatterns:3=**/CVS",
-            "FileOptions:SystemExcludeSearchPatterns:4=**/.DS_Store",
-            "FileOptions:SystemExcludeSearchPatterns:5=**/Thumbs.db",
-            $"RoslynExtensionsOptions:EnableAnalyzersSupport={settings.OmniSharp.EnableAnalyzersSupport}",
-            "RoslynExtensionsOptions:EnableEditorConfigSupport=false",
-            "RoslynExtensionsOptions:EnableDecompilationSupport=true",
-            $"RoslynExtensionsOptions:EnableImportCompletion={settings.OmniSharp.EnableImportCompletion}",
-            "RoslynExtensionsOptions:EnableAsyncCompletion=false",
-
-            $"RoslynExtensionsOptions:InlayHintsOptions:EnableForParameters={settings.OmniSharp.InlayHints.EnableParameters}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForLiteralParameters={settings.OmniSharp.InlayHints.EnableLiteralParameters}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForIndexerParameters={settings.OmniSharp.InlayHints.EnableIndexerParameters}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForObjectCreationParameters={settings.OmniSharp.InlayHints.EnableObjectCreationParameters}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForOtherParameters={settings.OmniSharp.InlayHints.EnableOtherParameters}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatDifferOnlyBySuffix={settings.OmniSharp.InlayHints.SuppressForParametersThatDifferOnlyBySuffix}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchMethodIntent={settings.OmniSharp.InlayHints.SuppressForParametersThatMatchMethodIntent}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:SuppressForParametersThatMatchArgumentName={settings.OmniSharp.InlayHints.SuppressForParametersThatMatchArgumentName}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:EnableForTypes={settings.OmniSharp.InlayHints.EnableTypes}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitVariableTypes={settings.OmniSharp.InlayHints.EnableImplicitVariableTypes}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForLambdaParameterTypes={settings.OmniSharp.InlayHints.EnableLambdaParameterTypes}",
-            $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
-        }.JoinToString(" ");
-
-        var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
-            executablePath!,
-            Project.ProjectDirectoryPath,
-            args,
-            dotNetInfo.LocateDotNetRootDirectory());
-
-        _logger.LogDebug("Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
-            executablePath,
-            Project.ProjectDirectoryPath,
-            args);
+        var omniSharpServer = await omniSharpServerBuilder.BuildAsync(Project);
 
         await omniSharpServer.StartAsync();
 
@@ -236,25 +183,6 @@ public class AppOmniSharpServer(
 
         _omniSharpServer = null;
     }
-
-    private bool IsValidServerExecutablePath(string? executablePath)
-    {
-        if (string.IsNullOrWhiteSpace(executablePath))
-        {
-            _logger.LogError("Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled");
-            return false;
-        }
-
-        if (!File.Exists(executablePath))
-        {
-            _logger.LogError("OmniSharp executable path does not exist at: {OmniSharpExecutablePath}. " +
-                             "OmniSharp functionality will not be enabled", executablePath);
-            return false;
-        }
-
-        return true;
-    }
-
 
     # region Event Handlers
 

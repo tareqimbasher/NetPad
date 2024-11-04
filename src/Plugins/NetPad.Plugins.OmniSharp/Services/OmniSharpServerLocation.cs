@@ -1,8 +1,30 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NetPad.Plugins.OmniSharp.Services;
 
-public class OmniSharpServerLocation(string executablePath)
+public class OmniSharpServerLocation
 {
-    public string ExecutablePath { get; } = executablePath;
-    public string DirectoryPath { get; } = new FileInfo(executablePath).DirectoryName ??
-                                           throw new Exception($"Could not get directory path from executable path: {executablePath}");
+    public OmniSharpServerLocation(string? executablePath, string? entryDllPath = default)
+    {
+        if (executablePath is null && entryDllPath is null) throw new ArgumentException("Can't locate omnisharp");
+        ExecutablePath = executablePath;
+        EntryDllPath = entryDllPath;
+        DirectoryPath = new FileInfo(executablePath ?? entryDllPath!).DirectoryName ??
+                        throw new Exception($"Could not get directory path from executable path: {executablePath}");
+    }
+
+    public string? ExecutablePath { get; }
+    public string? EntryDllPath { get; }
+    public string DirectoryPath { get; }
+
+    public bool Verify()
+    {
+        return CheckFileExistences(ExecutablePath) || CheckFileExistences(EntryDllPath);
+    }
+
+    private static bool CheckFileExistences([NotNullWhen(true)]string? executablePath)
+    {
+        return !string.IsNullOrWhiteSpace(executablePath) && File.Exists(executablePath);
+    }
+
 }
