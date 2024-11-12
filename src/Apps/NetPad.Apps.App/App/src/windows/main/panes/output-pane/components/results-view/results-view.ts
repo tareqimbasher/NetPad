@@ -1,4 +1,3 @@
-import {watch} from "@aurelia/runtime-html";
 import {KeyCode, System, Util} from "@common";
 import {ChannelInfo, IIpcGateway, ScriptStatus} from "@application";
 import {ExcelExportDialog} from "../excel-export/excel-export-dialog";
@@ -38,15 +37,6 @@ export class ResultsView extends OutputViewBase {
 
         this.txtUserInput.addEventListener("keydown", userInputKeyHandler);
         this.addDisposable(() => this.txtUserInput.removeEventListener("keydown", userInputKeyHandler));
-    }
-
-    @watch<ResultsView>(vm => vm.model.environment.status)
-    private scriptStatusChanged(newStatus: ScriptStatus, oldStatus: ScriptStatus) {
-        this.model.inputRequest = null;
-
-        if (oldStatus !== "Running" && newStatus === "Running") {
-            this.model.resultsDumpContainer.clearOutput(true);
-        }
     }
 
     private async exportOutputToExcel() {
