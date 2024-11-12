@@ -1,4 +1,4 @@
-﻿using ElectronNET.API.Entities;
+﻿using ElectronSharp.API.Entities;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
 

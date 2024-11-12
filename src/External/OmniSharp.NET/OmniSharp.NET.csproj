@@ -4,14 +4,19 @@
         <RootNamespace>OmniSharp</RootNamespace>
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
-        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
         <AssemblyVersion>0.1.0</AssemblyVersion>
         <FileVersion>0.1.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OmniSharp.Abstractions" Version="1.39.6"/>
-        <PackageReference Include="System.Text.Json" Version="6.0.9"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Newtonsoft.Json" />
+        <PackageReference Include="OmniSharp.Abstractions" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
 </Project>
