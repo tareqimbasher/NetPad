@@ -1,6 +1,7 @@
 ﻿import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
+    EnvironmentPropertyChangedEvent,
     HtmlErrorScriptOutput,
     HtmlRawScriptOutput,
     HtmlResultsScriptOutput,
@@ -14,6 +15,7 @@ import {
     PromptUserForInputCommand,
     ScriptEnvironment,
     ScriptOutputEmittedEvent,
+    ScriptStatus,
     Settings,
     ShortcutIds
 } from "@application";
@@ -57,6 +59,7 @@ export class OutputPane extends Pane {
     }
 
     public attached() {
+        this.listenForScriptStatusChanges();
         this.listenForOutputMessages();
 
         if (!this.isWindow) {
@@ -74,6 +77,21 @@ export class OutputPane extends Pane {
         this.disposables.add(() => this.element.removeEventListener("keydown", tabKeysHandler));
 
         PLATFORM.queueMicrotask(() => this.activatePaneIfApplicable());
+    }
+
+    private listenForScriptStatusChanges() {
+        this.disposables.add(
+            this.eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, msg => {
+                if (msg.propertyName == "Status" && (msg.newValue as ScriptStatus) == "Running") {
+                    const model = this.outputModels.get(msg.scriptId);
+                    if (model) {
+                        model.inputRequest = null;
+                        model.resultsDumpContainer.clearOutput(true);
+                        model.sqlDumpContainer.clearOutput(true);
+                    }
+                }
+            })
+        );
     }
 
     private listenForOutputMessages() {
