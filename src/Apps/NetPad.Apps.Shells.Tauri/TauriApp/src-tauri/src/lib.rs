@@ -171,11 +171,7 @@ pub fn create_window(
 
                 // Allow when loader/index.html reroutes to SPA app hosted by .NET server
                 if url.host_str() == Some("localhost") {
-                    return if cfg!(dev) {
-                        url.port() == Some(57940)
-                    } else {
-                        url.port() == Some(57950)
-                    };
+                    return url.port() == Some(57950)
                 }
 
                 // Reroute other URLs to system browser
