@@ -63,16 +63,29 @@ jobs:
       - name: dotnet restore
         run: dotnet restore
 
-      - name: 🔨 Build
+      - name: 🔨 build
         run: dotnet build --no-restore
 
-#      - name: install frontend dependencies
-#        run: npm install
+      - name: install frontend dependencies (SPA)
+        working-directory: "src/Apps/NetPad.Apps.App/App"
+        run: npm install
+
+      - name: install frontend dependencies (Tauri)
+        working-directory: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+        run: npm install
 
       # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
-  #      - uses: tauri-apps/tauri-action@v0
-  #        env:
-  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #        with:
-  #          args: ${{ matrix.args }}
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+          projectPath: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+          tauriScript: "npx tauri"
 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: netpad-d-file
+          path: src-tauri/target/x86_64-unknown-linux-gnu/release/NetPad.d
+          retention-days: 1
