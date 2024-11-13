@@ -86,6 +86,10 @@ jobs:
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: netpad-d-file
-          path: src-tauri/target/x86_64-unknown-linux-gnu/release/NetPad.d
+          name: netpad-appimage
+          path: src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/appimage/NetPad\ vNext_0.8.0_amd64.AppImage
           retention-days: 1
+
+#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/deb/NetPad vNext_0.8.0_amd64.deb
+#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/rpm/NetPad vNext-0.8.0-1.x86_64.rpm
+#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/appimage/NetPad vNext_0.8.0_amd64.AppImage
