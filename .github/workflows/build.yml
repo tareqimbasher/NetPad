@@ -47,6 +47,11 @@ jobs:
 
       - name: 🧐 Test
         run: dotnet test --no-build --verbosity normal
+
+      - name: 🔏 Sign binaries
+        if: runner.os == 'Windows'
+        run: |
+          osslsigncode sign -certs ${{ secrets.SIGN_CERT_PATH }} -key ${{ secrets.SIGN_CERT_PASS }} -in path/to/binary.exe -out path/to/signed_binary.exe
   
   spa:
     name: "SPA App"
