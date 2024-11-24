@@ -83,6 +83,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: netpad_0.8.0.bundles
-          path: ${{ steps.process_artifacts.outputs.paths }}
+          path: |
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-amd64.snap
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.AppImage
           retention-days: 1
           if-no-files-found: warn

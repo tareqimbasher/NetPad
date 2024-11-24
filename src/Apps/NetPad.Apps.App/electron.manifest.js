@@ -49,9 +49,9 @@ const electronBuilderConfig = {
             {
                 target: "rpm",
             },
-            {
-                target: "flatpak",
-            },
+            // {
+            //     target: "flatpak",
+            // },
             {
                 target: "snap",
             },
