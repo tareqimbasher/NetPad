@@ -27,56 +27,49 @@ jobs:
           #- platform: "macos-latest" # for Intel based macs.
           #  args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
           - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
-            #args: "-c src-tauri/tauri.conf.linux-x64.json5"
             args: ""
           #- platform: "windows-latest"
-          #  args: "-c src-tauri/tauri.conf.win-x64.json5"
+          #  args: ""
 
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🧲 setup node
+      - name: 🧲 Setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      - name: 🧲 setup .NET 7
+      - name: 🧲 Setup .NET 7
         uses: actions/setup-dotnet@v4.0.0
         with:
           dotnet-version: 7.0.x
 
-      - name: install dependencies (ubuntu only)
+      - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
 
-      - name: install frontend dependencies (SPA)
+      - name: Install frontend dependencies (SPA)
         working-directory: "src/Apps/NetPad.Apps.App/App"
         run: npm install
 
-      - name: install frontend dependencies (SPA)
+      - name: Install frontend dependencies (SPA)
         working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
         run: npm install
 
-      - name: package for Linux
+      - name: Package for Linux
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
           dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
           electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+          electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
 
       - name: List build files
         working-directory: "src/Apps/NetPad.Apps.App/bin/Desktop"
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-               find -follow
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-               dir /s /b /o:gn
-          else
-               find -L
-          fi
+        run: ls -al
         shell: bash
 
       - name: 'Upload Bundled Packages'
@@ -87,5 +80,8 @@ jobs:
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x64.zip
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-amd64.snap
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.AppImage
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.deb
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.rpm
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.pacman
           retention-days: 1
           if-no-files-found: warn
