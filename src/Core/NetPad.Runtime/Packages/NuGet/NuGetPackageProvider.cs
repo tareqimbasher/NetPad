@@ -53,11 +53,11 @@ public class NuGetPackageProvider(
 
         foreach (var resource in resources)
         {
-            var searchResource = await resource;
             IEnumerable<IPackageSearchMetadata>? searchResults;
 
             try
             {
+                var searchResource = await resource;
                 searchResults = await searchResource.SearchAsync(
                     term,
                     filter,
@@ -67,9 +67,9 @@ public class NuGetPackageProvider(
                     cancellationToken ?? CancellationToken.None
                 ).ConfigureAwait(false);
             }
-            catch (FatalProtocolException)
+            catch (Exception e)
             {
-                // ignore, might be a private feed
+                logger.LogError(e, "Error searching packages");
                 continue;
             }
 
@@ -95,11 +95,11 @@ public class NuGetPackageProvider(
 
         foreach (var repository in GetSourceRepositoryProvider().GetRepositories())
         {
-            var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
             NuGetVersion[] versions;
 
             try
             {
+                var resource = await repository.GetResourceAsync<FindPackageByIdResource>();
                 versions = (await resource.GetAllVersionsAsync(
                         packageId,
                         sourceCacheContext,
@@ -107,9 +107,9 @@ public class NuGetPackageProvider(
                         CancellationToken.None))
                     .ToArray();
             }
-            catch (FatalProtocolException)
+            catch (Exception e)
             {
-                // ignore, might be private feed
+                logger.LogError(e, "Error getting package versions");
                 continue;
             }
 
@@ -375,9 +375,9 @@ public class NuGetPackageProvider(
             {
                 await HydrateMetadataAsync(cachedPackages, TimeSpan.FromSeconds(cachedPackages.Count * 5));
             }
-            catch (FatalProtocolException)
+            catch (Exception e)
             {
-                // Ignore. This can occur if there is no internet connection.
+                logger.LogError(e, "Error hydrating metadata");
             }
         }
 
@@ -398,11 +398,11 @@ public class NuGetPackageProvider(
         foreach (var repository in repositories)
         {
             // Get the dependency info for the package.
-            var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>();
             SourcePackageDependencyInfo? dependencyInfo;
 
             try
             {
+                var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>();
                 dependencyInfo = await dependencyInfoResource.ResolvePackage(
                     package,
                     framework,
@@ -410,9 +410,9 @@ public class NuGetPackageProvider(
                     nugetLogger,
                     cancellationToken);
             }
-            catch (FatalProtocolException)
+            catch (Exception e)
             {
-                // ignore, might be private feed
+                logger.LogError(e, "Error getting dependency info of package: {Id} {Version}", package.Id, package.Version);
                 continue;
             }
 
@@ -602,8 +602,6 @@ public class NuGetPackageProvider(
                 .Select(x => x.Key)
                 .ToArray();
 
-            var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
-
             await Parallel.ForEachAsync(targets, async (packageIdentity, ct) =>
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -615,15 +613,16 @@ public class NuGetPackageProvider(
 
                 try
                 {
+                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
                         sourceCacheContext,
                         NuGetNullLogger.Instance,
                         cancellationToken);
                 }
-                catch (FatalProtocolException)
+                catch (Exception e)
                 {
-                    // ignore, might be private feed
+                    logger.LogError(e, "Error getting package metadata");
                     return;
                 }
 
@@ -668,8 +667,6 @@ public class NuGetPackageProvider(
                 break;
             }
 
-            var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
-
             var found = new List<PackageMetadata>();
 
             foreach (var package in needsProcessing)
@@ -688,15 +685,16 @@ public class NuGetPackageProvider(
 
                 try
                 {
+                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                         sourceCacheContext,
                         NuGetNullLogger.Instance,
                         cancellationTokenSource.Token);
                 }
-                catch (FatalProtocolException)
+                catch (Exception e)
                 {
-                    // ignore, might be private feed
+                    logger.LogError(e, "Error hydrating metadata");
                     continue;
                 }
 
