@@ -175,10 +175,12 @@ export class MainMenuManager {
             {
                 role: 'help',
                 submenu: [
-                    this.fromAppMenuItem("help.about"),
-                    this.fromAppMenuItem("help.checkForUpdates"),
+                    this.fromAppMenuItem("help.wiki"),
                     this.fromAppMenuItem("help.github"),
                     this.fromAppMenuItem("help.searchIssues"),
+                    {type: "separator"},
+                    this.fromAppMenuItem("help.checkForUpdates"),
+                    this.fromAppMenuItem("help.about"),
                 ]
             }
         ];

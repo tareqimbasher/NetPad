@@ -127,10 +127,12 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                     id: "help",
                     text: "Help",
                     items: [
-                        await this.fromAppMenuItem(appMenuItems, "help.about"),
-                        await this.fromAppMenuItem(appMenuItems, "help.checkForUpdates"),
+                        await this.fromAppMenuItem(appMenuItems, "help.wiki"),
                         await this.fromAppMenuItem(appMenuItems, "help.github"),
                         await this.fromAppMenuItem(appMenuItems, "help.searchIssues"),
+                        await PredefinedMenuItem.new({item: "Separator"}),
+                        await this.fromAppMenuItem(appMenuItems, "help.checkForUpdates"),
+                        await this.fromAppMenuItem(appMenuItems, "help.about"),
                     ].filter(x => x).map(x => x!)
                 })
             ].filter(x => x)

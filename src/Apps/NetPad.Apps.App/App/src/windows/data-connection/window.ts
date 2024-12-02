@@ -15,7 +15,6 @@ import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
 import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
-import {ShellType} from "@application/windows/shell-type";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -53,16 +52,12 @@ export class Window extends WindowBase {
             {
                 label: '<img src="/img/mariadb.png" class="connection-type-logo"/> MariaDB',
                 type: "MariaDB"
-            }
-        ];
-
-        // Until we implement a way to add a SQLite file in the browser, this option will not be available to browser shell
-        if (WindowParams.shell !== ShellType.Browser) {
-            this.connectionTypes.push({
+            },
+            {
                 label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
                 type: "SQLite"
-            });
-        }
+            }
+        ];
     }
 
     private getStartupParams() {

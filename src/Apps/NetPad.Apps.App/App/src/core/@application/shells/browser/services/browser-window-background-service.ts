@@ -44,7 +44,7 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
         const x = mainWin.top.outerWidth / 2 + mainWin.top.screenX - (width / 2);
         const y = mainWin.top.outerHeight / 2 + mainWin.top.screenY - (height / 2);
 
-        const features = `width=${width},height=${height},x=${x},y=${y},location=off,toolbar=off,status=off`;
+        const features = `width=${width},height=${height},x=${x},y=${y},location=no,status=no,toolbar=no,menubar=no,resizable=yes,titlebar=no`;
 
         window.open(url, command.windowName, features);
 

@@ -569,6 +569,11 @@ button > .icon-base {
     @extend .fa-bolt;
 }
 
+.wiki-icon {
+    @extend %icon-base;
+    @extend .fa-book-open;
+}
+
 .github-icon {
     @extend %icon-base;
     @extend %fa-brands;
@@ -667,6 +672,10 @@ button > .icon-base {
     .app-deps-check-icon {
         color: #8d8d8d;
     }
+
+    .wiki-icon {
+        color: #5b915b;
+    }
 }
 
 .theme-netpad-light.icon-theme-colorful,
@@ -756,5 +765,9 @@ button > .icon-base {
 
     .app-deps-check-icon {
         color: #808080;
+    }
+
+    .wiki-icon {
+        color: #47ac47;
     }
 }

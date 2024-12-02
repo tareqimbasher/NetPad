@@ -19,11 +19,12 @@
        click.trigger="openSettingsWindow()"
        title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
     <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
+       shells="!browser"
        click.trigger="toggleWindowAlwaysOnTop()"
        title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
 </div>
 
-<div class="window-controls ${leftWinCtrls ? 'order-first' : ''}">
+<div class="window-controls ${leftWinCtrls ? 'order-first' : ''}" shells="!browser">
     <i class="window-minimize-icon action-icon ${leftWinCtrls ? 'order-last' : ''}"
        click.trigger="minimize()"
        title="Minimize"></i>
