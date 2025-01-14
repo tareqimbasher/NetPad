@@ -2,6 +2,7 @@ import {ScriptOutput, Settings} from "@application";
 import {DisposableCollection, IDisposable, KeyCode, Util} from "@common";
 import {ResultControls} from "./result-controls";
 import {NavigationControls} from "./navigation-controls";
+import "highlight.js/styles/monokai.min.css";
 
 export class DumpContainer implements IDisposable {
     public readonly element: HTMLElement;

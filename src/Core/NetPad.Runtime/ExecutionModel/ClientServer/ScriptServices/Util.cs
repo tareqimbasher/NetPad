@@ -93,6 +93,19 @@ public static class Util
     }
 
     /// <summary>
+    /// Formats a code string and dumps it the results console.
+    /// </summary>
+    /// <param name="code">The code to be formatted.</param>
+    /// <param name="language">See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
+    /// for supported languages.</param>
+    /// <returns></returns>
+    public static string DumpCode(string code, string language = "auto")
+    {
+        Dump(code, code: language);
+        return code;
+    }
+
+    /// <summary>
     /// Serializes an object to a HTML string.
     /// </summary>
     public static string ToHtmlString<T>(T value, bool indented = false)
