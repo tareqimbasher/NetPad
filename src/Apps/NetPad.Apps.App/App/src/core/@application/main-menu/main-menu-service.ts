@@ -5,6 +5,8 @@ import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {IMainMenuService} from "./imain-menu-service";
+import {WindowParams} from "@application/windows/window-params";
+import {ShellType} from "@application/windows/shell-type";
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
@@ -68,12 +70,12 @@ export class MainMenuService implements IMainMenuService {
                         icon: "settings-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
                     },
-                    {
+                    WindowParams.shell === ShellType.Browser ? undefined! : {
                         id: "file.exit",
                         text: "Exit",
                         click: async () => this.windowService.close()
                     }
-                ]
+                ].filter(x => x)
             },
             {
                 text: "Edit",
@@ -248,6 +250,9 @@ export class MainMenuService implements IMainMenuService {
                         click: async () => this.windowService.resetZoom()
                     },
                     {
+                        isDivider: true
+                    },
+                    {
                         id: "view.toggleFullScreen",
                         text: "Toggle Full Screen",
                         click: async () => this.windowService.toggleFullScreen(),
@@ -259,16 +264,10 @@ export class MainMenuService implements IMainMenuService {
                 text: "Help",
                 menuItems: [
                     {
-                        id: "help.about",
-                        text: "About",
-                        icon: "star-icon",
-                        click: async () => await this.settingsService.openSettingsWindow("about")
-                    },
-                    {
-                        id: "help.checkForUpdates",
-                        text: "Check for Updates",
-                        icon: "app-update-icon",
-                        click: async () => await this.dialogUtil.toggle(AppUpdateDialog)
+                        id: "help.wiki",
+                        text: "Wiki",
+                        icon: "wiki-icon",
+                        click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/wiki")
                     },
                     {
                         id: "help.github",
@@ -281,6 +280,19 @@ export class MainMenuService implements IMainMenuService {
                         text: "Search Issues",
                         icon: "github-icon",
                         click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
+                    },
+                    {isDivider: true},
+                    {
+                        id: "help.checkForUpdates",
+                        text: "Check for Updates",
+                        icon: "app-update-icon",
+                        click: async () => await this.dialogUtil.toggle(AppUpdateDialog)
+                    },
+                    {
+                        id: "help.about",
+                        text: "About",
+                        icon: "star-icon",
+                        click: async () => await this.settingsService.openSettingsWindow("about")
                     },
                 ]
             }

@@ -70,13 +70,13 @@ internal class EntityFrameworkResourcesGenerator(
         // in our Script top-level program
         code.AppendLine(
             $$"""
-              public partial class Program : {{dbContextClassName}}<Program>
+              public partial class Program : {{dbContextClassName}}
               {
                   public Program()
                   {
                   }
 
-                  public Program(DbContextOptions<Program> options) : base(options)
+                  public Program(DbContextOptions<{{dbContextClassName}}> options) : base(options)
                   {
                   }
 
@@ -122,14 +122,11 @@ internal class EntityFrameworkResourcesGenerator(
               """);
 
         // 2. Add the DbContext property
-        code.AppendLine($"""
-
-                             private static Program? _program;
-
+        code.AppendLine($$"""
                              /// <summary>
                              /// The DbContext instance used to access the database.
                              /// </summary>
-                             public static {dbContextClassName}<Program> DataContext => _program ??= new Program();
+                             public static {{dbContextClassName}} DataContext { get; } = new {{dbContextClassName}}();
 
                          """);
 

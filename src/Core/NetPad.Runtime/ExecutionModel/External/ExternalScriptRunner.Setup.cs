@@ -54,17 +54,12 @@ public partial class ExternalScriptRunner
         var referenceAssets = (
                 await references.GetAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider)
             )
-            .Select(a => new
-            {
-                a.Path,
-                IsAssembly = a.IsAssembly()
-            })
             .DistinctBy(a => a.Path)
             .ToArray();
 
         // Get assembly file assets
         var assemblyFilePaths = referenceAssets
-            .Where(a => a.IsAssembly)
+            .Where(a => a.IsManagedAssembly)
             .Select(x => new
             {
                 x.Path,
@@ -107,7 +102,7 @@ public partial class ExternalScriptRunner
 
         // Get non-assembly file assets
         var fileAssets = referenceAssets
-            .Where(a => !a.IsAssembly)
+            .Where(a => !a.IsManagedAssembly)
             .Select(a => new FileAssetCopy(a.Path, $"./{Path.GetFileName(a.Path)}"))
             .ToHashSet();
 

@@ -6,8 +6,9 @@ using NetPad.DotNet;
 
 namespace NetPad.Assemblies;
 
+[Obsolete("Will be removed in a future version.")]
 public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> logger)
-    : AssemblyLoadContext(isCollectible: true), IAssemblyLoader
+    : AssemblyLoadContext(isCollectible: true), IDisposable
 {
     private bool _unloaded;
     private Dictionary<string, ReferencedAssemblyFile> _referenceAssemblyFiles = new();
@@ -81,7 +82,7 @@ public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> l
         }
     }
 
-    public IAssemblyLoader WithReferenceAssemblyImages(IEnumerable<AssemblyImage> referenceAssemblyImages)
+    public UnloadableAssemblyLoader WithReferenceAssemblyImages(IEnumerable<AssemblyImage> referenceAssemblyImages)
     {
         _referenceAssemblyImages = referenceAssemblyImages
             .Distinct()
@@ -90,7 +91,7 @@ public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> l
         return this;
     }
 
-    public IAssemblyLoader WithReferenceAssemblyFiles(IEnumerable<string> referenceAssemblyFiles)
+    public UnloadableAssemblyLoader WithReferenceAssemblyFiles(IEnumerable<string> referenceAssemblyFiles)
     {
         _referenceAssemblyFiles = referenceAssemblyFiles
             .Select(p => new ReferencedAssemblyFile(p, true))

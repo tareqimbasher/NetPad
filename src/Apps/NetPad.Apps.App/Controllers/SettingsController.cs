@@ -40,7 +40,7 @@ public class SettingsController(Settings settings, IMediator mediator) : Control
         if (string.IsNullOrWhiteSpace(containingDir) || !Directory.Exists(containingDir))
             return Ok();
 
-        ProcessUtil.OpenInDesktopExplorer(containingDir);
+        ProcessUtil.OpenWithDefaultApp(containingDir);
 
         return Ok();
     }

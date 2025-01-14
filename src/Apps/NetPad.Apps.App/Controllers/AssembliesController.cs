@@ -34,7 +34,7 @@ public class AssembliesController(IPackageProvider packageProvider) : Controller
 
             var namespaces = new HashSet<string>();
 
-            foreach (var asset in assets.Where(a => a.IsAssembly()))
+            foreach (var asset in assets.Where(a => a.IsManagedAssembly))
             {
                 using var assemblyInfoReader = new AssemblyInfoReader(asset.Path);
 

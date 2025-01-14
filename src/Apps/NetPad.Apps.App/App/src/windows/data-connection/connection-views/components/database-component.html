@@ -6,7 +6,7 @@
         <input class="form-control"
                list="datalistOptions"
                value.bind="connection.databaseName"
-               placeholder="${dbLoadingOptions.enabled ? 'Type to search, or click to select...' : 'Path to data file...'}"
+               placeholder="${dbLoadingOptions.enabled ? 'Type to search, or click to select...' : 'Full path to database file...'}"
                focus.trigger="loadDatabases()">
 
         <div if.bind="options.allowSelectDatabaseFile">

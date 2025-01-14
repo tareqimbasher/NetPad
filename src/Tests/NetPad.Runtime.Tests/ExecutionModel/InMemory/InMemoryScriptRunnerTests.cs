@@ -26,7 +26,6 @@ public class InMemoryScriptRunnerTests(ITestOutputHelper testOutputHelper) : Tes
     {
         services.AddTransient<ICodeParser, ExternalRunnerCSharpCodeParser>();
         services.AddTransient<ICodeCompiler, CSharpCodeCompiler>();
-        services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
         services.AddTransient<InMemoryScriptRunnerFactory>();
         services.AddTransient<IPackageProvider, NullPackageProvider>();
         services.AddTransient<ICodeAnalysisService, CodeAnalysisService>();

@@ -52,6 +52,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
         <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
+        <ProjectReference Include="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Shells.Electron\NetPad.Apps.Shells.Electron.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Shells.Tauri\NetPad.Apps.Shells.Tauri.csproj" />
         <ProjectReference Include="..\NetPad.Apps.Shells.Web\NetPad.Apps.Shells.Web.csproj" />

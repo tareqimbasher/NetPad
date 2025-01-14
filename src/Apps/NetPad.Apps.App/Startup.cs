@@ -64,7 +64,6 @@ public class Startup
         services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
         services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
         services.AddSingleton<ISession, Session>();
-        services.AddTransient<IAssemblyLoader, UnloadableAssemblyLoader>();
         services.AddTransient<ILogoService, LogoService>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
         services.AddTransient<IIpcService, SignalRIpcService>();
@@ -76,11 +75,7 @@ public class Startup
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
 
         // Script execution mechanism
-        services.AddExternalExecutionModel(options =>
-        {
-            options.ProcessCliArgs = ["-html"];
-            options.RedirectIo = true;
-        });
+        services.AddClientServerExecutionModel();
 
         // Data connections
         services

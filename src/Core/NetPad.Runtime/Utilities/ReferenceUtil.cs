@@ -38,4 +38,12 @@ public static class ReferenceUtil
 
         return assets;
     }
+
+    public static Task<HashSet<ReferenceAsset>> GetAssetsAsync(
+        this Reference reference,
+        DotNetFrameworkVersion dotNetFrameworkVersion,
+        IPackageProvider packageProvider)
+    {
+        return GetAssetsAsync([reference], dotNetFrameworkVersion, packageProvider);
+    }
 }

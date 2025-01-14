@@ -21,8 +21,8 @@ public class EntityFrameworkDatabaseScaffolder(
     ILogger<EntityFrameworkDatabaseScaffolder> logger)
 {
     // Should be names that are unlikely to conflict with scaffolded entity names
-    public const string DbContextName = "GeneratedDatabaseContext";
-    public const string DbContextCompiledModelName = "GeneratedDatabaseContextModel";
+    public const string DbContextName = "GeneratedDbContext";
+    public const string DbContextCompiledModelName = "GeneratedDbContextModel";
 
     public async Task<ScaffoldResult> ScaffoldAsync(EntityFrameworkDatabaseConnection connection, DotNetFrameworkVersion targetFrameworkVersion)
     {
