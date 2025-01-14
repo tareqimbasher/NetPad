@@ -48,4 +48,9 @@ public class RunResult(
     /// Returns a <see cref="RunResult"/> that indicates that the script ran and completed successfully.
     /// </summary>
     public static RunResult Success(double durationMs) => new(true, true, false, durationMs);
+
+    public override string ToString()
+    {
+        return $"IsRunAttemptSuccessful: {IsRunAttemptSuccessful}, IsScriptCompletedSuccessfully: {IsScriptCompletedSuccessfully}, IsRunCancelled: {IsRunCancelled}, DurationMs: {DurationMs}";
+    }
 }

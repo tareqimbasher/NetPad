@@ -45,7 +45,7 @@ internal static class ParseAndCompile
         Script script,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
-        List<AssemblyImage> referenceAssemblyImages,
+        IList<AssemblyImage> referenceAssemblyImages,
         HashSet<string> referenceAssemblyPaths,
         SourceCodeCollection additionalCode)
     {
@@ -90,7 +90,7 @@ internal static class ParseAndCompile
         Script script,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
-        List<AssemblyImage> referenceAssemblyImages,
+        IList<AssemblyImage> referenceAssemblyImages,
         HashSet<string> referenceAssemblyPaths,
         SourceCodeCollection additionalCode)
     {

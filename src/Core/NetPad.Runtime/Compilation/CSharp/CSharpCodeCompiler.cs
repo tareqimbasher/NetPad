@@ -21,7 +21,8 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
         var compilation = CreateCompilation(input, assemblyName);
 
         using var stream = new MemoryStream();
-        var result = compilation.Emit(stream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
+        var result = compilation.Emit(stream,
+            options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
 
         stream.Seek(0, SeekOrigin.Begin);
         var assemblyBytes = stream.ToArray();
@@ -42,7 +43,10 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             input.OptimizationLevel);
 
         // Build references
-        var assemblyLocations = FrameworkAssemblies.GetAssemblyLocations(dotNetInfo, input.TargetFrameworkVersion, input.UseAspNet);
+        var assemblyLocations = FrameworkAssemblies.GetAssemblyLocations(
+            dotNetInfo.LocateDotNetRootDirectoryOrThrow(),
+            input.TargetFrameworkVersion,
+            input.UseAspNet);
 
         foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
         {

@@ -86,7 +86,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error forwarding output to writer: {type}", writer.GetType().FullName);
+                    logger.LogError(ex, "Error forwarding output to writer: {Type}", writer.GetType().FullName);
                 }
             }
         });
@@ -219,6 +219,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         _logger.LogTrace("Dispose start");
 
         _externalOutputWriters.Clear();
+        _externalInputReaders.Clear();
 
         try
         {
@@ -226,7 +227,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error disposing process handler");
+            _logger.LogError(ex, "Error stopping script");
         }
 
         _logger.LogTrace("Dispose end");

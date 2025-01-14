@@ -161,7 +161,7 @@ public sealed class InMemoryScriptRunner : IScriptRunner
             //.Union(runOptions.AdditionalReferences)
             .GetAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider);
 
-        var referenceAssemblyPaths = assets.Where(a => a.IsAssembly()).Select(a => a.Path).ToHashSet();
+        var referenceAssemblyPaths = assets.Where(a => a.IsManagedAssembly).Select(a => a.Path).ToHashSet();
 
         var fullProgram = parsingResult.GetFullProgram()
             .ToCodeString()

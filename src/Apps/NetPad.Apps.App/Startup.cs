@@ -76,11 +76,7 @@ public class Startup
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
 
         // Script execution mechanism
-        services.AddExternalExecutionModel(options =>
-        {
-            options.ProcessCliArgs = ["-html"];
-            options.RedirectIo = true;
-        });
+        services.AddClientServerExecutionModel();
 
         // Data connections
         services
