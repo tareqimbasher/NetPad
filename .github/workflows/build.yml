@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, windows-2022, macos-12 ]
+        os: [ ubuntu-22.04, windows-2022, macos-13 ]
 
     steps:
       - name: 🚚 Checkout latest
@@ -47,18 +47,18 @@ jobs:
 
       - name: 🧐 Test
         run: dotnet test --no-build --verbosity normal
-  
+
   spa:
     name: "SPA App"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: ./src/Apps/NetPad.Apps.App/App
-    
+
     strategy:
       matrix:
         node-version: [ 16.x, 18.x, 20.x ]
-    
+
     steps:
       - name: 🚚 Checkout latest
         uses: actions/checkout@v4.1.1
