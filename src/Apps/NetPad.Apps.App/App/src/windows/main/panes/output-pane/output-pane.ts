@@ -82,12 +82,19 @@ export class OutputPane extends Pane {
     private listenForScriptStatusChanges() {
         this.disposables.add(
             this.eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, msg => {
-                if (msg.propertyName == "Status" && (msg.newValue as ScriptStatus) == "Running") {
+                if (msg.propertyName == "Status") {
                     const model = this.outputModels.get(msg.scriptId);
                     if (model) {
-                        model.inputRequest = null;
-                        model.resultsDumpContainer.clearOutput(true);
-                        model.sqlDumpContainer.clearOutput(true);
+                        const status = msg.newValue as ScriptStatus;
+
+                        if (status == "Running") {
+                            model.inputRequest = null;
+                            model.resultsDumpContainer.clearOutput(true);
+                            model.sqlDumpContainer.clearOutput(true);
+                        }
+                        else {
+                            model.inputRequest = null;
+                        }
                     }
                 }
             })
