@@ -19,7 +19,8 @@ public abstract class DataConnection(Guid id, string name, DataConnectionType ty
     /// Tests if the connection is valid.
     /// </summary>
     /// <returns></returns>
-    public abstract Task<DataConnectionTestResult> TestConnectionAsync(IDataConnectionPasswordProtector passwordProtector);
+    public abstract Task<DataConnectionTestResult> TestConnectionAsync(
+        IDataConnectionPasswordProtector passwordProtector);
 
     public override string ToString()
     {
@@ -30,40 +31,21 @@ public abstract class DataConnection(Guid id, string name, DataConnectionType ty
 
     private static Type[] GetKnownTypes()
     {
-        return DataConnectionKnownTypes.ScanForKnownTypes();
+        return DataConnectionKnownTypes.KnownTypes.Value;
     }
 
     private static class DataConnectionKnownTypes
     {
-        private static readonly object _lock = new();
-        private static Type[]? _knownTypes;
-
-        public static Type[] ScanForKnownTypes()
+        public static readonly Lazy<Type[]> KnownTypes = new(() =>
         {
-            if (_knownTypes != null)
-                return _knownTypes;
+            var dataConnectionType = typeof(DataConnection);
 
-            Type[] knownTypes;
-
-            lock (_lock)
-            {
-                if (_knownTypes != null)
-                    return _knownTypes;
-
-                var dataConnectionType = typeof(DataConnection);
-
-                knownTypes = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(a => a.GetName().Name?.StartsWith("NetPad.") == true)
-                    .SelectMany(a => a.GetExportedTypes())
-                    .Where(t => t.IsClass && !t.IsAbstract && dataConnectionType.IsAssignableFrom(t))
-                    .Distinct()
-                    .ToArray();
-
-                _knownTypes = knownTypes;
-            }
-
-            return _knownTypes;
-        }
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetName().FullName.Contains("NetPad"))
+                .SelectMany(x => x.GetExportedTypes())
+                .Where(t => t is { IsClass: true, IsAbstract: false } && dataConnectionType.IsAssignableFrom(t))
+                .ToArray();
+        });
     }
 
     #endregion

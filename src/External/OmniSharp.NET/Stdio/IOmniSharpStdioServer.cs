@@ -11,6 +11,11 @@ namespace OmniSharp.Stdio
     public interface IOmniSharpStdioServer : IOmniSharpServer
     {
         /// <summary>
+        /// Determines if the OmniSharp process is currently running.
+        /// </summary>
+        bool IsProcessRunning();
+
+        /// <summary>
         /// Subscribe to an event.
         /// </summary>
         /// <param name="eventType">The event type. See <see cref="OmniSharp.Models.Events.EventTypes"/> for a list of event types.</param>

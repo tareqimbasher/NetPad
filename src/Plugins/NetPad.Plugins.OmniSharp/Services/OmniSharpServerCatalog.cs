@@ -1,12 +1,6 @@
 using NetPad.Application;
-using NetPad.Compilation;
-using NetPad.Configuration;
-using NetPad.Data;
-using NetPad.DotNet;
-using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Utilities;
-using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp.Services;
 
@@ -36,7 +30,7 @@ public class OmniSharpServerCatalog(
         return null;
     }
 
-    public async Task StartOmniSharpServerAsync(ScriptEnvironment environment)
+    public Task StartOmniSharpServerAsync(ScriptEnvironment environment)
     {
         if (_items.ContainsKey(environment.Script.Id))
         {
@@ -46,90 +40,57 @@ public class OmniSharpServerCatalog(
 
         var serviceScope = _serviceScope.ServiceProvider.CreateScope();
 
-        var server = new AppOmniSharpServer(
-            environment,
-            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerFactory>(),
-            serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>(),
-            serviceScope.ServiceProvider.GetRequiredService<IDataConnectionResourcesCache>(),
-            serviceScope.ServiceProvider.GetRequiredService<Settings>(),
-            serviceScope.ServiceProvider.GetRequiredService<ICodeParser>(),
-            serviceScope.ServiceProvider.GetRequiredService<IEventBus>(),
-            serviceScope.ServiceProvider.GetRequiredService<IDotNetInfo>(),
-            serviceScope.ServiceProvider.GetRequiredService<ILogger<AppOmniSharpServer>>(),
-            serviceScope.ServiceProvider.GetRequiredService<ILogger<OmniSharpProject>>()
-        );
+        var server = ActivatorUtilities.CreateInstance<AppOmniSharpServer>(serviceScope.ServiceProvider, environment);
 
         logger.LogDebug("Initialized a new {Type} for script {Script}",
             nameof(AppOmniSharpServer),
             environment.Script);
 
-        try
+        _ = appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
+
+        Task<AppOmniSharpServer?> serverTask = Task.Run(async () =>
         {
-            await appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
-            var startTask = server.StartAsync();
-
-            // We don't want to await
-#pragma warning disable CS4014
-            startTask.ContinueWith(async task =>
-#pragma warning restore CS4014
+            try
             {
-                bool started = task.Status == TaskStatus.RanToCompletion && task.Result;
+                await server.StartAsync();
 
-                logger.LogDebug("Attempted to start {Type}. Succeeded: {Success}",
-                    nameof(AppOmniSharpServer),
-                    started);
+                if (!server.OmniSharpServer.IsProcessRunning())
+                {
+                    throw new Exception("OmniSharp server was started but the process is not running");
+                }
+
+                logger.LogDebug("Started OmniSharp server");
+                await appStatusMessagePublisher.PublishAsync(environment.Script.Id, "OmniSharp Server started");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred while starting OmniSharp server");
+
+                _items.Remove(environment.Script.Id);
+                serviceScope.Dispose();
 
                 await appStatusMessagePublisher.PublishAsync(
                     environment.Script.Id,
-                    $"OmniSharp Server {(started ? "started" : "failed to start")}",
-                    started ? AppStatusMessagePriority.Normal : AppStatusMessagePriority.High);
+                    "OmniSharp Server failed to start",
+                    AppStatusMessagePriority.High,
+                    true);
 
-                if (!started)
-                {
-                    _items.Remove(environment.Script.Id);
-                    serviceScope.Dispose();
-                }
-            });
+                return null;
+            }
 
-            Task<AppOmniSharpServer?> serverTask = Task.Run(async () =>
-            {
-                try
-                {
-                    await startTask;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Error occurred starting OmniSharp server");
-                    await appStatusMessagePublisher.PublishAsync(
-                        environment.Script.Id,
-                        "OmniSharp Server failed to start",
-                        AppStatusMessagePriority.High,
-                        true);
-                    return null;
-                }
+            return server;
+        });
 
-                return server;
-            });
-
-            _items.Add(environment.Script.Id, new CatalogItem(serverTask, serviceScope));
-            logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error occurred while attempting to start OmniSharp server");
-            await appStatusMessagePublisher.PublishAsync(
-                environment.Script.Id,
-                "OmniSharp Server failed to start",
-                AppStatusMessagePriority.High,
-                true);
-        }
+        _items.Add(environment.Script.Id, new CatalogItem(serverTask, serviceScope));
+        logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);
+        return serverTask;
     }
 
     public async Task StopOmniSharpServerAsync(ScriptEnvironment environment)
     {
         logger.LogDebug("Finding OmniSharp server to stop for script {Script}", environment.Script);
 
-        // Continuously try to find an OmniSharp server for the script for a few seconds.
+        // Try to find an OmniSharp server for the script for a few seconds.
         // A call to stop an OmniSharp server could be fired before the call to start it was fired
         // so we want to do multiple checks to ensure we find it if it starts later.
         CatalogItem? item = null;

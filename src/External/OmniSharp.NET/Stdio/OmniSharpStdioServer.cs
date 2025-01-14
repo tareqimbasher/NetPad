@@ -42,6 +42,8 @@ namespace OmniSharp.Stdio
             _stdioStandardInputLock = new object();
         }
 
+        public bool IsProcessRunning() => _processIo is { Process: { HasExited: false } };
+
         public override async Task StartAsync()
         {
             _processIo = await _omniSharpServerProcessAccessor.GetEntryPointAsync().ConfigureAwait(false);
