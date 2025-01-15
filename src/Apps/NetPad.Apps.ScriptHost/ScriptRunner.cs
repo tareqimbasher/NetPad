@@ -60,7 +60,7 @@ public class ScriptRunner
                 _scriptHostLoadedAssemblies.Add(file);
             }
 
-            Execute(message.ScriptAssemblyPath);
+            Execute(message.ScriptAssemblyPath, message.ProbingPaths);
 
             _ipcGateway.Send(0, new ScriptRunCompleteMessage(
                 RunResult.Success(Util.Stopwatch.ElapsedMilliseconds),
@@ -91,9 +91,11 @@ public class ScriptRunner
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Execute(string scriptAssemblyPath)
+    private static void Execute(string scriptAssemblyPath, string[] probingPaths)
     {
         using var assemblyLoader = new UnloadableAssemblyLoadContext(scriptAssemblyPath);
+
+        assemblyLoader.UseProbing(probingPaths);
 
         var assembly = assemblyLoader.LoadFromAssemblyPath(scriptAssemblyPath);
 

@@ -41,7 +41,8 @@ public class ScriptHostProcessManager(
         Guid runId,
         DirectoryPath scriptHostDepsDir,
         DirectoryPath scriptDir,
-        FilePath scriptAssemblyPath)
+        FilePath scriptAssemblyPath,
+        string[] probingPaths)
     {
         EnsureScriptHostStarted();
 
@@ -53,7 +54,8 @@ public class ScriptHostProcessManager(
             script.IsDirty,
             scriptHostDepsDir.Path,
             scriptDir.Path,
-            scriptAssemblyPath.Path
+            scriptAssemblyPath.Path,
+            probingPaths
         );
 
         Send(message);

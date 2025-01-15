@@ -290,7 +290,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
                 _currentScriptRun.RunId,
                 setup.ScriptHostDepsDir,
                 setup.ScriptDir,
-                setup.ScriptAssemblyFilePath);
+                setup.ScriptAssemblyFilePath,
+                setup.InPlaceDependencyDirectories);
 
             var result = await _currentScriptRun.Task;
             _logger.LogDebug("Script run completed. Run result: {Result}", result);

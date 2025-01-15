@@ -8,5 +8,6 @@ public record RunScriptMessage(
     bool IsDirty,
     string ScriptHostDepDirPath,
     string ScriptDirPath,
-    string ScriptAssemblyPath
+    string ScriptAssemblyPath,
+    string[] ProbingPaths
 );
