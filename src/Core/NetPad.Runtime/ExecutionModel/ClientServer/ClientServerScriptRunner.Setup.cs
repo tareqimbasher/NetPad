@@ -20,6 +20,17 @@ public partial class ClientServerScriptRunner
     private readonly IPackageProvider _packageProvider;
     private readonly Settings _settings;
 
+    /// <summary>
+    /// Contains post-setup info needed to run the script.
+    /// </summary>
+    /// <param name="ScriptHostDepsDir">The full path to the directory that will be used to deploy script-host
+    /// dependencies as well as dependencies needed by both the script-host process and the script itself.</param>
+    /// <param name="ScriptDir">The full path to the directory that will be used to deploy the script
+    /// assembly and any dependencies that are only needed by the script.</param>
+    /// <param name="ScriptAssemblyFilePath">The full path to the compiled script assembly.</param>
+    /// <param name="InPlaceDependencyDirectories">Full paths to directories where dependencies where not copied to
+    /// one of the deployment directories and instead should be loaded from their original locations (in-place).</param>
+    /// <param name="UserProgramStartLineNumber">The line number that user code starts on.</param>
     private record SetupInfo(
         DirectoryPath ScriptHostDepsDir,
         DirectoryPath ScriptDir,
@@ -45,14 +56,21 @@ public partial class ClientServerScriptRunner
     /// dependencies will not be copied, and instead will be loaded from their original locations (in-place).
     /// </para>
     /// </summary>
-    private async Task<SetupInfo?> SetupRunEnvironment(RunOptions runOptions)
+    private async Task<SetupInfo?> SetupRunEnvironmentAsync(RunOptions runOptions, CancellationToken cancellationToken)
     {
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+
         var dependencies = new List<Dependency>();
         var additionalCode = new SourceCodeCollection();
 
         // Add script references
         dependencies.AddRange(_script.Config.References
             .Select(x => new Dependency(x, NeededBy.Script, LoadStrategy.LoadInPlace)));
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
         // Add data connection resources
         if (_script.DataConnection != null)
@@ -80,14 +98,26 @@ public partial class ClientServerScriptRunner
 
         // Add assembly files needed to support running script
         dependencies.AddRange(_userVisibleAssemblies
-            .Select(assemblyPath => new Dependency(new AssemblyFileReference(assemblyPath), NeededBy.Shared,
+            .Select(assemblyPath => new Dependency(
+                new AssemblyFileReference(assemblyPath),
+                NeededBy.Shared,
                 LoadStrategy.DeployAndLoad))
         );
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
         Task.WaitAll(dependencies
             .Select(d => d.LoadAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider))
             .ToArray()
         );
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
         var compileAssemblyImageDeps = dependencies
             .Select(d =>
@@ -113,7 +143,13 @@ public partial class ClientServerScriptRunner
             .Select(x => x.Path)
             .ToHashSet();
 
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
         // Parse Code & Compile
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
         var (parsingResult, compilationResult) = ParseAndCompile.Do(
             runOptions.SpecificCodeToRun ?? _script.Code,
             _script,
@@ -135,6 +171,12 @@ public partial class ClientServerScriptRunner
             return null;
         }
 
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
         var scriptHostDepsDir = await DeployScriptHostDependenciesAsync(dependencies);
 
         var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(

@@ -88,7 +88,15 @@ public class ScriptHostProcessManager(
     public void StopScriptHost()
     {
         logger.LogDebug("Stopping script-host");
-        Cleanup();
+        _scriptHostProcessStartLock.Wait();
+        try
+        {
+            Cleanup();
+        }
+        finally
+        {
+            _scriptHostProcessStartLock.Release();
+        }
     }
 
     private void EnsureScriptHostStarted()

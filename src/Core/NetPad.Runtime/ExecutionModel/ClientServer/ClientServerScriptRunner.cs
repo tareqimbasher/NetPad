@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
@@ -20,10 +21,29 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.ExecutionModel.ClientServer;
 
+/// <summary>
+/// This runner starts a long-running script-host process the first time the script runs. It then interfaces with this
+/// script-host process via standard input/output streams (STD IO).
+///
+/// <para>
+/// High-level operation flow:
+/// 1. Sets up the run environment
+///     a. Resolves script references and their file locations
+///     b. Parses code: adds any additional code to the user's script to make a runnable program
+///     c. Compiles script into an assembly
+///     d. Deploys assets to filesystem
+/// 2. Start a script-host process if one hasn't been started already
+/// 3. Tell script-host process to run script assembly
+/// 4. script-host loads script assembly and its dependencies and executes main entry point
+///     a. script-host remains alive after script execution
+///     b. script-host can be terminated under certain conditions (ex. the user stopping the script)
+/// </para>
+/// </summary>
 public sealed partial class ClientServerScriptRunner : IScriptRunner
 {
     private readonly Script _script;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
+    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<ClientServerScriptRunner> _logger;
     private readonly DirectoryPath _scriptHostRootDirectory;
@@ -34,7 +54,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private readonly ScriptHostProcessManager _scriptHostProcessManager;
     private readonly List<IDisposable> _subscriptions = new();
 
-    private ScriptRun? _currentScriptRun;
+    private readonly object _runLock = new();
+    private ScriptRun? _currentRun;
     private bool _userRequestedStop;
     private bool _restartScriptHostOnNextRun;
 
@@ -50,6 +71,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         IDataConnectionResourcesCache dataConnectionResourcesCache,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
         IDotNetInfo dotNetInfo,
         IEventBus eventBus,
         Settings settings,
@@ -61,6 +83,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
+        _appStatusMessagePublisher = appStatusMessagePublisher;
         _dotNetInfo = dotNetInfo;
         _settings = settings;
         _logger = logger;
@@ -102,7 +125,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
         _subscriptions.Add(eventBus.Subscribe<DataConnectionResourcesUpdatingEvent>(ev =>
         {
-            if (_currentScriptRun?.DataConnectionId == ev.DataConnection.Id)
+            // script-host should be restarted if data connection resources (code, assemblies, dependencies) change
+            if (_currentRun?.DataConnectionId == ev.DataConnection.Id)
             {
                 _restartScriptHostOnNextRun = true;
             }
@@ -219,96 +243,141 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
                     {
                         var error = msg.Error;
 
-                        if (_currentScriptRun != null)
+                        if (_currentRun?.UserProgramStartLineNumber != null)
                         {
                             error = CorrectUncaughtExceptionStackTraceLineNumber(
                                 error,
-                                _currentScriptRun.UserProgramStartLineNumber);
+                                _currentRun.UserProgramStartLineNumber.Value);
                         }
 
                         _rawOutputHandler.RawErrorReceived(error);
                     }
 
                     _restartScriptHostOnNextRun = msg.RestartScriptHostOnNextRun;
-                    _currentScriptRun?.SetResult(msg.Result);
+                    _currentRun?.SetResult(msg.Result);
                 });
 
-                ipcGateway.On<ScriptHostExitedMessage>(_ =>
+                ipcGateway.On<ScriptHostExitedMessage>(msg =>
                 {
-                    if (_currentScriptRun is not { IsComplete: false }) return;
-                    if (_userRequestedStop)
-                    {
-                        _logger.LogError("script-host process stopped because user requested stop");
-                        _currentScriptRun.SetResult(RunResult.RunCancelled());
-                    }
-                    else
+                    if (!_userRequestedStop && _currentRun is { IsComplete: false })
                     {
                         _logger.LogError("script-host process stopped unexpectedly");
                         _output.WriteAsync(new ErrorScriptOutput("script-host process stopped unexpectedly")).Wait();
-                        _currentScriptRun.SetResult(RunResult.RunAttemptFailure());
+                        _currentRun.SetResult(RunResult.RunAttemptFailure());
                     }
                 });
             }
         );
 
-
         return manager;
     }
 
-    public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
+    public Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {
-        _logger.LogDebug("Starting to run script");
+        ScriptRun? previousRun;
 
-        try
+        lock (_runLock)
         {
-            if (_currentScriptRun != null && _scriptHostProcessManager.IsScriptHostRunning())
+            if (_currentRun is { IsComplete: false })
             {
-                bool stopScriptHost =
-                    _restartScriptHostOnNextRun
-                    || _currentScriptRun.HasScriptChangedEnoughToRestartScriptHost(_script);
+                return _currentRun.Task;
+            }
 
-                if (stopScriptHost)
+            _logger.LogDebug("Starting to run script");
+            previousRun = _currentRun;
+            _currentRun = new ScriptRun(_script);
+            _currentRun.CancellationToken.Register(() =>
+            {
+                _scriptHostProcessManager.StopScriptHost();
+                _currentRun.SetResult(RunResult.RunCancelled());
+                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopped");
+            });
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (previousRun != null)
                 {
-                    _logger.LogDebug("Will restart script-host");
-                    _scriptHostProcessManager.StopScriptHost();
+                    bool stopScriptHost =
+                        _userRequestedStop
+                        || _restartScriptHostOnNextRun
+                        || previousRun.HasScriptChangedEnoughToRestartScriptHost(_script);
+
+                    if (stopScriptHost)
+                    {
+                        _logger.LogDebug("Will restart script-host");
+                        _scriptHostProcessManager.StopScriptHost();
+                    }
+                }
+
+                _userRequestedStop = false;
+                _restartScriptHostOnNextRun = false;
+                _rawOutputHandler.Reset();
+
+                if (_currentRun.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var setup = await SetupRunEnvironmentAsync(runOptions, _currentRun.CancellationToken);
+
+                if (_currentRun.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (setup == null)
+                {
+                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Could not run script");
+                    _currentRun.SetResult(RunResult.RunAttemptFailure());
+                    return;
+                }
+
+                _currentRun.UserProgramStartLineNumber = setup.UserProgramStartLineNumber;
+
+                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Running...");
+                _scriptHostProcessManager.RunScript(
+                    _currentRun.RunId,
+                    setup.ScriptHostDepsDir,
+                    setup.ScriptDir,
+                    setup.ScriptAssemblyFilePath,
+                    setup.InPlaceDependencyDirectories);
+
+                var result = await _currentRun.Task;
+                _logger.LogDebug("Script run completed. Run result: {Result}", result);
+
+                if (!result.IsRunCancelled)
+                {
+                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Finished");
                 }
             }
-
-            _restartScriptHostOnNextRun = false;
-            _userRequestedStop = false;
-            _rawOutputHandler.Reset();
-
-            var setup = await SetupRunEnvironment(runOptions);
-            if (setup == null)
+            catch (Exception ex)
             {
-                return RunResult.RunAttemptFailure();
+                _logger.LogError(ex, "Error running script");
+                await _output.WriteAsync(new ErrorScriptOutput(ex));
+                _currentRun.SetResult(RunResult.RunAttemptFailure());
+                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Script finished with an error");
             }
+        });
 
-            _currentScriptRun = new ScriptRun(Guid.NewGuid(), setup.UserProgramStartLineNumber, _script);
-
-            _scriptHostProcessManager.RunScript(
-                _currentScriptRun.RunId,
-                setup.ScriptHostDepsDir,
-                setup.ScriptDir,
-                setup.ScriptAssemblyFilePath,
-                setup.InPlaceDependencyDirectories);
-
-            var result = await _currentScriptRun.Task;
-            _logger.LogDebug("Script run completed. Run result: {Result}", result);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error running script");
-            await _output.WriteAsync(new ErrorScriptOutput(ex));
-            return RunResult.RunAttemptFailure();
-        }
+        return _currentRun.Task;
     }
 
     public Task StopScriptAsync()
     {
-        _userRequestedStop = true;
-        _scriptHostProcessManager.StopScriptHost();
+        lock (_runLock)
+        {
+            _userRequestedStop = true;
+            if (_currentRun != null)
+            {
+                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopping...");
+                _currentRun.Cancel();
+                return _currentRun.Task;
+            }
+        }
+
         return Task.CompletedTask;
     }
 
