@@ -80,6 +80,8 @@ public class ScriptRunner
         }
         finally
         {
+            GCUtil.CollectAndWait();
+
             if (Directory.Exists(message.ScriptDirPath))
             {
                 Retry.Execute(
@@ -98,11 +100,6 @@ public class ScriptRunner
         assemblyLoader.UseProbing(probingPaths);
 
         var assembly = assemblyLoader.LoadFromAssemblyPath(scriptAssemblyPath);
-
-        if (assembly.EntryPoint == null)
-        {
-            throw new InvalidOperationException("Executing entry point Name null");
-        }
 
         Util.Stopwatch.Restart();
 

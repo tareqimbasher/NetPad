@@ -155,121 +155,124 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             _rawOutputHandler.RawErrorReceived,
             loggerFactory.CreateLogger(
                 $"{typeof(ScriptHostProcessManager)} | [{_script.Id.ToString()[..8]}] {_script.Name}"),
-            ipcGateway =>
-            {
-                ipcGateway.On<HtmlResultsScriptOutput>(msg => _output.WriteAsync(msg));
-                ipcGateway.On<HtmlSqlScriptOutput>(msg => _output.WriteAsync(msg));
-                ipcGateway.On<HtmlErrorScriptOutput>(msg => _output.WriteAsync(msg));
-                ipcGateway.On<RequestUserInputMessage>(_ =>
-                {
-                    // The first reader that returns a non-null input will be used
-                    string? input = null;
-                    foreach (var inputReader in _externalInputReaders)
-                    {
-                        input = inputReader.ReadAsync().Result;
-                        if (input != null)
-                        {
-                            break;
-                        }
-                    }
-
-                    _scriptHostProcessManager.Send(new ReceiveUserInputMessage(input));
-                });
-
-                ipcGateway.On<ScriptOutputMessage>(msg =>
-                {
-                    try
-                    {
-                        var raw = msg.Output;
-
-                        string type;
-                        JsonElement outputProperty;
-
-                        try
-                        {
-                            var json = JsonDocument.Parse(raw).RootElement;
-                            type =
-                                json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ??
-                                string.Empty;
-                            outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant());
-                        }
-                        catch
-                        {
-                            _logger.LogDebug(
-                                "Script output is not JSON or could not be deserialized. Output: '{RawOutput}'",
-                                raw);
-                            _rawOutputHandler.RawErrorReceived(raw);
-                            return;
-                        }
-
-                        ScriptOutput output;
-
-                        if (type == nameof(HtmlResultsScriptOutput))
-                        {
-                            output = JsonSerializer.Deserialize<HtmlResultsScriptOutput>(outputProperty.ToString())
-                                     ?? throw new FormatException(
-                                         $"Could deserialize JSON to {nameof(HtmlResultsScriptOutput)}");
-                        }
-                        else if (type == nameof(HtmlSqlScriptOutput))
-                        {
-                            output = JsonSerializer.Deserialize<HtmlSqlScriptOutput>(outputProperty.ToString())
-                                     ?? throw new FormatException(
-                                         $"Could deserialize JSON to {nameof(HtmlSqlScriptOutput)}");
-                        }
-                        else if (type == nameof(HtmlErrorScriptOutput))
-                        {
-                            output = JsonSerializer.Deserialize<HtmlErrorScriptOutput>(outputProperty.ToString())
-                                     ?? throw new FormatException(
-                                         $"Could deserialize JSON to {nameof(HtmlErrorScriptOutput)}");
-                        }
-                        else
-                        {
-                            // The raw output handler will handle writing the output
-                            _rawOutputHandler.RawOutputReceived(raw);
-                            return;
-                        }
-
-                        _output.WriteAsync(output);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Error processing script output");
-                    }
-                });
-
-                ipcGateway.On<ScriptRunCompleteMessage>(msg =>
-                {
-                    if (msg.Error != null)
-                    {
-                        var error = msg.Error;
-
-                        if (_currentRun?.UserProgramStartLineNumber != null)
-                        {
-                            error = CorrectUncaughtExceptionStackTraceLineNumber(
-                                error,
-                                _currentRun.UserProgramStartLineNumber.Value);
-                        }
-
-                        _rawOutputHandler.RawErrorReceived(error);
-                    }
-
-                    _restartScriptHostOnNextRun = msg.RestartScriptHostOnNextRun;
-                    _currentRun?.SetResult(msg.Result);
-                });
-
-                ipcGateway.On<ScriptHostExitedMessage>(msg =>
-                {
-                    if (!_userRequestedStop && _currentRun is { IsComplete: false })
-                    {
-                        _logger.LogError("script-host process stopped unexpectedly");
-                        _output.WriteAsync(new ErrorScriptOutput("script-host process stopped unexpectedly")).Wait();
-                        _currentRun.SetResult(RunResult.RunAttemptFailure());
-                    }
-                });
-            }
+            AddScriptHostOnMessageReceivedHandlers
         );
 
         return manager;
+    }
+
+    private void AddScriptHostOnMessageReceivedHandlers(ScriptHostIpcGateway ipcGateway)
+    {
+        ipcGateway.On<HtmlResultsScriptOutput>(msg => _output.WriteAsync(msg));
+        ipcGateway.On<HtmlSqlScriptOutput>(msg => _output.WriteAsync(msg));
+        ipcGateway.On<HtmlErrorScriptOutput>(msg => _output.WriteAsync(msg));
+
+        ipcGateway.On<RequestUserInputMessage>(_ =>
+        {
+            // The first reader that returns a non-null input will be used
+            string? input = null;
+            foreach (var inputReader in _externalInputReaders)
+            {
+                input = inputReader.ReadAsync().Result;
+                if (input != null)
+                {
+                    break;
+                }
+            }
+
+            _scriptHostProcessManager.Send(new ReceiveUserInputMessage(input));
+        });
+
+        ipcGateway.On<ScriptOutputMessage>(msg =>
+        {
+            try
+            {
+                var raw = msg.Output;
+
+                string type;
+                JsonElement outputProperty;
+
+                try
+                {
+                    var json = JsonDocument.Parse(raw).RootElement;
+                    type =
+                        json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ??
+                        string.Empty;
+                    outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant());
+                }
+                catch
+                {
+                    _logger.LogDebug(
+                        "Script output is not JSON or could not be deserialized. Output: '{RawOutput}'",
+                        raw);
+                    _rawOutputHandler.RawErrorReceived(raw);
+                    return;
+                }
+
+                ScriptOutput output;
+
+                if (type == nameof(HtmlResultsScriptOutput))
+                {
+                    output = JsonSerializer.Deserialize<HtmlResultsScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException(
+                                 $"Could deserialize JSON to {nameof(HtmlResultsScriptOutput)}");
+                }
+                else if (type == nameof(HtmlSqlScriptOutput))
+                {
+                    output = JsonSerializer.Deserialize<HtmlSqlScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException(
+                                 $"Could deserialize JSON to {nameof(HtmlSqlScriptOutput)}");
+                }
+                else if (type == nameof(HtmlErrorScriptOutput))
+                {
+                    output = JsonSerializer.Deserialize<HtmlErrorScriptOutput>(outputProperty.ToString())
+                             ?? throw new FormatException(
+                                 $"Could deserialize JSON to {nameof(HtmlErrorScriptOutput)}");
+                }
+                else
+                {
+                    // The raw output handler will handle writing the output
+                    _rawOutputHandler.RawOutputReceived(raw);
+                    return;
+                }
+
+                _output.WriteAsync(output);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error processing script output");
+            }
+        });
+
+        ipcGateway.On<ScriptRunCompleteMessage>(msg =>
+        {
+            if (msg.Error != null)
+            {
+                var error = msg.Error;
+
+                if (_currentRun?.UserProgramStartLineNumber != null)
+                {
+                    error = CorrectUncaughtExceptionStackTraceLineNumber(
+                        error,
+                        _currentRun.UserProgramStartLineNumber.Value);
+                }
+
+                _rawOutputHandler.RawErrorReceived(error);
+            }
+
+            _restartScriptHostOnNextRun = msg.RestartScriptHostOnNextRun;
+            _currentRun?.SetResult(msg.Result);
+        });
+
+        ipcGateway.On<ScriptHostExitedMessage>(msg =>
+        {
+            if (!_userRequestedStop && _currentRun is { IsComplete: false })
+            {
+                _logger.LogError("script-host process stopped unexpectedly");
+                _output.WriteAsync(new ErrorScriptOutput("script-host process stopped unexpectedly")).Wait();
+                _currentRun.SetResult(RunResult.RunAttemptFailure());
+            }
+        });
     }
 
     public Task<RunResult> RunScriptAsync(RunOptions runOptions)
