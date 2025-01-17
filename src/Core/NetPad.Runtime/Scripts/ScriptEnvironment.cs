@@ -22,12 +22,12 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     public ScriptEnvironment(Script script, IServiceScope serviceScope)
     {
         Script = script;
+        Status = ScriptStatus.Ready;
         _serviceScope = serviceScope;
         _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
         _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
         _inputReader = ActionInputReader<string>.Null;
         _outputWriter = ActionOutputWriter<object>.Null;
-        Status = ScriptStatus.Ready;
 
         // Forwards the following 2 property change notifications as messages on the event bus. They will eventually be pushed to IPC clients.
         Script.OnPropertyChanged.Add(async args =>

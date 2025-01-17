@@ -41,7 +41,8 @@ public class ScriptHostProcessManager(
         Guid runId,
         DirectoryPath scriptHostDepsDir,
         DirectoryPath scriptDir,
-        FilePath scriptAssemblyPath)
+        FilePath scriptAssemblyPath,
+        string[] probingPaths)
     {
         EnsureScriptHostStarted();
 
@@ -53,7 +54,8 @@ public class ScriptHostProcessManager(
             script.IsDirty,
             scriptHostDepsDir.Path,
             scriptDir.Path,
-            scriptAssemblyPath.Path
+            scriptAssemblyPath.Path,
+            probingPaths
         );
 
         Send(message);
@@ -86,7 +88,15 @@ public class ScriptHostProcessManager(
     public void StopScriptHost()
     {
         logger.LogDebug("Stopping script-host");
-        Cleanup();
+        _scriptHostProcessStartLock.Wait();
+        try
+        {
+            Cleanup();
+        }
+        finally
+        {
+            _scriptHostProcessStartLock.Release();
+        }
     }
 
     private void EnsureScriptHostStarted()

@@ -16,27 +16,31 @@ internal class Input(TextReader reader, Action<string> onInputReceived)
         _listenForInput = new();
 
         // This thread will exit when cancellation is requested or the TextReader stream is closed.
-        Task.Factory.StartNew(async () =>
+        Task.Factory.StartNew(cancellationToken =>
         {
-            while (!_listenForInput.IsCancellationRequested)
+            var ct = (CancellationToken)cancellationToken!;
+            while (!ct.IsCancellationRequested)
             {
-                string? input = await reader.ReadLineAsync();
-
+                var input = reader.ReadLine();
                 if (input == null)
                 {
                     continue;
                 }
 
-                try
+                // Execute handler on thread pool
+                _ = Task.Run(() =>
                 {
-                    _ = Task.Run(() => onInputReceived(input));
-                }
-                catch
-                {
-                    // Should be handled in message handlers
-                }
+                    try
+                    {
+                        onInputReceived(input);
+                    }
+                    catch
+                    {
+                        // Should be handled in message handlers
+                    }
+                });
             }
-        }, _listenForInput.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }, _listenForInput.Token, _listenForInput.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
     }
 
     public void CancelListening()

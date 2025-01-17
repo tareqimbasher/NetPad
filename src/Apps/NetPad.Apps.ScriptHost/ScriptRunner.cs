@@ -60,7 +60,7 @@ public class ScriptRunner
                 _scriptHostLoadedAssemblies.Add(file);
             }
 
-            Execute(message.ScriptAssemblyPath);
+            Execute(message.ScriptAssemblyPath, message.ProbingPaths);
 
             _ipcGateway.Send(0, new ScriptRunCompleteMessage(
                 RunResult.Success(Util.Stopwatch.ElapsedMilliseconds),
@@ -80,6 +80,8 @@ public class ScriptRunner
         }
         finally
         {
+            GCUtil.CollectAndWait();
+
             if (Directory.Exists(message.ScriptDirPath))
             {
                 Retry.Execute(
@@ -91,16 +93,13 @@ public class ScriptRunner
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Execute(string scriptAssemblyPath)
+    private static void Execute(string scriptAssemblyPath, string[] probingPaths)
     {
         using var assemblyLoader = new UnloadableAssemblyLoadContext(scriptAssemblyPath);
 
-        var assembly = assemblyLoader.LoadFromAssemblyPath(scriptAssemblyPath);
+        assemblyLoader.UseProbing(probingPaths);
 
-        if (assembly.EntryPoint == null)
-        {
-            throw new InvalidOperationException("Executing entry point Name null");
-        }
+        var assembly = assemblyLoader.LoadFromAssemblyPath(scriptAssemblyPath);
 
         Util.Stopwatch.Restart();
 

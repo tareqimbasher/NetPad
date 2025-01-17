@@ -20,14 +20,27 @@ public partial class ClientServerScriptRunner
     private readonly IPackageProvider _packageProvider;
     private readonly Settings _settings;
 
+    /// <summary>
+    /// Contains post-setup info needed to run the script.
+    /// </summary>
+    /// <param name="ScriptHostDepsDir">The full path to the directory that will be used to deploy script-host
+    /// dependencies as well as dependencies needed by both the script-host process and the script itself.</param>
+    /// <param name="ScriptDir">The full path to the directory that will be used to deploy the script
+    /// assembly and any dependencies that are only needed by the script.</param>
+    /// <param name="ScriptAssemblyFilePath">The full path to the compiled script assembly.</param>
+    /// <param name="InPlaceDependencyDirectories">Full paths to directories where dependencies where not copied to
+    /// one of the deployment directories and instead should be loaded from their original locations (in-place).</param>
+    /// <param name="UserProgramStartLineNumber">The line number that user code starts on.</param>
     private record SetupInfo(
         DirectoryPath ScriptHostDepsDir,
         DirectoryPath ScriptDir,
         FilePath ScriptAssemblyFilePath,
+        string[] InPlaceDependencyDirectories,
         int UserProgramStartLineNumber);
 
     /// <summary>
-    /// Sets up the environment the script will run in. It sets up a folder structure similar to the following:
+    /// Sets up the environment the script will run in. It creates a folder structure similar to the following and
+    /// deploys dependencies needed to run the script-host process and the script itself to these folders:
     /// <code>
     /// /script-root            # A temp directory created for each script when the script is run
     ///     /script-host        # Contains all dependency assets (assemblies, binaries...etc) that are specific
@@ -38,15 +51,26 @@ public partial class ClientServerScriptRunner
     ///     /script-run-3
     ///     /...
     /// </code>
+    /// <para>
+    /// Some dependencies are copied (deployed) to this folder structure where they will be loaded from, while other
+    /// dependencies will not be copied, and instead will be loaded from their original locations (in-place).
+    /// </para>
     /// </summary>
-    private async Task<SetupInfo?> SetupRunEnvironment(RunOptions runOptions)
+    private async Task<SetupInfo?> SetupRunEnvironmentAsync(RunOptions runOptions, CancellationToken cancellationToken)
     {
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+
         var dependencies = new List<Dependency>();
         var additionalCode = new SourceCodeCollection();
 
         // Add script references
         dependencies.AddRange(_script.Config.References
-            .Select(x => new Dependency(x, ReferenceNeededBy.Script)));
+            .Select(x => new Dependency(x, NeededBy.Script, LoadStrategy.LoadInPlace)));
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
         // Add data connection resources
         if (_script.DataConnection != null)
@@ -61,36 +85,50 @@ public partial class ClientServerScriptRunner
             if (dcResources.References.Count > 0)
             {
                 dependencies.AddRange(dcResources.References
-                    .Select(x => new Dependency(x, ReferenceNeededBy.Shared)));
+                    .Select(x => new Dependency(x, NeededBy.Shared, LoadStrategy.DeployAndLoad)));
             }
 
             if (dcResources.Assembly != null)
             {
                 dependencies.Add(
-                    new Dependency(new AssemblyImageReference(dcResources.Assembly), ReferenceNeededBy.Shared));
+                    new Dependency(new AssemblyImageReference(dcResources.Assembly), NeededBy.Shared,
+                        LoadStrategy.DeployAndLoad));
             }
         }
 
         // Add assembly files needed to support running script
         dependencies.AddRange(_userVisibleAssemblies
-            .Select(assemblyPath => new Dependency(new AssemblyFileReference(assemblyPath), ReferenceNeededBy.Shared))
+            .Select(assemblyPath => new Dependency(
+                new AssemblyFileReference(assemblyPath),
+                NeededBy.Shared,
+                LoadStrategy.DeployAndLoad))
         );
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
 
         Task.WaitAll(dependencies
             .Select(d => d.LoadAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider))
             .ToArray()
         );
 
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
         var compileAssemblyImageDeps = dependencies
             .Select(d =>
-                d.NeededBy != ReferenceNeededBy.ScriptHost && d.Reference is AssemblyImageReference air
+                d.NeededBy != NeededBy.ScriptHost && d.Reference is AssemblyImageReference air
                     ? air.AssemblyImage
                     : null!)
             .Where(x => x != null!)
             .ToArray();
 
         var compileAssemblyFileDeps = dependencies
-            .Where(x => x.NeededBy != ReferenceNeededBy.ScriptHost)
+            .Where(x => x.NeededBy != NeededBy.ScriptHost)
             .SelectMany(x => x.Assets)
             .DistinctBy(x => x.Path)
             .Where(x => x.IsManagedAssembly)
@@ -105,7 +143,13 @@ public partial class ClientServerScriptRunner
             .Select(x => x.Path)
             .ToHashSet();
 
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
         // Parse Code & Compile
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
         var (parsingResult, compilationResult) = ParseAndCompile.Do(
             runOptions.SpecificCodeToRun ?? _script.Code,
             _script,
@@ -127,6 +171,12 @@ public partial class ClientServerScriptRunner
             return null;
         }
 
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
         var scriptHostDepsDir = await DeployScriptHostDependenciesAsync(dependencies);
 
         var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
@@ -138,6 +188,11 @@ public partial class ClientServerScriptRunner
             scriptHostDepsDir,
             scriptDir,
             scriptAssemblyFilePath,
+            dependencies.Where(x => x.LoadStrategy == LoadStrategy.LoadInPlace)
+                .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToHashSet()
+                .ToArray()!,
             parsingResult.UserProgramStartLineNumber
         );
     }
@@ -176,7 +231,7 @@ public partial class ClientServerScriptRunner
         scriptHostDepsDir.Create();
 
         var scriptHostDeps = dependencies
-            .Where(x => x.NeededBy is ReferenceNeededBy.ScriptHost or ReferenceNeededBy.Shared);
+            .Where(x => x.NeededBy is NeededBy.ScriptHost or NeededBy.Shared);
 
         await DeployAsync(scriptHostDepsDir, scriptHostDeps);
         return scriptHostDepsDirPath;
@@ -195,7 +250,7 @@ public partial class ClientServerScriptRunner
         var scriptDir = new DirectoryInfo(scriptDirPath);
         scriptDir.Create();
 
-        var scriptDeps = dependencies.Where(x => x.NeededBy is ReferenceNeededBy.Script).ToArray();
+        var scriptDeps = dependencies.Where(x => x.NeededBy is NeededBy.Script).ToArray();
 
         await DeployAsync(scriptDir, scriptDeps);
 
@@ -263,6 +318,11 @@ public partial class ClientServerScriptRunner
                         destFilePath,
                         assemblyImage.Image);
                 }
+            }
+
+            if (dependency.LoadStrategy == LoadStrategy.LoadInPlace)
+            {
+                continue;
             }
 
             foreach (var asset in dependency.Assets)
@@ -334,9 +394,9 @@ public partial class ClientServerScriptRunner
     }
 
     /// <summary>
-    /// The component that a reference is needed by.
+    /// The component that a dependency is needed by.
     /// </summary>
-    enum ReferenceNeededBy
+    enum NeededBy
     {
         Script,
         ScriptHost,
@@ -344,11 +404,28 @@ public partial class ClientServerScriptRunner
     }
 
     /// <summary>
+    /// How a dependency is deployed and loaded.
+    /// </summary>
+    enum LoadStrategy
+    {
+        /// <summary>
+        /// Dependency will be copied to output directory and loaded from there.
+        /// </summary>
+        DeployAndLoad,
+
+        /// <summary>
+        /// Dependency will not be copied, and will be loaded from its original location (in-place).
+        /// </summary>
+        LoadInPlace
+    }
+
+    /// <summary>
     /// A dependency needed by the run environment.
     /// </summary>
     /// <param name="Reference">A reference dependency.</param>
     /// <param name="NeededBy">Which components need this dependency to run.</param>
-    record Dependency(Reference Reference, ReferenceNeededBy NeededBy)
+    /// <param name="LoadStrategy">How will this dependency be deployed.</param>
+    record Dependency(Reference Reference, NeededBy NeededBy, LoadStrategy LoadStrategy)
     {
         public ReferenceAsset[] Assets { get; private set; } = [];
 
