@@ -1,26 +1,28 @@
 <template class="d-flex align-items-center overflow-x-auto">
     <div class="group">
-        <button class="run-button btn btn-sm btn-themed me-2 ${environment.status === 'Running' ? 'disabled' : ''}"
-                show.bind="environment.status !== 'Running'"
+        <button class="run-button btn btn-sm btn-themed me-2"
+                show.bind="!isBusy"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
             <i class="run-icon text-green"></i>
         </button>
         <button class="btn btn-danger me-2"
-                show.bind="environment.status === 'Running'"
+                show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
                 title="Stop"
-                click.trigger="stop()">
+                click.trigger="stop()"
+                disabled.bind="environment.status === 'Stopping'">
             <i class="stop-icon"></i>
         </button>
         <button class="btn btn-sm btn-themed text-blue me-2"
                 title="${getShortcutKeyCombo('Save')}"
-                click.trigger="save()">
+                click.trigger="save()"
+                disabled.bind="isBusy">
             <i class="save-icon"></i>
         </button>
         <button class="btn btn-sm btn-themed"
                 title="${getShortcutKeyCombo('Script Properties')}"
                 click.trigger="openProperties()"
-                disabled.bind="environment.status === 'Running'">
+                disabled.bind="isBusy">
             <i class="properties-icon"></i>
         </button>
     </div>
@@ -28,7 +30,7 @@
         <b>SDK:</b>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="targetFrameworkVersion"
-                disabled.bind="environment.status === 'Running'">
+                disabled.bind="isBusy">
             <option value="" disabled></option>
             <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
                 .NET ${framework.replace('DotNet', '')}
@@ -39,7 +41,7 @@
         <b>Kind:</b>
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"
-                disabled.bind="environment.status === 'Running'">
+                disabled.bind="isBusy">
             <option value="Program">C# Program</option>
             <option value="SQL">SQL</option>
         </select>
@@ -49,7 +51,7 @@
         <b>Optimize:</b>
         <select class="form-select form-select-sm optimization-level-selector ms-3"
                 value.bind="optimizationLevel"
-                disabled.bind="environment.status === 'Running'">
+                disabled.bind="isBusy">
             <option model.bind="'Debug'" title="Optimize-: Optimizations disabled.">- Debug</option>
             <option model.bind="'Release'" title="Optimize+: Optimizations enabled.">+ Release</option>
         </select>
@@ -58,7 +60,7 @@
         <b>Connection:</b>
         <select class="form-select form-select-sm data-connection-selector ms-3"
                 value.bind="dataConnection"
-                disabled.bind="environment.status === 'Running'">
+                disabled.bind="isBusy">
             <option model.bind="null">None</option>
             <option repeat.for="connection of dataConnectionStore.connections"
                     model.bind="connection">

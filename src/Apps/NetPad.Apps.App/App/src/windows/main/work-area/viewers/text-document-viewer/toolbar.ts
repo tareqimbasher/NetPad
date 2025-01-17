@@ -36,6 +36,11 @@ export class Toolbar extends ViewModelBase {
             : null;
     }
 
+    public get isBusy(): boolean {
+        const status = this.environment?.status;
+        return status === "Running" || status === "Stopping";
+    }
+
     public get script(): Script | null | undefined {
         return this.environment?.script;
     }
