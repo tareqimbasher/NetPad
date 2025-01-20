@@ -99,7 +99,7 @@ public class EntityFrameworkDatabaseScaffolder(
                   using System.Text.Json;
                   using System.Text.Json.Serialization;
 
-                  class Program
+                  class DataConnectionProgram
                   {
                       static void Main()
                       {
