@@ -175,22 +175,24 @@ Only applicable when using the Integrated titlebar."></i>
         <div class="col">
             <div class="sub-header">Indicators</div>
             <div class="body">
-                <div class="form-check">
+                <div class="form-check"
+                title="Shows a colored indicator in the editor tab reflecting the current status of the script.">
                     <input id="showScriptRunStatusIndicatorInTab"
                            class="form-check-input"
                            type="checkbox"
                            checked.bind="settings.appearance.showScriptRunStatusIndicatorInTab">
                     <label class="form-check-label" for="showScriptRunStatusIndicatorInTab">
-                        Show colored indicator in tab reflecting if script ran successfully or not
+                        Show run status indicator in tab
                     </label>
                 </div>
-                <div class="form-check">
+                <div class="form-check"
+                title="Shows an indicator in the Explorer next to the script reflecting the current status of the script.">
                     <input id="showScriptRunStatusIndicatorInScriptsList"
                            class="form-check-input"
                            type="checkbox"
                            checked.bind="settings.appearance.showScriptRunStatusIndicatorInScriptsList">
                     <label class="form-check-label" for="showScriptRunStatusIndicatorInScriptsList">
-                        Show colored indicator in Explorer representing if script ran successfully or not
+                        Show run status indicator in Explorer
                     </label>
                 </div>
                 <div class="form-check">
