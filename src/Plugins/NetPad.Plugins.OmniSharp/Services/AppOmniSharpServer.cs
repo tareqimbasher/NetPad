@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Xml.Linq;
 using NetPad.Compilation;
 using NetPad.Configuration;
@@ -11,7 +12,9 @@ using NetPad.Scripts;
 using NetPad.Scripts.Events;
 using NetPad.Utilities;
 using OmniSharp;
+using OmniSharp.Events;
 using OmniSharp.FileWatching;
+using OmniSharp.Models.Events;
 using OmniSharp.Models.FilesChanged;
 using OmniSharp.Models.UpdateBuffer;
 using OmniSharp.Stdio;
@@ -37,16 +40,15 @@ public class AppOmniSharpServer(
     private readonly ILogger _logger = logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens = [];
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
-
+    private readonly CodeParsingOptions _codeParsingOptions = new();
     private IOmniSharpStdioServer? _omniSharpServer;
 
     public Guid ScriptId => environment.Script.Id;
 
     public OmniSharpProject Project { get; } = new(environment.Script, dotNetInfo, settings, scriptProjectLogger);
 
-    public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer
-                                                    ?? throw new InvalidOperationException(
-                                                        $"OmniSharp server has not been started yet. Script ID: {environment.Script.Id}");
+    public IOmniSharpStdioServer OmniSharpServer => _omniSharpServer ?? throw new InvalidOperationException(
+        $"OmniSharp server has not been started yet. Script ID: {environment.Script.Id}");
 
     /// <summary>
     /// Starts the server.
@@ -194,7 +196,8 @@ public class AppOmniSharpServer(
             args,
             dotNetInfo.LocateDotNetRootDirectory());
 
-        _logger.LogDebug("Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
+        _logger.LogDebug(
+            "Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
             executablePath,
             Project.ProjectDirectoryPath,
             args);
@@ -203,21 +206,26 @@ public class AppOmniSharpServer(
 
         _omniSharpServer = omniSharpServer;
 
-        // It takes some time for OmniSharp to register its updated buffer after it starts
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
             _ = Task.Run(async () =>
             {
-                await Task.Delay(3000);
+                for (int i = 0; i < 6; i++)
+                {
+                    bool shouldUpdateDataConnectionCodeBuffer =
+                        environment.Script.DataConnection == null
+                        || await dataConnectionResourcesCache.HasCachedResourcesAsync(
+                            environment.Script.DataConnection.Id,
+                            environment.Script.Config.TargetFrameworkVersion
+                        );
 
-                bool shouldUpdateDataConnectionCodeBuffer = environment.Script.DataConnection == null
-                                                            || await dataConnectionResourcesCache.HasCachedResourcesAsync(
-                                                                environment.Script.DataConnection.Id,
-                                                                environment.Script.Config.TargetFrameworkVersion);
-                if (shouldUpdateDataConnectionCodeBuffer)
-                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(environment.Script.DataConnection);
-                else
-                    await UpdateOmniSharpCodeBufferAsync();
+                    if (shouldUpdateDataConnectionCodeBuffer)
+                        await UpdateOmniSharpCodeBufferWithDataConnectionAsync(environment.Script.DataConnection);
+                    else
+                        await UpdateOmniSharpCodeBufferAsync();
+
+                    await Task.Delay(1000);
+                }
             });
         }
     }
@@ -238,7 +246,8 @@ public class AppOmniSharpServer(
     {
         if (string.IsNullOrWhiteSpace(executablePath))
         {
-            _logger.LogError("Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled");
+            _logger.LogError(
+                "Could not locate the OmniSharp Server executable. OmniSharp functionality will be disabled");
             return false;
         }
 
@@ -260,14 +269,7 @@ public class AppOmniSharpServer(
         Subscribe<ScriptCodeUpdatedEvent>(async ev =>
         {
             if (ev.Script.Id != environment.Script.Id) return;
-
             await UpdateOmniSharpCodeBufferAsync();
-
-            // Technically we should be doing this, instead of the previous line however when
-            // we do, code in bootstrapper program like the .Dump() extension method is not recognized
-            // TODO need to find a point where we can determine OmniSharp has fully started and is ready to update buffer and for it to register
-            // var parsingResult = _codeParser.Parse(_environment.Script);
-            // await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
         });
 
         Subscribe<ScriptTargetFrameworkVersionUpdatedEvent>(async ev =>
@@ -283,7 +285,10 @@ public class AppOmniSharpServer(
             else
             {
                 // When target framework version changes, we need to update OmniSharp's data connection assembly references
-                _ = Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection); });
+                _ = Task.Run(async () =>
+                {
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
+                });
             }
         });
 
@@ -299,7 +304,9 @@ public class AppOmniSharpServer(
         {
             if (ev.Script.Id != environment.Script.Id) return;
 
-            await Project.SetProjectAttributeAsync("Sdk", DotNetCSharpProject.GetProjectSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
+            await Project.SetProjectAttributeAsync(
+                "Sdk",
+                DotNetCSharpProject.GetProjectSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
             await NotifyOmniSharpServerProjectFileChangedAsync();
         });
 
@@ -370,10 +377,10 @@ public class AppOmniSharpServer(
     private async Task UpdateOmniSharpCodeBufferAsync()
     {
         var script = environment.Script;
-        var parsingResult = codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, new CodeParsingOptions()
-        {
-            IncludeAspNetUsings = script.Config.UseAspNet,
-        });
+        _codeParsingOptions.IncludeAspNetUsings = script.Config.UseAspNet;
+
+        var parsingResult =
+            codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, _codeParsingOptions);
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
     }
@@ -398,7 +405,9 @@ public class AppOmniSharpServer(
     {
         var connectionResources = dataConnection == null
             ? null
-            : await dataConnectionResourcesCache.GetResourcesAsync(dataConnection, environment.Script.Config.TargetFrameworkVersion);
+            : await dataConnectionResourcesCache.GetResourcesAsync(
+                dataConnection,
+                environment.Script.Config.TargetFrameworkVersion);
 
         List<Reference> references = [];
 
@@ -415,10 +424,10 @@ public class AppOmniSharpServer(
         await Project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(connectionResources?.SourceCode);
-
-        // Needed to trigger diagnostics and semantic highlighting for script file
-        await Task.Delay(1000);
         await UpdateOmniSharpCodeBufferAsync();
+
+        // Notify project file changed again
+        await NotifyOmniSharpServerProjectFileChangedAsync();
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(DataConnectionSourceCode? sourceCode)
@@ -435,16 +444,26 @@ public class AppOmniSharpServer(
 
     private async Task NotifyOmniSharpServerProjectFileChangedAsync()
     {
-        await OmniSharpServer.SendAsync(new[]
+        try
         {
-            new FilesChangedRequest
-            {
-                FileName = Project.ProjectFilePath,
-                ChangeType = FileChangeType.Change
-            }
-        });
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
-        await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
+            await OmniSharpServer.SendAsync(new[]
+            {
+                new FilesChangedRequest
+                {
+                    FileName = Project.ProjectFilePath,
+                    ChangeType = FileChangeType.Create
+                }
+            }, cts.Token);
+
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to notify OmniSharp server that project file changed");
+            throw;
+        }
     }
 
     private async Task UpdateBufferAsync(string filePath, string? buffer)
@@ -455,12 +474,18 @@ public class AppOmniSharpServer(
         try
         {
             buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             await OmniSharpServer.SendAsync(new UpdateBufferRequest
             {
                 FileName = filePath,
                 Buffer = buffer
-            });
+            }, cts.Token);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to update OmniSharp server buffer for file: '{FilePath}'", filePath);
+            throw;
         }
         finally
         {

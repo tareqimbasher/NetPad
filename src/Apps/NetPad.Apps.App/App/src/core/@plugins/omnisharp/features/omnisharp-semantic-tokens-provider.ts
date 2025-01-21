@@ -34,7 +34,7 @@ export class OmniSharpSemanticTokensProvider extends FeatureProvider implements 
         });
 
         this.eventBus.subscribeToServer(api.OmniSharpAsyncBufferUpdateCompletedEvent, message => {
-            setTimeout(() => this._onDidChange.fire(), 500);
+            this._onDidChange.fire();
         });
     }
 

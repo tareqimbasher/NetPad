@@ -1,20 +1,12 @@
 ﻿using System.Text.Json;
-using NetPad.Application;
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
-using OmniSharp.Models.Events;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
-public class DiagnosticsEventsBackgroundService(
-    IAppStatusMessagePublisher appStatusMessagePublisher,
-    IIpcService ipcService,
-    IEventBus eventBus,
-    ILogger<DiagnosticsEventsBackgroundService> logger)
-    : IHostedService
+public class DiagnosticsEventsBackgroundService(IIpcService ipcService, IEventBus eventBus) : IHostedService
 {
-    private readonly ILogger<DiagnosticsEventsBackgroundService> _logger = logger;
     private readonly List<IDisposable> _disposables = [];
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -23,21 +15,6 @@ public class DiagnosticsEventsBackgroundService(
         {
             var server = ev.AppOmniSharpServer;
             var scriptId = server.ScriptId;
-
-            server.OmniSharpServer.SubscribeToEvent("BackgroundDiagnosticStatus", async node =>
-            {
-                var body = node["Body"];
-
-                var diagnostic = body?.Deserialize<OmniSharpBackgroundDiagnostic>();
-                if (diagnostic == null)
-                    return;
-
-                string message = diagnostic.Status == BackgroundDiagnosticStatus.Finished
-                    ? $"OmniSharp analyzed {diagnostic.NumberFilesTotal} files"
-                    : $"OmniSharp analyzing {diagnostic.NumberFilesTotal - diagnostic.NumberFilesRemaining}/{diagnostic.NumberFilesTotal} files";
-
-                await appStatusMessagePublisher.PublishAsync(scriptId, message);
-            });
 
             server.OmniSharpServer.SubscribeToEvent("Diagnostic", async node =>
             {
@@ -48,12 +25,16 @@ public class DiagnosticsEventsBackgroundService(
                     return;
 
                 // Only send diagnostics for user program
-                diagnostics.Results = diagnostics.Results
+                var results = diagnostics.Results
                     .Where(d => d.FileName == server.Project.UserProgramFilePath)
                     .ToArray();
 
-                if (!diagnostics.Results.Any())
+                if (results.Length == 0)
+                {
                     return;
+                }
+
+                diagnostics.Results = results;
 
                 await ipcService.SendAsync(new OmniSharpDiagnosticsEvent(scriptId, diagnostics));
             });

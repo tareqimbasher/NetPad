@@ -10,7 +10,7 @@ public class CodeParsingOptions
     public SourceCodeCollection AdditionalCode { get; init; } = [];
 
     /// <summary>
-    /// Whether code parser should add add ASP.NET namespaces.
+    /// Whether code parser should add ASP.NET namespaces.
     /// </summary>
-    public bool IncludeAspNetUsings { get; init; }
+    public bool IncludeAspNetUsings { get; set; }
 }

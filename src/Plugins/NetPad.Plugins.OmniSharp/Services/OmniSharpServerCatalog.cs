@@ -46,7 +46,7 @@ public class OmniSharpServerCatalog(
             nameof(AppOmniSharpServer),
             environment.Script);
 
-        _ = appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp Server...");
+        _ = appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp server...");
 
         Task<AppOmniSharpServer?> serverTask = Task.Run(async () =>
         {
@@ -60,7 +60,7 @@ public class OmniSharpServerCatalog(
                 }
 
                 logger.LogDebug("Started OmniSharp server");
-                await appStatusMessagePublisher.PublishAsync(environment.Script.Id, "OmniSharp Server started");
+                await appStatusMessagePublisher.PublishAsync(environment.Script.Id, "OmniSharp server started");
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ public class OmniSharpServerCatalog(
 
                 await appStatusMessagePublisher.PublishAsync(
                     environment.Script.Id,
-                    "OmniSharp Server failed to start",
+                    "OmniSharp server failed to start",
                     AppStatusMessagePriority.High,
                     true);
 
