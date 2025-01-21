@@ -8,7 +8,7 @@ public class AppearanceOptions : ISettingsOptions
     public AppearanceOptions()
     {
         Theme = Theme.Dark;
-        IconTheme = IconTheme.Default;
+        IconTheme = IconTheme.Colorful;
         ShowScriptRunStatusIndicatorInTab = true;
         ShowScriptRunStatusIndicatorInScriptsList = false;
         ShowScriptRunningIndicatorInScriptsList = false;
