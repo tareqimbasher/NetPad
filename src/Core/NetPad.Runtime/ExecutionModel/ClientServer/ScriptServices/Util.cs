@@ -35,7 +35,7 @@ public static class Util
     /// <summary>
     /// The current script.
     /// </summary>
-    public static UserScript Script { get; set; } = null!;
+    public static UserScript Script { get; internal set; } = null!;
 
     /// <summary>
     /// Information about the current script-host environment.
@@ -50,7 +50,7 @@ public static class Util
     /// <summary>
     /// A memory-cache that persists between script runs.
     /// </summary>
-    public static MemCache Cache => new();
+    public static MemCache Cache { get; } = new();
 
     /// <summary>
     /// Terminates script-host process and current script execution.
