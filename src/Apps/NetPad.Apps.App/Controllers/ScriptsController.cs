@@ -77,9 +77,15 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/stop")]
-    public async Task Stop(Guid id)
+    public async Task Stop(Guid id, bool stopRunner = false)
     {
-        await mediator.Send(new StopScriptCommand(id));
+        await mediator.Send(new StopScriptCommand(id, stopRunner));
+    }
+
+    [HttpPatch("stop-all")]
+    public async Task StopAll(bool force)
+    {
+        await mediator.Send(new StopAllScriptsCommand(force));
     }
 
     [HttpPut("{id:guid}/code")]

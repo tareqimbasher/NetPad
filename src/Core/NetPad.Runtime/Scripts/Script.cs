@@ -136,7 +136,7 @@ public class Script : INotifyOnPropertyChanged
 
     public override string ToString()
     {
-        return $"[{Id}] {Name}".TrimEnd();
+        return $"[{Id}] {Name}";
     }
 
     private Task ConfigPropertyChangedHandler(PropertyChangedArgs propertyChangedArgs)

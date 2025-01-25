@@ -34,7 +34,12 @@
                                 <span class="script-status" switch.bind="script.environment.status">
                                     <span case="Running"
                                           if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
-                                          class="spinner-border script-running-indicator"></span>
+                                          class="spinner-border script-running-indicator"
+                                          title="Running..."></span>
+                                    <span case="Stopping"
+                                          if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
+                                          class="spinner-border script-stopping-indicator"
+                                          title="Stopping..."></span>
                                     <i case="Ready"
                                        class="script-status-success-icon icon-xs"
                                        if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds"

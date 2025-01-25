@@ -26,8 +26,10 @@
         <let has-submenu.bind="item.menuItems && item.menuItems.length > 0"></let>
         <let has-click-action.bind="item.click || item.shortcut"></let>
 
-        <div class="${item.isDivider ? 'dropdown-divider' : 'dropdown-item'} ${hasSubmenu ? 'dropdown' : ''} ${hasClickAction ? '' : 'view-only'}"
-             click.trigger="hasSubmenu ? $event.stopPropagation() : click(item)">
+        <div
+            class="${item.isDivider ? 'dropdown-divider' : 'dropdown-item'} ${hasSubmenu ? 'dropdown' : ''} ${hasClickAction ? '' : 'view-only'}"
+            click.trigger="hasSubmenu ? $event.stopPropagation() : click(item)"
+            title.bind="item.hoverText">
 
             <div class="menu-item-icon">
                 <i class="${item.icon}" if.bind="item.icon"></i>

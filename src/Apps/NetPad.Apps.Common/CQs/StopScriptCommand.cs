@@ -1,22 +1,21 @@
 using MediatR;
-using NetPad.Events;
-using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.CQs;
 
-public class StopScriptCommand(Guid scriptId) : Command
+public class StopScriptCommand(Guid scriptId, bool stopRunner) : Command
 {
     public Guid ScriptId { get; } = scriptId;
+    public bool StopRunner { get; } = stopRunner;
 
-    public class Handler(IMediator mediator, IEventBus eventBus) : IRequestHandler<StopScriptCommand>
+    public class Handler(IMediator mediator) : IRequestHandler<StopScriptCommand>
     {
         public async Task<Unit> Handle(StopScriptCommand request, CancellationToken cancellationToken)
         {
-            var environment = await mediator.Send(new GetOpenedScriptEnvironmentQuery(request.ScriptId, true));
+            var environment = await mediator.Send(
+                new GetOpenedScriptEnvironmentQuery(request.ScriptId, true),
+                cancellationToken);
 
-            await environment!.StopAsync();
-
-            await eventBus.PublishAsync(new ScriptRunCancelledEvent(environment));
+            await environment!.StopAsync(request.StopRunner);
 
             return Unit.Value;
         }

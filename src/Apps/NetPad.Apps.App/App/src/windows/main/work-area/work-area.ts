@@ -177,7 +177,7 @@ export class WorkArea extends ViewModelBase {
 
                 await this.scriptService.run(environment.script.id, runOptions);
             },
-            stop: async () => await this.scriptService.stop(environment.script.id),
+            stop: async () => await this.scriptService.stop(environment.script.id, true),
             openProperties: async () => await this.scriptService.openConfigWindow(environment.script.id, null)
         };
 

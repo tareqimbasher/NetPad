@@ -32,12 +32,14 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         // Forwards the following 2 property change notifications as messages on the event bus. They will eventually be pushed to IPC clients.
         Script.OnPropertyChanged.Add(async args =>
         {
-            await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.OldValue, args.NewValue));
+            await _eventBus.PublishAsync(new ScriptPropertyChangedEvent(Script.Id, args.PropertyName, args.OldValue,
+                args.NewValue));
         });
 
         Script.Config.OnPropertyChanged.Add(async args =>
         {
-            await _eventBus.PublishAsync(new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName, args.OldValue, args.NewValue));
+            await _eventBus.PublishAsync(new ScriptConfigPropertyChangedEvent(Script.Id, args.PropertyName,
+                args.OldValue, args.NewValue));
         });
 
         _runner = new Lazy<IScriptRunner>(() =>
@@ -63,7 +65,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         if (Status.NotIn(ScriptStatus.Ready, ScriptStatus.Error))
         {
-            throw new InvalidOperationException($"Script is not in the correct state to run. Status is currently: {Status}");
+            throw new InvalidOperationException(
+                $"Script is not in the correct state to run. Status is currently: {Status}");
         }
 
         await SetStatusAsync(ScriptStatus.Running);
@@ -77,7 +80,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             await SetRunDurationAsync(runResult.DurationMs);
 
-            await SetStatusAsync(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled ? ScriptStatus.Ready : ScriptStatus.Error);
+            await SetStatusAsync(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled
+                ? ScriptStatus.Ready
+                : ScriptStatus.Error);
 
             _logger.LogDebug("Run finished with status: {Status}", Status);
         }
@@ -93,19 +98,24 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
-    public async Task StopAsync()
+    public async Task StopAsync(bool stopRunner)
     {
         EnsureNotDisposed();
 
         _logger.LogTrace($"{nameof(StopAsync)} start");
 
-        if (Status != ScriptStatus.Running)
+        var stopTime = DateTime.Now;
+        var wasRunning = Status == ScriptStatus.Running;
+
+        if (!stopRunner && !wasRunning)
         {
             return;
         }
 
-        var stopTime = DateTime.Now;
-        await SetStatusAsync(ScriptStatus.Stopping);
+        if (wasRunning)
+        {
+            await SetStatusAsync(ScriptStatus.Stopping);
+        }
 
         try
         {
@@ -114,8 +124,11 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 await _runner.Value.StopScriptAsync();
             }
 
-            await _outputWriter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
-            await SetStatusAsync(ScriptStatus.Ready);
+            if (wasRunning)
+            {
+                await _outputWriter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
+                await SetStatusAsync(ScriptStatus.Ready);
+            }
         }
         catch (Exception ex)
         {
@@ -159,7 +172,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         var oldValue = RunDurationMilliseconds;
         RunDurationMilliseconds = runDurationMs;
-        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds), oldValue, runDurationMs));
+        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds),
+            oldValue, runDurationMs));
     }
 
     private void AddScriptRunnerIOHandlers()
@@ -196,10 +210,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         _logger.LogTrace($"{nameof(DisposeAsync)} start");
 
-        if (Status == ScriptStatus.Running)
-        {
-            await StopAsync();
-        }
+        await StopAsync(true);
 
         await DisposeAsyncCore().ConfigureAwait(false);
 
@@ -215,7 +226,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     {
         if (disposing)
         {
-            Try.Run(() => AsyncUtil.RunSync(async () => await StopAsync()));
+            Try.Run(() => AsyncUtil.RunSync(async () => await StopAsync(true)));
 
             Script.RemoveAllPropertyChangedHandlers();
             Script.Config.RemoveAllPropertyChangedHandlers();
@@ -241,7 +252,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
     protected async ValueTask DisposeAsyncCore()
     {
-        await Try.RunAsync(async () => await StopAsync());
+        await Try.RunAsync(async () => await StopAsync(true));
 
         Script.RemoveAllPropertyChangedHandlers();
         Script.Config.RemoveAllPropertyChangedHandlers();

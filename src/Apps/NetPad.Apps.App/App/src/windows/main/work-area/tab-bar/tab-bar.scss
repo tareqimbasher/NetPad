@@ -73,9 +73,14 @@ tab-bar {
             }
         }
 
-        .script-running-indicator {
+        .script-running-indicator,
+        .script-stopping-indicator {
             height: 0.65rem;
             width: 0.65rem;
+        }
+
+        .script-stopping-indicator {
+            @extend %text-red;
         }
 
         &:hover {

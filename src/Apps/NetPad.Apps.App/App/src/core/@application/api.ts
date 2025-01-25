@@ -1326,7 +1326,9 @@ export interface IScriptsApiClient {
 
     run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
 
-    stop(id: string, signal?: AbortSignal | undefined): Promise<void>;
+    stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
+
+    stopAll(force: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1579,11 +1581,15 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(<any>null);
     }
 
-    stop(id: string, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/stop";
+    stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/stop?";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (stopRunner === null)
+            throw new Error("The parameter 'stopRunner' cannot be null.");
+        else if (stopRunner !== undefined)
+            url_ += "stopRunner=" + encodeURIComponent("" + stopRunner) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -1599,6 +1605,41 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
     }
 
     protected processStop(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    stopAll(force: boolean | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/stop-all?";
+        if (force === null)
+            throw new Error("The parameter 'force' cannot be null.");
+        else if (force !== undefined)
+            url_ += "force=" + encodeURIComponent("" + force) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processStopAll(_response);
+        });
+    }
+
+    protected processStopAll(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {

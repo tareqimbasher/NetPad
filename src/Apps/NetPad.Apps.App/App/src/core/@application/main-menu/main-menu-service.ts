@@ -1,17 +1,26 @@
 import {System} from "@common";
 import {IMenuItem} from "./imenu-item";
-import {IPaneManager, ISettingsService, IShortcutManager, IWindowService, ShortcutIds} from "@application";
+import {
+    IPaneManager,
+    IScriptService,
+    ISettingsService,
+    IShortcutManager,
+    IWindowService,
+    ShortcutIds
+} from "@application";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {IMainMenuService} from "./imain-menu-service";
 import {WindowParams} from "@application/windows/window-params";
 import {ShellType} from "@application/windows/shell-type";
+import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
 
     constructor(
+        @IScriptService private readonly scriptService: IScriptService,
         @ISettingsService private readonly settingsService: ISettingsService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @ITextEditorService private readonly textEditorService: ITextEditorService,
@@ -257,6 +266,31 @@ export class MainMenuService implements IMainMenuService {
                         text: "Toggle Full Screen",
                         click: async () => this.windowService.toggleFullScreen(),
                         helpText: "F11",
+                    },
+                ]
+            },
+            {
+                text: "Tools",
+                menuItems: [
+                    {
+                        id: "tools.dependencyCheck",
+                        text: "App Dependency Check",
+                        icon: "app-deps-check-icon",
+                        click: async () => await this.dialogUtil.toggle(AppDependenciesCheckDialog)
+                    },
+                    {
+                        id: "tools.stopRunningScripts",
+                        text: "Stop Running Scripts",
+                        hoverText: "Stop all running scripts.",
+                        icon: "stop-icon text-red",
+                        click: async () => this.scriptService.stopAll(false),
+                    },
+                    {
+                        id: "tools.stopRunningScripts",
+                        text: "Stop Scripts and Runners",
+                        hoverText: "Stop all running scripts and idle runners that are alive in the background.",
+                        icon: "stop-icon",
+                        click: async () => this.scriptService.stopAll(true),
                     },
                 ]
             },

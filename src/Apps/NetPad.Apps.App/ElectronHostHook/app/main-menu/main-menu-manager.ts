@@ -171,6 +171,13 @@ export class MainMenuManager {
                     {role: 'togglefullscreen'}
                 ]
             },
+            {
+                label: 'Tools',
+                submenu: [
+                    this.fromAppMenuItem("tools.dependencyCheck"),
+                    this.fromAppMenuItem("tools.stopRunningScripts"),
+                ]
+            },
             { role: 'windowMenu' },
             {
                 role: 'help',
