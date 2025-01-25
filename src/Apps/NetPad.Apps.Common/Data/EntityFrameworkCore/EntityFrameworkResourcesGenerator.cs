@@ -126,7 +126,7 @@ internal class EntityFrameworkResourcesGenerator(
                              /// <summary>
                              /// The DbContext instance used to access the database.
                              /// </summary>
-                             public static {{dbContextClassName}} DataContext { get; } = new {{dbContextClassName}}();
+                             public static {{dbContextClassName}} DataContext { get; } = new Program();
 
                          """);
 

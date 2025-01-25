@@ -8,7 +8,18 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptServices;
 /// </summary>
 public class MemCache
 {
-    private readonly ConcurrentDictionary<string, Func<Task<object?>>> _cache = new();
+    private readonly ConcurrentDictionary<string, CacheItem> _cache = new();
+
+    private class CacheItem
+    {
+        public object? Instance { get; set; }
+        public Lazy<object?>? Factory { get; set; }
+
+        public object? GetValue()
+        {
+            return Factory != null ? Factory.Value : Instance;
+        }
+    }
 
     /// <summary>
     /// Returns whether the given key exists in cache.
@@ -19,47 +30,33 @@ public class MemCache
     }
 
     /// <summary>
-    /// Gets a cached value if it exists.
-    /// </summary>
-    /// <returns>true if cache contains key; false otherwise.</returns>
-    public bool TryGet(string key, [NotNullWhen(true)] out Func<Task<object?>>? value)
-    {
-        return _cache.TryGetValue(key, out value);
-    }
-
-    /// <summary>
     /// Gets a cached value and throws if key does not exist.
     /// </summary>
     /// <exception cref="KeyNotFoundException">If key is not present in cache.</exception>
     public T? Get<T>(string key)
     {
-        if (!_cache.TryGetValue(key, out var factory))
+        if (!_cache.TryGetValue(key, out var cached))
         {
             throw new KeyNotFoundException($"The key '{key}' was not present in cache.");
         }
 
-        var value = factory().Result;
-        return (T?)value;
+        return (T?)cached.GetValue();
     }
 
     /// <summary>
-    /// Gets value using a cached async factory. If none cached, the provided factory is cached and used to get value.
+    /// Gets a cached value if it exists.
     /// </summary>
-    public async Task<T?> GetOrAddAsync<T>(string key, Func<Task<T>> factory)
+    /// <returns>true if cache contains key; false otherwise.</returns>
+    public bool TryGet<T>(string key, out T? value)
     {
-        var cachedFactory = _cache.GetOrAdd(key, async () => Task.FromResult<object?>(await factory()));
-        var value = await cachedFactory();
-        return (T?)value;
-    }
+        if (!_cache.TryGetValue(key, out var cached))
+        {
+            value = default;
+            return false;
+        }
 
-    /// <summary>
-    /// Gets value using a cached factory. If none cached, the provided factory is cached and used to get value.
-    /// </summary>
-    public T? GetOrAdd<T>(string key, Func<T> factory)
-    {
-        var cachedFactory = _cache.GetOrAdd(key, () => Task.FromResult<object?>(factory()));
-        var value = cachedFactory().Result;
-        return (T?)value;
+        value = (T?)cached.GetValue();
+        return true;
     }
 
     /// <summary>
@@ -68,25 +65,26 @@ public class MemCache
     [return: NotNullIfNotNull("value")]
     public T? GetOrAdd<T>(string key, T? value)
     {
-        var cachedFactory = _cache.GetOrAdd(key, () => Task.FromResult(value as object));
-        var cached = cachedFactory().Result;
-        return (T?)cached;
+        var cached = _cache.GetOrAdd(key, new CacheItem { Instance = value });
+        return (T?)cached.Instance;
     }
 
     /// <summary>
-    /// Sets the factory to use to get value for the given key.
+    /// Gets value using a cached factory. If none cached, the provided factory is cached and used to get value.
     /// </summary>
-    public void Set<T>(string key, Func<Task<T>> factory)
+    public T? GetOrAdd<T>(string key, Func<T> factory)
     {
-        _cache[key] = async () => Task.FromResult<object?>(await factory());
+        var cached = _cache.GetOrAdd(key, new CacheItem { Factory = new Lazy<object?>(() => factory()) });
+        return (T?)cached.GetValue();
     }
 
     /// <summary>
-    /// Sets the factory to use to get value for the given key.
+    /// Gets value using a cached async factory. If none cached, the provided factory is cached and used to get value.
     /// </summary>
-    public void Set<T>(string key, Func<T> factory)
+    public T? GetOrAdd<T>(string key, Func<Task<T>> factory)
     {
-        _cache[key] = () => Task.FromResult<object?>(factory());
+        var cached = _cache.GetOrAdd(key, new CacheItem { Factory = new Lazy<object?>(() => factory().Result) });
+        return (T?)cached.GetValue();
     }
 
     /// <summary>
@@ -94,7 +92,23 @@ public class MemCache
     /// </summary>
     public void Set<T>(string key, T? value)
     {
-        _cache[key] = () => Task.FromResult(value as object);
+        _cache[key] = new CacheItem { Instance = value };
+    }
+
+    /// <summary>
+    /// Sets the factory to use to get value for the given key.
+    /// </summary>
+    public void Set<T>(string key, Func<T> factory)
+    {
+        _cache[key] = new CacheItem { Factory = new Lazy<object?>(() => factory()) };
+    }
+
+    /// <summary>
+    /// Sets the factory to use to get value for the given key.
+    /// </summary>
+    public void Set<T>(string key, Func<Task<T>> factory)
+    {
+        _cache[key] = new CacheItem { Factory = new Lazy<object?>(() => factory().Result) };
     }
 
     /// <summary>
