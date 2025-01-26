@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NetPad.CodeAnalysis;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.CodeAnalysis;
 
 public class SourceCode
 {

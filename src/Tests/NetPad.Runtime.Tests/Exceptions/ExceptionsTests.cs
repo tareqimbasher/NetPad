@@ -1,4 +1,5 @@
 ﻿using NetPad.DotNet;
+using NetPad.DotNet.References;
 using NetPad.Exceptions;
 using NetPad.Tests.Helpers;
 using Xunit;

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.CodeAnalysis;
 
 public class SourceCodeCollection<TSourceCode> : List<TSourceCode> where TSourceCode : SourceCode
 {

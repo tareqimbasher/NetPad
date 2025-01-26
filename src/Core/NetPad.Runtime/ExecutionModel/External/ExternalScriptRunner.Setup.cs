@@ -6,9 +6,11 @@ using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.DotNet.References;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Presentation;
+using SourceCodeCollection = NetPad.DotNet.CodeAnalysis.SourceCodeCollection;
 
 namespace NetPad.ExecutionModel.External;
 

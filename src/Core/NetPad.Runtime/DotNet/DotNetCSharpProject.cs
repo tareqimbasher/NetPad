@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
+using NetPad.DotNet.References;
 
 namespace NetPad.DotNet;
 

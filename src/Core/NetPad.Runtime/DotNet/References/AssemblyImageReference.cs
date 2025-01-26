@@ -1,6 +1,6 @@
 using NetPad.Exceptions;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.References;
 
 public class AssemblyImageReference(AssemblyImage assemblyImage)
     : Reference(assemblyImage.AssemblyName.Name ?? assemblyImage.AssemblyName.FullName)

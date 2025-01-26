@@ -6,6 +6,7 @@ using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.Data.Events;
 using NetPad.DotNet;
+using NetPad.DotNet.References;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
 using NetPad.Scripts;

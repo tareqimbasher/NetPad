@@ -1,7 +1,7 @@
 using System.IO;
 using NetPad.Exceptions;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.References;
 
 public class AssemblyFileReference(string assemblyPath)
     : Reference(!string.IsNullOrWhiteSpace(assemblyPath) ? Path.GetFileName(assemblyPath) : "(Unknown)")

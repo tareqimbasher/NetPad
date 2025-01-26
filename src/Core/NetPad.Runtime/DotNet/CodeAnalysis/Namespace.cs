@@ -1,17 +1,16 @@
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.CodeAnalysis;
 
-public record Using : SourceCodeElement<string>
+public record Namespace : SourceCodeElement<string>
 {
-    public Using(string value) : base(Normalize(value))
+    public Namespace(string value) : base(Normalize(value))
     {
     }
 
-    public override string ToCodeString() => ToCodeString(false);
-    public string ToCodeString(bool useGlobalNotation) => $"{(useGlobalNotation ? "global " : "")}using {Value};";
+    public override string ToCodeString() => $"namespace {Value};";
 
-    public static implicit operator Using(string value)
+    public static implicit operator Namespace(string value)
     {
-        return new Using(value);
+        return new Namespace(value);
     }
 
     public static string Normalize(string value)
@@ -26,9 +25,9 @@ public record Using : SourceCodeElement<string>
             value = value.Trim();
         }
 
-        if (value.StartsWith("using"))
+        if (value.StartsWith("namespace"))
         {
-            throw new ArgumentException("Cannot start with the keyword 'using'", nameof(value));
+            throw new ArgumentException("Cannot start with the keyword 'namespace'", nameof(value));
         }
 
         char firstChar = value[0];

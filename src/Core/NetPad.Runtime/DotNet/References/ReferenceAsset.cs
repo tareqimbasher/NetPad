@@ -1,6 +1,6 @@
 using NetPad.Assemblies;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.References;
 
 /// <summary>
 /// Represents a file asset that belongs to a <see cref="Reference"/>. It may or may not be an assembly.

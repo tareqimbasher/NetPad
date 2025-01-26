@@ -9,6 +9,7 @@ using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.DotNet.CodeAnalysis;
 using NetPad.Embedded;
 using NetPad.IO;
 

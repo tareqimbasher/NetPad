@@ -1,5 +1,6 @@
 using NetPad.Compilation;
 using NetPad.DotNet;
+using NetPad.DotNet.CodeAnalysis;
 using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.InMemory;

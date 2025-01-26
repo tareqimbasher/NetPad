@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NetPad.Assemblies;
 using NetPad.Common;
 using NetPad.DotNet;
+using NetPad.DotNet.References;
 using NetPad.Packages;
 
 namespace NetPad.Controllers;

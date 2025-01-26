@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.CodeAnalysis;
 
 [method: JsonConstructor]
 public record Code(Namespace? Namespace, string? Value) : SourceCodeElement<string?>(Value)

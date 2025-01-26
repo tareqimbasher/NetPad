@@ -1,5 +1,6 @@
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.DotNet;
+using NetPad.DotNet.References;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 

@@ -1,4 +1,4 @@
-namespace NetPad.DotNet;
+namespace NetPad.DotNet.CodeAnalysis;
 
 public abstract record SourceCodeElement<TValue>(TValue Value)
 {

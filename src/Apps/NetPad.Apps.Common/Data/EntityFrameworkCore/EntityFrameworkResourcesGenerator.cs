@@ -5,6 +5,7 @@ using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.DotNet.CodeAnalysis;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
