@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace NetPad.DotNet;
 
+/// <summary>
+/// An in-memory assembly.
+/// </summary>
 public class AssemblyImage
 {
     public AssemblyImage(AssemblyName assemblyName, byte[] image)
