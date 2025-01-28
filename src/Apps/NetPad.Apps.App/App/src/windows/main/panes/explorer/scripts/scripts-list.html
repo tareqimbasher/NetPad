@@ -8,9 +8,14 @@
                 <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
                 <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} text-yellow me-1 icon-fw"></i> ${folder.name}
             </span>
-            <i class="action-icon script-folder-open-icon"
-               title="Open in File Manager"
-               click.trigger="vm.openScriptsFolder(folder)"></i>
+            <div class="d-flex align-items-center gap-2">
+                <i class="action-icon script-folder-open-icon"
+                   title="Open in File Manager"
+                   click.trigger="vm.openScriptsFolder(folder)"></i>
+                <span class="badge text-muted" title="${folder.containingScriptCount} scripts">
+                    ${folder.containingScriptCount}
+                </span>
+            </div>
         </div>
 
         <div class="list-group-item" show.bind="folder.expanded">
@@ -42,7 +47,7 @@
                                           title="Stopping..."></span>
                                     <i case="Ready"
                                        class="script-status-success-icon icon-xs"
-                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds"
+                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds != null"
                                        title="Script ran successfully"></i>
                                     <i case="Error"
                                        class="script-status-error-icon icon-xs"
@@ -64,7 +69,7 @@
 <div class="d-flex align-items-center justify-content-between">
     <span class="ps-3 user-select-none text-semibold">Scripts</span>
 
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2 pe-3">
         <i class="icon-button tree-expand-all-icon"
            title="Expand All"
            click.trigger="expandAllFolders(rootScriptFolder)"></i>

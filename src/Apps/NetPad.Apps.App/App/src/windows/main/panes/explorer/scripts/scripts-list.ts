@@ -64,9 +64,10 @@ export class ScriptsList extends ViewModelBase {
         const scripts = summaries.map(s => new ScriptViewModel(s));
 
         const expandedFolders = new Set<string>();
-        this.recurseFolders(this.rootScriptFolder, folder => {
-            if (folder.expanded)
+        this.rootScriptFolder.recurseFolders(folder => {
+            if (folder.expanded) {
                 expandedFolders.add(folder.path);
+            }
         });
 
         const root = this.rootScriptFolder.clone();
@@ -90,14 +91,9 @@ export class ScriptsList extends ViewModelBase {
             folder.scripts.push(script);
         }
 
-        this.recurseFolders(root, folder => {
-            if (expandedFolders.has(folder.path)) {
-                folder.expanded = true;
-            }
-        });
-
         this.rootScriptFolder.scripts = root.scripts;
         this.rootScriptFolder.folders = root.folders;
+        this.rootScriptFolder.updateStats(expandedFolders);
 
         this.scriptsMap = new Map<string, ScriptViewModel>(scripts.map(s => [s.id, s]));
         this.hydrateScriptMarkers();
@@ -116,14 +112,6 @@ export class ScriptsList extends ViewModelBase {
         }
 
         return result;
-    }
-
-    private recurseFolders(folder: ScriptFolderViewModel, func: (f: ScriptFolderViewModel) => void) {
-        func(folder);
-
-        for (const subFolder of folder.folders) {
-            this.recurseFolders(subFolder, func);
-        }
     }
 
     @watch<ScriptsList>(vm => vm.session.environments.length)
