@@ -75,12 +75,13 @@ tab-bar {
 
         .script-running-indicator,
         .script-stopping-indicator {
-            height: 0.65rem;
-            width: 0.65rem;
+            height: 0.75rem;
+            width: 0.75rem;
+            color: orange;
         }
 
         .script-stopping-indicator {
-            @extend %text-red;
+            color: salmon;
         }
 
         &:hover {
@@ -125,6 +126,14 @@ tab-bar {
             .script-name {
                 color: var(--tab-active-text-color);
             }
+        }
+
+        &.status-Running {
+            border-bottom-color: orange !important;
+        }
+
+        &.status-Stopping {
+            border-bottom-color: salmon !important;
         }
 
         &.new-tab {

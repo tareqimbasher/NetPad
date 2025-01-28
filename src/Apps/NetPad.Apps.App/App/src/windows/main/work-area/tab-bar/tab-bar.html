@@ -1,5 +1,5 @@
 <div class="drag-drop-container" ref="tabContainer">
-    <div class="view-tab ${viewable.id === active.id ? 'active' : ''}"
+    <div class="view-tab ${viewable.id === active.id ? 'active' : ''} ${'status-' + viewable.environment.status}"
          repeat.for="viewable of orderedViewables"
          data-id.bind="viewable.id"
          data-name.bind="viewable.name"
