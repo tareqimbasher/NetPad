@@ -44,6 +44,12 @@
         width: 4px;
     }
 
+    // Make completion suggestion documentation text wrap if it doesn't fit
+    .docs.markdown-docs .monaco-tokenized-source {
+        white-space: break-spaces !important;
+        overflow-wrap: anywhere;
+    }
+
     .codicon.codicon-csharp {
         height: 16px;
         width: 16px;
