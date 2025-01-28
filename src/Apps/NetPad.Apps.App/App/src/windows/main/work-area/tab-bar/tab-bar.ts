@@ -64,7 +64,7 @@ export class TabBar extends ViewModelBase {
                 onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).run()
             },
             {
-                icon: "stop-icon",
+                icon: "stop-icon text-red",
                 text: "Stop",
                 show: (clickTarget) => {
                     const viewable = this.getViewable(clickTarget);

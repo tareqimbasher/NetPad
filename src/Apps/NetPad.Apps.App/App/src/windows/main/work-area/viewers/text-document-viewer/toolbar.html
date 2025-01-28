@@ -4,7 +4,7 @@
                 show.bind="!isBusy"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
-            <i class="run-icon text-green"></i>
+            <i class="run-icon"></i>
         </button>
         <button class="btn btn-danger me-2"
                 show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
@@ -13,11 +13,11 @@
                 disabled.bind="environment.status === 'Stopping'">
             <i class="stop-icon"></i>
         </button>
-        <button class="btn btn-sm btn-themed text-blue me-2"
-                title="${getShortcutKeyCombo('Save')}"
+        <button class="btn btn-sm btn-themed me-2"
+                title="${getShortcutKeyCombo('Save')}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
-                disabled.bind="isBusy">
-            <i class="save-icon"></i>
+                disabled.bind="isBusy || !environment.script.isDirty">
+            <i class="save-icon ${environment.script.isDirty ? 'is-dirty' : ''}"></i>
         </button>
         <button class="btn btn-sm btn-themed"
                 title="${getShortcutKeyCombo('Script Properties')}"

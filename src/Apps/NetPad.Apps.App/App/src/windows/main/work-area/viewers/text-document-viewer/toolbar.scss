@@ -17,6 +17,22 @@ toolbar {
         line-height: 1rem !important;
     }
 
+    .save-icon {
+        opacity: 50%;
+    }
+
+    .save-icon.is-dirty {
+        opacity: 100%;
+    }
+
+    .save-icon.is-dirty::after {
+        font-size: 0.55rem;
+        content: '●';
+        color: #1eb2f5;
+        margin-left: -0.2rem;
+        position: absolute;
+    }
+
     .dotnet-runtime-selector {
         min-width: 70px;
     }

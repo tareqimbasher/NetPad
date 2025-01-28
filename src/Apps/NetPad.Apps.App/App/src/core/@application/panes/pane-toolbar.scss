@@ -2,7 +2,7 @@ pane-toolbar {
     display: flex;
     align-items: center;
     z-index: 1;
-    box-shadow: var(--box-shadow-bottom);
+    box-shadow: var(--box-shadow-bottom-sm);
     user-select: none;
     background: var(--pane-toolbar-background);
     flex-grow: 0;
@@ -19,8 +19,7 @@ pane-toolbar {
 
     .dropdown-toggle {
         cursor: default;
-        padding: 0.45rem 0.5rem;
-        vertical-align: middle;
+        padding: 0.35rem 0.5rem;
         line-height: 1rem;
 
         &:hover {

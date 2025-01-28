@@ -49,6 +49,7 @@ pane-host.orientation-right {
         line-height: $ribbon-width;
         width: $ribbon-width;
         padding: 0.5rem 0.1rem;
+        align-items: end;
 
         .pane-icon {
             margin-bottom: 0.5rem;

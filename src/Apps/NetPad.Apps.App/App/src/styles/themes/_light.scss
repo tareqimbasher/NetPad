@@ -14,22 +14,23 @@ $light: (
     border-color: #cccccc,
     border-contrast-color: #bfbfbf,
     // ACTIONS
-    hover-color: rgb(0 0 0 / 0.75%),
+    hover-color: rgb(0 0 0 / 8%),
     active-color: #0d6efd,
     action-icon-color: #595959,
     action-icon-hover-color: black,
     // SHADOWS
     box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 16%),
+    box-shadow-bottom-sm: 0 5px 8px -8px rgb(0 0 0 / 16%),
     box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 16%),
     // TITLEBAR
-    titlebar-background: #dfdfdf,
+    titlebar-background: #e1e1e1,
     // STATUSBAR
     statusbar-background: #e3e3e3,
     // SCRIPT VIEW
     script-toolbar-background: #ffffff,
     find-text-box-background: #ededed,
     // PANES
-    pane-ribbon-background: #efefef,
+    pane-ribbon-background: #ececec,
     pane-background: #f3f3f3,
     // CONTEXT MENU
     context-menu-background: #f3f3f3,
@@ -45,4 +46,5 @@ $light: (
     scrollbar-track-color: #cecece,
     scrollbar-thumb-color: #7e8182,
     splitter-color: #dcdcdc,
+    splitter-hover-color: #cacaca,
 );

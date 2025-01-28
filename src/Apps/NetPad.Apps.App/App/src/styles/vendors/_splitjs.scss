@@ -10,4 +10,8 @@
     &.gutter-vertical:hover {
         cursor: row-resize;
     }
+
+    &:hover {
+        background-color: var(--splitter-hover-color);
+    }
 }

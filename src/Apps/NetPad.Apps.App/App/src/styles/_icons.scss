@@ -395,7 +395,7 @@ button > .icon-base {
 
 .namespaces-icon {
     @extend %icon-base;
-    @extend .fa-bars;
+    @extend .fa-cube;
 }
 
 .theme-icon {
@@ -437,19 +437,19 @@ button > .icon-base {
 .script-status-success-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    @extend .text-green;
+    color: #02c13d;
 }
 
 .script-status-error-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    @extend .text-red;
+    color: #d60303;
 }
 
 .script-status-dirty-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    @extend .text-gray;
+    color: #838e98;
 }
 
 .clear-output-icon {
@@ -592,17 +592,13 @@ button > .icon-base {
 
     .run-icon,
     .results-serialization-settings-icon {
-        color: #91b859;
+        color: #02c13d;
     }
 
     .close-icon:not(.action-icon),
     .delete-icon,
     .backspace-icon {
         color: #fe5370;
-    }
-
-    .save-icon {
-        color: #82aaff;
     }
 
     .settings-icon,
@@ -652,6 +648,10 @@ button > .icon-base {
         color: #ffcb6b;
     }
 
+    .namespaces-icon {
+        color: #4fc3f7;
+    }
+
     .output-icon {
         color: #4fc3f7;
     }
@@ -674,7 +674,7 @@ button > .icon-base {
     }
 
     .wiki-icon {
-        color: #5b915b;
+        color: #47ac47;
     }
 }
 
@@ -693,10 +693,6 @@ button > .icon-base {
     .delete-icon,
     .backspace-icon {
         color: #fe5370;
-    }
-
-    .save-icon {
-        color: #3676ff;
     }
 
     .settings-icon,
@@ -744,6 +740,10 @@ button > .icon-base {
 
     .clipboard-icon {
         color: #ffb938;
+    }
+
+    .namespaces-icon {
+        color: #1eb2f5;
     }
 
     .output-icon {
