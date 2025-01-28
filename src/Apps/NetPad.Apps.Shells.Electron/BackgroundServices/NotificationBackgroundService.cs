@@ -17,8 +17,22 @@ public class NotificationBackgroundService(IEventBus eventBus, ILogoService logo
             if (!await ElectronUtil.MainWindow.IsFocusedAsync())
             {
                 var environment = ev.ScriptEnvironment;
-                string status = environment.Status == ScriptStatus.Ready ? "successfully" : "with failures";
-                string message = $"\"{environment.Script.Name}\" finished {status} (took: {environment.RunDurationMilliseconds} ms)";
+
+                var status = environment.Status;
+                string message;
+
+                if (status == ScriptStatus.Error)
+                {
+                    message = $"\"{environment.Script.Name}\" finished with errors";
+                }
+                else if (status == ScriptStatus.Ready && environment.RunDurationMilliseconds != null)
+                {
+                    message = $"\"{environment.Script.Name}\" finished successfully (took: {environment.RunDurationMilliseconds} ms)";
+                }
+                else
+                {
+                    return;
+                }
 
                 ElectronNET.API.Electron.Notification.Show(new NotificationOptions("NetPad", message)
                 {

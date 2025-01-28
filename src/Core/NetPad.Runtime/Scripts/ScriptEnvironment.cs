@@ -55,7 +55,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
     public virtual ScriptStatus Status { get; private set; }
 
-    public double RunDurationMilliseconds { get; private set; }
+    public double? RunDurationMilliseconds { get; private set; }
 
     public async Task RunAsync(RunOptions runOptions)
     {
@@ -78,7 +78,10 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             var runResult = await _runner.Value.RunScriptAsync(runOptions);
 
-            await SetRunDurationAsync(runResult.DurationMs);
+            await SetRunDurationAsync(
+                runResult.IsScriptCompletedSuccessfully
+                    ? runResult.DurationMs
+                    : null);
 
             await SetStatusAsync(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled
                 ? ScriptStatus.Ready
@@ -168,7 +171,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), oldValue, status));
     }
 
-    private async Task SetRunDurationAsync(double runDurationMs)
+    private async Task SetRunDurationAsync(double? runDurationMs)
     {
         var oldValue = RunDurationMilliseconds;
         RunDurationMilliseconds = runDurationMs;

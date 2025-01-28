@@ -13,9 +13,10 @@
                      alt=""
                      style="max-height: 1rem" class="me-3"/>
                 ${viewable.name}
-                <small class="database-icon ms-3 ${viewable.environment.script.dataConnection.containsProductionData ? 'is-production' : ''}"
-                       show.bind="viewable.environment.script.dataConnection"
-                       title="${viewable.environment.script.dataConnection.name} ${viewable.environment.script.dataConnection.containsProductionData ? '(Production)' : ''}"></small>
+                <small
+                    class="database-icon ms-3 ${viewable.environment.script.dataConnection.containsProductionData ? 'is-production' : ''}"
+                    show.bind="viewable.environment.script.dataConnection"
+                    title="${viewable.environment.script.dataConnection.name} ${viewable.environment.script.dataConnection.containsProductionData ? '(Production)' : ''}"></small>
             </div>
 
             <div class="script-status"
@@ -25,10 +26,11 @@
                       title="Running..."></span>
                 <span case="Stopping" class="spinner-border script-stopping-indicator"
                       title="Stopping..."></span>
-                <i case="Ready" if.bind="viewable.environment.runDurationMilliseconds"
+                <i case="Ready" if.bind="viewable.environment.runDurationMilliseconds != null"
                    class="script-status-success-icon icon-xs"
                    title="Script ran successfully"></i>
-                <i case="Error" class="script-status-error-icon icon-xs"
+                <i case="Error"
+                   class="script-status-error-icon icon-xs"
                    title="Error occurred"></i>
             </div>
         </div>

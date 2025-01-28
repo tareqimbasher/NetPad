@@ -1,7 +1,7 @@
 <div class="left-column">
     <b>${activeEnvironment.status}</b>
 
-    <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds >= 0"
+    <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds != null"
           title="The time it took to run the script (in milliseconds).
 This includes the time it took to start the host process.">
         (Took: ${activeEnvironment.runDurationMilliseconds}ms)
@@ -27,8 +27,7 @@ This includes the time it took to start the host process.">
        title="Quick Tips"></i>
     <i class="app-deps-check-icon action-icon"
        click.trigger="showAppDepsCheckDialog()"
-       title="App Dependencies Check"
-       shells="!browser"></i>
+       title="App Dependencies Check"></i>
     <i class="theme-icon action-icon"
        click.trigger="settingsService.toggleTheme()"
        title="Toggle Theme"></i>

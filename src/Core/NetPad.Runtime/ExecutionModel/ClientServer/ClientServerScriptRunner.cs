@@ -375,7 +375,11 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             _userRequestedStop = true;
             if (_currentRun != null)
             {
-                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopping...");
+                if (!_currentRun.IsComplete)
+                {
+                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopping...");
+                }
+
                 _currentRun.Cancel();
                 return _currentRun.Task;
             }

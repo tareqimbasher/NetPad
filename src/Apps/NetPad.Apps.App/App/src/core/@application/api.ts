@@ -3006,6 +3006,7 @@ export interface IAssemblyImageReference extends IReference {
     assemblyImage: AssemblyImage;
 }
 
+/** An in-memory assembly. */
 export class AssemblyImage implements IAssemblyImage {
     assemblyName!: AssemblyName;
     image!: string;
@@ -3051,6 +3052,7 @@ export class AssemblyImage implements IAssemblyImage {
     }
 }
 
+/** An in-memory assembly. */
 export interface IAssemblyImage {
     assemblyName: AssemblyName;
     image: string;
@@ -4465,7 +4467,7 @@ export type OptimizationLevel = "Debug" | "Release";
 export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
     status!: ScriptStatus;
-    runDurationMilliseconds!: number;
+    runDurationMilliseconds?: number | undefined;
 
     constructor(data?: IScriptEnvironment) {
         if (data) {
@@ -4513,7 +4515,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
 export interface IScriptEnvironment {
     script: Script;
     status: ScriptStatus;
-    runDurationMilliseconds: number;
+    runDurationMilliseconds?: number | undefined;
 }
 
 export class Script implements IScript {

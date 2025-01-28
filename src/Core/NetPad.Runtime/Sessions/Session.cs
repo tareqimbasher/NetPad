@@ -77,8 +77,8 @@ public class Session(
         var ix = _environments.IndexOf(environment);
 
         _environments.RemoveAt(ix);
-        await environment.DisposeAsync();
         await eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
+        _ = Task.Run(async () => await environment.DisposeAsync());
 
         if (activateNextScript && Active == environment)
         {
