@@ -3,8 +3,15 @@
 
 <pane-toolbar>
     <span class="text-semibold">Explorer</span>
+    <div au-slot="right">
+        <i class="icon-button fa-solid fa-arrow-right-arrow-left fa-rotate-90"
+           click.trigger="reversePanelFlow()"
+           title="Reverse Panel Flow"></i>
+    </div>
 </pane-toolbar>
 
-<data-connections-list id="connection-list" class="flex-grow-height-restricted"></data-connections-list>
+<div class="explorer-content flex-grow-height-restricted d-flex ${settings.value.flow}">
+    <data-connections-list class="flex-grow-height-restricted"></data-connections-list>
 
-<scripts-list id="script-list" class="flex-grow-height-restricted"></scripts-list>
+    <scripts-list class="flex-grow-height-restricted"></scripts-list>
+</div>
