@@ -69,6 +69,9 @@
         </select>
     </div>
     <div class="ms-auto me-3 text-truncate" title="Click to go to References">
-        <a class="btn-link" click.trigger="openProperties()">${script.config.references.length} References</a>
+        <a class="btn btn-sm ${script.config.references.length ? 'btn-secondary' : 'btn-outline-secondary'}"
+           click.trigger="openProperties()">
+            ${script.config.references.length} Reference${script.config.references.length == 1 ? '' : 's'}
+        </a>
     </div>
 </template>
