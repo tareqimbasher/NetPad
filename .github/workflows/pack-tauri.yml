@@ -15,9 +15,6 @@ on:
 
 jobs:
   create-release:
-    defaults:
-      run:
-        working-directory: ./src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -33,7 +30,7 @@ jobs:
           node-version: lts/*
 
       - name: get version
-        run: echo "PACKAGE_VERSION=$(node -p "require('./tauri.conf.json5').version")" >> $GITHUB_ENV
+        run: echo "PACKAGE_VERSION=$(node -p "require('./src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5').version")" >> $GITHUB_ENV
 
       - name: create release
         id: create-release
@@ -44,7 +41,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: `app-v${process.env.PACKAGE_VERSION}`,
-              name: `Desktop App (Tauri) v${process.env.PACKAGE_VERSION}`,
+              name: `NetPad vNext v${process.env.PACKAGE_VERSION}`,
               body: 'Take a look at the assets to download and install this app.',
               draft: true,
               prerelease: false
@@ -62,8 +59,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- platform: "macos-latest" # for Arm based macs (M1 and above).
-          #  args: "--target aarch64-apple-darwi -c src-tauri/tauri.conf.mac-arm64.json5n"
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
           #- platform: "macos-latest" # for Intel based macs.
           #  args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
           #- platform: "ubuntu-22.04"

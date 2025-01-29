@@ -8,7 +8,7 @@
             "script": "npm run start-web",
             "cwd": "../../../NetPad.Apps.App/App"
         },
-        "devUrl": "http://localhost:57940?shell=tauri",
+        "devUrl": "http://localhost:57950?shell=tauri",
         "frontendDist": "./loader"
     },
     "app": {
