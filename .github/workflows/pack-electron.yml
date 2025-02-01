@@ -40,10 +40,10 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: 🧲 Setup .NET 7
+      - name: 🧲 Setup .NET 8
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
 
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.

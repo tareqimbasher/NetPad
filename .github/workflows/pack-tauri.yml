@@ -63,8 +63,8 @@ jobs:
             args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
           #- platform: "macos-latest" # for Intel based macs.
           #  args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
-          #- platform: "ubuntu-22.04"
-          #  args: "-c src-tauri/tauri.conf.linux-x64.json5"
+          - platform: "ubuntu-22.04"
+            args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
           - platform: "windows-latest"
             args: "-c src-tauri/tauri.conf.win-x64.json5"
 
@@ -77,10 +77,10 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: 🧲 setup .NET 7
+      - name: 🧲 setup .NET 8
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
 
       - name: setup Rust stable
         uses: dtolnay/rust-toolchain@stable
