@@ -56,7 +56,7 @@ public static class HtmlPresenter
         DumpOptions? options = null,
         bool isError = false)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         bool isTitled = options.Title != null;
 

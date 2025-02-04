@@ -11,7 +11,7 @@ internal class ExternalProcessOutputTextWriter(bool useConsoleColors, Func<strin
 {
     public async Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         var text = TextPresenter.Serialize(output, options.Title, useConsoleColors);
 

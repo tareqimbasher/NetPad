@@ -156,6 +156,18 @@ public static class Util
     }
 
     /// <summary>
+    /// Dumps an object to the results console.
+    /// </summary>
+    /// <param name="o">The object to dump.</param>
+    /// <param name="options">Dump options.</param>
+    /// <returns>The same object being dumped.</returns>
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
+    public static T? Dump<T>(this T? o, DumpOptions options)
+    {
+        return DumpExtension.Dump(o, options);
+    }
+
+    /// <summary>
     /// Dumps an <see cref="Span{T}"/> to the results view.
     /// </summary>
     /// <param name="span">The <see cref="Span{T}"/> to dump.</param>

@@ -4,3 +4,4 @@ export * from "./clipboard-pane/clipboard-pane";
 export * from "./namespaces-pane/namespaces-pane";
 export * from "./output-pane/output-pane";
 export * from "./code-pane/code-pane";
+export * from "./mem-cache-pane/mem-cache-pane";

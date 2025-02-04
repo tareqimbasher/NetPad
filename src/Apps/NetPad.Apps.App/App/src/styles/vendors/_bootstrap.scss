@@ -93,6 +93,10 @@ textarea.form-control {
     &.active:hover {
         background: var(--active-color);
     }
+
+    &.list-group-item-clickable:hover:active {
+        background: var(--list-item-clicked-background);
+    }
 }
 
 .nav-tabs {

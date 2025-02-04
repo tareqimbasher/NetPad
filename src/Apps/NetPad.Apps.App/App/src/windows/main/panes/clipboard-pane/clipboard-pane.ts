@@ -30,7 +30,7 @@ export class ClipboardPane extends Pane {
         document.addEventListener("cut", ev => this.addHistory());
     }
 
-    public async select(entry: string, event: MouseEvent) {
+    public async select(entry: string) {
         await navigator.clipboard.writeText(entry);
         this.selected = entry;
         setTimeout(() => this.selected = undefined, 1000);

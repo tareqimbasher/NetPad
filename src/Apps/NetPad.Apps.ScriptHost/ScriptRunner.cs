@@ -16,6 +16,7 @@ public class ScriptRunner
     private readonly ScriptHostIpcGateway _ipcGateway;
     private readonly HashSet<string> _scriptHostLoadedAssemblies = new();
     private TaskCompletionSource<string?>? _userInputRequest;
+    private bool _firstRun = true;
 
     public ScriptRunner(ScriptHostIpcGateway ipcGateway)
     {
@@ -47,6 +48,12 @@ public class ScriptRunner
                 return _userInputRequest.Task.Result;
             }
         );
+
+        if (_firstRun)
+        {
+            StartForwardingMemCacheItemInfoChanges();
+            _firstRun = false;
+        }
 
         try
         {
@@ -111,5 +118,35 @@ public class ScriptRunner
     public void ReceiveUserInput(ReceiveUserInputMessage message)
     {
         _userInputRequest?.TrySetResult(message.Input);
+    }
+
+    private void StartForwardingMemCacheItemInfoChanges()
+    {
+        var debounced = DelegateUtil.Debounce(
+            () => _ipcGateway.Send(0, new MemCacheItemInfoChangedMessage(Util.Cache.GetItemInfos())),
+            100);
+
+        Util.Cache.MemCacheItemInfoChanged += (_, _) => debounced();
+    }
+
+    public void DumpMemCacheItem(DumpMemCacheItemMessage message)
+    {
+        if (Util.Cache.TryGet(message.Key, out var value))
+        {
+            Util.Dump(value, new DumpOptions("Cache Key: " + message.Key)
+            {
+                Order = 0
+            });
+        }
+    }
+
+    public void DeleteMemCacheItem(DeleteMemCacheItemMessage message)
+    {
+        Util.Cache.Remove(message.Key);
+    }
+
+    public void ClearMemCache(ClearMemCacheMessage _)
+    {
+        Util.Cache.Clear();
     }
 }

@@ -17,5 +17,9 @@ public record DumpOptions(
     int? DestructAfterMs = null
 )
 {
-    public static readonly DumpOptions Default = new();
+    /// <summary>
+    /// Gets or sets the order of the dumped output. This is used to override the normal
+    /// behaviour of the order being assigned automatically.
+    /// </summary>
+    internal uint? Order { get; init; }
 }

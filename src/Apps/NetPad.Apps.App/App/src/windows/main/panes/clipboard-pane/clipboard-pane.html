@@ -6,8 +6,8 @@
            title="Clear History"></i>
     </div>
 </pane-toolbar>
-<div if.bind="history.size" class="list-group flex-fill min-w-0">
-    <div class="d-flex align-items-center p-3">
+<div if.bind="history.size" class="list-group flex-grow-height-restricted min-w-0 d-flex flex-column">
+    <div class="d-flex align-items-center p-3 flex-shrink-0">
         <input type="text"
                class="form-control"
                placeholder="Search..."
@@ -15,22 +15,24 @@
                spellcheck="false"/>
         <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
            click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
-           title="Match case"></i>
+           title="Match Case"></i>
     </div>
 
-    <div repeat.for="entry of viewableHistory"
-         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center min-w-0 overflow-hidden"
-         click.trigger="select(entry, $event)">
-        <span class="text-truncate user-select-none" title.bind="entry.substring(0, 1000)">
-            ${$index + 1}. ${entry.substring(0, 200)}
-        </span>
-        <span class="ms-2">
-            <i class="check-circle-icon text-success" if.bind="selected === entry"
-               style="padding: 0.45rem 0.5rem; line-height: 1rem"></i>
-            <i class="icon-button delete-icon" else
-               title="Delete"
-               click.trigger="removeEntry(entry)"></i>
-        </span>
+    <div class="flex-grow-height-restricted overflow-y-auto">
+        <div repeat.for="entry of viewableHistory"
+             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center min-w-0 overflow-hidden"
+             click.trigger="select(entry, $event)">
+            <span class="text-truncate user-select-none" title.bind="entry.substring(0, 1000)">
+                ${$index + 1}. ${entry.substring(0, 200)}
+            </span>
+            <span class="ms-2">
+                <i class="check-circle-icon text-success" if.bind="selected === entry"
+                   style="padding: 0.45rem 0.5rem; line-height: 1rem"></i>
+                <i class="icon-button delete-icon" else
+                   title="Delete"
+                   click.trigger="removeEntry(entry)"></i>
+            </span>
+        </div>
     </div>
 </div>
 <div else class="flex-fill d-flex align-items-center justify-content-center">

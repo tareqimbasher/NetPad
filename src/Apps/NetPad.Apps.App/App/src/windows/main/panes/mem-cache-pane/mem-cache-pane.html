@@ -1,0 +1,46 @@
+﻿<pane-toolbar>
+    <span class="text-semibold">MemCache</span>
+    <div au-slot="right">
+        <i class="icon-button clear-output-icon"
+           click.trigger="clearCache()"
+           title="Clear Cache"></i>
+    </div>
+</pane-toolbar>
+<div if.bind="session.active.memCacheItems.length"
+     class="list-group flex-grow-height-restricted min-w-0 d-flex flex-column">
+    <div class="d-flex align-items-center p-3 flex-shrink-0">
+        <input type="text"
+               class="form-control"
+               placeholder="Search..."
+               value.bind="searchTerm"
+               spellcheck="false"/>
+        <i class="icon-button case-sensitive-icon ms-3 ${caseSensitiveSearch ? 'active' : ''}"
+           click.trigger="caseSensitiveSearch = !caseSensitiveSearch"
+           title="Match Case"></i>
+    </div>
+
+    <div class="flex-grow-height-restricted overflow-y-auto">
+        <div repeat.for="item of items"
+             class="list-group-item list-group-item-action list-group-item-clickable d-flex align-items-center min-w-0 overflow-hidden"
+             title="Key: ${item.key.substring(0, 1000)}\nIs value initialized: ${item.valueInitialized}\nIs factory: ${item.isFactory}"
+             click.trigger="select(item)">
+            <span class="text-truncate user-select-none flex-grow-1 me-3"
+                  style="min-width: 100px;">
+                ${$index + 1}. ${item.key.substring(0, 200)}
+            </span>
+            <code class="text-truncate text-semibold user-select-none"
+                  style="min-width: 40px;"
+                  title.bind="item.valueType.substring(0, 1000)">
+                ${item.valueType.substring(0, 200)}
+            </code>
+            <div class="ms-2 flex-shrink-0">
+                <i class="icon-button delete-icon"
+                   title="Delete"
+                   click.trigger="removeKey(item.key, $event)"></i>
+            </div>
+        </div>
+    </div>
+</div>
+<div else class="flex-fill d-flex align-items-center justify-content-center">
+    <p class="text-muted user-select-none">No cached items.</p>
+</div>

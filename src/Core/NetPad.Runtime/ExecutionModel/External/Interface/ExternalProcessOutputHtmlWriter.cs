@@ -16,7 +16,7 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut) 
 
     public async Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         uint order = Interlocked.Increment(ref _resultOutputCounter);
 
@@ -35,7 +35,7 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut) 
 
     public async Task WriteSqlAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         uint order = Interlocked.Increment(ref _sqlOutputCounter);
 

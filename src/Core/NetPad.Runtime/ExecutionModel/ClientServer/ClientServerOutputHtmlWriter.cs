@@ -17,9 +17,9 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
     public async Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
-        uint order = Interlocked.Increment(ref _resultOutputCounter);
+        uint order = options.Order ?? Interlocked.Increment(ref _resultOutputCounter);
 
         // Added because ASP.NET Core output includes ANSI color formatting on Windows OS
         if (output is string str && str.StartsWith("\u001B[", StringComparison.Ordinal))
@@ -36,9 +36,9 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
     public async Task WriteSqlAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
-        uint order = Interlocked.Increment(ref _sqlOutputCounter);
+        uint order = options.Order ?? Interlocked.Increment(ref _sqlOutputCounter);
 
         var html = HtmlPresenter.Serialize(output, options: options);
 

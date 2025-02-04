@@ -180,6 +180,27 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:guid}/mem-cache/dump")]
+    public async Task DumpMemCacheItem(Guid id, [FromQuery] string key)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        environment.DumpMemCacheItem(key);
+    }
+
+    [HttpDelete("{id:guid}/mem-cache")]
+    public async Task DeleteMemCacheItem(Guid id, [FromQuery] string key)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        environment.DeleteMemCacheItem(key);
+    }
+
+    [HttpDelete("{id:guid}/mem-cache/all")]
+    public async Task ClearMemCacheItems(Guid id)
+    {
+        var environment = await GetScriptEnvironmentAsync(id);
+        environment.ClearMemCacheItems();
+    }
+
     private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
     {
         return await mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true))

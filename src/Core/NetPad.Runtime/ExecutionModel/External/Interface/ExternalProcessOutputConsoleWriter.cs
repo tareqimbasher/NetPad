@@ -10,7 +10,7 @@ internal class ExternalProcessOutputConsoleWriter(bool useConsoleColors) : IExte
 {
     public Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         ConsolePresenter.Serialize(output, options.Title, useConsoleColors);
 

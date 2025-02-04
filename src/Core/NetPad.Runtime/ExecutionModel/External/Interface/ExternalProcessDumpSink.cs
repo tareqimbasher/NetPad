@@ -66,7 +66,7 @@ public class ExternalProcessDumpSink : IDumpSink
 
     public void ResultWrite<T>(T? o, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
+        options ??= new DumpOptions();
 
         if (_isHtmlOutput && options.AppendNewLineToAllTextOutput == null)
         {

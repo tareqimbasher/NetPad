@@ -398,6 +398,11 @@ button > .icon-base {
     @extend .fa-cube;
 }
 
+.mem-cache-icon {
+    @extend %icon-base;
+    @extend .fa-memory;
+}
+
 .theme-icon {
     @extend %icon-base;
     @extend .fa-circle-half-stroke;
@@ -652,6 +657,10 @@ button > .icon-base {
         color: #4fc3f7;
     }
 
+    .mem-cache-icon {
+        color: #c090fd;
+    }
+
     .output-icon {
         color: #4fc3f7;
     }
@@ -739,11 +748,15 @@ button > .icon-base {
     }
 
     .clipboard-icon {
-        color: #ffb938;
+        color: #ffac07;
     }
 
     .namespaces-icon {
         color: #1eb2f5;
+    }
+
+    .mem-cache-icon {
+        color: #865cca;
     }
 
     .output-icon {

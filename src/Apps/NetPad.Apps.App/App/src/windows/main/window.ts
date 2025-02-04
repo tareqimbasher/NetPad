@@ -11,7 +11,15 @@ import {
     PaneHost,
     PaneHostOrientation
 } from "@application";
-import {ClipboardPane, CodePane, Explorer, NamespacesPane, OutputPane, SplitViewController} from "./panes";
+import {
+    ClipboardPane,
+    CodePane,
+    Explorer,
+    MemCachePane,
+    NamespacesPane,
+    OutputPane,
+    SplitViewController
+} from "./panes";
 import {Workbench} from "./workbench";
 import {WindowBase} from "@application/windows/window-base";
 
@@ -61,6 +69,7 @@ export class Window extends WindowBase {
 
         const explorer = this.paneManager.addPaneToHost(Explorer, this.leftPaneHost);
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
+        this.paneManager.addPaneToHost(MemCachePane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
 
 

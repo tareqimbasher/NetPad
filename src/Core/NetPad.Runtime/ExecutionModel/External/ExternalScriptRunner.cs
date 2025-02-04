@@ -214,6 +214,18 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         return Task.CompletedTask;
     }
 
+    public void DumpMemCacheItem(string key)
+    {
+    }
+
+    public void DeleteMemCacheItem(string key)
+    {
+    }
+
+    public void ClearMemCacheItems()
+    {
+    }
+
     public void Dispose()
     {
         _logger.LogTrace("Dispose start");

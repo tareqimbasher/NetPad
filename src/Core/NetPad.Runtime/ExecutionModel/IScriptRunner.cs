@@ -39,4 +39,8 @@ public interface IScriptRunner : IDisposable
     /// Removes a previously added output writer.
     /// </summary>
     void RemoveOutput(IOutputWriter<object> outputWriter);
+
+    void DumpMemCacheItem(string key);
+    void DeleteMemCacheItem(string key);
+    void ClearMemCacheItems();
 }

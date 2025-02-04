@@ -1347,6 +1347,12 @@ export interface IScriptsApiClient {
     setUseAspNet(id: string, useAspNet: boolean, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 
     setDataConnection(id: string, dataConnectionId: string | null | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    dumpMemCacheItem(id: string, key: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
+
+    deleteMemCacheItem(id: string, key: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
+
+    clearMemCacheItems(id: string, signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient {
@@ -2004,6 +2010,112 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             });
         }
         return Promise.resolve<FileResponse | null>(<any>null);
+    }
+
+    dumpMemCacheItem(id: string, key: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/mem-cache/dump?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (key !== undefined && key !== null)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processDumpMemCacheItem(_response);
+        });
+    }
+
+    protected processDumpMemCacheItem(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    deleteMemCacheItem(id: string, key: string | null | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/mem-cache?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (key !== undefined && key !== null)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processDeleteMemCacheItem(_response);
+        });
+    }
+
+    protected processDeleteMemCacheItem(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
+    }
+
+    clearMemCacheItems(id: string, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/mem-cache/all";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processClearMemCacheItems(_response);
+        });
+    }
+
+    protected processClearMemCacheItems(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(<any>null);
     }
 }
 
@@ -4468,6 +4580,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
     script!: Script;
     status!: ScriptStatus;
     runDurationMilliseconds?: number | undefined;
+    memCacheItems!: MemCacheItemInfo[];
 
     constructor(data?: IScriptEnvironment) {
         if (data) {
@@ -4478,6 +4591,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
         }
         if (!data) {
             this.script = new Script();
+            this.memCacheItems = [];
         }
     }
 
@@ -4486,6 +4600,11 @@ export class ScriptEnvironment implements IScriptEnvironment {
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
             this.status = _data["status"];
             this.runDurationMilliseconds = _data["runDurationMilliseconds"];
+            if (Array.isArray(_data["memCacheItems"])) {
+                this.memCacheItems = [] as any;
+                for (let item of _data["memCacheItems"])
+                    this.memCacheItems!.push(MemCacheItemInfo.fromJS(item));
+            }
         }
     }
 
@@ -4501,6 +4620,11 @@ export class ScriptEnvironment implements IScriptEnvironment {
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
         data["status"] = this.status;
         data["runDurationMilliseconds"] = this.runDurationMilliseconds;
+        if (Array.isArray(this.memCacheItems)) {
+            data["memCacheItems"] = [];
+            for (let item of this.memCacheItems)
+                data["memCacheItems"].push(item.toJSON());
+        }
         return data;
     }
 
@@ -4516,6 +4640,7 @@ export interface IScriptEnvironment {
     script: Script;
     status: ScriptStatus;
     runDurationMilliseconds?: number | undefined;
+    memCacheItems: MemCacheItemInfo[];
 }
 
 export class Script implements IScript {
@@ -4680,6 +4805,75 @@ export interface IScriptConfig {
 }
 
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
+
+/** Info about an item stored in MemCache. */
+export class MemCacheItemInfo implements IMemCacheItemInfo {
+    /** The unique key that identifies this item in cache. */
+    key!: string;
+    /** The name of the CLR type of the value. */
+    valueType!: string;
+    /** Whether the value has been initialized yet. If a factory was used when adding the cache item, this will return
+whether that factory was executed or not. If an object or value was used when adding the cache item, this
+will always return true. */
+    valueInitialized!: boolean;
+    /** Whether a factory, or an async factory, was used when adding the item to the cache. */
+    isFactory!: boolean;
+
+    constructor(data?: IMemCacheItemInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.key = _data["key"];
+            this.valueType = _data["valueType"];
+            this.valueInitialized = _data["valueInitialized"];
+            this.isFactory = _data["isFactory"];
+        }
+    }
+
+    static fromJS(data: any): MemCacheItemInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new MemCacheItemInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key;
+        data["valueType"] = this.valueType;
+        data["valueInitialized"] = this.valueInitialized;
+        data["isFactory"] = this.isFactory;
+        return data;
+    }
+
+    clone(): MemCacheItemInfo {
+        const json = this.toJSON();
+        let result = new MemCacheItemInfo();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Info about an item stored in MemCache. */
+export interface IMemCacheItemInfo {
+    /** The unique key that identifies this item in cache. */
+    key: string;
+    /** The name of the CLR type of the value. */
+    valueType: string;
+    /** Whether the value has been initialized yet. If a factory was used when adding the cache item, this will return
+whether that factory was executed or not. If an object or value was used when adding the cache item, this
+will always return true. */
+    valueInitialized: boolean;
+    /** Whether a factory, or an async factory, was used when adding the item to the cache. */
+    isFactory: boolean;
+}
 
 export class Settings implements ISettings {
     version!: string;

@@ -31,10 +31,10 @@ public class ClientServerDumpSink : IDumpSink
 
     public void ResultWrite<T>(T? o, DumpOptions? options = null)
     {
-        options ??= DumpOptions.Default;
-
-        if (_isHtmlOutput && options.AppendNewLineToAllTextOutput == null)
+        if (_isHtmlOutput && options?.AppendNewLineToAllTextOutput == null)
         {
+            options ??= new DumpOptions();
+
             // When using Dump() its implied that a new line is added to the end of it when rendered
             // When rendering objects or collections (ie. objects that are NOT rendered as strings)
             // they are rendered in an HTML block element that automatically pushes elements after it

@@ -252,6 +252,18 @@ public sealed class InMemoryScriptRunner : IScriptRunner
         return (alcWeakRef, true, GetElapsedMilliseconds(runStart));
     }
 
+    public void DumpMemCacheItem(string key)
+    {
+    }
+
+    public void DeleteMemCacheItem(string key)
+    {
+    }
+
+    public void ClearMemCacheItems()
+    {
+    }
+
     public void Dispose()
     {
         _logger.LogTrace("Dispose start");

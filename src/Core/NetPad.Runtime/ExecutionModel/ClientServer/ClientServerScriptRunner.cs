@@ -16,6 +16,7 @@ using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Presentation;
 using NetPad.Scripts;
+using NetPad.Scripts.Events;
 using O2Html;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
@@ -45,6 +46,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly IEventBus _eventBus;
     private readonly ILogger<ClientServerScriptRunner> _logger;
     private readonly DirectoryPath _scriptHostRootDirectory;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
@@ -85,6 +87,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _dotNetInfo = dotNetInfo;
+        _eventBus = eventBus;
         _settings = settings;
         _logger = logger;
 
@@ -273,6 +276,9 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
                 _currentRun.SetResult(RunResult.RunAttemptFailure());
             }
         });
+
+        ipcGateway.On<MemCacheItemInfoChangedMessage>(msg =>
+            _eventBus.PublishAsync(new ScriptMemCacheItemInfoChangedEvent(_script.Id, msg.Items)));
     }
 
     public Task<RunResult> RunScriptAsync(RunOptions runOptions)
@@ -293,6 +299,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             {
                 _scriptHostProcessManager.StopScriptHost();
                 _currentRun.SetResult(RunResult.RunCancelled());
+                _eventBus.PublishAsync(new ScriptMemCacheItemInfoChangedEvent(_script.Id, []));
                 _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopped");
             });
         }
@@ -386,6 +393,21 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         }
 
         return Task.CompletedTask;
+    }
+
+    public void DumpMemCacheItem(string key)
+    {
+        _scriptHostProcessManager.Send(new DumpMemCacheItemMessage(key));
+    }
+
+    public void DeleteMemCacheItem(string key)
+    {
+        _scriptHostProcessManager.Send(new DeleteMemCacheItemMessage(key));
+    }
+
+    public void ClearMemCacheItems()
+    {
+        _scriptHostProcessManager.Send(new ClearMemCacheMessage());
     }
 
     /// <summary>

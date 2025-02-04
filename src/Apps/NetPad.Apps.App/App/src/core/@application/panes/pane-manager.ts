@@ -72,6 +72,22 @@ export class PaneManager implements IPaneManager {
         paneHost.toggle(pane);
     }
 
+    public expand<TPane extends Pane>(paneType: Constructable<TPane>): void {
+        const info = this.findPaneAndHostByPaneType(paneType);
+        if (!info || !info.paneHost) {
+            return;
+        }
+        info.paneHost.expand(info.pane);
+    }
+
+    public collapse<TPane extends Pane>(paneType: Constructable<TPane>): void {
+        const info = this.findPaneAndHostByPaneType(paneType);
+        if (!info || !info.paneHost) {
+            return;
+        }
+        info.paneHost.collapse(info.pane);
+    }
+
     private findPaneHostByPane(pane: Pane): PaneHost | undefined {
         return this._paneHosts.find(h => h.hasPane(pane));
     }

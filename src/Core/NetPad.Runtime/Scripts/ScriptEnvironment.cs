@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Events;
 using NetPad.ExecutionModel;
+using NetPad.ExecutionModel.ClientServer.ScriptServices;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts.Events;
@@ -17,6 +18,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     private IInputReader<string> _inputReader;
     private IOutputWriter<object> _outputWriter;
     private Lazy<IScriptRunner> _runner;
+    private readonly List<IDisposable> _disposables = new();
     private bool _isDisposed;
 
     public ScriptEnvironment(Script script, IServiceScope serviceScope)
@@ -49,6 +51,23 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             _logger.LogDebug($"Initialized new {nameof(IScriptRunner)}");
             return runner;
         });
+
+        _disposables.Add(_eventBus.Subscribe<ScriptMemCacheItemInfoChangedEvent>(ev =>
+        {
+            if (ev.ScriptId == Script.Id)
+            {
+                var oldValue = MemCacheItems;
+                var newValue = ev.Items;
+                MemCacheItems = newValue;
+                _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(
+                    Script.Id,
+                    nameof(MemCacheItems),
+                    oldValue,
+                    newValue));
+            }
+
+            return Task.CompletedTask;
+        }));
     }
 
     public Script Script { get; }
@@ -56,6 +75,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     public virtual ScriptStatus Status { get; private set; }
 
     public double? RunDurationMilliseconds { get; private set; }
+
+    public MemCacheItemInfo[] MemCacheItems { get; private set; } = [];
 
     public async Task RunAsync(RunOptions runOptions)
     {
@@ -159,6 +180,30 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
     public string[] GetUserVisibleAssemblies() => _runner.Value.GetUserVisibleAssemblies();
 
+    public void DumpMemCacheItem(string key)
+    {
+        if (_runner.IsValueCreated)
+        {
+            _runner.Value.DumpMemCacheItem(key);
+        }
+    }
+
+    public void DeleteMemCacheItem(string key)
+    {
+        if (_runner.IsValueCreated)
+        {
+            _runner.Value.DeleteMemCacheItem(key);
+        }
+    }
+
+    public void ClearMemCacheItems()
+    {
+        if (_runner.IsValueCreated)
+        {
+            _runner.Value.ClearMemCacheItems();
+        }
+    }
+
     private async Task SetStatusAsync(ScriptStatus status)
     {
         if (status == Status)
@@ -233,6 +278,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             Script.RemoveAllPropertyChangedHandlers();
             Script.Config.RemoveAllPropertyChangedHandlers();
+            foreach (var disposable in _disposables) disposable.Dispose();
 
             _inputReader = ActionInputReader<string>.Null;
             _outputWriter = ActionOutputWriter<object>.Null;
@@ -259,6 +305,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         Script.RemoveAllPropertyChangedHandlers();
         Script.Config.RemoveAllPropertyChangedHandlers();
+        foreach (var disposable in _disposables) disposable.Dispose();
 
         try
         {
