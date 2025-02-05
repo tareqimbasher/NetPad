@@ -95,7 +95,16 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         try
         {
             // Script could have been requested to stop by this point
-            if (Status == ScriptStatus.Stopping) return;
+            if (Status == ScriptStatus.Stopping)
+            {
+                return;
+            }
+
+            // If no specific code to run, set the script code so we capture the current "state" of the code,
+            // we don't want changes the user makes to the code after they've hit "Run" and before their code
+            // compiles to make it into the run. Users expect that once they hit "Run", any changes they make to
+            // the code afterwards to not affect the current run.
+            runOptions.SpecificCodeToRun ??= Script.Code;
 
             var runResult = await _runner.Value.RunScriptAsync(runOptions);
 

@@ -9,5 +9,5 @@ public class RunOptions(string? specificCodeToRun = null)
     /// If not null, this code will run instead of script code. Typically used to only run code that user has
     /// highlighted in the editor.
     /// </summary>
-    public string? SpecificCodeToRun { get; } = specificCodeToRun;
+    public string? SpecificCodeToRun { get; set; } = specificCodeToRun;
 }
