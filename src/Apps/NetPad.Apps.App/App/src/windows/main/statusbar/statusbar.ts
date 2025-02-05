@@ -64,11 +64,15 @@ export class Statusbar {
             clearMsgTask = PLATFORM.setTimeout(() => {
                 clearMsgTask = null;
 
-                this.appStatusMessage = this.lastPersistentPriorityMessage
-                    ? this.lastPersistentPriorityMessage
-                    : null;
-            }, 30000);
+                this.dismissCurrentAppStatusMessage();
+            }, 15000);
         });
+    }
+
+    private dismissCurrentAppStatusMessage() {
+        this.appStatusMessage = this.lastPersistentPriorityMessage
+            ? this.lastPersistentPriorityMessage
+            : null;
     }
 }
 
