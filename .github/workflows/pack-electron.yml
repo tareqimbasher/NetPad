@@ -59,7 +59,7 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
         run: npm install
 
-      - name: Package for Linux
+      - name: Package for Linux & Windows
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
@@ -83,5 +83,7 @@ jobs:
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.deb
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.rpm
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.pacman
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.exe
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.zip
           retention-days: 1
           if-no-files-found: warn

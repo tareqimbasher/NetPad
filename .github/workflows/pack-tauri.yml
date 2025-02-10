@@ -61,8 +61,8 @@ jobs:
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
-          #- platform: "macos-latest" # for Intel based macs.
-          #  args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
           - platform: "ubuntu-22.04"
             args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
           - platform: "windows-latest"
@@ -116,49 +116,3 @@ jobs:
           projectPath: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
           tauriScript: "npx tauri"
           releaseId: ${{ needs.create-release.outputs.release_id }}
-
-      #      - name: List build files
-      #        working-directory: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target"
-      #        run: |
-      #          if [ "$RUNNER_OS" == "Linux" ]; then
-      #               find -follow
-      #          elif [ "$RUNNER_OS" == "Windows" ]; then
-      #               dir /s /b /o:gn
-      #          else
-      #               find -L
-      #          fi
-      #        shell: bash
-
-#      - name: 'Process Artifact Paths'
-#        id: process_artifacts
-#        run: |
-#          VAL=${{ steps.tauri.outputs.artifactPaths }}' | jq -r '.[]'
-#          echo "paths=$VAL"  >> "$GITHUB_OUTPUT"
-#        shell: bash
-#
-#      - name: 'Upload Bundled Packages'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: netpad_0.8.0.bundles
-#          path: ${{ steps.process_artifacts.outputs.paths }}
-#          retention-days: 1
-#          if-no-files-found: warn
-#
-#      - name: 'Upload Standalone Package'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: netpad_0.8.0.standalone
-#          path: |
-#            src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/NetPad\ vNext
-#            src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/resources
-#          retention-days: 1
-#          if-no-files-found: warn
-
-#src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/deb/NetPad\ vNext_0.8.0_amd64.deb
-#src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/appimage/NetPad\ vNext_0.8.0_amd64.AppImage
-#src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/rpm/NetPad\ vNext-0.8.0-1.x86_64.rpm
-
-# tauri action returns this, use it in upload artifact
-#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/deb/NetPad vNext_0.8.0_amd64.deb
-#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/rpm/NetPad vNext-0.8.0-1.x86_64.rpm
-#/home/runner/work/NetPad/NetPad/src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target/release/bundle/appimage/NetPad vNext_0.8.0_amd64.AppImage
