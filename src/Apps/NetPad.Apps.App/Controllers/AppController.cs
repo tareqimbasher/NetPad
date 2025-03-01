@@ -11,6 +11,7 @@ using NetPad.Application;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
+using NetPad.DotNet;
 using NetPad.Filters;
 
 namespace NetPad.Controllers;
@@ -131,6 +132,12 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
             FileName = path,
             UseShellExecute = true
         });
+    }
+
+    [HttpGet("dotnet-path")]
+    public DotNetPathReport GetDotNetPathReport([FromServices] Settings settings)
+    {
+        return new DotNetPathResolver().FindDotNetInstallDir(settings);
     }
 
     [HttpPost("log/{source}")]

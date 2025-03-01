@@ -1,7 +1,7 @@
 ﻿<template class="app-dependencies-check-dialog">
     <h4 class="d-flex justify-content-between">
         <div>
-            App Dependencies Check
+            App Dependency Check
             <span class="spinner-border float-end" if.bind="loading"></span>
         </div>
         <i class="app-deps-check-icon"></i>
@@ -15,7 +15,7 @@
             </h5>
 
             <div class="section-details">
-                NetPad is running on .NET <code>${input.dotNetRuntimeVersion}</code>.
+                NetPad is running on .NET runtime <code>v${input.dotNetRuntimeVersion}</code>
             </div>
         </div>
 
@@ -23,32 +23,50 @@
             <h5>
                 <i class="${dotnetSdkMissing ? 'error-icon text-red' : 'check-circle-icon text-green'}"></i>
                 .NET SDK
-                <small if.bind="input.supportedDotNetSdkVersionsInstalled.length">
-                    (latest: <code>v${latestDotnetSdkVersion.string}</code>)
-                </small>
             </h5>
 
             <div class="section-details">
-                <div if.bind="dotnetSdkMissing">
-                    <span class="text-red">No supported .NET SDK could be found.</span>
-                    <br/>
-                    Make sure the .NET SDK version 6 or greater is installed and the <code>dotnet</code>
-                    executable is in your <code>PATH</code>. All installed SDKs:
-                </div>
-                <div else>
-                    <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
-                    installed. All installed SDKs:
-                </div>
-                <div if.bind="input.dotNetSdkVersions">
+                <div if.bind="!report.resolvedPath">
+                    Could not find a .NET SDK installation. Searched paths:
+
                     <ul class="sdk-versions-list">
-                        <li repeat.for="version of input.dotNetSdkVersions">
-                            <code>${version.string}</code>
-                            <span class="badge text-green ms-3"
-                                  if.bind="input.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
-                                Supported
-                            </span>
+                        <li repeat.for="step of report.searchSteps">
+                            <div class="d-flex align-items-center justify-content-between" style="max-width: 400px">
+                                <code>${step.location.path}</code>
+                            </div>
                         </li>
                     </ul>
+                </div>
+                <div else>
+                    <div class="mb-3">
+                        Found .NET SDK installation:
+                        <code>${report.resolvedPath.path}</code>
+                    </div>
+
+                    <div if.bind="dotnetSdkMissing">
+                        <span class="text-red">No supported .NET SDK could be found.</span>
+                        <br/>
+                        Make sure the .NET SDK version 6 or greater is installed and the <code>dotnet</code>
+                        executable is in your <code>PATH</code>.
+
+                        <span if.bind="input.dotNetSdkVersions?.length">All installed SDKs:</span>
+                    </div>
+                    <div else>
+                        <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
+                        installed. All installed SDKs:
+                    </div>
+
+                    <div if.bind="input.dotNetSdkVersions?.length">
+                        <ul class="sdk-versions-list">
+                            <li repeat.for="version of input.dotNetSdkVersions">
+                                <code>${version.string}</code>
+                                <span class="badge text-green ms-3"
+                                      if.bind="input.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
+                                Supported
+                            </span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

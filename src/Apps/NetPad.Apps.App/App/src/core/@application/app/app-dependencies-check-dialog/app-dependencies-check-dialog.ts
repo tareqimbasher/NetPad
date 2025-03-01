@@ -1,17 +1,23 @@
-﻿import {AppDependencyCheckResult, IAppService, SemanticVersion} from "@application";
+﻿import {AppDependencyCheckResult, DotNetPathReport, IAppService, SemanticVersion} from "@application";
 import {Dialog} from "@application/dialogs/dialog";
 
 export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;
     public dotnetEfCoreToolMissing = false;
-    public latestDotnetSdkVersion?: SemanticVersion;
-    public loading = true;
+    public report?: DotNetPathReport;
+
+    private loadingCount = 0;
+
+    public get loading(): boolean {
+        return this.loadingCount > 0;
+    }
 
     constructor(@IAppService private readonly appService: IAppService) {
         super();
     }
 
     public bound() {
+        this.loadingCount++;
         const promise: Promise<AppDependencyCheckResult> = this.input
             ? Promise.resolve(this.input)
             : this.appService.checkDependencies();
@@ -21,14 +27,16 @@ export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult>
 
             this.dotnetSdkMissing = this.input.supportedDotNetSdkVersionsInstalled.length === 0;
 
-            this.latestDotnetSdkVersion = this.input.supportedDotNetSdkVersionsInstalled.length === 0
-                ? undefined
-                : [...this.input.supportedDotNetSdkVersionsInstalled]
-                    .sort((a, b) => b.major - a.major)[0];
-
             this.dotnetEfCoreToolMissing = !this.input.isSupportedDotNetEfToolInstalled;
+        }).finally(() => {
+            this.loadingCount--;
+        });
 
-            this.loading = false;
+        this.loadingCount++;
+        this.appService.getDotNetPathReport().then(report => {
+            this.report = report;
+        }).finally(() => {
+            this.loadingCount--;
         });
     }
 }

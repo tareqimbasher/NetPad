@@ -39,13 +39,6 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
 
     public string? LocateDotNetRootDirectory()
     {
-        if (!string.IsNullOrWhiteSpace(settings.DotNetSdkDirectoryPath))
-        {
-            return _pathResolver.IsValidDotNetSdkRootDirectory(settings.DotNetSdkDirectoryPath)
-                ? settings.DotNetSdkDirectoryPath
-                : null;
-        }
-
         if (_dotNetRootDirPath != null)
         {
             return _dotNetRootDirPath;
@@ -58,34 +51,14 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 return _dotNetRootDirPath;
             }
 
-            string? rootDirPath = null;
+            var report = _pathResolver.FindDotNetInstallDir(settings);
 
-            var exePathFromShell = GetDotNetExePathFromShell();
-
-            if (exePathFromShell != null)
+            if (report.ResolvedPath is not null)
             {
-                rootDirPath = Path.GetDirectoryName(exePathFromShell);
-                if (!_pathResolver.IsValidDotNetSdkRootDirectory(rootDirPath))
-                {
-                    rootDirPath = null;
-                }
+                Environment.SetEnvironmentVariable("DOTNET_ROOT", report.ResolvedPath.Path);
             }
 
-            if (rootDirPath == null)
-            {
-                rootDirPath = _pathResolver.SearchCommonLocationsForDotNetRootDirectory();
-                if (!_pathResolver.IsValidDotNetSdkRootDirectory(rootDirPath))
-                {
-                    rootDirPath = null;
-                }
-            }
-
-            if (rootDirPath != null)
-            {
-                Environment.SetEnvironmentVariable("DOTNET_ROOT", rootDirPath);
-            }
-
-            _dotNetRootDirPath = rootDirPath;
+            _dotNetRootDirPath = report.ResolvedPath?.Path;
         }
 
         return _dotNetRootDirPath;
@@ -120,7 +93,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
 
             var rootDirPath = LocateDotNetRootDirectory();
 
-            if (_pathResolver.IsValidDotNetSdkRootDirectory(rootDirPath))
+            if (DotNetPathResolver.IsValidDotNetSdkRootDirectory(rootDirPath))
             {
                 exePath = Path.Combine(rootDirPath!, _dotNetExeName);
             }
@@ -316,37 +289,5 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
     private static string GetDotNetEfToolExeName()
     {
         return PlatformUtil.IsOSWindows() ? "dotnet-ef.exe" : "dotnet-ef";
-    }
-
-    private static string? GetDotNetExePathFromShell()
-    {
-        try
-        {
-            // Try getting path using ShellExecute
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                UseShellExecute = true,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                FileName = _dotNetExeName,
-                Arguments = "--version",
-                RedirectStandardOutput = true
-            }.CopyCurrentEnvironmentVariables());
-
-            var path = process?.MainModule?.FileName;
-
-            // Process file path could sometimes point to the shell that executed the command, ex: if ShellExecute could find the command
-            if (path?.EndsWith(_dotNetExeName) != true)
-            {
-                return null;
-            }
-
-            return path;
-        }
-        catch
-        {
-            // If it failed, it wasn't found
-            return null;
-        }
     }
 }

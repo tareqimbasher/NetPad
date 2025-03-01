@@ -27,6 +27,8 @@ export interface IAppApiClient {
 
     openPackageCacheFolder(signal?: AbortSignal | undefined): Promise<void>;
 
+    getDotNetPathReport(signal?: AbortSignal | undefined): Promise<DotNetPathReport>;
+
     sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void>;
 }
 
@@ -273,6 +275,41 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             });
         }
         return Promise.resolve<void>(<any>null);
+    }
+
+    getDotNetPathReport(signal?: AbortSignal | undefined): Promise<DotNetPathReport> {
+        let url_ = this.baseUrl + "/app/dotnet-path";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetDotNetPathReport(_response);
+        });
+    }
+
+    protected processGetDotNetPathReport(response: Response): Promise<DotNetPathReport> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DotNetPathReport.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DotNetPathReport>(<any>null);
     }
 
     sendRemoteLog(source: LogSource, logs: RemoteLogMessage[], signal?: AbortSignal | undefined): Promise<void> {
@@ -2904,6 +2941,188 @@ export interface ISemanticVersion {
     /** String representation. */
     string: string;
 }
+
+export class DotNetPathReport implements IDotNetPathReport {
+    resolvedPath?: DirectoryPath | undefined;
+    searchSteps!: SearchStep[];
+
+    constructor(data?: IDotNetPathReport) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.searchSteps = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.resolvedPath = _data["resolvedPath"] ? DirectoryPath.fromJS(_data["resolvedPath"]) : <any>undefined;
+            if (Array.isArray(_data["searchSteps"])) {
+                this.searchSteps = [] as any;
+                for (let item of _data["searchSteps"])
+                    this.searchSteps!.push(SearchStep.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): DotNetPathReport {
+        data = typeof data === 'object' ? data : {};
+        let result = new DotNetPathReport();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["resolvedPath"] = this.resolvedPath ? this.resolvedPath.toJSON() : <any>undefined;
+        if (Array.isArray(this.searchSteps)) {
+            data["searchSteps"] = [];
+            for (let item of this.searchSteps)
+                data["searchSteps"].push(item.toJSON());
+        }
+        return data;
+    }
+
+    clone(): DotNetPathReport {
+        const json = this.toJSON();
+        let result = new DotNetPathReport();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDotNetPathReport {
+    resolvedPath?: DirectoryPath | undefined;
+    searchSteps: SearchStep[];
+}
+
+export abstract class AbsolutePath implements IAbsolutePath {
+    path!: string;
+
+    constructor(data?: IAbsolutePath) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.path = _data["path"];
+        }
+    }
+
+    static fromJS(data: any): AbsolutePath {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'AbsolutePath' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["path"] = this.path;
+        return data;
+    }
+
+    clone(): AbsolutePath {
+        throw new Error("The abstract class 'AbsolutePath' cannot be instantiated.");
+    }
+}
+
+export interface IAbsolutePath {
+    path: string;
+}
+
+export class DirectoryPath extends AbsolutePath implements IDirectoryPath {
+
+    constructor(data?: IDirectoryPath) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): DirectoryPath {
+        data = typeof data === 'object' ? data : {};
+        let result = new DirectoryPath();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): DirectoryPath {
+        const json = this.toJSON();
+        let result = new DirectoryPath();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDirectoryPath extends IAbsolutePath {
+}
+
+export class SearchStep implements ISearchStep {
+    location!: DirectoryPath;
+    result!: SearchStepResult;
+
+    constructor(data?: ISearchStep) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.location = new DirectoryPath();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.location = _data["location"] ? DirectoryPath.fromJS(_data["location"]) : new DirectoryPath();
+            this.result = _data["result"];
+        }
+    }
+
+    static fromJS(data: any): SearchStep {
+        data = typeof data === 'object' ? data : {};
+        let result = new SearchStep();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["location"] = this.location ? this.location.toJSON() : <any>undefined;
+        data["result"] = this.result;
+        return data;
+    }
+
+    clone(): SearchStep {
+        const json = this.toJSON();
+        let result = new SearchStep();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISearchStep {
+    location: DirectoryPath;
+    result: SearchStepResult;
+}
+
+export type SearchStepResult = "DirectoryNotFound" | "NoInstallationFound" | "Valid";
 
 export type LogSource = "WebApp" | "ElectronApp";
 
