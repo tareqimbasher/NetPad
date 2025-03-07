@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup>
-        <DefaultTargetFramework>net8.0</DefaultTargetFramework>
-        <EarliestSupportedTargetFramework>net8.0</EarliestSupportedTargetFramework>
+        <DefaultTargetFramework>net9.0</DefaultTargetFramework>
+        <EarliestSupportedTargetFramework>net9.0</EarliestSupportedTargetFramework>
         <LangVersion>latest</LangVersion>
         <Deterministic>True</Deterministic>
         <Nullable>Enable</Nullable>

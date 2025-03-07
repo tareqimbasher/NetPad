@@ -7,17 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dumpify" Version="0.6.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="6.0.31"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.31"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
-        <PackageReference Include="NJsonSchema" Version="10.6.6"/>
-        <PackageReference Include="NuGet.Protocol" Version="6.6.1"/>
-        <PackageReference Include="NuGet.Resolver" Version="6.6.1"/>
+        <PackageReference Include="Dumpify" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="NJsonSchema" />
+        <PackageReference Include="NuGet.Protocol" />
+        <PackageReference Include="NuGet.Resolver" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -40,6 +40,10 @@
         <EmbeddedResource Include="ExecutionModel\External\EmbeddedCode\Program.cs"/>
         <Compile Remove="ExecutionModel\External\EmbeddedCode\SqlAccessCode.cs"/>
         <EmbeddedResource Include="ExecutionModel\External\EmbeddedCode\SqlAccessCode.cs"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageVersion Update="Microsoft.Extensions.DependencyInjection.Abstractions"  />
     </ItemGroup>
 
 </Project>
