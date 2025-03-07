@@ -7,7 +7,7 @@ public class MediatorRequestPipeline<TRequest, TResponse> : IPipelineBehavior<TR
     where TRequest : class, IRequest<TResponse>
     where TResponse : class
 {
-    public async Task<TResponse?> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse?> next)
+    public async Task<TResponse?> Handle(TRequest request, RequestHandlerDelegate<TResponse?> next, CancellationToken cancellationToken)
     {
         // All Mediator requests must inherit from QueryBase or CommandBase
         if (!typeof(CommandBase).IsAssignableFrom(typeof(TRequest)) && !typeof(QueryBase).IsAssignableFrom(typeof(TRequest)))

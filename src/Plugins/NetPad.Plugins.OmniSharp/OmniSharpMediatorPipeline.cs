@@ -7,7 +7,7 @@ public class OmniSharpMediatorPipeline<TRequest, TResponse>(IServiceProvider ser
     : IPipelineBehavior<TRequest, TResponse?>
     where TRequest : class, IRequest<TResponse>
 {
-    public async Task<TResponse?> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse?> next)
+    public async Task<TResponse?> Handle(TRequest request, RequestHandlerDelegate<TResponse?> next, CancellationToken cancellationToken)
     {
         // This pipeline should only process requests from current assembly
         if (typeof(Plugin).Assembly != typeof(TRequest).Assembly)
