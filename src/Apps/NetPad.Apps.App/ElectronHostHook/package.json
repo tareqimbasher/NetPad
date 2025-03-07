@@ -7,8 +7,8 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "devDependencies": {
-        "electron": "^23.2.3",
-        "socket.io": "^4.8.0",
-        "typescript": "^5.1.6"
+        "electron": "^35.0.0",
+        "socket.io": "^4.8.1",
+        "typescript": "^5.8.2"
     }
 }
