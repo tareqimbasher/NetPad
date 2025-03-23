@@ -48,7 +48,7 @@ jobs:
             })
             return data.id
 
-  build-tauri:
+  package-tauri:
     needs: create-release
     defaults:
       run:
@@ -77,15 +77,17 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: 🧲 setup .NET 8
+      - name: 🧲 Setup .NET 6 and 8
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            6.0.x
+            8.0.x
 
       - name: setup Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          # These targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)

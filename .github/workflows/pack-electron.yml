@@ -14,7 +14,7 @@ on:
       - ".github/workflows/pack-electron.yml"
 
 jobs:
-  tauri:
+  package-electron:
     defaults:
       run:
         working-directory: ./src
@@ -22,11 +22,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
-          - platform: "macos-latest" # for Intel based macs.
-            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
-          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+          - platform: "macos-latest"
+            args: ""
+          - platform: "ubuntu-22.04"
             args: ""
           - platform: "windows-latest"
             args: ""
@@ -40,13 +38,15 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: 🧲 Setup .NET 8
+      - name: 🧲 Setup .NET 6 and 8
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            6.0.x
+            8.0.x
 
       - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
@@ -55,17 +55,39 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App/App"
         run: npm install
 
-      - name: Install frontend dependencies (SPA)
+      - name: Install frontend dependencies (ElectronHostHook)
         working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
         run: npm install
 
-      - name: Package for Linux & Windows
+      - name: Package for Linux
+        if: matrix.platform == 'ubuntu-22.04'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
           dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
           electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: Package for Windows
+        if: matrix.platform == 'windows-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
           electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: Package for macOS (x86)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: Package for macOS (ARM)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 
       - name: List build files
         working-directory: "src/Apps/NetPad.Apps.App/bin/Desktop"
@@ -75,7 +97,7 @@ jobs:
       - name: 'Upload Bundled Packages'
         uses: actions/upload-artifact@v4
         with:
-          name: netpad_0.8.0.bundles
+          name: netpad_${{ matrix.platform }}.bundle
           path: |
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x64.zip
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-amd64.snap
@@ -85,5 +107,7 @@ jobs:
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.pacman
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.exe
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-mac-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-mac-arm64.zip
           retention-days: 1
           if-no-files-found: warn
