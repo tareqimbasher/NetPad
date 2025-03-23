@@ -2,10 +2,12 @@ import {ILogger} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {
     ActiveEnvironmentChangedEvent,
+    ChannelInfo,
     EnvironmentPropertyChangedEvent,
     EnvironmentsAddedEvent,
     EnvironmentsRemovedEvent,
     IEventBus,
+    IIpcGateway,
     ISession,
     ScriptConfigPropertyChangedEvent,
     ScriptEnvironment,
@@ -22,6 +24,7 @@ export class Session extends SessionApiClient implements ISession {
     constructor(
         baseUrl: string,
         @IHttpClient http: IHttpClient,
+        @IIpcGateway private readonly ipcGateway: IIpcGateway,
         @IEventBus readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(baseUrl, http);
@@ -62,9 +65,13 @@ export class Session extends SessionApiClient implements ISession {
         return this.environments;
     }
 
-    public override async activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
-        if (scriptId === this.active?.script.id) return;
-        return super.activate(scriptId, signal);
+    public activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {
+        if (scriptId === this.active?.script.id) return Promise.resolve();
+        return this.ipcGateway.send(new ChannelInfo("Activate"), scriptId);
+    }
+
+    public activateLastActive(signal?: AbortSignal | undefined): Promise<void> {
+        return this.ipcGateway.send(new ChannelInfo("ActivateLastActive"));
     }
 
     private subscribeToEvents() {

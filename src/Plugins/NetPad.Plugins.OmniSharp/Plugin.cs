@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using NetPad.Apps.Plugins;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
+using NetPad.Plugins.OmniSharp.Host;
 using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp;
@@ -33,6 +34,7 @@ public class Plugin : IPlugin
 
     public void Configure(IApplicationBuilder app, IHostEnvironment env)
     {
+        app.UseMiddleware<ExceptionHandlerMiddleware>();
     }
 
     public Task CleaupAsync()

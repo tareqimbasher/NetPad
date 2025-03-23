@@ -43,16 +43,4 @@ public class SessionController(IMediator mediator) : ControllerBase
         var active = await mediator.Send(new GetActiveScriptEnvironmentQuery());
         return active?.Script.Id;
     }
-
-    [HttpPatch("{scriptId:guid}/activate")]
-    public async Task Activate(Guid scriptId)
-    {
-        await mediator.Send(new ActivateScriptCommand(scriptId));
-    }
-
-    [HttpPatch("activate-last-active")]
-    public async Task ActivateLastActive()
-    {
-        await mediator.Send(new ActivateLastActiveScriptCommand());
-    }
 }

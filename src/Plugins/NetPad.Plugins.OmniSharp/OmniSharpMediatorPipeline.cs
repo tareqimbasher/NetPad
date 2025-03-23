@@ -1,4 +1,5 @@
 using MediatR;
+using NetPad.Plugins.OmniSharp.Exceptions;
 using NetPad.Plugins.OmniSharp.Features;
 
 namespace NetPad.Plugins.OmniSharp;
@@ -28,7 +29,7 @@ public class OmniSharpMediatorPipeline<TRequest, TResponse>(IServiceProvider ser
                     return default;
                 }
 
-                throw new Exception($"Could not find an {nameof(AppOmniSharpServer)} for script ID '{targetsSpecificOmniSharp.ScriptId}'");
+                throw new OmniSharpInstanceNotFound(targetsSpecificOmniSharp.ScriptId);
             }
 
             serviceProvider.GetRequiredService<AppOmniSharpServerAccessor>().Set(server);

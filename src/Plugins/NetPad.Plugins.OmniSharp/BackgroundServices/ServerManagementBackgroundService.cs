@@ -32,18 +32,34 @@ public class ServerManagementBackgroundService(
             }
 
             var environment = session.Get(activatedEnvironmentScriptId.Value);
-            if (environment != null && environment.Script.Config.Kind != ScriptKind.SQL)
+            if (environment == null || environment.Script.Config.Kind == ScriptKind.SQL)
+            {
+                return Task.CompletedTask;
+            }
+
+            Task.Run(async () =>
             {
                 try
                 {
-                    // We don't want to wait for this, we want it to occur asynchronously
+                    // If the user has already switched to a different tab less than a second later they might
+                    // just be quickly browsing, don't start OmniSharp just yet.
+                    await Task.Delay(1000, cancellationToken);
+                    if (environment != session.Active)
+                    {
+                        return;
+                    }
+
                     _ = serverCatalog.StartOmniSharpServerAsync(environment);
+                }
+                catch (TaskCanceledException)
+                {
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error occurred starting OmniSharp server for script {Script}", environment.Script);
+                    logger.LogError(ex, "Error occurred starting OmniSharp server for script {Script}",
+                        environment.Script);
                 }
-            }
+            });
 
             return Task.CompletedTask;
         });
@@ -77,7 +93,8 @@ public class ServerManagementBackgroundService(
             {
                 var newKind = (ScriptKind)ev.NewValue!;
 
-                var scriptEnvironment = session.Get(ev.ScriptId) ?? throw new Exception($"No script environment for script ID: {ev.ScriptId}");
+                var scriptEnvironment = session.Get(ev.ScriptId) ??
+                                        throw new Exception($"No script environment for script ID: {ev.ScriptId}");
 
                 if (newKind == ScriptKind.SQL)
                 {
@@ -91,7 +108,8 @@ public class ServerManagementBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error reacting to property change in ScriptConfig. Property: {PropertyName}. NewValue: {NewValue}",
+                logger.LogError(ex,
+                    "Error reacting to property change in ScriptConfig. Property: {PropertyName}. NewValue: {NewValue}",
                     ev.PropertyName,
                     ev.NewValue);
             }
