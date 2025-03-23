@@ -15,7 +15,7 @@ public class HtmlConvertTests
 
     [Theory]
     [MemberData(nameof(TestData.All), MemberType = typeof(TestData))]
-    public void HtmlSerailizerSuccessfullyConverts(object? value)
+    public void HtmlSerializerSuccessfullyConverts(object? value)
     {
         var node = HtmlSerializer.Serialize(value, _htmlSerializerOptions);
         _ = node.ToHtml();
@@ -51,7 +51,7 @@ public class HtmlConvertTests
 
     [Theory]
     [MemberData(nameof(GetConverterTestData))]
-    public void HtmlSerailizerGetsCorrectConverter(object? value, Type expectedConverterType)
+    public void HtmlSerializerGetsCorrectConverter(object? value, Type expectedConverterType)
     {
         var converter = HtmlSerializer.Create().GetConverter(value?.GetType() ?? typeof(object));
 

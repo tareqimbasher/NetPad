@@ -109,7 +109,7 @@ const electronBuilderConfig = {
     }
 }
 
-const electronNetConfig = {
+const ElectronSharpConfig = {
     environment: "Production",
     name: "netpad",
     description: "A cross-platform C# editor and playground.",
@@ -132,4 +132,4 @@ const electronNetConfig = {
     build: electronBuilderConfig
 };
 
-module.exports = electronNetConfig;
+module.exports = ElectronSharpConfig;

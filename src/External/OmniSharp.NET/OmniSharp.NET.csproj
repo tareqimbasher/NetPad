@@ -3,15 +3,20 @@
     <PropertyGroup>
         <RootNamespace>OmniSharp</RootNamespace>
         <Nullable>enable</Nullable>
-        <LangVersion>9</LangVersion>
+        <LangVersion>default</LangVersion>
         <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
         <AssemblyVersion>0.1.0</AssemblyVersion>
         <FileVersion>0.1.0</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="OmniSharp.Abstractions" Version="1.39.6"/>
-        <PackageReference Include="System.Text.Json" Version="6.0.11"/>
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="OmniSharp.Abstractions" />
+        <PackageReference Include="System.Text.Json" />
     </ItemGroup>
 
 </Project>

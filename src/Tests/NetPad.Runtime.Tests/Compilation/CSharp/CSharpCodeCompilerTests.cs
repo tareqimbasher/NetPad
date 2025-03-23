@@ -18,7 +18,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -28,7 +28,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("Console.WriteLine(\"Hello World\");");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -45,7 +45,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         code = GetProgram(code);
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.False(result.Success);
     }
@@ -55,7 +55,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("foobar");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.False(result.Success);
         Assert.NotEmpty(result.Diagnostics);
@@ -68,7 +68,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         code = GetProgram(code, @namespace);
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.Select(d => d.GetMessage()).JoinToString("|"));
     }
@@ -78,7 +78,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("using var stream = new MemoryStream();", "System.IO");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
@@ -88,7 +88,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("DateTime datetime = new();");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
@@ -98,7 +98,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("var point = (1, 2); int x = 0; (x, int y) = point;");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet6));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
@@ -108,7 +108,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
     {
         var code = GetProgram("var str = \"\"\"\nsome text\n\"\"\";");
 
-        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet7));
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet8));
 
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }

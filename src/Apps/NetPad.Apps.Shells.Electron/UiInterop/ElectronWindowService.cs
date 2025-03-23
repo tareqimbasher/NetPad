@@ -1,5 +1,5 @@
-using ElectronNET.API;
-using ElectronNET.API.Entities;
+using ElectronSharp.API;
+using ElectronSharp.API.Entities;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
@@ -15,7 +15,7 @@ public class ElectronWindowService(
     ILogger<ElectronWindowService> logger)
     : IUiWindowService
 {
-    private async Task<Display> PrimaryDisplay() => await ElectronNET.API.Electron.Screen.GetPrimaryDisplayAsync();
+    private async Task<Display> PrimaryDisplay() => await ElectronSharp.API.Electron.Screen.GetPrimaryDisplayAsync();
 
     public async Task OpenMainWindowAsync()
     {
@@ -71,7 +71,7 @@ public class ElectronWindowService(
                 var bounds = await window.GetBoundsAsync();
                 var isMaximized = await window.IsMaximizedAsync();
 
-                trivialDataStore.Set("main-window.bounds", new WindowState(bounds, isMaximized));
+                trivialDataStore.Set("main-window.bounds", new WindowState(bounds, isMaximized ?? false));
             }
             catch (Exception ex)
             {
@@ -194,7 +194,7 @@ public class ElectronWindowService(
     private async Task ShowModalWindowAsync(BrowserWindow window, double height, double width)
     {
         var mainWindowPosition = await ElectronUtil.MainWindow.GetBoundsAsync();
-        var allDisplays = (await ElectronNET.API.Electron.Screen.GetAllDisplaysAsync())
+        var allDisplays = (await ElectronSharp.API.Electron.Screen.GetAllDisplaysAsync())
             .OrderBy(x => x.Bounds.X)
             .ToArray();
 

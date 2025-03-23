@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using ElectronNET.API;
+using ElectronSharp.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,17 +35,17 @@ public class ElectronShell : IShell
     {
         Task.Run(async () =>
         {
-            ElectronNET.API.Electron.App.WindowAllClosed += () =>
+            ElectronSharp.API.Electron.App.WindowAllClosed += () =>
             {
                 // On macOS it is common for applications and their menu bar
                 // to stay active until the user quits explicitly with Cmd + Q
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    ElectronNET.API.Electron.App.Quit();
+                    ElectronSharp.API.Electron.App.Quit();
                 }
             };
 
-            ElectronNET.API.Electron.App.WillQuit += args =>
+            ElectronSharp.API.Electron.App.WillQuit += args =>
             {
                 var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                 appLifetime.StopApplication();
@@ -58,6 +58,6 @@ public class ElectronShell : IShell
 
     public void ShowErrorDialog(string title, string content)
     {
-        ElectronNET.API.Electron.Dialog.ShowErrorBox(title, content);
+        ElectronSharp.API.Electron.Dialog.ShowErrorBox(title, content);
     }
 }

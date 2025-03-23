@@ -16,7 +16,7 @@ namespace OmniSharp
         {
             _loggerFactory = loggerFactory;
             Configuration = configuration;
-            Logger = loggerFactory.CreateLogger(GetType().FullName);
+            Logger = loggerFactory.CreateLogger(GetType().FullName ?? GetType().Name);
             _sequence = 100;
         }
 
