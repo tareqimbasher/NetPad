@@ -77,10 +77,10 @@ const electronBuilderConfig = {
         target: [
             {
                 target: "nsis"
-            },
-            {
-                target: "zip"
             }
+            // {
+            //     target: "zip"
+            // }
         ]
     },
     pacman: {

@@ -25,12 +25,13 @@ public class ScriptHostProcessManager(
     private ScriptHostIpcGateway? _ipcGateway;
     private uint _sendIpcMessageSeq;
 
-    private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(new UnboundedChannelOptions
-    {
-        SingleReader = true,
-        SingleWriter = false,
-        AllowSynchronousContinuations = true
-    });
+    private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(
+        new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            AllowSynchronousContinuations = true
+        });
 
     public ScriptHostIpcGateway IpcGateway =>
         _ipcGateway ?? throw new InvalidOperationException("IpcGateway is not initialized.");
@@ -204,14 +205,17 @@ public class ScriptHostProcessManager(
             runtimeOptions["tfm"] = $"net{majorVersion}.0";
         }
 
-        var frameworks = runtimeOptions["frameworks"];
-        if (frameworks != null)
+        foreach (var section in new[] { "frameworks", "includedFrameworks" })
         {
-            foreach (var framework in frameworks.AsArray())
+            var frameworks = runtimeOptions[section];
+            if (frameworks != null)
             {
-                if (framework != null)
+                foreach (var framework in frameworks.AsArray())
                 {
-                    framework["version"] = $"{majorVersion}.0.0";
+                    if (framework != null)
+                    {
+                        framework["version"] = $"{majorVersion}.0.0";
+                    }
                 }
             }
         }
