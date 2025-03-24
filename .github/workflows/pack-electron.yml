@@ -2,6 +2,9 @@ name: "Pack - Electron App"
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DEBUG: electron-builder
+  FPM_DEBUG: true
+  DEBUG_DMG: true
 
 on:
   push:
@@ -22,12 +25,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest"
+#          - platform: "macos-latest"
+#            args: ""
+          - platform: "ubuntu-24.04"
             args: ""
-          - platform: "ubuntu-22.04"
-            args: ""
-          - platform: "windows-latest"
-            args: ""
+#          - platform: "windows-latest"
+#            args: ""
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -46,7 +49,7 @@ jobs:
             8.0.x
 
       - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: matrix.platform == 'ubuntu-24.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
@@ -60,7 +63,7 @@ jobs:
         run: npm install
 
       - name: Package for Linux
-        if: matrix.platform == 'ubuntu-22.04'
+        if: matrix.platform == 'ubuntu-24.04'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
