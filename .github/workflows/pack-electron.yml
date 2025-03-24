@@ -2,9 +2,9 @@ name: "Pack - Electron App"
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
-  DEBUG: electron-builder
-  FPM_DEBUG: true
-  DEBUG_DMG: true
+#  DEBUG: electron-builder
+#  FPM_DEBUG: true
+#  DEBUG_DMG: true
 
 on:
   push:
@@ -107,7 +107,7 @@ jobs:
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.AppImage
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.deb
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.rpm
-            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x86_64.pacman
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-linux-x64.pacman
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.exe
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-win-x64.zip
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-0.8.0-mac-x64.zip

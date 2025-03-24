@@ -23,6 +23,10 @@ const electronBuilderConfig = {
     files: [
         "**/*"
     ],
+    publish: {
+        provider: "github",
+        releaseType: "draft"
+    },
     linux: {
         artifactName: "${name}-${version}-${os}-${arch}.${ext}",
         icon: "../../../wwwroot/logo/circle/",
@@ -77,9 +81,6 @@ const electronBuilderConfig = {
         target: [
             {
                 target: "nsis"
-            },
-            {
-                target: "zip"
             }
         ]
     },
