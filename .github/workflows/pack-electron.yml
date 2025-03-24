@@ -52,7 +52,7 @@ jobs:
         if: matrix.platform == 'ubuntu-24.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y flatpak flatpak-builder
+          sudo apt-get install -y flatpak flatpak-builder libarchive-tools
 
       - name: Install frontend dependencies (SPA)
         working-directory: "src/Apps/NetPad.Apps.App/App"
