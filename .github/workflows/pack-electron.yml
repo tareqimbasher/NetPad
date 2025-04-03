@@ -1,0 +1,120 @@
+name: "Package - Electron App"
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+#  DEBUG: electron-builder
+#  FPM_DEBUG: true
+#  DEBUG_DMG: true
+
+on:
+  push:
+    branches:
+      - "feat/pack-tauriapp-workflow"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pack-electron.yml"
+
+jobs:
+  package-electron:
+    defaults:
+      run:
+        working-directory: ./src
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            args: ""
+          - platform: "ubuntu-24.04"
+            args: ""
+          - platform: "windows-latest"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: 🧲 Setup .NET 6 and 8
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: 🧲 Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder libarchive-tools
+
+      - name: 🧲 Install frontend dependencies (SPA)
+        working-directory: "src/Apps/NetPad.Apps.App/App"
+        run: npm install
+
+      - name: 🧲 Install frontend dependencies (ElectronHostHook)
+        working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
+        run: npm install
+
+      - name: 🧲 Install electron-builder # we need this to use a specific version of electron-builder
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: npm install electron-builder@^24 -g
+
+      - name: 🔨 Restore Script Host
+        working-directory: "src/Apps/NetPad.Apps.ScriptHost"
+        run: dotnet restore
+
+      - name: 🚚 Package for Linux
+        if: matrix.platform == 'ubuntu-24.04'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for Windows
+        if: matrix.platform == 'windows-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for macOS (x86)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for macOS (ARM)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: Upload Bundled Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: netpad_${{ matrix.platform }}.bundle
+          path: |
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-amd64.snap
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.AppImage
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.deb
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.rpm
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x64.pacman
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-win-x64.exe
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-win-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-mac-x64.zip
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-mac-arm64.zip
+          retention-days: 1
+          if-no-files-found: warn

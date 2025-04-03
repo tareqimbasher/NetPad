@@ -14,3 +14,6 @@ trim_trailing_whitespace = false
 
 [*.{razor,cshtml}]
 charset = utf-8-bom
+
+[*.yml]
+indent_size = 2

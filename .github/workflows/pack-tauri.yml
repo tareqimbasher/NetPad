@@ -1,0 +1,120 @@
+name: "Package - Tauri App"
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+on:
+  push:
+    branches:
+      - "feat/pack-tauriapp-workflow"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/pack-tauri.yml"
+
+jobs:
+  create-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create-release.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: 🚩 Get version
+        run: echo "PACKAGE_VERSION=$(node -p "require('./src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5').version")" >> $GITHUB_ENV
+
+      - name: 🚚 Create release
+        id: create-release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `app-v${process.env.PACKAGE_VERSION}`,
+              name: `NetPad vNext v${process.env.PACKAGE_VERSION}`,
+              body: 'Take a look at the assets to download and install this app.',
+              draft: true,
+              prerelease: false
+            })
+            return data.id
+
+  package-tauri:
+    needs: create-release
+    defaults:
+      run:
+        working-directory: ./src
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
+          - platform: "ubuntu-22.04"
+            args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
+          - platform: "windows-latest"
+            args: "-c src-tauri/tauri.conf.win-x64.json5"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: 🧲 Setup .NET 6 and 8
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: 🧲 Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # These targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: 🧲 Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf liblttng-ust1
+
+      - name: 🧲 Install frontend dependencies (SPA)
+        working-directory: "src/Apps/NetPad.Apps.App/App"
+        run: npm install
+
+      - name: 🧲 Install frontend dependencies (Tauri)
+        working-directory: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+        run: npm install
+
+      - name: 🔨 Restore
+        run: dotnet restore
+
+      # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
+      - name: 🚚 Package Tauri app
+        uses: tauri-apps/tauri-action@v0
+        id: tauri
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+          projectPath: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+          tauriScript: "npx tauri"
+          releaseId: ${{ needs.create-release.outputs.release_id }}
