@@ -1,4 +1,4 @@
-name: "Pack - Electron App"
+name: "Package - Electron App"
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -26,10 +26,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #          - platform: "macos-latest"
-          #            args: ""
-          #          - platform: "ubuntu-24.04"
-          #            args: ""
+          - platform: "macos-latest"
+            args: ""
+          - platform: "ubuntu-24.04"
+            args: ""
           - platform: "windows-latest"
             args: ""
 

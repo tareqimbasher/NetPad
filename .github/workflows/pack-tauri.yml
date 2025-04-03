@@ -1,4 +1,4 @@
-name: "Pack - Tauri App"
+name: "Package - Tauri App"
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
@@ -59,12 +59,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #          - platform: "macos-latest" # for Arm based macs (M1 and above).
-          #            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
-          #          - platform: "macos-latest" # for Intel based macs.
-          #            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
-          #          - platform: "ubuntu-22.04"
-          #            args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
+          - platform: "ubuntu-22.04"
+            args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
           - platform: "windows-latest"
             args: "-c src-tauri/tauri.conf.win-x64.json5"
 
