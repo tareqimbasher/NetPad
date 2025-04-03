@@ -13,52 +13,28 @@
         <BuildServerSideRenderer>false</BuildServerSideRenderer>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
+
     <ItemGroup>
-        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1" />
-        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5" />
-        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5" />
-        <PackageReference Include="Serilog.AspNetCore" Version="6.0.0" />
-        <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1"/>
+        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5"/>
+        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
     </ItemGroup>
-    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
-        <!-- Ensure Node.js is installed -->
-        <Exec Command="node --version" ContinueOnError="true">
-            <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-        </Exec>
-        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
-        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-    </Target>
-    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
-        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" Condition=" '$(WebBuild)' != 'true' " />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build-web" Condition=" '$(WebBuild)' == 'true' " />
-        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' " />
-        <!-- Include the newly-built files in the publish output -->
-        <ItemGroup>
-            <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
-            <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'" />
-            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
-                <RelativePath>%(DistFiles.Identity)</RelativePath>
-                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-            </ResolvedFileToPublish>
-        </ItemGroup>
-    </Target>
+
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
-        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj" />
-        <ProjectReference Include="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj" />
-        <ProjectReference Include="..\NetPad.Apps.Shells.Electron\NetPad.Apps.Shells.Electron.csproj" />
-        <ProjectReference Include="..\NetPad.Apps.Shells.Tauri\NetPad.Apps.Shells.Tauri.csproj" />
-        <ProjectReference Include="..\NetPad.Apps.Shells.Web\NetPad.Apps.Shells.Web.csproj" />
-        <ProjectReference Include="..\..\Plugins\NetPad.Plugins.OmniSharp\NetPad.Plugins.OmniSharp.csproj" />
-        <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj"/>
+        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj"/>
+        <ProjectReference Include="..\NetPad.Apps.Shells.Electron\NetPad.Apps.Shells.Electron.csproj"/>
+        <ProjectReference Include="..\NetPad.Apps.Shells.Tauri\NetPad.Apps.Shells.Tauri.csproj"/>
+        <ProjectReference Include="..\NetPad.Apps.Shells.Web\NetPad.Apps.Shells.Web.csproj"/>
+        <ProjectReference Include="..\..\Plugins\NetPad.Plugins.OmniSharp\NetPad.Plugins.OmniSharp.csproj"/>
+        <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj"/>
     </ItemGroup>
+
     <ItemGroup>
         <Content Update="appsettings.Development.json">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
@@ -66,13 +42,13 @@
         <Content Update="appsettings.Local.json">
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <Content Remove="$(SpaRoot)**" />
-        <None Remove="$(SpaRoot)**" />
-        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-        <Compile Remove="App\dist\**" />
-        <Content Remove="App\dist\**" />
-        <EmbeddedResource Remove="App\dist\**" />
-        <None Remove="App\dist\**" />
+        <Content Remove="$(SpaRoot)**"/>
+        <None Remove="$(SpaRoot)**"/>
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
+        <Compile Remove="App\dist\**"/>
+        <Content Remove="App\dist\**"/>
+        <EmbeddedResource Remove="App\dist\**"/>
+        <None Remove="App\dist\**"/>
         <Content Include="electron.manifest.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
@@ -84,5 +60,71 @@
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
+
+    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+        <!-- Ensure Node.js is installed -->
+        <Exec Command="node --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+        </Exec>
+        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE."/>
+        <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..."/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+    </Target>
+
+    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install"/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" Condition=" '$(WebBuild)' != 'true' "/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build-web" Condition=" '$(WebBuild)' == 'true' "/>
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' "/>
+        <!-- Include the newly-built files in the publish output -->
+        <ItemGroup>
+            <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**"/>
+            <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'"/>
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BuildAndCopyScriptHostProject" AfterTargets="Build" Condition="'$(_IsPublishing)' == ''">
+        <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
+                 Targets="Build"
+                 Properties="Configuration=$(Configuration);Platform=$(Platform)"
+                 BuildInParallel="true"/>
+
+        <PropertyGroup>
+            <ScriptHostBuildDir>$(SolutionDir)Apps\NetPad.Apps.ScriptHost\bin\$(Configuration)\$(DefaultTargetFramework)\</ScriptHostBuildDir>
+            <CopyDestination>$(OutputPath)ScriptHost\</CopyDestination>
+        </PropertyGroup>
+
+        <MakeDir Directories="$(CopyDestination)"/>
+
+        <ItemGroup>
+            <ScriptHostBuildOutput Include="$(ScriptHostBuildDir)**\*"/>
+        </ItemGroup>
+
+        <Message Text="ScriptHostBuildDir: $(ScriptHostBuildDir)" Importance="high"/>
+        <Message Text="CopyDestination: $(CopyDestination)" Importance="high"/>
+
+        <Copy SourceFiles="@(ScriptHostBuildOutput)"
+              DestinationFolder="$(CopyDestination)%(RecursiveDir)"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+    <Target Name="PublishScriptHostProject" AfterTargets="Publish">
+        <PropertyGroup>
+            <ScriptHostPublishDir>$(PublishDir)ScriptHost</ScriptHostPublishDir>
+        </PropertyGroup>
+
+        <Message Text="ScriptHostPublishDir: $(ScriptHostPublishDir)" Importance="high"/>
+
+        <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
+                 Targets="Publish"
+                 Properties="Configuration=$(Configuration);SelfContained=false;PublishDir=$(ScriptHostPublishDir)"
+                 BuildInParallel="true"/>
+    </Target>
 
 </Project>

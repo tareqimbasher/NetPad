@@ -25,12 +25,13 @@ public class ScriptHostProcessManager(
     private ScriptHostIpcGateway? _ipcGateway;
     private uint _sendIpcMessageSeq;
 
-    private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(new UnboundedChannelOptions
-    {
-        SingleReader = true,
-        SingleWriter = false,
-        AllowSynchronousContinuations = true
-    });
+    private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(
+        new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            AllowSynchronousContinuations = true
+        });
 
     public ScriptHostIpcGateway IpcGateway =>
         _ipcGateway ?? throw new InvalidOperationException("IpcGateway is not initialized.");

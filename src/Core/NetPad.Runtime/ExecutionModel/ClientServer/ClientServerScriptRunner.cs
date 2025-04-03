@@ -144,9 +144,10 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         DirectoryPath scriptHostRootDirectory,
         ILoggerFactory loggerFactory)
     {
-        // ScriptHost executable should be in the same directory as the NetPad backend, and this assembly.
+        // ScriptHost executable should be in a sub-directory in the NetPad backend
         FilePath scriptHostExecutablePath = Path.Combine(
             Path.GetDirectoryName(typeof(ClientServerScriptRunner).Assembly.Location) ?? string.Empty,
+            "ScriptHost",
             "netpad-script-host" + (PlatformUtil.IsOSWindows() ? ".exe" : string.Empty)
         );
 
