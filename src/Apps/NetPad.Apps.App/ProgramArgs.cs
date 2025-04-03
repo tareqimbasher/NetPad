@@ -12,6 +12,12 @@ public class ProgramArgs
     {
         Raw = args;
 
+        ShellType = Raw.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT"))
+            ? ShellType.Electron
+            : Raw.Any(a => a.EqualsIgnoreCase("--tauri"))
+                ? ShellType.Tauri
+                : ShellType.Web;
+
         RunMode = args.Contains("--swagger") ? RunMode.SwaggerGen : RunMode.Normal;
 
         var parentPidArg = Array.IndexOf(args, "--parent-pid");
@@ -44,14 +50,19 @@ public class ProgramArgs
     /// </summary>
     public RunMode RunMode { get; }
 
+    /// <summary>
+    /// The shell the app is running in.
+    /// </summary>
+    public ShellType ShellType { get; }
+
     public IShell CreateShell()
     {
-        if (Raw.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT")))
+        if (ShellType == ShellType.Electron)
         {
             return new ElectronShell();
         }
 
-        if (Raw.Any(a => a.EqualsIgnoreCase("--tauri")))
+        if (ShellType == ShellType.Tauri)
         {
             return new TauriShell();
         }

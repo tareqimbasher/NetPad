@@ -40,13 +40,13 @@ public static class Program
                 Shell?.ShowErrorDialog(
                     $"{AppIdentifier.AppName} Already Running",
                     $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
-                result =  ProgramExitCode.PortUnavailable;
+                result = ProgramExitCode.PortUnavailable;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
                 Log.Fatal(ex, "Host terminated unexpectedly");
-                result =  ProgramExitCode.UnexpectedError;
+                result = ProgramExitCode.UnexpectedError;
             }
             finally
             {
@@ -128,7 +128,19 @@ public static class Program
 
     private static IHostBuilder CreateHostBuilder(ProgramArgs args) =>
         Host.CreateDefaultBuilder(args.Raw)
-            .ConfigureAppConfiguration(config => { config.AddJsonFile("appsettings.Local.json", true); })
+            .ConfigureAppConfiguration(config =>
+            {
+                if (args.ShellType == ShellType.Electron)
+                {
+                    config.AddJsonFile("appsettings.Electron.json", false);
+                }
+                else if (args.ShellType == ShellType.Tauri)
+                {
+                    config.AddJsonFile("appsettings.Tauri.json", false);
+                }
+
+                config.AddJsonFile("appsettings.Local.json", true);
+            })
             .UseSerilog((ctx, config) => { ConfigureLogging(config, ctx.Configuration); })
             .ConfigureWebHostDefaults(webBuilder =>
             {
