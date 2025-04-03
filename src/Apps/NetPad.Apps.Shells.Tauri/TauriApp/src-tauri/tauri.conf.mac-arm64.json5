@@ -1,10 +1,10 @@
 {
     "build": {
-        "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r osx-arm64 -c \"Release\" /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --no-self-contained"
+        "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r osx-arm64 -c \"Release\" --output ../../NetPad.Apps.App/bin/tauri/osx-arm64 /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --self-contained"
     },
     "bundle": {
         "resources": {
-            "../../../NetPad.Apps.App/bin/Release/net6.0/osx-arm64/publish": "resources/netpad-server"
+            "../../../NetPad.Apps.App/bin/tauri/osx-arm64": "resources/netpad-server"
         }
     }
 }
