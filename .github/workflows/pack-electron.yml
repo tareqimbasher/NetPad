@@ -2,7 +2,7 @@ name: "Package - Electron App"
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 #  DEBUG: electron-builder
 #  FPM_DEBUG: true
 #  DEBUG_DMG: true

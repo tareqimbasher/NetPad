@@ -63,7 +63,7 @@ jobs:
             args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
           - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
-          - platform: "ubuntu-22.04"
+          - platform: "ubuntu-24.04"
             args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
           - platform: "windows-latest"
             args: "-c src-tauri/tauri.conf.win-x64.json5"
@@ -91,7 +91,7 @@ jobs:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: 🧲 Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
+        if: matrix.platform == 'ubuntu-24.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
