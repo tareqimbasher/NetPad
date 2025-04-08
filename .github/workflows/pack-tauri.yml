@@ -94,7 +94,7 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf liblttng-ust1
 
       - name: 🧲 Install frontend dependencies (SPA)
         working-directory: "src/Apps/NetPad.Apps.App/App"
