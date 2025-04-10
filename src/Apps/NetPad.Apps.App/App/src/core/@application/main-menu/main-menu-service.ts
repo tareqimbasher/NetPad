@@ -1,8 +1,11 @@
 import {System} from "@common";
 import {IMenuItem} from "./imenu-item";
 import {
+    EnvironmentPropertyChangedEvent,
+    IEventBus,
     IPaneManager,
     IScriptService,
+    ISession,
     ISettingsService,
     IShortcutManager,
     IWindowService,
@@ -26,6 +29,8 @@ export class MainMenuService implements IMainMenuService {
         @ITextEditorService private readonly textEditorService: ITextEditorService,
         @IWindowService private readonly windowService: IWindowService,
         @IPaneManager private readonly paneManager: IPaneManager,
+        @ISession private readonly session: ISession,
+        @IEventBus eventBus: IEventBus,
         private readonly dialogUtil: DialogUtil
     ) {
         this._items = [
@@ -286,7 +291,7 @@ export class MainMenuService implements IMainMenuService {
                         click: async () => this.scriptService.stopAll(false),
                     },
                     {
-                        id: "tools.stopRunningScripts",
+                        id: "tools.stopScriptHosts",
                         text: "Stop Scripts and Runners",
                         hoverText: "Stop all running scripts and idle runners that are alive in the background.",
                         icon: "stop-icon",
@@ -331,6 +336,10 @@ export class MainMenuService implements IMainMenuService {
                 ]
             }
         ];
+
+        this.updateMenuItems();
+
+        eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
     }
 
     public get items(): ReadonlyArray<IMenuItem> {
@@ -397,6 +406,35 @@ export class MainMenuService implements IMainMenuService {
             if (item.menuItems && item.menuItems.length) {
                 this.walkItems(item.menuItems, action);
             }
+        }
+    }
+
+    private updateMenuItems() {
+        let anyScriptRunning = false;
+        let anyScriptHostRunning = false;
+
+        for (const environment of this.session.environments) {
+            if (!anyScriptRunning && environment.status === "Running") {
+                anyScriptRunning = true;
+            }
+
+            if (!anyScriptHostRunning && environment.isScriptHostRunning) {
+                anyScriptHostRunning = true;
+            }
+
+            if (anyScriptRunning || anyScriptHostRunning) {
+                break;
+            }
+        }
+
+        let item = this.find(this._items, x => x.id === "tools.stopRunningScripts");
+        if (item) {
+            item.disabled = !anyScriptRunning;
+        }
+
+        item = this.find(this._items, x => x.id === "tools.stopScriptHosts");
+        if (item) {
+            item.disabled = !anyScriptHostRunning;
         }
     }
 }

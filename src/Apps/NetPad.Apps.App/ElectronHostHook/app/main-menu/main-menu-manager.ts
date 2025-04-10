@@ -176,6 +176,7 @@ export class MainMenuManager {
                 submenu: [
                     this.fromAppMenuItem("tools.dependencyCheck"),
                     this.fromAppMenuItem("tools.stopRunningScripts"),
+                    this.fromAppMenuItem("tools.stopScriptHosts"),
                 ]
             },
             { role: 'windowMenu' },

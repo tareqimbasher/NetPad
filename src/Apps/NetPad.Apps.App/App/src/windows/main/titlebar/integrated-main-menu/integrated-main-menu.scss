@@ -63,6 +63,10 @@ integrated-main-menu {
     .dropdown-item {
         display: flex;
         align-items: center;
+
+        &.disabled {
+            opacity: 50%;
+        }
     }
 
     .main-menu-icon {

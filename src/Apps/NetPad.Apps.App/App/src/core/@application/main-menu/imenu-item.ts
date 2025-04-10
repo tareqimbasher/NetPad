@@ -10,4 +10,5 @@ export interface IMenuItem {
     isDivider?: boolean;
     click?: () => Promise<void | unknown>,
     menuItems?: IMenuItem[],
+    disabled?: boolean,
 }

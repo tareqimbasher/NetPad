@@ -4731,6 +4731,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
     status!: ScriptStatus;
     runDurationMilliseconds?: number | undefined;
     memCacheItems!: MemCacheItemInfo[];
+    isScriptHostRunning!: boolean;
 
     constructor(data?: IScriptEnvironment) {
         if (data) {
@@ -4755,6 +4756,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
                 for (let item of _data["memCacheItems"])
                     this.memCacheItems!.push(MemCacheItemInfo.fromJS(item));
             }
+            this.isScriptHostRunning = _data["isScriptHostRunning"];
         }
     }
 
@@ -4775,6 +4777,7 @@ export class ScriptEnvironment implements IScriptEnvironment {
             for (let item of this.memCacheItems)
                 data["memCacheItems"].push(item.toJSON());
         }
+        data["isScriptHostRunning"] = this.isScriptHostRunning;
         return data;
     }
 
@@ -4791,6 +4794,7 @@ export interface IScriptEnvironment {
     status: ScriptStatus;
     runDurationMilliseconds?: number | undefined;
     memCacheItems: MemCacheItemInfo[];
+    isScriptHostRunning: boolean;
 }
 
 export class Script implements IScript {

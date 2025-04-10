@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Events;
 using NetPad.ExecutionModel;
+using NetPad.ExecutionModel.ClientServer.Events;
 using NetPad.ExecutionModel.ClientServer.ScriptServices;
 using NetPad.IO;
 using NetPad.Presentation;
@@ -68,6 +69,26 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             return Task.CompletedTask;
         }));
+
+        _disposables.Add(_eventBus.Subscribe<ScriptHostProcessLifetimeEvent>(ev =>
+        {
+            if (ev.ScriptId == Script.Id)
+            {
+                var oldValue = IsScriptHostRunning;
+                var newValue = ev.IsRunning;
+                if (oldValue != newValue)
+                {
+                    IsScriptHostRunning = newValue;
+                    _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(
+                        Script.Id,
+                        nameof(IsScriptHostRunning),
+                        oldValue,
+                        newValue));
+                }
+            }
+
+            return Task.CompletedTask;
+        }));
     }
 
     public Script Script { get; }
@@ -77,6 +98,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     public double? RunDurationMilliseconds { get; private set; }
 
     public MemCacheItemInfo[] MemCacheItems { get; private set; } = [];
+
+    public bool IsScriptHostRunning { get; private set; }
 
     public async Task RunAsync(RunOptions runOptions)
     {

@@ -129,6 +129,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                     items: [
                         await this.fromAppMenuItem(appMenuItems, "tools.dependencyCheck"),
                         await this.fromAppMenuItem(appMenuItems, "tools.stopRunningScripts"),
+                        await this.fromAppMenuItem(appMenuItems, "tools.stopScriptHosts"),
                     ].filter(x => x).map(x => x!)
                 }),
                 await Submenu.new({

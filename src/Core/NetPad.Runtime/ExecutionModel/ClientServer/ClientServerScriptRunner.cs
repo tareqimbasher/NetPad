@@ -159,7 +159,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             _rawOutputHandler.RawErrorReceived,
             loggerFactory.CreateLogger(
                 $"{typeof(ScriptHostProcessManager)} | [{_script.Id.ToString()[..8]}] {_script.Name}"),
-            AddScriptHostOnMessageReceivedHandlers
+            AddScriptHostOnMessageReceivedHandlers,
+            _eventBus
         );
 
         return manager;

@@ -4,6 +4,8 @@ using System.Text.Json.Nodes;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using NetPad.DotNet;
+using NetPad.Events;
+using NetPad.ExecutionModel.ClientServer.Events;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.IO;
 using NetPad.Scripts;
@@ -18,7 +20,8 @@ public class ScriptHostProcessManager(
     Action<string> nonMessageOutputHandler,
     Action<string> errorOutputHandler,
     ILogger logger,
-    Action<ScriptHostIpcGateway> addMessageHandlers)
+    Action<ScriptHostIpcGateway> addMessageHandlers,
+    IEventBus eventBus)
 {
     private static readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
     private Process? _scriptHostProcess;
@@ -169,6 +172,7 @@ public class ScriptHostProcessManager(
         finally
         {
             _scriptHostProcessStartLock.Release();
+            PublishLifetimeEvent();
         }
     }
 
@@ -259,5 +263,12 @@ public class ScriptHostProcessManager(
                 logger.LogError(ex, "Error deleting script-host root dir: {Path}", scriptHostExecutablePath.Path);
             }
         }
+
+        PublishLifetimeEvent();
+    }
+
+    private void PublishLifetimeEvent()
+    {
+        _ = eventBus.PublishAsync(new ScriptHostProcessLifetimeEvent(script.Id, IsScriptHostRunning()));
     }
 }
