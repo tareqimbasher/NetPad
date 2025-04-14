@@ -53,7 +53,7 @@
         "@popperjs/core": "^2.11.5",
         "@tauri-apps/api": "^2.0.0-rc.6",
         "@tauri-apps/plugin-dialog": "^2.0.0-rc.1",
-        "@tauri-apps/plugin-shell": "^2.0.0-rc.1",
+        "@tauri-apps/plugin-shell": "^2.2.1",
         "aurelia": "2.0.0-beta.14",
         "bootstrap": "^5.2.3",
         "dragula": "^3.7.3",
