@@ -25,13 +25,13 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
 
     public bool IsWritable() => FileSystemUtil.IsDirectoryWritable(Path);
 
+    public void CreateIfNotExists() => Directory.CreateDirectory(Path);
+
     public override void DeleteIfExists()
     {
-        var dir = GetInfo();
-
-        if (dir.Exists)
+        if (Exists())
         {
-            dir.Delete(true);
+            Directory.Delete(Path, true);
         }
     }
 }

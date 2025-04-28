@@ -39,4 +39,6 @@ public static class PlatformUtil
 
         return supported;
     }
+
+    public static string GetPlatformExecutableExtension() => IsOSWindows() ? ".exe" : string.Empty;
 }

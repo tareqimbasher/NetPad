@@ -15,8 +15,7 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
 public class ScriptHostProcessManager(
     Script script,
-    FilePath scriptHostExecutablePath,
-    DirectoryPath scriptHostRootDir,
+    WorkingDirectory workingDirectory,
     Action<string> nonMessageOutputHandler,
     Action<string> errorOutputHandler,
     ILogger logger,
@@ -123,7 +122,7 @@ public class ScriptHostProcessManager(
             UpdateScriptHostRuntimeConfig();
 
             var startInfo = new ProcessStartInfo(
-                    scriptHostExecutablePath.Path,
+                    workingDirectory.ScriptHostExecutableFile.Path,
                     $"--parent {Environment.ProcessId}")
                 .CopyCurrentEnvironmentVariables()
                 .WithRedirectIO()
@@ -182,12 +181,11 @@ public class ScriptHostProcessManager(
         // The same .runtimeconfig.json file is used, but it is updated everytime before
         // starting a new script-host process.
 
-        var runtimeConfigFilePath = Path.Combine(
-            Path.GetDirectoryName(scriptHostExecutablePath.Path) ?? string.Empty,
-            Path.GetFileNameWithoutExtension(scriptHostExecutablePath.Path) + ".runtimeconfig.json"
+        var runtimeConfigFilePath = workingDirectory.ScriptHostExecutableRunDirectory.CombineFilePath(
+            Path.GetFileNameWithoutExtension(workingDirectory.ScriptHostExecutableFile.Path) + ".runtimeconfig.json"
         );
 
-        if (!File.Exists(runtimeConfigFilePath))
+        if (!runtimeConfigFilePath.Exists())
         {
             throw new FileNotFoundException(
                 $"script-host runtimeconfig.json could not be found at: {runtimeConfigFilePath}");
@@ -195,7 +193,7 @@ public class ScriptHostProcessManager(
 
         int majorVersion = script.Config.TargetFrameworkVersion.GetMajorVersion();
 
-        var root = JsonNode.Parse(File.ReadAllText(runtimeConfigFilePath))
+        var root = JsonNode.Parse(File.ReadAllText(runtimeConfigFilePath.Path))
                    ?? throw new Exception($"Could not deserialize runtimeconfig.json from {runtimeConfigFilePath}");
 
         var runtimeOptions = root["runtimeOptions"];
@@ -221,10 +219,7 @@ public class ScriptHostProcessManager(
             }
         }
 
-        File.WriteAllText(
-            runtimeConfigFilePath,
-            root.ToJsonString()
-        );
+        File.WriteAllText(runtimeConfigFilePath.Path, root.ToJsonString());
     }
 
     private void Cleanup()
@@ -256,11 +251,11 @@ public class ScriptHostProcessManager(
 
             try
             {
-                Retry.Execute(2, TimeSpan.FromSeconds(1), () => { Directory.Delete(scriptHostRootDir.Path, true); });
+                Retry.Execute(2, TimeSpan.FromSeconds(1), workingDirectory.DeleteIfExists);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error deleting script-host root dir: {Path}", scriptHostExecutablePath.Path);
+                logger.LogError(ex, "Error deleting script-host root dir: {Path}", workingDirectory.Path);
             }
         }
 

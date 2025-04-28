@@ -25,8 +25,6 @@ public partial class ClientServerScriptRunner
     /// <summary>
     /// Contains post-setup info needed to run the script.
     /// </summary>
-    /// <param name="ScriptHostDepsDir">The full path to the directory that will be used to deploy script-host
-    /// dependencies as well as dependencies needed by both the script-host process and the script itself.</param>
     /// <param name="ScriptDir">The full path to the directory that will be used to deploy the script
     /// assembly and any dependencies that are only needed by the script.</param>
     /// <param name="ScriptAssemblyFilePath">The full path to the compiled script assembly.</param>
@@ -34,7 +32,6 @@ public partial class ClientServerScriptRunner
     /// one of the deployment directories and instead should be loaded from their original locations (in-place).</param>
     /// <param name="UserProgramStartLineNumber">The line number that user code starts on.</param>
     private record SetupInfo(
-        DirectoryPath ScriptHostDepsDir,
         DirectoryPath ScriptDir,
         FilePath ScriptAssemblyFilePath,
         string[] InPlaceDependencyDirectories,
@@ -60,6 +57,13 @@ public partial class ClientServerScriptRunner
     /// </summary>
     private async Task<SetupInfo?> SetupRunEnvironmentAsync(RunOptions runOptions, CancellationToken cancellationToken)
     {
+        _workingDirectory.CreateIfNotExists();
+
+        if (!_workingDirectory.ScriptHostExecutableRunDirectory.Exists())
+        {
+            DeployScriptHostExecutable(_workingDirectory);
+        }
+
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
 
         var dependencies = new List<Dependency>();
@@ -112,8 +116,12 @@ public partial class ClientServerScriptRunner
         }
 
         Task.WaitAll(dependencies
-            .Select(d => d.LoadAssetsAsync(_script.Config.TargetFrameworkVersion, _packageProvider))
-            .ToArray()
+                .Select(d => d.LoadAssetsAsync(
+                    _script.Config.TargetFrameworkVersion,
+                    _packageProvider,
+                    cancellationToken))
+                .ToArray(),
+            cancellationToken
         );
 
         if (cancellationToken.IsCancellationRequested)
@@ -152,6 +160,7 @@ public partial class ClientServerScriptRunner
 
         // Parse Code & Compile
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
+
         var (parsingResult, compilationResult) = ParseAndCompile.Do(
             runOptions.SpecificCodeToRun ?? _script.Code,
             _script,
@@ -179,15 +188,13 @@ public partial class ClientServerScriptRunner
         }
 
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
-        var scriptHostDepsDir = await DeployScriptHostDependenciesAsync(dependencies);
+        await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
 
         var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
             compilationResult.AssemblyBytes,
-            scriptHostDepsDir,
             dependencies);
 
         return new SetupInfo(
-            scriptHostDepsDir,
             scriptDir,
             scriptAssemblyFilePath,
             dependencies.Where(x => x.LoadStrategy == LoadStrategy.LoadInPlace)
@@ -225,36 +232,42 @@ public partial class ClientServerScriptRunner
         return (code, references, connectionResources.Assembly);
     }
 
-    private async Task<DirectoryPath> DeployScriptHostDependenciesAsync(IList<Dependency> dependencies)
+    private static void DeployScriptHostExecutable(WorkingDirectory workingDirectory)
     {
-        var scriptHostDepsDirPath = _scriptHostRootDirectory.Combine("script-host");
-        var scriptHostDepsDir = scriptHostDepsDirPath.GetInfo();
+        if (!workingDirectory.ScriptHostExecutableSourceDirectory.Exists())
+        {
+            throw new InvalidOperationException(
+                $"Could not find source script-host executable directory to deploy. Path does not exist: {workingDirectory.ScriptHostExecutableSourceDirectory}");
+        }
 
-        scriptHostDepsDir.Create();
+        // Copy script-host app to working dir
+        FileSystemUtil.CopyDirectory(
+            workingDirectory.ScriptHostExecutableSourceDirectory.Path,
+            workingDirectory.ScriptHostExecutableRunDirectory.Path,
+            true);
+    }
 
-        var scriptHostDeps = dependencies
+    private static async Task DeploySharedDependenciesAsync(WorkingDirectory workingDirectory,
+        IList<Dependency> dependencies)
+    {
+        workingDirectory.SharedDependenciesDirectory.CreateIfNotExists();
+
+        var sharedDeps = dependencies
             .Where(x => x.NeededBy is NeededBy.ScriptHost or NeededBy.Shared);
 
-        await DeployAsync(scriptHostDepsDir, scriptHostDeps);
-        return scriptHostDepsDirPath;
+        await DeployAsync(workingDirectory.SharedDependenciesDirectory, sharedDeps);
     }
 
     private async Task<(DirectoryPath, FilePath)> DeployScriptDependenciesAsync(
         byte[] scriptAssembly,
-        DirectoryPath scriptHostDepsDir,
         IList<Dependency> dependencies)
     {
-        var scriptDirPath = Path.Combine(
-            _scriptHostRootDirectory.Path,
-            "script",
-            DateTime.Now.ToString("yyyy-MM-dd_hh-mm-ss-fff"));
-
-        var scriptDir = new DirectoryInfo(scriptDirPath);
-        scriptDir.Create();
+        var scriptDeployDir = _workingDirectory.CreateNewScriptDeployDirectory();
+        scriptDeployDir.CreateIfNotExists();
 
         var scriptDeps = dependencies.Where(x => x.NeededBy is NeededBy.Script).ToArray();
 
-        await DeployAsync(scriptDir, scriptDeps);
+        await DeployAsync(scriptDeployDir, scriptDeps);
 
         // Write compiled assembly to dir
         var fileSafeScriptName = StringUtil
@@ -267,15 +280,15 @@ public partial class ClientServerScriptRunner
                                  // to the output directory, resulting in the referenced assembly not being found.
                                  + "__";
 
-        FilePath scriptAssemblyFilePath = Path.Combine(scriptDir.FullName, $"{fileSafeScriptName}.dll");
+        var scriptAssemblyFilePath = scriptDeployDir.CombineFilePath($"{fileSafeScriptName}.dll");
 
         await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, scriptAssembly);
 
         // A runtimeconfig.json file tells .NET how to run the assembly
         var probingPaths = new[]
             {
-                scriptDir.FullName,
-                scriptHostDepsDir.Path,
+                scriptDeployDir.Path,
+                _workingDirectory.SharedDependenciesDirectory.Path,
             }
             .Concat(scriptDeps.SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)!)))
             .Distinct()
@@ -283,24 +296,26 @@ public partial class ClientServerScriptRunner
             .ToArray();
 
         await File.WriteAllTextAsync(
-            Path.Combine(scriptDir.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
+            Path.Combine(scriptDeployDir.Path, $"{fileSafeScriptName}.runtimeconfig.json"),
             GenerateRuntimeConfigFileContents(probingPaths)
         );
 
         // The scriptconfig.json is custom and passes some options to the running script
         await File.WriteAllTextAsync(
-            Path.Combine(scriptDir.FullName, "scriptconfig.json"),
-            $@"{{
-    ""output"": {{
-        ""maxDepth"": {_settings.Results.MaxSerializationDepth},
-        ""maxCollectionSerializeLength"": {_settings.Results.MaxCollectionSerializeLength}
-    }}
-}}");
+            Path.Combine(scriptDeployDir.Path, "scriptconfig.json"),
+            $$"""
+              {
+                  "output": {
+                      "maxDepth": {{_settings.Results.MaxSerializationDepth}},
+                      "maxCollectionSerializeLength": {{_settings.Results.MaxCollectionSerializeLength}}
+                  }
+              }
+              """);
 
-        return (scriptDirPath, scriptAssemblyFilePath);
+        return (scriptDeployDir, scriptAssemblyFilePath);
     }
 
-    private async Task DeployAsync(DirectoryInfo destination, IEnumerable<Dependency> dependencies)
+    private static async Task DeployAsync(DirectoryPath destination, IEnumerable<Dependency> dependencies)
     {
         foreach (var dependency in dependencies)
         {
@@ -310,14 +325,14 @@ public partial class ClientServerScriptRunner
             {
                 var assemblyImage = air.AssemblyImage;
                 var fileName = assemblyImage.ConstructAssemblyFileName();
-                var destFilePath = Path.Combine(destination.FullName, fileName);
+                var destFilePath = destination.CombineFilePath(fileName);
 
                 // Checking file exists means that the first assembly in the list of paths will win.
                 // Later assemblies with the same file name will not be copied to the output directory.
-                if (!File.Exists(destFilePath))
+                if (!destFilePath.Exists())
                 {
                     await File.WriteAllBytesAsync(
-                        destFilePath,
+                        destFilePath.Path,
                         assemblyImage.Image);
                 }
             }
@@ -329,10 +344,10 @@ public partial class ClientServerScriptRunner
 
             foreach (var asset in dependency.Assets)
             {
-                var destFilePath = Path.Combine(destination.FullName, Path.GetFileName(asset.Path));
-                if (!File.Exists(destFilePath))
+                var destFilePath = destination.CombineFilePath(Path.GetFileName(asset.Path));
+                if (!destFilePath.Exists())
                 {
-                    File.Copy(asset.Path, destFilePath, true);
+                    File.Copy(asset.Path, destFilePath.Path, true);
                 }
             }
         }
@@ -433,9 +448,11 @@ public partial class ClientServerScriptRunner
 
         public async Task LoadAssetsAsync(
             DotNetFrameworkVersion dotNetFrameworkVersion,
-            IPackageProvider packageProvider)
+            IPackageProvider packageProvider,
+            CancellationToken cancellationToken = default)
         {
-            Assets = (await Reference.GetAssetsAsync(dotNetFrameworkVersion, packageProvider)).ToArray();
+            var assets = await Reference.GetAssetsAsync(dotNetFrameworkVersion, packageProvider, cancellationToken);
+            Assets = assets.ToArray();
         }
     }
 }

@@ -9,12 +9,15 @@ public static class ReferenceUtil
     public static async Task<HashSet<ReferenceAsset>> GetAssetsAsync(
         this IEnumerable<Reference> references,
         DotNetFrameworkVersion dotNetFrameworkVersion,
-        IPackageProvider packageProvider)
+        IPackageProvider packageProvider,
+        CancellationToken cancellationToken = default)
     {
         var assets = new HashSet<ReferenceAsset>();
 
         foreach (var reference in references.Distinct())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (reference is AssemblyImageReference)
             {
                 // AssemblyImages don't have file assets
@@ -43,8 +46,9 @@ public static class ReferenceUtil
     public static Task<HashSet<ReferenceAsset>> GetAssetsAsync(
         this Reference reference,
         DotNetFrameworkVersion dotNetFrameworkVersion,
-        IPackageProvider packageProvider)
+        IPackageProvider packageProvider,
+        CancellationToken cancellationToken = default)
     {
-        return GetAssetsAsync([reference], dotNetFrameworkVersion, packageProvider);
+        return GetAssetsAsync([reference], dotNetFrameworkVersion, packageProvider, cancellationToken);
     }
 }

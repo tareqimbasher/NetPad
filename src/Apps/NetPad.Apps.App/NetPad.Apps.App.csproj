@@ -89,6 +89,7 @@
         </ItemGroup>
     </Target>
 
+    <!-- When not publishing build and copy ScriptHost artifacts to subfolder -->
     <Target Name="BuildAndCopyScriptHostProject" AfterTargets="Build" Condition="'$(_IsPublishing)' == ''">
         <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
                  Targets="Build"
@@ -114,6 +115,7 @@
               SkipUnchangedFiles="true"/>
     </Target>
 
+    <!-- When publishing, also publish ScriptHost artifacts to subfolder -->
     <Target Name="PublishScriptHostProject" AfterTargets="Publish">
         <PropertyGroup>
             <ScriptHostPublishDir>$(PublishDir)ScriptHost</ScriptHostPublishDir>

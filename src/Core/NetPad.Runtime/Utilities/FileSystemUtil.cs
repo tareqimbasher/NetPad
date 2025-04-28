@@ -39,4 +39,36 @@ public static class FileSystemUtil
             return false;
         }
     }
+
+    /// <summary>
+    /// Copies a directory. This method does not overwrite files that already exist in the destination.
+    /// </summary>
+    public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+    {
+        var dir = new DirectoryInfo(sourceDir);
+
+        if (!dir.Exists)
+        {
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+        }
+
+        Directory.CreateDirectory(destinationDir);
+
+        foreach (var file in dir.GetFiles())
+        {
+            var targetFilePath = Path.Combine(destinationDir, file.Name);
+            file.CopyTo(targetFilePath);
+        }
+
+        if (recursive)
+        {
+            var subDirs = dir.GetDirectories();
+
+            foreach (var subDir in subDirs)
+            {
+                var newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir, true);
+            }
+        }
+    }
 }

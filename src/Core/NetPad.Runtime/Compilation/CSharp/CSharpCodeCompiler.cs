@@ -83,7 +83,7 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
     private static string GetCompiledFileExtension(OutputKind outputKind)
     {
-        var executableExt = PlatformUtil.IsOSWindows() ? ".exe" : string.Empty;
+        var executableExt = PlatformUtil.GetPlatformExecutableExtension();
 
         return outputKind switch
         {
