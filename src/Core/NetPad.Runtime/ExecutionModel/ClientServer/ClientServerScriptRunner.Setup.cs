@@ -25,11 +25,11 @@ public partial class ClientServerScriptRunner
     /// <summary>
     /// Contains post-setup info needed to run the script.
     /// </summary>
-    /// <param name="ScriptDir">The full path to the directory that will be used to deploy the script
+    /// <param name="ScriptDir">The directory that will be used to deploy the script
     /// assembly and any dependencies that are only needed by the script.</param>
     /// <param name="ScriptAssemblyFilePath">The full path to the compiled script assembly.</param>
-    /// <param name="InPlaceDependencyDirectories">Full paths to directories where dependencies where not copied to
-    /// one of the deployment directories and instead should be loaded from their original locations (in-place).</param>
+    /// <param name="InPlaceDependencyDirectories">Directories where dependencies where not copied to one of the
+    /// deployment directories and instead should be loaded from their original locations (in-place).</param>
     /// <param name="UserProgramStartLineNumber">The line number that user code starts on.</param>
     private record SetupInfo(
         DirectoryPath ScriptDir,
@@ -41,14 +41,12 @@ public partial class ClientServerScriptRunner
     /// Sets up the environment the script will run in. It creates a folder structure similar to the following and
     /// deploys dependencies needed to run the script-host process and the script itself to these folders:
     /// <code>
-    /// /script-root            # A temp directory created for each script when the script is run
-    ///     /script-host        # Contains all dependency assets (assemblies, binaries...etc) that are specific
-    ///                           to the script-host process or are shared between script-host and the script assembly.
-    ///     /script-run-1       # A new dir is created for each script run. It contains the script assembly and all
-    ///                           dependency assets that only the script assembly needs to run
-    ///     /script-run-2
-    ///     /script-run-3
-    ///     /...
+    /// /root                   # A temp directory created for each script when the script is run
+    ///     /script-host        # Contains the script-host executable
+    ///     /shared-deps        # Contains all dependency assets (assemblies, binaries...etc) that are specific
+    ///                           to the script-host process or are shared between script-host and the script assembly
+    ///     /script             # Contains a sub-directory for each instance the user runs the script. Each sub dir
+    ///                           contains the script assembly and all dependency assets that only the script assembly needs to run
     /// </code>
     /// <para>
     /// Some dependencies are copied (deployed) to this folder structure where they will be loaded from, while other
@@ -59,13 +57,64 @@ public partial class ClientServerScriptRunner
     {
         _workingDirectory.CreateIfNotExists();
 
-        if (!_workingDirectory.ScriptHostExecutableRunDirectory.Exists())
+        // Resolve and collect all dependencies needed by script-host and script
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+        var (dependencies, additionalCode) = await GatherDependenciesAsync(cancellationToken);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        // Parse and compile the script
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
+        var parseCompileResult = ParseAndCompileInner(runOptions, dependencies, additionalCode, cancellationToken);
+        if (parseCompileResult == null || cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        var (parsingResult, compilationResult) = parseCompileResult;
+        if (!compilationResult.Success)
+        {
+            var errors = compilationResult
+                .Diagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => CorrectDiagnosticErrorLineNumber(d, parsingResult.UserProgramStartLineNumber));
+
+            await _output.WriteAsync(
+                new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),
+                cancellationToken: cancellationToken);
+
+            return null;
+        }
+
+        // Deploy compiled script, the script-host, and their dependencies
+        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
+        if (!_workingDirectory.ScriptHostExecutableFile.Exists())
         {
             DeployScriptHostExecutable(_workingDirectory);
         }
+        await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
+        var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
+            compilationResult.AssemblyBytes,
+            dependencies);
 
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+        return new SetupInfo(
+            scriptDir,
+            scriptAssemblyFilePath,
+            dependencies.Where(x => x.LoadStrategy == LoadStrategy.LoadInPlace)
+                .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToHashSet()
+                .ToArray()!,
+            parsingResult.UserProgramStartLineNumber
+        );
+    }
 
+    private async Task<(List<Dependency> dependencies, SourceCodeCollection additionalCode)> GatherDependenciesAsync(
+        CancellationToken cancellationToken)
+    {
         var dependencies = new List<Dependency>();
         var additionalCode = new SourceCodeCollection();
 
@@ -75,7 +124,7 @@ public partial class ClientServerScriptRunner
 
         if (cancellationToken.IsCancellationRequested)
         {
-            return null;
+            return (dependencies, additionalCode);
         }
 
         // Add data connection resources
@@ -112,7 +161,7 @@ public partial class ClientServerScriptRunner
 
         if (cancellationToken.IsCancellationRequested)
         {
-            return null;
+            return (dependencies, additionalCode);
         }
 
         Task.WaitAll(dependencies
@@ -124,86 +173,7 @@ public partial class ClientServerScriptRunner
             cancellationToken
         );
 
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-
-        var compileAssemblyImageDeps = dependencies
-            .Select(d =>
-                d.NeededBy != NeededBy.ScriptHost && d.Reference is AssemblyImageReference air
-                    ? air.AssemblyImage
-                    : null!)
-            .Where(x => x != null!)
-            .ToArray();
-
-        var compileAssemblyFileDeps = dependencies
-            .Where(x => x.NeededBy != NeededBy.ScriptHost)
-            .SelectMany(x => x.Assets)
-            .DistinctBy(x => x.Path)
-            .Where(x => x.IsManagedAssembly)
-            .Select(x => new
-            {
-                x.Path,
-                AssemblyName = AssemblyName.GetAssemblyName(x.Path)
-            })
-            // Choose the highest version of duplicate assemblies
-            .GroupBy(a => a.AssemblyName.Name)
-            .Select(grp => grp.OrderBy(x => x.AssemblyName.Version).Last())
-            .Select(x => x.Path)
-            .ToHashSet();
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-
-        // Parse Code & Compile
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
-
-        var (parsingResult, compilationResult) = ParseAndCompile.Do(
-            runOptions.SpecificCodeToRun ?? _script.Code,
-            _script,
-            _codeParser,
-            _codeCompiler,
-            compileAssemblyImageDeps,
-            compileAssemblyFileDeps,
-            additionalCode);
-
-        if (!compilationResult.Success)
-        {
-            var errors = compilationResult
-                .Diagnostics
-                .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => CorrectDiagnosticErrorLineNumber(d, parsingResult.UserProgramStartLineNumber));
-
-            await _output.WriteAsync(new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")));
-
-            return null;
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
-        await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
-
-        var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
-            compilationResult.AssemblyBytes,
-            dependencies);
-
-        return new SetupInfo(
-            scriptDir,
-            scriptAssemblyFilePath,
-            dependencies.Where(x => x.LoadStrategy == LoadStrategy.LoadInPlace)
-                .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
-                .Where(x => !string.IsNullOrEmpty(x))
-                .ToHashSet()
-                .ToArray()!,
-            parsingResult.UserProgramStartLineNumber
-        );
+        return (dependencies, additionalCode);
     }
 
     private async Task<(SourceCodeCollection Code, IReadOnlyList<Reference> References, AssemblyImage? Assembly)>
@@ -230,6 +200,51 @@ public partial class ClientServerScriptRunner
         }
 
         return (code, references, connectionResources.Assembly);
+    }
+
+    private ParseAndCompileResult? ParseAndCompileInner(
+        RunOptions runOptions,
+        List<Dependency> dependencies,
+        SourceCodeCollection additionalCode,
+        CancellationToken cancellationToken)
+    {
+        var compileAssemblyImageDeps = dependencies
+            .Select(d =>
+                d.NeededBy != NeededBy.ScriptHost && d.Reference is AssemblyImageReference air
+                    ? air.AssemblyImage
+                    : null!)
+            .Where(x => x != null!)
+            .ToArray();
+
+        var compileAssemblyFileDeps = dependencies
+            .Where(x => x.NeededBy != NeededBy.ScriptHost)
+            .SelectMany(x => x.Assets)
+            .DistinctBy(x => x.Path)
+            .Where(x => x.IsManagedAssembly)
+            .Select(x => new
+            {
+                x.Path,
+                AssemblyName = AssemblyName.GetAssemblyName(x.Path)
+            })
+            // Choose the highest version of duplicate assemblies
+            .GroupBy(a => a.AssemblyName.Name)
+            .Select(grp => grp.OrderBy(x => x.AssemblyName.Version).Last())
+            .Select(x => x.Path)
+            .ToHashSet();
+
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+
+        return ParseAndCompile.Do(
+            runOptions.SpecificCodeToRun ?? _script.Code,
+            _script,
+            _codeParser,
+            _codeCompiler,
+            compileAssemblyImageDeps,
+            compileAssemblyFileDeps,
+            additionalCode);
     }
 
     private static void DeployScriptHostExecutable(WorkingDirectory workingDirectory)

@@ -9,23 +9,22 @@ internal record ParseAndCompileResult(CodeParsingResult ParsingResult, Compilati
 
 internal static class ParseAndCompile
 {
-    // We will try different permutations of the user's code, starting with running it as-is. The idea is to account
+    // We will try different permutations of the user's code, starting with compiling it as-is. The idea is to account
     // for, and give the ability for users to, run expressions not ending with semi-colon or .Dump() and generate
     // the "missing" pieces to run the expression.
     // TODO use SyntaxTree to determine if expression or not. Currently not a performance bottleneck however.
     private static readonly List<Func<string, (bool shouldAttempt, string code)>> _permutations =
     [
+        // First try user's code as-is
         code => (true, code),
 
         // Try adding ".Dump();" to dump the result of an expression
         code =>
         {
-            var fixedCode = code.Trim();
-
-            if (!fixedCode.EndsWith(";") && !fixedCode.EndsWith(".Dump()"))
+            var trimmed = code.TrimEnd();
+            if (!trimmed.EndsWith(";") && !trimmed.EndsWith(".Dump()"))
             {
-                fixedCode = $"({fixedCode}).Dump();";
-                return (true, fixedCode);
+                return (true, $"({trimmed}).Dump();");
             }
 
             return (false, code);
@@ -34,9 +33,9 @@ internal static class ParseAndCompile
         // Try adding ";" to execute an expression
         code =>
         {
-            var trimmedCode = code.Trim();
-            return !trimmedCode.EndsWith(";")
-                ? (true, trimmedCode + ";")
+            var trimmed = code.TrimEnd();
+            return !trimmed.EndsWith(";")
+                ? (true, trimmed + ";")
                 : (false, code);
         }
     ];
@@ -54,16 +53,16 @@ internal static class ParseAndCompile
 
         for (var ixPerm = 0; ixPerm < _permutations.Count; ixPerm++)
         {
-            var permutationFunc = _permutations[ixPerm];
-            var permutation = permutationFunc(code);
+            var permutation = _permutations[ixPerm];
+            var pResult = permutation(code);
 
-            if (!permutation.shouldAttempt)
+            if (!pResult.shouldAttempt)
             {
                 continue;
             }
 
             var result = ParseAndCompilePermutation(
-                permutation.code,
+                pResult.code,
                 script,
                 codeParser,
                 codeCompiler,

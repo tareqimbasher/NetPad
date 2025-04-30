@@ -8,7 +8,7 @@ public class AsyncActionOutputWriter<TOutput>(Func<TOutput?, string?, Task> acti
     {
         if (cancellationToken.IsCancellationRequested)
         {
-            return Task.FromCanceled(cancellationToken);
+            return Task.CompletedTask;
         }
 
         return action(output, title);

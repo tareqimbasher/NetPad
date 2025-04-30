@@ -1,4 +1,3 @@
-using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
@@ -23,21 +22,25 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 namespace NetPad.ExecutionModel.ClientServer;
 
 /// <summary>
-/// This runner starts a long-running script-host process the first time the script runs. It then interfaces with this
-/// script-host process via standard input/output streams (STD IO).
+/// Runs a script by spawning a long-running host process (the Server) called the "script-host".
+/// The Client (this) will then interface with the script-host via standard input/output streams (STD IO).
+///
+/// The script-host process is spawned the first time the script is run and is stopped and restarted under
+/// certain conditions, like when the user stops the script or when the target .NET version is changed.
 ///
 /// <para>
-/// High-level operation flow:
+/// High-level operation flow of what happens each time a script runs:
 /// 1. Sets up the run environment
-///     a. Resolves script references and their file locations
-///     b. Parses code: adds any additional code to the user's script to make a runnable program
+///     a. Resolves dependencies required by the script or the script-host
+///     b. Parses code and adds additional code to the user's script to make a runnable program
 ///     c. Compiles script into an assembly
-///     d. Deploys assets to filesystem
-/// 2. Start a script-host process if one hasn't been started already
-/// 3. Tell script-host process to run script assembly
+///     d. Deploys script-host process, script assembly and dependency assets to filesystem
+/// 2. Starts a script-host process (Server) if one hasn't been started already
+/// 3. Client (this) sends message to script-host process to run script assembly via STD IO
 /// 4. script-host loads script assembly and its dependencies and executes main entry point
 ///     a. script-host remains alive after script execution
 ///     b. script-host can be terminated under certain conditions (ex. the user stopping the script)
+///     c. script-host sends output back to Client (this) by emitting messages
 /// </para>
 /// </summary>
 public sealed partial class ClientServerScriptRunner : IScriptRunner
@@ -52,10 +55,10 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private readonly HashSet<IOutputWriter<object>> _externalOutputWriters;
     private readonly IOutputWriter<object> _output;
     private readonly RawOutputHandler _rawOutputHandler;
-    private readonly ScriptHostProcessManager _scriptHostProcessManager;
     private readonly WorkingDirectory _workingDirectory;
-    private readonly List<IDisposable> _subscriptions = new();
+    private readonly List<IDisposable> _subscriptions = [];
 
+    private readonly ScriptHostProcessManager _scriptHostProcessManager;
     private readonly object _runLock = new();
     private ScriptRun? _currentRun;
     private bool _userRequestedStop;
@@ -122,12 +125,11 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         _scriptHostProcessManager = new ScriptHostProcessManager(
             _script,
             _workingDirectory,
+            AddScriptHostOnMessageReceivedHandlers,
             _rawOutputHandler.RawOutputReceived,
             _rawOutputHandler.RawErrorReceived,
-            loggerFactory.CreateLogger(
-                $"{typeof(ScriptHostProcessManager)} | [{_script.Id.ToString()[..8]}] {_script.Name}"),
-            AddScriptHostOnMessageReceivedHandlers,
-            _eventBus
+            _eventBus,
+            loggerFactory
         );
 
         _subscriptions.Add(eventBus.Subscribe<DataConnectionResourcesUpdatingEvent>(ev =>
@@ -150,6 +152,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
         lock (_runLock)
         {
+            // If the current run is still in progress return the in progress task
             if (_currentRun is { IsComplete: false })
             {
                 return _currentRun.Task;
@@ -158,6 +161,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             _logger.LogDebug("Starting to run script");
             previousRun = _currentRun;
             _currentRun = new ScriptRun(_script);
+
+            // Handle when the run is cancelled (when the script is requested to stop)
             _currentRun.CancellationToken.Register(() =>
             {
                 _scriptHostProcessManager.StopScriptHost();
@@ -171,6 +176,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         {
             try
             {
+                // If there was a previous run, check if we need to stop and restart the script-host process
                 if (previousRun != null)
                 {
                     bool stopScriptHost =
@@ -258,6 +264,9 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Adds listeners that react to messages output by the script-host process.
+    /// </summary>
     private void AddScriptHostOnMessageReceivedHandlers(ScriptHostIpcGateway ipcGateway)
     {
         ipcGateway.On<HtmlResultsScriptOutput>(msg => _output.WriteAsync(msg));

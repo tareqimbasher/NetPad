@@ -4,7 +4,7 @@ using NetPad.Scripts;
 namespace NetPad.ExecutionModel.ClientServer;
 
 /// <summary>
-/// A single occurrence of running a script
+/// A single occurrence of running a script.
 /// </summary>
 internal class ScriptRun(Script script)
 {

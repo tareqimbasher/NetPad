@@ -6,7 +6,7 @@ using NetPad.IO.IPC.Stdio;
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
 /// <summary>
-/// A <see cref="StdioIpcGateway{TMessage}"/> specialized to interfacing with script-host process.
+/// A specialized <see cref="StdioIpcGateway{TMessage}"/> to interface with script-host process.
 /// </summary>
 /// <param name="sendChannel">The STD Input of the script-host process.</param>
 /// <param name="logger">An optional logger.</param>

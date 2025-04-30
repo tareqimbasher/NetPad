@@ -13,19 +13,31 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
+/// <summary>
+/// Controls the spawning and stopping of a script-host process and provides a high-level interface to send and receive
+/// messages.
+/// </summary>
+/// <param name="script">The target script.</param>
+/// <param name="workingDirectory">The root working directory where script-host will work within.</param>
+/// <param name="addMessageHandlers">Add message listeners to handle messages emitted by script-host.</param>
+/// <param name="nonMessageOutputHandler">Handles process output that cannot be parsed into a proper message.</param>
+/// <param name="errorOutputHandler">Handles process error output.</param>
 public class ScriptHostProcessManager(
     Script script,
     WorkingDirectory workingDirectory,
+    Action<ScriptHostIpcGateway> addMessageHandlers,
     Action<string> nonMessageOutputHandler,
     Action<string> errorOutputHandler,
-    ILogger logger,
-    Action<ScriptHostIpcGateway> addMessageHandlers,
-    IEventBus eventBus)
+    IEventBus eventBus,
+    ILoggerFactory loggerFactory)
 {
     private static readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
     private Process? _scriptHostProcess;
     private ScriptHostIpcGateway? _ipcGateway;
     private uint _sendIpcMessageSeq;
+
+    private readonly ILogger _logger = loggerFactory.CreateLogger(
+        $"{nameof(ScriptHostProcessManager)} | [{script.Id.ToString()[..8]}] {script.Name}");
 
     private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(
         new UnboundedChannelOptions
@@ -34,9 +46,6 @@ public class ScriptHostProcessManager(
             SingleWriter = false,
             AllowSynchronousContinuations = true
         });
-
-    public ScriptHostIpcGateway IpcGateway =>
-        _ipcGateway ?? throw new InvalidOperationException("IpcGateway is not initialized.");
 
     public bool IsScriptHostRunning() => _scriptHostProcess?.IsProcessRunning() == true;
 
@@ -66,7 +75,7 @@ public class ScriptHostProcessManager(
 
     public void Send<T>(T message) where T : class
     {
-        logger.LogDebug("Sending message: {MessageType}", typeof(T).Name);
+        _logger.LogDebug("Sending message: {MessageType}", typeof(T).Name);
 
         _sendQueue.Writer.TryWrite(new ScriptHostIpcMessage(
             Interlocked.Increment(ref _sendIpcMessageSeq),
@@ -90,7 +99,7 @@ public class ScriptHostProcessManager(
 
     public void StopScriptHost()
     {
-        logger.LogDebug("Stopping script-host");
+        _logger.LogDebug("Stopping script-host");
         _scriptHostProcessStartLock.Wait();
         try
         {
@@ -115,7 +124,7 @@ public class ScriptHostProcessManager(
         }
 
         _scriptHostProcessStartLock.Wait();
-        logger.LogDebug("Starting script-host process");
+        _logger.LogDebug("Starting script-host process");
 
         try
         {
@@ -136,11 +145,11 @@ public class ScriptHostProcessManager(
             }
 
             _scriptHostProcess = Process.Start(startInfo) ?? throw new Exception("Could not start script-host process");
-            _ipcGateway = new ScriptHostIpcGateway(_scriptHostProcess.StandardInput, logger);
+            _ipcGateway = new ScriptHostIpcGateway(_scriptHostProcess.StandardInput, _logger);
 
             _ipcGateway.On<ScriptHostReadyMessage>(msg =>
             {
-                logger.LogDebug("script-host is ready");
+                _logger.LogDebug("script-host is ready");
                 _ = ProcessSendQueueAsync();
             });
 
@@ -161,7 +170,7 @@ public class ScriptHostProcessManager(
 
             _scriptHostProcess.Exited += (_, _) =>
             {
-                logger.LogDebug("script-host process exited");
+                _logger.LogDebug("script-host process exited");
                 Cleanup();
                 _ipcGateway.Handle(new ScriptHostExitedMessage());
             };
@@ -243,7 +252,7 @@ public class ScriptHostProcessManager(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error killing script-host process");
+                _logger.LogError(ex, "Error killing script-host process");
             }
 
             _scriptHostProcess.Dispose();
@@ -255,7 +264,7 @@ public class ScriptHostProcessManager(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error deleting script-host root dir: {Path}", workingDirectory.Path);
+                _logger.LogError(ex, "Error deleting script-host root dir: {Path}", workingDirectory.Path);
             }
         }
 

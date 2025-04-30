@@ -5,7 +5,7 @@ using System.Xml.Linq;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 using O2Html.Dom;
-
+// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InvokeAsExtensionMethod
@@ -98,7 +98,7 @@ public static class Util
     /// <param name="code">The code to be formatted.</param>
     /// <param name="language">See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
     /// for supported languages.</param>
-    /// <returns></returns>
+    /// <returns>The input code.</returns>
     public static string DumpCode(string code, string language = "auto")
     {
         Dump(code, code: language);
@@ -106,7 +106,7 @@ public static class Util
     }
 
     /// <summary>
-    /// Serializes an object to a HTML string.
+    /// Serializes an object to an HTML string.
     /// </summary>
     public static string ToHtmlString<T>(T value, bool indented = false)
     {
@@ -196,38 +196,57 @@ public static class Util
 }
 
 /// <summary>
-/// Information about the current script-host environment
+/// Information about the current script-host environment.
 /// </summary>
 public class HostEnvironment(int parentPid)
 {
     /// <summary>
-    /// The date and time the host process started.
+    /// The UTC date and time the script-host process started.
     /// </summary>
-    public DateTime HostStarted = DateTime.Now;
+    public DateTime HostStarted { get; } = DateTime.UtcNow;
 
     /// <summary>
-    /// The process ID (PID) of the host process.
+    /// The process ID (PID) of the script-host process.
     /// </summary>
     public int ProcessPid => Environment.ProcessId;
 
     /// <summary>
-    /// The process ID (PID) of the parent process that started the current host process.
+    /// The process ID (PID) of the parent process that started the script-host process.
     /// </summary>
     public int ParentPid => parentPid;
 
     /// <summary>
-    /// The .NET runtime version the host is running on.
+    /// The .NET runtime version the script-host process is running on.
     /// </summary>
     public Version DotNetRuntimeVersion => Environment.Version;
 
     /// <summary>
-    /// Gets the name of the .NET installation on which the host is running.
+    /// Gets the name of the .NET installation on which the script-host process is running.
     /// </summary>
     public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
 
+    /// <summary>
+    /// Gets the current platform identifier and version number.
+    /// </summary>
     public OperatingSystem OSVersion => Environment.OSVersion;
+
+    /// <summary>
+    /// Gets the platform on which an app is running.
+    /// </summary>
     public string RuntimeIdentifier => RuntimeInformation.RuntimeIdentifier;
+
+    /// <summary>
+    /// Gets a string that describes the operating system on which the app is running.
+    /// </summary>
     public string OSDescription => RuntimeInformation.OSDescription;
+
+    /// <summary>
+    /// Gets the process architecture of the currently running app.
+    /// </summary>
     public Architecture ProcessArchitecture => RuntimeInformation.ProcessArchitecture;
+
+    /// <summary>
+    /// Gets the platform architecture on which the current app is running.
+    /// </summary>
     public Architecture OSArchitecture => RuntimeInformation.OSArchitecture;
 }

@@ -25,17 +25,17 @@ public record WorkingDirectory : DirectoryPath
     }
 
     /// <summary>
-    /// The direc
+    /// The directory that is part of the installed NetPad package that contains the script-host process executable.
     /// </summary>
     public DirectoryPath ScriptHostExecutableSourceDirectory { get; }
 
     /// <summary>
-    /// The directory where the script host executable is deployed to.
+    /// The directory where the script-host executable is deployed to and run from.
     /// </summary>
     public DirectoryPath ScriptHostExecutableRunDirectory { get; }
 
     /// <summary>
-    /// The file path to the deployed script host executable.
+    /// The file path to the deployed script-host executable.
     /// </summary>
     public FilePath ScriptHostExecutableFile { get; }
 
@@ -56,7 +56,7 @@ public record WorkingDirectory : DirectoryPath
     public DirectoryPath ScriptDeployDirectoryRoot { get; }
 
     /// <summary>
-    /// Creates a new directory that will be used to deploy a script assembly and its dependencies to run.
+    /// Creates a new directory that will be used to deploy a script assembly and its dependencies.
     /// </summary>
     public DirectoryPath CreateNewScriptDeployDirectory()
     {

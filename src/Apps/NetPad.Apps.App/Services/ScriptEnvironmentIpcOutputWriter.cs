@@ -98,6 +98,11 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     /// </summary>
     public async Task WriteAsync(object? output, string? title = null, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         // Since we want the end result to be HTML-encoded, any output that is not an HtmlScriptOutput will be converted to
         // its corresponding HtmlScriptOutput type before pushing to IPC clients.
 
