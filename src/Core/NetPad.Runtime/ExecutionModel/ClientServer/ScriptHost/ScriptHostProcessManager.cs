@@ -22,6 +22,8 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 /// <param name="addMessageHandlers">Add message listeners to handle messages emitted by script-host.</param>
 /// <param name="nonMessageOutputHandler">Handles process output that cannot be parsed into a proper message.</param>
 /// <param name="errorOutputHandler">Handles process error output.</param>
+/// <param name="eventBus"></param>
+/// <param name="loggerFactory"></param>
 public class ScriptHostProcessManager(
     Script script,
     WorkingDirectory workingDirectory,

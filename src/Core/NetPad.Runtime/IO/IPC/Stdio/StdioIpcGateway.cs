@@ -5,7 +5,7 @@ using NetPad.Common;
 namespace NetPad.IO.IPC.Stdio;
 
 /// <summary>
-/// Used to communicate between two processes over standard IO (STDIN & STDOUT).
+/// Used to communicate between two processes over standard IO (STDIN/STDOUT).
 /// </summary>
 public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable where TMessage : class
 {
