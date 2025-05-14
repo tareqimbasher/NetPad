@@ -173,8 +173,8 @@ public class ScriptHostProcessManager(
             _scriptHostProcess.Exited += (_, _) =>
             {
                 _logger.LogDebug("script-host process exited");
-                Cleanup();
                 _ipcGateway.Handle(new ScriptHostExitedMessage());
+                Cleanup();
             };
 
             _ = _scriptHostProcess.WaitForExitAsync();
