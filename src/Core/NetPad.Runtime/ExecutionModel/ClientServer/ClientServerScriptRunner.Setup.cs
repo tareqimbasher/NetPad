@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Compilation;
 using NetPad.Configuration;
@@ -71,6 +72,7 @@ public partial class ClientServerScriptRunner
         var parseCompileResult = ParseAndCompileInner(runOptions, dependencies, additionalCode, cancellationToken);
         if (parseCompileResult == null || cancellationToken.IsCancellationRequested)
         {
+            _logger.LogError("Parse and compile failed");
             return null;
         }
 
@@ -232,7 +234,7 @@ public partial class ClientServerScriptRunner
             .Select(x => x.Path)
             .ToHashSet();
 
-        if (!cancellationToken.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested)
         {
             return null;
         }

@@ -91,15 +91,19 @@
 
     <!-- When not publishing build and copy ScriptHost artifacts to subfolder -->
     <Target Name="BuildAndCopyScriptHostProject" AfterTargets="Build" Condition="'$(_IsPublishing)' == ''">
+        <Message Text="[i] BuildAndCopyScriptHostProject" Importance="high"/>
         <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
                  Targets="Build"
                  Properties="Configuration=$(Configuration);Platform=$(Platform)"
                  BuildInParallel="true"/>
 
         <PropertyGroup>
-            <ScriptHostBuildDir>$(SolutionDir)Apps\NetPad.Apps.ScriptHost\bin\$(Configuration)\$(DefaultTargetFramework)\</ScriptHostBuildDir>
+            <ScriptHostBuildDir>$(ProjectDir)..\NetPad.Apps.ScriptHost\bin\$(Configuration)\$(DefaultTargetFramework)\</ScriptHostBuildDir>
             <CopyDestination>$(OutputPath)ScriptHost\</CopyDestination>
         </PropertyGroup>
+
+        <Message Text="[i] BuildAndCopyScriptHostProject.ScriptHostBuildDir: $(ScriptHostBuildDir)" Importance="high"/>
+        <Message Text="[i] BuildAndCopyScriptHostProject.CopyDestination:    $(CopyDestination)" Importance="high"/>
 
         <MakeDir Directories="$(CopyDestination)"/>
 
@@ -107,21 +111,19 @@
             <ScriptHostBuildOutput Include="$(ScriptHostBuildDir)**\*"/>
         </ItemGroup>
 
-        <Message Text="ScriptHostBuildDir: $(ScriptHostBuildDir)" Importance="high"/>
-        <Message Text="CopyDestination: $(CopyDestination)" Importance="high"/>
-
         <Copy SourceFiles="@(ScriptHostBuildOutput)"
               DestinationFolder="$(CopyDestination)%(RecursiveDir)"
               SkipUnchangedFiles="true"/>
     </Target>
 
     <!-- When publishing, also publish ScriptHost artifacts to subfolder -->
-    <Target Name="PublishScriptHostProject" AfterTargets="Publish">
+    <Target Name="PublishScriptHostProject" AfterTargets="Publish" Condition="'$(_IsPublishing)' != ''">
+        <Message Text="[i] PublishScriptHostProject" Importance="high"/>
         <PropertyGroup>
             <ScriptHostPublishDir>$(PublishDir)ScriptHost</ScriptHostPublishDir>
         </PropertyGroup>
 
-        <Message Text="ScriptHostPublishDir: $(ScriptHostPublishDir)" Importance="high"/>
+        <Message Text="[i] PublishScriptHostProject.ScriptHostPublishDir: $(ScriptHostPublishDir)" Importance="high"/>
 
         <MSBuild Projects="..\NetPad.Apps.ScriptHost\NetPad.Apps.ScriptHost.csproj"
                  Targets="Publish"

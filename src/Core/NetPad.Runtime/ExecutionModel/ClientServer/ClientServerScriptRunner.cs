@@ -209,6 +209,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
                 if (setup == null)
                 {
+                    _logger.LogError("Run environment setup failed");
                     _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Could not run script");
                     _currentRun.SetResult(RunResult.RunAttemptFailure());
                     return;
