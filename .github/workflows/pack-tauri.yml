@@ -5,13 +5,8 @@ env:
 
 on:
   push:
-    branches:
-      - "feat/pack-tauriapp-workflow"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/pack-tauri.yml"
+    tags:
+      - 'v*'
 
 jobs:
   create-release:
