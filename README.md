@@ -47,7 +47,7 @@ Additional requirement if you plan to create and use database connections:
 
 [Download](https://github.com/tareqimbasher/NetPad/releases) the latest version for free!
 
-For folks on **Arch Linux** or **Manjaro**, you can also install it from
+For folks on **Arch Linux**, you can also install it from
 the [AUR](https://aur.archlinux.org/packages/netpad-bin).
 
 On **macOS**
@@ -77,10 +77,13 @@ the Wiki.
 
 ## Contribution
 
-All Pull Requests, feedback and contributions are welcome! Please read the [Contributing guidelines](./CONTRIBUTING.md) for more information about how to contribute and build/run the project.
+All Pull Requests, feedback and contributions are welcome! Please read
+the [Contributing guidelines](./CONTRIBUTING.md) for more information about how to contribute and
+build/run the project.
 
 A special thanks to NetPad's wonderful <a href="https://github.com/sponsors/tareqimbasher">
-sponsors</a>. Sponsorships help pay for macOS builds and helps me maintain this project.
+sponsors</a>. Sponsorships help pay for macOS builds and cross-platform testing and helps me
+maintain this project.
 
 <a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>
 &nbsp;&nbsp;
@@ -94,28 +97,26 @@ sponsors</a>. Sponsorships help pay for macOS builds and helps me maintain this 
 &nbsp;&nbsp;
 
 If you enjoy using NetPad and would like to support its continued development,
-consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A small contribution,
-like the cost of a cup of coffee ($5) per month, helps immensely with maintenance and the addition
-of new features. Thank you for your support! :heart:
+consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A small contribution
+helps immensely with maintenance and the addition of new features. 
+Thank you for your support! :heart:
 
-Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate with the community.
+Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see the latest
+announcements.
 
 ## Features :rocket:
 
 * The basics:
-    * Write, save and run your own scripts
-    * Manage namespaces
-    * Standard code editor features powered by Monaco editor
-    * Auto-open unsaved scripts from previous session on launch
-* Dump complex objects to the results console
-* Export results to Excel or HTML
-* Choose the .NET SDK version you want to use per script
-* Add database connections and query them with LINQ
-* Run SQL queries
-* Add NuGet packages
-* Reference assemblies from disk
-* Syntax Tree Visualizer
-* User-defined results styling
+    * Write, save and run your own scripts.
+    * Manage namespaces.
+    * Standard code editor features powered by Monaco editor.
+    * Auto-open unsaved scripts from previous session on launch.
+* Dump complex objects to the results console and export results to Excel or HTML.
+* Choose the .NET SDK version you want to use per script.
+* Add database connections and query them with LINQ or T-SQL.
+* Add NuGet packages and reference assemblies from disk.
+* Syntax Tree Visualizer.
+* User-defined results styling.
 * LSP powered by OmniSharp:
     * Code Completion (Intellisense)
     * Semantic Highlighting

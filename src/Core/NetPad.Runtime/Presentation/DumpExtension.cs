@@ -16,15 +16,39 @@ public static class DumpExtension
     }
 
     /// <summary>
-    /// Dumps this object to the results console.
+    /// Dumps an object, or value, to the results console.
     /// </summary>
+    /// <typeparam name="T">
+    /// The type of the object being dumped. Can be a reference or value type.
+    /// </typeparam>
     /// <param name="o">The object to dump.</param>
-    /// <param name="title">If specified, will add a title heading to the result.</param>
-    /// <param name="css">If specified, will add the specified CSS classes to the result.</param>
-    /// <param name="code">If specified, assumes the dump target is a code string of this language and will
-    /// render with syntax highlighting. See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md for supported languages.</param>
-    /// <param name="clear">If specified, will remove the result after specified milliseconds.</param>
-    /// <returns>The same object being dumped.</returns>
+    /// <param name="title">
+    /// Optional. A heading displayed above the dumped output to help distinguish multiple dumps.
+    /// For example, <c>Dump(person, "Current User")</c> renders a “Current User” heading.
+    /// </param>
+    /// <param name="css">
+    /// Optional. One or more CSS class names to apply to the output container for styling the rendered dump.
+    /// You can use standard Bootstrap v5 class names (e.g., <c>"text-success"</c>, <c>"w-25"</c>), or specify custom classes
+    /// that you've defined under Settings &gt; Styles.
+    /// For example: <c>Dump(obj, css: "card text-bg-warning w-25")</c>
+    /// </param>
+    /// <param name="code">
+    /// Optional. If you’re dumping a code snippet, specify its language (e.g. <c>"csharp"</c>, <c>"json"</c>, <c>"xml"</c>, etc.).
+    /// The output will be syntax-highlighted using <see href="https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md">Highlight.js</see>.
+    /// </param>
+    /// <param name="clear">
+    /// Optional. If provided, the dump will automatically be removed from the console after the given time in milliseconds.
+    /// For example, <c>clear: 5000</c> makes it disappear after 5 seconds.
+    /// </param>
+    /// <returns>
+    /// Returns the same object instance (<paramref name="o"/>), allowing you to write:
+    /// <code>
+    /// var result = GetItems()
+    ///     .Where(i => i.IsValid)
+    ///     .Dump("Filtered Items")
+    ///     .Select(i => i.Value);
+    /// </code>
+    /// </returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static T? Dump<T>(this T? o, string? title = null, string? css = null, string? code = null, int? clear = null)
     {

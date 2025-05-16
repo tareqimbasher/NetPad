@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 using O2Html.Dom;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -12,6 +13,9 @@ using O2Html.Dom;
 
 namespace NetPad.ExecutionModel.ClientServer.ScriptServices;
 
+/// <summary>
+/// Helpers for dumping data, caching, environment access, and more.
+/// </summary>
 public static class Util
 {
     /// <summary>
@@ -96,8 +100,9 @@ public static class Util
     /// Formats a code string and dumps it the results console.
     /// </summary>
     /// <param name="code">The code to be formatted.</param>
-    /// <param name="language">See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
-    /// for supported languages.</param>
+    /// <param name="language">
+    /// See <see href="https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md">Highlight.js - SUPPORTED_LANGUAGES.md</see>.
+    /// </param>
     /// <returns>The input code.</returns>
     public static string DumpCode(string code, string language = "auto")
     {
@@ -116,7 +121,7 @@ public static class Util
     }
 
     /// <summary>
-    /// Serializes an object to a HTML element.
+    /// Serializes an object to an HTML <see cref="Element"/>.
     /// </summary>
     public static Element ToHtmlElement<T>(T value)
     {
@@ -124,31 +129,63 @@ public static class Util
     }
 
     /// <summary>
-    /// Returns a <see cref="TextNode"/> from the given <see cref="XElement"/>.
+    /// Dumps raw HTML to the results console. Example:
+    /// <code>
+    /// Util.RawHtml(XElement.Parse("<h1>Heading 1</h1>"));
+    /// </code>
     /// </summary>
-    public static TextNode RawHtml(XElement xElement)
+    public static XElement RawHtml(XElement xElement)
     {
-        return TextNode.RawText(xElement.ToString());
+        Dump(TextNode.RawText(xElement.ToString()));
+        return xElement;
     }
 
     /// <summary>
-    /// Returns a <see cref="TextNode"/> from the given HTML string.
+    /// Dumps raw HTML to the results console. Example:
+    /// <code>
+    /// Util.RawHtml("<h1>Heading 1</h1>");
+    /// </code>
     /// </summary>
-    public static TextNode RawHtml(string html)
+    public static string RawHtml(string html)
     {
-        return TextNode.RawText(html);
+        Dump(TextNode.RawText(html));
+        return html;
     }
 
     /// <summary>
-    /// Dumps an object to the results console.
+    /// Dumps an object, or value, to the results console.
     /// </summary>
+    /// <typeparam name="T">
+    /// The type of the object being dumped. Can be a reference or value type.
+    /// </typeparam>
     /// <param name="o">The object to dump.</param>
-    /// <param name="title">If specified, will add a title heading to the result.</param>
-    /// <param name="css">If specified, will add the specified CSS classes to the result.</param>
-    /// <param name="code">If specified, assumes the dump target is a code string of this language and will
-    /// render with syntax highlighting. See https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md for supported languages.</param>
-    /// <param name="clear">If specified, will remove the result after specified milliseconds.</param>
-    /// <returns>The same object being dumped.</returns>
+    /// <param name="title">
+    /// Optional. A heading displayed above the dumped output to help distinguish multiple dumps.
+    /// For example, <c>Dump(person, "Current User")</c> renders a “Current User” heading.
+    /// </param>
+    /// <param name="css">
+    /// Optional. One or more CSS class names to apply to the output container for styling the rendered dump.
+    /// You can use standard Bootstrap v5 class names (e.g., <c>"text-success"</c>, <c>"w-25"</c>), or specify custom classes
+    /// that you've defined under Settings &gt; Styles.
+    /// For example: <c>Dump(obj, css: "card text-bg-warning w-25")</c>
+    /// </param>
+    /// <param name="code">
+    /// Optional. If you’re dumping a code snippet, specify its language (e.g. <c>"csharp"</c>, <c>"json"</c>, <c>"xml"</c>, etc.).
+    /// The output will be syntax-highlighted using <see href="https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md">Highlight.js</see>.
+    /// </param>
+    /// <param name="clear">
+    /// Optional. If provided, the dump will automatically be removed from the console after the given time in milliseconds.
+    /// For example, <c>clear: 5000</c> makes it disappear after 5 seconds.
+    /// </param>
+    /// <returns>
+    /// Returns the same object instance (<paramref name="o"/>), allowing you to write:
+    /// <code>
+    /// var result = GetItems()
+    ///     .Where(i => i.IsValid)
+    ///     .Dump("Filtered Items")
+    ///     .Select(i => i.Value);
+    /// </code>
+    /// </returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static T? Dump<T>(T? o, string? title = null, string? css = null, string? code = null, int? clear = null)
     {
@@ -162,7 +199,7 @@ public static class Util
     /// <param name="options">Dump options.</param>
     /// <returns>The same object being dumped.</returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
-    public static T? Dump<T>(this T? o, DumpOptions options)
+    public static T? Dump<T>(T? o, DumpOptions options)
     {
         return DumpExtension.Dump(o, options);
     }
@@ -188,7 +225,10 @@ public static class Util
     /// <param name="css">If specified, will be added as CSS classes to the result.</param>
     /// <param name="clear">If specified, will remove the result after specified milliseconds.</param>
     /// <returns>The <see cref="ReadOnlySpan{T}"/> being dumped.</returns>
-    public static ReadOnlySpan<T> Dump<T>(ReadOnlySpan<T> span, string? title = null, string? css = null,
+    public static ReadOnlySpan<T> Dump<T>(
+        ReadOnlySpan<T> span,
+        string? title = null,
+        string? css = null,
         int? clear = null)
     {
         return DumpExtension.Dump(span, title, css, clear);
