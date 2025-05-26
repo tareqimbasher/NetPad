@@ -205,12 +205,18 @@ public class NuGetPackageProvider(
         var libItems = GetNearestItems(packageReader.GetLibItems())
             .Where(i => i.EndsWithIgnoreCase(".dll"));
 
-        return Task.FromResult(
-            libItems
-                .Concat(GetRuntimeItems(installPath, nugetFramework))
-                .Where(IsLib)
-                .Select(itemPath => new PackageAsset(itemPath))
-                .ToHashSet());
+        var runtimeItems = GetRuntimeItems(installPath, nugetFramework);
+
+        // Put runtime items first as they are more specific, and later when we deploy these assets, if multiple
+        // asset files with the same are being deployed, only the first one is deployed, the rest are ignored.
+        // We want the runtime version of an assembly to be deployed, not the generic "lib" assembly.
+        var final = runtimeItems
+            .Concat(libItems)
+            .Where(IsLib)
+            .Select(itemPath => new PackageAsset(itemPath))
+            .ToHashSet();
+
+        return Task.FromResult(final);
 
         IEnumerable<string> GetNearestItems(IEnumerable<FrameworkSpecificGroup> items)
         {
