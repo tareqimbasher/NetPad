@@ -7,6 +7,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - 'beta'
 
 jobs:
   create-release:
