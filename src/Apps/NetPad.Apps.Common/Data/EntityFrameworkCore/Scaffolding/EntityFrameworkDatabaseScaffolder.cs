@@ -112,6 +112,7 @@ public class EntityFrameworkDatabaseScaffolder(
                               Converters = { new JsonStringEnumConverter() }
                           });
 
+                          Console.WriteLine("__DB_STRUCTURE_JSON__");
                           Console.WriteLine(json);
                       }
                   }
@@ -124,17 +125,27 @@ public class EntityFrameworkDatabaseScaffolder(
                 logger.LogError("Failed to get database structure. Run failed with output: {Output}", result.FormattedOutput);
             }
 
-            var json = result.Output;
+            var output = result.Output;
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                logger.LogError("Ran database structure generation successfully but output was empty");
+                return null;
+            }
 
             try
             {
+                var json = output.Split("__DB_STRUCTURE_JSON__")
+                    .Last()
+                    .Trim();
+
                 return JsonSerializer.Deserialize<DatabaseStructure>(json);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,
-                    "Ran database structure generation successfully but failed to deserialize output. JSON: {Json}",
-                    json);
+                    "Ran database structure generation successfully but failed to deserialize output: {Output}",
+                    output);
                 return null;
             }
         }
