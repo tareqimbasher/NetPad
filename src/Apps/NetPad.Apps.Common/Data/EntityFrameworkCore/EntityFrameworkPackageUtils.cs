@@ -96,7 +96,7 @@ public static class EntityFrameworkPackageUtils
                     DotNetFrameworkVersion.DotNet6 => "6.0.29",
                     DotNetFrameworkVersion.DotNet7 => "7.0.18",
                     DotNetFrameworkVersion.DotNet8 => "8.0.4",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.4",
+                    DotNetFrameworkVersion.DotNet9 => "9.0.1",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
@@ -123,7 +123,7 @@ public static class EntityFrameworkPackageUtils
                     DotNetFrameworkVersion.DotNet6 => "6.0.28",
                     DotNetFrameworkVersion.DotNet7 => "7.0.2",
                     DotNetFrameworkVersion.DotNet8 => "8.0.2",
-                    DotNetFrameworkVersion.DotNet9 => "9.0.4",
+                    DotNetFrameworkVersion.DotNet9 => "9.0.0",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
 
