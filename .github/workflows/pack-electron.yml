@@ -106,7 +106,7 @@ jobs:
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x64.zip
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-amd64.snap
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.AppImage
-            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.deb
+            src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-amd64.deb
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x86_64.rpm
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-linux-x64.pacman
             src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*-win-x64.exe
