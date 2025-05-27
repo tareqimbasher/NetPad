@@ -1,6 +1,6 @@
 [package]
 name = "NetPad"
-version = "0.9.0"
+version = "0.9.1"
 description = "A cross-platform C# editor and playground"
 authors = ["Tareq Imbasher"]
 repository = "https://github.com/tareqimbasher/NetPad"

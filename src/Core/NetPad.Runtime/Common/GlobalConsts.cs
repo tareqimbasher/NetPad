@@ -15,5 +15,5 @@ public static class GlobalConsts
     /// <summary>
     /// If a data connection resource cache was created with an app version before this version, it will be invalidated and re-scaffolded.
     /// </summary>
-    public static SemanticVersion DataConnectionCacheValidOnOrAfterAppVersion { get; } = new(0, 9, 0);
+    public static SemanticVersion DataConnectionCacheValidOnOrAfterAppVersion { get; } = new(0, 9, 1);
 }
