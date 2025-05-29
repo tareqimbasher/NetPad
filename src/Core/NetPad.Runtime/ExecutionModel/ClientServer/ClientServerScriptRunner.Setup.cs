@@ -7,6 +7,7 @@ using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.DotNet.CodeAnalysis;
 using NetPad.DotNet.References;
 using NetPad.ExecutionModel.External;
 using NetPad.IO;
@@ -127,6 +128,11 @@ public partial class ClientServerScriptRunner
         if (cancellationToken.IsCancellationRequested)
         {
             return (dependencies, additionalCode);
+        }
+
+        foreach (var entry in await _extensionsCodeProvider.GetAll(_script.Id))
+        {
+            additionalCode.Add(new SourceCode(entry.Code, entry.Config.Namespaces));
         }
 
         // Add data connection resources
