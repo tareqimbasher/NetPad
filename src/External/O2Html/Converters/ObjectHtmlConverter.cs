@@ -30,9 +30,7 @@ public class ObjectHtmlConverter : HtmlConverter
             var name = property.Name;
             object? value = GetPropertyValue(property, ref obj!);
 
-            var propertyType = value == null || property.PropertyType != typeof(object)
-                ? property.PropertyType
-                : value.GetType();
+            var propertyType = value?.GetType() ?? property.PropertyType;
 
             var tr = table.Body.AddAndGetRow();
 
@@ -58,9 +56,7 @@ public class ObjectHtmlConverter : HtmlConverter
         foreach (var property in properties)
         {
             object? value = GetPropertyValue(property, ref obj!);
-            var propertyType = value == null || property.PropertyType != typeof(object)
-                ? property.PropertyType
-                : value.GetType();
+            var propertyType = value?.GetType() ?? property.PropertyType;
 
             tr.AddAndGetElement("td")
                 .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
