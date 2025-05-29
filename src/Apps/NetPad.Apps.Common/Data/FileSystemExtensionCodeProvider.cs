@@ -20,6 +20,9 @@ public class FileSystemExtensionCodeProvider(Settings settings, IDataConnectionR
         foreach (var file in Directory.GetFileSystemEntries(path))
         {
             var contents = await File.ReadAllTextAsync(file);
+            if (!Path.GetExtension(file).EqualsIgnoreCase(Script.STANDARD_EXTENSION))
+                continue;
+
             var script = await ScriptSerializer.DeserializeAsync(Script.GetNameFromPath(file), contents, repository, info);
 
             if (script.Id == currentScriptId)
