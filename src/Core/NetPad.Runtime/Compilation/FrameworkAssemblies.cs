@@ -5,10 +5,10 @@ using NetPad.IO;
 
 namespace NetPad.Compilation;
 
-record CacheKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
-
 public static class FrameworkAssemblies
 {
+    private record CacheKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
+
     private static readonly ConcurrentDictionary<CacheKey, HashSet<string>> _systemAssembliesLocations = new();
 
     public static HashSet<string> GetAssemblyLocations(DirectoryPath dotNetRootDir,
@@ -118,7 +118,10 @@ public static class FrameworkAssemblies
 
             if (latestMinorVersionDir != null)
             {
-                var target = Path.Combine(referenceAssemblyRoot.FullName, latestMinorVersionDir, "ref",
+                var target = Path.Combine(
+                    referenceAssemblyRoot.FullName,
+                    latestMinorVersionDir,
+                    "ref",
                     $"net{majorVersion}.0");
 
                 if (!Directory.Exists(target))
@@ -128,11 +131,17 @@ public static class FrameworkAssemblies
 
                 directories.Add(target);
 
-                var analysers = Path.Combine(referenceAssemblyRoot.FullName, latestMinorVersionDir, "analyzers",
-                    "dotnet", "cs");
+                var analysers = Path.Combine(
+                    referenceAssemblyRoot.FullName,
+                    latestMinorVersionDir,
+                    "analyzers",
+                    "dotnet",
+                    "cs");
 
                 if (Directory.Exists(analysers))
+                {
                     directories.Add(analysers);
+                }
             }
             else
             {

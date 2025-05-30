@@ -59,9 +59,6 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
         var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 
-        var analyzers = BuildAnalyzerReferences(assemblyLocations);
-        var generators = analyzers.SelectMany(x => x.GetGeneratorsForAllLanguages()).ToArray();
-
         var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
             .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
             .WithOptimizationLevel(input.OptimizationLevel)
@@ -76,31 +73,33 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
         );
 
         // Now run the built-in generator infrastructure
+        var generators = GetSourceGenerators(assemblyLocations);
         var driver = CSharpGeneratorDriver.Create(
             generators: generators,
             additionalTexts: null,
-            parseOptions: (CSharpParseOptions)compilation.SyntaxTrees.First().Options,
+            parseOptions: (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
             optionsProvider: null);
 
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var sourceGenCompilation, out var diagnostics);
         return (CSharpCompilation)sourceGenCompilation;
     }
 
-    private AnalyzerFileReference[] BuildAnalyzerReferences(
-        HashSet<string> assemblyLocations)
-    {
-        return assemblyLocations
-            .Select(loc => new AnalyzerFileReference(loc, new FromAssemblyLoader()))
-            .ToArray();
-    }
-
-    private PortableExecutableReference[] BuildMetadataReferences(
+    private static PortableExecutableReference[] BuildMetadataReferences(
         IEnumerable<byte[]> assemblyImages,
         HashSet<string> assemblyLocations)
     {
         return assemblyImages
             .Select(i => MetadataReference.CreateFromImage(i))
             .Union(assemblyLocations.Select(loc => MetadataReference.CreateFromFile(loc)))
+            .ToArray();
+    }
+
+    private static ISourceGenerator[] GetSourceGenerators(HashSet<string> assemblyLocations)
+    {
+        var assemblyLoader = new FromAssemblyLoader();
+        return assemblyLocations
+            .Select(loc => new AnalyzerFileReference(loc, assemblyLoader))
+            .SelectMany(x => x.GetGenerators("C#"))
             .ToArray();
     }
 
@@ -125,7 +124,9 @@ file class FromAssemblyLoader : IAnalyzerAssemblyLoader
 {
     private readonly ConcurrentDictionary<string, Assembly> _loaded = new();
 
-    public void AddDependencyLocation(string fullPath) { }
+    public void AddDependencyLocation(string fullPath)
+    {
+    }
 
     public Assembly LoadFromPath(string fullPath)
     {
