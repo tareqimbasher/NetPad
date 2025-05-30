@@ -1,7 +1,9 @@
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using NetPad.CodeAnalysis;
 using NetPad.DotNet;
@@ -57,18 +59,39 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
         var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 
+        var analyzers = BuildAnalyzerReferences(assemblyLocations);
+        var generators = analyzers.SelectMany(x => x.GetGeneratorsForAllLanguages()).ToArray();
+
         var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
             .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
             .WithOptimizationLevel(input.OptimizationLevel)
             .WithOverflowChecks(true)
             .WithAllowUnsafe(true);
 
-        return CSharpCompilation.Create(
+        var compilation = CSharpCompilation.Create(
             assemblyName,
             syntaxTrees: new[] { syntaxTree },
             options: compilationOptions,
             references: references
         );
+
+        // Now run the built-in generator infrastructure
+        var driver = CSharpGeneratorDriver.Create(
+            generators: generators,
+            additionalTexts: null,
+            parseOptions: (CSharpParseOptions)compilation.SyntaxTrees.First().Options,
+            optionsProvider: null);
+
+        driver.RunGeneratorsAndUpdateCompilation(compilation, out var sourceGenCompilation, out var diagnostics);
+        return (CSharpCompilation)sourceGenCompilation;
+    }
+
+    private AnalyzerFileReference[] BuildAnalyzerReferences(
+        HashSet<string> assemblyLocations)
+    {
+        return assemblyLocations
+            .Select(loc => new AnalyzerFileReference(loc, new FromAssemblyLoader()))
+            .ToArray();
     }
 
     private PortableExecutableReference[] BuildMetadataReferences(
@@ -95,5 +118,17 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             OutputKind.NetModule => ".netmodule",
             _ => throw new ArgumentOutOfRangeException(nameof(outputKind), outputKind, null)
         };
+    }
+}
+
+file class FromAssemblyLoader : IAnalyzerAssemblyLoader
+{
+    private readonly ConcurrentDictionary<string, Assembly> _loaded = new();
+
+    public void AddDependencyLocation(string fullPath) { }
+
+    public Assembly LoadFromPath(string fullPath)
+    {
+        return _loaded.GetOrAdd(fullPath, Assembly.LoadFrom);
     }
 }
