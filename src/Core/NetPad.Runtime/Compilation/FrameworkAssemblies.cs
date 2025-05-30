@@ -127,6 +127,12 @@ public static class FrameworkAssemblies
                 }
 
                 directories.Add(target);
+
+                var analysers = Path.Combine(referenceAssemblyRoot.FullName, latestMinorVersionDir, "analyzers",
+                    "dotnet", "cs");
+
+                if (Directory.Exists(analysers))
+                    directories.Add(analysers);
             }
             else
             {
