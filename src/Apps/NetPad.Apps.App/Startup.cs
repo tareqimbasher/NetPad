@@ -85,6 +85,8 @@ public class Startup
                 FileSystemDataConnectionResourcesCache>()
             .AddEntityFrameworkCoreDataConnectionDriver();
 
+        services.AddTransient<IExtensionsCodeProvider, FileSystemExtensionCodeProvider>();
+
         // Package management
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
 
