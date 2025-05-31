@@ -45,21 +45,32 @@ Additional requirement if you plan to create and use database connections:
 
 ## Download
 
-[Download](https://github.com/tareqimbasher/NetPad/releases) the latest version for free!
-
-For folks on **Arch Linux**, you can also install it from
-the [AUR](https://aur.archlinux.org/packages/netpad-bin).
+You can download installers for Windows, macOS and Linux from
+the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
 
 On **macOS**
 see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
 if you have trouble opening NetPad.
+
+### Community
+
+The community also maintains these packages:
+
+**Windows**
+
+    winget install NetPad
+    winget install "NetPad vNext"
+
+**Arch Linux (AUR)**
+
+    yay -S netpad-bin
 
 ## Updates
 
 NetPad automatically checks for updates each time you start the application and will notify
 you when a new version is available.
 
-Currently, automatic updates are not supported, but this feature will be added to make updating
+Automatic updates are not supported, but will be added in the future to make updating
 as seamless as possible. Stay tuned for future updates!
 
 The latest version can be downloaded from
@@ -86,19 +97,15 @@ sponsors</a>. Sponsorships help pay for macOS builds and cross-platform testing 
 maintain this project.
 
 <a href="https://github.com/mattjcowan"><img src="https://github.com/mattjcowan.png" width="50px" alt="mattjcowan" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/jdonohoo"><img src="https://github.com/jdonohoo.png" width="50px" alt="jdonohoo" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/ChristopherHaws"><img src="https://github.com/ChristopherHaws.png" width="50px" alt="ChristopherHaws" /></a>
-&nbsp;&nbsp;
-<a href="https://github.com/pelsedyr"><img src="https://github.com/pelsedyr.png" width="50px" alt="pelsedyr" /></a>
+&nbsp;&nbsp;<a href="https://github.com/lpreiner"><img src="https://github.com/lpreiner.png" width="50px" alt="lpreiner" /></a>
+&nbsp;&nbsp;<a href="https://github.com/ChristopherHaws"><img src="https://github.com/ChristopherHaws.png" width="50px" alt="ChristopherHaws" /></a>
+&nbsp;&nbsp;<a href="https://github.com/OddSkancke"><img src="https://github.com/OddSkancke.png" width="50px" alt="OddSkancke" /></a>
+&nbsp;&nbsp;<a href="https://github.com/SimonNyvall"><img src="https://github.com/SimonNyvall.png" width="50px" alt="SimonNyvall" /></a>
 &nbsp;&nbsp;
 
 If you enjoy using NetPad and would like to support its continued development,
 consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A small contribution
-helps immensely with maintenance and the addition of new features. 
+helps immensely with maintenance and the addition of new features.
 Thank you for your support! :heart:
 
 Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see the latest
