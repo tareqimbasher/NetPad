@@ -90,16 +90,13 @@ public static class DumpExtension
     /// <returns>
     /// Returns the same object instance (<paramref name="o"/>), allowing you to write:
     /// <code>
-    /// var result = GetItems()
-    ///     .Where(i => i.IsValid)
-    ///     .Dump("Filtered Items")
-    ///     .Select(i => i.Value);
+    /// var result = await GetItemsAsync().Dump("Filtered Items")
     /// </code>
     /// </returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
     public static async Task<T?> Dump<T>(this Task<T?> o, string? title = null, string? css = null, string? code = null, int? clear = null)
     {
-        var result = await o;
+        var result = await o.ConfigureAwait(false);
         Sink.ResultWrite(result, new DumpOptions(
             Title: title,
             CssClasses: css,
@@ -121,6 +118,19 @@ public static class DumpExtension
     {
         Sink.ResultWrite(o, options);
         return o;
+    }
+
+    /// <summary>
+    /// Dumps this object to the results console.
+    /// </summary>
+    /// <param name="o">The object to dump.</param>
+    /// <param name="options">Dump options.</param>
+    /// <returns>The same object being dumped.</returns>
+    public static async Task<T> Dump<T>(this Task<T> o, DumpOptions options)
+    {
+        var result = await o.ConfigureAwait(false);
+        Sink.ResultWrite(result, options);
+        return result;
     }
 
     /// <summary>

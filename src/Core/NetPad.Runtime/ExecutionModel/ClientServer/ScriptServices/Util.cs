@@ -219,10 +219,8 @@ public static class Util
     /// <returns>
     /// Returns the same object instance (<paramref name="o"/>), allowing you to write:
     /// <code>
-    /// var result = GetItems()
-    ///     .Where(i => i.IsValid)
+    /// var result = await GetItemsAsync()
     ///     .Dump("Filtered Items")
-    ///     .Select(i => i.Value);
     /// </code>
     /// </returns>
     [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
@@ -233,7 +231,7 @@ public static class Util
         string? code = null,
         int? clear = null)
     {
-        var result = await o;
+        var result = await o.ConfigureAwait(false);
         return DumpExtension.Dump(result, title, css, code, clear);
     }
 
@@ -247,6 +245,18 @@ public static class Util
     public static T? Dump<T>(T? o, DumpOptions options)
     {
         return DumpExtension.Dump(o, options);
+    }
+
+    /// <summary>
+    /// Dumps an object to the results console.
+    /// </summary>
+    /// <param name="o">The object to dump.</param>
+    /// <param name="options">Dump options.</param>
+    /// <returns>The same object being dumped.</returns>
+    public static async Task<T?> Dump<T>(Task<T?> o, DumpOptions options)
+    {
+        var result = await o.ConfigureAwait(false);
+        return DumpExtension.Dump(result, options);
     }
 
     /// <summary>
