@@ -191,6 +191,49 @@ public static class Util
     {
         return DumpExtension.Dump(o, title, css, code, clear);
     }
+    /// <summary>
+    /// Dumps an object, or value, to the results console, awaiting the call first.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of the object being dumped. Can be a reference or value type.
+    /// </typeparam>
+    /// <param name="o">The object to dump.</param>
+    /// <param name="title">
+    /// Optional. A heading displayed above the dumped output to help distinguish multiple dumps.
+    /// For example, <c>Dump(person, "Current User")</c> renders a “Current User” heading.
+    /// </param>
+    /// <param name="css">
+    /// Optional. One or more CSS class names to apply to the output container for styling the rendered dump.
+    /// You can use standard Bootstrap v5 class names (e.g., <c>"text-success"</c>, <c>"w-25"</c>), or specify custom classes
+    /// that you've defined under Settings &gt; Styles.
+    /// For example: <c>Dump(obj, css: "card text-bg-warning w-25")</c>
+    /// </param>
+    /// <param name="code">
+    /// Optional. If you’re dumping a code snippet, specify its language (e.g. <c>"csharp"</c>, <c>"json"</c>, <c>"xml"</c>, etc.).
+    /// The output will be syntax-highlighted using <see href="https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md">Highlight.js</see>.
+    /// </param>
+    /// <param name="clear">
+    /// Optional. If provided, the dump will automatically be removed from the console after the given time in milliseconds.
+    /// For example, <c>clear: 5000</c> makes it disappear after 5 seconds.
+    /// </param>
+    /// <returns>
+    /// Returns the same object instance (<paramref name="o"/>), allowing you to write:
+    /// <code>
+    /// var result = await GetItemsAsync()
+    ///     .Dump("Filtered Items")
+    /// </code>
+    /// </returns>
+    [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("o")]
+    public static async Task<T?> Dump<T>(
+        Task<T?> o,
+        string? title = null,
+        string? css = null,
+        string? code = null,
+        int? clear = null)
+    {
+        var result = await o.ConfigureAwait(false);
+        return DumpExtension.Dump(result, title, css, code, clear);
+    }
 
     /// <summary>
     /// Dumps an object to the results console.
@@ -202,6 +245,18 @@ public static class Util
     public static T? Dump<T>(T? o, DumpOptions options)
     {
         return DumpExtension.Dump(o, options);
+    }
+
+    /// <summary>
+    /// Dumps an object to the results console.
+    /// </summary>
+    /// <param name="o">The object to dump.</param>
+    /// <param name="options">Dump options.</param>
+    /// <returns>The same object being dumped.</returns>
+    public static async Task<T?> Dump<T>(Task<T?> o, DumpOptions options)
+    {
+        var result = await o.ConfigureAwait(false);
+        return DumpExtension.Dump(result, options);
     }
 
     /// <summary>
