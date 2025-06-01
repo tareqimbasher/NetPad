@@ -16,7 +16,7 @@ public class CodeAnalysisService : ICodeAnalysisService
             .WithLanguageVersion(targetFrameworkVersion.GetLatestSupportedCSharpLanguageVersion())
             // TODO investigate using SourceCodeKind.Script (see cs-scripts branch)
             .WithKind(SourceCodeKind.Regular)
-            .WithPreprocessorSymbols(PreprocessorSymbols.For(optimizationLevel));
+            .WithPreprocessorSymbols(PreprocessorSymbols.For(optimizationLevel, targetFrameworkVersion));
     }
 
     public SyntaxTree GetSyntaxTree(
