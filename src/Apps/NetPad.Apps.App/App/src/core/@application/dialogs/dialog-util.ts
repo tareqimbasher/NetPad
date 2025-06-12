@@ -4,10 +4,20 @@ import {Dialog} from "./dialog";
 import {OpenDialogs} from "./open-dialogs";
 import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
 import {AskDialog, IAskDialogModel} from "../app/ask-dialog/ask-dialog";
+import {AlertDialog, IAlertDialogModel} from "../app/alert-dialog/alert-dialog";
 
 export class DialogUtil {
-
     constructor(@IDialogService private readonly dialogService: IDialogService) {
+    }
+
+    public async alert(options: IAlertDialogModel): Promise<DialogCloseResult> {
+        const openResult = await this.open(AlertDialog, options);
+
+        if (!openResult) {
+            throw new Error("Error opening alert with message: " + options.message)
+        }
+
+        return openResult;
     }
 
     public async ask(options: IAskDialogModel): Promise<DialogCloseResult> {

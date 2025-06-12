@@ -54,7 +54,9 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     }
 
     private async alert(command: AlertUserCommand) {
-        alert(command.message);
+        await this.dialogUtil.alert({
+            message: command.message,
+        });
     }
 
     private async confirm(command: ConfirmWithUserCommand) {
