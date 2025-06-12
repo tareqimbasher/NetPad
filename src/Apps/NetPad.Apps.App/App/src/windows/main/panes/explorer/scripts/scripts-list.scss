@@ -47,6 +47,7 @@ scripts-list {
                     display: flex;
                     align-items: center;
                     margin-right: 0.2rem;
+                    overflow: hidden;
                 }
 
                 &.is-active {
@@ -76,12 +77,18 @@ scripts-list {
 
             .script-running-indicator,
             .script-stopping-indicator {
-                height: 0.75rem;
-                width: 0.75rem;
+                height: 1.35rem;
+                width: 1.35rem;
             }
 
-            .script-stopping-indicator {
-                @extend %text-red;
+            .script-running-indicator svg {
+                stroke: orange;
+                stroke-width: 2
+            }
+
+            .script-stopping-indicator svg {
+                stroke: red;
+                stroke-width: 2
             }
         }
     }

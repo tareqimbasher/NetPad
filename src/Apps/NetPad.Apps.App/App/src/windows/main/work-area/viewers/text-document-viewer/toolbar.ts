@@ -114,25 +114,7 @@ export class Toolbar extends ViewModelBase {
     }
 
     public attached() {
-        this.appService.checkDependencies().then(result => {
-            if (!result?.dotNetSdkVersions.length) {
-                this.availableFrameworkVersions = [];
-                return;
-            }
-
-            const frameworks = new Set<DotNetFrameworkVersion>();
-
-            for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
-                const major = sdkVersion.major;
-
-                if (!isNaN(major) && major >= 2) {
-                    frameworks.add(`DotNet${major}` as DotNetFrameworkVersion);
-                }
-            }
-
-            this.availableFrameworkVersions = [...frameworks]
-                .sort((a, b) => a.localeCompare(b));
-        });
+        this.appService.getAvailableDotNetSdkVersions().then(result => this.availableFrameworkVersions = result);
     }
 
     public async run() {

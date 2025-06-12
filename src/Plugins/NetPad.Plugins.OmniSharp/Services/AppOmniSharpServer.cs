@@ -58,11 +58,15 @@ public class AppOmniSharpServer(
     {
         _logger.LogDebug("Initializing script project for script: {Script}", environment.Script);
 
+        if (Directory.Exists(Project.ProjectDirectoryPath))
+        {
+            Directory.Delete(Project.ProjectDirectoryPath, recursive: true);
+        }
+
         await Project.CreateAsync(
             environment.Script.Config.TargetFrameworkVersion,
             ProjectOutputType.Executable,
             environment.Script.Config.UseAspNet ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp,
-            true,
             true,
             false);
 

@@ -78,27 +78,20 @@ public partial class DotNetCSharpProject
     /// <param name="targetDotNetFrameworkVersion">The .NET framework to target.</param>
     /// <param name="outputType">The output type of the project.</param>
     /// <param name="sdkPack">The SDK pack to use for this project.</param>
-    /// <param name="deleteExisting">If true, will delete the project directory if it already exists on disk.</param>
     /// <param name="enableNullable">If true, will enable nullable checks.</param>
     /// <param name="enableImplicitUsings">If true, will enable implicit usings.</param>
     public virtual async Task CreateAsync(
         DotNetFrameworkVersion targetDotNetFrameworkVersion,
         ProjectOutputType outputType,
         DotNetSdkPack sdkPack = DotNetSdkPack.NetApp,
-        bool deleteExisting = false,
         bool enableNullable = true,
         bool enableImplicitUsings = true)
     {
-        if (deleteExisting)
-        {
-            await DeleteAsync();
-        }
-
         Directory.CreateDirectory(ProjectDirectoryPath);
 
-        string dotnetOutputType = outputType == ProjectOutputType.Executable ? "Exe" : "Library";
+        var dotnetOutputType = outputType.ToDotNetProjectPropertyValue();
 
-        string xml = $@"<Project Sdk=""{GetProjectSdkName(sdkPack)}"">
+        var xml = $@"<Project Sdk=""{GetProjectSdkName(sdkPack)}"">
 
     <PropertyGroup>
         <OutputType>{dotnetOutputType}</OutputType>

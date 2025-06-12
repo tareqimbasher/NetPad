@@ -1,0 +1,61 @@
+<template class="scaffold-to-project-dialog">
+    <h4 class="main-header">
+        Scaffold Connection to a C# Project
+        <i class="code-icon float-end"></i>
+    </h4>
+
+    <div class="mb-5">
+        <div class="mb-2 fw-bold">Connection</div>
+        <data-connection-name connection.bind="connection"></data-connection-name>
+    </div>
+
+    <div class="mb-5"
+         title="The directory to create the project in. No new folder will be created; the project will be placed directly inside this folder.">
+        <div class="fw-bold">Project Directory</div>
+        <div class="mt-2 d-flex gap-3">
+            <input class="form-control"
+                   type="text"
+                   placeholder="Directory to create the project in"
+                   spellcheck="false"
+                   value.bind="projectDirectory"
+                   disabled.bind="isWorking">
+            <button class="btn btn-secondary" click.trigger="showDirPicker()" disabled.bind="isWorking">
+                Browse...
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-5" title="The project .NET SDK version to use.">
+        <div class="fw-bold">.NET SDK Version</div>
+        <div class="mt-2 d-flex gap-3">
+            <select class="form-select" value.bind="selectedDotNetFrameworkVersion" disabled.bind="isWorking">
+                <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
+                    .NET ${framework.replace('DotNet', '')}
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-5 text-danger"
+         style="cursor: default"
+         if.bind="error"
+         title.bind="'(Click to copy to clipboard)\n\n' + error"
+         click.trigger="copyErrorToClipboard(connectionViewModel)">
+        An error occurred creating the project. Hover for details.
+    </div>
+
+    <div class="bottom-bar">
+        <div class="buttons">
+            <button class="btn btn-secondary" click.trigger="cancel()" disabled.bind="isWorking">
+                Cancel
+            </button>
+            <button class="btn btn-primary" click.trigger="scaffold()" disabled.bind="!projectDirectory || isWorking">
+                <span if.bind="!isWorking">Create</span>
+                <span else class="d-flex">
+                    Scaffolding...
+                    <spinner style="height: 20px; width: 20px"></spinner>
+                </span>
+            </button>
+        </div>
+    </div>
+</template>

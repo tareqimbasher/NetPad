@@ -1,0 +1,9 @@
+<template class="alert-dialog">
+    <h5 class="mb-5 fw-semibold">${input.title}</h5>
+
+    <p innerHTML.bind="input.message"></p>
+
+    <div class="buttons">
+        <button class="btn btn-primary" click.trigger="ok()">OK</button>
+    </div>
+</template>

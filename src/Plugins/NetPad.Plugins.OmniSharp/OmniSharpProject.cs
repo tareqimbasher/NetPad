@@ -43,11 +43,10 @@ public class OmniSharpProject : DotNetCSharpProject
         DotNetFrameworkVersion targetDotNetFrameworkVersion,
         ProjectOutputType outputType,
         DotNetSdkPack sdkPack = DotNetSdkPack.NetApp,
-        bool deleteExisting = false,
         bool enableNullable = true,
         bool enableImplicitUsings = true)
     {
-        await base.CreateAsync(targetDotNetFrameworkVersion, outputType, sdkPack, deleteExisting, enableNullable, enableImplicitUsings);
+        await base.CreateAsync(targetDotNetFrameworkVersion, outputType, sdkPack, enableNullable, enableImplicitUsings);
         await AddReferencesAsync(Script.Config.References);
     }
 
