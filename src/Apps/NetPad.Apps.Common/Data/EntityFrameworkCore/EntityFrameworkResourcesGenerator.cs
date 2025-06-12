@@ -29,7 +29,7 @@ internal class EntityFrameworkResourcesGenerator(
             settings,
             loggerFactory.CreateLogger<EntityFrameworkDatabaseScaffolder>());
 
-        var result = await scaffolder.ScaffoldAsync(efDbConnection, targetFrameworkVersion);
+        var result = await scaffolder.ScaffoldConnectionResourcesAsync(efDbConnection, targetFrameworkVersion);
 
         var applicationCode = GenerateApplicationCode(efDbConnection, result.Model.DbContextFile.ClassName, result.Model.DbContextFile.Code.ToCodeString());
 

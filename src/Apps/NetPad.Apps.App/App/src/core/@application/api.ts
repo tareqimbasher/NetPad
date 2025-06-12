@@ -494,6 +494,8 @@ export interface IDataConnectionsApiClient {
     getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]>;
 
     getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure>;
+
+    scaffoldToProject(id: string, projectDirectoryPath: string | null | undefined, frameworkVersion: DotNetFrameworkVersion | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
 }
 
 export class DataConnectionsApiClient extends ApiClientBase implements IDataConnectionsApiClient {
@@ -970,6 +972,48 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             });
         }
         return Promise.resolve<DatabaseStructure>(<any>null);
+    }
+
+    scaffoldToProject(id: string, projectDirectoryPath: string | null | undefined, frameworkVersion: DotNetFrameworkVersion | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/data-connections/{id}/scaffold-to-project?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (projectDirectoryPath !== undefined && projectDirectoryPath !== null)
+            url_ += "projectDirectoryPath=" + encodeURIComponent("" + projectDirectoryPath) + "&";
+        if (frameworkVersion === null)
+            throw new Error("The parameter 'frameworkVersion' cannot be null.");
+        else if (frameworkVersion !== undefined)
+            url_ += "frameworkVersion=" + encodeURIComponent("" + frameworkVersion) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processScaffoldToProject(_response);
+        });
+    }
+
+    protected processScaffoldToProject(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(<any>null);
     }
 }
 
@@ -4303,6 +4347,8 @@ export interface IDatabaseTableNavigation {
     clrType?: string | undefined;
 }
 
+export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
+
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
     version?: string | undefined;
@@ -4564,8 +4610,6 @@ export interface IPackageIdentity {
     id: string;
     version: string;
 }
-
-export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
 
 export class ScriptSummary implements IScriptSummary {
     id!: string;

@@ -1,4 +1,4 @@
-import {IAppApiClient} from "@application";
+import {DotNetFrameworkVersion, IAppApiClient} from "@application";
 import {Version} from "@common/data/version";
 import {DI} from "aurelia";
 
@@ -18,6 +18,8 @@ export interface IAppService extends IAppApiClient {
      * Gets the current version and latest available version of the app.
      */
     getCurrentAndLatestVersions(): Promise<{current: Version, latest: Version} | null>;
+
+    getAvailableDotNetSdkVersions(): Promise<DotNetFrameworkVersion[]>;
 }
 
 export const IAppService = DI.createInterface<IAppService>();

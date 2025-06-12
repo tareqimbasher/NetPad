@@ -1,4 +1,4 @@
-import {AppApiClient, AppDependencyCheckResult} from "@application";
+import {AppApiClient, AppDependencyCheckResult, DotNetFrameworkVersion} from "@application";
 import {Util} from "@common/utils/util";
 import {Version} from "@common/data/version";
 import {IAppService} from "@application";
@@ -55,5 +55,25 @@ export class AppService extends AppApiClient implements IAppService {
             current: current,
             latest: latest
         };
+    }
+
+    public async getAvailableDotNetSdkVersions(): Promise<DotNetFrameworkVersion[]> {
+        const result = await this.checkDependencies();
+
+        if (!result?.dotNetSdkVersions.length) {
+            return [];
+        }
+
+        const frameworks = new Set<DotNetFrameworkVersion>();
+
+        for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
+            const major = sdkVersion.major;
+
+            if (!isNaN(major) && major >= 2) {
+                frameworks.add(`DotNet${major}` as DotNetFrameworkVersion);
+            }
+        }
+
+        return [...frameworks].sort((a, b) => a.localeCompare(b));
     }
 }

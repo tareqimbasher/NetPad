@@ -17,6 +17,8 @@ import {
 } from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
+import {DialogUtil} from "@application/dialogs/dialog-util";
+import {ScaffoldToProjectDialog} from "./scaffold-to-project/scaffold-to-project-dialog";
 
 export class DataConnectionsList extends ViewModelBase {
     public dataConnectionViewModels: DataConnectionViewModel[] = [];
@@ -29,6 +31,7 @@ export class DataConnectionsList extends ViewModelBase {
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
         @IScriptService private readonly scriptService: IScriptService,
         private readonly dataConnectionStore: DataConnectionStore,
+        private readonly dialogUtil: DialogUtil,
         @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger) {
         super(logger);
@@ -73,6 +76,14 @@ export class DataConnectionsList extends ViewModelBase {
                 icon: "delete-icon",
                 text: "Delete",
                 onSelected: async (target) => this.delete(this.getElementOrParentDataConnectionId(target))
+            },
+            {
+                isDivider: true
+            },
+            {
+                icon: "code-icon",
+                text: "Scaffold to C# Project",
+                onSelected: async (target) => this.showScaffoldToProjectModal(this.getElementOrParentDataConnectionId(target))
             },
             {
                 isDivider: true
@@ -219,6 +230,21 @@ export class DataConnectionsList extends ViewModelBase {
         if (dataConnection) {
             await dataConnection.refresh();
         }
+    }
+
+    public async showScaffoldToProjectModal(connectionId: string) {
+        const result = await this.dialogUtil.open(ScaffoldToProjectDialog, {
+            connectionId: connectionId
+        });
+
+        if (result?.status !== "ok") {
+            return;
+        }
+
+        await this.dialogUtil.alert({
+            title: "Scaffolding Complete",
+            message: `A .NET project was created at: <code>${result.value}</code>`
+        });
     }
 
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections.length)

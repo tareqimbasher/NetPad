@@ -25,29 +25,24 @@ public class EntityFrameworkDatabaseScaffolder(
     public const string DbContextName = "GeneratedDbContext";
     public const string DbContextCompiledModelName = "GeneratedDbContextModel";
 
-    public async Task<ScaffoldResult> ScaffoldAsync(EntityFrameworkDatabaseConnection connection, DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<ScaffoldResult> ScaffoldConnectionResourcesAsync(
+        EntityFrameworkDatabaseConnection connection,
+        DotNetFrameworkVersion targetFrameworkVersion)
     {
-        var project = await InitProjectAsync(connection, targetFrameworkVersion);
+        var projectDirectory = AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString());
+
+        // DANGER: make sure that whatever path we use here is meant to be temporary and can be safely deleted
+        projectDirectory.DeleteIfExists();
+
+        var project = await ScaffoldToProjectAsync(
+            projectDirectory,
+            $"DataConnection_{connection.Id}",
+            targetFrameworkVersion,
+            connection);
 
         try
         {
-            var buildResult = await project.BuildAsync();
-
-            if (!buildResult.Succeeded)
-            {
-                throw new Exception($"Failed to scaffold database. Error building project. {buildResult.FormattedOutput}");
-            }
-
             var dbModelOutputDirPath = Path.Combine(project.ProjectDirectoryPath, "DbModel");
-
-            Directory.CreateDirectory(dbModelOutputDirPath);
-
-            await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath, dbModelOutputDirPath);
-
-            if (connection.ScaffoldOptions?.OptimizeDbContext == true)
-            {
-                await RunEfOptimizeAsync(project.ProjectDirectoryPath, dbModelOutputDirPath);
-            }
 
             var model = await GetScaffoldedModelAsync(dbModelOutputDirPath);
 
@@ -55,11 +50,12 @@ public class EntityFrameworkDatabaseScaffolder(
 
             await WriteTransformedModelAsync(model);
 
-            buildResult = await project.BuildAsync("-c Release");
+            var buildResult = await project.BuildAsync("-c Release");
 
             if (!buildResult.Succeeded)
             {
-                throw new Exception($"Failed to complete scaffold process. Error building scaffolded project. {buildResult.FormattedOutput}");
+                throw new Exception(
+                    $"Failed to complete scaffold process. Error building scaffolded project. {buildResult.FormattedOutput}");
             }
 
             var assemblyFilePath = Directory.GetFiles(
@@ -83,15 +79,55 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task<DatabaseStructure?> GetDatabaseStructureAsync(DotNetCSharpProject project, string dbContextClassName)
+    public async Task<DotNetCSharpProject> ScaffoldToProjectAsync(
+        DirectoryPath projectDirectory,
+        string projectName,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        EntityFrameworkDatabaseConnection connection)
+    {
+        var project = await InitProjectAsync(
+            projectDirectory,
+            projectName,
+            targetFrameworkVersion,
+            connection);
+
+        var buildResult = await project.BuildAsync();
+
+        if (!buildResult.Succeeded)
+        {
+            throw new Exception(
+                $"Failed to scaffold database. Error building project. {buildResult.FormattedOutput}");
+        }
+
+        var dbModelOutputDirPath = Path.Combine(project.ProjectDirectoryPath, "DbModel");
+
+        Directory.CreateDirectory(dbModelOutputDirPath);
+
+        await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath, dbModelOutputDirPath);
+
+        if (connection.ScaffoldOptions?.OptimizeDbContext == true)
+        {
+            await RunEfOptimizeAsync(project.ProjectDirectoryPath, dbModelOutputDirPath);
+        }
+
+        return project;
+    }
+
+    private async Task<DatabaseStructure?> GetDatabaseStructureAsync(
+        DotNetCSharpProject project,
+        string dbContextClassName)
     {
         try
         {
-            await project.SetProjectPropertyAsync("OutputType", "Exe");
+            await project.SetProjectPropertyAsync(
+                "OutputType",
+                ProjectOutputType.Executable.ToDotNetProjectPropertyValue());
 
-            var embeddedUtilCode = AssemblyUtil.ReadEmbeddedResource(typeof(EntityFrameworkDatabaseUtil).Assembly, "DatabaseStructureEmbedded.cs");
+            var embeddedUtilCode = AssemblyUtil.ReadEmbeddedResource(typeof(EntityFrameworkDatabaseUtil).Assembly,
+                "DatabaseStructureEmbedded.cs");
 
-            await File.WriteAllTextAsync(Path.Combine(project.ProjectDirectoryPath, "EntityFrameworkDatabaseUtil.cs"), embeddedUtilCode);
+            await File.WriteAllTextAsync(Path.Combine(project.ProjectDirectoryPath, "EntityFrameworkDatabaseUtil.cs"),
+                embeddedUtilCode);
 
             await File.WriteAllTextAsync(
                 Path.Combine(project.ProjectDirectoryPath, "Program.cs"),
@@ -122,7 +158,8 @@ public class EntityFrameworkDatabaseScaffolder(
 
             if (!result.Succeeded)
             {
-                logger.LogError("Failed to get database structure. Run failed with output: {Output}", result.FormattedOutput);
+                logger.LogError("Failed to get database structure. Run failed with output: {Output}",
+                    result.FormattedOutput);
             }
 
             var output = result.Output;
@@ -156,32 +193,32 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task<DotNetCSharpProject> InitProjectAsync(EntityFrameworkDatabaseConnection connection, DotNetFrameworkVersion targetFrameworkVersion)
+    private async Task<DotNetCSharpProject> InitProjectAsync(
+        DirectoryPath projectDirectory,
+        string projectName,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        EntityFrameworkDatabaseConnection connection)
     {
         var project = new DotNetCSharpProject(
             dotNetInfo,
-            AppDataProvider.TypedDataContextTempDirectoryPath.Combine(connection.Id.ToString()).Path,
-            $"DataConnection_{connection.Id}",
+            projectDirectory.Path,
+            projectName,
             Path.Combine(settings.PackageCacheDirectoryPath, "NuGet"));
 
-        await project.CreateAsync(targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp, true);
+        await project.CreateAsync(targetFrameworkVersion, ProjectOutputType.Library, DotNetSdkPack.NetApp);
 
-        try
-        {
-            var references = EntityFrameworkPackageUtils.GetRequiredReferences(connection, targetFrameworkVersion, true);
+        var references =
+            EntityFrameworkPackageUtils.GetRequiredReferences(connection, targetFrameworkVersion, true);
 
-            await project.AddReferencesAsync(references);
-        }
-        catch
-        {
-            await project.DeleteAsync();
-            throw;
-        }
+        await project.AddReferencesAsync(references);
 
         return project;
     }
 
-    private async Task RunEfScaffoldAsync(EntityFrameworkDatabaseConnection connection, string projectDirectoryPath, string dbModelOutputDirPath)
+    private async Task RunEfScaffoldAsync(
+        EntityFrameworkDatabaseConnection connection,
+        string projectDirectoryPath,
+        string dbModelOutputDirPath)
     {
         var argList = new List<string>
         {
@@ -230,7 +267,9 @@ public class EntityFrameworkDatabaseScaffolder(
         // it will fail as dotnet-ef depends on dotnet
         var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
-        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
+        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal)
+            ? dotnetExeDir
+            : $"{pathVariableVal}:{dotnetExeDir}";
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
@@ -275,7 +314,9 @@ public class EntityFrameworkDatabaseScaffolder(
 
         var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
         var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
-        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal) ? dotnetExeDir : $"{pathVariableVal}:{dotnetExeDir}";
+        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal)
+            ? dotnetExeDir
+            : $"{pathVariableVal}:{dotnetExeDir}";
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
@@ -300,7 +341,7 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync(string dbModelOutputDirPath)
+    private static async Task<ScaffoldedDatabaseModel> GetScaffoldedModelAsync(string dbModelOutputDirPath)
     {
         var projectDir = new DirectoryInfo(dbModelOutputDirPath);
         if (!projectDir.Exists)
@@ -341,7 +382,7 @@ public class EntityFrameworkDatabaseScaffolder(
         return new ScaffoldedDatabaseModel(sourceFiles, dbContextFile, dbContextCompiledModelFile);
     }
 
-    private async Task<ScaffoldedSourceFile> ParseScaffoldedSourceFileAsync(FileInfo file)
+    private static async Task<ScaffoldedSourceFile> ParseScaffoldedSourceFileAsync(FileInfo file)
     {
         var scaffoldedCode = await File.ReadAllTextAsync(file.FullName);
 
@@ -369,7 +410,7 @@ public class EntityFrameworkDatabaseScaffolder(
         return sourceFile;
     }
 
-    private void DoTransforms(ScaffoldedDatabaseModel model, EntityFrameworkDatabaseConnection connection)
+    private static void DoTransforms(ScaffoldedDatabaseModel model, EntityFrameworkDatabaseConnection connection)
     {
         new AnyDatabaseProviderTransform().Transform(model);
 
@@ -379,7 +420,7 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task WriteTransformedModelAsync(ScaffoldedDatabaseModel model)
+    private static async Task WriteTransformedModelAsync(ScaffoldedDatabaseModel model)
     {
         foreach (var file in model.SourceFiles)
         {
