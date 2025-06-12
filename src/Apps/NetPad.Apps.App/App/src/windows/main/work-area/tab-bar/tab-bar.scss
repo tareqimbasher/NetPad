@@ -75,13 +75,18 @@ tab-bar {
 
         .script-running-indicator,
         .script-stopping-indicator {
-            height: 0.75rem;
-            width: 0.75rem;
-            color: orange;
+            height: 1.5rem;
+            width: 1.5rem;
         }
 
-        .script-stopping-indicator {
-            color: salmon;
+        .script-running-indicator svg {
+            stroke: orange;
+            stroke-width: 2
+        }
+
+        .script-stopping-indicator svg {
+            stroke: red;
+            stroke-width: 2
         }
 
         &:hover {

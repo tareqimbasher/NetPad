@@ -22,10 +22,12 @@
             <div class="script-status"
                  if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
                  switch.bind="viewable.environment.status">
-                <span case="Running" class="spinner-border script-running-indicator"
-                      title="Running..."></span>
-                <span case="Stopping" class="spinner-border script-stopping-indicator"
-                      title="Stopping..."></span>
+                <spinner case="Running"
+                         class="script-running-indicator"
+                         title="Running..."></spinner>
+                <spinner case="Stopping"
+                         class="script-stopping-indicator"
+                         title="Stopping..."></spinner>
                 <i case="Ready" if.bind="viewable.environment.runDurationMilliseconds != null"
                    class="script-status-success-icon icon-xs"
                    title="Script ran successfully"></i>
