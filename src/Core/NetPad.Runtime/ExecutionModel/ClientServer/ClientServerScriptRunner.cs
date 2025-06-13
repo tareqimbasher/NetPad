@@ -47,6 +47,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 {
     private readonly Script _script;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
+    private readonly IExtensionsCodeProvider _extensionsCodeProvider;
     private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly IEventBus _eventBus;
@@ -76,6 +77,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
         IDataConnectionResourcesCache dataConnectionResourcesCache,
+        IExtensionsCodeProvider extensionsCodeProvider,
         IAppStatusMessagePublisher appStatusMessagePublisher,
         IDotNetInfo dotNetInfo,
         IEventBus eventBus,
@@ -88,6 +90,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         _codeCompiler = codeCompiler;
         _packageProvider = packageProvider;
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
+        _extensionsCodeProvider = extensionsCodeProvider;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _dotNetInfo = dotNetInfo;
         _eventBus = eventBus;
