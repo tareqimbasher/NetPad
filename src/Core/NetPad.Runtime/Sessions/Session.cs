@@ -8,84 +8,149 @@ using NetPad.Sessions.Events;
 
 namespace NetPad.Sessions;
 
-public class Session(
-    IServiceScopeFactory serviceScopeFactory,
-    ITrivialDataStore trivialDataStore,
-    IEventBus eventBus,
-    ILogger<Session> logger)
-    : ISession
+public class Session : ISession
 {
-    private const string CurrentActiveSaveKey = "session.active";
+    private const string ActiveSaveKey = "session.active";
+    public const string OpenScriptsSaveKey = "session.openScripts";
 
-    private readonly List<ScriptEnvironment> _environments = [];
+    private readonly List<ScriptEnvironment> _environments;
+    private readonly Action _saveSessionInfoDebounced;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly ITrivialDataStore _trivialDataStore;
+    private readonly IEventBus _eventBus;
+    private readonly ILogger<Session> _logger;
     private Guid? _lastActiveScriptId;
 
-    public IReadOnlyList<ScriptEnvironment> Environments => _environments.AsReadOnly();
+    public Session(
+        IServiceScopeFactory serviceScopeFactory,
+        ITrivialDataStore trivialDataStore,
+        IEventBus eventBus,
+        ILogger<Session> logger)
+    {
+        _serviceScopeFactory = serviceScopeFactory;
+        _trivialDataStore = trivialDataStore;
+        _eventBus = eventBus;
+        _logger = logger;
+        _environments = [];
+        Environments = _environments.AsReadOnly();
+
+        _saveSessionInfoDebounced = DelegateUtil.Debounce(SaveSessionInfo, 500);
+    }
+
+    public IReadOnlyList<ScriptEnvironment> Environments { get; }
 
     public ScriptEnvironment? Active { get; private set; }
 
+    public bool IsOpen(Guid scriptId) => Environments.Any(e => e.Script.Id == scriptId);
 
     public ScriptEnvironment? Get(Guid scriptId)
     {
         return _environments.FirstOrDefault(m => m.Script.Id == scriptId);
     }
 
-    public async Task OpenAsync(Script script, bool activate = true)
+    public async Task OpenAsync(Script script, bool activate)
     {
-        var environment = Get(script.Id);
-
-        if (environment == null)
-        {
-            environment = new ScriptEnvironment(script, serviceScopeFactory.CreateScope());
-            _environments.Add(environment);
-            await eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
-        }
+        await OpenInternalAsync(script);
 
         if (activate)
         {
             await ActivateAsync(script.Id);
         }
+
+        _saveSessionInfoDebounced();
     }
 
-    public async Task OpenAsync(IEnumerable<Script> scripts)
+    public async Task OpenAsync(IList<Script> scripts, bool activateBestCandidate)
     {
+        if (scripts.Count == 0)
+        {
+            return;
+        }
+
         scripts = scripts.ToArray();
 
         foreach (var script in scripts)
         {
-            await OpenAsync(script, activate: false);
+            await OpenInternalAsync(script);
         }
 
-        if (Guid.TryParse(trivialDataStore.Get<string>(CurrentActiveSaveKey), out var lastSavedScriptId) &&
-            scripts.Any(s => s.Id == lastSavedScriptId))
+        if (activateBestCandidate)
         {
-            await ActivateAsync(lastSavedScriptId);
+            await ActivateBestCandidateAsync();
         }
-        else
+
+        _saveSessionInfoDebounced();
+    }
+
+    private async Task OpenInternalAsync(Script script)
+    {
+        var environment = Get(script.Id);
+
+        if (environment == null)
         {
-            await ActivateAsync(scripts.LastOrDefault()?.Id);
+            environment = new ScriptEnvironment(script, _serviceScopeFactory.CreateScope());
+            _environments.Add(environment);
+            await _eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
         }
     }
 
-    public async Task CloseAsync(Guid scriptId, bool activateNextScript = true)
+    public async Task CloseAsync(Guid scriptId, bool activateNextScript)
     {
-        logger.LogDebug("Closing script: {ScriptId}", scriptId);
+        var environment = await CloseInternalAsync(scriptId, activateNextScript);
+
+        if (_environments.Count == 0)
+        {
+            await ActivateAsync(null);
+        }
+
+        if (environment != null)
+        {
+            _saveSessionInfoDebounced();
+        }
+    }
+
+    public async Task CloseAsync(IList<Guid> scriptIds, bool activateNextScript, bool persistSession)
+    {
+        for (int i = 0; i < scriptIds.Count; i++)
+        {
+            var id = scriptIds[i];
+
+            bool isLastScriptInBatch = i == scriptIds.Count - 1;
+
+            await CloseInternalAsync(id, activateNextScript && isLastScriptInBatch);
+        }
+
+        if (persistSession)
+        {
+            _saveSessionInfoDebounced();
+        }
+    }
+
+    private async Task<ScriptEnvironment?> CloseInternalAsync(Guid scriptId, bool activateNextScript)
+    {
         var environment = Get(scriptId);
         if (environment == null)
-            return;
+        {
+            return null;
+        }
+
+        _logger.LogDebug("Closing script: {ScriptId}", scriptId);
 
         var ix = _environments.IndexOf(environment);
-
         _environments.RemoveAt(ix);
-        await eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
+        await _eventBus.PublishAsync(new EnvironmentsRemovedEvent(environment));
         _ = Task.Run(async () => await environment.DisposeAsync());
+
+        _logger.LogDebug("Closed script: {ScriptId}", scriptId);
 
         if (activateNextScript && Active == environment)
         {
-            if (_environments.Any())
+            if (_environments.Count > 0)
             {
                 if (CanActivateLastActiveScript())
+                {
                     await ActivateAsync(_lastActiveScriptId);
+                }
                 else
                 {
                     ix = ix == 0 ? 1 : ix - 1;
@@ -98,21 +163,7 @@ public class Session(
             }
         }
 
-        logger.LogDebug("Closed script: {ScriptId}", scriptId);
-    }
-
-    public async Task CloseAsync(IEnumerable<Guid> scriptIds)
-    {
-        var ids = scriptIds.ToArray();
-
-        for (int i = 0; i < ids.Length; i++)
-        {
-            var id = ids[i];
-
-            bool isLastScriptInBatch = i == ids.Length - 1;
-
-            await CloseAsync(id, isLastScriptInBatch);
-        }
+        return environment;
     }
 
     public Task ActivateAsync(Guid? scriptId)
@@ -136,9 +187,9 @@ public class Session(
         }
 
         Active = newActive;
-        eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
+        _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
 
-        trivialDataStore.Set(CurrentActiveSaveKey, Active?.Script.Id);
+        _trivialDataStore.Set(ActiveSaveKey, Active?.Script.Id);
 
         return Task.CompletedTask;
     }
@@ -151,6 +202,56 @@ public class Session(
         return Task.CompletedTask;
     }
 
+    public async Task ActivateBestCandidateAsync()
+    {
+        // If a script is already active, nothing more to do
+        if (Active != null || _environments.Count == 0)
+        {
+            return;
+        }
+
+        await ActivateLastActiveScriptAsync();
+
+        if (Active != null)
+        {
+            return;
+        }
+
+        // Try to activate the last activated script from data store
+        var lastActiveScriptIdStr = _trivialDataStore.Get<string>(ActiveSaveKey);
+        if (lastActiveScriptIdStr != null
+            && Guid.TryParse(lastActiveScriptIdStr, out var lastActiveScriptId)
+            && IsOpen(lastActiveScriptId))
+        {
+            await ActivateAsync(lastActiveScriptId);
+        }
+
+        // If we still haven't activated a script, activate the last one
+        if (Active == null)
+        {
+            await ActivateAsync(Environments[^1].Script.Id);
+        }
+    }
+
     private bool CanActivateLastActiveScript() =>
         _lastActiveScriptId != null && _environments.Any(e => e.Script.Id == _lastActiveScriptId);
+
+
+    private void SaveSessionInfo()
+    {
+        try
+        {
+            var scriptIds = _environments.Select(x => x.Script.Id).ToArray();
+            if (scriptIds.Length == 0)
+            {
+                return;
+            }
+
+            _trivialDataStore.Set(OpenScriptsSaveKey, scriptIds);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error saving session info");
+        }
+    }
 }

@@ -25,13 +25,13 @@ public class DefaultScriptNameGeneratorTests(ITestOutputHelper testOutputHelper)
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var generator = new DefaultScriptNameGenerator(session);
         var script = ScriptTestHelper.CreateScript(name: generator.Generate());
-        await session.OpenAsync(script);
+        await session.OpenAsync(script, true);
 
         foreach (var num in Enumerable.Range(2, 15))
         {
             var name = generator.Generate();
             script = ScriptTestHelper.CreateScript(name: name);
-            await session.OpenAsync(script);
+            await session.OpenAsync(script, true);
 
             Assert.Equal($"Script {num}", name);
         }
@@ -60,13 +60,13 @@ public class DefaultScriptNameGeneratorTests(ITestOutputHelper testOutputHelper)
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var generator = new DefaultScriptNameGenerator(session);
         var script = ScriptTestHelper.CreateScript(name: generator.Generate(baseName));
-        await session.OpenAsync(script);
+        await session.OpenAsync(script, true);
 
         foreach (var num in Enumerable.Range(2, 15))
         {
             var name = generator.Generate(baseName);
             script = ScriptTestHelper.CreateScript(name: name);
-            await session.OpenAsync(script);
+            await session.OpenAsync(script, true);
 
             Assert.Equal($"{baseName} {num}", name);
         }
@@ -119,7 +119,7 @@ public class DefaultScriptNameGeneratorTests(ITestOutputHelper testOutputHelper)
         {
             var script = ScriptTestHelper.CreateScript();
             script.SetName(existingScriptName);
-            await session.OpenAsync(script);
+            await session.OpenAsync(script, true);
         }
 
         var newName = generator.Generate(baseName);

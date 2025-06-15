@@ -42,7 +42,7 @@ public class OpenScriptCommand : Command
                 throw new ArgumentException("Not enough information to open a script.");
             }
 
-            await session.OpenAsync(script);
+            await session.OpenAsync(script, true);
 
             await eventBus.PublishAsync(new ScriptOpenedEvent(script));
 

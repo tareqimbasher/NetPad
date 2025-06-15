@@ -1,4 +1,4 @@
-using NetPad.Common;
+using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
@@ -12,12 +12,18 @@ public class FileSystemScriptRepository : IScriptRepository
     private readonly Settings _settings;
     private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly ILogger<FileSystemScriptRepository> _logger;
 
-    public FileSystemScriptRepository(Settings settings, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
+    public FileSystemScriptRepository(
+        Settings settings,
+        IDataConnectionRepository dataConnectionRepository,
+        IDotNetInfo dotNetInfo,
+        ILogger<FileSystemScriptRepository> logger)
     {
         _settings = settings;
         _dataConnectionRepository = dataConnectionRepository;
         _dotNetInfo = dotNetInfo;
+        _logger = logger;
         Directory.CreateDirectory(GetRepositoryDirPath());
     }
 
@@ -105,15 +111,17 @@ public class FileSystemScriptRepository : IScriptRepository
 
     public async Task<Script?> GetAsync(Guid scriptId)
     {
-        var scriptFiles = new DirectoryInfo(GetRepositoryDirPath()).EnumerateFiles(
-                $"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
+        var scriptFiles = new DirectoryInfo(GetRepositoryDirPath())
+            .EnumerateFiles($"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
             // Basic protection against malicious calls
             .Where(f => f.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION));
 
         foreach (var scriptFile in scriptFiles)
         {
             var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
-            if (firstLine == null || !Guid.TryParse(firstLine, out var scriptIdFromFile) || scriptId != scriptIdFromFile)
+            if (firstLine == null
+                || !Guid.TryParse(firstLine, out var scriptIdFromFile)
+                || scriptId != scriptIdFromFile)
             {
                 continue;
             }
@@ -122,6 +130,39 @@ public class FileSystemScriptRepository : IScriptRepository
         }
 
         return null;
+    }
+
+    public async Task<List<Script>> GetAsync(HashSet<Guid> scriptIds)
+    {
+        var scripts = new List<Script>();
+
+        var scriptFiles = new DirectoryInfo(GetRepositoryDirPath())
+            .EnumerateFiles($"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
+            // Basic protection against malicious calls
+            .Where(f => f.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION));
+
+        foreach (var scriptFile in scriptFiles)
+        {
+            var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
+            if (firstLine == null
+                || !Guid.TryParse(firstLine, out var scriptIdFromFile)
+                || !scriptIds.Contains(scriptIdFromFile))
+            {
+                continue;
+            }
+
+            try
+            {
+                var script = await GetAsync(scriptFile.FullName);
+                scripts.Add(script);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to load script: {FilePath}", scriptFile.FullName);
+            }
+        }
+
+        return scripts;
     }
 
     public async Task<Script> SaveAsync(Script script)
@@ -163,7 +204,8 @@ public class FileSystemScriptRepository : IScriptRepository
             if (File.Exists(newPath))
             {
                 script.SetName(oldName);
-                throw new Exception($"A file already exists at path: {newPath}. Renaming script will overwrite that file");
+                throw new Exception(
+                    $"A file already exists at path: {newPath}. Renaming script will overwrite that file");
             }
 
             File.Move(oldPath!, newPath!, overwrite: false);
