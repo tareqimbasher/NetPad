@@ -58,7 +58,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         if (script.Id != scriptId)
         {
-            throw new Exception($"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
+            throw new Exception(
+                $"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
         }
 
         script.IsDirty = true;
@@ -66,7 +67,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         return script;
     }
 
-    public async Task<IEnumerable<Script>> GetScriptsAsync()
+    public async Task<List<Script>> GetScriptsAsync()
     {
         var scripts = new List<Script>();
 
@@ -80,12 +81,10 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
                 }
 
                 var script = await GetScriptAsync(scriptId);
-                if (script == null)
+                if (script != null)
                 {
-                    continue;
+                    scripts.Add(script);
                 }
-
-                scripts.Add(script);
             }
             catch (Exception ex)
             {
@@ -138,10 +137,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             var map = GetIndex();
 
-            if (map.ContainsKey(scriptId))
-                map[scriptId] = scriptName;
-            else
-                map.Add(scriptId, scriptName);
+            map[scriptId] = scriptName;
 
             File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
         }
@@ -153,9 +149,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             var map = GetIndex();
 
-            if (!map.ContainsKey(scriptId)) return;
+            if (!map.Remove(scriptId)) return;
 
-            map.Remove(scriptId);
             File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
         }
     }

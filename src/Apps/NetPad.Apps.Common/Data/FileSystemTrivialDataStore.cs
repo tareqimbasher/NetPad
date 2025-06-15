@@ -22,18 +22,19 @@ public class FileSystemTrivialDataStore : ITrivialDataStore
             using var reader = File.OpenText(_storeFilePath.Path);
             while (reader.ReadLine() is { } line)
             {
-                if (line.Length == 0 || !line.StartsWith(key))
+                if (line.Length == 0 || !line.StartsWith($"{key}="))
                 {
                     continue;
                 }
 
-                var parts = line.Split('=', 2);
+                var parts = line.Split('=');
                 if (parts.Length < 2)
                 {
                     continue;
                 }
 
-                return JsonSerializer.Deserialize<TValue>(parts[1].Trim());
+                var value = parts.Length > 2 ? string.Join("=", parts.Skip(1)) : parts[1];
+                return JsonSerializer.Deserialize<TValue>(value);
             }
         }
 

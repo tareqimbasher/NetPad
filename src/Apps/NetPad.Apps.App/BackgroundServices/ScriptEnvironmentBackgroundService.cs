@@ -22,7 +22,6 @@ public class ScriptEnvironmentBackgroundService(
     : BackgroundService(loggerFactory)
 {
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
-
     private readonly Dictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens = new();
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,7 +41,8 @@ public class ScriptEnvironmentBackgroundService(
 
                 var inputReader = new AsyncActionInputReader<string>(
                     // TODO There should be a way to cancel the wait when the environment stops using a CancellationToken
-                    async () => await ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
+                    async () => await ipcService.SendAndReceiveAsync(
+                        new PromptUserForInputCommand(environment.Script.Id)));
 
                 var outputWriter = new ScriptEnvironmentIpcOutputWriter(
                     environment,

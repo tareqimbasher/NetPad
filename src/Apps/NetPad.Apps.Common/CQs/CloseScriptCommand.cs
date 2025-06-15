@@ -23,7 +23,7 @@ public class CloseScriptCommand(Guid scriptId) : Command
 
             var script = session.Get(scriptId)?.Script ?? throw new ScriptNotFoundException(scriptId);
 
-            await session.CloseAsync(scriptId);
+            await session.CloseAsync(scriptId, true);
 
             await autoSaveScriptRepository.DeleteAsync(script);
 
