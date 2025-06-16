@@ -6,9 +6,9 @@ using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp;
 
-public class Plugin : IPlugin
+public class OmniSharpPlugin : IPlugin
 {
-    public Plugin(PluginInitialization initialization)
+    public OmniSharpPlugin(PluginInitialization initialization)
     {
     }
 

@@ -11,8 +11,9 @@ It is **not** responsible for:
 
 1. Parsing user code.
 2. Compiling and emitting script assemblies.
+3. Interfacing with the UI
 
-A dedicated `script-host` process instance is started for each script the user runs
+A dedicated `script-host` process instance is started for each script the user runs.
 Multiple runs of the same script will reuse the same `script-host`.
 
 Two-way communication between the `script-host` and NetPad occurs by sending messages
