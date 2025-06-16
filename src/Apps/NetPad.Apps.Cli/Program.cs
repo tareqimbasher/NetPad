@@ -1,16 +1,13 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
-using NetPad;
+using NetPad.Apps;
 using NetPad.Apps.Cli;
-using NetPad.Apps.Configuration;
-using NetPad.Apps.Data;
 using NetPad.Apps.Data.EntityFrameworkCore;
-using NetPad.Apps.Scripts;
-using NetPad.Configuration;
 using NetPad.ExecutionModel;
-using NetPad.Packages;
-using NetPad.Packages.NuGet;
+using NetPad.IO;
+using NetPad.Presentation;
 using NetPad.Scripts;
+using Spectre.Console;
 
 var serviceProvider = BuildServiceProvider();
 
@@ -46,14 +43,10 @@ IServiceProvider BuildServiceProvider()
 {
     var services = new ServiceCollection();
 
-    services.AddSingleton<ScriptFinder>();
-
-    services.AddLogging();
     services.AddCoreServices();
 
-    services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
-    services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-    services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
+    // Application Services
+    services.AddSingleton<ScriptFinder>();
 
     // Script execution mechanism
     services.AddExternalExecutionModel(options =>
@@ -64,14 +57,10 @@ IServiceProvider BuildServiceProvider()
 
     // Data connections
     services
-        .AddDataConnectionFeature<
-            FileSystemDataConnectionRepository,
-            FileSystemDataConnectionResourcesRepository,
-            FileSystemDataConnectionResourcesCache>()
+        .AddDataConnectionFeature()
         .AddEntityFrameworkCoreDataConnectionDriver();
 
-    // Package management
-    services.AddTransient<IPackageProvider, NuGetPackageProvider>();
+    services.AddLogging();
 
     return services.BuildServiceProvider(true);
 }

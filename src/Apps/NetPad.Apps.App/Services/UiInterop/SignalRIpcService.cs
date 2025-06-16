@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 using NetPad.Apps.CQs;
+using NetPad.Apps.UiInterop;
 
-namespace NetPad.Apps.UiInterop;
+namespace NetPad.Services.UiInterop;
 
 /// <summary>
 /// Pushes messages to connected clients using SignalR.

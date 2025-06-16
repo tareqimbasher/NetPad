@@ -1,4 +1,8 @@
-namespace NetPad.Apps.Resources;
+using System.IO;
+using NetPad.Apps;
+using NetPad.Apps.Resources;
+
+namespace NetPad.Services;
 
 public class LogoService(HostInfo hostInfo) : ILogoService
 {

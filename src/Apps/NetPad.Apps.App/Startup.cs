@@ -9,27 +9,20 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps;
-using NetPad.Apps.Configuration;
 using NetPad.Apps.CQs;
-using NetPad.Apps.Data;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.Apps.Plugins;
 using NetPad.Apps.Resources;
-using NetPad.Apps.Scripts;
 using NetPad.Apps.UiInterop;
-using NetPad.Assemblies;
 using NetPad.BackgroundServices;
 using NetPad.Common;
-using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.ExecutionModel;
 using NetPad.Middlewares;
-using NetPad.Packages;
-using NetPad.Packages.NuGet;
 using NetPad.Plugins.OmniSharp;
 using NetPad.Scripts;
 using NetPad.Services;
-using NetPad.Sessions;
+using NetPad.Services.UiInterop;
 using NetPad.Swagger;
 
 namespace NetPad;
@@ -60,33 +53,21 @@ public class Startup
     {
         services.AddCoreServices();
 
+        // Application services
         services.AddSingleton<HostInfo>();
-        services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-        services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
-        services.AddSingleton<ISession, Session>();
         services.AddTransient<ILogoService, LogoService>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
         services.AddTransient<IIpcService, SignalRIpcService>();
-
-        // Script services
         services.AddTransient<ScriptService>();
-        services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
         services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
-        services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
 
         // Script execution mechanism
         services.AddClientServerExecutionModel();
 
         // Data connections
         services
-            .AddDataConnectionFeature<
-                FileSystemDataConnectionRepository,
-                FileSystemDataConnectionResourcesRepository,
-                FileSystemDataConnectionResourcesCache>()
+            .AddDataConnectionFeature()
             .AddEntityFrameworkCoreDataConnectionDriver();
-
-        // Package management
-        services.AddTransient<IPackageProvider, NuGetPackageProvider>();
 
         // Plugins
         var pluginInitialization = new PluginInitialization(Configuration, WebHostEnvironment);
@@ -103,9 +84,8 @@ public class Startup
         // Should be the last hosted service so it runs last on app start
         services.AddHostedService<AppSetupAndCleanupBackgroundService>();
 
-        var pluginRegistrations = new List<PluginRegistration>();
-
         // Register plugins
+        var pluginRegistrations = new List<PluginRegistration>();
         foreach (var pluginAssembly in _pluginAssemblies)
         {
             try
