@@ -4,3 +4,4 @@ global using System.Threading.Tasks;
 global using NetPad.Utilities;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.Common.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.App")]

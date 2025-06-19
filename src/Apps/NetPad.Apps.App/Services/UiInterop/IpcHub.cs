@@ -2,8 +2,9 @@ using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using NetPad.Apps.CQs;
+using NetPad.Apps.UiInterop;
 
-namespace NetPad.Apps.UiInterop;
+namespace NetPad.Services.UiInterop;
 
 /// <summary>
 /// SignalR Hub. This includes methods that clients can invoke.

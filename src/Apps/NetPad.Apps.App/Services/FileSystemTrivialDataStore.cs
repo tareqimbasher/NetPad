@@ -1,9 +1,11 @@
+using System.IO;
+using System.Linq;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.IO;
 
-namespace NetPad.Apps.Data;
+namespace NetPad.Services;
 
 public class FileSystemTrivialDataStore : ITrivialDataStore
 {
@@ -22,19 +24,18 @@ public class FileSystemTrivialDataStore : ITrivialDataStore
             using var reader = File.OpenText(_storeFilePath.Path);
             while (reader.ReadLine() is { } line)
             {
-                if (line.Length == 0 || !line.StartsWith($"{key}="))
+                if (line.Length == 0 || !line.StartsWith(key))
                 {
                     continue;
                 }
 
-                var parts = line.Split('=');
+                var parts = line.Split('=', 2);
                 if (parts.Length < 2)
                 {
                     continue;
                 }
 
-                var value = parts.Length > 2 ? string.Join("=", parts.Skip(1)) : parts[1];
-                return JsonSerializer.Deserialize<TValue>(value);
+                return JsonSerializer.Deserialize<TValue>(parts[1].Trim());
             }
         }
 

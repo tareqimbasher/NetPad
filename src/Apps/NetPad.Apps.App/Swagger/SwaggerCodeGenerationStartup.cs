@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps;
-using NetPad.Apps.Configuration;
 using NetPad.Apps.Plugins;
 using NetPad.Common;
-using NetPad.Configuration;
 using NetPad.Plugins.OmniSharp;
 
 namespace NetPad.Swagger;
@@ -30,8 +28,6 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
         services.AddCoreServices();
 
         services.AddSingleton<HostInfo>();
-        services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
-        services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
 
         // Plugins
         var pluginInitialization = new PluginInitialization(Configuration, WebHostEnvironment);

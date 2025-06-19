@@ -1,11 +1,14 @@
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps.Scripts;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Scripts;
 
-namespace NetPad.Apps.Scripts;
+namespace NetPad.Services;
 
 public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 {
@@ -58,8 +61,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         if (script.Id != scriptId)
         {
-            throw new Exception(
-                $"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
+            throw new Exception($"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
         }
 
         script.IsDirty = true;
@@ -81,10 +83,12 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
                 }
 
                 var script = await GetScriptAsync(scriptId);
-                if (script != null)
+                if (script == null)
                 {
-                    scripts.Add(script);
+                    continue;
                 }
+
+                scripts.Add(script);
             }
             catch (Exception ex)
             {
@@ -137,7 +141,10 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             var map = GetIndex();
 
-            map[scriptId] = scriptName;
+            if (map.ContainsKey(scriptId))
+                map[scriptId] = scriptName;
+            else
+                map.Add(scriptId, scriptName);
 
             File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
         }
@@ -149,8 +156,9 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             var map = GetIndex();
 
-            if (!map.Remove(scriptId)) return;
+            if (!map.ContainsKey(scriptId)) return;
 
+            map.Remove(scriptId);
             File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
         }
     }
