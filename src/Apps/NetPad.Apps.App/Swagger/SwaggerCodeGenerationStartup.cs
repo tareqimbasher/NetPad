@@ -17,7 +17,7 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
 {
     private readonly Assembly[] _pluginAssemblies =
     [
-        typeof(Plugin).Assembly
+        typeof(OmniSharpPlugin).Assembly
     ];
 
     public IConfiguration Configuration { get; } = configuration;

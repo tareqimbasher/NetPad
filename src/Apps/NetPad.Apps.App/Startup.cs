@@ -29,15 +29,17 @@ namespace NetPad;
 
 public class Startup
 {
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly Assembly[] _pluginAssemblies =
     [
-        typeof(Plugin).Assembly
+        typeof(OmniSharpPlugin).Assembly
     ];
 
     public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
     {
-        Configuration = configuration;
-        WebHostEnvironment = webHostEnvironment;
+        _configuration = configuration;
+        _webHostEnvironment = webHostEnvironment;
         Console.WriteLine("Configuration:");
         Console.WriteLine($"   - .NET Runtime Version: {Environment.Version.ToString()}");
         Console.WriteLine($"   - Environment: {webHostEnvironment.EnvironmentName}");
@@ -45,9 +47,6 @@ public class Startup
         Console.WriteLine($"   - ContentRootPath: {webHostEnvironment.ContentRootPath}");
         Console.WriteLine($"   - Shell: {Program.Shell?.GetType().Name}");
     }
-
-    public IConfiguration Configuration { get; }
-    public IWebHostEnvironment WebHostEnvironment { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -70,7 +69,7 @@ public class Startup
             .AddEntityFrameworkCoreDataConnectionDriver();
 
         // Plugins
-        var pluginInitialization = new PluginInitialization(Configuration, WebHostEnvironment);
+        var pluginInitialization = new PluginInitialization(_configuration, _webHostEnvironment);
         IPluginManager pluginManager = new PluginManager(pluginInitialization);
         services.AddSingleton(pluginInitialization);
         services.AddSingleton(pluginManager);
@@ -134,7 +133,7 @@ public class Startup
 
         // Swagger
 #if DEBUG
-        SwaggerSetup.AddSwagger(services, WebHostEnvironment, pluginRegistrations);
+        SwaggerSetup.AddSwagger(services, _webHostEnvironment, pluginRegistrations);
 #endif
 
         // Allow Shell to add/modify any service registrations it needs
@@ -153,11 +152,13 @@ public class Startup
         //app.UseHttpsRedirection();
         app.UseStaticFiles();
 
+#if !DEBUG
+        app.UseSpaStaticFiles();
+#endif
+
 #if DEBUG
         app.UseOpenApi();
         app.UseSwaggerUi3();
-#else
-        app.UseSpaStaticFiles();
 #endif
 
         InitializeHostInfo(app, env);

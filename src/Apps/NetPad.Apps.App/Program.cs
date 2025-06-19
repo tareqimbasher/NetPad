@@ -20,56 +20,77 @@ public static class Program
 
     public static async Task<int> Main(string[] rawArgs)
     {
-        ProgramExitCode result;
         var args = new ProgramArgs(rawArgs);
 
         if (args.RunMode == RunMode.SwaggerGen)
         {
-            result = await GenerateSwaggerClientCodeAsync(args);
+            return (int)await GenerateSwaggerClientCodeAsync(args);
         }
-        else
+
+        ProgramExitCode result;
+
+        try
         {
-            try
-            {
-                RunApp(args);
-                result = ProgramExitCode.Success;
-            }
-            catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
-            {
-                Console.WriteLine($"Another instance is already running. {ioException.Message}");
-                Shell?.ShowErrorDialog(
-                    $"{AppIdentifier.AppName} Already Running",
-                    $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
-                result = ProgramExitCode.PortUnavailable;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                result = ProgramExitCode.UnexpectedError;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            RunApp(args);
+            result = ProgramExitCode.Success;
+        }
+        catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
+        {
+            Console.WriteLine($"Another instance is already running: {ioException.Message}");
+            Shell?.ShowErrorDialog(
+                $"{AppIdentifier.AppName} Already Running",
+                $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");
+            result = ProgramExitCode.PortUnavailable;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Host terminated unexpectedly with error:\n{ex}");
+            Log.Fatal(ex, "Host terminated unexpectedly");
+            result = ProgramExitCode.UnexpectedError;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
 
         return (int)result;
     }
 
+    private static void RunApp(ProgramArgs args)
+    {
+        if (args.ParentPid.HasValue)
+        {
+            ParentProcessTracker.ExitWhenParentProcessExists(args.ParentPid.Value);
+        }
+
+        Shell = args.CreateShell();
+
+        var host = CreateHostBuilder<Startup>(args).Build();
+
+        if (args.ParentPid.HasValue)
+        {
+            ParentProcessTracker.SetThisHost(host);
+        }
+
+        host.Run();
+    }
+
+    /// <summary>
+    /// Starts a web host and calls the swagger endpoint which will in turn generate client code and write it to disk.
+    /// </summary>
     private static async Task<ProgramExitCode> GenerateSwaggerClientCodeAsync(ProgramArgs args)
     {
         try
         {
-            var host = CreateHostBuilder(args).Build();
+            var host = CreateHostBuilder<SwaggerCodeGenerationStartup>(args).Build();
             _ = host.RunAsync();
 
             var hostInfo = host.Services.GetRequiredService<HostInfo>();
 
             string[] docs =
             [
-                "/swagger/NetPad/swagger.json",
-                "/swagger/netpad.plugins.omnisharp/swagger.json"
+                "swagger/NetPad/swagger.json",
+                "swagger/netpad.plugins.omnisharp/swagger.json"
             ];
 
             var maxLength = docs.Select(x => x.Length).Max();
@@ -78,12 +99,13 @@ public static class Program
 
             foreach (var doc in docs)
             {
-                var url = $"{hostInfo.HostUrl}{doc}";
+                var url = $"{hostInfo.HostUrl}/{doc}";
 
                 Console.Write($"* Generating client code for:   {doc.PadRight(maxLength)}   ... ");
                 var response = await client.GetAsync(url);
                 var success = response.IsSuccessStatusCode;
                 Console.WriteLine(success ? "DONE" : "FAIL");
+                Console.WriteLine("Client code written to disk.");
 
                 if (!success)
                 {
@@ -103,30 +125,7 @@ public static class Program
         }
     }
 
-    private static void RunApp(ProgramArgs args)
-    {
-        if (args.ParentPid.HasValue)
-        {
-            ParentProcessTracker.ExitWhenParentProcessExists(args.ParentPid.Value);
-        }
-
-        Shell = args.CreateShell();
-
-        var builder = CreateHostBuilder(args);
-
-        builder.ConfigureServices(s => s.AddSingleton(Shell));
-
-        var host = builder.Build();
-
-        if (args.ParentPid.HasValue)
-        {
-            ParentProcessTracker.SetThisHost(host);
-        }
-
-        host.Run();
-    }
-
-    private static IHostBuilder CreateHostBuilder(ProgramArgs args) =>
+    private static IHostBuilder CreateHostBuilder<TStartup>(ProgramArgs args) where TStartup : class =>
         Host.CreateDefaultBuilder(args.Raw)
             .ConfigureAppConfiguration(config =>
             {
@@ -144,11 +143,9 @@ public static class Program
             .UseSerilog((ctx, config) => { ConfigureLogging(config, ctx.Configuration); })
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                if (args.RunMode == RunMode.SwaggerGen)
-                {
-                    webBuilder.UseStartup<SwaggerCodeGenerationStartup>();
-                }
-                else
+                webBuilder.UseStartup<TStartup>();
+
+                if (args.RunMode == RunMode.Normal)
                 {
                     if (Shell == null)
                     {
@@ -156,14 +153,12 @@ public static class Program
                     }
 
                     Shell.ConfigureWebHost(webBuilder, args.Raw);
-                    webBuilder.UseStartup<Startup>();
                 }
             });
 
     private static void ConfigureLogging(LoggerConfiguration serilogConfig, IConfiguration appConfig)
     {
         Environment.SetEnvironmentVariable("NETPAD_LOG_DIR", AppDataProvider.LogDirectoryPath.Path);
-
         serilogConfig.ReadFrom.Configuration(appConfig);
     }
 }

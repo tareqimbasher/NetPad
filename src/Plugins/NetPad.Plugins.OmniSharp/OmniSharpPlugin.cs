@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using NetPad.Apps.Plugins;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
 using NetPad.Plugins.OmniSharp.Host;
@@ -6,9 +6,9 @@ using OmniSharp;
 
 namespace NetPad.Plugins.OmniSharp;
 
-public class Plugin : IPlugin
+public class OmniSharpPlugin : IPlugin
 {
-    public Plugin(PluginInitialization initialization)
+    public OmniSharpPlugin(PluginInitialization initialization)
     {
     }
 

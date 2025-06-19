@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 namespace NetPad;
 
 /// <summary>
-/// Used to exit this program when the parent host process that started it exits.
+/// Used to exit this program when the parent process that started it exits.
 /// </summary>
 public static class ParentProcessTracker
 {
@@ -32,11 +32,14 @@ public static class ParentProcessTracker
 
         if (parentProcess != null)
         {
-            parentProcess.Exited += (_, _) =>
+            parentProcess.Exited += async (_, _) =>
             {
                 try
                 {
-                    _thisHost?.StopAsync(TimeSpan.FromSeconds(10));
+                    if (_thisHost != null)
+                    {
+                        await _thisHost.StopAsync(TimeSpan.FromSeconds(10));
+                    }
                 }
                 catch
                 {
