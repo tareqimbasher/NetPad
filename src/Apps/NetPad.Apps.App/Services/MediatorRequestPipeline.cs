@@ -12,7 +12,8 @@ public class MediatorRequestPipeline<TRequest, TResponse> : IPipelineBehavior<TR
         // All Mediator requests must inherit from QueryBase or CommandBase
         if (!typeof(CommandBase).IsAssignableFrom(typeof(TRequest)) && !typeof(QueryBase).IsAssignableFrom(typeof(TRequest)))
         {
-            throw new InvalidOperationException($"{typeof(TRequest)} does not inherit from {nameof(QueryBase)} or from {nameof(CommandBase)}");
+            throw new InvalidOperationException(
+                $"{typeof(TRequest)} does not inherit from {nameof(QueryBase)} or from {nameof(CommandBase)}");
         }
 
         return await next();

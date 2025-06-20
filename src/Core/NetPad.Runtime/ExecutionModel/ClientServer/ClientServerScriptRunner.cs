@@ -66,7 +66,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
     private static readonly string[] _userVisibleAssemblies =
     [
-        typeof(INetPadRuntimeMarker).Assembly.Location,
+        typeof(INetPadRuntimeLibMarker).Assembly.Location,
         typeof(HtmlSerializer).Assembly.Location
     ];
 

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.CQs;
@@ -12,7 +13,7 @@ using NetPad.Sessions.Events;
 namespace NetPad.BackgroundServices;
 
 /// <summary>
-/// Handles automations that occur when a script environment is added to removed from the session.
+/// Handles automations that occur when a script environment is added or removed from the session.
 /// </summary>
 public class ScriptEnvironmentBackgroundService(
     IEventBus eventBus,
@@ -22,7 +23,7 @@ public class ScriptEnvironmentBackgroundService(
     : BackgroundService(loggerFactory)
 {
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
-    private readonly Dictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens = new();
+    private readonly ConcurrentDictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens = new();
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,21 +39,7 @@ public class ScriptEnvironmentBackgroundService(
             foreach (var environment in ev.Environments)
             {
                 AutoSaveScriptChanges(environment);
-
-                var inputReader = new AsyncActionInputReader<string>(
-                    // TODO There should be a way to cancel the wait when the environment stops using a CancellationToken
-                    async () => await ipcService.SendAndReceiveAsync(
-                        new PromptUserForInputCommand(environment.Script.Id)));
-
-                var outputWriter = new ScriptEnvironmentIpcOutputWriter(
-                    environment,
-                    ipcService,
-                    eventBus,
-                    _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>());
-
-                environment.SetIO(inputReader, outputWriter);
-
-                AddEnvironmentEventToken(environment, new DisposableToken(() => outputWriter.Dispose()));
+                HandleScriptInputOutput(environment);
             }
 
             return Task.CompletedTask;
@@ -94,14 +81,26 @@ public class ScriptEnvironmentBackgroundService(
         AddEnvironmentEventToken(environment, scriptConfigPropChangeToken);
     }
 
+    private void HandleScriptInputOutput(ScriptEnvironment environment)
+    {
+        var inputReader = new AsyncActionInputReader<string>(
+            // TODO There should be a way to cancel the wait when the environment stops using a CancellationToken
+            async () => await ipcService.SendAndReceiveAsync(new PromptUserForInputCommand(environment.Script.Id)));
+
+        var outputWriter = new ScriptEnvironmentIpcOutputWriter(
+            environment,
+            ipcService,
+            eventBus,
+            _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>());
+
+        environment.SetIO(inputReader, outputWriter);
+
+        AddEnvironmentEventToken(environment, new DisposableToken(() => outputWriter.Dispose()));
+    }
+
     private void AddEnvironmentEventToken(ScriptEnvironment environment, IDisposable token)
     {
-        if (!_environmentSubscriptionTokens.TryGetValue(environment.Script.Id, out var tokens))
-        {
-            tokens = [];
-            _environmentSubscriptionTokens.Add(environment.Script.Id, tokens);
-        }
-
+        var tokens = _environmentSubscriptionTokens.GetOrAdd(environment.Script.Id, static _ => []);
         tokens.Add(token);
     }
 
@@ -117,6 +116,6 @@ public class ScriptEnvironmentBackgroundService(
             token.Dispose();
         }
 
-        _environmentSubscriptionTokens.Remove(environment.Script.Id);
+        _environmentSubscriptionTokens.TryRemove(environment.Script.Id, out _);
     }
 }

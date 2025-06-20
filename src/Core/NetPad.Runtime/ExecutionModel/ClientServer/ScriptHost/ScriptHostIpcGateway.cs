@@ -30,6 +30,11 @@ public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger
             onNonMessageReceived);
     }
 
+    /// <summary>
+    /// Adds a handler to execute when a message of the specified type is received.
+    /// </summary>
+    /// <param name="action">The message handler.</param>
+    /// <typeparam name="TMessage">The type of message to listen for.</typeparam>
     public void On<TMessage>(Action<TMessage> action) where TMessage : class
     {
         var messageType = typeof(TMessage);
@@ -63,7 +68,10 @@ public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger
         }
     }
 
-    public void Handle<TMessage>(TMessage message) where TMessage : class
+    /// <summary>
+    /// Executes any handlers associated with the specified message type.
+    /// </summary>
+    public void ExecuteHandlers<TMessage>(TMessage message) where TMessage : class
     {
         if (_ipcMessageHandlers.TryGetValue(typeof(TMessage), out var handler))
         {
@@ -71,6 +79,12 @@ public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger
         }
     }
 
+    /// <summary>
+    /// Sends a message over IPC.
+    /// </summary>
+    /// <param name="seq">The sequence (order) of this message. This can be useful to the receiver if it wants
+    /// to process messages in order.</param>
+    /// <param name="message">The message to send.</param>
     public void Send<TMessage>(uint seq, TMessage message)
     {
         var messageType = typeof(TMessage).FullName;

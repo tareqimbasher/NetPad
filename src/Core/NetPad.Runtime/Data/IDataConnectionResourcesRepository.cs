@@ -2,6 +2,9 @@ using NetPad.DotNet;
 
 namespace NetPad.Data;
 
+/// <summary>
+/// Persists and retrieves generated data connection resources.
+/// </summary>
 public interface IDataConnectionResourcesRepository
 {
     Task<bool> HasResourcesAsync(Guid dataConnectionId, DotNetFrameworkVersion dotNetFrameworkVersion);

@@ -31,6 +31,8 @@ public class Startup
 {
     private readonly IConfiguration _configuration;
     private readonly IWebHostEnvironment _webHostEnvironment;
+
+    // Add built-in plugins here.
     private readonly Assembly[] _pluginAssemblies =
     [
         typeof(OmniSharpPlugin).Assembly
@@ -74,15 +76,6 @@ public class Startup
         services.AddSingleton(pluginInitialization);
         services.AddSingleton(pluginManager);
 
-        // Hosted services
-        services.AddHostedService<EventHandlerBackgroundService>();
-        services.AddHostedService<EventForwardToIpcBackgroundService>();
-        services.AddHostedService<ScriptEnvironmentBackgroundService>();
-        services.AddHostedService<ScriptsFileWatcherBackgroundService>();
-
-        // Should be the last hosted service so it runs last on app start
-        services.AddHostedService<AppSetupAndCleanupBackgroundService>();
-
         // Register plugins
         var pluginRegistrations = new List<PluginRegistration>();
         foreach (var pluginAssembly in _pluginAssemblies)
@@ -101,6 +94,14 @@ public class Startup
                 Console.Error.WriteLine("Could not register plugin: '{0}'. {1}", pluginAssembly.FullName, ex);
             }
         }
+
+        // Hosted background services
+        services.AddHostedService<EventHandlerBackgroundService>();
+        services.AddHostedService<EventForwardToIpcBackgroundService>();
+        services.AddHostedService<ScriptEnvironmentBackgroundService>();
+        services.AddHostedService<ScriptsFileWatcherBackgroundService>();
+        // Should be the last hosted service so it runs last on app start
+        services.AddHostedService<AppSetupAndCleanupBackgroundService>();
 
         // MVC
         var mvcBuilder = services.AddControllersWithViews()
@@ -128,20 +129,25 @@ public class Startup
 
         // Mediator
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatorRequestPipeline<,>));
-        services.AddMediatR(new[] { typeof(Command).Assembly }.Union(pluginRegistrations.Select(pr => pr.Assembly))
-            .ToArray());
+        services.AddMediatR(
+            new[] { typeof(Command).Assembly }
+                .Concat(pluginRegistrations.Select(pr => pr.Assembly))
+                .ToArray()
+        );
 
         // Swagger
 #if DEBUG
         SwaggerSetup.AddSwagger(services, _webHostEnvironment, pluginRegistrations);
 #endif
 
-        // Allow Shell to add/modify any service registrations it needs
+        // Allow Shell to add/modify any service registrations it needs.
         Program.Shell?.ConfigureServices(services);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        // Using DEBUG pre-processor symbol instead of checking environment. Reason is some users set
+        // DOTNET_ENVIRONMENT (or similar variables) to "Development" globally, which breaks app in production.
 #if DEBUG
         app.UseDeveloperExceptionPage();
 #else

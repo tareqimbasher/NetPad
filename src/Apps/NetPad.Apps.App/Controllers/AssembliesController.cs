@@ -14,16 +14,16 @@ namespace NetPad.Controllers;
 public class AssembliesController(IPackageProvider packageProvider) : ControllerBase
 {
     [HttpPatch("namespaces")]
-    public async Task<ActionResult<string[]>> GetNamespaces([FromBody] Reference reference)
+    public async Task<HashSet<string>> GetNamespaces([FromBody] Reference reference)
     {
         if (reference is AssemblyFileReference assemblyFileReference)
         {
-            if (assemblyFileReference.AssemblyPath == null)
-                throw new Exception("Assembly path is null.");
+            if (!System.IO.File.Exists(assemblyFileReference.AssemblyPath))
+                throw new Exception($"Assembly path does not exist: {assemblyFileReference.AssemblyPath}");
 
             using var assemblyInfoReader = new AssemblyInfoReader(assemblyFileReference.AssemblyPath);
 
-            return Ok(assemblyInfoReader.GetNamespaces());
+            return assemblyInfoReader.GetNamespaces();
         }
 
         if (reference is PackageReference packageReference)
@@ -45,7 +45,7 @@ public class AssembliesController(IPackageProvider packageProvider) : Controller
                 }
             }
 
-            return Ok(namespaces);
+            return namespaces;
         }
 
         throw new Exception($"Unhandled reference type: {reference.GetType().Name}");

@@ -11,6 +11,9 @@ using WindowManager = NetPad.Apps.Shells.Electron.UiInterop.WindowManager;
 
 namespace NetPad.Apps.Shells.Electron;
 
+/// <summary>
+/// Configures the application to run as an Electron desktop application.
+/// </summary>
 public class ElectronShell : IShell
 {
     public void ConfigureWebHost(IWebHostBuilder webHostBuilder, string[] programArgs)

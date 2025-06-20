@@ -13,6 +13,7 @@ using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Filters;
+using NetPad.Scripts;
 
 namespace NetPad.Controllers;
 
@@ -49,8 +50,9 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
 
             var jsonDocument = JsonDocument.Parse(json);
             var latestVersion = jsonDocument.RootElement.GetProperty("tag_name").GetString();
+            latestVersion = latestVersion?.TrimStart('v');
 
-            if (latestVersion == null || !SemanticVersion.TryParse(latestVersion.TrimStart('v'), out var version))
+            if (latestVersion == null || !SemanticVersion.TryParse(latestVersion, out var version))
             {
                 return null;
             }
@@ -66,11 +68,15 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
     }
 
     [HttpPost("client/ready")]
-    public async Task NotifyClientAppIsReady([FromServices] IUiDialogService uiDialogService, [FromServices] IMediator mediator)
+    public async Task NotifyClientAppIsReady([FromServices] IUiDialogService uiDialogService,
+        [FromServices] IMediator mediator)
     {
         var result = await CheckDependencies(mediator);
 
-        if (result.SupportedDotNetSdkVersionsInstalled.Any()) return;
+        if (result.SupportedDotNetSdkVersionsInstalled.Length > 0)
+        {
+            return;
+        }
 
         await uiDialogService.AlertUserAboutMissingDependencies(result);
     }
@@ -80,24 +86,26 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         await mediator.Send(new CheckAppDependenciesQuery());
 
     [HttpPatch("open-folder-containing-script")]
-    public void OpenFolderContainingScript([FromQuery] string? scriptPath, [FromServices] Settings settings)
+    public void OpenFolderContainingScript([FromQuery] string scriptPath, [FromServices] Settings settings)
     {
-        if (scriptPath == null)
-            throw new Exception("Script has no path");
+        if (string.IsNullOrWhiteSpace(scriptPath))
+        {
+            throw new Exception("No script path provided");
+        }
 
         var file = new FileInfo(scriptPath);
 
-        if (!file.Exists || file.Directory?.Exists != true)
-            throw new Exception("Not allowed");
-
-        if (!file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath))
-            throw new Exception("Not allowed");
-
-        using var process = Process.Start(new ProcessStartInfo
+        if (
+            !file.Exists
+            || file.Directory?.Exists != true
+            || !file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath)
+            || !file.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION)
+        )
         {
-            FileName = file.Directory.FullName,
-            UseShellExecute = true
-        });
+            throw new Exception("Not allowed");
+        }
+
+        ProcessUtil.OpenWithDefaultApp(file.Directory.FullName);
     }
 
     [HttpPatch("open-scripts-folder")]
@@ -106,18 +114,20 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         string sanitized;
 
         if (string.IsNullOrWhiteSpace(path))
+        {
             sanitized = settings.ScriptsDirectoryPath;
+        }
         else
+        {
             sanitized = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\'));
+        }
 
         if (!Directory.Exists(sanitized))
-            throw new Exception($"Directory does not exist at: {path}");
-
-        using var process = Process.Start(new ProcessStartInfo
         {
-            FileName = sanitized,
-            UseShellExecute = true
-        });
+            throw new Exception($"Directory does not exist at: {path}");
+        }
+
+        ProcessUtil.OpenWithDefaultApp(sanitized);
     }
 
     [HttpPatch("open-package-cache-folder")]
@@ -127,11 +137,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
             throw new Exception($"Package cache folder does not exist at: '{settings.PackageCacheDirectoryPath}'");
 
-        using var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = path,
-            UseShellExecute = true
-        });
+        ProcessUtil.OpenWithDefaultApp(path);
     }
 
     [HttpGet("dotnet-path")]

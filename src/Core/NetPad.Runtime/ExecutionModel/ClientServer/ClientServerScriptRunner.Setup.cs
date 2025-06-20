@@ -307,8 +307,7 @@ public partial class ClientServerScriptRunner
                 scriptDeployDir.Path,
                 _workingDirectory.SharedDependenciesDirectory.Path,
             }
-            .Concat(scriptDeps.SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)!)))
-            .Distinct()
+            .Union(scriptDeps.SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)!)))
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 

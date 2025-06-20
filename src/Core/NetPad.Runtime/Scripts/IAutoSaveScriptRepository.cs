@@ -1,5 +1,8 @@
 namespace NetPad.Scripts;
 
+/// <summary>
+/// Persists and retrieves auto-saved scripts.
+/// </summary>
 public interface IAutoSaveScriptRepository
 {
     Task<Script?> GetScriptAsync(Guid scriptId);

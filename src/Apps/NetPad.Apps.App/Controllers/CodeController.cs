@@ -11,7 +11,7 @@ namespace NetPad.Controllers;
 [Route("code")]
 public class CodeController : ControllerBase
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = JsonSerializer.Configure(new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = JsonSerializer.Configure(new JsonSerializerOptions
     {
         MaxDepth = 100
     });
@@ -19,8 +19,8 @@ public class CodeController : ControllerBase
     [HttpGet("{scriptId:guid}/syntax-tree")]
     public ActionResult<SyntaxNodeOrTokenSlim?> GetSyntaxTree(
         Guid scriptId,
-        [FromServices] ICodeAnalysisService codeAnalysisService,
-        [FromServices] ISession session)
+        [FromServices] ISession session,
+        [FromServices] ICodeAnalysisService codeAnalysisService)
     {
         var env = session.Get(scriptId);
 
@@ -43,6 +43,6 @@ public class CodeController : ControllerBase
             HttpContext.RequestAborted
         );
 
-        return new JsonResult(tree, JsonSerializerOptions);
+        return new JsonResult(tree, _jsonSerializerOptions);
     }
 }

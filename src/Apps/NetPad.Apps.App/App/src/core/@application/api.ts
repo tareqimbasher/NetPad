@@ -5073,6 +5073,7 @@ will always return true. */
     isFactory: boolean;
 }
 
+/** Application-wide settings. */
 export class Settings implements ISettings {
     version!: string;
     autoCheckUpdates?: boolean | undefined;
@@ -5153,6 +5154,7 @@ export class Settings implements ISettings {
     }
 }
 
+/** Application-wide settings. */
 export interface ISettings {
     version: string;
     autoCheckUpdates?: boolean | undefined;

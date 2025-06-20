@@ -22,12 +22,12 @@ public interface IPlugin
     void ConfigureServices(IServiceCollection services);
 
     /// <summary>
-    /// Configure application.
+    /// Configure application startup.
     /// </summary>
     void Configure(IApplicationBuilder app, IHostEnvironment env);
 
     /// <summary>
-    /// Invokes any cleanup the plugins needs to make.
+    /// Invokes plugin to run cleanup.
     /// </summary>
-    Task CleaupAsync();
+    Task CleanupAsync();
 }

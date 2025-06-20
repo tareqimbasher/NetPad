@@ -1,22 +1,24 @@
 ﻿using System.Text.Json;
+using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 
 namespace NetPad.Apps.Common.Tests.UiInterop;
 
 public class TransactionQueueTests
 {
+    class TestCommand : Command<string>;
+
     [Fact]
     public async Task PromiseTaskIsOnlyCompletedAfterSettingResponse()
     {
-        var messageId = Guid.NewGuid();
-        var promise = new ResponsePromise<string>();
-        IpcResponseQueue.Enqueue(messageId, promise);
+        var message = new TestCommand();
 
+        var promise = IpcResponseQueue.Enqueue(message);
         await Task.Delay(100);
 
         Assert.False(promise.Task.IsCompleted);
 
-        IpcResponseQueue.ResponseReceived(messageId, JsonDocument.Parse("\"Hello world\"").RootElement);
+        IpcResponseQueue.ResponseReceived(message.Id, JsonDocument.Parse("\"Hello world\"").RootElement);
 
         Assert.True(promise.Task.IsCompletedSuccessfully);
     }
@@ -24,11 +26,14 @@ public class TransactionQueueTests
     [Fact]
     public async Task ResponseIsSetCorrectly()
     {
-        var messageId = Guid.NewGuid();
-        var promise = new ResponsePromise<string>();
-        IpcResponseQueue.Enqueue(messageId, promise);
+        var message = new TestCommand();
 
-        IpcResponseQueue.ResponseReceived(messageId, JsonDocument.Parse("\"Hello world\"").RootElement);
+        var promise = IpcResponseQueue.Enqueue(message);
+        await Task.Delay(100);
+
+        Assert.False(promise.Task.IsCompleted);
+
+        IpcResponseQueue.ResponseReceived(message.Id, JsonDocument.Parse("\"Hello world\"").RootElement);
 
         Assert.Equal("Hello world", await promise.Task);
     }

@@ -1,5 +1,8 @@
 namespace NetPad.Data;
 
+/// <summary>
+/// Persists and retrieves data connections.
+/// </summary>
 public interface IDataConnectionRepository
 {
     Task<IEnumerable<DataConnection>> GetAllAsync();

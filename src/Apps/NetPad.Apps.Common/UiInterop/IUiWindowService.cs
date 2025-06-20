@@ -2,6 +2,9 @@ using NetPad.Scripts;
 
 namespace NetPad.Apps.UiInterop;
 
+/// <summary>
+/// Used to open various UI windows.
+/// </summary>
 public interface IUiWindowService
 {
     Task OpenMainWindowAsync();

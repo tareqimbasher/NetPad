@@ -37,6 +37,7 @@ public static class Program
         catch (IOException ioException) when (ioException.Message.ContainsIgnoreCase("address already in use"))
         {
             Console.WriteLine($"Another instance is already running: {ioException.Message}");
+            Log.Fatal(ioException, "Another instance is already running");
             Shell?.ShowErrorDialog(
                 $"{AppIdentifier.AppName} Already Running",
                 $"{AppIdentifier.AppName} is already running. You cannot open multiple instances of {AppIdentifier.AppName}.");

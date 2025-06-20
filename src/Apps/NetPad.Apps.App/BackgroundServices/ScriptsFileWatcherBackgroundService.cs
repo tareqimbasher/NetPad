@@ -14,14 +14,14 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
 {
     private readonly Settings _settings;
     private FileSystemWatcher? _scriptDirWatcher;
-    private readonly Action PushDirectoryChanged;
+    private readonly Action _pushDirectoryChanged;
 
     public ScriptsFileWatcherBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
         base(loggerFactory)
     {
         _settings = settings;
 
-        PushDirectoryChanged = new Func<Task>(async () =>
+        _pushDirectoryChanged = new Func<Task>(async () =>
         {
             var scripts = await scriptRepository.GetAllAsync();
             await ipcService.SendAsync(new ScriptDirectoryChangedEvent(scripts));
@@ -45,14 +45,14 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
                            | NotifyFilters.DirectoryName
         };
 
-        _scriptDirWatcher.Created += (_, ev) => PushDirectoryChanged();
-        _scriptDirWatcher.Deleted += (_, ev) => PushDirectoryChanged();
-        _scriptDirWatcher.Renamed += (_, ev) => PushDirectoryChanged();
+        _scriptDirWatcher.Created += (_, ev) => _pushDirectoryChanged();
+        _scriptDirWatcher.Deleted += (_, ev) => _pushDirectoryChanged();
+        _scriptDirWatcher.Renamed += (_, ev) => _pushDirectoryChanged();
         _scriptDirWatcher.Error += delegate(object sender, ErrorEventArgs args)
         {
             _logger.LogError(args.GetException(), "Error in FileSystemWatcher. Will re-initialize watcher");
             _scriptDirWatcher.Dispose();
-            PushDirectoryChanged();
+            _pushDirectoryChanged();
             InitFileWatcher();
         };
 

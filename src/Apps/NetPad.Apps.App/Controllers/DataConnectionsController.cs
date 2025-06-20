@@ -20,8 +20,10 @@ namespace NetPad.Controllers;
 public class DataConnectionsController(IMediator mediator) : ControllerBase
 {
     [HttpPatch("open")]
-    public async Task OpenDataConnectionWindow([FromServices] IUiWindowService uiWindowService,
-        [FromQuery] Guid? dataConnectionId = null, [FromQuery] bool copy = false)
+    public async Task OpenDataConnectionWindow(
+        [FromServices] IUiWindowService uiWindowService,
+        [FromQuery] Guid? dataConnectionId = null,
+        [FromQuery] bool copy = false)
     {
         await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy);
     }

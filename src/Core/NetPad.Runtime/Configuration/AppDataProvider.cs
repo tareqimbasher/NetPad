@@ -13,11 +13,7 @@ public static class AppDataProvider
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         AppIdentifier.AppName);
 
-    /// <summary>
-    /// Path of where the app stores logs.
-    /// </summary>
     public static readonly DirectoryPath LogDirectoryPath = AppDataDirectoryPath.Combine("Logs");
-
     public static readonly DirectoryPath TempDirectoryPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
     public static readonly DirectoryPath ExternalProcessesDirectoryPath = TempDirectoryPath.Combine("Processes");
     public static readonly DirectoryPath TypedDataContextTempDirectoryPath = TempDirectoryPath.Combine("TypedDataContexts");

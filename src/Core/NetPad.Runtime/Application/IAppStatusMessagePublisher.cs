@@ -1,5 +1,8 @@
 namespace NetPad.Application;
 
+/// <summary>
+/// Publishes application status message updates mainly to show on UI for users.
+/// </summary>
 public interface IAppStatusMessagePublisher
 {
     /// <summary>

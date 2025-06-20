@@ -2,6 +2,9 @@ using NetPad.DotNet;
 
 namespace NetPad.Scripts;
 
+/// <summary>
+/// Persists and reads scripts.
+/// </summary>
 public interface IScriptRepository
 {
     Task<IEnumerable<ScriptSummary>> GetAllAsync();

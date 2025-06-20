@@ -7,6 +7,9 @@ using NetPad.Scripts;
 
 namespace NetPad.Apps.Scripts;
 
+/// <summary>
+/// Serializes and deserializes the standard NetPad script file format.
+/// </summary>
 public static class ScriptSerializer
 {
     public static string Serialize(Script script)

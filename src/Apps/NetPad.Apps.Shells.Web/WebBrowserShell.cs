@@ -7,6 +7,9 @@ using NetPad.Apps.UiInterop;
 
 namespace NetPad.Apps.Shells.Web;
 
+/// <summary>
+/// Configures the application to run as a web application.
+/// </summary>
 public class WebBrowserShell : IShell
 {
     public void ConfigureWebHost(IWebHostBuilder webHostBuilder, string[] programArgs)

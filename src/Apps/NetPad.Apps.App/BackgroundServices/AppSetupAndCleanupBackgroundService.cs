@@ -52,15 +52,31 @@ public class AppSetupAndCleanupBackgroundService(
 
         var environments = session.Environments;
 
-        var scriptIds = environments.Select(e => e.Script.Id).ToArray();
-        await session.CloseAsync(scriptIds, false, false);
+        try
+        {
+            var scriptIds = environments.Select(e => e.Script.Id).ToArray();
+            await session.CloseAsync(scriptIds, false, false);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error closing environments");
+        }
 
-        AppDataProvider.ExternalProcessesDirectoryPath.DeleteIfExists();
-        AppDataProvider.TypedDataContextTempDirectoryPath.DeleteIfExists();
+        Try.Run(() => AppDataProvider.ExternalProcessesDirectoryPath.DeleteIfExists());
+        Try.Run(() => AppDataProvider.TypedDataContextTempDirectoryPath.DeleteIfExists());
 
         foreach (var registration in pluginManager.PluginRegistrations)
         {
-            await registration.Plugin.CleaupAsync();
+            try
+            {
+                await registration.Plugin.CleanupAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error cleaning up plugin: {PluginName} ({PluginId})",
+                    registration.Plugin.Name,
+                    registration.Plugin.Id);
+            }
         }
     }
 }

@@ -7,6 +7,9 @@ using NetPad.IO;
 
 namespace NetPad.Services;
 
+/// <summary>
+/// An implementation of <see cref="ITrivialDataStore"/> that persists trivial data to the local file system.
+/// </summary>
 public class FileSystemTrivialDataStore : ITrivialDataStore
 {
     private static readonly FilePath _storeFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("key-values.txt");

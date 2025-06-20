@@ -37,7 +37,7 @@ public class OmniSharpPlugin : IPlugin
         app.UseMiddleware<ExceptionHandlerMiddleware>();
     }
 
-    public Task CleaupAsync()
+    public Task CleanupAsync()
     {
         Consts.OmniSharpServerProcessesDirectoryPath.DeleteIfExists();
         return Task.CompletedTask;

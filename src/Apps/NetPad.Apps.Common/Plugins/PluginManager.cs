@@ -9,7 +9,7 @@ public class PluginManager(PluginInitialization pluginInitialization) : IPluginM
 {
     private readonly Dictionary<string, PluginRegistration> _pluginRegistrations = new(StringComparer.OrdinalIgnoreCase);
 
-    public IEnumerable<PluginRegistration> PluginRegistrations => _pluginRegistrations.Values;
+    public IReadOnlyCollection<PluginRegistration> PluginRegistrations => _pluginRegistrations.Values;
 
     public PluginRegistration RegisterPlugin(Assembly assembly, IServiceCollection services)
     {

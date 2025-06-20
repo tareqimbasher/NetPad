@@ -5,6 +5,9 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Apps.Configuration;
 
+/// <summary>
+/// An implementation of <see cref="ISettingsRepository"/> that persists settings to the local file system.
+/// </summary>
 public class FileSystemSettingsRepository : ISettingsRepository
 {
     private readonly FilePath _settingsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("settings.json");

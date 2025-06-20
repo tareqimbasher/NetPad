@@ -1,21 +1,25 @@
 namespace NetPad.Application;
 
 /// <summary>
-/// Represents a status change in the application.
+/// Represents a status change in the application meant to be shown on UIs for users.
 /// </summary>
 public class AppStatusMessage(
     string text,
     AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
     bool persistant = false)
 {
-    public AppStatusMessage(Guid scriptId, string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistant = false)
-        : this(text, priority, persistant)
+    public AppStatusMessage(
+        Guid scriptId,
+        string text,
+        AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
+        bool persistant = false
+    ) : this(text, priority, persistant)
     {
         ScriptId = scriptId;
     }
 
     /// <summary>
-    /// The ID of the script this message relates to.
+    /// The ID of the script this message relates to, if any.
     /// </summary>
     public Guid? ScriptId { get; }
 
@@ -30,18 +34,12 @@ public class AppStatusMessage(
     public AppStatusMessagePriority Priority { get; } = priority;
 
     /// <summary>
-    /// Whether this status message should be persistant or it should clear out after a timeout.
+    /// Whether this status message should be persistant or if it should be cleared after a timeout.
     /// </summary>
     public bool Persistant { get; } = persistant;
 
     /// <summary>
-    /// The DateTime of when this message was created.
+    /// The date and time when this message was created.
     /// </summary>
     public DateTime CreatedDate { get; } = DateTime.Now;
-}
-
-public enum AppStatusMessagePriority
-{
-    Normal = 1,
-    High = 2
 }

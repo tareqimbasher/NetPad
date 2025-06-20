@@ -5,6 +5,9 @@ using NetPad.Presentation.Html;
 
 namespace NetPad.BackgroundServices;
 
+/// <summary>
+/// Handles some application level events.
+/// </summary>
 public class EventHandlerBackgroundService(IEventBus eventBus, ILoggerFactory loggerFactory)
     : BackgroundService(loggerFactory)
 {
@@ -12,7 +15,11 @@ public class EventHandlerBackgroundService(IEventBus eventBus, ILoggerFactory lo
     {
         eventBus.Subscribe<SettingsUpdatedEvent>(ev =>
         {
-            HtmlPresenter.UpdateSerializerSettings(ev.Settings.Results.MaxSerializationDepth, ev.Settings.Results.MaxCollectionSerializeLength);
+            var resultSettings = ev.Settings.Results;
+
+            HtmlPresenter.UpdateSerializerSettings(
+                resultSettings.MaxSerializationDepth,
+                resultSettings.MaxCollectionSerializeLength);
 
             return Task.CompletedTask;
         });

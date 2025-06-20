@@ -21,6 +21,10 @@ namespace NetPad.Apps;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds services that are shared across all apps.
+    /// </summary>
+    /// <param name="services"></param>
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         services.AddSingleton<ISession, Session>();
@@ -40,6 +44,9 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>
+    /// Adds core services needed to use data connections.
+    /// </summary>
     public static DataConnectionFeatureBuilder AddDataConnectionFeature(this IServiceCollection services)
     {
         services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();

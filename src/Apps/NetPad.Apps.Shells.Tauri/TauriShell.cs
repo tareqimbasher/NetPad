@@ -7,6 +7,9 @@ using NetPad.Apps.UiInterop;
 
 namespace NetPad.Apps.Shells.Tauri;
 
+/// <summary>
+/// Configures the application to run as a desktop Tauri (native, rust-based) application.
+/// </summary>
 public class TauriShell : IShell
 {
     public void ConfigureWebHost(IWebHostBuilder webHostBuilder, string[] programArgs)

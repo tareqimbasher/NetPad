@@ -10,6 +10,10 @@ using NetPad.Scripts;
 
 namespace NetPad.Services;
 
+/// <summary>
+/// An implementation of <see cref="IAutoSaveScriptRepository"/> that persists auto-saved scripts
+/// to the local file system.
+/// </summary>
 public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 {
     private readonly Settings _settings;

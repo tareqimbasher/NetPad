@@ -6,7 +6,7 @@ using NetPad.DotNet;
 
 namespace NetPad.Assemblies;
 
-[Obsolete("Will be removed in a future version.")]
+[Obsolete($"Will be removed in a future version. Use {nameof(UnloadableAssemblyLoadContext)} instead.")]
 public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> logger)
     : AssemblyLoadContext(isCollectible: true), IDisposable
 {

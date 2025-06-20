@@ -2,6 +2,9 @@ using System.Reflection;
 
 namespace NetPad.Apps;
 
+/// <summary>
+/// Information about the running web host.
+/// </summary>
 public class HostInfo
 {
     public string HostUrl { get; private set; } = "http://localhost";

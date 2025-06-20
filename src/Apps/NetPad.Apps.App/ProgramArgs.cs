@@ -6,17 +6,30 @@ using NetPad.Apps.Shells.Web;
 
 namespace NetPad;
 
+/// <summary>
+/// Parsed program arguments.
+/// </summary>
 public class ProgramArgs
 {
     public ProgramArgs(string[] args)
     {
         Raw = args;
 
-        ShellType = Raw.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT"))
-            ? ShellType.Electron
-            : Raw.Any(a => a.EqualsIgnoreCase("--tauri"))
-                ? ShellType.Tauri
-                : ShellType.Web;
+        // When Electron.js app starts, it starts this process and passes the Electron IPC port.
+        if (args.Any(a => a.ContainsIgnoreCase("/ELECTRONPORT")))
+        {
+            ShellType = ShellType.Electron;
+        }
+        // When the Tauri (rust) app starts, it starts this process and passes this option.
+        else if (args.Any(a => a.EqualsIgnoreCase("--tauri")))
+        {
+            ShellType = ShellType.Tauri;
+        }
+        // If no shell can be determined, use web shell.
+        else
+        {
+            ShellType = ShellType.Web;
+        }
 
         RunMode = args.Contains("--swagger") ? RunMode.SwaggerGen : RunMode.Normal;
 

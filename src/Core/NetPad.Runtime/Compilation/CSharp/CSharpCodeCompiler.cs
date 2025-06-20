@@ -11,14 +11,17 @@ using NetPad.IO;
 
 namespace NetPad.Compilation.CSharp;
 
+/// <summary>
+/// An implementation of <see cref="ICodeCompiler"/> that compiles C#.NET code.
+/// </summary>
 public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService codeAnalysisService)
     : ICodeCompiler
 {
     public CompilationResult Compile(CompilationInput input)
     {
         string assemblyName = !string.IsNullOrWhiteSpace(input.AssemblyName) ? input.AssemblyName : "NetPadScript";
-
-        string assemblyFileName = $"{assemblyName}{GetCompiledFileExtension(input.OutputKind)}";
+        string assemblyFileExtension = GetCompiledAssemblyFileExtension(input.OutputKind);
+        string assemblyFileName = $"{assemblyName}{assemblyFileExtension}";
 
         var compilation = CreateCompilation(input, assemblyName);
 
@@ -44,19 +47,23 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             input.TargetFrameworkVersion,
             input.OptimizationLevel);
 
-        // Build references
+        // Build references to all assemblies we need to include in the compilation, starting with the assemblies
+        // of the selected .NET SDK.
         var assemblyLocations = FrameworkAssemblies.GetAssemblyLocations(
             dotNetInfo.LocateDotNetRootDirectoryOrThrow(),
             input.TargetFrameworkVersion,
             input.UseAspNet);
 
+        // Add assemblies coming from input
         foreach (var assemblyReferenceLocation in input.AssemblyFileReferences)
         {
             assemblyLocations.Add(assemblyReferenceLocation);
         }
 
-        assemblyLocations.Add(typeof(IOutputWriter<>).Assembly.Location);
+        // Add a reference to the NetPad runtime
+        assemblyLocations.Add(typeof(INetPadRuntimeLibMarker).Assembly.Location);
 
+        // Convert locations to metadata references
         var references = BuildMetadataReferences(input.AssemblyImageReferences, assemblyLocations);
 
         var compilationOptions = new CSharpCompilationOptions(input.OutputKind)
@@ -67,12 +74,12 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
         var compilation = CSharpCompilation.Create(
             assemblyName,
-            syntaxTrees: new[] { syntaxTree },
+            syntaxTrees: [syntaxTree],
             options: compilationOptions,
             references: references
         );
 
-        // Now run the built-in generator infrastructure
+        // Run the built-in source generators
         var generators = GetSourceGenerators(assemblyLocations);
         var driver = CSharpGeneratorDriver.Create(
             generators: generators,
@@ -80,7 +87,7 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             parseOptions: (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
             optionsProvider: null);
 
-        driver.RunGeneratorsAndUpdateCompilation(compilation, out var sourceGenCompilation, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(compilation, out var sourceGenCompilation, out _);
         return (CSharpCompilation)sourceGenCompilation;
     }
 
@@ -103,7 +110,7 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
             .ToArray();
     }
 
-    private static string GetCompiledFileExtension(OutputKind outputKind)
+    private static string GetCompiledAssemblyFileExtension(OutputKind outputKind)
     {
         var executableExt = PlatformUtil.GetPlatformExecutableExtension();
 

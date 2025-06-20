@@ -1,5 +1,8 @@
 namespace NetPad.Apps.UiInterop;
 
+/// <summary>
+/// A list of application UI windows and their IDs.
+/// </summary>
 public static class WindowIds
 {
     public const string Main = "main";

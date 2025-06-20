@@ -1,8 +1,10 @@
 namespace NetPad.Data;
 
 /// <summary>
-/// Represents a key-value data store that persists trivial data. Trivial data is data
-/// that if lost does not impact the functionality of the application. Example: Window size/location.
+/// Represents a key-value data store that persists trivial data. Trivial data is data we can afford
+/// to lose without impacting the functionality of the application. Examples:
+///   - Window size/location
+///   - The last active script
 /// </summary>
 public interface ITrivialDataStore
 {

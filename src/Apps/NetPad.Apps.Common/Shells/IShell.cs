@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 namespace NetPad.Apps.Shells;
 
 /// <summary>
-/// A shell that hosts the web interface.
+/// A shell (user-interface container) that hosts the web interface.
 /// </summary>
 public interface IShell
 {

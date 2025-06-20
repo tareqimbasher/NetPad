@@ -17,8 +17,8 @@ namespace NetPad.Controllers;
 [Route("types")]
 public class TypesController : ControllerBase
 {
-    // This endpoint was created for the sole reason of providing Swagger with types that are not exposed by other endpoints
-    // that we want in the generated code
+    // This endpoint was created for the sole reason of providing Swagger with types that are not exposed
+    // by other endpoints that we want in the generated client code.
     [ProducesResponseType(typeof(Types), 200)]
     [HttpGet]
     public void AdditionalTypes()

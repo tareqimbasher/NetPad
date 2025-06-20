@@ -1,5 +1,8 @@
 namespace NetPad.DotNet;
 
+/// <summary>
+/// Gets information about locally installed .NET runtimes, SDKs and versions.
+/// </summary>
 public interface IDotNetInfo
 {
     SemanticVersion GetCurrentDotNetRuntimeVersion();

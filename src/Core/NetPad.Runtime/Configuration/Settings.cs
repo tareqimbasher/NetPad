@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace NetPad.Configuration;
 
+/// <summary>
+/// Application-wide settings.
+/// </summary>
 public class Settings : ISettingsOptions
 {
     private const string LatestSettingsVersion = "1.0";
@@ -143,6 +146,7 @@ public class Settings : ISettingsOptions
     public void DefaultMissingValues()
     {
         // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        // ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 
         if (Version == null)
             Version = Version.Parse(LatestSettingsVersion);
@@ -166,6 +170,7 @@ public class Settings : ISettingsOptions
         (OmniSharp ??= new()).DefaultMissingValues();
 
         // ReSharper enable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        // ReSharper enable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
     }
 
     /// <summary>

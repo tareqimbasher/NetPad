@@ -5,7 +5,7 @@ using NetPad.Apps.UiInterop;
 namespace NetPad.Services.UiInterop;
 
 /// <summary>
-/// Pushes messages to connected clients using SignalR.
+/// Pushes (sends) messages to clients that are connected to this application (host) using SignalR.
 /// </summary>
 public class SignalRIpcService(IHubContext<IpcHub> hubContext) : IIpcService
 {
@@ -30,8 +30,7 @@ public class SignalRIpcService(IHubContext<IpcHub> hubContext) : IIpcService
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var promise = new ResponsePromise<TResponse>();
-        IpcResponseQueue.Enqueue(message.Id, promise);
+        var promise = IpcResponseQueue.Enqueue(message, cancellationToken);
         return await promise.Task;
     }
 }

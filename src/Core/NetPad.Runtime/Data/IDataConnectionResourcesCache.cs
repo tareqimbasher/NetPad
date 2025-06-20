@@ -2,6 +2,9 @@ using NetPad.DotNet;
 
 namespace NetPad.Data;
 
+/// <summary>
+/// A cache for generated data connection resources.
+/// </summary>
 public interface IDataConnectionResourcesCache
 {
     /// <summary>

@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.Contracts;
 using System.Text.Json;
+using NetPad.Apps.CQs;
 
 namespace NetPad.Apps.UiInterop;
 
@@ -7,19 +10,20 @@ namespace NetPad.Apps.UiInterop;
 /// </summary>
 internal static class IpcResponseQueue
 {
-    private static readonly Dictionary<Guid, IpcResponsePromise> _promises;
-
-    static IpcResponseQueue()
-    {
-        _promises = new Dictionary<Guid, IpcResponsePromise>();
-    }
+    private static readonly Dictionary<Guid, IpcResponsePromise> _promises = new();
 
     /// <summary>
-    /// Enqueue a message we're waiting on for a response.
+    /// Enqueue a message we're waiting on for a response and returns a promise that will resolve only when a
+    /// response is received.
     /// </summary>
-    public static void Enqueue(Guid messageId, IpcResponsePromise promise)
+    [Pure]
+    public static IpcResponsePromise<TResponse> Enqueue<TResponse>(
+        Command<TResponse> message,
+        CancellationToken cancellationToken = default)
     {
-        _promises.Add(messageId, promise);
+        var promise = new IpcResponsePromise<TResponse>();
+        _promises.Add(message.Id, promise);
+        return promise;
     }
 
     /// <summary>

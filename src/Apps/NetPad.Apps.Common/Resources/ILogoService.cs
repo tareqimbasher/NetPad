@@ -17,5 +17,8 @@ public enum LogoStyle
 
 public interface ILogoService
 {
+    /// <summary>
+    /// Gets the path of the application logo that matches the specified style and size.
+    /// </summary>
     string? GetLogoPath(LogoStyle style, LogoSize size);
 }

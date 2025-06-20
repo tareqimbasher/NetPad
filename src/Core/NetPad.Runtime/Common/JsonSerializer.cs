@@ -3,6 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace NetPad.Common;
 
+/// <summary>
+/// Provides a centralized JSON serializer for use across the entire application.
+/// This serializer ensures consistent JSON formatting and behavior throughout the codebase.
+/// Use this serializer by default unless there is a specific reason to use a different one.
+/// </summary>
 public static class JsonSerializer
 {
     static JsonSerializer()

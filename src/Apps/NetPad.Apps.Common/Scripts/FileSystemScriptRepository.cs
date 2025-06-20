@@ -7,6 +7,9 @@ using NetPad.Scripts;
 
 namespace NetPad.Apps.Scripts;
 
+/// <summary>
+/// An implementation of <see cref="IScriptRepository"/> that persists scripts to the local file system.
+/// </summary>
 public class FileSystemScriptRepository : IScriptRepository
 {
     private readonly Settings _settings;

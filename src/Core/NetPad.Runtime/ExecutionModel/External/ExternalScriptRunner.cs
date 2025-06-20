@@ -33,7 +33,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
     private static readonly string[] _userVisibleAssemblies =
     [
-        typeof(INetPadRuntimeMarker).Assembly.Location,
+        typeof(INetPadRuntimeLibMarker).Assembly.Location,
         typeof(O2Html.HtmlSerializer).Assembly.Location
     ];
 
