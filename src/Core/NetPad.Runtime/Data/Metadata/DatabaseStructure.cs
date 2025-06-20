@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 public class DatabaseStructure(string databaseName)
 {

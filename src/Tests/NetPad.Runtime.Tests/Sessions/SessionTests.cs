@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.Scripts;
 using NetPad.Tests;
 using NetPad.Tests.Helpers;

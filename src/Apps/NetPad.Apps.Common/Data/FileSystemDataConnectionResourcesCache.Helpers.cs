@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using NetPad.Data;
 using NetPad.Data.Events;
+using NetPad.Data.Metadata;
 using NetPad.DotNet;
 
 namespace NetPad.Apps.Data;

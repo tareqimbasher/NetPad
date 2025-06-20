@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Metadata.ChangeDetection;
 using NetPad.DotNet;
 
 namespace NetPad.Apps.Data;

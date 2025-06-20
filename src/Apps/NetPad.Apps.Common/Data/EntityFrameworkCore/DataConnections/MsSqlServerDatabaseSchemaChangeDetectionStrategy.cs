@@ -1,5 +1,8 @@
 using NetPad.Application;
 using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Metadata.ChangeDetection;
+using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 

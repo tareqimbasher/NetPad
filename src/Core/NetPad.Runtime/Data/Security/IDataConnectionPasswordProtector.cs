@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Security;
 
 public interface IDataConnectionPasswordProtector
 {

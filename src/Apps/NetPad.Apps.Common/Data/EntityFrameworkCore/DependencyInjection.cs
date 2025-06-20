@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
-using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Metadata.ChangeDetection;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 

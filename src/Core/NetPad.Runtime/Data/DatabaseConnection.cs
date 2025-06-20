@@ -1,3 +1,5 @@
+using NetPad.Data.Security;
+
 namespace NetPad.Data;
 
 public abstract class DatabaseConnection(Guid id, string name, DataConnectionType type) : DataConnection(id, name, type)

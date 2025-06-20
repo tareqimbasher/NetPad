@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata.ChangeDetection;
 
 public class DataConnectionSchemaChangeDetectionStrategyFactory(IServiceProvider serviceProvider)
     : IDataConnectionSchemaChangeDetectionStrategyFactory

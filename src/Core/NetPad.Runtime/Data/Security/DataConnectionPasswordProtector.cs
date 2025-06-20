@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Security;
 
-public class DataProtector(IDataProtectionProvider dataProtectionProvider, string purpose)
+public class DataConnectionPasswordProtector(IDataProtectionProvider dataProtectionProvider, string purpose)
     : IDataProtector, IDataConnectionPasswordProtector
 {
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(purpose);

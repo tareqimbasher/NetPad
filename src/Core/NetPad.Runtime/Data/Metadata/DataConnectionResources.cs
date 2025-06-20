@@ -1,6 +1,6 @@
 using NetPad.DotNet;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 public class DataConnectionResources(DataConnection dataConnection, DateTime recentAsOf)
 {

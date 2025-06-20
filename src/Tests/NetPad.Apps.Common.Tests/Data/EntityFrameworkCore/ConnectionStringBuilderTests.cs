@@ -1,7 +1,6 @@
-using NetPad.Data;
-using Xunit;
+using NetPad.Apps.Data.EntityFrameworkCore;
 
-namespace NetPad.Runtime.Tests.Data;
+namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore;
 
 public class ConnectionStringBuilderTests
 {

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.ExecutionModel;
 using NetPad.Scripts;
 using NetPad.Tests;

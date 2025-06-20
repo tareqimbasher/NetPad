@@ -2,7 +2,7 @@ using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
-using NetPad.DotNet;
+using NetPad.Data.Metadata;
 using NetPad.Sessions;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;

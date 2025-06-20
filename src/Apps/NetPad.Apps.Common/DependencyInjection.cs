@@ -10,6 +10,9 @@ using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Metadata.ChangeDetection;
+using NetPad.Data.Security;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Packages;
@@ -56,7 +59,7 @@ public static class DependencyInjection
             new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
 
         services.AddTransient<IDataConnectionPasswordProtector>(s =>
-            new DataProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
+            new DataConnectionPasswordProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
 
         services.AddTransient<
             IDataConnectionSchemaChangeDetectionStrategyFactory,

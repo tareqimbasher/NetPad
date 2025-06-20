@@ -1,6 +1,6 @@
 using NetPad.DotNet;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 /// <summary>
 /// A cache for generated data connection resources.

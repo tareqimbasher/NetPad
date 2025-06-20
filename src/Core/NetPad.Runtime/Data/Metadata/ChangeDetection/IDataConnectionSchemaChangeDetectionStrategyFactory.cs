@@ -1,4 +1,4 @@
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata.ChangeDetection;
 
 public interface IDataConnectionSchemaChangeDetectionStrategyFactory
 {

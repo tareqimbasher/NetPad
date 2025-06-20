@@ -1,6 +1,7 @@
+using NetPad.Data.Metadata.ChangeDetection;
 using NetPad.DotNet;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 /// <summary>
 /// Persists and retrieves generated data connection resources.

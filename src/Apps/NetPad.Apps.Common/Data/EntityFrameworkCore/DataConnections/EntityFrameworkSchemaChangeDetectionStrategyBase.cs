@@ -1,6 +1,7 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 

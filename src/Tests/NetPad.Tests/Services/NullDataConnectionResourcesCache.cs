@@ -1,4 +1,5 @@
 using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.DotNet;
 
 namespace NetPad.Tests.Services;

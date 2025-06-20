@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
+using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 

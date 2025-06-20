@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
-using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Tests.Logging;

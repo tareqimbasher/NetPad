@@ -1,4 +1,4 @@
-namespace NetPad.Data;
+namespace NetPad.Apps.Data.EntityFrameworkCore;
 
 public class ConnectionStringBuilder() : Dictionary<string, string?>(StringComparer.InvariantCultureIgnoreCase)
 {

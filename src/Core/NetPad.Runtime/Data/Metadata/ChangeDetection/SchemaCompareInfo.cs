@@ -1,6 +1,6 @@
 using NetPad.Common;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata.ChangeDetection;
 
 /// <summary>
 /// Represents information needed to compare if a data connection's schema has changed.

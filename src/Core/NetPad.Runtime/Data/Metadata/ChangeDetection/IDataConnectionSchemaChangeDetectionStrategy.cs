@@ -1,4 +1,4 @@
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata.ChangeDetection;
 
 /// <summary>
 /// Represents a strategy that attempts to detect when a data connection's schema has changed.

@@ -1,5 +1,6 @@
 using MediatR;
 using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.DotNet;
 using NetPad.Sessions;
 

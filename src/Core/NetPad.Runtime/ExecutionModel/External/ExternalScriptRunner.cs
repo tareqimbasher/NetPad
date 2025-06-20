@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using NetPad.Compilation;
 using NetPad.Configuration;
-using NetPad.Data;
+using NetPad.Data.Metadata;
 using NetPad.DotNet;
 using NetPad.IO;
 using NetPad.Packages;

@@ -1,4 +1,4 @@
-namespace NetPad.Data;
+namespace NetPad.Data.Security;
 
 /// <summary>
 /// A data connection password protector that doesn't actually protect/unprotect the password, and instead

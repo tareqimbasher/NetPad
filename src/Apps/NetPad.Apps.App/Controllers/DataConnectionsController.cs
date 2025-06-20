@@ -11,6 +11,8 @@ using NetPad.Apps.UiInterop;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
+using NetPad.Data.Metadata;
+using NetPad.Data.Security;
 using NetPad.DotNet;
 
 namespace NetPad.Controllers;

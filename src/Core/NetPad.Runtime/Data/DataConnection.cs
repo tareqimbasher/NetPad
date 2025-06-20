@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using NetPad.Common;
+using NetPad.Data.Security;
 using Newtonsoft.Json;
 using NJsonSchema.Converters;
 

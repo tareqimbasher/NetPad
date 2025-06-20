@@ -1,4 +1,4 @@
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 public interface IDatabaseConnectionMetadataProviderFactory
 {

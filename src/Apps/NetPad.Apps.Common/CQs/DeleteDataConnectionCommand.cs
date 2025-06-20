@@ -1,6 +1,7 @@
 using MediatR;
 using NetPad.Data;
 using NetPad.Data.Events;
+using NetPad.Data.Metadata;
 using NetPad.Events;
 
 namespace NetPad.Apps.CQs;
