@@ -17,7 +17,7 @@ public class StopAllScriptsCommand(bool stopRunner) : Command
     {
         public async Task<Unit> Handle(StopAllScriptsCommand request, CancellationToken cancellationToken)
         {
-            IEnumerable<ScriptEnvironment> environments = session.Environments;
+            IEnumerable<ScriptEnvironment> environments = session.GetOpened();
 
             if (!request.StopRunner)
             {

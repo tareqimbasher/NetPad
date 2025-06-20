@@ -11,7 +11,7 @@ public class GetOpenedScriptEnvironmentsQuery : Query<IEnumerable<ScriptEnvironm
     {
         public Task<IEnumerable<ScriptEnvironment>> Handle(GetOpenedScriptEnvironmentsQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<ScriptEnvironment>>(session.Environments.ToArray());
+            return Task.FromResult<IEnumerable<ScriptEnvironment>>(session.GetOpened());
         }
     }
 }

@@ -36,7 +36,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var script = ScriptTestHelper.CreateScript();
         await session.OpenAsync(script, true);
-        await session.CloseAsync(script.Id, false);
+        await session.CloseAsync(script.Id);
 
         var result = session.Get(script.Id);
 
@@ -130,7 +130,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         var script = ScriptTestHelper.CreateScript();
         await session.OpenAsync(script, true);
 
-        Assert.Equal(session.Environments.Single().Script, script);
+        Assert.Equal(session.GetOpened().Single().Script, script);
     }
 
     [Fact]
@@ -140,9 +140,9 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         var script = ScriptTestHelper.CreateScript();
         await session.OpenAsync(script, true);
 
-        await session.CloseAsync(script.Id, false);
+        await session.CloseAsync(script.Id);
 
-        Assert.Empty(session.Environments);
+        Assert.Empty(session.GetOpened());
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         await session.OpenAsync(script1, true);
         await session.OpenAsync(script3, true);
 
-        await session.CloseAsync(script3.Id, true);
+        await session.CloseAsync(script3.Id);
 
         Assert.Equal(script1, session.Active?.Script);
     }
@@ -168,7 +168,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         var script = ScriptTestHelper.CreateScript();
         await session.OpenAsync(script, true);
 
-        await session.CloseAsync(script.Id, false);
+        await session.CloseAsync(script.Id);
 
         Assert.Null(session.Active);
     }
@@ -184,8 +184,8 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         await session.OpenAsync(script2, true);
         await session.OpenAsync(script3, true);
 
-        await session.CloseAsync(script2.Id, false);
-        await session.CloseAsync(script3.Id, true);
+        await session.CloseAsync(script2.Id);
+        await session.CloseAsync(script3.Id);
 
         Assert.Equal(script1, session.Active?.Script);
     }
@@ -201,7 +201,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
         await session.OpenAsync(script1, true);
         await session.OpenAsync(script3, true);
 
-        await session.CloseAsync(script1.Id, false);
+        await session.CloseAsync(script1.Id);
 
         Assert.Equal(script3, session.Active?.Script);
     }

@@ -50,7 +50,7 @@ public class AppSetupAndCleanupBackgroundService(
     {
         _ = appStatusMessagePublisher.PublishAsync("Closing...", AppStatusMessagePriority.Normal, true);
 
-        var environments = session.Environments;
+        var environments = session.GetOpened();
 
         try
         {

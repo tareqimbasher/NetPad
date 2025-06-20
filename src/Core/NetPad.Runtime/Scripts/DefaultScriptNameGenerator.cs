@@ -6,7 +6,7 @@ public class DefaultScriptNameGenerator(ISession session) : IScriptNameGenerator
 {
     public string Generate(string baseName = "Script")
     {
-        var max = session.Environments
+        var max = session.GetOpened()
                 .Where(e => e.Script.Name.StartsWith($"{baseName} "))
                 .Select(e =>
                 {
