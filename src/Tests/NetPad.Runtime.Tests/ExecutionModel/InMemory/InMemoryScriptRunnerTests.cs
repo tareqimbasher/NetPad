@@ -93,7 +93,7 @@ public class InMemoryScriptRunnerTests(ITestOutputHelper testOutputHelper) : Tes
             await runtime.RunScriptAsync(new RunOptions());
 
             scope.Dispose();
-            GCUtil.CollectAndWait();
+            GcUtil.CollectAndWait();
 
             int loadedAssembliesCount = AppDomain.CurrentDomain.GetAssemblies().Length;
             Logger.LogDebug($"Loaded assemblies count: {loadedAssembliesCount}");

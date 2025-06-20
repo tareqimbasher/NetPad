@@ -5,6 +5,7 @@ using NetPad.Configuration;
 using NetPad.Data.Metadata;
 using NetPad.DotNet;
 using NetPad.Events;
+using NetPad.ExecutionModel;
 using NetPad.Tests.Logging;
 using NetPad.Tests.Services;
 using Xunit.Abstractions;
@@ -36,6 +37,8 @@ public abstract class TestBase : IDisposable
         services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<IEventBus, EventBus>();
         services.AddSingleton<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
+        services.AddScoped<IScriptRunnerFactory, NullScriptRunnerFactory>();
+        services.AddScoped<IScriptRunner, NullScriptRunner>();
 
         ConfigureServices(services);
         ServiceProvider = services.BuildServiceProvider(true);

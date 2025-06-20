@@ -7,15 +7,21 @@ namespace NetPad.ExecutionModel;
 /// </summary>
 public interface IScriptRunner : IDisposable
 {
+    /// <summary>
+    /// Start running script.
+    /// </summary>
+    /// <returns>A task that completes when script run completes.</returns>
     Task<RunResult> RunScriptAsync(RunOptions runOptions);
+
+    /// <summary>
+    /// Stop the running script.
+    /// </summary>
     Task StopScriptAsync();
 
     /// <summary>
-    /// Gets assemblies that users can reference in scripts.
-    ///
-    /// This is different than the assemblies or nuget packages users have added to their scripts. These
-    /// assemblies are provided by NetPad. If we want an assembly that is packaged with NetPad to be
-    /// accessible to user code, we add it here.
+    /// Gets assemblies that are provided by NetPad itself that users can reference in scripts.
+    /// This is different from the assemblies or nuget packages users have added to their scripts.
+    /// If we want an assembly that is packaged with NetPad to be accessible to user code, we add it here.
     /// </summary>
     /// <returns>Fully-qualified file paths of all user-visible assemblies.</returns>
     string[] GetUserVisibleAssemblies();

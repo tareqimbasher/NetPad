@@ -2,6 +2,9 @@
 
 namespace NetPad.Utilities;
 
+/// <summary>
+/// Provides access to some native Win32 APIs.
+/// </summary>
 public static class WindowsNative
 {
     public static void DisableWindowsErrorReporting()

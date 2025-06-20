@@ -5,19 +5,28 @@ using NetPad.Common;
 namespace NetPad.IO.IPC.Stdio;
 
 /// <summary>
-/// Used to communicate between two processes over standard IO (STDIN/STDOUT).
+/// Used for two-way communication between two processes over standard IO (STDIN/STDOUT).
 /// </summary>
+/// <param name="sendChannel">The IO channel to use to send messages.</param>
+/// <typeparam name="TMessage">The type of messages both processes agree to send and receive.</typeparam>
 public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable where TMessage : class
 {
-    private readonly Output _output = new(sendChannel);
-    private Input? _input;
+    private readonly StdioOutputChannel _outputChannel = new(sendChannel);
+    private StdioInputChannel? _inputChannel;
 
+    /// <summary>
+    /// Start listening for messages on the specified IO channel.
+    /// </summary>
+    /// <param name="receiveChannel">The IO stream to listen for messages on.</param>
+    /// <param name="onMessageReceived">An action to execute when a message is received.</param>
+    /// <param name="onNonMessageReceived">An action to execute when data is received and cannot be parsed into a
+    /// message of type <typeparamref name="TMessage"/>.</param>
     public void Listen(
         TextReader receiveChannel,
         Action<TMessage> onMessageReceived,
         Action<string>? onNonMessageReceived = null)
     {
-        _input = new Input(receiveChannel, input =>
+        _inputChannel = new StdioInputChannel(receiveChannel, input =>
         {
             if (TryParse(input, out TMessage? message))
             {
@@ -29,12 +38,15 @@ public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable whe
             }
         });
 
-        _input.StartListening();
+        _inputChannel.StartListening();
     }
 
+    /// <summary>
+    /// Sends a message on the configured send channel.
+    /// </summary>
     public void Send(TMessage message)
     {
-        _output.Write(message);
+        _outputChannel.Write(message);
     }
 
     private static bool TryParse(string input, [NotNullWhen(true)] out TMessage? message)
@@ -66,6 +78,6 @@ public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable whe
 
     public void Dispose()
     {
-        _input?.CancelListening();
+        _inputChannel?.CancelListening();
     }
 }

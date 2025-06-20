@@ -2,6 +2,9 @@ using System.IO;
 
 namespace NetPad.IO;
 
+/// <summary>
+/// A relative path to a file or directory.
+/// </summary>
 public record RelativePath
 {
     public RelativePath(string path) =>
@@ -29,5 +32,5 @@ public record RelativePath
 
     public bool Exists() => File.Exists(Path);
 
-    public string FullPath(DirectoryPath directoryPath) => System.IO.Path.Combine(directoryPath.Path, Path);
+    public string FullPath(DirectoryPath directoryBase) => System.IO.Path.Combine(directoryBase.Path, Path);
 }

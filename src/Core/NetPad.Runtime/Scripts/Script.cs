@@ -4,6 +4,9 @@ using NetPad.Data;
 
 namespace NetPad.Scripts;
 
+/// <summary>
+/// A user script.
+/// </summary>
 public class Script : INotifyOnPropertyChanged
 {
     public const string STANDARD_EXTENSION_WO_DOT = "netpad";
@@ -53,6 +56,9 @@ public class Script : INotifyOnPropertyChanged
         private set => this.RaiseAndSetIfChanged(ref _path, value);
     }
 
+    public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
+
+    public bool IsNew => Path == null;
 
     public ScriptConfig Config { get; }
 
@@ -73,10 +79,6 @@ public class Script : INotifyOnPropertyChanged
         get => _isDirty;
         set => this.RaiseAndSetIfChanged(ref _isDirty, value);
     }
-
-    public string? DirectoryPath => Path == null ? null : System.IO.Path.GetDirectoryName(Path);
-
-    public bool IsNew => Path == null;
 
     public void SetName(string newName)
     {

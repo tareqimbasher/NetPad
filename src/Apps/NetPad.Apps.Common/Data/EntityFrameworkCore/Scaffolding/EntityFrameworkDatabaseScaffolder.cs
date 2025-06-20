@@ -276,7 +276,7 @@ public class EntityFrameworkDatabaseScaffolder(
         var outputs = new List<string>();
         var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error));
 
         var exitCode = await startResult.WaitForExitTask;
 
@@ -323,7 +323,7 @@ public class EntityFrameworkDatabaseScaffolder(
         var outputs = new List<string>();
         var errors = new List<string>();
 
-        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error), isLongRunning: true);
+        var startResult = startInfo.Run(output => outputs.Add(output), error => errors.Add(error));
 
         var exitCode = await startResult.WaitForExitTask;
 

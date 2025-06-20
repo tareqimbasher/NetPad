@@ -6,6 +6,9 @@ namespace NetPad.Utilities;
 
 public static class ReferenceUtil
 {
+    /// <summary>
+    /// Gets the file assets that belong to the specified <paramref name="references"/>.
+    /// </summary>
     public static async Task<HashSet<ReferenceAsset>> GetAssetsAsync(
         this IEnumerable<Reference> references,
         DotNetFrameworkVersion dotNetFrameworkVersion,
@@ -43,6 +46,9 @@ public static class ReferenceUtil
         return assets;
     }
 
+    /// <summary>
+    /// Gets the file assets that belong to the specified <paramref name="reference"/>.
+    /// </summary>
     public static Task<HashSet<ReferenceAsset>> GetAssetsAsync(
         this Reference reference,
         DotNetFrameworkVersion dotNetFrameworkVersion,

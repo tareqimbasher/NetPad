@@ -3,7 +3,7 @@ using NetPad.Common;
 
 namespace NetPad.IO.IPC.Stdio;
 
-internal class Output(TextWriter writer)
+internal class StdioOutputChannel(TextWriter writer)
 {
     public void Write<T>(T message)
     {

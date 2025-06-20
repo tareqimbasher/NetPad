@@ -88,7 +88,7 @@ public sealed class InMemoryScriptRunner : IScriptRunner
 
             for (int i = 0; alcWeakRef.IsAlive && i < 10; i++)
             {
-                GCUtil.CollectAndWait();
+                GcUtil.CollectAndWait();
             }
 
             _logger.LogDebug("alcWeakRef.IsAlive after GC collect?: " + alcWeakRef.IsAlive);

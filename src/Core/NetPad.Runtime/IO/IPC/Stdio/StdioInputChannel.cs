@@ -2,7 +2,7 @@ using System.IO;
 
 namespace NetPad.IO.IPC.Stdio;
 
-internal class Input(TextReader reader, Action<string> onInputReceived)
+internal class StdioInputChannel(TextReader reader, Action<string> onInputReceived)
 {
     private CancellationTokenSource? _listenForInput = new();
 

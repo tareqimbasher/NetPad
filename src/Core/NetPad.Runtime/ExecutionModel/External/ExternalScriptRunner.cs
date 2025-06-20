@@ -137,8 +137,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             _scriptProcess = startInfo.Run(
                 output => _ = OnProcessOutputReceived(output),
-                error => OnProcessErrorReceived(error, runDependencies.ParsingResult.UserProgramStartLineNumber),
-                isLongRunning: true
+                error => OnProcessErrorReceived(error, runDependencies.ParsingResult.UserProgramStartLineNumber)
             );
 
             var stopWatch = Stopwatch.StartNew();

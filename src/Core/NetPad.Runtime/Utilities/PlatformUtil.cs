@@ -4,12 +4,12 @@ namespace NetPad.Utilities;
 
 public static class PlatformUtil
 {
-    public static IReadOnlyList<Architecture> SupportedArchitectures { get; } = new[]
-    {
+    private static readonly IReadOnlyList<Architecture> _supportedArchitectures =
+    [
         Architecture.X64,
         Architecture.X86,
-        Architecture.Arm64,
-    };
+        Architecture.Arm64
+    ];
 
     public static OSPlatform GetOSPlatform()
     {
@@ -29,7 +29,7 @@ public static class PlatformUtil
 
     public static bool IsOsArchitectureSupported(bool throwIfNotSupported = false)
     {
-        bool supported = SupportedArchitectures.Contains(RuntimeInformation.OSArchitecture);
+        bool supported = _supportedArchitectures.Contains(RuntimeInformation.OSArchitecture);
 
         if (!supported && throwIfNotSupported)
         {

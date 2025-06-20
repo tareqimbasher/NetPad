@@ -2,6 +2,9 @@ using System.IO;
 
 namespace NetPad.IO;
 
+/// <summary>
+/// An absolute path to a directory.
+/// </summary>
 public record DirectoryPath(string Path) : AbsolutePath(Path)
 {
     public virtual bool Equals(DirectoryPath? other) =>

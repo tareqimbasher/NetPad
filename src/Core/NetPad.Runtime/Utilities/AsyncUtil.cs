@@ -3,7 +3,7 @@ namespace NetPad.Utilities;
 public static class AsyncUtil
 {
     /// <summary>
-    /// Executes an async Task which has a void return value synchronously
+    /// Executes an async Task, which has a void return value, synchronously.
     /// </summary>
     /// <param name="func">Task to execute</param>
     public static void RunSync(Func<Task> func)
@@ -34,11 +34,10 @@ public static class AsyncUtil
     }
 
     /// <summary>
-    /// Executes an async Task which has a T return type synchronously
+    /// Executes an async Task, which has a T return type, synchronously.
     /// </summary>
-    /// <typeparam name="T">Return Type</typeparam>
+    /// <typeparam name="T">Return type</typeparam>
     /// <param name="func">Task to execute</param>
-    /// <returns></returns>
     public static T? RunSync<T>(Func<Task<T>> func)
     {
         var oldContext = SynchronizationContext.Current;

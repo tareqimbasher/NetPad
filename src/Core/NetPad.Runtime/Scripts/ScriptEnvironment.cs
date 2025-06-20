@@ -11,6 +11,37 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Scripts;
 
+/// <summary>
+/// Provides a managed execution context for a <see cref="Script"/> used to run it, track its status, receive
+/// script output and provide input when requested. Many high level operations throughout the application run against
+/// a <see cref="ScriptEnvironment"/> instead of the <see cref="Script"/> itself.
+/// </summary>
+/// <remarks>
+/// <para>
+/// All changes to the properties of this environment or changes to the properties of the script or its configuration
+/// are published via the injected <see cref="IEventBus"/>, including:
+/// <list type="bullet">
+///   <item><see cref="ScriptPropertyChangedEvent"/> and <see cref="ScriptConfigPropertyChangedEvent"/> for changes in the <see cref="Script"/> or its configuration.</item>
+///   <item><c>EnvironmentPropertyChangedEvent</c> for changes in the <see cref="ScriptEnvironment"/></item>
+/// </list>
+/// This lets UI or IPC clients subscribe and react to progress, errors, or memory-cache updates in real time.
+/// </para>
+/// <para>
+/// Call <see cref="SetIO(IInputReader{string}, IOutputWriter{object})"/> to hook up
+/// <see cref="IInputReader{T}"/> and <see cref="IOutputWriter{T}"/> implementations for user input and script output.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// using var scope = serviceProvider.CreateScope();
+/// var environment = new ScriptEnvironment(myScript, scope);
+/// environment.SetIO(consoleReader, consoleWriter);
+/// await environment.RunAsync(new RunOptions());
+/// </code>
+/// </example>
+
+// Needed for testing with Moq:
+// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class ScriptEnvironment : IDisposable, IAsyncDisposable
 {
     private readonly IEventBus _eventBus;
@@ -18,7 +49,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     private IServiceScope _serviceScope;
     private IInputReader<string> _inputReader;
     private IOutputWriter<object> _outputWriter;
-    private Lazy<IScriptRunner> _runner;
+    private IScriptRunner _runner;
     private readonly List<IDisposable> _disposables = new();
     private bool _isDisposed;
 
@@ -45,13 +76,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 args.OldValue, args.NewValue));
         });
 
-        _runner = new Lazy<IScriptRunner>(() =>
-        {
-            var factory = _serviceScope.ServiceProvider.GetRequiredService<IScriptRunnerFactory>();
-            var runner = factory.CreateRunner(Script);
-            _logger.LogDebug($"Initialized new {nameof(IScriptRunner)}");
-            return runner;
-        });
+        var factory = _serviceScope.ServiceProvider.GetRequiredService<IScriptRunnerFactory>();
+        _runner = factory.CreateRunner(Script);
 
         _disposables.Add(_eventBus.Subscribe<ScriptMemCacheItemInfoChangedEvent>(ev =>
         {
@@ -101,6 +127,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
     public bool IsScriptHostRunning { get; private set; }
 
+    /// <summary>
+    /// Runs the script and returns a task that completes when the run completes.
+    /// </summary>
     public async Task RunAsync(RunOptions runOptions)
     {
         EnsureNotDisposed();
@@ -113,7 +142,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 $"Script is not in the correct state to run. Status is currently: {Status}");
         }
 
-        await SetStatusAsync(ScriptStatus.Running);
+        SetStatus(ScriptStatus.Running);
 
         try
         {
@@ -123,20 +152,21 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
                 return;
             }
 
-            // If no specific code to run, set the script code so we capture the current "state" of the code,
-            // we don't want changes the user makes to the code after they've hit "Run" and before their code
-            // compiles to make it into the run. Users expect that once they hit "Run", any changes they make to
-            // the code afterwards to not affect the current run.
+            // If no specific code to run was specified in runOptions, set the property to the entire script's code
+            // so we capture the current "state" of the code. We don't want changes the user makes to the code after
+            // they've hit "Run", and before their code compiles to make it into the run/execution.
+            //
+            // Users expect that once they hit "Run", any changes they make to the code afterward should not change
+            // the code being executed in the "current run".
             runOptions.SpecificCodeToRun ??= Script.Code;
 
-            var runResult = await _runner.Value.RunScriptAsync(runOptions);
+            var runResult = await _runner.RunScriptAsync(runOptions);
 
-            await SetRunDurationAsync(
-                runResult.IsScriptCompletedSuccessfully
-                    ? runResult.DurationMs
-                    : null);
+            SetRunDuration(runResult.IsScriptCompletedSuccessfully
+                ? runResult.DurationMs
+                : null);
 
-            await SetStatusAsync(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled
+            SetStatus(runResult.IsScriptCompletedSuccessfully || runResult.IsRunCancelled
                 ? ScriptStatus.Ready
                 : ScriptStatus.Error);
 
@@ -146,7 +176,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         {
             _logger.LogError(ex, "Error running script");
             await _outputWriter.WriteAsync(new ErrorScriptOutput(ex));
-            await SetStatusAsync(ScriptStatus.Error);
+            SetStatus(ScriptStatus.Error);
         }
         finally
         {
@@ -170,27 +200,24 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         if (wasRunning)
         {
-            await SetStatusAsync(ScriptStatus.Stopping);
+            SetStatus(ScriptStatus.Stopping);
         }
 
         try
         {
-            if (_runner.IsValueCreated)
-            {
-                await _runner.Value.StopScriptAsync();
-            }
+            await _runner.StopScriptAsync();
 
             if (wasRunning)
             {
                 await _outputWriter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
-                await SetStatusAsync(ScriptStatus.Ready);
+                SetStatus(ScriptStatus.Ready);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error stopping script");
             await _outputWriter.WriteAsync(new ErrorScriptOutput(ex));
-            await SetStatusAsync(ScriptStatus.Error);
+            SetStatus(ScriptStatus.Error);
         }
         finally
         {
@@ -198,6 +225,29 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Configures the script environment’s input and output handlers by attaching the specified reader and writer
+    /// to the underlying <see cref="IScriptRunner"/>.
+    /// </summary>
+    /// <param name="inputReader">
+    /// The <see cref="IInputReader{T}"/> implementation that supplies user input to the script.
+    /// Cannot be <c>null</c>.
+    /// </param>
+    /// <param name="outputWriter">
+    /// The <see cref="IOutputWriter{T}"/> implementation that receives script output.
+    /// Cannot be <c>null</c>.
+    /// </param>
+    /// <remarks>
+    /// Any previously registered IO handlers are removed before the new ones are added.
+    /// You should call this before invoking <see cref="RunAsync(RunOptions)"/> to ensure the script
+    /// uses the correct input and output streams.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="inputReader"/> or <paramref name="outputWriter"/> are <c>null</c>.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the <see cref="ScriptEnvironment"/> has already been disposed.
+    /// </exception>
     public void SetIO(IInputReader<string> inputReader, IOutputWriter<object> outputWriter)
     {
         EnsureNotDisposed();
@@ -205,38 +255,29 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         RemoveScriptRunnerIOHandlers();
 
         _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-        _outputWriter = outputWriter;
+        _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
 
         AddScriptRunnerIOHandlers();
     }
 
-    public string[] GetUserVisibleAssemblies() => _runner.Value.GetUserVisibleAssemblies();
+    public string[] GetUserVisibleAssemblies() => _runner.GetUserVisibleAssemblies();
 
     public void DumpMemCacheItem(string key)
     {
-        if (_runner.IsValueCreated)
-        {
-            _runner.Value.DumpMemCacheItem(key);
-        }
+        _runner.DumpMemCacheItem(key);
     }
 
     public void DeleteMemCacheItem(string key)
     {
-        if (_runner.IsValueCreated)
-        {
-            _runner.Value.DeleteMemCacheItem(key);
-        }
+        _runner.DeleteMemCacheItem(key);
     }
 
     public void ClearMemCacheItems()
     {
-        if (_runner.IsValueCreated)
-        {
-            _runner.Value.ClearMemCacheItems();
-        }
+        _runner.ClearMemCacheItems();
     }
 
-    private async Task SetStatusAsync(ScriptStatus status)
+    private void SetStatus(ScriptStatus status)
     {
         if (status == Status)
         {
@@ -245,33 +286,39 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         var oldValue = Status;
         Status = status;
-        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), oldValue, status));
+        _ = _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(Status), oldValue, status));
     }
 
-    private async Task SetRunDurationAsync(double? runDurationMs)
+    private void SetRunDuration(double? runDurationMs)
     {
         var oldValue = RunDurationMilliseconds;
         RunDurationMilliseconds = runDurationMs;
-        await _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(Script.Id, nameof(RunDurationMilliseconds),
-            oldValue, runDurationMs));
+        _ = _eventBus.PublishAsync(new EnvironmentPropertyChangedEvent(
+            Script.Id,
+            nameof(RunDurationMilliseconds),
+            oldValue,
+            runDurationMs)
+        );
     }
 
     private void AddScriptRunnerIOHandlers()
     {
-        _runner.Value.AddInput(_inputReader);
-        _runner.Value.AddOutput(_outputWriter);
+        _runner.AddInput(_inputReader);
+        _runner.AddOutput(_outputWriter);
     }
 
     private void RemoveScriptRunnerIOHandlers()
     {
-        _runner.Value.RemoveInput(_inputReader);
-        _runner.Value.RemoveOutput(_outputWriter);
+        _runner.RemoveInput(_inputReader);
+        _runner.RemoveOutput(_outputWriter);
     }
 
     private void EnsureNotDisposed()
     {
         if (_isDisposed)
+        {
             throw new InvalidOperationException($"Script environment {Script.Id} is disposed.");
+        }
     }
 
     public void Dispose()
@@ -317,7 +364,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             try
             {
-                _runner.Value.Dispose();
+                _runner.Dispose();
             }
             catch (Exception ex)
             {
@@ -331,7 +378,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
-    protected async ValueTask DisposeAsyncCore()
+    private async ValueTask DisposeAsyncCore()
     {
         await Try.RunAsync(async () => await StopAsync(true));
 
@@ -341,7 +388,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         try
         {
-            _runner.Value.Dispose();
+            _runner.Dispose();
         }
         catch (Exception ex)
         {

@@ -87,7 +87,7 @@ public class ScriptRunner
         }
         finally
         {
-            GCUtil.CollectAndWait();
+            GcUtil.CollectAndWait();
 
             if (Directory.Exists(message.ScriptDirPath))
             {

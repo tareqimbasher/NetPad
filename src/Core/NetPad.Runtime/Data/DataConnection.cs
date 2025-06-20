@@ -6,6 +6,9 @@ using NJsonSchema.Converters;
 
 namespace NetPad.Data;
 
+/// <summary>
+/// A connection to a data source (ex. a database, a flat file...etc.)
+/// </summary>
 // Only used for NSwag
 [JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
 [System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<DataConnection>))]

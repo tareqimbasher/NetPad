@@ -105,7 +105,7 @@ public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> l
     {
         logger.LogTrace($"{nameof(Dispose)} start");
         UnloadLoadedAssemblies();
-        GCUtil.CollectAndWait();
+        GcUtil.CollectAndWait();
         logger.LogTrace($"{nameof(Dispose)} end ");
     }
 

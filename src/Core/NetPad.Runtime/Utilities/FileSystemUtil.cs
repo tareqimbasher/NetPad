@@ -41,7 +41,8 @@ public static class FileSystemUtil
     }
 
     /// <summary>
-    /// Copies a directory. This method does not overwrite files that already exist in the destination.
+    /// Copies a directory. This method will throw an exception when copying a file and the file already exists
+    /// in the destination.
     /// </summary>
     public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
     {
