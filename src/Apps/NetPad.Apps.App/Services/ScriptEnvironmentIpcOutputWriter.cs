@@ -73,23 +73,32 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
     private void NotifyScriptEnvironmentStatusChanged(ScriptStatus newStatus)
     {
-        if (newStatus == ScriptStatus.Running)
+        try
         {
-            // Starting a new run
-            _sendMessageQueueTimer.Stop();
+            if (newStatus == ScriptStatus.Running)
+            {
+                // Starting a new run
+                _sendMessageQueueTimer.Stop();
 
-            _ctsAccessor.Value.Cancel();
-            _sendMessageQueue.Clear();
-            _userOutputMessagesSentThisRun = 0;
-            _outputLimitReachedMessageSent = false;
-            _ctsAccessor.Update(new CancellationTokenSource());
+                _ctsAccessor.Value.Cancel();
+                _ctsAccessor.Value.Dispose();
+                _sendMessageQueue.Clear();
+                _userOutputMessagesSentThisRun = 0;
+                _outputLimitReachedMessageSent = false;
+                _ctsAccessor.Update(new CancellationTokenSource());
 
-            _sendMessageQueueTimer.Start();
+                _sendMessageQueueTimer.Start();
+            }
+            else if (newStatus == ScriptStatus.Stopping)
+            {
+                // When a script is stopped explicitly, cancel sending all cancellable output messages
+                _ctsAccessor.Value.Cancel();
+                _ctsAccessor.Value.Dispose();
+            }
         }
-        else if (newStatus == ScriptStatus.Stopping)
+        catch (Exception e)
         {
-            // When a script is stopped explicitly, cancel sending all cancellable output messages
-            _ctsAccessor.Value.Cancel();
+            _logger.LogError(e, "Error handling script status change");
         }
     }
 
@@ -256,7 +265,11 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
     public void Dispose()
     {
-        _ctsAccessor.Value.Cancel();
+        Try.Run(() =>
+        {
+            _ctsAccessor.Value.Cancel();
+            _ctsAccessor.Value.Dispose();
+        });
         _sendMessageQueueTimer.Stop();
         _sendMessageQueueTimer.Dispose();
         _sendMessageQueue.Clear();

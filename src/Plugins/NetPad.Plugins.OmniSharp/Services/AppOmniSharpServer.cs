@@ -449,7 +449,7 @@ public class AppOmniSharpServer(
     {
         try
         {
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             await OmniSharpServer.SendAsync(new[]
             {
@@ -477,7 +477,7 @@ public class AppOmniSharpServer(
         try
         {
             buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             await OmniSharpServer.SendAsync(new UpdateBufferRequest
             {

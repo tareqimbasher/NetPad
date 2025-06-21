@@ -663,7 +663,7 @@ public class NuGetPackageProvider(
 
         using var sourceCacheContext = new SourceCacheContext();
         var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
-        var cancellationTokenSource =
+        using var cancellationTokenSource =
             timeout == null ? new CancellationTokenSource() : new CancellationTokenSource(timeout.Value);
 
         foreach (var sourceRepository in sourceRepositories)
@@ -691,7 +691,7 @@ public class NuGetPackageProvider(
 
                 try
                 {
-                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationTokenSource.Token);
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                         sourceCacheContext,
