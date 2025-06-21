@@ -1,5 +1,5 @@
-using ElectronNET.API;
-using ElectronNET.API.Entities;
+using ElectronSharp.API;
+using ElectronSharp.API.Entities;
 using NetPad.Application;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
@@ -12,7 +12,7 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
 {
     public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
     {
-        var result = await ElectronNET.API.Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
+        var result = await ElectronSharp.API.Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
             new MessageBoxOptions($"'{script.Name}' has unsaved changes. Do you want to save?")
             {
                 Title = "Save?",
@@ -25,14 +25,20 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
-        var path = await ElectronNET.API.Electron.Dialog.ShowSaveDialogAsync(ElectronUtil.MainWindow, new SaveDialogOptions
+        var options = new SaveDialogOptions
         {
             Title = "Save Script",
-            Message = "Where do you want to save this script?",
-            NameFieldLabel = script.Name,
             Filters = [new FileFilter { Name = "NetPad Script", Extensions = [Script.STANDARD_EXTENSION_WO_DOT] }],
             DefaultPath = Path.Combine(settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)
-        });
+        };
+
+        if (OperatingSystem.IsMacOS())
+        {
+            options.Message = "Where do you want to save this script?";
+            options.NameFieldLabel = script.Name;
+        }
+
+        var path = await ElectronSharp.API.Electron.Dialog.ShowSaveDialogAsync(ElectronUtil.MainWindow, options);
 
         if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
         {

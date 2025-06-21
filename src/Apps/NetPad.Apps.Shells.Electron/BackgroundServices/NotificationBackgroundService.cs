@@ -1,4 +1,4 @@
-using ElectronNET.API.Entities;
+using ElectronSharp.API.Entities;
 using Microsoft.Extensions.Hosting;
 using NetPad.Apps.Resources;
 using NetPad.Apps.Shells.Electron.UiInterop;
@@ -14,7 +14,7 @@ public class NotificationBackgroundService(IEventBus eventBus, ILogoService logo
     {
         eventBus.Subscribe<ScriptRanEvent>(async ev =>
         {
-            if (!await ElectronUtil.MainWindow.IsFocusedAsync())
+            if (await ElectronUtil.MainWindow.IsFocusedAsync() != true)
             {
                 var environment = ev.ScriptEnvironment;
 
@@ -34,7 +34,7 @@ public class NotificationBackgroundService(IEventBus eventBus, ILogoService logo
                     return;
                 }
 
-                ElectronNET.API.Electron.Notification.Show(new NotificationOptions("NetPad", message)
+                ElectronSharp.API.Electron.Notification.Show(new NotificationOptions("NetPad", message)
                 {
                     Icon = logoService.GetLogoPath(LogoStyle.Circle, LogoSize._64)
                 });
