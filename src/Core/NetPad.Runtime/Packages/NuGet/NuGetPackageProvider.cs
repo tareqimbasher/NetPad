@@ -133,7 +133,7 @@ public class NuGetPackageProvider(
         var packageIdentity = new NugetPackageIdentity(packageId, NuGetVersion.Parse(packageVersion));
 
         var sourceRepositoryProvider = GetSourceRepositoryProvider();
-        var repositories = sourceRepositoryProvider.GetRepositories();
+        var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
 
         using var sourceCacheContext = new SourceCacheContext();
         var nugetLogger = new NuGetNullLogger();
@@ -156,7 +156,12 @@ public class NuGetPackageProvider(
             sourceRepositoryProvider,
             nugetLogger);
 
-        await InstallPackagesAsync(packageIdentity, packagesToInstall, sourceCacheContext, nugetLogger, cancellationToken);
+        await InstallPackagesAsync(
+            packageIdentity,
+            packagesToInstall,
+            sourceCacheContext,
+            nugetLogger,
+            cancellationToken);
     }
 
     public Task<PackageInstallInfo?> GetPackageInstallInfoAsync(string packageId, string packageVersion)
@@ -174,14 +179,16 @@ public class NuGetPackageProvider(
         var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
 
         return await GetCachedPackagesAsync(
-            nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories), loadMetadata);
+            nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories),
+            loadMetadata);
     }
 
     public async Task<CachedPackage[]> GetExplicitlyInstalledCachedPackagesAsync(bool loadMetadata = false)
     {
         var nuGetCacheDir = new DirectoryInfo(GetNuGetCacheDirectoryPath());
 
-        var packageInstallInfoFiles = nuGetCacheDir.GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories)
+        var packageInstallInfoFiles = nuGetCacheDir
+            .GetFiles(PackageInstallInfoFileName, SearchOption.AllDirectories)
             .Where(f => GetInstallInfo(f)?.InstallReason == PackageInstallReason.Explicit);
 
         return await GetCachedPackagesAsync(packageInstallInfoFiles, loadMetadata);
@@ -202,7 +209,7 @@ public class NuGetPackageProvider(
         var frameworkReducer = new FrameworkReducer();
         using var packageReader = new PackageFolderReader(installPath);
 
-        var libItems = GetNearestItems(packageReader.GetLibItems())
+        var libItems = GetNearestItems(packageReader.GetLibItems().ToArray())
             .Where(i => i.EndsWithIgnoreCase(".dll"));
 
         var runtimeItems = GetRuntimeItems(installPath, nugetFramework);
@@ -218,11 +225,12 @@ public class NuGetPackageProvider(
 
         return Task.FromResult(final);
 
-        IEnumerable<string> GetNearestItems(IEnumerable<FrameworkSpecificGroup> items)
+        IEnumerable<string> GetNearestItems(FrameworkSpecificGroup[] items)
         {
-            var nearestLibItemsFramework =
-                frameworkReducer.GetNearest(nugetFramework, items.Select(x => x.TargetFramework));
-            return items.Where(x => x.TargetFramework.Equals(nearestLibItemsFramework))
+            var nearestLibItemsFramework = frameworkReducer
+                .GetNearest(nugetFramework, items.Select(x => x.TargetFramework));
+            return items
+                .Where(x => x.TargetFramework.Equals(nearestLibItemsFramework))
                 .SelectMany(x => x.Items)
                 .Select(i => Path.Combine(installPath, i));
         }
@@ -250,7 +258,7 @@ public class NuGetPackageProvider(
         var packageDependencyTree = await GetPackageDependencyTreeAsync(
             packageIdentity,
             nugetFramework,
-            GetSourceRepositoryProvider().GetRepositories(),
+            GetSourceRepositoryProvider().GetRepositories().ToArray(),
             dependencyContext,
             sourceCacheContext,
             nugetLogger,
@@ -267,8 +275,10 @@ public class NuGetPackageProvider(
                 await InstallPackageAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
             }
 
-            var packageAssets =
-                await GetCachedPackageAssetsAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
+            var packageAssets = await GetCachedPackageAssetsAsync(
+                package.Id,
+                package.Version.ToString(),
+                dotNetFrameworkVersion);
 
             foreach (var asset in packageAssets)
             {
@@ -287,7 +297,9 @@ public class NuGetPackageProvider(
         var installPath = GetInstallPath(packageIdentity);
 
         if (installPath != null && Directory.Exists(installPath))
+        {
             Directory.Delete(installPath, true);
+        }
 
         return Task.CompletedTask;
     }
@@ -334,7 +346,8 @@ public class NuGetPackageProvider(
                         if (File.Exists(iconPath))
                         {
                             var iconBytes = await File.ReadAllBytesAsync(iconPath);
-                            icon = $"data:image/{Path.GetExtension(iconPath).Trim('.')};base64,{Convert.ToBase64String(iconBytes)}";
+                            icon =
+                                $"data:image/{Path.GetExtension(iconPath).Trim('.')};base64,{Convert.ToBase64String(iconBytes)}";
                         }
                     }
                     catch (Exception ex)
@@ -343,10 +356,13 @@ public class NuGetPackageProvider(
                     }
                 }
 
-                var cachedPackage = new CachedPackage(packageId, title)
+                var cachedPackage = new CachedPackage(
+                    packageId,
+                    title,
+                    installInfo.InstallReason,
+                    packageDir.FullName
+                )
                 {
-                    InstallReason = installInfo.InstallReason,
-                    DirectoryPath = packageDir.FullName,
                     Version = nuspecReader.GetVersion().ToString(),
                     Authors = nuspecReader.GetAuthors(),
                     Description = nuspecReader.GetDescription(),
@@ -370,7 +386,9 @@ public class NuGetPackageProvider(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Could not gather info about package located in: {PackageDir}",
+                logger.LogError(
+                    ex,
+                    "Could not gather info about package located in: {PackageDir}",
                     packageDir.FullName);
             }
         }
@@ -393,7 +411,7 @@ public class NuGetPackageProvider(
     private async Task<PackageDependencyTree> GetPackageDependencyTreeAsync(
         NugetPackageIdentity package,
         NuGetFramework framework,
-        IEnumerable<SourceRepository> repositories,
+        SourceRepository[] repositories,
         DependencyContext hostDependencies,
         SourceCacheContext cacheContext,
         INugetLogger nugetLogger,
@@ -408,7 +426,8 @@ public class NuGetPackageProvider(
 
             try
             {
-                var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>();
+                var dependencyInfoResource =
+                    await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
                 dependencyInfo = await dependencyInfoResource.ResolvePackage(
                     package,
                     framework,
@@ -418,7 +437,8 @@ public class NuGetPackageProvider(
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error getting dependency info of package: {Id} {Version}", package.Id, package.Version);
+                logger.LogError(e, "Error getting dependency info of package: {Id} {Version}", package.Id,
+                    package.Version);
                 continue;
             }
 
@@ -469,7 +489,7 @@ public class NuGetPackageProvider(
         // Create a package resolver context (this is used to help figure out which actual package versions to install).
         var resolverContext = new PackageResolverContext(
             DependencyBehavior.Lowest,
-            new[] { packageDependencyTree.Identity.Id },
+            [packageDependencyTree.Identity.Id],
             [],
             [],
             [],
@@ -591,7 +611,7 @@ public class NuGetPackageProvider(
         CancellationToken cancellationToken = default)
     {
         var metadatas = packageIdentities
-            .ToDictionary(p => p, x => (PackageMetadata?)null);
+            .ToDictionary(p => p, _ => (PackageMetadata?)null);
 
         using var sourceCacheContext = new SourceCacheContext();
         var sourceRepositories = GetSourceRepositoryProvider().GetRepositories();
@@ -608,7 +628,7 @@ public class NuGetPackageProvider(
                 .Select(x => x.Key)
                 .ToArray();
 
-            await Parallel.ForEachAsync(targets, async (packageIdentity, ct) =>
+            await Parallel.ForEachAsync(targets, cancellationToken, async (packageIdentity, ct) =>
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -619,12 +639,12 @@ public class NuGetPackageProvider(
 
                 try
                 {
-                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(ct);
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(packageIdentity.Id, new NuGetVersion(packageIdentity.Version)),
                         sourceCacheContext,
                         NuGetNullLogger.Instance,
-                        cancellationToken);
+                        ct);
                 }
                 catch (Exception e)
                 {
@@ -691,7 +711,8 @@ public class NuGetPackageProvider(
 
                 try
                 {
-                    var resource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationTokenSource.Token);
+                    var resource =
+                        await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationTokenSource.Token);
                     metadata = await resource.GetMetadataAsync(
                         new NugetPackageIdentity(package.PackageId, new NuGetVersion(package.Version)),
                         sourceCacheContext,
@@ -714,7 +735,9 @@ public class NuGetPackageProvider(
             }
 
             foreach (var cachedPackage in found)
+            {
                 needsProcessing.Remove(cachedPackage);
+            }
         }
     }
 
@@ -724,16 +747,16 @@ public class NuGetPackageProvider(
 
         if (!runtimesDirectory.Exists)
         {
-            return Array.Empty<string>();
+            return [];
         }
 
-        var platformRIDs = GetCurrentPlatformRIDs();
+        var platformRids = GetCurrentPlatformRIDs();
 
         var ridDirs = runtimesDirectory.GetDirectories()
-            .Where(d => platformRIDs.Contains(d.Name))
-            .OrderBy(d => Array.IndexOf(platformRIDs, d.Name));
+            .Where(d => platformRids.Contains(d.Name))
+            .OrderBy(d => Array.IndexOf(platformRids, d.Name));
 
-        var interestingRuntimeSubDirs = new HashSet<string>(new[] { "native", "nativeassets", "lib" });
+        var interestingRuntimeSubDirs = new HashSet<string>(["native", "nativeassets", "lib"]);
 
         foreach (var ridDir in ridDirs)
         {
@@ -786,7 +809,7 @@ public class NuGetPackageProvider(
             }
         }
 
-        return Array.Empty<string>();
+        return [];
     }
 
     private static bool IsLib(string filePath)
@@ -810,20 +833,31 @@ public class NuGetPackageProvider(
         {
             if (arch == Architecture.X64)
             {
-                rids.AddRange(new[] { "amd64", "win", "x64", "win-x64", "win7", "win7-x64", "win8", "win8-x64", "win81", "win81-x64", "win10", "win10-x64" });
+                rids.AddRange([
+                    "amd64", "win", "x64", "win-x64", "win7", "win7-x64", "win8", "win8-x64", "win81", "win81-x64",
+                    "win10", "win10-x64"
+                ]);
             }
             else if (arch == Architecture.X86)
             {
-                rids.AddRange(new[] { "win", "x86", "win-x86", " win7", " win7-x86", " win8", " win8-x86", " win81", " win81-x86", " win10", " win10-x86" });
+                rids.AddRange([
+                    "win", "x86", "win-x86", " win7", " win7-x86", " win8", " win8-x86", " win81", " win81-x86",
+                    " win10", " win10-x86"
+                ]);
             }
             else if (arch == Architecture.Arm64)
             {
-                rids.AddRange(new[]
-                    { "win", "arm64", "win-arm64", "win7", "win7-arm64", "win8", "win8-arm64", "win81", "win81-arm64", "win10", "win10-arm64" });
+                rids.AddRange([
+                    "win", "arm64", "win-arm64", "win7", "win7-arm64", "win8", "win8-arm64", "win81", "win81-arm64",
+                    "win10", "win10-arm64"
+                ]);
             }
             else if (arch == Architecture.Arm)
             {
-                rids.AddRange(new[] { "win", "arm", "win-arm", "win7", "win7-arm", "win8", "win8-arm", "win81", "win81-arm", "win10", "win10-arm" });
+                rids.AddRange([
+                    "win", "arm", "win-arm", "win7", "win7-arm", "win8", "win8-arm", "win81", "win81-arm", "win10",
+                    "win10-arm"
+                ]);
             }
 
             var osVersion = Environment.OSVersion.Version;
@@ -850,12 +884,12 @@ public class NuGetPackageProvider(
         {
             if (arch == Architecture.X64)
             {
-                rids.AddRange(new[] { "unix", "osx", "osx-x64" });
+                rids.AddRange(["unix", "osx", "osx-x64"]);
                 if (OperatingSystem.IsMacCatalyst()) rids.Add("maccatalyst-x64");
             }
             else if (arch == Architecture.Arm64)
             {
-                rids.AddRange(new[] { "unix", "osx", "osx-x64", "osx-arm64" });
+                rids.AddRange(["unix", "osx", "osx-x64", "osx-arm64"]);
                 if (OperatingSystem.IsMacCatalyst()) rids.Add("maccatalyst-arm64");
             }
         }
@@ -863,23 +897,23 @@ public class NuGetPackageProvider(
         {
             if (arch == Architecture.X64)
             {
-                rids.AddRange(new[] { "unix", "linux", "linux-x64", "linux-musl-x64" });
+                rids.AddRange(["unix", "linux", "linux-x64", "linux-musl-x64"]);
             }
             else if (arch == Architecture.X86)
             {
-                rids.AddRange(new[] { "unix", "linux", "linux-x86" });
+                rids.AddRange(["unix", "linux", "linux-x86"]);
             }
             else if (arch == Architecture.Arm64)
             {
-                rids.AddRange(new[] { "unix", "linux", "linux-arm64", "linux-musl-arm64" });
+                rids.AddRange(["unix", "linux", "linux-arm64", "linux-musl-arm64"]);
             }
             else if (arch == Architecture.Arm)
             {
-                rids.AddRange(new[] { "unix", "linux", "linux-arm", "linux-musl-arm" });
+                rids.AddRange(["unix", "linux", "linux-arm", "linux-musl-arm"]);
             }
             else if (arch == Architecture.S390x)
             {
-                rids.AddRange(new[] { "unix", "linux", "linux-s390x" });
+                rids.AddRange(["unix", "linux", "linux-s390x"]);
             }
 
             if (!RuntimeInformation.OSDescription.ContainsIgnoreCase("musl"))
@@ -894,7 +928,7 @@ public class NuGetPackageProvider(
         // Add WASM as most specific
         if (arch == Architecture.Wasm)
         {
-            rids.AddRange(new[] { "wasm", "browser-wasm" });
+            rids.AddRange(["wasm", "browser-wasm"]);
         }
 
         return rids
@@ -938,14 +972,13 @@ public class NuGetPackageProvider(
 
     private SourceRepositoryProvider GetSourceRepositoryProvider()
     {
-        var settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(
+        var nugetSettings = global::NuGet.Configuration.Settings.LoadDefaultSettings(
             global::NuGet.Configuration.Settings.DefaultSettingsFileName
         );
 
-        var sourceProvider = new PackageSourceProvider(settings, new[]
-        {
+        var sourceProvider = new PackageSourceProvider(nugetSettings, [
             new PackageSource(NugetApiUri)
-        });
+        ]);
 
         return new SourceRepositoryProvider(sourceProvider, Repository.Provider.GetCoreV3());
     }
@@ -983,9 +1016,9 @@ public class NuGetPackageProvider(
 
         packageMetadata.Version ??= latestVersion?.Version.ToString();
 
-        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ??
-                                                 (await GetPackageVersionsAsync(packageMetadata.PackageId, searchMetadata.Identity.Version.IsPrerelease))
-                                                 .MaxBy(NuGetVersion.Parse);
+        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ?? (await GetPackageVersionsAsync(
+            packageMetadata.PackageId,
+            searchMetadata.Identity.Version.IsPrerelease)).MaxBy(NuGetVersion.Parse);
     }
 
     private string? GetInstallPath(NugetPackageIdentity packageIdentity)

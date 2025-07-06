@@ -1,5 +1,10 @@
 namespace NetPad.Packages;
 
+/// <summary>
+/// Information about a package.
+/// </summary>
+/// <param name="packageId">The package ID.</param>
+/// <param name="title">The package title.</param>
 public class PackageMetadata(string packageId, string title)
 {
     public string PackageId { get; set; } = packageId ?? throw new ArgumentNullException(nameof(packageId));

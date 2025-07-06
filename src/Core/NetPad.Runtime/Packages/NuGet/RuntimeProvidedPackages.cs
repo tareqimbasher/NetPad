@@ -13,7 +13,7 @@ internal static class RuntimeProvidedPackages
     /// <returns>True if the package is provided by the framework, otherwise false.</returns>
     public static bool IsPackageProvidedByRuntime(string packageId)
     {
-        return ProvidedPackages.Contains(packageId);
+        return _providedPackages.Contains(packageId);
     }
 
     /// <summary>
@@ -21,7 +21,7 @@ internal static class RuntimeProvidedPackages
     /// at https://github.com/dotnet/sdk/blob/v3.1.201/src/Tasks/Common/targets/Microsoft.NET.DefaultPackageConflictOverrides.targets.
     /// If the executing binaries ever change to a newer version, this project must update as well, and refresh this list.
     /// </summary>
-    private static readonly ISet<string> ProvidedPackages = new HashSet<string>
+    private static readonly ISet<string> _providedPackages = new HashSet<string>
     {
         "Microsoft.CSharp",
         "Microsoft.Win32.Primitives",
