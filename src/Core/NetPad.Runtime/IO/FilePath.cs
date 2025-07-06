@@ -19,8 +19,6 @@ public record FilePath(string Path) : AbsolutePath(Path)
 
     public FileInfo GetInfo() => new(Path);
 
-    public FilePath Combine(params string[] paths) => System.IO.Path.Combine(paths.Prepend(Path).ToArray());
-
     public override bool Exists() => File.Exists(Path);
 
     public override void DeleteIfExists()

@@ -1,6 +1,6 @@
 namespace NetPad.Events;
 
-public class DisposableToken(Action onDispose) : IDisposable
+public sealed class DisposableToken(Action onDispose) : IDisposable
 {
     public void Dispose()
     {

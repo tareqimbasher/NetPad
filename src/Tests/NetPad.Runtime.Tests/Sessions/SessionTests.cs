@@ -19,6 +19,29 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
     }
 
     [Fact]
+    public async Task IsOpenReturnsTrueWhenScriptIsOpen()
+    {
+        var session = SessionTestHelper.CreateSession(ServiceProvider);
+        var script = ScriptTestHelper.CreateScript();
+        await session.OpenAsync(script, false);
+
+        var isOpen = session.IsOpen(script.Id);
+
+        Assert.True(isOpen);
+    }
+
+    [Fact]
+    public void IsOpenReturnsFalseWhenScriptIsNotOpen()
+    {
+        var session = SessionTestHelper.CreateSession(ServiceProvider);
+        var script = ScriptTestHelper.CreateScript();
+
+        var isOpen = session.IsOpen(script.Id);
+
+        Assert.False(isOpen);
+    }
+
+    [Fact]
     public async Task GettingOpenedScriptById_ReturnsCorrectScript()
     {
         var session = SessionTestHelper.CreateSession(ServiceProvider);
