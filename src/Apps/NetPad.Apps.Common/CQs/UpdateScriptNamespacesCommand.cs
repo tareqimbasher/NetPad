@@ -5,10 +5,10 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.CQs;
 
-public class UpdateScriptNamespacesCommand(Script script, IEnumerable<string> namespaces) : Command
+public class UpdateScriptNamespacesCommand(Script script, IList<string> namespaces) : Command
 {
     public Script Script { get; } = script;
-    public IEnumerable<string> Namespaces { get; } = namespaces;
+    public IList<string> Namespaces { get; } = namespaces;
 
     public class Handler(IEventBus eventBus) : IRequestHandler<UpdateScriptNamespacesCommand>
     {

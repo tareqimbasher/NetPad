@@ -1,6 +1,5 @@
 using System.IO;
 using System.Reflection;
-using NetPad.Assemblies;
 
 namespace NetPad.Utilities;
 

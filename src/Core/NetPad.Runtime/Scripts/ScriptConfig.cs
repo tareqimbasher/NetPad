@@ -25,31 +25,35 @@ public class ScriptConfig(
 {
     private List<string> _namespaces = namespaces ?? [];
     private List<Reference> _references = references ?? [];
+    private ScriptKind _kind = kind;
+    private DotNetFrameworkVersion _targetFrameworkVersion = targetFrameworkVersion;
+    private OptimizationLevel _optimizationLevel = optimizationLevel;
+    private bool _useAspNet = useAspNet;
 
     [JsonIgnore] public List<Func<PropertyChangedArgs, Task>> OnPropertyChanged { get; } = [];
 
     public ScriptKind Kind
     {
-        get => kind;
-        private set => this.RaiseAndSetIfChanged(ref kind, value);
+        get => _kind;
+        private set => this.RaiseAndSetIfChanged(ref _kind, value);
     }
 
     public DotNetFrameworkVersion TargetFrameworkVersion
     {
-        get => targetFrameworkVersion;
-        private set => this.RaiseAndSetIfChanged(ref targetFrameworkVersion, value);
+        get => _targetFrameworkVersion;
+        private set => this.RaiseAndSetIfChanged(ref _targetFrameworkVersion, value);
     }
 
     public OptimizationLevel OptimizationLevel
     {
-        get => optimizationLevel;
-        private set => this.RaiseAndSetIfChanged(ref optimizationLevel, value);
+        get => _optimizationLevel;
+        private set => this.RaiseAndSetIfChanged(ref _optimizationLevel, value);
     }
 
     public bool UseAspNet
     {
-        get => useAspNet;
-        private set => this.RaiseAndSetIfChanged(ref useAspNet, value);
+        get => _useAspNet;
+        private set => this.RaiseAndSetIfChanged(ref _useAspNet, value);
     }
 
     public List<string> Namespaces
@@ -64,25 +68,25 @@ public class ScriptConfig(
         private set => this.RaiseAndSetIfChanged(ref _references, value);
     }
 
-    public void SetKind(ScriptKind kind)
+    public void SetKind(ScriptKind newKind)
     {
-        if (kind == Kind)
+        if (newKind == Kind)
             return;
 
-        Kind = kind;
+        Kind = newKind;
     }
 
-    public void SetTargetFrameworkVersion(DotNetFrameworkVersion targetFrameworkVersion)
+    public void SetTargetFrameworkVersion(DotNetFrameworkVersion newTargetFrameworkVersion)
     {
-        if (targetFrameworkVersion == TargetFrameworkVersion)
+        if (newTargetFrameworkVersion == TargetFrameworkVersion)
             return;
 
-        TargetFrameworkVersion = targetFrameworkVersion;
+        TargetFrameworkVersion = newTargetFrameworkVersion;
     }
 
     public void SetOptimizationLevel(OptimizationLevel level)
     {
-        if (level == optimizationLevel)
+        if (level == _optimizationLevel)
             return;
 
         OptimizationLevel = level;
@@ -90,30 +94,32 @@ public class ScriptConfig(
 
     public void SetUseAspNet(bool use)
     {
-        if (use == useAspNet)
+        if (use == _useAspNet)
             return;
 
         UseAspNet = use;
     }
 
-    public void SetNamespaces(IEnumerable<string> namespaces)
+    public void SetNamespaces(IList<string> namespaces)
     {
         if (Namespaces.SequenceEqual(namespaces))
             return;
 
-        namespaces = namespaces
+        var clean = namespaces
             .Where(ns => !string.IsNullOrWhiteSpace(ns))
-            .Select(ns => ns.Trim());
+            .Select(ns => ns.Trim())
+            .Distinct()
+            .ToList();
 
-        if (namespaces.Any(ns => ns.StartsWith("using ") || ns.EndsWith(';')))
+        if (clean.Any(ns => ns.StartsWith("using ") || ns.EndsWith(';')))
         {
             throw new ArgumentException("Namespaces should not start with 'using ' and must not end with ';'");
         }
 
-        Namespaces = namespaces.Distinct().ToList();
+        Namespaces = clean;
     }
 
-    public void SetReferences(IEnumerable<Reference> references)
+    public void SetReferences(IList<Reference> references)
     {
         if (References.SequenceEqual(references))
             return;
@@ -127,7 +133,7 @@ public class ScriptConfig(
 
 public static class ScriptConfigDefaults
 {
-    public static readonly List<string> DefaultNamespaces =
+    public static readonly string[] DefaultNamespaces =
     [
         "System",
         "System.Collections",

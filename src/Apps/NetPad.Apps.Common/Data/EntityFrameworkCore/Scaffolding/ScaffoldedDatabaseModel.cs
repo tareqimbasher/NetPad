@@ -1,4 +1,3 @@
-using NetPad.DotNet;
 using NetPad.DotNet.CodeAnalysis;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;

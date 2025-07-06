@@ -1,6 +1,5 @@
 using NetPad.Common;
 using NetPad.Compilation;
-using NetPad.DotNet;
 using NetPad.DotNet.CodeAnalysis;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.Scripts;

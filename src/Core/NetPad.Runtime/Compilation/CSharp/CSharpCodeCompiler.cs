@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using NetPad.CodeAnalysis;
 using NetPad.DotNet;
-using NetPad.IO;
 
 namespace NetPad.Compilation.CSharp;
 

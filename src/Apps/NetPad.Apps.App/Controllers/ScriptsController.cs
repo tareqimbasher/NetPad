@@ -104,7 +104,7 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/namespaces")]
-    public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] IEnumerable<string> namespaces)
+    public async Task<IActionResult> SetScriptNamespaces(Guid id, [FromBody] string[] namespaces)
     {
         var environment = await GetScriptEnvironmentAsync(id);
 
@@ -114,7 +114,7 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/references")]
-    public async Task<IActionResult> SetReferences(Guid id, [FromBody] IEnumerable<Reference> newReferences)
+    public async Task<IActionResult> SetReferences(Guid id, [FromBody] Reference[] newReferences)
     {
         var environment = await GetScriptEnvironmentAsync(id);
 

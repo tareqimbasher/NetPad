@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using NetPad.Assemblies;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;

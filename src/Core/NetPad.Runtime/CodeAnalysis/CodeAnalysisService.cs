@@ -101,7 +101,7 @@ public class CodeAnalysisService : ICodeAnalysisService
             }
         }
 
-        return new SyntaxTriviaSlim(kind, trivia.GetLocation()!.GetLineSpan().Span, displayValue.Truncate(50, true));
+        return new SyntaxTriviaSlim(kind, trivia.GetLocation().GetLineSpan().Span, displayValue.Truncate(50, true));
     }
 
     private static readonly Dictionary<SyntaxKind, string> _triviaDisplayValues = new Dictionary<SyntaxKind, string>

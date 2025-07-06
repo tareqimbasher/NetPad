@@ -11,7 +11,7 @@ public class KeyboardShortcutOptions : ISettingsOptions
 
     [JsonInclude] public List<KeyboardShortcutConfiguration> Shortcuts { get; private set; } = null!;
 
-    public KeyboardShortcutOptions SetShortcuts(IEnumerable<KeyboardShortcutConfiguration> shortcuts)
+    public KeyboardShortcutOptions SetShortcuts(IList<KeyboardShortcutConfiguration> shortcuts)
     {
         if (shortcuts.Any(s => string.IsNullOrWhiteSpace(s.Id)))
         {

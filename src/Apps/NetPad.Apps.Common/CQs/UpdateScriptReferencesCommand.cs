@@ -6,10 +6,10 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.CQs;
 
-public class UpdateScriptReferencesCommand(Script script, IEnumerable<Reference> newReferences) : Command
+public class UpdateScriptReferencesCommand(Script script, IList<Reference> newReferences) : Command
 {
     public Script Script { get; } = script;
-    public IEnumerable<Reference> NewReferences { get; } = newReferences;
+    public IList<Reference> NewReferences { get; } = newReferences;
 
     public class Handler(IEventBus eventBus) : IRequestHandler<UpdateScriptReferencesCommand>
     {

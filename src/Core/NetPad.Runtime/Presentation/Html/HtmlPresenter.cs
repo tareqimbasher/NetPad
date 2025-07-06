@@ -10,7 +10,7 @@ namespace NetPad.Presentation.Html;
 /// </summary>
 public static class HtmlPresenter
 {
-    public static readonly HtmlSerializerOptions _htmlSerializerOptions;
+    private static readonly HtmlSerializerOptions _htmlSerializerOptions;
 
     static HtmlPresenter()
     {
