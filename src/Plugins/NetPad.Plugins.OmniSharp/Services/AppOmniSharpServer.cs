@@ -81,8 +81,6 @@ public class AppOmniSharpServer(
 
         await StartOmniSharpServerAsync();
 
-        await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
-
         return true;
     }
 
@@ -129,8 +127,6 @@ public class AppOmniSharpServer(
         }
 
         _bufferUpdateSemaphores.Clear();
-
-        await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
 
         await Project.DeleteAsync();
     }
@@ -231,6 +227,8 @@ public class AppOmniSharpServer(
                 }
             });
         }
+
+        await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
     }
 
     private async Task StopOmniSharpServerAsync()
@@ -243,6 +241,8 @@ public class AppOmniSharpServer(
         await _omniSharpServer.StopAsync();
 
         _omniSharpServer = null;
+
+        await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
     }
 
     private bool IsValidServerExecutablePath(string? executablePath)
