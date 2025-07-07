@@ -20,14 +20,14 @@
 
         <div class="list-group-item" show.bind="folder.expanded">
             <div class="list-group">
-                <div class="list-group-item" repeat.for="childFolder of folder.folders | sort:'name'">
+                <div class="list-group-item" repeat.for="childFolder of folder.folders | sort:'name':'ordinalIgnoreCase'">
                     <script-folder folder.bind="childFolder" vm.bind="vm"></script-folder>
                 </div>
 
                 <div class="list-group-item">
                     <div class="list-group">
                         <div class="list-group-item script ${script.cssClasses}"
-                             repeat.for="script of folder.scripts | sort:'name'"
+                             repeat.for="script of folder.scripts | sort:'name':'ordinalIgnoreCase'"
                              click.trigger="vm.session.openByPath(script.path)">
                             <div class="script-content text-truncate"
                                  title.bind="script.path">
