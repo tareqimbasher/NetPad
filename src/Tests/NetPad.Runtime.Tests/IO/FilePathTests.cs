@@ -11,7 +11,8 @@ public class FilePathTests
         const string path = "/path/to/file";
 
         FilePath filePath = path;
+        var normalized = filePath.Path.Replace('/', Path.DirectorySeparatorChar);
 
-        Assert.Equal(path, filePath.Path);
+        Assert.Equal(path, normalized);
     }
 }
