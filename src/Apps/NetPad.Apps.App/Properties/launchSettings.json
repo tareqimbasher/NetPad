@@ -8,10 +8,10 @@
         }
     },
     "profiles": {
-        "Electron.NET App": {
+        "ElectronSharp App": {
             "commandName": "Executable",
-            "executablePath": "electronize",
-            "commandLineArgs": "start",
+            "executablePath": "electron-sharp",
+            "commandLineArgs": "start /manifest electron.manifest.js",
             "workingDirectory": "."
         },
         "ASP.NET Core App (no Electron)": {

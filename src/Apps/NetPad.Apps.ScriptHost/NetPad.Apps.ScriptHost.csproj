@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+        <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <AssemblyName>netpad-script-host</AssemblyName>
         <RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>

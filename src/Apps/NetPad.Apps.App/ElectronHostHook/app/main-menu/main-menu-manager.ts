@@ -67,7 +67,11 @@ export class MainMenuManager {
             id: id,
             label: item.text,
             accelerator: this.getAccelerator(item),
-            click: async (menuItem, browserWindow) => await this.sendMenuItemToRenderer(menuItem.id, browserWindow)
+            click: async (menuItem, browserWindow) => {
+                if (browserWindow instanceof BrowserWindow) {
+                    await this.sendMenuItemToRenderer(menuItem.id, browserWindow);
+                }
+            },
         };
     }
 
@@ -179,7 +183,7 @@ export class MainMenuManager {
                     this.fromAppMenuItem("tools.stopScriptHosts"),
                 ]
             },
-            { role: 'windowMenu' },
+            {role: 'windowMenu'},
             {
                 role: 'help',
                 submenu: [

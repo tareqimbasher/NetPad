@@ -75,7 +75,7 @@
         "@types/dragula": "^3.7.1",
         "@types/highlight.js": "^10.1.0",
         "@types/jest": "^29.5.3",
-        "@types/node": "^18.11.18",
+        "@types/node": "^22.16.2",
         "@types/sanitize-html": "^2.6.2",
         "@types/webpack-env": "^1.17.0",
         "@typescript-eslint/eslint-plugin": "^6.4.0",
