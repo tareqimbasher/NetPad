@@ -1,27 +1,40 @@
-Use the powerful `Dump()` method to visualize almost any object in the results console.
+# Data Dumping
 
-
+Use the powerful `Dump()` method to visualize almost any object or value in the output pane.
 
 ## Usage
 
-Use the `.Dump()` extension method on pretty much any object or value.
+Use the `.Dump()` extension method:
 
 ```csharp
 "some text".Dump();
+DateTime.Now.Dump();
 new MyClass().Dump();
 new List<MyClass> { new MyClass() }.Dump();
+```
 
-// Dump returns the object/value being dumped
+You can alternatively use the `Util` class:
+
+```csharp
+Util.Dump(new MyClass());
+```
+
+`Dump()` returns the object/value being dumped
+
+```csharp
 var personsOver30 = Persons.Where(p => p.Age > 30).Dump();
+```
 
-// Dump is chainable
+`Dump()` is chainable
+
+```csharp
 var names = Persons
   .Where(p => p.Age > 30)
   .Dump()
   .Select(p => p.Name);
 ```
 
-### Parameters
+## Parameters
 
 The `Dump()` method has the following optional parameters.
 
@@ -37,9 +50,9 @@ Persons.Where(p => p.Age > 30).Dump("Persons above the age of 30");
 Logs.Where(l => l.Level == "WRN").Dump(css: "card text-bg-warning w-25");
 ```
 
-> You can also define your own CSS classes in `Settings > Styles` and use them here!
+> :bulb: You can also define your own CSS classes in `Settings > Styles` and use them here!
 
-`clear`: removes the output after the specified milliseconds.
+`clear`: removes the output after the specified number of milliseconds.
 
 ```csharp
 while (true)
@@ -63,14 +76,17 @@ while (true)
 """.Dump(code: "xml");
 ```
 
-This is powered by the excellent [highlight.js](https://github.com/highlightjs/highlight.js) library which supports an exhaustive [list of languages](https://github.com/highlightjs/highlight.js?tab=readme-ov-file#supported-languages). You can also just use `auto` which will auto-detect the language.
-
+This is powered by the excellent [highlight.js](https://github.com/highlightjs/highlight.js) library which supports an
+exhaustive [list of languages](https://github.com/highlightjs/highlight.js?tab=readme-ov-file#supported-languages). You
+can also just use `auto` which will auto-detect the language.
 
 ## Media Files
 
 To dump media files, use the built-in `Image`, `Audio` and `Video` types from the `NetPad.Media` namespace.
 
 ```csharp
+using NetPad.Media;
+
 new Image("/path/to/image/png").Dump();
 Image.FromPath("/path/to/image.png").Dump();
 Image.FromUri(new Uri("https://web.com/image.png")).Dump();
@@ -83,11 +99,13 @@ Video.FromPath(...).Dump();
 ...
 ```
 
-> **Note:** using the `FromBytes` method will internally convert the source to a Base64 string and is provided as a convenience method.
+> **Caution:** using the `FromBytes` method will internally convert the source to a Base64 string and is provided as a
+> convenience method.
 
 #### Sizing
 
-Media files will be rendered in their original size, but you can specify size using the `DisplayWidth` and `DisplayHeight` properties:
+Media files will be rendered in their original size, but you can specify display size using the `DisplayWidth` and
+`DisplayHeight` properties:
 
 ```csharp
 new Image("/path/to/img.png")
@@ -111,7 +129,7 @@ Image.FromPath(imageFile).WithDisplaySize("100%", "400px");
 
 #### Methods
 
-These types inherit from the `MediaFile` base class which has these methods:
+`Image`, `Audio` and `Video` inherit from the `MediaFile` base class which has these utlitiy methods:
 
 ```csharp
 var image = Image.FromPath("/path/to/image.png");
@@ -125,7 +143,7 @@ image.OpenAndWait();
 
 ## HTML
 
-**Support is still experimental**
+**Functionality is a bit basic right now, but will be expanded.**
 
 You can dump HTML and create your own interactive views.
 
@@ -140,7 +158,8 @@ O2Html
 O2Html.Dom
 ```
 
-> More documentation and examples will be added soon. Advanced scenarios like JS interop and Blazor support are planned.
+> :bulb: More documentation and examples will be added soon. Advanced scenarios like JS interop and Blazor support are
+> planned.
 
 ### Examples
 
@@ -266,7 +285,9 @@ document.ToHtml(O2Html.Formatting.Indented).Dump("HTML", code: "html");
 ```
 
 ## `Span<T>` and `ReadOnlySpan<T>`
-Dumping `Span<T>` and `ReadOnlySpan<T>` values only works if the Span is the value being dumped. If the Span is instead a nested value inside a collection or object, only basic info about the Span will be rendered.
+
+Dumping `Span<T>` and `ReadOnlySpan<T>` values only works if you dump the Span directly. If the Span is a nested value
+inside a collection or object, only basic info about the Span will be rendered.
 
 ```csharp
 var span = new Span<byte>();
@@ -278,17 +299,26 @@ var myObject = new MyObject
 }.Dump();
 ```
 
-## Settings
-
-### Serialization Depth
-When dumping objects there is a limit on how deep the serialization will go. This setting can be configured in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Depth</kbd></kbd>.
-
-### Collection Length
-When dumping collections there is a limit on how many items from the collection will be serialized. This setting can be configured in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Collection Length</kbd></kbd>.
-
-> Setting these properties too high might cause performance problems.
-
-
 ## Customizing `Dump()`
 
-While this is **not** implemented yet, the plan is to give users the ability to customize how certain objects are serialized and rendered.
+### Settings
+
+You can control some of the functionality behind `Dump()` from settings.
+
+#### Serialization Depth
+
+When dumping objects there is a limit on how deep the serialization will go. This setting can be configured
+in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Depth</kbd></kbd>.
+
+#### Collection Length
+
+When dumping collections there is a limit on how many items from the collection will be serialized. This setting can be
+configured in <kbd><kbd>Settings</kbd> > <kbd>Results</kbd> > <kbd>Serialization</kbd> > <kbd>Max Collection
+Length</kbd></kbd>.
+
+!> Setting these properties to a large number might cause performance problems.
+
+### In Code
+
+While **not** implemented yet, the plan is to give users the ability to use code to customize how objects are serialized
+and rendered.
