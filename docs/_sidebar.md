@@ -4,17 +4,17 @@
   - [Download](/)
   
 
-- User Documentation
-  - [Home](user-docs/)
-  - [.NET SDK](user-docs/NET-SDK)
-  - [Data Connections](user-docs/Data-Connections)
-  - [Dump](user-docs/Dump)
-  - [Editor](user-docs/Editor)
-  - [NuGet & Assemblies](user-docs/NuGet-&-Assemblies)
-  - [Styling](user-docs/Styling)
-  - [Util](user-docs/Util)
-  - [How To](user-docs/How-Tos)
-  - [Troubleshooting](user-docs/Troubleshooting)
+- Wiki
+  - [Home](wiki/)
+  - [.NET SDK](wiki/NET-SDK)
+  - [Data Connections](wiki/Data-Connections)
+  - [Dump](wiki/Dump)
+  - [Editor](wiki/Editor)
+  - [NuGet & Assemblies](wiki/NuGet-&-Assemblies)
+  - [Styling](wiki/Styling)
+  - [Util](wiki/Util)
+  - [How To](wiki/How-Tos)
+  - [Troubleshooting](wiki/Troubleshooting)
 
 - Technical Documentation
   - [Home](technical-docs/)

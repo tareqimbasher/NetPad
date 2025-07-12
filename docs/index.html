@@ -25,6 +25,12 @@
         .app-name-link img {
             height: 28px;
         }
+
+        .sidebar .search input {
+            border-radius: 5px;
+            margin-left: 0.2rem;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -42,7 +48,12 @@
         subMaxLevel: 2,
         // plugins: [
         //     EditOnGithubPlugin.create("https://github.com/tareqimbasher/NetPad/blob/main/docs/")
-        // ]
+        // ],
+        progress: {
+            position: "top",
+            color: "var(--theme-color,#5d4df3)",
+            height: "3px",
+        }
     }
 </script>
 <!-- Docsify v4 -->
@@ -56,6 +67,7 @@
 <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docsify-progress@latest/dist/progress.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const link = document.getElementsByClassName("app-name-link")[0];

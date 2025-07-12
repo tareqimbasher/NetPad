@@ -1,6 +1,10 @@
-Data connections are a way to add data sources that can be accessed easily in scripts. Data connections were designed to
-support a wide variety of data sources like databases, Excel files, flat files...etc. NetPad currently supports database
-connections for these providers:
+# Data Connections
+
+Data connections let scripts tap into data sources and easily query, add and update data. Connections were designed to
+support a wide variety of data sources like databases, Excel files, flat files...etc. NetPad currently **only supports**
+database connections; the plan is to expand support in the near future.
+
+To access database connections, NetPad uses EntityFramework Core, and supports the following providers:
 
 * Microsoft SQL Server
 * PostgreSQL
@@ -8,25 +12,25 @@ connections for these providers:
 * MySQL
 * MariaDB
 
-:computer_mouse: To add a connection, click the `+` icon in the <kbd>Connections</kbd> explorer pane. Clicking <kbd>
-Save</kbd> once you're done will save the connection and scaffold it, making it ready to use in any of your scripts.
+:computer_mouse: To add a new connection, click the `+` icon in the <kbd>Connections</kbd> explorer pane. When you're
+finished, click <kbd>Save</kbd> to store your settings and auto-generate the scaffolding, making the connection
+instantly available in your scripts.
 
-:computer_mouse: To use a connection, drag and drop it to a script, or use the <kbd>Connections</kbd> dropdown in the
-toolbar to select the connection. Alternatively, you can right-click a connection and select <kbd>Use in Current
-script</kbd>.
+:computer_mouse: To use a connection, drag it and drop it onto a script, or use the <kbd>Connections</kbd> dropdown in
+the toolbar to select the connection. You can also right-click a connection and select <kbd>Use in Current script</kbd>.
 
-> :bulb: **Requirement**
-> You need to have the `dotnet-ef` tool installed to use this feature:
-> ```shell
-> dotnet tool install --global dotnet-ef
-> ```
-> You need version 6 or later.
+## Requirements
 
-## Data Context
+You need to have the `dotnet-ef` tool installed (version 6 or later) to use database connections:
 
-When a database connection is assigned on a script, NetPad scaffolds the data source using the Entity Framework Core
-dotnet tool (`dotnet-ef`) and generates a `DbContext` that can be accessed directly in the script using the
-`DataContext` property:
+```shell
+dotnet tool install --global dotnet-ef
+```
+
+## Usage
+
+When a database connection is created, NetPad scaffolds it using `dotnet-ef` and generates a `DbContext` and gives your
+script access to it via the `DataContext` property:
 
 ```csharp
 DataContext.AspNetRoles.Where(...).Dump();
@@ -34,7 +38,8 @@ DataContext.AspNetRoles.Add(...);
 DataContext.SaveChanges();
 ```
 
-You can also access `DbContext` properties and methods directly without going through the `DataContext` property:
+For convenience, NetPad allows you to reference certain `DbContext` members (`DbSet<T>` and methods) directly
+without going through the `DataContext` property:
 
 ```csharp
 AspNetRoles.Where(...).Dump();
@@ -44,7 +49,7 @@ SaveChanges();
 
 ## Configuring the `DbContext`
 
-Your script program inherits from `DbContext` so you can override and configure the generated `DbContext` as needed:
+Your script program inherits from `DbContext`, so you can override and configure the generated `DbContext` as needed:
 
 ```csharp
 var role = AspNetRoles.First(...);
@@ -81,15 +86,14 @@ partial class Program
 > :bulb: **Note**
 >
 > Since scripts in NetPad are Top-Level Statements, they run in a static context. That means you cannot directly
-> override `DbContext` methods. Instead add the methods you want to override in the partial `Program` class as shown in
+> override `DbContext` methods. Instead, add the methods you want to override in the `partial Program` class as shown in
 > the example above.
 
 ## Compiled Models
 
-Compiled models can improve EF Core startup time for applications with large models. A large model typically means
+Compiled models can improve script startup time for connections with large models. A "large model" typically means
 hundreds to thousands of entity types and relationships. You can opt to use a compiled model in the <kbd>
-Scaffolding</kbd>
-tab of the connection properties dialog.
+Scaffolding</kbd> tab of the connection properties dialog.
 
 Compiled models are not effective for smaller models and have some limitations when used. To learn more about compiled
 models and their limitations
@@ -97,27 +101,26 @@ see [this](https://learn.microsoft.com/en-us/ef/core/performance/advanced-perfor
 
 ## Schema Caching
 
-After a `DbContext` is generated for a connection, it will be cached for re-use. The validity of the cached `DbContext`
+After a `DbContext` is generated for a connection, it is cached for re-use. The validity of the cached `DbContext`
 will be verified the first time it is used after starting NetPad. If the schema has changed it will be re-scaffolded and
 a new `DbContext` will be generated and cached.
 
-You can manually re-scaffold the database anytime by right-clicking a connection and selecting `Refresh`.
+> :bulb: You can manually re-scaffold the `DbContext` anytime by right-clicking a connection and selecting <kbd>
+> Refresh</kbd>.
 
-#### How does schema cache validation work?
+#### How does NetPad figure out if cache needs to be invalidated?
 
-Since each database engine works a little differently, different strategies are needed to determine if a schema has
-changed since the last time we saw it. In general though, the first time a database is scaffolded, metadata specific to
-that database's schema will be stored. The next time NetPad is started, and the connection used, database metadata will
-be recalculated and compared with the metadata we've previously cached.
+Since each database provider operates differently, NetPad uses specific strategies to detect if the schema has changed
+since it was cached. Generally, when a database is scaffolded for the first time, schema-specific metadata is
+stored. Whenever NetPad restarts and the connection is used again, it recalculates the database metadata and compares it
+to the previously cached version.
 
-If the two values do not match, NetPad will re-scaffold the database and store the new metadata to compare against in
-the future. The important part is that generating this metadata is far quicker that scaffolding the database everytime
-NetPad is started.
+If differences are found, NetPad re-scaffolds the database and updates the stored metadata for future comparisons. This
+approach is significantly faster than re-scaffolding the database every time NetPad starts.
 
-Below is an outline of what metadata is stored, per database engine type. This metadata is compared against to determine
-if the schema has changed:
+Below is an outline of what metadata is stored and used for comparison, per database provider:
 
-| Engine               | Metadata                                                                                                                                                                                                                                                                                                                                                                |
+| Database             | Metadata                                                                                                                                                                                                                                                                                                                                                                |
 |:---------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Microsoft SQL Server | The date of the last modified user-created object:<br />`SELECT max(modify_date)`<br />`FROM sys.objects`<br />`WHERE is_ms_shipped = 'False'`<br />&nbsp;&nbsp;&nbsp;`AND type IN ('F', 'PK', 'U', 'V')`                                                                                                                                                               |
 | PostgreSQL           | A MD5 hash is calculated from the result of:<br />`SELECT table_schema, table_name, column_name, is_nullable, data_type, is_identity`<br />`FROM information_schema.columns`<br />`WHERE table_schema NOT IN ('pg_catalog', 'information_schema')`<br />&nbsp;&nbsp;&nbsp;`AND table_schema NOT LIKE 'pg_toast%'`<br />`ORDER BY table_schema, table_name, column_name` |
