@@ -1,6 +1,6 @@
 # .NET SDK
 
-NetPad is a great way to experiment with new versions of .NET and try out new features. Any .NET SDKs installed on the
+NetPad is a great way to experiment with new versions of .NET and try out new features. Any .NET SDKs installed on your
 machine are automatically detected. You must have at least one .NET SDK **v6 or later** installed. If you have multiple
 SDK versions installed, you can change the SDK used on a per-script basis.
 
@@ -11,9 +11,8 @@ want to use.
 
 ## Auto-detection
 
-NetPad will attempt to automatically locate where you installed the .NET SDK.
-
-First it will attempt to use the value from one of these environment variables:
+NetPad will try to locate where you installed the .NET SDK. First it will attempt to use the value from one of these
+environment variables:
 
 * `DOTNET_ROOT`
 * `DOTNET_INSTALL_DIR`
@@ -47,5 +46,11 @@ Folders</kbd></kbd> and adding the full path to your .NET SDK installation direc
 
 ## Issues
 
-If NetPad is complaining that it cannot find your .NET SDK installation,
-please [open an issue](https://github.com/tareqimbasher/NetPad/issues) on GitHub.
+If NetPad is complaining that it cannot find your .NET SDK installation:
+
+1. Set `DOTNET_ROOT` or `DOTNET_INSTALL_DIR` environment variables to the directory where you have the .NET SDK
+   installed.
+2. Or, make sure you have the .NET SDK installed in one of the locations outlined in
+   the [Auto-detection](#auto-detection) section above.
+3. Try setting the location manually in Settings.
+4. If all else fails, see: [How to Get Help](/wiki/Troubleshooting#how-to-get-help).

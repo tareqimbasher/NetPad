@@ -97,7 +97,7 @@ The following happens when a user starts the Electron version of NetPad:
 The implementation for the Tauri shell. Used when NetPad runs as a Tauri desktop app. Tauri is a Rust framework that
 opens a window that contains a WebView which in turn loads a web page, in this case the NetPad JS app.
 
-> [!TIP]
+> :bulb:
 > The Tauri shell is a native application which has the following advantages over the Electron shell:
 > 1. Faster to start.
 > 2. Uses significantly less system resources at runtime.

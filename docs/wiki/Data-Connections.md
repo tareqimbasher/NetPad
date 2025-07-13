@@ -83,9 +83,7 @@ partial class Program
 }
 ```
 
-> :bulb: **Note**
->
-> Since scripts in NetPad are Top-Level Statements, they run in a static context. That means you cannot directly
+> :bulb: Since scripts in NetPad are Top-Level Statements, they run in a static context. That means you cannot directly
 > override `DbContext` methods. Instead, add the methods you want to override in the `partial Program` class as shown in
 > the example above.
 

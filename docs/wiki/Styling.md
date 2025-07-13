@@ -1,10 +1,11 @@
-# App Styles
+# Styling
 
-You can change the way NetPad looks by defining your own CSS styles in <kbd><kbd>Settings</kbd> > <kbd>Styles</kbd></kbd>.
+You can change the way NetPad looks by defining your own CSS styles in <kbd><kbd>Settings</kbd> > <kbd>
+Styles</kbd></kbd>.
 
-### Customizing Output
+## Styling Output
 
-Use the `.dump-container` class to define custom styles
+Use the `.dump-container` class to define custom styles for the output container.
 
 ```css
 .dump-container {
@@ -24,9 +25,10 @@ myObj.Dump(css: "important");
 }
 ```
 
-### Theming NetPad
+## Theming NetPad
 
-NetPad has 2 themes, Light and Dark. You can override the styles of these themes to make it feel yours. These are all the 
+NetPad has 2 themes, Light and Dark. You can override the styles of these themes to make it feel yours. These are all
+the
 CSS variables and their values for both themes:
 
 ```css
@@ -138,7 +140,8 @@ To override a variable, define it in your custom styles.
 }
 ```
 
-Here's an example of customizing the Dark theme using the Dracula color palette (which goes great with the Dracula editor theme):
+Here's an example of customizing the Dark theme using the Dracula color palette, which goes great with the Dracula
+editor theme in <kbd><kbd>Settings</kbd> > <kbd>Editor</kbd></kbd>:
 
 ```css
 .theme-netpad-dark {
@@ -163,17 +166,34 @@ Here's an example of customizing the Dark theme using the Dracula color palette 
 }
 ```
 
-Finally, you can style pretty much anything in NetPad. If you find something you'd like to style that isn't covered by the
-pre-defined CSS variables open the Developer Console (`CTRL + SHIFT + I`), locate the element(s) you'd like to customize and
-add them to your custom styles!
+### Theming Anything
 
-> **Note** that changes to theme CSS variables and to DOM structure can/will occur in later releases.
+You can style pretty much anything in NetPad. If you find something you'd like to style that isn't covered by
+the pre-defined CSS variables open the Developer Console (`CTRL + SHIFT + I`), locate the element(s) you'd like to
+customize and add them to your custom styles!
 
-# Editor Styles
+Example:
 
-NetPad uses the Monaco editor. You can customize the look and feel of the editor by going to <kbd><kbd>Settings</kbd> > <kbd>Editor</kbd></kbd>.
-There are a number of themes to select from (powered by the [monaco-themes](https://github.com/brijeshb42/monaco-themes) project), 
-but you can further customize a selected theme using the `themeCustomizations` property.
+```css
+.save-icon {
+    color: orange;
+}
+```
+
+!> **Note** that breaking changes to theme CSS variables and to DOM structure can occur in NetPad updates. If that
+happens, it will be announced.
+
+## Styling the Editor
+
+### Predefined Themes
+
+NetPad uses the Monaco editor. You can customize the look and feel of the editor by going to <kbd><kbd>
+Settings</kbd> > <kbd>Editor</kbd></kbd>. There you'll find a number of themes to select from (powered by
+the [monaco-themes](https://github.com/brijeshb42/monaco-themes) project).
+
+### Custom Styles
+
+You can customize a selected theme using the `themeCustomizations` property.
 
 ```jsonc
 {
@@ -202,26 +222,29 @@ but you can further customize a selected theme using the `themeCustomizations` p
 }
 ```
 
-> See [IColors](https://microsoft.github.io/monaco-editor/typedoc/types/editor.IColors.html) and 
-> [ITokenThemeRule](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.ITokenThemeRule.html) for the 
+> :bulb: See [IColors](https://microsoft.github.io/monaco-editor/typedoc/types/editor.IColors.html) and
+> [ITokenThemeRule](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.ITokenThemeRule.html) for the
 > definition of the `colors` and `rules` properties respectively.
 
-The value keys that can be added to the `colors` property are not all clearly defined by the Monaco project but here are some:
+The value keys that can be added to the `colors` property are not all clearly defined by the Monaco project but here are
+some:
 
 ```json
-"colors": {
-    "editor.foreground": "#f6f8fa",
-    "editor.background": "#24292e",
-    "editor.selectionBackground": "#4c2889",
-    "editor.inactiveSelectionBackground": "#444d56",
-    "editor.lineHighlightBackground": "#444d56",
-    "editorCursor.foreground": "#ffffff",
-    "editorWhitespace.foreground": "#6a737d",
-    "editorIndentGuide.background": "#6a737d",
-    "editorIndentGuide.activeBackground": "#f6f8fa",
-    "editor.selectionHighlightBorder": "#444d56"
+{
+    "colors": {
+        "editor.foreground": "#f6f8fa",
+        "editor.background": "#24292e",
+        "editor.selectionBackground": "#4c2889",
+        "editor.inactiveSelectionBackground": "#444d56",
+        "editor.lineHighlightBackground": "#444d56",
+        "editorCursor.foreground": "#ffffff",
+        "editorWhitespace.foreground": "#6a737d",
+        "editorIndentGuide.background": "#6a737d",
+        "editorIndentGuide.activeBackground": "#f6f8fa",
+        "editor.selectionHighlightBorder": "#444d56"
+    }
 }
 ```
 
-Token names for use in the `rules` property are also not clearly defined. However, you can find the ones NetPad uses 
+Token names for use in the `rules` property are also not clearly defined. However, you can find the ones NetPad uses
 [here](https://github.com/tareqimbasher/NetPad/blob/5d0e78714383f41254253fd47190964510475b76/src/Apps/NetPad.Apps.App/App/src/core/%40application/editor/monaco/monaco-theme-manager.ts#L319).
