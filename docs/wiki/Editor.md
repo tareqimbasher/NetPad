@@ -25,4 +25,8 @@ OmniSharp server from the editor Command Palette: <kbd><kbd>Command Palette (F1)
 OmniSharp Server</kbd></kbd>. Wait a couple seconds for it to restart, it should start behaving after that.
 
 If you still experience issues, try restarting NetPad entirely,
-or [open an issue](https://github.com/tareqimbasher/NetPad) on GitHub.
+or see [How to Get Help](/wiki/Troubleshooting#how-to-get-help).
+
+## Styling
+
+See [Styling the Editor](/wiki/Styling?id=styling-the-editor) for how to style the editor in NetPad.

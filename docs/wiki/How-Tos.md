@@ -1,4 +1,4 @@
-## How to create a "Program-style" script?
+## Creating a "Program-style" script
 
 The primary approach is to write Top-Level statements, ie:
 

@@ -11,11 +11,16 @@ managing projects. NetPad's simplicity and utility make it a great tool for any 
 - Query databases using LINQ or SQL.
 - Create your own utility/administration scripts and run them anytime.
 
-### Issues & Suggestions
+### Suggestions & Issues
 
-Please open an [issue](https://github.com/tareqimbasher/NetPad/issues)
-or [discussion](https://github.com/tareqimbasher/NetPad/discussions) if you're having problems
-or want to request a new feature.
+If you have a suggestion or want to request a new feature please open an [issue](https://github.com/tareqimbasher/NetPad/issues)
+or a [discussion](https://github.com/tareqimbasher/NetPad/discussions).
+
+If you need help with an issue you're facing:
+
+- Take a look at the [Common Issues](/wiki/Troubleshooting#Common-Issues) section.
+- [Search the issues](https://github.com/tareqimbasher/NetPad/issues) on GitHub, someone might've already run into the same problem and got it resolved.
+- [Open an issue](https://github.com/tareqimbasher/NetPad/issues) on GitHub or join our [Discord server](https://discord.gg/FrgzNBYQFW).
 
 Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see the latest announcements.
 
