@@ -9,5 +9,8 @@
     - [How To](wiki/How-Tos)
     - [Troubleshooting](wiki/Troubleshooting)
 
-- [Technical Documentation](/technical-docs/)
-    - [Solution Structure](/technical-docs/Solution%20Structure.md)
+- [Technical](/technical-docs/)
+    - [Solution Structure](/technical-docs/Solution-Structure.md)
+    - [App Components](/technical-docs/App-Components.md)
+    - [Startup](/technical-docs/Startup.md)
+    - [IPC](/technical-docs/IPC.md)
