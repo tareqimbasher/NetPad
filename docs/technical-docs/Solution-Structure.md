@@ -81,17 +81,6 @@ The implementation for the web (browser) shell. Used when NetPad runs as a web a
 The implementation for the Electron shell. Used when NetPad runs as an Electron desktop app. An integral part of this
 implementation is the ElectronSharp library, which enables calling into Electron from .NET code.
 
-#### App Startup Overview
-
-The following happens when a user starts the Electron version of NetPad:
-
-1. The Electron main process starts first.
-2. The Electron process opens a websocket that is used for two-way communication between .NET and Electron.
-3. The Electron process then starts the .NET app and passes it the port on which the websocket is listening. This port
-   is used to initialize the ElectronSharp library and tells the .NET app that the Electron shell is in use.
-4. After the .NET app has initialized, it calls into ElectronSharp to open the main NetPad window.
-5. When the window opens, it loads the JS app by navigating to the proper URL hosted by the .NET app.
-
 ### Apps/`NetPad.Apps.Shells.Tauri`
 
 The implementation for the Tauri shell. Used when NetPad runs as a Tauri desktop app. Tauri is a Rust framework that
@@ -104,16 +93,6 @@ opens a window that contains a WebView which in turn loads a web page, in this c
 > 3. Smaller installer and takes up less disk space when installed.
 >
 > Note that **only** the shell is native; it still loads a web-based user interface within it.
-
-#### App Startup Overview
-
-The following happens when a user starts the Tauri version of NetPad:
-
-1. The Rust app starts first and opens the main NetPad window.
-2. It then starts the .NET app and passes it the `--tauri` argument. This tells the .NET app that the Tauri shell is in
-   use.
-3. The window that was opened waits for the .NET app to finish starting and become available.
-4. When the .NET app starts, the window loads the JS app by navigating to the proper URL hosted by the .NET app.
 
 ### Apps/`NetPad.Apps.ScriptHost`
 
