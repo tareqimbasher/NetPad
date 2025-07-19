@@ -1,6 +1,6 @@
-import {observable} from "@aurelia/runtime";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
-import {DatabaseConnection, IDataConnectionService} from "@application";
+import {DatabaseConnection} from "@application";
+import {CommonServices} from "../common-services";
 
 export interface IDatabaseComponentOptions {
     allowSelectDatabaseFile: boolean;
@@ -12,18 +12,15 @@ export interface IDatabaseComponentOptions {
 export interface IDatabaseLoadingOptions {
     enabled: boolean;
     requirementsToLoadAreMet: () => boolean;
-    dataConnectionService: IDataConnectionService
 }
 
 export class DatabaseComponent implements IDataConnectionViewComponent {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
 
-    private browseInput: HTMLInputElement;
-    @observable public browsedFile: FileList;
-
     constructor(
         private readonly connection: DatabaseConnection,
+        private readonly commonServices: CommonServices,
         private readonly options?: IDatabaseComponentOptions,
         private readonly dbLoadingOptions?: IDatabaseLoadingOptions) {
 
@@ -50,24 +47,23 @@ export class DatabaseComponent implements IDataConnectionViewComponent {
             this.loadingDatabases = true;
 
             try {
-                this.databasesOnServer = await this.dbLoadingOptions.dataConnectionService.getDatabases(this.connection);
+                this.databasesOnServer = await this.commonServices.dataConnectionService.getDatabases(this.connection);
             } finally {
                 this.loadingDatabases = false;
             }
         }
     }
 
-    private browsedFileChanged(newValue: FileList) {
-        if (!newValue || newValue.length === 0) {
+    public async browseDatabaseFile() {
+        const paths = await this.commonServices.nativeDialogService.showFileSelectorDialog({
+            title: "Database file",
+            multiple: false,
+        });
+
+        if (!paths || paths.length === 0) {
             return;
         }
 
-        const file = newValue.item(0);
-
-        this.connection.databaseName = file?.path;
-
-        // Clear file input element so if user selects a file, removes it, then re-selects it
-        // the change is observed
-        this.browseInput.value = "";
+        this.connection.databaseName = paths[0];
     }
 }

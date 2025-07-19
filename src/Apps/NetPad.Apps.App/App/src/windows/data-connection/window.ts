@@ -15,6 +15,8 @@ import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
 import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
+import {CommonServices} from "./connection-views/common-services";
+import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -29,7 +31,8 @@ export class Window extends WindowBase {
 
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
-        @IWindowService private readonly windowService: IWindowService
+        @IWindowService private readonly windowService: IWindowService,
+        @INativeDialogService private readonly nativeDialogService: INativeDialogService
     ) {
         super();
 
@@ -153,24 +156,29 @@ export class Window extends WindowBase {
             return undefined;
         }
 
+        const commonServices: CommonServices = {
+            dataConnectionService: this.dataConnectionService,
+            nativeDialogService: this.nativeDialogService,
+        }
+
         if (connectionType === "MSSQLServer") {
-            return new MssqlView(connection, this.dataConnectionService);
+            return new MssqlView(connection, commonServices);
         }
 
         if (connectionType === "PostgreSQL") {
-            return new PostgresqlView(connection, this.dataConnectionService);
+            return new PostgresqlView(connection, commonServices);
         }
 
         if (connectionType === "SQLite") {
-            return new SqliteView(connection, this.dataConnectionService);
+            return new SqliteView(connection, commonServices);
         }
 
         if (connectionType === "MySQL") {
-            return new MysqlView(connection, this.dataConnectionService);
+            return new MysqlView(connection, commonServices);
         }
 
         if (connectionType === "MariaDB") {
-            return new MariaDbView(connection, this.dataConnectionService);
+            return new MariaDbView(connection, commonServices);
         }
 
         return undefined;

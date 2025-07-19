@@ -4,7 +4,7 @@
         <p class="text-muted text-center">
             No assembly references.<br/>
             <span shells="!browser">
-            <a class="btn-link" click.trigger="browseInput.click()">Browse</a> for an assembly or
+            <a class="btn-link" click.trigger="browseAssemblies()">Browse</a> for an assembly or
             <a class="btn-link" click.trigger="configStore.selectedTab = configStore.tabs[1]">add a NuGet package</a>.
         </span>
             <span shells="browser">
@@ -82,6 +82,5 @@
 </div>
 
 <div portal="#buttons" if.bind="configStore.selectedTab.route === 'references'" shells="!browser">
-    <button class="btn btn-secondary" click.trigger="browseInput.click()">Browse...</button>
-    <input ref="browseInput" type="file" multiple accept=".dll" files.bind="browsedAssemblies" class="d-none">
+    <button class="btn btn-secondary" click.trigger="browseAssemblies()">Browse...</button>
 </div>

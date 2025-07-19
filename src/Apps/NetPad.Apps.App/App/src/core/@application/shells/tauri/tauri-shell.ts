@@ -9,6 +9,8 @@ import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-hand
 import {Window} from "@tauri-apps/api/window"
 import {WindowId} from "@application/windows/window-id";
 import {WindowParams} from "@application/windows/window-params";
+import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {TauriNativeDialogService} from "@application/shells/tauri/services/tauri-native-dialog-service";
 
 export class TauriShell implements IShell {
     public configure(appBuilder: IAurelia): void {
@@ -17,6 +19,7 @@ export class TauriShell implements IShell {
             Registration.transient(IBackgroundService, TauriWindowBackgroundService),
             Registration.transient(IWindowService, TauriWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
+            Registration.singleton(INativeDialogService, TauriNativeDialogService),
         );
 
         if (WindowParams.window === WindowId.Main) {

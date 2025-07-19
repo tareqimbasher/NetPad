@@ -13,8 +13,8 @@ import {save} from '@tauri-apps/plugin-dialog'
 import {listen} from '@tauri-apps/api/event';
 
 /**
- * This is utilized for the Browser app, not the Electron app.
- * This enables opening specific dialog windows when running the browser app.
+ * This is utilized for the Tauri app
+ * This enables opening specific dialog windows when running the tauri app.
  */
 export class TauriDialogBackgroundService extends WithDisposables implements IBackgroundService {
     constructor(@IEventBus readonly eventBus: IEventBus,

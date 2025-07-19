@@ -1,6 +1,7 @@
 import {watch} from "@aurelia/runtime-html";
-import {DatabaseConnection, IDataConnectionService} from "@application";
+import {DatabaseConnection} from "@application";
 import {IDataConnectionViewComponent} from "./idata-connection-view-component";
+import {CommonServices} from "../common-services";
 
 export class AuthComponent implements IDataConnectionViewComponent {
     public authType: "none" | "password" | "userAndPassword";
@@ -8,7 +9,7 @@ export class AuthComponent implements IDataConnectionViewComponent {
 
     constructor(
         private readonly connection: DatabaseConnection,
-        private readonly dataConnectionService: IDataConnectionService,
+        private readonly commonServices: CommonServices,
         private readonly passwordOnly = false) {
 
         if (passwordOnly && !!connection.password) {
@@ -45,7 +46,7 @@ export class AuthComponent implements IDataConnectionViewComponent {
         const dbConnection = this.connection as DatabaseConnection;
         if (!this.unprotectedPassword) dbConnection.password = this.unprotectedPassword;
         else {
-            dbConnection.password = await this.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;
+            dbConnection.password = await this.commonServices.dataConnectionService.protectPassword(this.unprotectedPassword) || undefined;
         }
     }
 }

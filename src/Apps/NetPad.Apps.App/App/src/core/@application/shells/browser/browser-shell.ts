@@ -6,6 +6,8 @@ import {BrowserWindowBackgroundService} from "./services/browser-window-backgrou
 import {BrowserWindowService} from "./services/browser-window-service";
 import {IBackgroundService} from "@application";
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
+import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {BrowserNativeDialogService} from "@application/shells/browser/services/browser-native-dialog-service";
 
 /**
  * Configurations for when the app is running in the Browser.
@@ -17,6 +19,7 @@ export class BrowserShell implements IShell {
             Registration.transient(IBackgroundService, BrowserWindowBackgroundService),
             Registration.transient(IWindowService, BrowserWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
+            Registration.singleton(INativeDialogService, BrowserNativeDialogService),
         );
 
         // Disable default right-click action
