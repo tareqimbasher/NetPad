@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
+        services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
         services.AddDataProtection(options => options.ApplicationDiscriminator = AppIdentifier.AppId);
 
         return services;

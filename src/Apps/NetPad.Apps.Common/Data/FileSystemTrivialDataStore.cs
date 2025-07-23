@@ -1,11 +1,9 @@
-using System.IO;
-using System.Linq;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.IO;
 
-namespace NetPad.Services;
+namespace NetPad.Apps.Data;
 
 /// <summary>
 /// An implementation of <see cref="ITrivialDataStore"/> that persists trivial data to the local file system.

@@ -16,7 +16,6 @@ using NetPad.Apps.Resources;
 using NetPad.Apps.UiInterop;
 using NetPad.BackgroundServices;
 using NetPad.Common;
-using NetPad.Data;
 using NetPad.ExecutionModel;
 using NetPad.Middlewares;
 using NetPad.Plugins.OmniSharp;
@@ -57,7 +56,6 @@ public class Startup
         // Application services
         services.AddSingleton<HostInfo>();
         services.AddTransient<ILogoService, LogoService>();
-        services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
         services.AddTransient<IIpcService, SignalRIpcService>();
         services.AddTransient<ScriptService>();
         services.AddTransient<IAutoSaveScriptRepository, FileSystemAutoSaveScriptRepository>();
