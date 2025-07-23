@@ -24,7 +24,7 @@ jobs:
       - name: 🧲 Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 22.x
 
       - name: 🚩 Get version
         run: echo "PACKAGE_VERSION=$(node -p "require('./src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5').version")" >> $GITHUB_ENV
@@ -72,7 +72,7 @@ jobs:
       - name: 🧲 Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 22.x
 
       - name: 🧲 Setup .NET 6 and 8
         uses: actions/setup-dotnet@v4.0.0

@@ -52,8 +52,8 @@ if ! command -v npm &> /dev/null; then
     exit 1
 fi
 
-if ! command -v electronize &> /dev/null; then
-    echo "Could not find 'electronize'."
+if ! command -v electron-sharp &> /dev/null; then
+    echo "Could not find 'electron-sharp'."
     exit 1
 fi
 
@@ -100,7 +100,7 @@ package() {
   if [[ $build == "true" ]]; then
     echo "- Building..."
     cd "$APP_DIR" || exit 1
-    electronize build /manifest electron.manifest.js /PublishSingleFile false /target $os
+    electron-sharp build /manifest electron.manifest.js /PublishSingleFile false /target $os
   fi
 
   echo "- Distributing..."

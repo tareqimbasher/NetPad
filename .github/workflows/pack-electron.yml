@@ -37,7 +37,7 @@ jobs:
       - name: 🧲 Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 22.x
 
       - name: 🧲 Setup .NET 6 and 8
         uses: actions/setup-dotnet@v4.0.0
@@ -74,7 +74,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
-          electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for Windows
         if: matrix.platform == 'windows-latest'
@@ -82,7 +82,7 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
-          electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for macOS (x86)
         if: matrix.platform == 'macos-latest'
@@ -90,13 +90,13 @@ jobs:
         run: |
           dotnet restore
           dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
-          electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for macOS (ARM)
         if: matrix.platform == 'macos-latest'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
-          electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+          electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 
       - name: Upload Bundled Packages
         uses: actions/upload-artifact@v4

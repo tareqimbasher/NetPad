@@ -60,9 +60,9 @@ interface can be hosted in a number of different environments, or _shells_:
 
 ### Prerequisites
 
-- [Node](https://nodejs.org/en/download/prebuilt-installer/current) v18.20+ (npm v10.7+)
-- [.NET](https://dotnet.microsoft.com/en-us/download/dotnet/7.0) SDK 7.x
-- [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
+- [Node](https://nodejs.org/en/download) v22+
+- [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) 9.x
+- [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)
 
 Start by cloning, or forking, the repository:
 
@@ -116,23 +116,25 @@ npm start
 ```bash
 cd src/Apps/NetPad.Apps.App/
 
-# Install the `electronize` dotnet tool
-dotnet tool install ElectronNET.CLI -g
+# Install the `electron-sharp` dotnet tool
+dotnet tool install ElectronSharp.CLI -g
 
 # Start in watch mode (remove '/watch' to run without watch mode)
-electronize start /watch /manifest electron.manifest.dev.js
+electron-sharp start /watch /manifest electron.manifest.dev.js
 
-# For macOS ARM, append the following to the 'electronize start' command
+# For macOS ARM, append the following to the 'electron-sharp start' command
 /target custom "osx-arm64;mac" /electron-arch arm64
 ```
 
-> [!IMPORTANT]
-> Running `electronize` requires you to have .NET 6 SDK installed.
+> [!HINT]
+> If invoking any of those commands gives you strange errors (like .NET 6 not installed), it means
+> you've typed electronize instead of electron-sharp.
 
 > [!TIP]
-> The very first `electronize start` is slow. Later runs are much faster!
+> The very first `electron-sharp start` is slow due to dependency downloads. Later runs are much
+> faster!
 
-### Tauri (Native) App
+### Tauri (Native Shell) Desktop App
 
 You will need to have the [Rust toolchain](https://www.rust-lang.org/tools/install)  installed to
 build the Tauri app.
@@ -169,12 +171,12 @@ Build the app for the desired platform from the root directory of the `NetPad.Ap
 
 ```bash
 # For x64:
-electronize build /target win /manifest electron.manifest.js /PublishSingleFile false
-electronize build /target osx /manifest electron.manifest.js /PublishSingleFile false
-electronize build /target linux /manifest electron.manifest.js /PublishSingleFile false
+electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
+electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
 
 # For macOS ARM:
-electronize build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 ```
 
 Packaged files can be found in the `bin/Desktop` folder.
@@ -184,29 +186,14 @@ Packaged files can be found in the `bin/Desktop` folder.
 > Linux, the `/scripts/package-electron.sh` script can be used to package the Electron app, in which
 > case packaged files can be found in the `/dist/` folder.
 
-See the [Electron.NET docs](https://github.com/ElectronNET/Electron.NET#-build)
-for additional CLI options when packaging the app,
-and [electron-builder](https://www.electron.build/) for additional configuration
-options.
+See the [ElectronSharp docs](https://github.com/theolivenbaum/electron-sharp) for additional CLI
+options when packaging the app, and [electron-builder](https://www.electron.build/) for additional
+configuration options.
 
 ## Issue Reporting
 
 - **Bug Reports**: Include steps to reproduce and environment details.
 - **Feature Requests**: Clearly describe the feature and why it’s needed.
-
-## Documentation Guidelines
-
-Documentation contributions are welcome. And includes in the `/docs` directory as well as in
-the [README.md](./README.md) and [CONTRIBUTING.md](./CONTRIBUTING.md) files.
-
-* Don't add images or other media files with excessive size.
-* Use [camelCase](https://en.wikipedia.org/wiki/Camel_case) for directory names.
-* Use [Title Case](https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case) for
-  file names.
-
-> [!IMPORTANT]
-> The naming conventions mentioned above do not apply for the .NET projects nor the Electron
-> projects. Follow the conventions of the respective technologies.
 
 ## License
 
@@ -220,7 +207,3 @@ our [Discord Server](https://discord.gg/FrgzNBYQFW)
 
 At our Discord, you can find the latest announcements, troubleshooting, ideas and feedback, and
 more.
-
-## Acknowledgments
-
-<div style="display: flex; align-items: center;">Thank you for your contributions and helping make&nbsp;<img width="20px" style="padding: 0 7;" src="https://github.com/tareqimbasher/netpad/blob/main/src/Apps/NetPad.Apps.App/wwwroot/logo/circle/32x32.png?raw=true"/>&nbsp;<b>NetPad</b> better!</div>
