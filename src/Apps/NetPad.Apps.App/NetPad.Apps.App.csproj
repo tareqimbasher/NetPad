@@ -98,7 +98,7 @@
                  BuildInParallel="true"/>
 
         <PropertyGroup>
-            <ScriptHostBuildDir>$(ProjectDir)..\NetPad.Apps.ScriptHost\bin\$(Configuration)\$(DefaultTargetFramework)\</ScriptHostBuildDir>
+            <ScriptHostBuildDir>$(ProjectDir)..\NetPad.Apps.ScriptHost\bin\$(Configuration)\$(EarliestSupportedTargetFramework)\</ScriptHostBuildDir>
             <CopyDestination>$(OutputPath)ScriptHost\</CopyDestination>
         </PropertyGroup>
 
