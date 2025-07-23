@@ -1,9 +1,10 @@
 using System.Runtime.InteropServices;
-using ElectronNET.API;
+using ElectronSharp.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetPad.Apps.Shells.Electron.BackgroundServices;
 using NetPad.Apps.Shells.Electron.UiInterop;
 using NetPad.Apps.UiInterop;
@@ -18,6 +19,7 @@ public class ElectronShell : IShell
 {
     public void ConfigureWebHost(IWebHostBuilder webHostBuilder, string[] programArgs)
     {
+        ElectronSharp.API.Electron.ReadAuth();
         webHostBuilder.UseElectron(programArgs);
     }
 
@@ -36,31 +38,41 @@ public class ElectronShell : IShell
 
     public void Initialize(IApplicationBuilder app, IHostEnvironment env)
     {
+        var logger = app.ApplicationServices.GetRequiredService<ILogger<ElectronShell>>();
+
         Task.Run(async () =>
         {
-            ElectronNET.API.Electron.App.WindowAllClosed += () =>
+            try
             {
-                // On macOS it is common for applications and their menu bar
-                // to stay active until the user quits explicitly with Cmd + Q
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                ElectronSharp.API.Electron.App.WindowAllClosed += () =>
                 {
-                    ElectronNET.API.Electron.App.Quit();
-                }
-            };
+                    // On macOS it is common for applications and their menu bar
+                    // to stay active until the user quits explicitly with Cmd + Q
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        ElectronSharp.API.Electron.App.Quit();
+                    }
+                };
 
-            ElectronNET.API.Electron.App.WillQuit += args =>
+                ElectronSharp.API.Electron.App.WillQuit += args =>
+                {
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+                    appLifetime.StopApplication();
+                    return Task.CompletedTask;
+                };
+
+                await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
+            }
+            catch (Exception e)
             {
-                var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
-                appLifetime.StopApplication();
-                return Task.CompletedTask;
-            };
-
-            await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
+                logger.LogError(e, "Error initializing ElectronShell");
+                Environment.Exit(-1);
+            }
         });
     }
 
     public void ShowErrorDialog(string title, string content)
     {
-        ElectronNET.API.Electron.Dialog.ShowErrorBox(title, content);
+        ElectronSharp.API.Electron.Dialog.ShowErrorBox(title, content);
     }
 }

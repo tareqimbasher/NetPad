@@ -1,5 +1,7 @@
 using System.IO;
 using System.Text.Json.Serialization;
+using NJsonSchema;
+using NJsonSchema.Annotations;
 
 namespace NetPad.Configuration;
 
@@ -21,7 +23,10 @@ public class Settings : ISettingsOptions
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
     }
 
-    [JsonInclude] public Version Version { get; private set; } = null!;
+    [JsonInclude]
+    [JsonSchema(JsonObjectType.String)]
+    public Version Version { get; private set; } = null!;
+
     [JsonInclude] public bool? AutoCheckUpdates { get; private set; }
     [JsonInclude] public string? DotNetSdkDirectoryPath { get; private set; }
     [JsonInclude] public string ScriptsDirectoryPath { get; private set; } = null!;

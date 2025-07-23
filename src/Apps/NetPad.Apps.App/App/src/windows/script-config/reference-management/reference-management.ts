@@ -4,16 +4,16 @@ import * as path from "path";
 import Split from "split.js";
 import {AssemblyFileReference, IAssemblyService, Reference} from "@application";
 import {ConfigStore} from "../config-store";
+import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 
 export class ReferenceManagement {
-    @observable public browsedAssemblies: FileList;
-    public browseInput: HTMLInputElement;
     public selectedReference?: Reference;
     public namespaces: AssemblyNamespace[] = [];
 
     constructor(
         readonly configStore: ConfigStore,
-        @IAssemblyService readonly assemblyService: IAssemblyService
+        @IAssemblyService readonly assemblyService: IAssemblyService,
+        @INativeDialogService readonly nativeDialogService: INativeDialogService,
     ) {
     }
 
@@ -49,23 +49,28 @@ export class ReferenceManagement {
         }
     }
 
-    private browsedAssembliesChanged(newValue: FileList) {
-        if (!newValue || newValue.length === 0) {
+    public async browseAssemblies(): Promise<void> {
+        const paths = await this.nativeDialogService.showFileSelectorDialog({
+            title: "Select Assemblies",
+            multiple: true,
+            filters: [
+                { name: 'Assemblies', extensions: ['dll', 'exe'] },
+                { name: 'All Files', extensions: ['*'] }
+            ],
+        });
+
+        if (!paths || paths.length === 0) {
             return;
         }
 
-        const references = Array.from(newValue).map((d: File) => new AssemblyFileReference({
-            title: path.basename(d.path),
-            assemblyPath: d.path
+        const references = paths.map(p => new AssemblyFileReference({
+            title: path.basename(p),
+            assemblyPath: p
         }));
 
         for (const reference of references) {
             this.configStore.addReference(reference);
         }
-
-        // Clear file input element so if user selects X.dll, removes it, then re-selects it
-        // the change is observed
-        this.browseInput.value = "";
     }
 
     @watch<ReferenceManagement>(vm => vm.configStore.namespaces.length)

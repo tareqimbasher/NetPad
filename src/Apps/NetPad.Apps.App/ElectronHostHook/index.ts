@@ -3,6 +3,7 @@ import {Connector} from "./connector";
 import {MainMenuManager} from "./app/main-menu/main-menu-manager";
 import {WindowControlsManager} from "./app/window-controls/window-controls-manager";
 import {LinkNavigationHandler} from "./app/link-navigation-handler";
+import {NativeDialogHandler} from "./app/native-dialog-handler";
 
 export class HookService extends Connector {
     constructor(socket: Socket, app: Electron.App) {
@@ -13,5 +14,6 @@ export class HookService extends Connector {
         WindowControlsManager.init();
         MainMenuManager.init();
         LinkNavigationHandler.init();
+        NativeDialogHandler.init();
     }
 }

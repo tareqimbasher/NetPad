@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="ElectronNET.API" Version="23.6.1" />
+      <PackageReference Include="ElectronSharp.API" Version="36.2.0.59099" />
     </ItemGroup>
 
 </Project>

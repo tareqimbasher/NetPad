@@ -56,14 +56,14 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 18.x, 20.x ]
+        node-version: [ 22.x ]
 
     steps:
       - name: 🚚 Checkout latest
         uses: actions/checkout@v4.1.1
 
       - name: 🧲 Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 

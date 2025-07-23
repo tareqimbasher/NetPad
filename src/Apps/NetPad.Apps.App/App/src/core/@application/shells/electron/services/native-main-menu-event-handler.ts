@@ -4,6 +4,7 @@ import {ElectronIpcGateway} from "./electron-ipc-gateway";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 import {ClickMenuItemCommand} from "@application/main-menu/click-menu-item-command";
+import {electronConstants} from "@application/shells/electron/electron-shared";
 
 /**
  * Handles IPC events sent by the Electron main process related to the native main menu.
@@ -20,7 +21,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
         }));
 
         // Handle native menu bootstrap
-        const bootstrapChannel = new ChannelInfo("main-menu-bootstrap");
+        const bootstrapChannel = new ChannelInfo(electronConstants.ipcEventNames.mainMenuBootstrap);
 
         const sendBootstrapDataToMain = () => {
             try {

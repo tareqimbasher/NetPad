@@ -49,7 +49,7 @@ export class ElectronIpcGateway implements IIpcGateway {
 
             let firstArg = args.length > 0 ? args[0] as unknown : null;
 
-            // IPC messages we get from .NET over Electron.NET get sent as an item in an array
+            // IPC messages pushed via ElectronSharp's IPC channel get sent as an item in an array
             if (Array.isArray(firstArg)) {
                 firstArg = firstArg[0];
             }

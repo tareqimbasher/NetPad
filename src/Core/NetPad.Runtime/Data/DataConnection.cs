@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using NetPad.Common;
 using NetPad.Data.Security;
 using Newtonsoft.Json;
 using NJsonSchema.Converters;
@@ -10,8 +9,8 @@ namespace NetPad.Data;
 /// A connection to a data source (ex. a database, a flat file...etc.)
 /// </summary>
 // Only used for NSwag
-[JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
-[System.Text.Json.Serialization.JsonConverter(typeof(JsonInheritanceConverter<DataConnection>))]
+[JsonConverter(typeof(JsonInheritanceConverter<DataConnection>), "discriminator")]
+[System.Text.Json.Serialization.JsonConverter(typeof(Common.JsonInheritanceConverter<DataConnection>))]
 [KnownType("GetKnownTypes")]
 public abstract class DataConnection(Guid id, string name, DataConnectionType type)
 {

@@ -1,5 +1,6 @@
 import {BrowserWindow, ipcMain, Menu, MenuItemConstructorOptions} from "electron";
 import {AppMenuItemWalker, IAppMenuItem} from "./models";
+import {electronConstants} from "../../electron-shared";
 
 const isMac = process.platform === "darwin";
 
@@ -13,7 +14,7 @@ export class MainMenuManager {
     private static appMenuItems: IAppMenuItem[] = [];
 
     public static init() {
-        const mainMenuBootstrapChannelName = "main-menu-bootstrap";
+        const mainMenuBootstrapChannelName = electronConstants.ipcEventNames.mainMenuBootstrap;
 
         const sendBootstrapEvent = () => {
             let allBrowsers: Electron.BrowserWindow[];
@@ -44,7 +45,7 @@ export class MainMenuManager {
             this.rebuildMenu();
         });
 
-        ipcMain.handle("AppActivatedEvent", (event, ...args) => sendBootstrapEvent());
+        ipcMain.handle(electronConstants.ipcEventNames.appActivated, (event, ...args) => sendBootstrapEvent());
 
         // Send right away to take care of any race-condition that might occur.
         sendBootstrapEvent();
@@ -67,7 +68,11 @@ export class MainMenuManager {
             id: id,
             label: item.text,
             accelerator: this.getAccelerator(item),
-            click: async (menuItem, browserWindow) => await this.sendMenuItemToRenderer(menuItem.id, browserWindow)
+            click: async (menuItem, browserWindow) => {
+                if (browserWindow instanceof BrowserWindow) {
+                    await this.sendMenuItemToRenderer(menuItem.id, browserWindow);
+                }
+            },
         };
     }
 
@@ -179,7 +184,7 @@ export class MainMenuManager {
                     this.fromAppMenuItem("tools.stopScriptHosts"),
                 ]
             },
-            { role: 'windowMenu' },
+            {role: 'windowMenu'},
             {
                 role: 'help',
                 submenu: [

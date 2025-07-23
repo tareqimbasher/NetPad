@@ -12,16 +12,22 @@ namespace NetPad.Swagger;
 
 internal static class SwaggerSetup
 {
-    public static void AddSwagger(IServiceCollection services, IWebHostEnvironment webHostEnvironment, IEnumerable<PluginRegistration> pluginRegistrations)
+    public static void AddSwagger(
+        IServiceCollection services,
+        IWebHostEnvironment webHostEnvironment,
+        IEnumerable<PluginRegistration> pluginRegistrations)
     {
         services.AddSwaggerDocument(config =>
         {
             config.Title = "NetPad HTTP Interface";
             config.DocumentName = "NetPad";
-            config.OperationProcessors.Insert(0, new ExcludeControllersInAssemblies(pluginRegistrations.Select(p => p.Assembly).ToArray()));
+            config.OperationProcessors.Insert(
+                0,
+                new ExcludeControllersInAssemblies(pluginRegistrations.Select(p => p.Assembly).ToArray()));
+            config.SchemaSettings.SchemaProcessors.Add(new TupleSchemaProcessor());
 
-            config.PostProcess = GenerateTypeScriptClientCode(
-                Path.Combine(webHostEnvironment.ContentRootPath, "App", "src", "core", "@application", "api.ts"));
+            var path = Path.Combine(webHostEnvironment.ContentRootPath, "App", "src", "core", "@application", "api.ts");
+            config.PostProcess = GenerateTypeScriptClientCode(path);
         });
 
         foreach (var pluginRegistration in pluginRegistrations)
@@ -31,6 +37,7 @@ internal static class SwaggerSetup
                 config.Title = $"Plugin - {pluginRegistration.Plugin.Name}";
                 config.DocumentName = pluginRegistration.Plugin.Id;
                 config.OperationProcessors.Insert(0, new IncludeControllersInAssemblies(pluginRegistration.Assembly));
+                config.SchemaSettings.SchemaProcessors.Add(new TupleSchemaProcessor());
 
                 string pluginDirName = pluginRegistration.Plugin.Name.Replace(" ", "-");
 
@@ -42,8 +49,9 @@ internal static class SwaggerSetup
 
                 pluginDirName = pluginDirName.ToLowerInvariant();
 
-                config.PostProcess = GenerateTypeScriptClientCode(
-                    Path.Combine(webHostEnvironment.ContentRootPath, "App", "src", "core", "@plugins", pluginDirName, "api.ts"));
+                var path = Path.Combine(
+                    webHostEnvironment.ContentRootPath, "App", "src", "core", "@plugins", pluginDirName, "api.ts");
+                config.PostProcess = GenerateTypeScriptClientCode(path);
             });
         }
 
@@ -65,11 +73,11 @@ internal static class SwaggerSetup
                 ClientBaseClass = "ApiClientBase",
                 TypeScriptGeneratorSettings =
                 {
-                    TypeScriptVersion = 4.4m,
+                    TypeScriptVersion = 5.4m,
                     EnumStyle = TypeScriptEnumStyle.StringLiteral,
                     GenerateCloneMethod = true,
                     MarkOptionalProperties = true
-                }
+                },
             };
 
             var generator = new TypeScriptClientGenerator(document, settings);

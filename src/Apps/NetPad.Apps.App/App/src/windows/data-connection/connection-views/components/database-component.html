@@ -10,8 +10,7 @@
                focus.trigger="loadDatabases()">
 
         <div if.bind="options.allowSelectDatabaseFile">
-            <button class="btn btn-sm btn-secondary ms-3 btn-basic bg-transparent" click.trigger="browseInput.click()">...</button>
-            <input ref="browseInput" type="file" files.bind="browsedFile" class="d-none">
+            <button class="btn btn-sm btn-secondary ms-3 btn-basic bg-transparent" click.trigger="browseDatabaseFile()">...</button>
         </div>
 
         <span if.bind="dbLoadingOptions.enabled">

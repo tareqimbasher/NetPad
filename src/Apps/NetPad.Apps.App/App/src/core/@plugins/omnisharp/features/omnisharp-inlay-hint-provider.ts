@@ -79,7 +79,7 @@ export class OmniSharpInlayHintProvider extends FeatureProvider implements IInla
                 position: Converter.monacoIPositionToApiPoint(hint.position),
                 label: hint.label as string,
                 data: new api.InlayHintData({
-                    item1: omnisharpHint.data.item1,
+                    item1: omnisharpHint.data.item1!,
                     item2: omnisharpHint.data.item2
                 })
             })

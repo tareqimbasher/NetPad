@@ -164,7 +164,9 @@ announcements.
 ## Tech Stack :computer:
 
 * .NET
-* Electron.NET ([github](https://github.com/ElectronNET/Electron.NET))
+* ElectronSharp ([github](https://github.com/theolivenbaum/electron-sharp)) for the Electron shell
+  desktop version
+* Tauri ([docs](https://tauri.app/)) for the native shell desktop version
 * Aurelia 2 ([docs](https://docs.aurelia.io/))
 
 ### How it works

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using ElectronNET.API;
-using ElectronNET.API.Entities;
+using ElectronSharp.API;
+using ElectronSharp.API.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
@@ -39,14 +39,14 @@ public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo)
 
         options.Center = true;
 
-        var window = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(options, url);
+        var window = await ElectronSharp.API.Electron.WindowManager.CreateWindowAsync(options, url);
 
         // We want to add the window ID after creating the window as a hack
         // This hack is needed for when developing the app in watch mode. When making a change to .NET code
-        // ElectronNET will restart the app, but that will cause a new main window to be created while keeping the
-        // old/existing main window (before the app restart) opened resulting in 2 main windows. ElectronNET
+        // ElectronSharp will restart the app, but that will cause a new main window to be created while keeping the
+        // old/existing main window (before the app restart) opened resulting in 2 main windows. ElectronSharp
         // determines this new window is different from the old main window because the URL is different.
-        // Adding the window ID after creating the window in ElectronNET will stop this from happening.
+        // Adding the window ID after creating the window in ElectronSharp will stop this from happening.
         var windowId = Guid.NewGuid();
         url += $"&winId={windowId}";
         window.LoadURL(url);

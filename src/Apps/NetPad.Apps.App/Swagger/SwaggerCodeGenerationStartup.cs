@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps;
+using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.Apps.Plugins;
 using NetPad.Common;
 using NetPad.Plugins.OmniSharp;
@@ -25,7 +26,10 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddCoreServices();
+        services
+            .AddCoreServices()
+            .AddDataConnectionFeature()
+            .AddEntityFrameworkCoreDataConnectionDriver();
 
         services.AddSingleton<HostInfo>();
 
@@ -74,7 +78,7 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
         app.UseDeveloperExceptionPage();
 
         app.UseOpenApi();
-        app.UseSwaggerUi3();
+        app.UseSwaggerUi();
 
         // Set host url
         var hostInfo = services.GetRequiredService<HostInfo>();

@@ -129,6 +129,9 @@ const electronNetConfig = {
     },
     singleInstance: true,
     electronPort: 57931,
+    cliFlags: [
+        "gtk-version=3" // https://www.electronjs.org/docs/latest/breaking-changes#changed-gtk-4-is-default-when-running-gnome
+    ],
     build: electronBuilderConfig
 };
 
