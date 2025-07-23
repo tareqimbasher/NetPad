@@ -164,7 +164,7 @@ public class Startup
 
 #if DEBUG
         app.UseOpenApi();
-        app.UseSwaggerUi3();
+        app.UseSwaggerUi();
 #endif
 
         InitializeHostInfo(app, env);

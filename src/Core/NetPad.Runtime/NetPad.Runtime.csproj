@@ -14,8 +14,8 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
-        <PackageReference Include="NJsonSchema" Version="10.6.6"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="NJsonSchema" Version="11.3.2"/>
         <PackageReference Include="NuGet.Protocol" Version="6.6.1"/>
         <PackageReference Include="NuGet.Resolver" Version="6.6.1"/>
         <PackageReference Include="System.Reactive" Version="6.0.1" />

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Reflection;
+using NJsonSchema.Annotations;
 
 namespace NetPad.DotNet;
 
@@ -23,8 +24,8 @@ public class AssemblyImage
         Image = File.ReadAllBytes(assemblyFilePath);
     }
 
-    public AssemblyName AssemblyName { get; }
-    public byte[] Image { get; }
+    [JsonSchemaIgnore] public AssemblyName AssemblyName { get; }
+    [JsonSchemaIgnore] public byte[] Image { get; }
 
     public string ConstructAssemblyFileName()
     {

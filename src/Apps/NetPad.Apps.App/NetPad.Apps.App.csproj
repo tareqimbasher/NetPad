@@ -17,8 +17,8 @@
     <ItemGroup>
         <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.1"/>
-        <PackageReference Include="NSwag.AspNetCore" Version="13.15.5"/>
-        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="13.15.5"/>
+        <PackageReference Include="NSwag.AspNetCore" Version="14.4.0"/>
+        <PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="14.4.0"/>
         <PackageReference Include="Serilog.AspNetCore" Version="6.0.0"/>
         <PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1"/>
