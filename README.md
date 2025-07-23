@@ -61,8 +61,7 @@ will eventually
 become the main package. At which point, the Electron version will be deprecated.
 
 > On **macOS**
->
-see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
+> see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
 > if you have trouble opening NetPad.
 
 ### Unofficial Packages
