@@ -2,8 +2,10 @@
 
 A cross-platform C# editor and playground.
 
-[![build](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/build.yml)
-[![CodeQL](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/tareqimbasher/NetPad/actions/workflows/codeql-analysis.yml)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)
+![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/tareqimbasher/NetPad/total)
+![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)
 
 ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
 
@@ -108,8 +110,10 @@ consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A 
 helps immensely with maintenance and the addition of new features.
 Thank you for your support! :heart:
 
-Join our [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate and see the latest
-announcements.
+## Discord
+
+Join the [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate, ask questions and get the
+latest announcements!
 
 ## Features :rocket:
 
