@@ -1,7 +1,7 @@
 - Getting Started
 
   - [Home](/)
-  - [Download](/)
+  - [Download & Updates](/Download.md)
   
 
 - Wiki

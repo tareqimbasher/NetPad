@@ -2,10 +2,10 @@
 
 A cross-platform C# editor and playground.
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)
-![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)](https://github.com/tareqimbasher/NetPad/actions)
+[![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad?color=%23097bbb)](https://github.com/tareqimbasher/NetPad/releases/tag/v0.9.1)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/tareqimbasher/NetPad/total)
-![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)
+[![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)](https://discord.gg/FrgzNBYQFW)
 
 ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
 
@@ -25,7 +25,7 @@ simple.
 
 See [Features](https://github.com/tareqimbasher/NetPad?tab=readme-ov-file#features-rocket).
 
-#### If you like this project, please star it :star2: and consider [contributing](https://github.com/sponsors/tareqimbasher).
+#### If you like this project, please star it :star2: and consider [sponsoring](https://github.com/sponsors/tareqimbasher)!
 
 ## Motivation
 
@@ -43,29 +43,41 @@ The following must be installed to use NetPad:
 
 Additional requirement if you plan to create and use database connections:
 
-* [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (.NET 5 or later)
+* [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) (v6 or later)
 
 ## Download
 
-You can download installers for Windows, macOS and Linux from
-the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
+### Official Installers
 
-On **macOS**
+**[Download Now!](https://github.com/tareqimbasher/NetPad/releases)**
+
+NetPad has 2 release channels:
+
+- **Stable**: The Electron.js version of NetPad. Installers that start with `netpad`
+- **vNext**: Uses a native Rust-based shell. Installers that start with `netpad_vnext`
+
+Both channels have the same feature set. The native vNext version is lighter on system resources and
+will eventually
+become the main package. At which point, the Electron version will be deprecated.
+
+> On **macOS**
+>
 see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
-if you have trouble opening NetPad.
+> if you have trouble opening NetPad.
 
-### Community
+### Unofficial Packages
 
-The community also maintains these packages:
+These packages are maintained by community members.
 
-**Windows**
+| Installer                                                                                                                                                     | Channel    | Command                                              |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|------------------------------------------------------|
+| [![AUR Version](https://img.shields.io/aur/version/netpad-bin)](https://aur.archlinux.org/packages/netpad-bin)                                                | **stable** | `yay -S netpad-bin`                                  |
+| [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad)             | **stable** | `winget install --id=TareqImbasher.NetPad  -e`       |
+| [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad.vNext?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad.vNext) | **vNext**  | `winget install --id=TareqImbasher.NetPad.vNext  -e` |
 
-    winget install NetPad
-    winget install "NetPad vNext"
-
-**Arch Linux (AUR)**
-
-    yay -S netpad-bin
+> Currently, the installers published in GitHub releases are the only installers published by NetPad
+> maintainers.
+> Unofficial packages are maintained by 3rd parties.
 
 ## Updates
 
@@ -188,7 +200,5 @@ source. NetPad can be run as a desktop app or as a web application accessed with
 
 ## Resources :books::
 
-* Docs: [Go](https://github.com/tareqimbasher/NetPad/tree/main/docs)
-* More on SPA app startup and running
-  tests: [Go](https://github.com/tareqimbasher/NetPad/tree/main/src/Apps/NetPad.Apps.App/App)
-* Build: [Go](./CONTRIBUTING.md#manually-start-the-project)
+* Technical Docs: [Go](https://tareqimbasher.github.io/NetPad)
+* Build & RUn: [Go](./CONTRIBUTING.md)

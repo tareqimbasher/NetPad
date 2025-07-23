@@ -3,8 +3,10 @@
 If you need help with an issue you're facing:
 
 - Take a look at the [Common Issues](#Common-Issues) section.
-- [Search the issues](https://github.com/tareqimbasher/NetPad/issues) on GitHub, someone might've already run into the same problem and got it resolved.
-- [Open an issue](https://github.com/tareqimbasher/NetPad/issues) on GitHub or join our [Discord server](https://discord.gg/FrgzNBYQFW).
+- [Search the issues](https://github.com/tareqimbasher/NetPad/issues) on GitHub, someone might've already run into the
+  same problem and got it resolved.
+- [Open an issue](https://github.com/tareqimbasher/NetPad/issues) on GitHub or join
+  our [Discord server](https://discord.gg/FrgzNBYQFW).
 
 ## Common Issues
 
@@ -13,6 +15,10 @@ These are common issues that some users run into.
 ### NetPad cannot find my .NET SDK installation
 
 See the [.NET SDK](/wiki/NET-SDK) page.
+
+### IntelliSense or OmniSharp stops working
+
+See the [Editor](/wiki/Editor?id=omnisharp-issues) wiki page.
 
 ### NetPad is damaged and can't be opened
 
@@ -30,6 +36,14 @@ xattr -cr /path/to/NetPad.app
 NetPad will run normally afterward. See [this discussion](https://github.com/tareqimbasher/NetPad/discussions/90) for a
 tip.
 
+### NetPad vNext is flagged as a Virus/Trojan on Windows
+
+This is a [known upstream issue](https://github.com/tauri-apps/tauri/issues/2486) with Tauri, the framework the vNext
+version is built on. To solve the issue add an exclusion to Windows Defender. There are **no** viruses or trojans built
+into NetPad.
+
+> :bulb: Also see [this page](/Download) about official vs non-official installers.
+
 ### NetPad does not start on Windows [Error: listen EACCES: permission denied]
 
 ![image](https://github.com/tareqimbasher/NetPad/assets/8684786/c8bb306c-355d-4004-b221-943b6d658f97)
@@ -41,6 +55,3 @@ If you get this message when starting NetPad on Windows, try these possible solu
    and [#111](https://github.com/tareqimbasher/NetPad/issues/111).
 2. Restart `winnat`. See [this SO answer](https://stackoverflow.com/a/67968597) for details.
 
-### IntelliSense stops working
-
-See the [Editor](/wiki/Editor) wiki page.
