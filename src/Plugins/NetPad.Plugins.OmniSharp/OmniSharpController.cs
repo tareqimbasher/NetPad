@@ -24,6 +24,11 @@ namespace NetPad.Plugins.OmniSharp;
 [Route("omnisharp/{scriptId:guid}")]
 public class OmniSharpController(IMediator mediator) : Controller
 {
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = JsonSerializer.Configure(new JsonSerializerOptions
+    {
+        IncludeFields = true // To serialize tuples correctly
+    });
+
     [HttpPatch("restart-server")]
     public async Task<bool> RestartServer(Guid scriptId) => await mediator.Send(new RestartOmniSharpServerCommand(scriptId), HttpContext.RequestAborted);
 
@@ -32,12 +37,7 @@ public class OmniSharpController(IMediator mediator) : Controller
     {
         var response = await mediator.Send(new GetCompletionsQuery(scriptId, request), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
-        {
-            IncludeFields = true // To serialize tuples correctly
-        });
-
-        return new JsonResult(response, serializationOptions);
+        return new JsonResult(response, _jsonSerializerOptions);
     }
 
     [HttpPost("completion/resolve")]
@@ -45,12 +45,7 @@ public class OmniSharpController(IMediator mediator) : Controller
     {
         var response = await mediator.Send(new ResolveCompletionQuery(scriptId, completionItem), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
-        {
-            IncludeFields = true
-        });
-
-        return new JsonResult(response, serializationOptions);
+        return new JsonResult(response, _jsonSerializerOptions);
     }
 
     [HttpPost("completion/after-insert")]
@@ -94,12 +89,7 @@ public class OmniSharpController(IMediator mediator) : Controller
     {
         var response = await mediator.Send(new GetInlayHintsQuery(scriptId, request), HttpContext.RequestAborted);
 
-        var serializationOptions = JsonSerializer.Configure(new JsonSerializerOptions
-        {
-            IncludeFields = true
-        });
-
-        return new JsonResult(response, serializationOptions);
+        return new JsonResult(response, _jsonSerializerOptions);
     }
 
     [HttpPost("inlay-hints/resolve")]

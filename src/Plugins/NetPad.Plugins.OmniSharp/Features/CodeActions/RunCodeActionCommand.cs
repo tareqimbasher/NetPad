@@ -14,6 +14,11 @@ public class RunCodeActionCommand(Guid scriptId, OmniSharpRunCodeActionRequest i
     {
         private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter = new();
 
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            Converters = { _fileOperationResponseCollectionJsonConverter }
+        };
+
         public async Task<RunCodeActionResponse?> Handle(RunCodeActionCommand request, CancellationToken cancellationToken)
         {
             var omniSharpRequest = request.Input;
@@ -43,11 +48,9 @@ public class RunCodeActionCommand(Guid scriptId, OmniSharpRunCodeActionRequest i
 
             return new RunCodeActionResponse
             {
-                Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(changesArr.ToJsonString(),
-                    new JsonSerializerOptions
-                    {
-                        Converters = { _fileOperationResponseCollectionJsonConverter }
-                    })
+                Changes = JsonSerializer.Deserialize<IEnumerable<FileOperationResponse?>>(
+                    changesArr.ToJsonString(),
+                    _jsonSerializerOptions)
             };
         }
     }
