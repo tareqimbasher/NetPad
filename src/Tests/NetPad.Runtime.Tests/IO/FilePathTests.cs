@@ -13,6 +13,7 @@ public class FilePathTests
         FilePath filePath = path;
         var normalized = filePath.Path.Replace('/', Path.DirectorySeparatorChar);
 
-        Assert.Equal(path, normalized);
+        var expected = Path.GetFullPath(path);
+        Assert.Equal(expected, normalized);
     }
 }

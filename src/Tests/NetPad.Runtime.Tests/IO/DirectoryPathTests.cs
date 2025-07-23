@@ -13,7 +13,8 @@ public class DirectoryPathTests
         DirectoryPath dirPath = path;
         var normalized = dirPath.Path.Replace('/', Path.DirectorySeparatorChar);
 
-        Assert.Equal(path, normalized);
+        var expected = Path.GetFullPath(path);
+        Assert.Equal(expected, normalized);
     }
 
     [Fact]
@@ -25,7 +26,8 @@ public class DirectoryPathTests
         var newPath = dirPath.Combine("dir1/dir2");
         var normalized = newPath.Path.Replace('/', Path.DirectorySeparatorChar);
 
-        Assert.Equal("/path/to/dir/dir1/dir2", normalized);
+        var expected = Path.GetFullPath($"{path}/dir1/dir2");
+        Assert.Equal(expected, normalized);
     }
 
     [Fact]
@@ -37,6 +39,7 @@ public class DirectoryPathTests
         var newPath = dirPath.CombineFilePath("dir1/file1");
         var normalized = newPath.Path.Replace('/', Path.DirectorySeparatorChar);
 
-        Assert.Equal("/path/to/dir/dir1/file1", normalized);
+        var expected = Path.GetFullPath($"{path}/dir1/file1");
+        Assert.Equal(expected, normalized);
     }
 }
