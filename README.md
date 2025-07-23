@@ -5,6 +5,7 @@ A cross-platform C# editor and playground.
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)](https://github.com/tareqimbasher/NetPad/actions)
 [![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad?color=%23097bbb)](https://github.com/tareqimbasher/NetPad/releases/tag/v0.9.1)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/tareqimbasher/NetPad/total)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/tareqimbasher/netpad/latest)
 [![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)](https://discord.gg/FrgzNBYQFW)
 
 ![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
