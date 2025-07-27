@@ -306,7 +306,7 @@ export class MainMenuService implements IMainMenuService {
                         id: "help.wiki",
                         text: "Wiki",
                         icon: "wiki-icon",
-                        click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/wiki")
+                        click: async () => System.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
                     },
                     {
                         id: "help.github",
