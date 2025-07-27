@@ -10,8 +10,8 @@ NetPad has 2 release channels:
 - **Stable**: The Electron.js version of NetPad. Installers that start with `netpad`
 - **vNext**: Uses a native Rust-based shell. Installers that start with `netpad_vnext`
 
-Both channels have the same feature set. The native vNext version is lighter on system resources and will eventually
-become the main package. At which point, the Electron version will be deprecated.
+Both channels have the same feature set and are equally maintained. The native vNext version is lighter on system
+resources and will eventually become the main package. At which point, the Electron version might be deprecated.
 
 ### Unofficial Packages
 

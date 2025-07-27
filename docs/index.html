@@ -55,7 +55,7 @@
     window.$docsify = {
         name: 'NetPad',
         repo: 'https://github.com/tareqimbasher/NetPad',
-        requestHeaders: {
+        requestHeaders: window.location.hostname === 'localhost' ? {} : {
             'cache-control': 'max-age=300',
         },
         ga: 'G-1RP5LHPWT0',
