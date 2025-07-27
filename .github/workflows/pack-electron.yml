@@ -1,5 +1,7 @@
 name: "Package - Electron App"
-
+permissions:
+  contents: read
+  
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
