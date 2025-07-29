@@ -9,7 +9,8 @@ using NetPad.Application;
 using NetPad.Apps;
 using NetPad.Apps.Shells;
 using NetPad.Configuration;
-using NetPad.Swagger;
+using NetPad.Host;
+using NetPad.Host.Swagger;
 using Serilog;
 
 namespace NetPad;
@@ -22,6 +23,7 @@ public static class Program
     {
         var args = new ProgramArgs(rawArgs);
 
+        // If we only want to generate swagger client code, do that and then exit.
         if (args.RunMode == RunMode.SwaggerGen)
         {
             return (int)await GenerateSwaggerClientCodeAsync(args);
@@ -59,9 +61,10 @@ public static class Program
 
     private static void RunApp(ProgramArgs args)
     {
+        // If this process was started by a parent process, exit when that parent exits.
         if (args.ParentPid.HasValue)
         {
-            ParentProcessTracker.ExitWhenParentProcessExists(args.ParentPid.Value);
+            ParentProcessTracker.ExitWhenParentProcessExits(args.ParentPid.Value);
         }
 
         Shell = args.CreateShell();
@@ -127,7 +130,7 @@ public static class Program
     }
 
     private static IHostBuilder CreateHostBuilder<TStartup>(ProgramArgs args) where TStartup : class =>
-        Host.CreateDefaultBuilder(args.Raw)
+        Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args.Raw)
             .ConfigureAppConfiguration(config =>
             {
                 if (args.ShellType == ShellType.Electron)

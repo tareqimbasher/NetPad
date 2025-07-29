@@ -2,7 +2,7 @@ using System.Reflection;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
-namespace NetPad.Swagger;
+namespace NetPad.Host.Swagger;
 
 /// <summary>
 /// A schema processor that converts CLR <c>System.ValueTuple&lt;…&gt;</c> types into JSON‑Schema object definitions

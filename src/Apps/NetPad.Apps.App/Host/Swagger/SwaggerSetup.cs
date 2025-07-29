@@ -8,7 +8,7 @@ using NJsonSchema.CodeGeneration.TypeScript;
 using NSwag;
 using NSwag.CodeGeneration.TypeScript;
 
-namespace NetPad.Swagger;
+namespace NetPad.Host.Swagger;
 
 internal static class SwaggerSetup
 {

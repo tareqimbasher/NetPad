@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace NetPad.Filters;
+namespace NetPad.Host.Filters;
 
 /// <summary>
 /// Used to force return an empty response (204 No Content) to the caller, hiding any
 /// exceptions that might be thrown and any return values that the action produces.
 /// </summary>
-public class SilentResponseAttribute() : ActionFilterAttribute
+public class SilentResponseAttribute : ActionFilterAttribute
 {
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {

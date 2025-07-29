@@ -1,4 +1,4 @@
-namespace NetPad;
+namespace NetPad.Host;
 
 public enum RunMode
 {

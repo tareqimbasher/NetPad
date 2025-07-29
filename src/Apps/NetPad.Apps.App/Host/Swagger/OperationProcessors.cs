@@ -3,7 +3,7 @@ using System.Reflection;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
 
-namespace NetPad.Swagger;
+namespace NetPad.Host.Swagger;
 
 internal class IncludeControllersInAssemblies(params Assembly[] assemblies) : IOperationProcessor
 {

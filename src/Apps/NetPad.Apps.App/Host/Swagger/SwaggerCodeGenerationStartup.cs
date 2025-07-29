@@ -12,7 +12,7 @@ using NetPad.Apps.Plugins;
 using NetPad.Common;
 using NetPad.Plugins.OmniSharp;
 
-namespace NetPad.Swagger;
+namespace NetPad.Host.Swagger;
 
 public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
 {

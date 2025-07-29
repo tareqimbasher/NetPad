@@ -11,7 +11,7 @@ using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.DotNet;
-using NetPad.Filters;
+using NetPad.Host.Filters;
 using NetPad.Scripts;
 
 namespace NetPad.Controllers;

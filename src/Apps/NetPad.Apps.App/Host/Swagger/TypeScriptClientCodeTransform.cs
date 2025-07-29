@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NetPad.Swagger;
+namespace NetPad.Host.Swagger;
 
 internal static class TypeScriptClientCodeTransform
 {

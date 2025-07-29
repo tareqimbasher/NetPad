@@ -3,6 +3,7 @@ using NetPad.Apps.Shells;
 using NetPad.Apps.Shells.Electron;
 using NetPad.Apps.Shells.Tauri;
 using NetPad.Apps.Shells.Web;
+using NetPad.Host;
 
 namespace NetPad;
 

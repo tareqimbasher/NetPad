@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Dtos;
 
-namespace NetPad.Middlewares;
+namespace NetPad.Host.Middlewares;
 
 public class ExceptionHandlerMiddleware(
     RequestDelegate next,

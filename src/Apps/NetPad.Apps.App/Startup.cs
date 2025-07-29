@@ -17,12 +17,12 @@ using NetPad.Apps.UiInterop;
 using NetPad.BackgroundServices;
 using NetPad.Common;
 using NetPad.ExecutionModel;
-using NetPad.Middlewares;
+using NetPad.Host.Middlewares;
+using NetPad.Host.Swagger;
 using NetPad.Plugins.OmniSharp;
 using NetPad.Scripts;
 using NetPad.Services;
 using NetPad.Services.UiInterop;
-using NetPad.Swagger;
 
 namespace NetPad;
 

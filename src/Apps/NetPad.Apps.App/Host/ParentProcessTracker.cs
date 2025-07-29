@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 
-namespace NetPad;
+namespace NetPad.Host;
 
 /// <summary>
 /// Used to exit this program when the parent process that started it exits.
@@ -11,7 +11,7 @@ public static class ParentProcessTracker
     private static bool _initialized;
     private static IHost? _thisHost;
 
-    public static void ExitWhenParentProcessExists(int parentPid)
+    public static void ExitWhenParentProcessExits(int parentPid)
     {
         if (_initialized)
         {
