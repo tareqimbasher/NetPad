@@ -9,6 +9,9 @@ using NetPad.Events;
 
 namespace NetPad.Apps.Data;
 
+/// <summary>
+/// Caches resources that are generated for data connections like assemblies, database structure...etc.
+/// </summary>
 public sealed partial class FileSystemDataConnectionResourcesCache(
     IDataConnectionResourcesRepository dataConnectionResourcesRepository,
     IDataConnectionSchemaChangeDetectionStrategyFactory dataConnectionSchemaChangeDetectionStrategyFactory,

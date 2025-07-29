@@ -11,6 +11,9 @@ using NetPad.DotNet.CodeAnalysis;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
+/// <summary>
+/// Generates the resources (assembly, code...etc.) needed to use a <see cref="EntityFrameworkDatabaseConnection"/>.
+/// </summary>
 internal class EntityFrameworkResourcesGenerator(
     IDataConnectionPasswordProtector dataConnectionPasswordProtector,
     IDotNetInfo dotNetInfo,
@@ -18,7 +21,9 @@ internal class EntityFrameworkResourcesGenerator(
     ILoggerFactory loggerFactory)
     : IDataConnectionResourcesGenerator
 {
-    public async Task<DataConnectionResources> GenerateResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<DataConnectionResources> GenerateResourcesAsync(
+        DataConnection dataConnection,
+        DotNetFrameworkVersion targetFrameworkVersion)
     {
         if (dataConnection is not EntityFrameworkDatabaseConnection efDbConnection)
         {
@@ -33,14 +38,17 @@ internal class EntityFrameworkResourcesGenerator(
 
         var result = await scaffolder.ScaffoldConnectionResourcesAsync(efDbConnection, targetFrameworkVersion);
 
-        var applicationCode = GenerateApplicationCode(efDbConnection, result.Model.DbContextFile.ClassName, result.Model.DbContextFile.Code.ToCodeString());
+        var applicationCode = GenerateApplicationCode(
+            efDbConnection, result.Model.DbContextFile.ClassName,
+            result.Model.DbContextFile.Code.ToCodeString());
 
         var sourceCode = new DataConnectionSourceCode
         {
             ApplicationCode = applicationCode
         };
 
-        var requiredReferences = EntityFrameworkPackageUtils.GetRequiredReferences(efDbConnection, targetFrameworkVersion);
+        var requiredReferences =
+            EntityFrameworkPackageUtils.GetRequiredReferences(efDbConnection, targetFrameworkVersion);
 
         return new DataConnectionResources(efDbConnection, DateTime.UtcNow)
         {
@@ -51,26 +59,30 @@ internal class EntityFrameworkResourcesGenerator(
         };
     }
 
-    private static SourceCodeCollection GenerateApplicationCode(EntityFrameworkDatabaseConnection efDbConnection, string dbContextClassName,
+    /// <summary>
+    /// Generates code that will be needed to access the database using the resources generated for the data connection.
+    /// </summary>
+    private static SourceCodeCollection GenerateApplicationCode(
+        EntityFrameworkDatabaseConnection efDbConnection,
+        string dbContextClassName,
         string dbContextCode)
     {
-        // We want to add utility code to a partial Program class that can be used to augment the Program class in scripts.
+        // We want to generate code that can be used to augment the "partial Program class" in scripts have implicitly.
         // The goal is to accomplish the following items, mainly for convenience while writing scripts:
-        // 1. Make the Program class inherit the generated DbContext
+        // 1. Make the Program class inherit the "DbContext" that was generated during scaffolding.
         //    Why? - This allows users to override methods on the base DbContext, ex: the OnConfiguring(DbContextOptionsBuilder optionsBuilder) method.
         //
-        // 2. Add a property for the generated DbContext
-        //    Why? - This allows users to access the DbContext instance being used in the script
+        // 2. Add a property to the Program that points to an instance of the generated DbContext.
+        //    Why? - This allows users to access the DbContext instance via a property on the top-level Program.
         //
-        // 3. Add properties for all the generated DbSet's
-        //    Why? - This makes it easy for users to just type in the name of the table/DbSet (ex: "Authors") in their query
+        // 3. Add properties for all the generated DbSet's to the Program
+        //    Why? - This makes it easy for users to just type the name of the table/DbSet (ex: "Authors") in their query
         //           instead of having to do something like "DbContext.Authors"
 
         var code = new StringBuilder();
 
         // 1. Make the Program class inherit the generated DbContext
-        // The program class here will merge with the Program class generated
-        // in our Script top-level program
+        // The "partial Program class" here will augment the Program class implicitly available to scripts.
         code.AppendLine(
             $$"""
               public partial class Program : {{dbContextClassName}}
@@ -83,6 +95,10 @@ internal class EntityFrameworkResourcesGenerator(
                   {
                   }
 
+                  /// <summary>
+                  /// Overriden by NetPad. Implement "partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder)"
+                  /// to add code to "OnConfiguring".
+                  /// </summary>
                   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
                   {
                       optionsBuilder
@@ -126,18 +142,18 @@ internal class EntityFrameworkResourcesGenerator(
 
         // 2. Add the DbContext property
         code.AppendLine($$"""
-                             /// <summary>
-                             /// The DbContext instance used to access the database.
-                             /// </summary>
-                             public static {{dbContextClassName}} DataContext { get; } = new Program();
+                              /// <summary>
+                              /// The DbContext instance used to access the database.
+                              /// </summary>
+                              public static {{dbContextClassName}} DataContext { get; } = new Program();
 
-                         """);
+                          """);
 
 
-        var dbContextCodeLines = dbContextCode.Split(Environment.NewLine).ToList();
 
         // 3. Add properties for all the generated DbSet's
         var programProperties = new List<string>();
+        var dbContextCodeLines = dbContextCode.Split(Environment.NewLine).ToList();
 
         foreach (var line in dbContextCodeLines)
         {

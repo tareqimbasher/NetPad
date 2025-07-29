@@ -9,12 +9,11 @@ public abstract class EntityFrameworkSchemaChangeDetectionStrategyBase(
     IDataConnectionResourcesRepository dataConnectionResourcesRepository,
     IDataConnectionPasswordProtector passwordProtector)
 {
-    protected readonly IDataConnectionResourcesRepository _dataConnectionResourcesRepository = dataConnectionResourcesRepository;
-    protected readonly IDataConnectionPasswordProtector _passwordProtector = passwordProtector;
+    protected readonly IDataConnectionResourcesRepository DataConnectionResourcesRepository = dataConnectionResourcesRepository;
 
     protected async Task ExecuteSqlCommandAsync(EntityFrameworkDatabaseConnection connection, string commandText, Func<DbDataReader, Task> process)
     {
-        await using var context = connection.CreateDbContext(_passwordProtector);
+        await using var context = connection.CreateDbContext(passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = commandText;

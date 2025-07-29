@@ -1,9 +1,9 @@
 namespace NetPad.Compilation;
 
+/// <summary>
+/// Compiles user script code.
+/// </summary>
 public interface ICodeCompiler
 {
-    /// <summary>
-    /// Compiles .NET code.
-    /// </summary>
     CompilationResult Compile(CompilationInput input);
 }

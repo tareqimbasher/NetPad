@@ -4,6 +4,9 @@ using Microsoft.CodeAnalysis;
 
 namespace NetPad.Compilation;
 
+/// <summary>
+/// The result of compiling a script.
+/// </summary>
 public class CompilationResult(
     bool success,
     AssemblyName assemblyName,

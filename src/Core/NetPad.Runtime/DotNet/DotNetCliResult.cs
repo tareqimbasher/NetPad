@@ -1,5 +1,8 @@
 namespace NetPad.DotNet;
 
+/// <summary>
+/// The result of invoking the dotnet CLI.
+/// </summary>
 public record DotNetCliResult(bool Succeeded, string Output, string? Error = null)
 {
     public string FormattedOutput

@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 namespace NetPad.Common;
 
 /// <summary>
-/// Provides a centralized JSON serializer for use across the entire application.
-/// This serializer ensures consistent JSON formatting and behavior throughout the codebase.
-/// Use this serializer by default unless there is a specific reason to use a different one.
+/// A centralized JSON serializer that wraps System.Text.Json for use across the entire application.
+/// Always use this serializer throughout the entire codebase unless there is a specific reason to
+/// use a different one. This is to ensure consistent JSON formatting and behavior everywhere.
 /// </summary>
 public static class JsonSerializer
 {
@@ -17,6 +17,9 @@ public static class JsonSerializer
 
     public static JsonSerializerOptions DefaultOptions { get; }
 
+    /// <summary>
+    /// Configures an instance of <see cref="JsonSerializerOptions"/> to use the same settings used in this serializer.
+    /// </summary>
     public static JsonSerializerOptions Configure(JsonSerializerOptions options)
     {
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;

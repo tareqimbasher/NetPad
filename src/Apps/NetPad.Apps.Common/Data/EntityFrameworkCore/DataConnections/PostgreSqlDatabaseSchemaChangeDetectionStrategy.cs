@@ -23,7 +23,7 @@ internal class PostgreSqlDatabaseSchemaChangeDetectionStrategy(
     {
         if (dataConnection is not PostgreSqlDatabaseConnection connection) return null;
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<PostGreSqlSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<PostGreSqlSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {

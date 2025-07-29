@@ -6,6 +6,9 @@ using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
+/// <summary>
+/// A data connection that uses EntityFramework to connect to a relational database.
+/// </summary>
 public abstract class EntityFrameworkRelationalDatabaseConnection(
     Guid id,
     string name,

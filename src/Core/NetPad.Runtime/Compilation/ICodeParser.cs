@@ -2,10 +2,13 @@ using NetPad.Scripts;
 
 namespace NetPad.Compilation;
 
+/// <summary>
+/// Parses user script code into a program that is ready to compile.
+/// </summary>
 public interface ICodeParser
 {
     /// <summary>
-    /// Parses script code into a full program that is ready to compile.
+    /// Parses script code into a program that is ready to compile.
     /// </summary>
     /// <param name="scriptCode">The code to parse.</param>
     /// <param name="scriptKind">The kind of code.</param>

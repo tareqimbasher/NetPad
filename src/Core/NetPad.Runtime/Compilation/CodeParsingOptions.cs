@@ -2,6 +2,9 @@ using NetPad.DotNet.CodeAnalysis;
 
 namespace NetPad.Compilation;
 
+/// <summary>
+/// Options that the <see cref="ICodeParser"/> uses when user script code is parsed.
+/// </summary>
 public class CodeParsingOptions
 {
     /// <summary>

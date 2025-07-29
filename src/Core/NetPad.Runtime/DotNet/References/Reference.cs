@@ -21,7 +21,11 @@ public abstract class Reference
         Title = title;
     }
 
+    /// <summary>
+    /// The human-readable name of this reference.
+    /// </summary>
     public string Title { get; }
+
     public abstract void EnsureValid();
 
     /// <inheritdoc/>

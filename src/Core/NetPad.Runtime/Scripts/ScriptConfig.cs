@@ -8,12 +8,6 @@ namespace NetPad.Scripts;
 /// <summary>
 /// Script configuration options.
 /// </summary>
-/// <param name="kind"></param>
-/// <param name="targetFrameworkVersion"></param>
-/// <param name="namespaces"></param>
-/// <param name="references"></param>
-/// <param name="optimizationLevel"></param>
-/// <param name="useAspNet"></param>
 public class ScriptConfig(
     ScriptKind kind,
     DotNetFrameworkVersion targetFrameworkVersion,

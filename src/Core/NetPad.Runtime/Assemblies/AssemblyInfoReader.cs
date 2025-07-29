@@ -5,6 +5,9 @@ using System.Reflection.PortableExecutable;
 
 namespace NetPad.Assemblies;
 
+/// <summary>
+/// Reads metadata from .NET assemblies.
+/// </summary>
 public sealed class AssemblyInfoReader : IDisposable
 {
     private readonly Stream? _stream;

@@ -129,7 +129,7 @@ public class ScriptRunner
         Util.Cache.MemCacheItemInfoChanged += (_, _) => debounced();
     }
 
-    public void DumpMemCacheItem(DumpMemCacheItemMessage message)
+    public static void DumpMemCacheItem(DumpMemCacheItemMessage message)
     {
         if (Util.Cache.TryGet(message.Key, out var value))
         {
@@ -140,12 +140,12 @@ public class ScriptRunner
         }
     }
 
-    public void DeleteMemCacheItem(DeleteMemCacheItemMessage message)
+    public static void DeleteMemCacheItem(DeleteMemCacheItemMessage message)
     {
         Util.Cache.Remove(message.Key);
     }
 
-    public void ClearMemCache(ClearMemCacheMessage _)
+    public static void ClearMemCache(ClearMemCacheMessage _)
     {
         Util.Cache.Clear();
     }

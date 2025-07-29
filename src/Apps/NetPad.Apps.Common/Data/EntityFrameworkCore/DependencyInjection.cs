@@ -7,6 +7,11 @@ namespace NetPad.Apps.Data.EntityFrameworkCore;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Adds services required to use data connections of type <see cref="EntityFrameworkDatabaseConnection"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
     public static DataConnectionFeatureBuilder AddEntityFrameworkCoreDataConnectionDriver(this DataConnectionFeatureBuilder builder)
     {
         var services = builder.Services;

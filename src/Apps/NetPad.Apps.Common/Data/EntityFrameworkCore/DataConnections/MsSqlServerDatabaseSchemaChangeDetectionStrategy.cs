@@ -21,7 +21,7 @@ internal class MsSqlServerDatabaseSchemaChangeDetectionStrategy(
     {
         if (dataConnection is not MsSqlServerDatabaseConnection connection) return null;
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MsSqlServerSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MsSqlServerSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {

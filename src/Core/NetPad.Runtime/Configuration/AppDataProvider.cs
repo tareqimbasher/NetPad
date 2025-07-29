@@ -4,6 +4,9 @@ using NetPad.IO;
 
 namespace NetPad.Configuration;
 
+/// <summary>
+/// Provides paths to common directories where the application stores data and files.
+/// </summary>
 public static class AppDataProvider
 {
     /// <summary>

@@ -2,9 +2,19 @@ using NetPad.Exceptions;
 
 namespace NetPad.DotNet.References;
 
+/// <summary>
+/// A reference to a NuGet package.
+/// </summary>
 public class PackageReference(string packageId, string title, string version) : Reference(title)
 {
+    /// <summary>
+    /// The unique NuGet package ID.
+    /// </summary>
     public string PackageId { get; } = packageId;
+
+    /// <summary>
+    /// The version of the reference package.
+    /// </summary>
     public string Version { get; } = version;
 
     public override void EnsureValid()

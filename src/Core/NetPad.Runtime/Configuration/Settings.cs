@@ -23,6 +23,9 @@ public class Settings : ISettingsOptions
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
     }
 
+    /// <summary>
+    /// The version of this instance of <see cref="Settings"/>.
+    /// </summary>
     [JsonInclude]
     [JsonSchema(JsonObjectType.String)]
     public Version Version { get; private set; } = null!;

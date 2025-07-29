@@ -2,7 +2,8 @@
 
 namespace NetPad.DotNet;
 
-public class DotNetProcessRunner
+
+public class DotNetCliRunner
 {
     public string ExecuteCommand(string fileName, string arguments)
     {

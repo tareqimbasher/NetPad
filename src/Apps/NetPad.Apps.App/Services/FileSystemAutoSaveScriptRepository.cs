@@ -22,7 +22,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<FileSystemAutoSaveScriptRepository> _logger;
-    private static readonly object _indexLock = new();
+    private readonly string _indexFilePath;
+    private static readonly Lock _indexLock = new();
 
     public FileSystemAutoSaveScriptRepository(
         Settings settings,
@@ -38,6 +39,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         _dataConnectionRepository = dataConnectionRepository;
         _dotNetInfo = dotNetInfo;
         _logger = logger;
+        _indexFilePath = Path.Combine(GetRepositoryDirPath(), "index.json");
         Directory.CreateDirectory(_settings.AutoSaveScriptsDirectoryPath);
     }
 
@@ -65,7 +67,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         if (script.Id != scriptId)
         {
-            throw new Exception($"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
+            throw new Exception(
+                $"Auto-saved script on disk with ID: {script.Id} did not contain the same ID as indexed.");
         }
 
         script.IsDirty = true;
@@ -144,13 +147,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         lock (_indexLock)
         {
             var map = GetIndex();
-
-            if (map.ContainsKey(scriptId))
-                map[scriptId] = scriptName;
-            else
-                map.Add(scriptId, scriptName);
-
-            File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
+            map[scriptId] = scriptName;
+            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(map, true));
         }
     }
 
@@ -159,27 +157,21 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         lock (_indexLock)
         {
             var map = GetIndex();
+            if (!map.Remove(scriptId))
+            {
+                return;
+            }
 
-            if (!map.ContainsKey(scriptId)) return;
-
-            map.Remove(scriptId);
-            File.WriteAllText(GetIndexFilePath(), JsonSerializer.Serialize(map, true));
+            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(map, true));
         }
     }
 
     private Dictionary<Guid, string> GetIndex()
     {
-        var indexFilePath = GetIndexFilePath();
-
-        var map = File.Exists(indexFilePath)
-            ? JsonSerializer.Deserialize<Dictionary<Guid, string>>(File.ReadAllText(indexFilePath))
+        var map = File.Exists(_indexFilePath)
+            ? JsonSerializer.Deserialize<Dictionary<Guid, string>>(File.ReadAllText(_indexFilePath))
             : new Dictionary<Guid, string>();
 
         return map ?? throw new Exception("Could not deserialize index file.");
-    }
-
-    private string GetIndexFilePath()
-    {
-        return Path.Combine(GetRepositoryDirPath(), "index.json");
     }
 }

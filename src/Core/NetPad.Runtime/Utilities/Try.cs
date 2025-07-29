@@ -2,6 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NetPad.Utilities;
 
+/// <summary>
+/// Provides utility methods to execute delegates and functions safely,
+/// catching any exceptions and returning a boolean success indicator or fallback value.
+/// </summary>
 public static class Try
 {
     public static bool Run(Action action)

@@ -7,8 +7,8 @@ namespace NetPad.DotNet;
 public class DotNetInfo(Settings settings) : IDotNetInfo
 {
     private readonly DotNetEnvironment _environment = new();
-    private readonly DotNetProcessRunner _processRunner = new();
-    private readonly DotNetPathResolver _pathResolver = new();
+    private readonly DotNetCliRunner _dotNetCliRunner = new();
+    private readonly DotNetPathResolver _dotNetPathResolver = new();
 
     private readonly object _dotNetRootDirLocateLock = new();
     private string? _dotNetRootDirPath;
@@ -51,7 +51,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 return _dotNetRootDirPath;
             }
 
-            var report = _pathResolver.FindDotNetInstallDir(settings);
+            var report = _dotNetPathResolver.FindDotNetInstallDir(settings);
 
             if (report.ResolvedPath is not null)
             {
@@ -131,7 +131,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
             var dotNetExePath = LocateDotNetExecutable();
             if (dotNetExePath == null) return [];
 
-            var output = _processRunner.ExecuteCommand(dotNetExePath, "--list-runtimes");
+            var output = _dotNetCliRunner.ExecuteCommand(dotNetExePath, "--list-runtimes");
 
             _dotNetRuntimeVersions = output.Split(Environment.NewLine)
                 .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x.Trim()).ToArray())
@@ -171,7 +171,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
             var dotNetExePath = LocateDotNetExecutable();
             if (dotNetExePath == null) return [];
 
-            var output = _processRunner.ExecuteCommand(dotNetExePath, "--list-sdks");
+            var output = _dotNetCliRunner.ExecuteCommand(dotNetExePath, "--list-sdks");
 
             _dotNetSdkVersions = output.Split(Environment.NewLine)
                 .Select(l => l.Split(" ")[0].Trim())
@@ -280,7 +280,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
 
     public SemanticVersion? GetDotNetEfToolVersion(string dotNetEfToolExePath)
     {
-        var output = _processRunner.ExecuteCommand(dotNetEfToolExePath, "--version");
+        var output = _dotNetCliRunner.ExecuteCommand(dotNetEfToolExePath, "--version");
         return SemanticVersion.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
             ? version
             : null;

@@ -10,5 +10,8 @@ public record ReferenceAsset(string Path)
 {
     private bool? _isManagedAssembly;
 
+    /// <summary>
+    /// Gets a value indicating whether this asset is a managed .NET assembly.
+    /// </summary>
     public bool IsManagedAssembly => _isManagedAssembly ??= AssemblyInfoReader.IsManaged(Path);
 }

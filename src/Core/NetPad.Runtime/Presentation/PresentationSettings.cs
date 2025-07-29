@@ -9,6 +9,10 @@ public static class PresentationSettings
     public const int MaxDepth = 64;
     public const int MaxCollectionLength = 1000;
 
+    /// <summary>
+    /// Reads presentation configuration from "scriptconfig.json" file. This is read and configured per-script; the
+    /// "scriptconfig.json" file is deployed along with the script when it is executed.
+    /// </summary>
     public static (uint? maxDepth, uint? maxCollectionSerializeLength) GetConfigFileValues()
     {
         var scriptConfigFilePath  = Path.Combine(

@@ -5,6 +5,9 @@ using NetPad.IO;
 
 namespace NetPad.DotNet;
 
+/// <summary>
+/// Resolves the path where .NET is installed.
+/// </summary>
 public class DotNetPathResolver
 {
     private static readonly string _dotNetExeName = PlatformUtil.IsOSWindows() ? "dotnet.exe" : "dotnet";

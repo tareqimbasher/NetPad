@@ -1,7 +1,7 @@
 namespace NetPad.Application;
 
 /// <summary>
-/// Represents a status change in the application meant to be shown on UIs for users.
+/// A message that represents a status change in the application meant to be shown to users on the UI.
 /// </summary>
 public class AppStatusMessage(
     string text,

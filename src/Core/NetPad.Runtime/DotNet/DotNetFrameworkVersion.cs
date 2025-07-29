@@ -1,5 +1,8 @@
 namespace NetPad.DotNet;
 
+/// <summary>
+/// A version of the .NET framework.
+/// </summary>
 public enum DotNetFrameworkVersion
 {
     DotNet5 = 50,

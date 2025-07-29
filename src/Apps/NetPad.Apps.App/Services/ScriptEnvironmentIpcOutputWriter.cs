@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
@@ -17,25 +16,33 @@ namespace NetPad.Services;
 /// <summary>
 /// An <see cref="IOutputWriter{TOutput}"/> that coordinates sending of script output messages emitted by
 /// ScriptEnvironments to IPC clients, mainly the front end SPA. It employs queueing and max output limits
-/// to prevent over-flooding IPC channel with too much data.
+/// to prevent over-flooding IPC channel with too many messages.
 /// </summary>
 public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, IDisposable
 {
+    /// <summary>The number of messages to send in a single batch.</summary>
     private const int SendMessageQueueBatchSize = 1000;
+
+    /// <summary>How often to process the message queue.</summary>
     private const int ProcessSendMessageQueueEveryMs = 50;
+
+    /// <summary>
+    /// The max number of messages that is allowed to be outputted by a single script run/execution.
+    /// Any messages produced after this number will not be sent to IPC clients.
+    /// </summary>
     private const int MaxUserOutputMessagesPerRun = 10100;
 
     private readonly ScriptEnvironment _scriptEnvironment;
     private readonly IIpcService _ipcService;
-    private readonly List<IDisposable> _disposables;
+    private readonly List<IDisposable> _disposables = [];
     private readonly ILogger<ScriptEnvironmentIpcOutputWriter> _logger;
 
-    private readonly Accessor<CancellationTokenSource> _ctsAccessor;
-    private readonly ConcurrentQueue<IpcMessage> _sendMessageQueue;
+    private readonly Accessor<CancellationTokenSource> _ctsAccessor = new(new CancellationTokenSource());
+    private readonly ConcurrentQueue<IpcMessage> _sendMessageQueue = new();
     private readonly Timer _sendMessageQueueTimer;
     private int _userOutputMessagesSentThisRun;
-    private bool _outputLimitReachedMessageSent;
-    private readonly object _outputLimitReachedMessageSendLock = new();
+    private bool _sentOutputLimitReachedMessage;
+    private readonly Lock _sendOutputLimitReachedMessageLock = new();
 
     public ScriptEnvironmentIpcOutputWriter(
         ScriptEnvironment scriptEnvironment,
@@ -46,32 +53,28 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         _scriptEnvironment = scriptEnvironment;
         _ipcService = ipcService;
         _logger = logger;
-        _disposables = [];
 
-        _ctsAccessor = new Accessor<CancellationTokenSource>(new CancellationTokenSource());
-        _sendMessageQueue = new();
-
-        _sendMessageQueueTimer = new Timer()
+        _sendMessageQueueTimer = new Timer
         {
             Interval = ProcessSendMessageQueueEveryMs,
             AutoReset = false,
             Enabled = false
         };
 
-        _sendMessageQueueTimer.Elapsed += async (_, _) => await ProcessSendMessageQueue(SendMessageQueueBatchSize);
+        _sendMessageQueueTimer.Elapsed += (_, _) => ProcessSendMessageQueue();
 
         _disposables.Add(eventBus.Subscribe<EnvironmentPropertyChangedEvent>(msg =>
         {
             if (msg.ScriptId == _scriptEnvironment.Script.Id && msg.PropertyName == nameof(ScriptEnvironment.Status))
             {
-                NotifyScriptEnvironmentStatusChanged((ScriptStatus)msg.NewValue!);
+                OnScriptEnvironmentStatusChanged((ScriptStatus)msg.NewValue!);
             }
 
             return Task.CompletedTask;
         }));
     }
 
-    private void NotifyScriptEnvironmentStatusChanged(ScriptStatus newStatus)
+    private void OnScriptEnvironmentStatusChanged(ScriptStatus newStatus)
     {
         try
         {
@@ -84,7 +87,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 _ctsAccessor.Value.Dispose();
                 _sendMessageQueue.Clear();
                 _userOutputMessagesSentThisRun = 0;
-                _outputLimitReachedMessageSent = false;
+                _sentOutputLimitReachedMessage = false;
                 _ctsAccessor.Update(new CancellationTokenSource());
 
                 _sendMessageQueueTimer.Start();
@@ -121,20 +124,21 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             if (HasReachedUserOutputMessageLimitForThisRun())
             {
-                if (_outputLimitReachedMessageSent) return;
+                if (_sentOutputLimitReachedMessage) return;
 
-                lock (_outputLimitReachedMessageSendLock)
+                lock (_sendOutputLimitReachedMessageLock)
                 {
-                    if (_outputLimitReachedMessageSent) return;
+                    if (_sentOutputLimitReachedMessage) return;
 
                     var message = new HtmlRawScriptOutput(HtmlPresenter.SerializeToElement(
                             "Output limit reached.",
-                            new DumpOptions(AppendNewLineToAllTextOutput: true))
+                            new DumpOptions(AppendNewLineToAllTextOutput: true)
+                        )
                         .AddClass("raw")
                         .ToHtml()
                     );
                     QueueMessage(message, true);
-                    _outputLimitReachedMessageSent = true;
+                    _sentOutputLimitReachedMessage = true;
                 }
 
                 return;
@@ -148,13 +152,16 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlSqlScriptOutput = new HtmlSqlScriptOutput(
                 sqlScriptOutput.Order,
-                HtmlPresenter.Serialize(sqlScriptOutput.Body, new DumpOptions(Title: title)));
+                HtmlPresenter.Serialize(sqlScriptOutput.Body, new DumpOptions(Title: title))
+            );
 
-            await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput), _ctsAccessor.Value.Token);
+            await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput),
+                _ctsAccessor.Value.Token);
         }
         else if (output is HtmlSqlScriptOutput htmlSqlScriptOutput)
         {
-            await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput), _ctsAccessor.Value.Token);
+            await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput),
+                _ctsAccessor.Value.Token);
         }
         else if (output is RawScriptOutput rawScriptOutput)
         {
@@ -181,7 +188,9 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 HtmlPresenter.Serialize(
                     errorScriptOutput.Body,
                     new DumpOptions(Title: title, AppendNewLineToAllTextOutput: true),
-                    isError: true));
+                    isError: true
+                )
+            );
 
             QueueMessage(htmlErrorOutput, false);
         }
@@ -193,15 +202,17 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         {
             var htmlRawOutput = new HtmlRawScriptOutput(
                 scriptOutput.Order,
-                HtmlPresenter.Serialize(output, new DumpOptions(Title: title)));
+                HtmlPresenter.Serialize(output, new DumpOptions(Title: title))
+            );
 
             QueueMessage(htmlRawOutput, true);
         }
         else
         {
-            _logger.LogWarning("Unexpected script output format: {OutputType}", output?.GetType().Name);
+            _logger.LogWarning("Unexpected script output format: {OutputType}", output?.GetType().FullName);
 
-            var htmlRawOutput = new HtmlRawScriptOutput(0, HtmlPresenter.Serialize(output, new DumpOptions(Title: title)));
+            var htmlRawOutput =
+                new HtmlRawScriptOutput(0, HtmlPresenter.Serialize(output, new DumpOptions(Title: title)));
 
             QueueMessage(htmlRawOutput, true);
         }
@@ -221,20 +232,22 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
             return;
         }
 
-        var message = new IpcMessage(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, output), cancellationToken);
+        var message = new IpcMessage(
+            new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, output),
+            cancellationToken);
 
         _sendMessageQueue.Enqueue(message);
     }
 
-    private async Task ProcessSendMessageQueue(int maxMessagesToSend)
+    private async void ProcessSendMessageQueue()
     {
         try
         {
-            if (!_sendMessageQueue.Any()) return;
+            if (_sendMessageQueue.IsEmpty) return;
 
             var messages = new List<IpcMessage>();
 
-            while (messages.Count < maxMessagesToSend && _sendMessageQueue.TryDequeue(out var queuedMessage))
+            while (messages.Count <= SendMessageQueueBatchSize && _sendMessageQueue.TryDequeue(out var queuedMessage))
             {
                 if (queuedMessage.CancellationToken.IsCancellationRequested)
                 {
@@ -244,7 +257,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 messages.Add(queuedMessage);
             }
 
-            if (!messages.Any()) return;
+            if (messages.Count == 0) return;
 
             await PushToIpcAsync(new IpcMessageBatch(messages), CancellationToken.None);
         }
@@ -267,8 +280,15 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     {
         Try.Run(() =>
         {
-            _ctsAccessor.Value.Cancel();
-            _ctsAccessor.Value.Dispose();
+            try
+            {
+                _ctsAccessor.Value.Cancel();
+                _ctsAccessor.Value.Dispose();
+            }
+            catch
+            {
+                // Ignore
+            }
         });
         _sendMessageQueueTimer.Stop();
         _sendMessageQueueTimer.Dispose();

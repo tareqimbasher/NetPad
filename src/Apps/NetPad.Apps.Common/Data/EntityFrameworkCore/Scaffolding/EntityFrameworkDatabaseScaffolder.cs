@@ -16,6 +16,9 @@ using NetPad.IO;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 
+/// <summary>
+/// Scaffolds a <see cref="EntityFrameworkDatabaseConnection"/>.
+/// </summary>
 public class EntityFrameworkDatabaseScaffolder(
     IDataConnectionPasswordProtector dataConnectionPasswordProtector,
     IDotNetInfo dotNetInfo,

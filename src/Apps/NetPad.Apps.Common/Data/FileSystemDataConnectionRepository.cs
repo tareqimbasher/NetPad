@@ -7,6 +7,9 @@ using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Apps.Data;
 
+/// <summary>
+/// An implementation of <see cref="IDataConnectionRepository"/> that persists data connections to the local file system.
+/// </summary>
 public class FileSystemDataConnectionRepository(ILogger<FileSystemDataConnectionRepository> logger)
     : IDataConnectionRepository
 {

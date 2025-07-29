@@ -26,7 +26,7 @@ internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
             return null;
         }
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MariaDbSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MariaDbSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {

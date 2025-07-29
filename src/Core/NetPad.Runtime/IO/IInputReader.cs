@@ -1,7 +1,7 @@
 namespace NetPad.IO;
 
 /// <summary>
-/// Reads input.
+/// Requests input.
 /// </summary>
 public interface IInputReader<TInput>
 {

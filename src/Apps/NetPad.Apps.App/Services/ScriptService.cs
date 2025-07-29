@@ -6,6 +6,9 @@ using NetPad.Sessions;
 
 namespace NetPad.Services;
 
+/// <summary>
+/// High-level service that handles some common script-related operations that involves prompting user for action.
+/// </summary>
 public class ScriptService(ISession session, IUiDialogService uiDialogService, IMediator mediator)
 {
     public async Task CloseScriptAsync(Guid scriptId)

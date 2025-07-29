@@ -1,7 +1,7 @@
 namespace NetPad.DotNet;
 
 /// <summary>
-/// Gets information about locally installed .NET runtimes, SDKs and versions.
+/// Gets information about locally installed .NET runtimes and SDKs.
 /// </summary>
 public interface IDotNetInfo
 {

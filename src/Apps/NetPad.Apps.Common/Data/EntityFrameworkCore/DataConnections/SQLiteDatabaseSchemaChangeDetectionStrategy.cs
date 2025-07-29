@@ -23,7 +23,7 @@ internal class SQLiteDatabaseSchemaChangeDetectionStrategy(
     {
         if (dataConnection is not SQLiteDatabaseConnection connection) return null;
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<SQLiteSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<SQLiteSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {

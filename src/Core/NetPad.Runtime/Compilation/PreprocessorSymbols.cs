@@ -4,7 +4,7 @@ using NetPad.DotNet;
 namespace NetPad.Compilation;
 
 /// <summary>
-/// Application-specific pre-processor symbols.
+/// Gets pre-processor symbols supported in user script code.
 /// </summary>
 public static class PreprocessorSymbols
 {

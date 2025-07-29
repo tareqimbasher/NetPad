@@ -11,7 +11,7 @@ namespace NetPad.Apps.Data;
 public class FileSystemTrivialDataStore : ITrivialDataStore
 {
     private static readonly FilePath _storeFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("key-values.txt");
-    private static readonly object _fileLock = new();
+    private static readonly Lock _fileLock = new();
 
     public TValue? Get<TValue>(string key) where TValue : class
     {

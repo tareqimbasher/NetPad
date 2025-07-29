@@ -8,6 +8,10 @@ using NetPad.DotNet;
 
 namespace NetPad.Apps.Data;
 
+/// <summary>
+/// An implementation of <see cref="IDataConnectionResourcesRepository"/> that persists generated data connection
+/// resources to the local file system.
+/// </summary>
 public sealed class FileSystemDataConnectionResourcesRepository(ILogger<FileSystemDataConnectionResourcesRepository> logger)
     : IDataConnectionResourcesRepository
 {

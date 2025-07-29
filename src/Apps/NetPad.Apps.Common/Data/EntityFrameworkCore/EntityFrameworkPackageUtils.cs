@@ -7,7 +7,7 @@ namespace NetPad.Apps.Data.EntityFrameworkCore;
 public static class EntityFrameworkPackageUtils
 {
     /// <summary>
-    /// Gets the required for Entity Framework packages for a connection for a specified .NET framework version.
+    /// Gets the required EntityFramework packages for a connection for a specified .NET framework version.
     /// </summary>
     /// <param name="connection">The connection.</param>
     /// <param name="dotNetFrameworkVersion">The target .NET framework version.</param>

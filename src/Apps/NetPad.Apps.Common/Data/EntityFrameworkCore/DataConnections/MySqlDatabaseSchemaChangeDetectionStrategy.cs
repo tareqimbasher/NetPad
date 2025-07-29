@@ -26,7 +26,7 @@ internal class MySqlDatabaseSchemaChangeDetectionStrategy(
             return null;
         }
 
-        var schemaCompareInfo = await _dataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MySqlSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MySqlSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {

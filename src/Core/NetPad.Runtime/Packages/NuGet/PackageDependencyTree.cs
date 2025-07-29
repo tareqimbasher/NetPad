@@ -4,6 +4,9 @@ using NugetPackageIdentity = NuGet.Packaging.Core.PackageIdentity;
 
 namespace NetPad.Packages.NuGet;
 
+/// <summary>
+/// Represents the dependency tree for a NuGet package.
+/// </summary>
 internal class PackageDependencyTree(NugetPackageIdentity packageIdentity)
 {
     public NugetPackageIdentity Identity { get; } = packageIdentity;
