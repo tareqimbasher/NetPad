@@ -2,14 +2,24 @@
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
+using NetPad.Apps;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
-public class DiagnosticsEventsBackgroundService(IIpcService ipcService, IEventBus eventBus) : IHostedService
+/// <summary>
+/// Sends diagnostics events to IPC clients.
+/// </summary>
+/// <param name="ipcService"></param>
+/// <param name="eventBus"></param>
+/// <param name="loggerFactory"></param>
+public class DiagnosticsEventsBackgroundService(
+    IIpcService ipcService,
+    IEventBus eventBus,
+    ILoggerFactory loggerFactory) : BackgroundService(loggerFactory)
 {
     private readonly List<IDisposable> _disposables = [];
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override Task StartingAsync(CancellationToken cancellationToken)
     {
         var serverStartSubscription = eventBus.Subscribe<OmniSharpServerStartedEvent>(ev =>
         {
@@ -47,7 +57,7 @@ public class DiagnosticsEventsBackgroundService(IIpcService ipcService, IEventBu
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    protected override Task StoppingAsync(CancellationToken cancellationToken)
     {
         foreach (var disposable in _disposables)
         {

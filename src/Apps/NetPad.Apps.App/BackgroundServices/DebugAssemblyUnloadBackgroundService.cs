@@ -1,30 +1,38 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps;
 
 namespace NetPad.BackgroundServices;
 
 /// <summary>
 /// Periodically outputs the compiled script assemblies loaded by the program into memory. This is
-/// mainly used to debug assembly unloading after script execution (when using InMemoryScriptRunner only).
+/// mainly used in development to debug assembly unloading after script execution (when using InMemoryScriptRunner).
 /// </summary>
 public class DebugAssemblyUnloadBackgroundService(ILoggerFactory loggerFactory) : BackgroundService(loggerFactory)
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
         Task.Run(async () =>
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(3000);
+                try
+                {
+                    await Task.Delay(3000, stoppingToken);
 
-                int count = 0;
-                var names = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.FullName)
-                    .Where(n => n?.Contains("NetPadScript") == true)
-                    .Select(s => $"{++count}. {s?.Split(',')[0]}");
+                    int count = 0;
+                    var names = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.FullName)
+                        .Where(n => n?.Contains("NetPadScript") == true)
+                        .Select(s => $"{++count}. {s?.Split(',')[0]}");
 
-                _logger.LogDebug("Loaded NetPad script assemblies (count: {Count}):\n{Assemblies}",
-                    count,
-                    names.JoinToString("\n"));
+                    Logger.LogDebug("Loaded NetPad script assemblies (count: {Count}):\n{Assemblies}",
+                        count,
+                        names.JoinToString("\n"));
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Unhandled exception");
+                }
             }
         });
 

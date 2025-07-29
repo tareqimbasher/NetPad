@@ -1,4 +1,7 @@
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using NetPad.Common;
 using NetPad.Plugins.OmniSharp.Exceptions;
 

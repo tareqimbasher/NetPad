@@ -1,14 +1,21 @@
+using NetPad.Apps;
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
-public class EventForwardToIpcBackgroundService(IEventBus eventBus, IIpcService ipcService) : BackgroundService
+/// <summary>
+/// Forwards certain EventBus messages that are produced by this plugin to IPC clients.
+/// </summary>
+public class EventForwardToIpcBackgroundService(
+    IEventBus eventBus,
+    IIpcService ipcService,
+    ILoggerFactory loggerFactory) : BackgroundService(loggerFactory)
 {
     private readonly List<IDisposable> _disposables = [];
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken cancellationToken)
     {
         SubscribeAndForwardToIpc<OmniSharpAsyncBufferUpdateCompletedEvent>();
 
@@ -21,13 +28,13 @@ public class EventForwardToIpcBackgroundService(IEventBus eventBus, IIpcService 
         _disposables.Add(token);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    protected override Task StoppingAsync(CancellationToken cancellationToken)
     {
         foreach (var disposable in _disposables)
         {
             disposable.Dispose();
         }
 
-        return base.StopAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }

@@ -1,5 +1,5 @@
 using ElectronSharp.API.Entities;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetPad.Apps.Resources;
 using NetPad.Apps.Shells.Electron.UiInterop;
 using NetPad.Events;
@@ -8,10 +8,15 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.Shells.Electron.BackgroundServices;
 
-public class NotificationBackgroundService(IEventBus eventBus, ILogoService logoService) : BackgroundService
+/// <summary>
+/// Shows a desktop notification when a script finishes running (successfully or otherwise) and the app is not focused.
+/// </summary>
+public class NotificationBackgroundService(IEventBus eventBus, ILogoService logoService, ILoggerFactory loggerFactory)
+    : BackgroundService(loggerFactory)
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
+
         eventBus.Subscribe<ScriptRanEvent>(async ev =>
         {
             if (await ElectronUtil.MainWindow.IsFocusedAsync() != true)

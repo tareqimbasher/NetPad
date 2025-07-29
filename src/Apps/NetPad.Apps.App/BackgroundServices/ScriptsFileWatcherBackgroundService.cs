@@ -1,5 +1,6 @@
 using System.IO;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.Scripts;
@@ -8,7 +9,7 @@ using NetPad.Scripts.Events;
 namespace NetPad.BackgroundServices;
 
 /// <summary>
-/// Monitors scripts directory, on disk, for changes and notifies IPC clients that it changed.
+/// Monitors scripts directory, on disk, for changes and notifies IPC clients when changes are detected.
 /// </summary>
 public class ScriptsFileWatcherBackgroundService : BackgroundService
 {
@@ -16,8 +17,11 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
     private FileSystemWatcher? _scriptDirWatcher;
     private readonly Action _pushDirectoryChanged;
 
-    public ScriptsFileWatcherBackgroundService(IScriptRepository scriptRepository, IIpcService ipcService, Settings settings, ILoggerFactory loggerFactory) :
-        base(loggerFactory)
+    public ScriptsFileWatcherBackgroundService(
+        IScriptRepository scriptRepository,
+        IIpcService ipcService,
+        Settings settings, ILoggerFactory loggerFactory
+    ) : base(loggerFactory)
     {
         _settings = settings;
 
@@ -28,7 +32,7 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
         }).DebounceAsync();
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
         InitFileWatcher();
 
@@ -50,7 +54,7 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
         _scriptDirWatcher.Renamed += (_, ev) => _pushDirectoryChanged();
         _scriptDirWatcher.Error += delegate(object sender, ErrorEventArgs args)
         {
-            _logger.LogError(args.GetException(), "Error in FileSystemWatcher. Will re-initialize watcher");
+            Logger.LogError(args.GetException(), "Error in FileSystemWatcher. Will re-initialize watcher");
             _scriptDirWatcher.Dispose();
             _pushDirectoryChanged();
             InitFileWatcher();

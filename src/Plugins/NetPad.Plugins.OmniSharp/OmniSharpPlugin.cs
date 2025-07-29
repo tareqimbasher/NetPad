@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
 using NetPad.Apps.Plugins;
 using NetPad.Plugins.OmniSharp.BackgroundServices;
 using NetPad.Plugins.OmniSharp.Host;

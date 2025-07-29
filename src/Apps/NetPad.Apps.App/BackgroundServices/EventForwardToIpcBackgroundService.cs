@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using NetPad.Application.Events;
+using NetPad.Apps;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration.Events;
 using NetPad.Data.Events;
@@ -13,7 +14,7 @@ using NetPad.Sessions.Events;
 namespace NetPad.BackgroundServices;
 
 /// <summary>
-/// Forwards some event bus messages to IPC clients.
+/// Forwards certain EventBus messages that are produced by this app (the host) to IPC clients.
 /// </summary>
 public class EventForwardToIpcBackgroundService(
     IEventBus eventBus,
@@ -23,7 +24,7 @@ public class EventForwardToIpcBackgroundService(
 {
     private readonly ConcurrentDictionary<Guid, List<EventSubscriptionToken>> _environmentSubscriptionTokens = new();
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
         ForwardApplicationLevelEvents();
         ForwardEnvironmentLevelEvents();
@@ -94,7 +95,7 @@ public class EventForwardToIpcBackgroundService(
     /// <summary>
     /// Subscribes to an event that is fired in this application and forwards it to connected clients.
     /// </summary>
-    /// <param name="environment"></param>
+    /// <param name="environment">The script environment the event is related to.</param>
     /// <param name="predicate">If specified, event will only be forwarded if this predicate returns true.</param>
     private void SubscribeAndForwardToIpc<TEvent>(ScriptEnvironment environment, Func<TEvent, bool>? predicate = null)
         where TEvent : class, IScriptEvent

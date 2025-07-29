@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
     </PropertyGroup>
 

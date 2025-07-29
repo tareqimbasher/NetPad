@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
@@ -13,7 +14,7 @@ using NetPad.Sessions.Events;
 namespace NetPad.BackgroundServices;
 
 /// <summary>
-/// Handles automations that occur when a script environment is added or removed from the session.
+/// Runs operations that should occur when a script environment is added or removed from the session.
 /// </summary>
 public class ScriptEnvironmentBackgroundService(
     IEventBus eventBus,
@@ -25,7 +26,7 @@ public class ScriptEnvironmentBackgroundService(
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
     private readonly ConcurrentDictionary<Guid, List<IDisposable>> _environmentSubscriptionTokens = new();
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
         ListenToEnvironmentsChanges();
 

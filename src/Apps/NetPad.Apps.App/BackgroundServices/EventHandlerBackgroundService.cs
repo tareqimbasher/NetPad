@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using NetPad.Apps;
 using NetPad.Configuration.Events;
 using NetPad.Events;
 using NetPad.Presentation.Html;
@@ -11,7 +12,7 @@ namespace NetPad.BackgroundServices;
 public class EventHandlerBackgroundService(IEventBus eventBus, ILoggerFactory loggerFactory)
     : BackgroundService(loggerFactory)
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task StartingAsync(CancellationToken stoppingToken)
     {
         eventBus.Subscribe<SettingsUpdatedEvent>(ev =>
         {

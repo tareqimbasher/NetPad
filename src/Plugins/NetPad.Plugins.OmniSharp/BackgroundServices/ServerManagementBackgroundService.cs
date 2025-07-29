@@ -1,3 +1,4 @@
+using NetPad.Apps;
 using NetPad.Events;
 using NetPad.Scripts;
 using NetPad.Scripts.Events;
@@ -6,17 +7,21 @@ using ISession = NetPad.Sessions.ISession;
 
 namespace NetPad.Plugins.OmniSharp.BackgroundServices;
 
+/// <summary>
+/// Starts and stops OmniSharp server instances in response to session changes.
+/// </summary>
 public class ServerManagementBackgroundService(
     OmniSharpServerCatalog serverCatalog,
     ISession session,
     IEventBus eventBus,
-    ILogger<ServerManagementBackgroundService> logger)
-    : IHostedService
+    ILoggerFactory loggerFactory)
+    : BackgroundService(loggerFactory)
 {
     private readonly List<IDisposable> _disposables = [];
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override Task StartingAsync(CancellationToken cancellationToken)
     {
+        // When a script environment is activated, start a OmniSharp server instance for it.
         var activeEnvChangedSubscription = eventBus.Subscribe<ActiveEnvironmentChangedEvent>(ev =>
         {
             var activatedEnvironmentScriptId = ev.ScriptId;
@@ -56,7 +61,7 @@ public class ServerManagementBackgroundService(
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error occurred starting OmniSharp server for script {Script}",
+                    Logger.LogError(ex, "Error occurred starting OmniSharp server for script {Script}",
                         environment.Script);
                 }
             });
@@ -66,7 +71,7 @@ public class ServerManagementBackgroundService(
 
         _disposables.Add(activeEnvChangedSubscription);
 
-
+        // When a script environment is closed/removed, stop its related OmniSharp instance.
         var envRemovedSubscription = eventBus.Subscribe<EnvironmentsRemovedEvent>(ev =>
         {
             foreach (var environment in ev.Environments)
@@ -82,6 +87,7 @@ public class ServerManagementBackgroundService(
 
         _disposables.Add(envRemovedSubscription);
 
+        // Only have an OmniSharp server instance running if the script is not of Kind = SQL
         var scriptKindChangedSubscription = eventBus.Subscribe<ScriptConfigPropertyChangedEvent>(ev =>
         {
             if (ev.PropertyName != nameof(ScriptConfig.Kind))
@@ -101,14 +107,14 @@ public class ServerManagementBackgroundService(
                     if (serverCatalog.HasOmniSharpServer(scriptEnvironment.Script.Id))
                         _ = serverCatalog.StopOmniSharpServerAsync(scriptEnvironment);
                 }
-                else
+                else if (!serverCatalog.HasOmniSharpServer(scriptEnvironment.Script.Id))
                 {
                     _ = serverCatalog.StartOmniSharpServerAsync(scriptEnvironment);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex,
+                Logger.LogError(ex,
                     "Error reacting to property change in ScriptConfig. Property: {PropertyName}. NewValue: {NewValue}",
                     ev.PropertyName,
                     ev.NewValue);
@@ -122,7 +128,7 @@ public class ServerManagementBackgroundService(
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    protected override Task StoppingAsync(CancellationToken cancellationToken)
     {
         foreach (var disposable in _disposables)
         {

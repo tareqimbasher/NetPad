@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
+using NetPad.Apps;
 using NetPad.Apps.Plugins;
 using NetPad.Configuration;
 using NetPad.Data;
@@ -9,6 +10,9 @@ using NetPad.Sessions;
 
 namespace NetPad.BackgroundServices;
 
+/// <summary>
+/// Runs setup operations when the app starts and cleanup when the app is stopping.
+/// </summary>
 public class AppSetupAndCleanupBackgroundService(
     ISession session,
     IScriptRepository scriptRepository,
@@ -19,7 +23,7 @@ public class AppSetupAndCleanupBackgroundService(
     ILoggerFactory loggerFactory)
     : BackgroundService(loggerFactory)
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task StartingAsync(CancellationToken stoppingToken)
     {
         // Open auto-saved scripts
         var autoSavedScripts = await autoSaveScriptRepository.GetScriptsAsync();
@@ -40,7 +44,7 @@ public class AppSetupAndCleanupBackgroundService(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error opening scripts from previous session");
+            Logger.LogError(e, "Error opening scripts from previous session");
         }
 
         await session.ActivateBestCandidateAsync();
@@ -59,7 +63,7 @@ public class AppSetupAndCleanupBackgroundService(
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error closing environments");
+            Logger.LogError(e, "Error closing environments");
         }
 
         Try.Run(() => AppDataProvider.ExternalProcessesDirectoryPath.DeleteIfExists());
@@ -73,7 +77,7 @@ public class AppSetupAndCleanupBackgroundService(
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error cleaning up plugin: {PluginName} ({PluginId})",
+                Logger.LogError(e, "Error cleaning up plugin: {PluginName} ({PluginId})",
                     registration.Plugin.Name,
                     registration.Plugin.Id);
             }
