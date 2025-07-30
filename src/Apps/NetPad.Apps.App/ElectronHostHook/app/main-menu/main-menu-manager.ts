@@ -9,11 +9,26 @@ export class ClickMenuItemCommand {
     }
 }
 
-
+/**
+ * Initializes the native Electron main menu and interfaces with the renderer process to handle the user
+ * selecting menu items.
+ */
 export class MainMenuManager {
     private static appMenuItems: IAppMenuItem[] = [];
 
     public static init() {
+        // What happens:
+        // 1. The main process (this) sends event to renderer process, requesting that it sends the list of menu items
+        //    that should be loaded
+        // 2. The renderer process sends the list of menu items to main process
+        // 3. The main process loads the native main menu using the items provided by renderer process.
+        //
+        // Why?
+        // We want to handle user selection in renderer process (SPA app) so that the handling of menu item
+        // selection is all in one place. NetPad has the option to use a native main menu, and an integrated (custom)
+        // main menu built into the SPA app. This way the handling of menu item selection is the same, and in one
+        // place, regardless which menu the user has selected to use.
+
         const mainMenuBootstrapChannelName = electronConstants.ipcEventNames.mainMenuBootstrap;
 
         const sendBootstrapEvent = () => {
@@ -33,7 +48,7 @@ export class MainMenuManager {
             try {
                 allBrowsers[0].webContents.send(mainMenuBootstrapChannelName);
             } catch (err) {
-                // ignore, Renderer process event handler might not be setup yet.
+                // Ignore: renderer process event handler might not be setup yet.
             }
         };
 
@@ -45,7 +60,10 @@ export class MainMenuManager {
             this.rebuildMenu();
         });
 
-        ipcMain.handle(electronConstants.ipcEventNames.appActivated, (event, ...args) => sendBootstrapEvent());
+        ipcMain.handle(
+            electronConstants.ipcEventNames.appActivated,
+            (event, ...args) => sendBootstrapEvent()
+        );
 
         // Send right away to take care of any race-condition that might occur.
         sendBootstrapEvent();
@@ -54,26 +72,6 @@ export class MainMenuManager {
     private static rebuildMenu() {
         const menu = Menu.buildFromTemplate(this.buildTemplate());
         Menu.setApplicationMenu(menu);
-    }
-
-    private static fromAppMenuItem(id: string): MenuItemConstructorOptions | undefined {
-        const item = AppMenuItemWalker.find(this.appMenuItems, item => item.id === id);
-        if (!item) return {type: "separator"};
-
-        if (item.isDivider) {
-            return {type: "separator"};
-        }
-
-        return <MenuItemConstructorOptions>{
-            id: id,
-            label: item.text,
-            accelerator: this.getAccelerator(item),
-            click: async (menuItem, browserWindow) => {
-                if (browserWindow instanceof BrowserWindow) {
-                    await this.sendMenuItemToRenderer(menuItem.id, browserWindow);
-                }
-            },
-        };
     }
 
     private static buildTemplate(): Partial<MenuItemConstructorOptions>[] {
@@ -197,6 +195,31 @@ export class MainMenuManager {
                 ]
             }
         ];
+    }
+
+    /**
+     * Creates an Electron menu item from a menu item defined by the SPA app.
+     */
+    private static fromAppMenuItem(id: string): MenuItemConstructorOptions | undefined {
+        const appMenuItem = AppMenuItemWalker.find(
+            this.appMenuItems,
+            item => item.id === id
+        );
+
+        if (!appMenuItem || appMenuItem.isDivider) {
+            return {type: "separator"};
+        }
+
+        return <MenuItemConstructorOptions>{
+            id: id,
+            label: appMenuItem.text,
+            accelerator: this.getAccelerator(appMenuItem),
+            click: async (menuItem, browserWindow) => {
+                if (browserWindow instanceof BrowserWindow) {
+                    await this.sendMenuItemToRenderer(menuItem.id, browserWindow);
+                }
+            },
+        };
     }
 
     private static async sendMenuItemToRenderer(menuItemId: string, browserWindow: Electron.BrowserWindow) {

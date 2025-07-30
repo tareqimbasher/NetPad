@@ -1,5 +1,9 @@
 import {app, shell} from "electron";
 
+/**
+ * Opens a link that the user clicks on in an external browser instead of navigating to that link inside
+ * the Electron window.
+ */
 export class LinkNavigationHandler {
     public static init() {
         app.on("browser-window-created", (ev, window) => {
@@ -11,7 +15,7 @@ export class LinkNavigationHandler {
                         return;
                     }
 
-                    shell.openExternal(urlStr);
+                    const _ = shell.openExternal(urlStr);
                     event.preventDefault();
                 } catch (ex) {
                     console.error(ex);
@@ -19,7 +23,7 @@ export class LinkNavigationHandler {
             });
 
             window.webContents.setWindowOpenHandler(({url}) => {
-                shell.openExternal(url);
+                const _ = shell.openExternal(url);
                 return {action: 'deny'};
             });
         });

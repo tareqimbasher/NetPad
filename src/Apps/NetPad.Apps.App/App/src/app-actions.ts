@@ -8,9 +8,9 @@ import {
     IWindowBootstrapperConstructor,
     Settings
 } from "@application";
-import {IShell} from "@application/shells/ishell";
 import {WindowParams} from "@application/windows/window-params";
 import {WindowId} from "@application/windows/window-id";
+import {IShell} from "./shells/ishell";
 
 /**
  * Loads main app settings.
@@ -30,11 +30,11 @@ export const configureAndGetShell = async (builder: IAurelia) => {
     let shellType: Constructable<IShell>;
 
     if (WindowParams.shell === "electron") {
-        shellType = (await import("@application/shells/electron/electron-shell")).ElectronShell;
+        shellType = (await import("./shells/electron/electron-shell")).ElectronShell;
     } else if (WindowParams.shell === "tauri") {
-        shellType = (await import("@application/shells/tauri/tauri-shell")).TauriShell;
+        shellType = (await import("./shells/tauri/tauri-shell")).TauriShell;
     } else {
-        shellType = (await import("@application/shells/browser/browser-shell")).BrowserShell;
+        shellType = (await import("./shells/browser/browser-shell")).BrowserShell;
     }
 
     const shell = new shellType() as IShell;

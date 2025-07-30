@@ -5,6 +5,9 @@ import {electronConstants} from "../electron-shared";
 type ElectronOpenDialogProperty = 'openFile' | 'openDirectory' | 'multiSelections' | 'showHiddenFiles'
     | 'createDirectory' | 'promptToCreate' | 'noResolveAliases' | 'treatPackageAsDirectory' | 'dontAddToRecent';
 
+/**
+ * Handles messages sent from renderer process related to opening native dialogs.
+ */
 export class NativeDialogHandler {
     public static init() {
         ipcMain.handle(electronConstants.ipcEventNames.openFileSelectorDialog, async (ev, ...args) => {

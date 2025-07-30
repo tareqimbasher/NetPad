@@ -2,15 +2,15 @@ import {IAurelia, Registration} from "aurelia";
 import {IShell} from "../ishell";
 import {IBackgroundService, IIpcGateway, IWindowService, Settings} from "@application";
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
-import {TauriWindowBackgroundService} from "@application/shells/tauri/services/tauri-window-background-service";
-import {TauriDialogBackgroundService} from "@application/shells/tauri/services/tauri-dialog-background-service";
-import {TauriWindowService} from "@application/shells/tauri/services/tauri-window-service";
 import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
 import {Window} from "@tauri-apps/api/window"
 import {WindowId} from "@application/windows/window-id";
 import {WindowParams} from "@application/windows/window-params";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
-import {TauriNativeDialogService} from "@application/shells/tauri/services/tauri-native-dialog-service";
+import {TauriWindowService} from "./services/tauri-window-service";
+import {TauriNativeDialogService} from "./services/tauri-native-dialog-service";
+import {TauriWindowBackgroundService} from "./services/tauri-window-background-service";
+import {TauriDialogBackgroundService} from "./services/tauri-dialog-background-service";
 
 export class TauriShell implements IShell {
     public configure(appBuilder: IAurelia): void {

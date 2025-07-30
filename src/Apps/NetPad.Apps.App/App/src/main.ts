@@ -40,6 +40,7 @@ import {EventBus} from "@application/events/event-bus";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
 import * as Spinner from "@application/icons/spinner.html";
 
+// Read options from URL which determine which shell and window should be started.
 WindowParams.init(new URLSearchParams(window.location.search));
 
 // Register common dependencies shared across entire application (all windows)
@@ -102,7 +103,7 @@ await appActions.loadAppSettings(builder);
 const shell = await appActions.configureAndGetShell(builder);
 logger.debug(`Configured for shell: ${shell.constructor.name}`);
 
-// Start the app
+// Configure the proper window and start the app
 const entryPoint = await appActions.configureAndGetAppEntryPoint(builder);
 const app = builder.app(entryPoint as CustomElementType);
 

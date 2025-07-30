@@ -2,6 +2,9 @@ import {BrowserWindow, ipcMain} from "electron";
 import {IWindowState, WindowViewStatus} from "./models";
 import {electronConstants} from "../../electron-shared";
 
+/**
+ * Handles messages sent by the renderer process related to window controls like minimize, maximize...etc.
+ */
 export class WindowControlsManager {
     public static init() {
         const handlers = new Map<string, (window: Electron.BrowserWindow) => void | unknown>([

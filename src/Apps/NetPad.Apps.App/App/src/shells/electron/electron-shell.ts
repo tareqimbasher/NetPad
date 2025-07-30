@@ -1,14 +1,14 @@
 import {IAurelia, Registration} from "aurelia";
 import {IBackgroundService, IIpcGateway, IWindowService, Settings} from "@application";
 import {IShell} from "../ishell";
-import {ElectronWindowService} from "./services/electron-window-service";
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
-import {ElectronEventSync} from "./services/electron-event-sync";
-import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
 import {WindowParams} from "@application/windows/window-params";
 import {WindowId} from "@application/windows/window-id";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
-import {ElectronNativeDialogService} from "@application/shells/electron/services/electron-native-dialog-service";
+import {ElectronWindowService} from "./services/electron-window-service";
+import {ElectronNativeDialogService} from "./services/electron-native-dialog-service";
+import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
+import {ElectronEventSync} from "./services/electron-event-sync";
 
 /**
  * Configurations for when the app is running in Electron.

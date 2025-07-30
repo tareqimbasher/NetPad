@@ -1,10 +1,10 @@
 import {WithDisposables} from "@common";
 import {ChannelInfo, IBackgroundService, Shortcut} from "@application";
-import {ElectronIpcGateway} from "./electron-ipc-gateway";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
 import {ClickMenuItemCommand} from "@application/main-menu/click-menu-item-command";
-import {electronConstants} from "@application/shells/electron/electron-shared";
+import {ElectronIpcGateway} from "./electron-ipc-gateway";
+import {electronConstants} from "../electron-shared";
 
 /**
  * Handles IPC events sent by the Electron main process related to the native main menu.

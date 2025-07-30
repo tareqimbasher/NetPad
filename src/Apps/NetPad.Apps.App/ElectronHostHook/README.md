@@ -1,6 +1,6 @@
 # ElectronHookHost
 
-This a place we can run code within the Electron Main process.
+This runs in the Electron `main` process and is called at startup by `ElectronSharp`.
 
 Entry point is `index.ts`
 

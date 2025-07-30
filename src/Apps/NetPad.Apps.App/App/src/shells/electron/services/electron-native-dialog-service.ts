@@ -1,6 +1,6 @@
 import {ipcRenderer} from "electron";
 import {FileSelectorDialogOptions, INativeDialogService} from "@application/dialogs/inative-dialog-service";
-import {electronConstants} from "@application/shells/electron/electron-shared";
+import {electronConstants} from "../electron-shared";
 
 export class ElectronNativeDialogService implements INativeDialogService {
     public async showFileSelectorDialog(options: FileSelectorDialogOptions): Promise<string[] | null> {
