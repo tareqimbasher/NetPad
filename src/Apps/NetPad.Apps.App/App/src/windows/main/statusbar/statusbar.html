@@ -1,11 +1,16 @@
 <div class="left-column">
-    <b>${activeEnvironment.status}</b>
+    <span class="script-status">${activeEnvironment.status}</span>
 
     <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds != null"
           title="The time it took to run the script (in milliseconds).
 This includes the time it took to start the host process.">
         (Took: ${activeEnvironment.runDurationMilliseconds}ms)
     </span>
+
+    <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
+        <au-compose component.bind="item.component"
+                    class="statusbar-item"></au-compose>
+    </div>
 </div>
 <div class="middle-column">
     <div class="active-app-status-message text-truncate-1-line"
@@ -17,12 +22,9 @@ This includes the time it took to start the host process.">
     </div>
 </div>
 <div class="right-column">
-    <div repeat.for="item of workbench.statusbarService.items"
-         class="statusbar-item ${item.click ? 'clickable' : ''}"
-         click.trigger="item.click ? item.click() : false"
-         tooltip.bind="item.hoverText">
-        <i class="${item.icon}" if.bind="item.icon"></i>
-        <span innerHTML.bind="item.text"></span>
+    <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
+        <au-compose component.bind="item.component"
+                    class="statusbar-item"></au-compose>
     </div>
 
     <i class="quick-tips-icon action-icon"

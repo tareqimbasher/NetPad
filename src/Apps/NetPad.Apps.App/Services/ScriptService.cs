@@ -11,15 +11,23 @@ namespace NetPad.Services;
 /// </summary>
 public class ScriptService(ISession session, IUiDialogService uiDialogService, IMediator mediator)
 {
-    public async Task CloseScriptAsync(Guid scriptId)
+    public async Task CloseScriptAsync(Guid scriptId, bool discardUnsavedChanges)
     {
         var scriptEnvironment = session.Get(scriptId) ?? throw new ScriptNotFoundException(scriptId);
         var script = scriptEnvironment.Script;
 
-        bool shouldAskUserToSave = script.IsDirty;
-        if (script.IsNew && string.IsNullOrEmpty(script.Code))
+        bool shouldAskUserToSave;
+        if (discardUnsavedChanges)
         {
             shouldAskUserToSave = false;
+        }
+        else if (script.IsNew && string.IsNullOrEmpty(script.Code))
+        {
+            shouldAskUserToSave = false;
+        }
+        else
+        {
+            shouldAskUserToSave = script.IsDirty;
         }
 
         if (shouldAskUserToSave)

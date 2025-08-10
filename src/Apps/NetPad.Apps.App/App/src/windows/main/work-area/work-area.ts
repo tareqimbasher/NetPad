@@ -138,28 +138,12 @@ export class WorkArea extends ViewModelBase {
                     viewerHost.removeViewables(viewable);
                     // TODO What tab should be activated?
                 } else if (environment.status !== "Running" && environment.status !== "Stopping") {
-                    await this.session.close(environment.script.id);
+                    await this.session.close(environment.script.id, false);
                 }
             },
             activate: async (viewerHost) => await this.session.activate(environment.script.id),
             save: async () => await this.scriptService.save(environment.script.id),
-            rename: async () => {
-                const prompt = await this.dialogUtil.prompt({
-                    message: "New name:",
-                    defaultValue: environment.script.name,
-                    placeholder: "Type a new name for script..."
-                });
-
-                const newName = prompt.value as string | undefined;
-                if (!newName || newName.trim() === environment.script.name) return;
-
-                this.scriptService.rename(environment.script.id, prompt.value as string)
-                    .catch(err => {
-                        if (err instanceof ApiException) {
-                            alert(err.errorResponse?.message || "An error occurred during rename.");
-                        }
-                    });
-            },
+            rename: async () => await this.scriptService.openRenamePrompt(environment.script),
             duplicate: async () => await this.scriptService.duplicate(environment.script.id),
             openContainingFolder: async () => environment.script.path
                 ? await this.appService.openFolderContainingScript(environment.script.path)

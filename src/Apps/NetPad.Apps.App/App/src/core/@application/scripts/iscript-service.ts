@@ -1,6 +1,8 @@
 import {DI} from "aurelia";
-import {IScriptsApiClient} from "@application";
+import {IScriptsApiClient, Script} from "@application";
 
-export interface IScriptService extends IScriptsApiClient {}
+export interface IScriptService extends IScriptsApiClient {
+    openRenamePrompt(script: Script): Promise<void>;
+}
 
 export const IScriptService = DI.createInterface<IScriptService>();

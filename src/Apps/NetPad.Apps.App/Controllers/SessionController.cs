@@ -32,9 +32,9 @@ public class SessionController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{scriptId:guid}/close")]
-    public async Task Close(Guid scriptId, [FromServices] ScriptService scriptService)
+    public async Task Close(Guid scriptId, [FromServices] ScriptService scriptService, [FromQuery] bool discardUnsavedChanges)
     {
-        await scriptService.CloseScriptAsync(scriptId);
+        await scriptService.CloseScriptAsync(scriptId, discardUnsavedChanges);
     }
 
     [HttpGet("active")]

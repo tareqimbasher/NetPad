@@ -1442,7 +1442,7 @@ export interface IScriptsApiClient {
 
     duplicate(id: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    save(id: string, signal?: AbortSignal | undefined): Promise<void>;
+    save(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
     run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1635,7 +1635,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(null as any);
     }
 
-    save(id: string, signal?: AbortSignal): Promise<void> {
+    save(id: string, signal?: AbortSignal): Promise<boolean> {
         let url_ = this.baseUrl + "/scripts/{id}/save";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -1646,6 +1646,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             method: "PATCH",
             signal,
             headers: {
+                "Accept": "application/json"
             }
         };
 
@@ -1654,19 +1655,23 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         });
     }
 
-    protected processSave(response: Response): Promise<void> {
+    protected processSave(response: Response): Promise<boolean> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<boolean>(null as any);
     }
 
     run(id: string, options: RunOptions, signal?: AbortSignal): Promise<void> {
@@ -2293,7 +2298,7 @@ export interface ISessionApiClient {
 
     openByPath(scriptPath: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    close(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;
+    close(scriptId: string, discardUnsavedChanges: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     getActive(signal?: AbortSignal | undefined): Promise<string | null>;
 }
@@ -2424,11 +2429,15 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
         return Promise.resolve<void>(null as any);
     }
 
-    close(scriptId: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/session/{scriptId}/close";
+    close(scriptId: string, discardUnsavedChanges: boolean | undefined, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/session/{scriptId}/close?";
         if (scriptId === undefined || scriptId === null)
             throw new Error("The parameter 'scriptId' must be defined.");
         url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        if (discardUnsavedChanges === null)
+            throw new Error("The parameter 'discardUnsavedChanges' cannot be null.");
+        else if (discardUnsavedChanges !== undefined)
+            url_ += "discardUnsavedChanges=" + encodeURIComponent("" + discardUnsavedChanges) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -2801,6 +2810,7 @@ export class WindowApiClient extends ApiClientBase implements IWindowApiClient {
     }
 }
 
+/** Provides a centralized identifier and version information for the application. */
 export class AppIdentifier implements IAppIdentifier {
     name!: string;
     version!: string;
@@ -2846,18 +2856,24 @@ export class AppIdentifier implements IAppIdentifier {
     }
 }
 
+/** Provides a centralized identifier and version information for the application. */
 export interface IAppIdentifier {
     name: string;
     version: string;
     productVersion: string;
 }
 
-/** The result of the checking for dependencies needed for the app to function properly. */
+/** Represents the outcome of verifying that all required .NET dependencies are present and compatible for the application to run correctly. */
 export class AppDependencyCheckResult implements IAppDependencyCheckResult {
+    /** The version of the .NET runtime the application is currently running on. */
     dotNetRuntimeVersion!: string;
+    /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions!: SemanticVersion[];
+    /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
     dotNetEfToolVersion?: SemanticVersion | undefined;
+    /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled!: SemanticVersion[];
+    /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
     isSupportedDotNetEfToolInstalled!: boolean;
 
     constructor(data?: IAppDependencyCheckResult) {
@@ -2924,12 +2940,17 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     }
 }
 
-/** The result of the checking for dependencies needed for the app to function properly. */
+/** Represents the outcome of verifying that all required .NET dependencies are present and compatible for the application to run correctly. */
 export interface IAppDependencyCheckResult {
+    /** The version of the .NET runtime the application is currently running on. */
     dotNetRuntimeVersion: string;
+    /** A collection of all .NET SDK versions detected as installed. */
     dotNetSdkVersions: SemanticVersion[];
+    /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
     dotNetEfToolVersion?: SemanticVersion | undefined;
+    /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
     supportedDotNetSdkVersionsInstalled: SemanticVersion[];
+    /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
     isSupportedDotNetEfToolInstalled: boolean;
 }
 
@@ -3277,6 +3298,7 @@ export interface IRemoteLogMessage {
 export type LogLevel = "Trace" | "Debug" | "Information" | "Warning" | "Error" | "Critical" | "None";
 
 export abstract class Reference implements IReference {
+    /** The human-readable name of this reference. */
     title!: string;
 
     protected _discriminator: string;
@@ -3330,9 +3352,11 @@ export abstract class Reference implements IReference {
 }
 
 export interface IReference {
+    /** The human-readable name of this reference. */
     title: string;
 }
 
+/** A reference to an assembly file on disk. */
 export class AssemblyFileReference extends Reference implements IAssemblyFileReference {
     assemblyPath!: string;
 
@@ -3370,10 +3394,12 @@ export class AssemblyFileReference extends Reference implements IAssemblyFileRef
     }
 }
 
+/** A reference to an assembly file on disk. */
 export interface IAssemblyFileReference extends IReference {
     assemblyPath: string;
 }
 
+/** An reference to an in-memory assembly. */
 export class AssemblyImageReference extends Reference implements IAssemblyImageReference {
     assemblyImage!: AssemblyImage;
 
@@ -3414,6 +3440,7 @@ export class AssemblyImageReference extends Reference implements IAssemblyImageR
     }
 }
 
+/** An reference to an in-memory assembly. */
 export interface IAssemblyImageReference extends IReference {
     assemblyImage: AssemblyImage;
 }
@@ -3457,8 +3484,11 @@ export class AssemblyImage implements IAssemblyImage {
 export interface IAssemblyImage {
 }
 
+/** A reference to a NuGet package. */
 export class PackageReference extends Reference implements IPackageReference {
+    /** The unique NuGet package ID. */
     packageId!: string;
+    /** The version of the reference package. */
     version!: string;
 
     constructor(data?: IPackageReference) {
@@ -3497,8 +3527,11 @@ export class PackageReference extends Reference implements IPackageReference {
     }
 }
 
+/** A reference to a NuGet package. */
 export interface IPackageReference extends IReference {
+    /** The unique NuGet package ID. */
     packageId: string;
+    /** The version of the reference package. */
     version: string;
 }
 
@@ -4280,6 +4313,7 @@ export interface IDatabaseTableNavigation {
     clrType?: string | undefined;
 }
 
+/** A version of the .NET framework. */
 export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
 
 /** Information about a package. */
@@ -5043,6 +5077,7 @@ will always return true. */
 
 /** Application-wide settings. */
 export class Settings implements ISettings {
+    /** The version of this instance of Settings. */
     version!: string;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
@@ -5124,6 +5159,7 @@ export class Settings implements ISettings {
 
 /** Application-wide settings. */
 export interface ISettings {
+    /** The version of this instance of Settings. */
     version: string;
     autoCheckUpdates?: boolean | undefined;
     dotNetSdkDirectoryPath?: string | undefined;
@@ -5267,6 +5303,7 @@ export type MainMenuVisibility = "AlwaysVisible" | "AutoHidden";
 
 export class EditorOptions implements IEditorOptions {
     monacoOptions!: any;
+    vim!: VimOptions;
 
     constructor(data?: IEditorOptions) {
         if (data) {
@@ -5275,11 +5312,15 @@ export class EditorOptions implements IEditorOptions {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+        if (!data) {
+            this.vim = new VimOptions();
+        }
     }
 
     init(_data?: any) {
         if (_data) {
             this.monacoOptions = _data["monacoOptions"];
+            this.vim = _data["vim"] ? VimOptions.fromJS(_data["vim"]) : new VimOptions();
         }
     }
 
@@ -5293,6 +5334,7 @@ export class EditorOptions implements IEditorOptions {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["monacoOptions"] = this.monacoOptions;
+        data["vim"] = this.vim ? this.vim.toJSON() : <any>undefined;
         return data;
     }
 
@@ -5306,6 +5348,50 @@ export class EditorOptions implements IEditorOptions {
 
 export interface IEditorOptions {
     monacoOptions: any;
+    vim: VimOptions;
+}
+
+export class VimOptions implements IVimOptions {
+    enabled!: boolean;
+
+    constructor(data?: IVimOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.enabled = _data["enabled"];
+        }
+    }
+
+    static fromJS(data: any): VimOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new VimOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["enabled"] = this.enabled;
+        return data;
+    }
+
+    clone(): VimOptions {
+        const json = this.toJSON();
+        let result = new VimOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IVimOptions {
+    enabled: boolean;
 }
 
 export class ResultsOptions implements IResultsOptions {
@@ -6414,7 +6500,7 @@ export interface IAppStatusMessagePublishedEvent {
     message: AppStatusMessage;
 }
 
-/** Represents a status change in the application meant to be shown on UIs for users. */
+/** A message that represents a status change in the application meant to be shown to users on the UI. */
 export class AppStatusMessage implements IAppStatusMessage {
     /** The ID of the script this message relates to, if any. */
     scriptId?: string | undefined;
@@ -6471,7 +6557,7 @@ export class AppStatusMessage implements IAppStatusMessage {
     }
 }
 
-/** Represents a status change in the application meant to be shown on UIs for users. */
+/** A message that represents a status change in the application meant to be shown to users on the UI. */
 export interface IAppStatusMessage {
     /** The ID of the script this message relates to, if any. */
     scriptId?: string | undefined;
