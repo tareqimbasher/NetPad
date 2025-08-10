@@ -17,7 +17,9 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
             {
                 Title = "Save?",
                 Buttons = ["Yes", "No", "Cancel"],
-                Type = MessageBoxType.question
+                Type = MessageBoxType.question,
+                DefaultId = 2,
+                CancelId = 2
             });
 
         return (YesNoCancel)result.Response;
