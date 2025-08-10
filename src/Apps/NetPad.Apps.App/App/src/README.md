@@ -49,3 +49,13 @@ Dependencies are registered in multiple places:
 2. Then, dependencies that are shell-specific are registered inside `/shells/*/*-shell.ts` files.
 3. Finally, dependencies that the window-specific ("mini-app" specific) are registered inside
    `/windows/*/window.ts` files.
+
+# Folders
+
+- `core/@application`: contains app-specific re-usable code used throughout the entire application.
+  This includes things like components, services, API client code...etc
+- `core/@common`: contains generic re-usable code that is not app or framework specific.
+- `core/@plugins`: contains NetPad plugins
+- `shells`: contains implementations for each of the 3 shells.
+- `styles`: contains all app-wide CSS styles.
+- `windows`: contains all windows that make up the application.

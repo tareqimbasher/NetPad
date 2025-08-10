@@ -18,7 +18,19 @@
     <style>
         :root {
             --theme-color: #5d4df3;
+            --bg: #ffffff;
+            //--bg: #f5f7fa;
+            --sidebar-bg: #ffffff;
         }
+
+        body {
+            background: var(--bg);
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+        }
+
         .app-name-link {
             display: flex;
             gap: 0.3rem;
@@ -47,6 +59,17 @@
             color: dodgerblue;
         }
     </style>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1RP5LHPWT0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-1RP5LHPWT0');
+    </script>
+
 </head>
 <body>
 <div id="app"></div>
@@ -58,7 +81,6 @@
         requestHeaders: window.location.hostname === 'localhost' ? {} : {
             'cache-control': 'max-age=300',
         },
-        ga: 'G-1RP5LHPWT0',
         auto2top: true,
         logo: '/images/logo/circle/32x32.png',
         loadNavbar: true,
@@ -85,7 +107,6 @@
 </script>
 <!-- Docsify v4 -->
 <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-<script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/ga.min.js"></script>
 <!--<script-->
 <!--    src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/index.min.js"-->
 <!--    type="text/javascript">-->

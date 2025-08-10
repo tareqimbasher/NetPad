@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFrameworks>net6.0;netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
-        <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
         <AssemblyVersion>1.0.0</AssemblyVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
