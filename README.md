@@ -3,7 +3,7 @@
 A cross-platform C# editor and playground.
 
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)](https://github.com/tareqimbasher/NetPad/actions)
-[![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad?color=%23097bbb)](https://github.com/tareqimbasher/NetPad/releases/tag/v0.9.1)
+[![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad?color=%23097bbb)](https://github.com/tareqimbasher/NetPad/releases/latest)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/tareqimbasher/NetPad/total)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/tareqimbasher/netpad/latest)
 [![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)](https://discord.gg/FrgzNBYQFW)
@@ -65,7 +65,7 @@ become the main package. At which point, the Electron version will be deprecated
 > see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
 > if you have trouble opening NetPad.
 
-### Unofficial Packages
+### Community Packages
 
 These packages are maintained by community members.
 
@@ -74,10 +74,6 @@ These packages are maintained by community members.
 | [![AUR Version](https://img.shields.io/aur/version/netpad-bin)](https://aur.archlinux.org/packages/netpad-bin)                                                | **stable** | `yay -S netpad-bin`                                  |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad)             | **stable** | `winget install --id=TareqImbasher.NetPad  -e`       |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad.vNext?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad.vNext) | **vNext**  | `winget install --id=TareqImbasher.NetPad.vNext  -e` |
-
-> Currently, the installers published in GitHub releases are the only installers published by NetPad
-> maintainers.
-> Unofficial packages are maintained by 3rd parties.
 
 ## Updates
 
@@ -100,7 +96,7 @@ about NetPad.
 See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting) section of
 the Wiki.
 
-## Contribution
+## Contribution & Support
 
 All Pull Requests, feedback and contributions are welcome! Please read
 the [Contributing guidelines](./CONTRIBUTING.md) for more information about how to contribute and
@@ -138,6 +134,7 @@ latest announcements!
 * Choose the .NET SDK version you want to use per script.
 * Add database connections and query them with LINQ or T-SQL.
 * Add NuGet packages and reference assemblies from disk.
+* Vim keybindings.
 * Syntax Tree Visualizer.
 * User-defined results styling.
 * LSP powered by OmniSharp:
@@ -164,7 +161,7 @@ latest announcements!
 * Benchmark your code
 * Referencing other scripts
 * Ability to run a script from the command-line
-* IL Visualizer
+* IL Viewer
 * Export a script as a "ready to run" .NET app
 * Export a script as a C# project
 * Git tracking of script changes

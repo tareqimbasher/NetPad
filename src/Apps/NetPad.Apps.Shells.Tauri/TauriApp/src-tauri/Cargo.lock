@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "NetPad"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "better-panic",
  "color-eyre",
