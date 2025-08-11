@@ -1,7 +1,7 @@
 name: "Package - Tauri App"
 permissions:
   contents: read
-  
+
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
 
@@ -76,12 +76,10 @@ jobs:
         with:
           node-version: 22.x
 
-      - name: 🧲 Setup .NET 6 and 8
+      - name: 🧲 Setup .NET 9
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: |
-            6.0.x
-            8.0.x
+          dotnet-version: 9.0.x
 
       - name: 🧲 Setup Rust stable
         uses: dtolnay/rust-toolchain@stable

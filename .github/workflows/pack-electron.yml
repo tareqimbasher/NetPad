@@ -1,7 +1,7 @@
 name: "Package - Electron App"
 permissions:
   contents: read
-  
+
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -41,12 +41,10 @@ jobs:
         with:
           node-version: 22.x
 
-      - name: 🧲 Setup .NET 6 and 8
+      - name: 🧲 Setup .NET 9
         uses: actions/setup-dotnet@v4.0.0
         with:
-          dotnet-version: |
-            6.0.x
-            8.0.x
+          dotnet-version: 9.0.x
 
       - name: 🧲 Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-24.04'
@@ -75,7 +73,7 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
-          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          dotnet tool install ElectronSharp.CLI -g
           electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for Windows
@@ -83,7 +81,7 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
-          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          dotnet tool install ElectronSharp.CLI -g
           electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for macOS (x86)
@@ -91,7 +89,7 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
-          dotnet tool install ElectronNET.CLI -g --version 23.6.1.0
+          dotnet tool install ElectronSharp.CLI -g
           electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for macOS (ARM)
