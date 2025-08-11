@@ -1,5 +1,5 @@
 import {KeyCode} from "@common";
-import {CreateScriptDto, IScriptService, ISettingsService, IWindowService} from "@application";
+import {CreateScriptDto, IScriptService, ISettingsService, IWindowService, Settings} from "@application";
 import {Shortcut} from "./shortcut";
 import {ITextEditorService} from "../editor/itext-editor-service";
 
@@ -21,6 +21,7 @@ export enum ShortcutIds {
     zoomIn = "shortcut.window.zoomIn",
     zoomOut = "shortcut.window.zoomOut",
     zoomReset = "shortcut.window.zoomReset",
+    vimModeToggle = "shortcut.editor.vim.toggle",
 }
 
 export const BuiltinShortcuts = [
@@ -73,7 +74,7 @@ export const BuiltinShortcuts = [
         .withCtrlKey()
         .withKey(KeyCode.KeyW)
         .hasAction((ctx) => {
-            if (ctx.session.active) ctx.session.close(ctx.session.active.script.id);
+            if (ctx.session.active) ctx.session.close(ctx.session.active.script.id, false);
         })
         .captureDefaultKeyCombo()
         .configurable()
@@ -196,5 +197,17 @@ export const BuiltinShortcuts = [
         .hasAction((ctx) => ctx.container.get(IWindowService).resetZoom())
         .captureDefaultKeyCombo()
         .configurable(false)
+        .enabled(),
+
+    new Shortcut(ShortcutIds.vimModeToggle, "Vim Mode")
+        .withAltKey()
+        .withKey(KeyCode.KeyV)
+        .hasAction((ctx) => {
+            const settings = ctx.container.get(Settings);
+            settings.editor.vim.enabled = !settings.editor.vim.enabled;
+            ctx.container.get(ISettingsService).update(settings);
+        })
+        .captureDefaultKeyCombo()
+        .configurable()
         .enabled(),
 ];

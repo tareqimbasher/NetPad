@@ -13,7 +13,7 @@ export interface IViewableObjectCommands
     activate: (viewerHost: ViewerHost) => Promise<void>;
     rename: () => Promise<void>;
     duplicate: () => Promise<void>;
-    save: () => Promise<void>;
+    save: () => Promise<boolean>;
     openContainingFolder: () => Promise<void>;
 }
 
@@ -54,7 +54,7 @@ export abstract class ViewableObject extends WithDisposables {
         return this.commands.duplicate();
     }
 
-    public save(): Promise<void> {
+    public save(): Promise<boolean> {
         return this.commands.save();
     }
 

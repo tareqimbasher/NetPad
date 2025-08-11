@@ -65,9 +65,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/save")]
-    public async Task Save(Guid id, [FromServices] ScriptService scriptService)
+    public async Task<bool> Save(Guid id, [FromServices] ScriptService scriptService)
     {
-        await scriptService.SaveScriptAsync(id);
+        return await scriptService.SaveScriptAsync(id);
     }
 
     [HttpPatch("{id:guid}/run")]

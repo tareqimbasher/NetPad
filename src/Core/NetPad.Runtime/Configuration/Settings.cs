@@ -89,7 +89,9 @@ public class Settings : ISettingsOptions
         if (options == null)
             throw new ArgumentNullException(nameof(options));
 
-        Editor.SetMonacoOptions(options.MonacoOptions);
+        Editor
+            .SetMonacoOptions(options.MonacoOptions)
+            .SetVimOptions(options.Vim);
 
         return this;
     }

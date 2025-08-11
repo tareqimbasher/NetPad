@@ -1,11 +1,15 @@
 import {IHttpClient} from "@aurelia/fetch-client";
-import {IEventBus, IScriptService, ScriptsApiClient} from "@application";
+import {ApiException, IEventBus, IScriptService, Script, ScriptsApiClient} from "@application";
 import {ScriptCodeUpdatingEvent} from "@application/scripts/script-code-updating-event";
 import {ScriptCodeUpdatedEvent} from "@application/scripts/script-code-updated-event";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class ScriptService extends ScriptsApiClient implements IScriptService {
 
-    constructor(@IEventBus private readonly eventBus: IEventBus, baseUrl?: string, @IHttpClient http?: IHttpClient) {
+    constructor(
+        @IEventBus private readonly eventBus: IEventBus,
+        private readonly dialogUtil: DialogUtil,
+        baseUrl?: string, @IHttpClient http?: IHttpClient) {
         super(baseUrl, http);
     }
 
@@ -17,5 +21,25 @@ export class ScriptService extends ScriptsApiClient implements IScriptService {
         } finally {
             this.eventBus.publish(new ScriptCodeUpdatedEvent(id, code));
         }
+    }
+
+    public async openRenamePrompt(script: Script): Promise<void> {
+        const prompt = await this.dialogUtil.prompt({
+            message: "New name:",
+            defaultValue: script.name,
+            placeholder: "Script name"
+        });
+
+        const newName = (prompt.value as string | undefined)?.trim();
+        if (!newName || newName === script.name) {
+            return;
+        }
+
+        super.rename(script.id, newName)
+            .catch(err => {
+                if (err instanceof ApiException) {
+                    alert(err.errorResponse?.message || "An error occurred during rename.");
+                }
+            });
     }
 }

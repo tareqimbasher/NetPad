@@ -1,22 +1,30 @@
-import {bindable, ILogger} from "aurelia";
+import {bindable, ILogger, resolve} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {observable} from "@aurelia/runtime";
 import * as monaco from "monaco-editor";
-import {MonacoEditorUtil, Settings} from "@application";
+import {BuiltinShortcuts, MonacoEditorUtil, Settings, ShortcutIds} from "@application";
 import {MonacoThemeManager} from "@application/editor/monaco/monaco-theme-manager";
 
 export class EditorOptionsSettings {
     @bindable public settings: Settings;
     @observable public theme?: string;
+    public vimModeKeyCombo?: string;
 
     private editor: monaco.editor.IStandaloneCodeEditor;
-    private logger: ILogger;
-
-    constructor(@ILogger logger: ILogger) {
-        this.logger = logger.scopeTo(nameof(EditorOptionsSettings));
-    }
+    private logger: ILogger = resolve(ILogger).scopeTo(nameof(EditorOptionsSettings));
 
     public async attached() {
+        const keyCombo = BuiltinShortcuts.find(x => x.id === ShortcutIds.vimModeToggle)?.keyCombo.clone();
+        if (keyCombo) {
+            // Use the default keybinding unless overridden by user in settings
+            const config = this.settings.keyboardShortcuts.shortcuts.find(x => x.id === ShortcutIds.vimModeToggle);
+            if (config) {
+                keyCombo.updateFrom(config);
+            }
+            this.vimModeKeyCombo = keyCombo.toString();
+        }
+
+        // Initialize monaco editor
         const id = "options-editor";
         const el = document.getElementById(id);
         if (!el) {
@@ -28,10 +36,10 @@ export class EditorOptionsSettings {
 
         if (!monacoOptions.themeCustomizations) {
             monacoOptions.themeCustomizations =
-            {
-                colors: {},
-                rules: []
-            }
+                {
+                    colors: {},
+                    rules: []
+                }
         }
 
         this.editor = monaco.editor.create(el, {

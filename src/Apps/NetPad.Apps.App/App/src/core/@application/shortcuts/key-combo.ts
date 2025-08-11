@@ -199,4 +199,8 @@ export class KeyCombo {
     public static fromKeyCombo(keyCombo: KeyCombo): KeyCombo {
         return keyCombo.clone();
     }
+
+    public static fromKeyboardShortcutConfiguration(config: IKeyboardShortcutConfiguration) {
+        return new KeyCombo().updateFrom(config);
+    }
 }
