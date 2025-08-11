@@ -118,12 +118,13 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         }
         else
         {
-            sanitized = Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\'));
+            sanitized = Path.GetFullPath(Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\')));
         }
 
-        if (!Directory.Exists(sanitized))
+        if (!sanitized.StartsWith(settings.ScriptsDirectoryPath, StringComparison.OrdinalIgnoreCase) ||
+            !Directory.Exists(sanitized))
         {
-            throw new Exception($"Directory does not exist at: {path}");
+            throw new Exception($"Invalid or non-existent directory: {path}");
         }
 
         ProcessUtil.OpenWithDefaultApp(sanitized);
