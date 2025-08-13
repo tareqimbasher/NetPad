@@ -29,6 +29,10 @@ public class ElectronWindowService(
             Fullscreenable = true,
         });
 
+        // HACK: Electron.App.WindowAllClosed and Electron.App.WillQuit no longer work when we switched to ElectronSharp
+        // Stops application when the main window is closed
+        window.OnClosed += ElectronSharp.API.Electron.App.Quit;
+
         await RestoreMainWindowPositionAsync(window);
     }
 

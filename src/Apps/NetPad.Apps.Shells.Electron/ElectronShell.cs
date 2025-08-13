@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using ElectronSharp.API;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,22 +43,26 @@ public class ElectronShell : IShell
         {
             try
             {
-                ElectronSharp.API.Electron.App.WindowAllClosed += () =>
-                {
-                    // On macOS it is common for applications and their menu bar
-                    // to stay active until the user quits explicitly with Cmd + Q
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    {
-                        ElectronSharp.API.Electron.App.Quit();
-                    }
-                };
+                // These events no longer work when we switched to ElectronSharp :(
+                // To account for this, a hack was implemented in ElectronWindowService.cs
+                //
+                // ElectronSharp.API.Electron.App.WindowAllClosed += () =>
+                // {
+                //     // On macOS it is common for applications and their menu bar
+                //     // to stay active until the user quits explicitly with Cmd + Q
+                //     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                //     {
+                //         ElectronSharp.API.Electron.App.Quit();
+                //     }
+                // };
+                //
+                // ElectronSharp.API.Electron.App.WillQuit += args =>
+                // {
+                //     var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+                //     appLifetime.StopApplication();
+                //     return Task.CompletedTask;
+                // };
 
-                ElectronSharp.API.Electron.App.WillQuit += args =>
-                {
-                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
-                    appLifetime.StopApplication();
-                    return Task.CompletedTask;
-                };
 
                 await app.ApplicationServices.GetRequiredService<IUiWindowService>().OpenMainWindowAsync();
             }
