@@ -24,7 +24,11 @@ internal class DownloadProgress(IAppStatusMessagePublisher appStatusMessagePubli
     }
 }
 
-public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessagePublisher appStatusMessagePublisher, IConfiguration configuration)
+public class OmniSharpServerDownloader(
+    HttpClient httpClient,
+    IAppStatusMessagePublisher appStatusMessagePublisher,
+    IConfiguration configuration,
+    ILogger<OmniSharpServerDownloader> logger)
     : IOmniSharpServerDownloader
 {
     public async Task<OmniSharpServerLocation> DownloadAsync(OSPlatform platform)
@@ -63,16 +67,26 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
 
             if (platform != OSPlatform.Windows)
             {
-                ProcessUtil.MakeExecutable(downloadedLocation.ExecutablePath);
+                if (!ProcessUtil.SetUnixExecutablePermission(downloadedLocation.ExecutablePath))
+                {
+                    logger.LogError(
+                        "Could not set executable flag on downloaded OmniSharp executable: {ExecutablePath}",
+                        downloadedLocation.ExecutablePath);
+                }
             }
 
-            await appStatusMessagePublisher.PublishAsync($"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
+            await appStatusMessagePublisher.PublishAsync(
+                $"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
 
             return downloadedLocation;
         }
-        catch
+        catch (Exception ex)
         {
-            await appStatusMessagePublisher.PublishAsync("OmniSharp download failed", AppStatusMessagePriority.High, true);
+            logger.LogError(ex, "Error downloading OmniSharp");
+            await appStatusMessagePublisher.PublishAsync(
+                "OmniSharp download failed",
+                AppStatusMessagePriority.High,
+                true);
             throw;
         }
     }
@@ -97,8 +111,11 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
         return new OmniSharpServerLocation(executableFile.FullName);
     }
 
-    private DirectoryInfo GetDownloadRootDirectory() => new(Path.Combine(AppDataProvider.AppDataDirectoryPath.Path, "OmniSharp"));
-    private DirectoryInfo GetDownloadDirectory() => new(Path.Combine(GetDownloadRootDirectory().FullName, GetRequiredVersion()));
+    private static DirectoryInfo GetDownloadRootDirectory() =>
+        new(Path.Combine(AppDataProvider.AppDataDirectoryPath.Path, "OmniSharp"));
+
+    private DirectoryInfo GetDownloadDirectory() =>
+        new(Path.Combine(GetDownloadRootDirectory().FullName, GetRequiredVersion()));
 
     private string GetRequiredVersion()
     {
@@ -118,10 +135,11 @@ public class OmniSharpServerDownloader(HttpClient httpClient, IAppStatusMessageP
         string settingPath = $"OmniSharp:DownloadUrls:{platform}:{arch}";
 
         return configuration.GetValue<string>(settingPath)
-               ?? throw new Exception($"No configuration value for OmniSharp download url at setting path: '{settingPath}'");
+               ?? throw new Exception(
+                   $"No configuration value for OmniSharp download url at setting path: '{settingPath}'");
     }
 
-    private string GetExecutableFileName(OSPlatform platform)
+    private static string GetExecutableFileName(OSPlatform platform)
     {
         return platform == OSPlatform.Windows ? "OmniSharp.exe" : "OmniSharp";
     }

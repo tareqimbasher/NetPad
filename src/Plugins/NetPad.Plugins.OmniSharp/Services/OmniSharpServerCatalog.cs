@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using NetPad.Application;
 using NetPad.Scripts;
 using NetPad.Utilities;
@@ -65,7 +66,7 @@ public class OmniSharpServerCatalog(
 
                 await appStatusMessagePublisher.PublishAsync(
                     environment.Script.Id,
-                    "OmniSharp server failed to start",
+                    "OmniSharp server failed to start. Check log file for details.",
                     AppStatusMessagePriority.High,
                     true);
             }
@@ -145,7 +146,23 @@ public class OmniSharpServerCatalog(
                 server = ActivatorUtilities.CreateInstance<AppOmniSharpServer>(serviceScope.ServiceProvider,
                     environment);
 
-                await server.StartAsync();
+                try
+                {
+                    await server.StartAsync();
+                }
+                catch (Win32Exception ex) when (ex.Message.ContainsIgnoreCase("Permission denied"))
+                {
+                    var locator = serviceScope.ServiceProvider.GetRequiredService<IOmniSharpServerLocator>();
+                    if (await AttemptFixExecutablePermissions(locator, logger))
+                    {
+                        await server.StartAsync();
+                    }
+                    else
+                    {
+                        logger.LogError("Could not fix executable permissions");
+                        throw;
+                    }
+                }
 
                 if (!server.OmniSharpServer.IsProcessRunning())
                 {
@@ -165,6 +182,32 @@ public class OmniSharpServerCatalog(
         });
 
         return new CatalogItem(serverTask, serviceScope);
+    }
+
+    private static async Task<bool> AttemptFixExecutablePermissions(IOmniSharpServerLocator locator, ILogger logger)
+    {
+        if (PlatformUtil.IsOSWindows())
+        {
+            logger.LogError("Cannot fix OmniSharp executable permissions on Windows");
+            return false;
+        }
+
+        var location = await locator.GetServerLocationAsync();
+        if (location == null)
+        {
+            logger.LogError("Could not get OmniSharp executable location");
+            return false;
+        }
+
+        if (!ProcessUtil.SetUnixExecutablePermission(location.ExecutablePath))
+        {
+            logger.LogError(
+                "Could not set executable flag on downloaded OmniSharp executable: {ExecutablePath}",
+                location.ExecutablePath);
+            return false;
+        }
+
+        return true;
     }
 
     private class CatalogItem(Task<AppOmniSharpServer?> appOmniSharpServerTask, IServiceScope serviceScope)

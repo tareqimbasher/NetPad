@@ -70,18 +70,35 @@ public static class ProcessUtil
     }
 
     /// <summary>
-    /// Attempts to make a file executable. Does nothing on Microsoft Windows.
+    /// Grants execute permission to the specified file on Unix-based systems.
     /// </summary>
-    /// <param name="filePath"></param>
-    public static void MakeExecutable(string filePath)
+    /// <param name="filePath">The full path to the file to be made executable.</param>
+    /// <returns>
+    /// <c>true</c> if the execute permission was successfully granted, or if running on Windows;
+    /// otherwise, <c>false</c> if an error occurred.
+    /// </returns>
+    /// <remarks>
+    /// This method is a no-op on Windows platforms.
+    /// On Unix-based systems, it invokes the <c>chmod</c> command with the <c>+x</c> flag
+    /// to add execute permissions for the file owner, group, and others.
+    /// </remarks>
+    public static bool SetUnixExecutablePermission(string filePath)
     {
-        if (PlatformUtil.IsOSWindows())
+        try
         {
-            return;
-        }
+            if (PlatformUtil.IsOSWindows())
+            {
+                return true;
+            }
 
-        using var p = Process.Start("chmod", $"+x {filePath}");
-        p.WaitForExit();
+            using var p = Process.Start("chmod", $"+x \"{filePath}\"");
+            p.WaitForExit();
+            return p.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public static ProcessStartInfo WithWorkingDirectory(this ProcessStartInfo processStartInfo, string workingDirectory)
