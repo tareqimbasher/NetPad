@@ -1,5 +1,6 @@
 using ElectronSharp.API;
 using ElectronSharp.API.Entities;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
@@ -11,6 +12,7 @@ namespace NetPad.Apps.Shells.Electron.UiInterop;
 public class ElectronWindowService(
     WindowManager windowManager,
     ITrivialDataStore trivialDataStore,
+    IHostApplicationLifetime applicationLifetime,
     Settings settings,
     ILogger<ElectronWindowService> logger)
     : IUiWindowService
@@ -31,7 +33,7 @@ public class ElectronWindowService(
 
         // HACK: Electron.App.WindowAllClosed and Electron.App.WillQuit no longer work when we switched to ElectronSharp
         // Stops application when the main window is closed
-        window.OnClosed += ElectronSharp.API.Electron.App.Quit;
+        window.OnClosed += applicationLifetime.StopApplication;
 
         await RestoreMainWindowPositionAsync(window);
     }
