@@ -122,7 +122,7 @@ public partial class ClientServerScriptRunner
 
         // Add script references
         dependencies.AddRange(_script.Config.References
-            .Select(x => new Dependency(x, NeededBy.Script, LoadStrategy.LoadInPlace)));
+            .Select(x => new Dependency(x, NeededBy.Script, LoadStrategy.DeployAndLoad)));
 
         if (cancellationToken.IsCancellationRequested)
         {

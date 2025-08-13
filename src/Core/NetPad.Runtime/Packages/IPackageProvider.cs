@@ -30,7 +30,7 @@ public interface IPackageProvider
     /// </summary>
     /// <param name="packageId">The ID of the package.</param>
     /// <param name="includePrerelease">Whether to include pre-release versions.</param>
-    Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease);
+    Task<string[]> GetPackageVersionStringsAsync(string packageId, bool includePrerelease);
 
     /// <summary>
     /// Gets metadata for a collection of packages.

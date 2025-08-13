@@ -89,7 +89,7 @@ public class NuGetPackageProvider(
         return packages.ToArray();
     }
 
-    public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
+    private async Task<NuGetVersion[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
     {
         using var sourceCacheContext = new SourceCacheContext();
 
@@ -115,14 +115,18 @@ public class NuGetPackageProvider(
 
             if (versions.Any())
             {
-                return versions
-                    .Where(v => includePrerelease || !v.IsPrerelease)
-                    .Select(v => v.ToString())
-                    .ToArray();
+                return versions.Where(v => includePrerelease || !v.IsPrerelease).ToArray();
             }
         }
 
         return [];
+    }
+
+    public async Task<string[]> GetPackageVersionStringsAsync(string packageId, bool includePrerelease)
+    {
+        return (await GetPackageVersionsAsync(packageId, includePrerelease))
+            .Select(v => v.ToString())
+            .ToArray();
     }
 
     public async Task InstallPackageAsync(
@@ -434,6 +438,11 @@ public class NuGetPackageProvider(
                     cacheContext,
                     nugetLogger,
                     cancellationToken);
+
+                if (dependencyInfo == null)
+                {
+                    var all = await dependencyInfoResource.ResolvePackages(package.Id, framework, cacheContext, nugetLogger, cancellationToken);
+                }
             }
             catch (Exception e)
             {
@@ -1016,7 +1025,7 @@ public class NuGetPackageProvider(
 
         packageMetadata.Version ??= latestVersion?.Version.ToString();
 
-        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ?? (await GetPackageVersionsAsync(
+        packageMetadata.LatestAvailableVersion = latestVersion?.Version.ToString() ?? (await GetPackageVersionStringsAsync(
             packageMetadata.PackageId,
             searchMetadata.Identity.Version.IsPrerelease)).MaxBy(NuGetVersion.Parse);
     }

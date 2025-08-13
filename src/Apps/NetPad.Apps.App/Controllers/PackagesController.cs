@@ -45,7 +45,7 @@ public class PackagesController(IPackageProvider packageProvider) : ControllerBa
     [HttpGet("versions")]
     public async Task<string[]> GetPackageVersionsAsync([FromQuery] string packageId, [FromQuery] bool includePrerelease = false)
     {
-        return await packageProvider.GetPackageVersionsAsync(packageId, includePrerelease);
+        return await packageProvider.GetPackageVersionStringsAsync(packageId, includePrerelease);
     }
 
     [HttpPost("metadata")]

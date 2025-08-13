@@ -8,14 +8,25 @@
         }
     },
     "profiles": {
-        "ElectronSharp App": {
+        "ASP.NET Core App (Web/Browser)": {
+            "commandName": "Project",
+            "launchBrowser": false,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "ASP.NET Core App (Electron)": {
             "commandName": "Executable",
             "executablePath": "electron-sharp",
             "commandLineArgs": "start /manifest electron.manifest.js",
-            "workingDirectory": "."
+            "workingDirectory": ".",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
         },
-        "ASP.NET Core App (no Electron)": {
+        "ASP.NET Core App (Tauri)": {
             "commandName": "Project",
+            "commandLineArgs": "--tauri",
             "launchBrowser": false,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

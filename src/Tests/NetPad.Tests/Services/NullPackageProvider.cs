@@ -25,7 +25,7 @@ public class NullPackageProvider : IPackageProvider
         throw new NotImplementedException();
     }
 
-    public Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease)
+    public Task<string[]> GetPackageVersionStringsAsync(string packageId, bool includePrerelease)
     {
         throw new NotImplementedException();
     }

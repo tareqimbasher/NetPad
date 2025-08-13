@@ -16,9 +16,13 @@ internal class PackageDependencyTree(NugetPackageIdentity packageIdentity)
     public SourcePackageDependencyInfo[] GetAllPackages()
     {
         if (DependencyInfo == null)
-            throw new Exception("Dependency info is not loaded.");
+        {
+            //throw new Exception($"Dependency info is not loaded for {Identity}.");
+        }
 
-        var all = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default) { DependencyInfo };
+        var all = DependencyInfo == null
+            ? new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default)
+            : new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default) { DependencyInfo };
 
         all.AddRange(Dependencies.SelectMany(d => d.GetAllPackages()));
 

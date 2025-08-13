@@ -262,7 +262,7 @@ public class ScriptHostProcessManager(
 
             try
             {
-                Retry.Execute(2, TimeSpan.FromSeconds(1), workingDirectory.DeleteIfExists);
+                //Retry.Execute(2, TimeSpan.FromSeconds(1), workingDirectory.DeleteIfExists);
             }
             catch (Exception ex)
             {
