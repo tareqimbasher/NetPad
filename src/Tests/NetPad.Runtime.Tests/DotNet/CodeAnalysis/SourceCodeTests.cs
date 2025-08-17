@@ -1,7 +1,7 @@
 ﻿using NetPad.DotNet.CodeAnalysis;
 using Xunit;
 
-namespace NetPad.Runtime.Tests.DotNet;
+namespace NetPad.Runtime.Tests.DotNet.CodeAnalysis;
 
 public class SourceCodeTests
 {

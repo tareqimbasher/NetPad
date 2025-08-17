@@ -1,14 +1,18 @@
-using NetPad.IO;
+﻿using NetPad.IO;
 using Xunit;
 
 namespace NetPad.Runtime.Tests.IO;
 
-public class ActionInputReaderTests
+public class AsyncActionInputReaderTests
 {
     [Fact]
     public async Task CallsAction()
     {
-        var reader = new ActionInputReader<string>(() => "My input");
+        var reader = new AsyncActionInputReader<string>(async () =>
+        {
+            await Task.Delay(1);
+            return "My input";
+        });
 
         var input = await reader.ReadAsync();
 
@@ -18,7 +22,7 @@ public class ActionInputReaderTests
     [Fact]
     public async Task NullDoesNothing()
     {
-        var reader = ActionInputReader<string>.Null;
+        var reader = AsyncActionInputReader<string>.Null;
 
         var input = await reader.ReadAsync();
 
