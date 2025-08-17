@@ -148,16 +148,16 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
             frameworkVersion,
             (EntityFrameworkDatabaseConnection)databaseConnection);
 
-        // Switch project to a executable project
-        await project.SetProjectPropertyAsync(
+        // Switch project to an executable project
+        await project.SetProjectGroupItemAsync(
             "OutputType",
             ProjectOutputType.Executable.ToDotNetProjectPropertyValue());
 
-        var programFilePath = Path.Combine(project.ProjectDirectoryPath, "Program.cs");
-        if (!System.IO.File.Exists(programFilePath))
+        var programFilePath = project.ProjectDirectoryPath.CombineFilePath("Program.cs");
+        if (!programFilePath.Exists())
         {
             await System.IO.File.WriteAllTextAsync(
-                programFilePath,
+                programFilePath.Path,
                 """
                 using Microsoft.EntityFrameworkCore;
 
@@ -168,7 +168,7 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
             );
         }
 
-        ProcessUtil.OpenWithDefaultApp(project.ProjectDirectoryPath);
+        ProcessUtil.OpenWithDefaultApp(project.ProjectDirectoryPath.Path);
         return NoContent();
     }
 }

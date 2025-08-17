@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace NetPad.IO;
@@ -15,7 +16,14 @@ public record FilePath(string Path) : AbsolutePath(Path)
 
     public override int GetHashCode() => Path.ToLowerInvariant().GetHashCode();
 
-    public static implicit operator FilePath(string name) => new(name);
+    [return: NotNullIfNotNull("name")]
+    public static implicit operator FilePath?(string? name) => name is null ? null : new(name);
+
+    public string FileName => System.IO.Path.GetFileName(Path);
+
+    public string FileNameWithoutExtension => System.IO.Path.GetFileNameWithoutExtension(Path);
+
+    public string Extension => System.IO.Path.GetExtension(Path);
 
     public FileInfo GetInfo() => new(Path);
 

@@ -46,15 +46,15 @@ public class EntityFrameworkDatabaseScaffolder(
 
         try
         {
-            var dbModelOutputDirPath = Path.Combine(project.ProjectDirectoryPath, "DbModel");
+            var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel");
 
-            var model = await GetScaffoldedModelAsync(dbModelOutputDirPath);
+            var model = await GetScaffoldedModelAsync(dbModelOutputDirPath.Path);
 
             DoTransforms(model, connection);
 
             await WriteTransformedModelAsync(model);
 
-            var buildResult = await project.BuildAsync("-c Release");
+            var buildResult = await project.BuildAsync(["-c", "Release"]);
 
             if (!buildResult.Succeeded)
             {
@@ -63,8 +63,8 @@ public class EntityFrameworkDatabaseScaffolder(
             }
 
             var assemblyFilePath = Directory.GetFiles(
-                    Path.Combine(project.BinDirectoryPath, "Release"),
-                    $"{Path.GetFileNameWithoutExtension(project.ProjectFilePath)}.dll",
+                    project.BinDirectoryPath.Combine("Release").Path,
+                    $"{project.ProjectFilePath.FileNameWithoutExtension}.dll",
                     SearchOption.AllDirectories)
                 .FirstOrDefault();
 
@@ -103,15 +103,13 @@ public class EntityFrameworkDatabaseScaffolder(
                 $"Failed to scaffold database. Error building project. {buildResult.FormattedOutput}");
         }
 
-        var dbModelOutputDirPath = Path.Combine(project.ProjectDirectoryPath, "DbModel");
+        var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel").CreateIfNotExists();
 
-        Directory.CreateDirectory(dbModelOutputDirPath);
-
-        await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath, dbModelOutputDirPath);
+        await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path);
 
         if (connection.ScaffoldOptions?.OptimizeDbContext == true)
         {
-            await RunEfOptimizeAsync(project.ProjectDirectoryPath, dbModelOutputDirPath);
+            await RunEfOptimizeAsync(project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path);
         }
 
         return project;
@@ -123,18 +121,19 @@ public class EntityFrameworkDatabaseScaffolder(
     {
         try
         {
-            await project.SetProjectPropertyAsync(
+            await project.SetProjectGroupItemAsync(
                 "OutputType",
                 ProjectOutputType.Executable.ToDotNetProjectPropertyValue());
 
             var embeddedUtilCode = AssemblyUtil.ReadEmbeddedResource(typeof(EntityFrameworkDatabaseUtil).Assembly,
                 "DatabaseStructureEmbedded.cs");
 
-            await File.WriteAllTextAsync(Path.Combine(project.ProjectDirectoryPath, "EntityFrameworkDatabaseUtil.cs"),
+            await File.WriteAllTextAsync(
+                Path.Combine(project.ProjectDirectoryPath.Path, "EntityFrameworkDatabaseUtil.cs"),
                 embeddedUtilCode);
 
             await File.WriteAllTextAsync(
-                Path.Combine(project.ProjectDirectoryPath, "Program.cs"),
+                Path.Combine(project.ProjectDirectoryPath.Path, "Program.cs"),
                 $$"""
                   using System;
                   using System.Text.Json;
@@ -158,7 +157,7 @@ public class EntityFrameworkDatabaseScaffolder(
                   }
                   """);
 
-            var result = await project.RunAsync("-c Release", "--property WarningLevel=0", "/clp:ErrorsOnly");
+            var result = await project.RunAsync(["-c", "Release", "--property", "WarningLevel=0", "/clp:ErrorsOnly"]);
 
             if (!result.Succeeded)
             {
