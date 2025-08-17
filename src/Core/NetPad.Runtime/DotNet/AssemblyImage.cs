@@ -12,7 +12,9 @@ public class AssemblyImage
     public AssemblyImage(AssemblyName assemblyName, byte[] image)
     {
         if (image.Length == 0)
+        {
             throw new ArgumentNullException(nameof(image), "Image has zero length");
+        }
 
         AssemblyName = assemblyName ?? throw new ArgumentNullException(nameof(assemblyName));
         Image = image;
