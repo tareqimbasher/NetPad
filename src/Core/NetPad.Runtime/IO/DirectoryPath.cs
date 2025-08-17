@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace NetPad.IO;
@@ -15,7 +16,8 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
 
     public override int GetHashCode() => Path.ToLowerInvariant().GetHashCode();
 
-    public static implicit operator DirectoryPath(string name) => new(name);
+    [return: NotNullIfNotNull("name")]
+    public static implicit operator DirectoryPath?(string? name) => name is null ? null : new(name);
 
     public DirectoryInfo GetInfo() => new(Path);
 
@@ -28,7 +30,11 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
 
     public bool IsWritable() => FileSystemUtil.IsDirectoryWritable(Path);
 
-    public void CreateIfNotExists() => Directory.CreateDirectory(Path);
+    public DirectoryPath CreateIfNotExists()
+    {
+        Directory.CreateDirectory(Path);
+        return this;
+    }
 
     public override void DeleteIfExists()
     {

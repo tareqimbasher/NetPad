@@ -56,10 +56,7 @@ public class AppOmniSharpServer(
     {
         _logger.LogDebug("Initializing script project for script: {Script}", environment.Script);
 
-        if (Directory.Exists(Project.ProjectDirectoryPath))
-        {
-            Directory.Delete(Project.ProjectDirectoryPath, recursive: true);
-        }
+        Project.ProjectDirectoryPath.DeleteIfExists();
 
         await Project.CreateAsync(
             environment.Script.Config.TargetFrameworkVersion,
@@ -68,7 +65,7 @@ public class AppOmniSharpServer(
             true,
             false);
 
-        await Project.SetProjectPropertyAsync("AllowUnsafeBlocks", "true");
+        await Project.SetProjectGroupItemAsync("AllowUnsafeBlocks", "true");
 
         await SetPreprocessorSymbolsAsync();
 
@@ -191,7 +188,7 @@ public class AppOmniSharpServer(
 
         var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
             executablePath!,
-            Project.ProjectDirectoryPath,
+            Project.ProjectDirectoryPath.Path,
             args,
             dotNetInfo.LocateDotNetRootDirectory());
 
@@ -279,7 +276,7 @@ public class AppOmniSharpServer(
         {
             if (ev.Script.Id != environment.Script.Id) return;
 
-            await Project.SetProjectPropertyAsync("TargetFramework", ev.NewVersion.GetTargetFrameworkMoniker());
+            await Project.SetProjectGroupItemAsync("TargetFramework", ev.NewVersion.GetTargetFrameworkMoniker());
 
             if (ev.Script.DataConnection == null)
             {
@@ -455,7 +452,7 @@ public class AppOmniSharpServer(
             {
                 new FilesChangedRequest
                 {
-                    FileName = Project.ProjectFilePath,
+                    FileName = Project.ProjectFilePath.Path,
                     ChangeType = FileChangeType.Create
                 }
             }, cts.Token);

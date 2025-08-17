@@ -29,9 +29,9 @@ public class OmniSharpProject : DotNetCSharpProject
         _dataConnectionReferencesLock = new SemaphoreSlim(1, 1);
 
         Script = script;
-        BootstrapperProgramFilePath = Path.Combine(ProjectDirectoryPath, "Bootstrapper_Program.cs");
-        UserProgramFilePath = Path.Combine(ProjectDirectoryPath, "User_Program.cs");
-        DataConnectionProgramFilePath = Path.Combine(ProjectDirectoryPath, "Data_Connection_Program.cs");
+        BootstrapperProgramFilePath = Path.Combine(ProjectDirectoryPath.Path, "Bootstrapper_Program.cs");
+        UserProgramFilePath = Path.Combine(ProjectDirectoryPath.Path, "User_Program.cs");
+        DataConnectionProgramFilePath = Path.Combine(ProjectDirectoryPath.Path, "Data_Connection_Program.cs");
     }
 
     public Script Script { get; }

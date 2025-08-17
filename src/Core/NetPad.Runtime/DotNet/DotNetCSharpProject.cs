@@ -1,27 +1,33 @@
 using System.Diagnostics;
 using System.IO;
 using System.Xml.Linq;
+using NetPad.IO;
 
 namespace NetPad.DotNet;
 
 /// <summary>
-/// Represents a .NET C# project. Provides methods to create, delete, and manage a project,
-/// add/remove references and other utility functions.
+/// Represents a .NET C# project backed by a <c>.csproj</c> file.
+/// Provides helpers to create/delete the project on disk, mutate the project XML,
+/// manage references, and invoke common <c>dotnet</c> CLI actions.
 /// </summary>
 public partial class DotNetCSharpProject
 {
     private readonly IDotNetInfo _dotNetInfo;
-    private readonly HashSet<Reference> _references;
-    private readonly SemaphoreSlim _projectFileLock;
+    private readonly HashSet<Reference> _references = [];
+    private readonly SemaphoreSlim _projectFileLock = new(1, 1);
 
     /// <summary>
-    /// Creates an instance of <see cref="DotNetCSharpProject"/>.
+    /// Initializes a new instance of <see cref="DotNetCSharpProject"/>.
     /// </summary>
-    /// <param name="dotNetInfo"></param>
-    /// <param name="projectDirectoryPath">Project root directory path.</param>
-    /// <param name="projectFileName">If name of the project file. '.csproj' extension will be added if not specified.</param>
-    /// <param name="packageCacheDirectoryPath">The package cache directory to use when adding or removing packages.
-    /// Only needed when adding or removing package references.</param>
+    /// <param name="dotNetInfo">Service used to locate the <c>dotnet</c> CLI.</param>
+    /// <param name="projectDirectoryPath">Absolute path to the project’s root directory.</param>
+    /// <param name="projectFileName">
+    /// Name of the project file. If the <c>.csproj</c> extension is omitted, it is appended automatically.
+    /// </param>
+    /// <param name="packageCacheDirectoryPath">
+    /// Directory to use as a package cache when adding, removing or resolving packages. Will use the default package
+    /// cache if this value is <c>null</c>.
+    /// </param>
     public DotNetCSharpProject(
         IDotNetInfo dotNetInfo,
         string projectDirectoryPath,
@@ -29,57 +35,65 @@ public partial class DotNetCSharpProject
         string? packageCacheDirectoryPath = null)
     {
         _dotNetInfo = dotNetInfo;
-        _references = [];
-        _projectFileLock = new SemaphoreSlim(1, 1);
-
         ProjectDirectoryPath = projectDirectoryPath;
         PackageCacheDirectoryPath = packageCacheDirectoryPath;
 
         if (!projectFileName.EndsWithIgnoreCase(".csproj"))
+        {
             projectFileName += ".csproj";
+        }
 
-        ProjectFilePath = Path.Combine(projectDirectoryPath, projectFileName);
+        ProjectFilePath = ProjectDirectoryPath.CombineFilePath(projectFileName);
     }
 
     /// <summary>
-    /// The root directory of this project.
+    /// Gets the root directory of this project.
     /// </summary>
-    public string ProjectDirectoryPath { get; }
+    public DirectoryPath ProjectDirectoryPath { get; }
 
     /// <summary>
-    /// The bin directory of this project.
+    /// Gets the full path to the project file.
     /// </summary>
-    public string BinDirectoryPath => Path.Combine(ProjectDirectoryPath, "bin");
+    public FilePath ProjectFilePath { get; }
 
     /// <summary>
-    /// The path to the project file.
+    /// Gets the path to the project's <c>bin</c> directory.
     /// </summary>
-    public string ProjectFilePath { get; }
+    public DirectoryPath BinDirectoryPath => ProjectDirectoryPath.Combine("bin");
 
     /// <summary>
-    /// The package cache directory to use when adding or removing packages.
+    /// Gets the package cache directory used when adding, removing or resolving packages, if configured.
     /// </summary>
-    public string? PackageCacheDirectoryPath { get; }
+    public DirectoryPath? PackageCacheDirectoryPath { get; }
 
     /// <summary>
-    /// The references that are added to this project.
+    /// Gets the set of references that have been added to this project.
     /// </summary>
     public IReadOnlySet<Reference> References => _references;
 
     /// <summary>
-    /// Returns the name of the project SDK based on the provided <see cref="DotNetSdkPack"/>.
+    /// Returns the SDK name to use in the project file for the specified <see cref="DotNetSdkPack"/>.
     /// </summary>
-    public static string GetProjectSdkName(DotNetSdkPack pack) =>
-        pack == DotNetSdkPack.AspNetApp ? "Microsoft.NET.Sdk.Web" : "Microsoft.NET.Sdk";
+    /// <param name="pack">The SDK pack type.</param>
+    /// <returns><c>Microsoft.NET.Sdk.Web</c> for ASP.NET apps; otherwise <c>Microsoft.NET.Sdk</c>.</returns>
+    public static string GetProjectSdkName(DotNetSdkPack pack) => pack switch
+    {
+        DotNetSdkPack.AspNetApp => "Microsoft.NET.Sdk.Web",
+        _ => "Microsoft.NET.Sdk"
+    };
 
     /// <summary>
-    /// Creates the project on disk.
+    /// Creates the project on disk by writing a minimal <c>.csproj</c>.
     /// </summary>
-    /// <param name="targetDotNetFrameworkVersion">The .NET framework to target.</param>
-    /// <param name="outputType">The output type of the project.</param>
+    /// <param name="targetDotNetFrameworkVersion">The target framework to use (e.g., <c>net8.0</c>).</param>
+    /// <param name="outputType">The project's output type (e.g., Exe or Library).</param>
     /// <param name="sdkPack">The SDK pack to use for this project.</param>
-    /// <param name="enableNullable">If true, will enable nullable checks.</param>
-    /// <param name="enableImplicitUsings">If true, will enable implicit usings.</param>
+    /// <param name="enableNullable">Whether to enable C# nullable context.</param>
+    /// <param name="enableImplicitUsings">Whether to enable implicit global usings.</param>
+    /// <remarks>
+    /// Ensures the project directory exists. If a project file already exists at the computed path,
+    /// its contents are overwritten.
+    /// </remarks>
     public virtual async Task CreateAsync(
         DotNetFrameworkVersion targetDotNetFrameworkVersion,
         ProjectOutputType outputType,
@@ -87,52 +101,56 @@ public partial class DotNetCSharpProject
         bool enableNullable = true,
         bool enableImplicitUsings = true)
     {
-        Directory.CreateDirectory(ProjectDirectoryPath);
+        ProjectDirectoryPath.CreateIfNotExists();
 
-        var dotnetOutputType = outputType.ToDotNetProjectPropertyValue();
+        var assemblyOutputType = outputType.ToDotNetProjectPropertyValue();
 
-        var xml = $@"<Project Sdk=""{GetProjectSdkName(sdkPack)}"">
+        var xml = $"""
+                   <Project Sdk="{GetProjectSdkName(sdkPack)}">
 
-    <PropertyGroup>
-        <OutputType>{dotnetOutputType}</OutputType>
-        <TargetFramework>{targetDotNetFrameworkVersion.GetTargetFrameworkMoniker()}</TargetFramework>
-        <Nullable>{(enableNullable ? "enable" : "disable")}</Nullable>
-        <ImplicitUsings>{(enableImplicitUsings ? "enable" : "disable")}</ImplicitUsings>
-    </PropertyGroup>
+                       <PropertyGroup>
+                           <OutputType>{assemblyOutputType}</OutputType>
+                           <TargetFramework>{targetDotNetFrameworkVersion.GetTargetFrameworkMoniker()}</TargetFramework>
+                           <Nullable>{(enableNullable ? "enable" : "disable")}</Nullable>
+                           <ImplicitUsings>{(enableImplicitUsings ? "enable" : "disable")}</ImplicitUsings>
+                       </PropertyGroup>
 
-</Project>
-";
+                   </Project>
+                   """;
 
-        await File.WriteAllTextAsync(ProjectFilePath, xml);
+        await File.WriteAllTextAsync(ProjectFilePath.Path, xml);
     }
 
     /// <summary>
-    /// Deletes project directory on disk.
+    /// Deletes the project directory and all of its contents.
     /// </summary>
+    /// <remarks>
+    /// This is a destructive operation and cannot be undone.
+    /// </remarks>
     public Task DeleteAsync()
     {
-        if (Directory.Exists(ProjectDirectoryPath))
-        {
-            Directory.Delete(ProjectDirectoryPath, true);
-        }
-
+        ProjectDirectoryPath.DeleteIfExists();
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Modifies the project file by applying the specified modification action to the root "Project" XML node.
+    /// Loads the project file and applies a modification to the root <c>Project</c> XML node.
     /// </summary>
-    /// <param name="modification">The modification to apply to the project's root element.</param>
-    /// <exception cref="FormatException"></exception>
+    /// <param name="modification">An action that receives the root element and performs in-place edits.</param>
+    /// <exception cref="FormatException">
+    /// Thrown if the project XML is malformed or the root <c>Project</c> node cannot be found.
+    /// </exception>
     /// <remarks>
-    /// Note that this method locks the project file in memory, no other calls to ModifyProjectFileAsync() should
-    /// take place inside the Action handler.
+    /// This method serializes access to the project file using an in-memory lock. Do not call
+    /// <see cref="ModifyProjectFileAsync(Action&lt;XElement&gt;)"/> recursively from within <paramref name="modification"/>.
     /// </remarks>
     /// <example>
     /// <code>
     /// await ModifyProjectFileAsync(root =>
     /// {
-    ///     // root is the "Project" XML node
+    ///     // root is the &lt;Project&gt; element
+    ///     var propertyGroup = root.Element("PropertyGroup") ?? new XElement("PropertyGroup");
+    ///     root.Add(propertyGroup);
     /// });
     /// </code>
     /// </example>
@@ -142,11 +160,10 @@ public partial class DotNetCSharpProject
 
         try
         {
-            var xmlDoc = XDocument.Load(ProjectFilePath);
+            var xmlDoc = XDocument.Load(ProjectFilePath.Path);
 
-            var root = xmlDoc.Elements("Project").FirstOrDefault();
-
-            if (root == null)
+            var root = xmlDoc.Root;
+            if (root == null || root.Name.LocalName != "Project")
             {
                 throw new FormatException(
                     "Project XML file is not formatted correctly. Could not find the root \"Project\" XML node.");
@@ -154,7 +171,7 @@ public partial class DotNetCSharpProject
 
             modification(root);
 
-            await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+            await File.WriteAllTextAsync(ProjectFilePath.Path, xmlDoc.ToString());
         }
         finally
         {
@@ -163,14 +180,10 @@ public partial class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Sets a project attribute.
+    /// Sets an attribute on the root <c>Project</c> element in the project file.
     /// </summary>
-    /// <param name="attributeName">The name of the attribute to set.</param>
-    /// <param name="value">The value to set for the attribute.</param>
-    /// <remarks>
-    /// This method modifies the project file by setting the specified attribute on the root Project XML node
-    /// to the given value.
-    /// </remarks>
+    /// <param name="attributeName">The attribute name (e.g., <c>Sdk</c>).</param>
+    /// <param name="value">The attribute value, or <see langword="null"/> to remove the attribute.</param>
     /// <example>
     /// <code>
     /// await SetProjectAttributeAsync("Sdk", "Microsoft.NET.Sdk");
@@ -182,145 +195,128 @@ public partial class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Sets the value of a project property in the first found "PropertyGroup" XML node.
+    /// Adds or updates a child element within the first <c>PropertyGroup</c> in the project file.
     /// </summary>
-    /// <param name="propertyName">The name of the project property to set.</param>
-    /// <param name="value">The value to set for the property.</param>
+    /// <param name="propertyName">The element name to set (e.g., <c>Nullable</c>).</param>
+    /// <param name="value">The element value, or <see langword="null"/> to set an empty value.</param>
+    /// <exception cref="FormatException">
+    /// Thrown if no <c>PropertyGroup</c> element exists in the project file.
+    /// </exception>
     /// <example>
     /// <code>
-    /// await SetProjectPropertyAsync("Nullable", "enable");
+    /// await SetProjectGroupItemAsync("Nullable", "enable");
     /// </code>
     /// </example>
-    public async Task SetProjectPropertyAsync(string propertyName, string? value)
+    public async Task SetProjectGroupItemAsync(string propertyName, string? value)
     {
         await ModifyProjectFileAsync(root =>
         {
-            var propertyGroups = root.Elements("PropertyGroup").ToArray();
-
-            if (propertyGroups.Length == 0)
+            var firstGroup = root.Element("PropertyGroup");
+            if (firstGroup == null)
             {
                 throw new FormatException(
                     "Project XML file is not formatted correctly. Could not find a \"PropertyGroup\" XML node.");
             }
 
-            XElement? property;
+            var name = XName.Get(propertyName);
+            var existing = root.Elements("PropertyGroup")
+                .Elements(name)
+                .FirstOrDefault();
 
-            foreach (var projectProperties in propertyGroups)
+            if (existing != null)
             {
-                property = projectProperties.Elements(propertyName).FirstOrDefault();
-
-                if (property != null)
-                {
-                    property.SetValue(value ?? string.Empty);
-                    return;
-                }
+                existing.SetValue(value ?? string.Empty);
             }
-
-            property = new XElement(propertyName);
-            propertyGroups[0].Add(property);
+            else
+            {
+                firstGroup.Add(new XElement(name, value ?? string.Empty));
+            }
         });
     }
 
-    public async Task RestoreAsync()
-    {
-        EnsurePackageCacheDirectoryExists();
+    /// <summary>
+    /// Runs <c>dotnet restore</c> for this project and waits for completion.
+    /// </summary>
+    /// <param name="additionalArgs">Additional arguments to pass to the restore command.</param>
+    /// <param name="cancellationToken">Token used to cancel waiting for the process to exit.</param>
+    /// <returns>
+    /// A <see cref="DotNetCliResult"/> containing standard output, standard error, and a success flag
+    /// (true if the process exited with code 0).
+    /// </returns>
+    public Task<DotNetCliResult> RestoreAsync(
+        string[]? additionalArgs = null,
+        CancellationToken cancellationToken = default)
+        => InvokeDotNetAsync("restore", additionalArgs, true, cancellationToken);
 
-        using var process = Process.Start(new ProcessStartInfo(
-            _dotNetInfo.LocateDotNetExecutableOrThrow(),
-            $"restore \"{ProjectFilePath}\"")
+    /// <summary>
+    /// Builds the project by invoking <c>dotnet build</c>.
+    /// </summary>
+    /// <param name="additionalArgs">Additional arguments to pass to the build command.</param>
+    /// <param name="cancellationToken">Token used to cancel waiting for the process to exit.</param>
+    /// <returns>
+    /// A <see cref="DotNetCliResult"/> containing standard output, standard error, and a success flag
+    /// (true if the process exited with code 0).
+    /// </returns>
+    public Task<DotNetCliResult> BuildAsync(
+        string[]? additionalArgs = null,
+        CancellationToken cancellationToken = default)
+        => InvokeDotNetAsync("build", additionalArgs, true, cancellationToken);
+
+    /// <summary>
+    /// Runs the project by invoking <c>dotnet run</c>.
+    /// </summary>
+    /// <param name="additionalArgs">Additional arguments to pass to the run command.</param>
+    /// <param name="cancellationToken">Token used to cancel waiting for the process to exit.</param>
+    /// <returns>
+    /// A <see cref="DotNetCliResult"/> containing standard output, standard error, and a success flag
+    /// (true if the process exited with code 0).
+    /// </returns>
+    public Task<DotNetCliResult> RunAsync(
+        string[]? additionalArgs = null,
+        CancellationToken cancellationToken = default)
+        => InvokeDotNetAsync("run", additionalArgs, true, cancellationToken);
+
+    private async Task<DotNetCliResult> InvokeDotNetAsync(
+        string command,
+        string[]? args = null,
+        bool redirectOutput = true,
+        CancellationToken cancellationToken = default)
+    {
+        var psi = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow())
         {
             UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            await process.WaitForExitAsync();
-        }
-    }
-
-    public async Task<DotNetCliResult> BuildAsync(params string[] additionalArgs)
-    {
-        EnsurePackageCacheDirectoryExists();
-
-        List<string> args = ["build"];
-
-        if (additionalArgs.Length > 0)
-        {
-            args.AddRange(additionalArgs);
-        }
-
-        args.Add($"\"{ProjectFilePath}\"");
-
-        var startInfo = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(), string.Join(" ", args))
-        {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
+            WorkingDirectory = ProjectDirectoryPath.Path,
             CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            RedirectStandardOutput = redirectOutput,
+            RedirectStandardError = redirectOutput
         };
 
-        using var process = Process.Start(startInfo);
+        psi.ArgumentList.Add(command);
 
+        if (PackageCacheDirectoryPath != null)
+        {
+            psi.ArgumentList.Add($"-p:RestorePackagesPath=\"{PackageCacheDirectoryPath.Path}\"");
+        }
+
+        if (args != null)
+        {
+            foreach (var a in args) psi.ArgumentList.Add(a);
+        }
+
+        psi.ArgumentList.Add(ProjectFilePath.Path);
+
+        using var process = Process.Start(psi);
         if (process == null)
         {
-            return new DotNetCliResult(false, $"Failed to start dotnet with args: {startInfo.Arguments}");
+            return new DotNetCliResult(false, $"Failed to start: {psi.FileName} {string.Join(' ', psi.ArgumentList)}");
         }
 
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
+        var stdOutTask = redirectOutput ? process.StandardOutput.ReadToEndAsync() : Task.FromResult(string.Empty);
+        var stdErrTask = redirectOutput ? process.StandardError.ReadToEndAsync() : Task.FromResult(string.Empty);
 
-        await process.WaitForExitAsync();
+        await Task.WhenAll(process.WaitForExitAsync(cancellationToken), stdOutTask, stdErrTask).ConfigureAwait(false);
 
-        return new DotNetCliResult(process.ExitCode == 0, output, error);
-    }
-
-    public async Task<DotNetCliResult> RunAsync(params string[] additionalArgs)
-    {
-        EnsurePackageCacheDirectoryExists();
-
-        List<string> args = ["run"];
-
-        if (additionalArgs.Length > 0)
-        {
-            args.AddRange(additionalArgs);
-        }
-
-        args.Add($"\"{ProjectFilePath}\"");
-
-        var startInfo = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(), string.Join(" ", args))
-        {
-            UseShellExecute = false,
-            WorkingDirectory = ProjectDirectoryPath,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-
-        using var process = Process.Start(startInfo);
-
-        if (process == null)
-        {
-            return new DotNetCliResult(false, $"Failed to start dotnet with args: {startInfo.Arguments}");
-        }
-
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-
-        await process.WaitForExitAsync();
-
-        return new DotNetCliResult(process.ExitCode == 0, output, error);
-    }
-
-    private void EnsurePackageCacheDirectoryExists()
-    {
-        if (PackageCacheDirectoryPath == null)
-        {
-            throw new InvalidOperationException($"{nameof(PackageCacheDirectoryPath)} is not set.");
-        }
-
-        if (!Directory.Exists(PackageCacheDirectoryPath)) Directory.CreateDirectory(PackageCacheDirectoryPath);
+        var succeeded = process.ExitCode == 0;
+        return new DotNetCliResult(succeeded, await stdOutTask, await stdErrTask);
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using NetPad.DotNet.References;
+using NetPad.IO;
 
 namespace NetPad.DotNet;
 
@@ -148,9 +148,9 @@ public partial class DotNetCSharpProject
         {
             var assemblyImage = reference.AssemblyImage;
 
-            var assemblyPath = Path.Combine(ProjectDirectoryPath, assemblyImage.ConstructAssemblyFileName());
+            var assemblyPath = ProjectDirectoryPath.CombineFilePath(assemblyImage.ConstructAssemblyFileName());
 
-            await File.WriteAllBytesAsync(assemblyPath, assemblyImage.Image);
+            await File.WriteAllBytesAsync(assemblyPath.Path, assemblyImage.Image);
 
             await AddAssemblyToProjectAsync(assemblyPath);
 
@@ -180,10 +180,9 @@ public partial class DotNetCSharpProject
         {
             var assemblyImage = reference.AssemblyImage;
 
-            var assemblyPath = Path.Combine(ProjectDirectoryPath, assemblyImage.ConstructAssemblyFileName());
+            var assemblyPath = ProjectDirectoryPath.CombineFilePath(assemblyImage.ConstructAssemblyFileName());
 
-            if (File.Exists(assemblyPath))
-                File.Delete(assemblyPath);
+            assemblyPath.DeleteIfExists();
 
             await RemoveAssemblyFromProjectAsync(assemblyPath);
 
@@ -196,11 +195,14 @@ public partial class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Adds a package reference to the project and installs it.
+    /// Adds a NuGet package reference to the project by invoking <c>dotnet add package</c>.
     /// </summary>
     /// <param name="reference">The package to add.</param>
-    /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    private async Task AddPackageAsync(PackageReference reference)
+    /// <param name="cancellationToken">Token used to cancel waiting for the process to exit.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the CLI invocation returns a non-zero exit code.
+    /// </exception>
+    private async Task AddPackageAsync(PackageReference reference, CancellationToken cancellationToken = default)
     {
         if (_references.Contains(reference))
         {
@@ -211,24 +213,29 @@ public partial class DotNetCSharpProject
 
         try
         {
-            EnsurePackageCacheDirectoryExists();
-
-            var packageId = reference.PackageId;
-            var packageVersion = reference.Version;
-
-            using var process = Process.Start(new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow(),
-                $"add \"{ProjectFilePath}\" package {packageId} " +
-                $"--version {packageVersion} " +
-                $"--package-directory \"{PackageCacheDirectoryPath}\"")
+            var args = new List<string>
             {
-                UseShellExecute = false,
-                WorkingDirectory = ProjectDirectoryPath,
-                CreateNoWindow = true
-            });
+                "package",
+                reference.PackageId,
+                "--version", reference.Version,
+                "--project", ProjectFilePath.Path
+            };
 
-            if (process != null)
+            if (PackageCacheDirectoryPath is not null)
             {
-                await process.WaitForExitAsync();
+                args.Add("--package-directory");
+                args.Add(PackageCacheDirectoryPath.Path);
+            }
+
+            var result = await InvokeDotNetAsync(
+                "add",
+                args.ToArray(),
+                false,
+                cancellationToken);
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"dotnet add package failed: {result.FormattedOutput}");
             }
 
             _references.Add(reference);
@@ -240,11 +247,14 @@ public partial class DotNetCSharpProject
     }
 
     /// <summary>
-    /// Removes a package reference from the project and uninstalls it.
+    /// Removes a NuGet package reference from the project by invoking <c>dotnet remove package</c>.
     /// </summary>
     /// <param name="reference">The package to remove.</param>
-    /// <exception cref="InvalidOperationException">Thrown if <see cref="PackageCacheDirectoryPath"/> is not set.</exception>
-    private async Task RemovePackageAsync(PackageReference reference)
+    /// <param name="cancellationToken">Token used to cancel waiting for the process to exit.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the CLI invocation returns a non-zero exit code.
+    /// </exception>
+    private async Task RemovePackageAsync(PackageReference reference, CancellationToken cancellationToken = default)
     {
         if (!_references.Contains(reference))
         {
@@ -255,27 +265,26 @@ public partial class DotNetCSharpProject
 
         try
         {
-            EnsurePackageCacheDirectoryExists();
-
-            var packageId = reference.PackageId;
-
-            var dotnetExe = _dotNetInfo.LocateDotNetExecutableOrThrow();
-
-            using var process = Process.Start(new ProcessStartInfo(dotnetExe,
-                $"remove \"{ProjectFilePath}\" package {packageId}")
+            var args = new[]
             {
-                UseShellExecute = false,
-                WorkingDirectory = ProjectDirectoryPath,
-                CreateNoWindow = true
-            });
+                "package",
+                reference.PackageId,
+                "--project", ProjectFilePath.Path
+            };
 
-            if (process != null)
+            var result = await InvokeDotNetAsync(
+                "remove",
+                args,
+                false,
+                cancellationToken);
+
+            if (!result.Succeeded)
             {
-                await process.WaitForExitAsync();
+                throw new InvalidOperationException($"dotnet remove package failed: {result.FormattedOutput}");
             }
 
             // This is needed so that 'project.assets.json' file is updated properly
-            await RestoreAsync();
+            await RestoreAsync(null, cancellationToken);
 
             _references.Remove(reference);
         }
@@ -285,9 +294,9 @@ public partial class DotNetCSharpProject
         }
     }
 
-    private async Task AddAssemblyToProjectAsync(string assemblyPath)
+    private async Task AddAssemblyToProjectAsync(FilePath assemblyPath)
     {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
+        var xmlDoc = XDocument.Load(ProjectFilePath.Path);
 
         var root = xmlDoc.Elements("Project").FirstOrDefault();
 
@@ -312,7 +321,7 @@ public partial class DotNetCSharpProject
 
         var referenceElement = new XElement("Reference");
 
-        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath).FullName);
+        referenceElement.SetAttributeValue("Include", AssemblyName.GetAssemblyName(assemblyPath.Path).FullName);
 
         var hintPathElement = new XElement("HintPath");
         hintPathElement.SetValue(assemblyPath);
@@ -320,12 +329,12 @@ public partial class DotNetCSharpProject
 
         referenceGroup.Add(referenceElement);
 
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        await File.WriteAllTextAsync(ProjectFilePath.Path, xmlDoc.ToString());
     }
 
-    private async Task RemoveAssemblyFromProjectAsync(string assemblyPath)
+    private async Task RemoveAssemblyFromProjectAsync(FilePath assemblyPath)
     {
-        var xmlDoc = XDocument.Load(ProjectFilePath);
+        var xmlDoc = XDocument.Load(ProjectFilePath.Path);
 
         var root = xmlDoc.Elements("Project").FirstOrDefault();
 
@@ -343,10 +352,10 @@ public partial class DotNetCSharpProject
 
         referenceElementToRemove.Remove();
 
-        await File.WriteAllTextAsync(ProjectFilePath, xmlDoc.ToString());
+        await File.WriteAllTextAsync(ProjectFilePath.Path, xmlDoc.ToString());
     }
 
-    private XElement? FindAssemblyReferenceElement(string assemblyPath, XDocument xmlDoc)
+    private XElement? FindAssemblyReferenceElement(FilePath assemblyPath, XDocument xmlDoc)
     {
         var root = xmlDoc.Elements("Project").First();
 
