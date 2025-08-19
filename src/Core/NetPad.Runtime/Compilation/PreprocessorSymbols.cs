@@ -8,30 +8,31 @@ namespace NetPad.Compilation;
 /// </summary>
 public static class PreprocessorSymbols
 {
-    private static readonly string[] _forDebug = ["NETPAD", "DEBUG", "TRACE"];
-    private static readonly string[] _forRelease = ["NETPAD", "RELEASE"];
+    private static readonly string[] _debugSymbols = ["NETPAD", "DEBUG", "TRACE"];
+    private static readonly string[] _releaseSymbols = ["NETPAD", "RELEASE"];
 
     public static string[] For(OptimizationLevel optimizationLevel) =>
-        optimizationLevel == OptimizationLevel.Debug ? _forDebug : _forRelease;
+        (optimizationLevel == OptimizationLevel.Debug ? _debugSymbols : _releaseSymbols).ToArray();
 
     public static string[] For(DotNetFrameworkVersion version)
     {
-        return ForInternal(version).ToArray();
+        var major = version.GetMajorVersion();
 
-        IEnumerable<string> ForInternal(DotNetFrameworkVersion version)
+        var symbols = new List<string>
         {
-            var major = version.GetMajorVersion();
+            "NETPAD",
+            "NET",
+            $"NET{major}_0",
+        };
 
-            yield return "NET";
-            yield return $"NET{major}_0";
-
-            // Add all past versions symbols
-            while (major - 4 > 0)
-            {
-                yield return $"NET{major}_0_OR_GREATER";
-                major--;
-            }
+        // Add all past versions symbols
+        while (major >= 5)
+        {
+            symbols.Add($"NET{major}_0_OR_GREATER");
+            major--;
         }
+
+        return symbols.ToArray();
     }
 
     public static string[] For(OptimizationLevel optimizationLevel, DotNetFrameworkVersion version) =>
