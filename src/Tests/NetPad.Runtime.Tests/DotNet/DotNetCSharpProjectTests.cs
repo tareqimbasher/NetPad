@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 using NetPad.Configuration;
 using NetPad.DotNet;
+using NetPad.Tests.Helpers;
 using Xunit;
 
 namespace NetPad.Runtime.Tests.DotNet;
@@ -13,7 +14,7 @@ public partial class DotNetCSharpProjectTests : IAsyncLifetime
 
     public DotNetCSharpProjectTests()
     {
-        _root = Path.Combine(Path.GetTempPath(), "DotNetCSharpProjectTests", Guid.NewGuid().ToString("N"));
+        _root = TempFileHelper.CreateTempTestDirectory<DotNetCSharpProjectTests>();
         _projectDir = Path.Combine(_root, "proj");
         _packageCacheDir = Path.Combine(_root, "pkgcache");
         Directory.CreateDirectory(_projectDir);
@@ -24,16 +25,9 @@ public partial class DotNetCSharpProjectTests : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        try
+        if (Directory.Exists(_root))
         {
-            if (Directory.Exists(_root))
-            {
-                Directory.Delete(_root, recursive: true);
-            }
-        }
-        catch
-        {
-            // Ignore
+            Directory.Delete(_root, recursive: true);
         }
 
         return Task.CompletedTask;

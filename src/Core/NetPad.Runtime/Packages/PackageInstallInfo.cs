@@ -18,9 +18,6 @@ public class PackageInstallInfo(string packageId, string version, PackageInstall
 
     public void ChangeInstallReason(PackageInstallReason installReason)
     {
-        if (InstallReason != installReason)
-        {
-            InstallReason = installReason;
-        }
+        InstallReason = installReason;
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Configuration;
 using NetPad.Data.Metadata;
 using NetPad.DotNet;
@@ -36,6 +37,7 @@ public abstract class TestBase : IDisposable
         services.AddSingleton<Settings>();
         services.AddSingleton<IDotNetInfo, DotNetInfo>();
         services.AddSingleton<IEventBus, EventBus>();
+        services.AddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddSingleton<IDataConnectionResourcesCache, NullDataConnectionResourcesCache>();
         services.AddScoped<IScriptRunnerFactory, NullScriptRunnerFactory>();
         services.AddScoped<IScriptRunner, NullScriptRunner>();

@@ -11,8 +11,15 @@ public interface IPackageProvider
     /// Searches for packages.
     /// </summary>
     /// <param name="term">The term to search for.</param>
-    /// <param name="skip">How many items to skip; used for paging.</param>
-    /// <param name="take">How many items to take, used for paging.</param>
+    /// <param name="skip">
+    /// How many items to skip from each search source; used for paging.
+    /// The total number of items skipped can be larger than this value if multiple number of search sources are used.
+    /// </param>
+    /// <param name="take">
+    /// How many items to take from each search source, used for paging.
+    /// The number of returned items can be larger than this value if multiple search sources are used.
+    /// The max number of returned items will be this number multiplied by the number of search sources used.
+    /// </param>
     /// <param name="includePrerelease">Whether to include pre-release package versions in search results.</param>
     /// <param name="loadMetadata">Whether to load metadata or not. If false, some basic metadata will
     /// still be loaded from the search operation.</param>

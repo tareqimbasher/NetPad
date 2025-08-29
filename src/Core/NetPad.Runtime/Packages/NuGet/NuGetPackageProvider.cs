@@ -534,7 +534,7 @@ public class NuGetPackageProvider(
                         await packageToInstall.Source.GetResourceAsync<DownloadResource>(cancellationToken);
 
                     // Download the package.
-                    _ = await downloadResource.GetDownloadResourceResultAsync(
+                    using var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                         packageToInstall,
                         new PackageDownloadContext(sourceCacheContext),
                         GetNuGetCacheDirectoryPath(),
