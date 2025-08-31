@@ -7,8 +7,10 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MySQL, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
+    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MySQL, ProviderName, scaffoldOptions)
 {
+    public const string ProviderName = "Pomelo.EntityFrameworkCore.MySql";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         ConnectionStringBuilder connectionStringBuilder = [];

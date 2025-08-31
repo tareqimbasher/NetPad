@@ -3,7 +3,7 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
 
-public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MySQL, "Pomelo.EntityFrameworkCore.MySql")
+public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MySQL, MySqlDatabaseConnection.ProviderName)
 {
     [Theory]
     [MemberData(nameof(ConnectionStringTestData))]
@@ -25,7 +25,7 @@ public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MyS
         connection.UserId = userId;
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
-        
+
         var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
 
         Assert.Equal(expected, connectionString);

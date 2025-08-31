@@ -6,9 +6,11 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.Oracle, "Oracle.EntityFrameworkCore",
+    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.Oracle, ProviderName,
         scaffoldOptions)
 {
+    public const string ProviderName = "Oracle.EntityFrameworkCore";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionStringBuilder = new ConnectionStringBuilder();

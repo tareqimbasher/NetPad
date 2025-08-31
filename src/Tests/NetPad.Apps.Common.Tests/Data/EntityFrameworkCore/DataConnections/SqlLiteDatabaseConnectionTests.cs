@@ -3,7 +3,7 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
 
-public class SqlLiteDatabaseConnectionTests() : CommonTests(DataConnectionType.SQLite, "Microsoft.EntityFrameworkCore.Sqlite")
+public class SqlLiteDatabaseConnectionTests() : CommonTests(DataConnectionType.SQLite, SQLiteDatabaseConnection.ProviderName)
 {
     [Theory]
     [MemberData(nameof(ConnectionStringTestData))]

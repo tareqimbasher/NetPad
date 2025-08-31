@@ -3,7 +3,7 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
 
-public class PostgreSqlDatabaseConnectionTests() : CommonTests(DataConnectionType.PostgreSQL, "Npgsql.EntityFrameworkCore.PostgreSQL")
+public class PostgreSqlDatabaseConnectionTests() : CommonTests(DataConnectionType.PostgreSQL, PostgreSqlDatabaseConnection.ProviderName)
 {
     [Theory]
     [MemberData(nameof(ConnectionStringTestData))]

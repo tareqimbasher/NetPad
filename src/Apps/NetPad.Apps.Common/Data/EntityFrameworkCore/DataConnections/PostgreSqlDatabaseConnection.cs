@@ -7,8 +7,10 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class PostgreSqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
     : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.PostgreSQL,
-        "Npgsql.EntityFrameworkCore.PostgreSQL", scaffoldOptions)
+        ProviderName, scaffoldOptions)
 {
+    public const string ProviderName = "Npgsql.EntityFrameworkCore.PostgreSQL";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionStringBuilder = new ConnectionStringBuilder();

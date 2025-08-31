@@ -3,7 +3,7 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
 
-public class OracleDatabaseConnectionTests() : CommonTests(DataConnectionType.Oracle, "Oracle.EntityFrameworkCore")
+public class OracleDatabaseConnectionTests() : CommonTests(DataConnectionType.Oracle, OracleDatabaseConnection.ProviderName)
 {
     public static IEnumerable<object?[]> ConnectionStringTestData =>
     [

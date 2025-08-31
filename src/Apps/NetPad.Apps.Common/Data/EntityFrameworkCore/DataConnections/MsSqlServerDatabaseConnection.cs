@@ -7,8 +7,10 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MsSqlServerDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
     : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MSSQLServer,
-        "Microsoft.EntityFrameworkCore.SqlServer", scaffoldOptions)
+        ProviderName, scaffoldOptions)
 {
+    public const string ProviderName = "Microsoft.EntityFrameworkCore.SqlServer";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionStringBuilder = new ConnectionStringBuilder();

@@ -22,7 +22,7 @@ public static class EntityFrameworkPackageUtils
         string providerName = connection.EntityFrameworkProviderName;
         var packages = new List<PackageReference>();
 
-        if (providerName == "Microsoft.EntityFrameworkCore.SqlServer")
+        if (providerName == MsSqlServerDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -49,7 +49,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Microsoft.EntityFrameworkCore.Sqlite")
+        else if (providerName == SQLiteDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -76,7 +76,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        else if (providerName == PostgreSqlDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -103,7 +103,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Pomelo.EntityFrameworkCore.MySql")
+        else if (providerName == MySqlDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {

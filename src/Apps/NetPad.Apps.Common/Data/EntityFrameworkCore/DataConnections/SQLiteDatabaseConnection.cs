@@ -7,8 +7,10 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class SQLiteDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
     : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.SQLite,
-        "Microsoft.EntityFrameworkCore.Sqlite", scaffoldOptions)
+        ProviderName, scaffoldOptions)
 {
+    public const string ProviderName = "Microsoft.EntityFrameworkCore.Sqlite";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionStringBuilder = new ConnectionStringBuilder();
