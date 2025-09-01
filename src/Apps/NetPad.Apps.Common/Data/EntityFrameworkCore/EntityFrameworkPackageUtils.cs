@@ -149,7 +149,7 @@ public static class EntityFrameworkPackageUtils
                 {
                     DotNetFrameworkVersion.DotNet6 => "6.0.36",
                     DotNetFrameworkVersion.DotNet7 => "7.0.20",
-                    DotNetFrameworkVersion.DotNet8 => "8.0.19",
+                    DotNetFrameworkVersion.DotNet8 => "8.0.8",
                     DotNetFrameworkVersion.DotNet9 => "9.0.8",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };
