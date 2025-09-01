@@ -130,6 +130,33 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
+        else if (providerName == OracleDatabaseConnection.ProviderName)
+        {
+            var version = dotNetFrameworkVersion switch
+            {
+                DotNetFrameworkVersion.DotNet6 => "6.21.170",
+                DotNetFrameworkVersion.DotNet7 => "7.21.13",
+                DotNetFrameworkVersion.DotNet8 => "8.23.90",
+                DotNetFrameworkVersion.DotNet9 => "9.23.90",
+                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
+            };
+
+            packages.Add(new PackageReference(providerName, providerName, version));
+
+            if (includeDesignPackage)
+            {
+                version = dotNetFrameworkVersion switch
+                {
+                    DotNetFrameworkVersion.DotNet6 => "6.0.36",
+                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
+                    DotNetFrameworkVersion.DotNet8 => "8.0.19",
+                    DotNetFrameworkVersion.DotNet9 => "9.0.8",
+                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
+                };
+
+                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+            }
+        }
 
         return packages.ToArray();
     }
