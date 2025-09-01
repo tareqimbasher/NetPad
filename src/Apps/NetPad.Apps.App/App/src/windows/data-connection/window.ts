@@ -14,6 +14,7 @@ import {MssqlView} from "./connection-views/mssql/mssql-view";
 import {PostgresqlView} from "./connection-views/postgresql/postgresql-view";
 import {SqliteView} from "./connection-views/sqlite/sqlite-view";
 import {MysqlView} from "./connection-views/mysql/mysql-view";
+import {OracleView} from "./connection-views/oracle/oracle-view";
 import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
 import {CommonServices} from "./connection-views/common-services";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
@@ -59,6 +60,10 @@ export class Window extends WindowBase {
             {
                 label: '<img src="/img/sqlite.png" class="connection-type-logo"/> SQLite',
                 type: "SQLite"
+            },
+            {
+                label: '<img src="/img/oracle.png" class="connection-type-logo"/> Oracle',
+                type: "Oracle"
             }
         ];
     }
@@ -179,6 +184,10 @@ export class Window extends WindowBase {
 
         if (connectionType === "MariaDB") {
             return new MariaDbView(connection, commonServices);
+        }
+
+        if (connectionType === "Oracle") {
+            return new OracleView(connection, commonServices);
         }
 
         return undefined;
