@@ -13,8 +13,17 @@ public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptio
 
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
+        // It builds a connection string with 'Easy Connect Naming Method' Oracle format
         var connectionStringBuilder = new ConnectionStringBuilder();
-        connectionStringBuilder.TryAdd("Data Source", DatabaseName);
+        var dataSource = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(Host) && !string.IsNullOrWhiteSpace(DatabaseName))
+        {
+            string port = Port ?? "1521";
+            dataSource = $"//{Host}:{port}/{DatabaseName}";
+        }
+
+        connectionStringBuilder.TryAdd("Data Source", dataSource);
 
         if (UserId != null)
         {
@@ -23,7 +32,7 @@ public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptio
 
         if (Password != null)
         {
-            connectionStringBuilder.TryAdd("Password", passwordProtector.Protect(Password));
+            connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
         }
 
         if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))

@@ -7,22 +7,16 @@ public class OracleDatabaseConnectionTests() : CommonTests(DataConnectionType.Or
 {
     public static IEnumerable<object?[]> ConnectionStringTestData =>
     [
-        // TNS Alias Connection
-        ["ORCL", "scott_tiger", "test123", null, "Data Source=ORCL;User Id=scott_tiger;Password=test123;"],
-        ["ORCL", null, "test123", null, "Data Source=ORCL;Password=test123;"],
-        ["ORCL", "scott_tiger", null, null, "Data Source=ORCL;User Id=scott_tiger;"],
-        ["ORCL", null, null, null, "Data Source=ORCL;"],
-        // Using the Connect Descriptor
-        [
-            null, "scott_tiger", "test123", "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=sales-server)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=sales.us.acme.com)))",
-            "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=sales-server)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=sales.us.acme.com)));User Id=scott_tiger;Password=test123;"
-        ]
+        ["localhost", "1521", "XE", "scott_tiger", "Pw123!", null, "Data Source=//localhost:1521/XE;User Id=scott_tiger;Password=Pw123!;"],
+        ["localhost", null, "XE", "scott_tiger", "Pw123!", null, "Data Source=//localhost:1521/XE;User Id=scott_tiger;Password=Pw123!;"],
     ];
 
     [Theory]
     [MemberData(nameof(ConnectionStringTestData))]
     public void GetConnectionString_ShouldReturnCorrectlyFormattedConnectionString(
-        string? dataSource,
+        string? host,
+        string? port,
+        string? serviceName,
         string? userId,
         string? password,
         string? connectionStringAugment,
@@ -31,7 +25,9 @@ public class OracleDatabaseConnectionTests() : CommonTests(DataConnectionType.Or
     {
         var connection = CreateConnection();
 
-        connection.DatabaseName = dataSource;
+        connection.Host = host;
+        connection.Port = port;
+        connection.DatabaseName = serviceName;
         connection.UserId = userId;
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
