@@ -88,15 +88,7 @@ internal class MySqlDatabaseSchemaChangeDetectionStrategy(
             }
         });
 
-        if (sb.Length == 0)
-        {
-            return null;
-        }
-
-        using var md5 = MD5.Create();
-        var hash = md5.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString()));
-
-        return Convert.ToBase64String(hash);
+        return sb.Length == 0 ? null : Convert.ToBase64String(CalculateHash(sb.ToString()));
     }
 
     private class MySqlSchemaCompareInfo(string schemaHash) : SchemaCompareInfo(DateTime.UtcNow)
