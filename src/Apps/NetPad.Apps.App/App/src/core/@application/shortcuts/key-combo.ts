@@ -136,10 +136,10 @@ export class KeyCombo {
         }
 
         return this.key === key
-            && (this.ctrl === ctrl ?? false)
-            && (this.alt === alt ?? false)
-            && (this.shift === shift ?? false)
-            && (this.meta === meta ?? false);
+            && (this.ctrl === (ctrl ?? false))
+            && (this.alt === (alt ?? false))
+            && (this.shift === (shift ?? false))
+            && (this.meta === (meta ?? false));
     }
 
     public get asArray(): string[] {

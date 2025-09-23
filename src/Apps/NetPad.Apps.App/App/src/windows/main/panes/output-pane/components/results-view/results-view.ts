@@ -90,7 +90,7 @@ export class ResultsView extends OutputViewBase {
             firstCell.value = this.model.environment.script.code;
         }
 
-        const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
+        const buffer = (await workbook.xlsx.writeBuffer()) as unknown as Buffer;
 
         System.downloadFile(
             `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,

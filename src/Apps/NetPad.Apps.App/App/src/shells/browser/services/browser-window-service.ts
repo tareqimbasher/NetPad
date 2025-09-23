@@ -52,7 +52,7 @@ export class BrowserWindowService extends WindowApiClient implements IWindowServ
     }
 
     private setZoomFactor(zoomFactor: number) {
-        document.body.style.zoom = zoomFactor;
+        document.body.style.zoom = zoomFactor.toString();
         BrowserWindowService.zoomFactor = zoomFactor;
     }
 }

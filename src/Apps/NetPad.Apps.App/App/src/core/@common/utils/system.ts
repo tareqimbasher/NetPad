@@ -26,7 +26,7 @@ export class System {
         const downloadLink = document.createElement("A") as HTMLAnchorElement;
         try {
             downloadLink.download = fileName;
-            downloadLink.href = URL.createObjectURL(new Blob([data], {type: mimeType}));
+            downloadLink.href = URL.createObjectURL(new Blob([data as BlobPart], {type: mimeType}));
             downloadLink.target = '_blank';
             downloadLink.click();
         } finally {
