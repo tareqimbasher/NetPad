@@ -14,8 +14,8 @@ export class System {
             /* eslint-enable @typescript-eslint/no-var-requires */
         } else if (shell == "tauri") {
             /* eslint-disable @typescript-eslint/no-var-requires */
-            const open = require("@tauri-apps/plugin-shell").open;
-            const _ = open(url);
+            const open = require("@tauri-apps/plugin-opener").openUrl;
+            const _ = open(url, undefined);
             /* eslint-enable @typescript-eslint/no-var-requires */
         } else {
             window.open(url, "_blank");

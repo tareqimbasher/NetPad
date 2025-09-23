@@ -10,7 +10,7 @@ use tauri::{
     WebviewWindowBuilder, WindowEvent,
 };
 use tauri_plugin_log::{Target, TargetKind};
-use tauri_plugin_shell::ShellExt;
+use tauri_plugin_opener::OpenerExt;
 
 use crate::commands::{create_window_command, get_os_type, toggle_devtools};
 use crate::dotnet_server_manager::{DotNetServerManager, DotNetServerManagerState};
@@ -32,7 +32,7 @@ pub fn run() -> Result<()> {
                 .build(),
         )
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_opener::init())
         .manage(server_manager_state)
         .setup(move |app| {
             if cfg!(not(debug_assertions)) {
@@ -149,7 +149,7 @@ pub fn create_window(
                                 .ok();
 
                             if !path_str.is_empty() {
-                                app_handle.shell().open(path_str, None).ok();
+                                app_handle.opener().open_path(path_str, None::<&str>).ok();
                             }
                         }
                     }
@@ -175,7 +175,7 @@ pub fn create_window(
                 }
 
                 // Reroute other URLs to system browser
-                app_handle.shell().open(url.to_string(), None).ok();
+                app_handle.opener().open_url(url.to_string(), None::<&str>).ok();
                 false
             }
         });
