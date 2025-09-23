@@ -29,7 +29,7 @@ $tooltip-padding-y: $spacer * 0.5;
 $tooltip-padding-x: $spacer * 1;
 
 // Should be the last line after overrides
-@import "~bootstrap/scss/bootstrap";
+@import "bootstrap/scss/bootstrap";
 
 .btn, button.btn {
     cursor: default;
@@ -79,6 +79,7 @@ textarea.form-control {
 .list-group-item {
     background: var(--list-background);
     color: var(--text-color);
+    border-color: transparent;
 
     &.list-group-item-action:not(.active):hover {
         background: var(--hover-color);
@@ -104,9 +105,12 @@ textarea.form-control {
 }
 
 .table {
-    color: var(--text-color);
-
     tr {
+        td, th {
+            background: transparent;
+            color: var(--text-color);
+        }
+
         td {
             border-bottom-color: var(--border-color);
         }

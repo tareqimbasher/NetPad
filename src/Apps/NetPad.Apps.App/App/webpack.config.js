@@ -12,8 +12,9 @@ const cssLoader = "css-loader";
 const sassLoader = {
     loader: "sass-loader",
     options: {
+        api: "modern", // switch off the legacy API
         sassOptions: {
-            includePaths: ["node_modules"]
+            loadPaths: ["node_modules", "src"]
         }
     }
 };
