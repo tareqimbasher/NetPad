@@ -1,6 +1,6 @@
 using NetPad.DotNet.CodeAnalysis;
 
-namespace NetPad.Data;
+namespace NetPad.Data.Metadata;
 
 public class DataConnectionSourceCode
 {

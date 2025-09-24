@@ -50,7 +50,7 @@ public class StringUtilTests
     [InlineData("Hello World", 0, true, "...")]
     [InlineData("Hello World", 20, false, "Hello World")]
     [InlineData("Hello World", 20, true, "Hello World")]
-    public void Truncate(string str,  int maxLength, bool withTrailingDots, string expected)
+    public void Truncate(string str, int maxLength, bool withTrailingDots, string expected)
     {
         var result = StringUtil.Truncate(str, maxLength, withTrailingDots);
 
@@ -62,7 +62,7 @@ public class StringUtilTests
     [InlineData("hello", "world", "hello")]
     [InlineData("", "world", "world")]
     [InlineData(null, "world", "world")]
-    public void DefaultIfNullOrWhitespace(string? str,  string defaultString, string expected)
+    public void DefaultIfNullOrWhitespace(string? str, string defaultString, string expected)
     {
         var result = StringUtil.DefaultIfNullOrWhitespace(str, defaultString);
 
@@ -122,7 +122,7 @@ public class StringUtilTests
     [Theory]
     [InlineData("https://github.com", true)]
     [InlineData("relative/path", true)]
-    public void ToUriOrDefault(string uriStr,  bool expectedSuccess)
+    public void ToUriOrDefault(string uriStr, bool expectedSuccess)
     {
         var uri = StringUtil.ToUriOrDefault(uriStr);
 
@@ -138,7 +138,7 @@ public class StringUtilTests
         var parts = StringUtil.SplitLastOccurence(str, ".");
 
         Assert.Equal(2, parts.Length);
-        Assert.Equal(parts, ["one. two", " three"]);
+        Assert.Equal(parts, new[] { "one. two", " three" });
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class StringUtilTests
         var parts = StringUtil.SplitLastOccurence(str, "&");
 
         Assert.Single(parts);
-        Assert.Equal(parts, ["one. two. three"]);
+        Assert.Equal(parts, new[] { "one. two. three" });
     }
 
     [Fact]

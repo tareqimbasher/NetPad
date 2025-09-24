@@ -97,6 +97,7 @@ public partial class ClientServerScriptRunner
         {
             DeployScriptHostExecutable(_workingDirectory);
         }
+
         await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
         var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
             compilationResult.AssemblyBytes,
@@ -114,8 +115,8 @@ public partial class ClientServerScriptRunner
         );
     }
 
-    private async Task<(List<Dependency> dependencies, SourceCodeCollection additionalCode)> GatherDependenciesAsync(
-        CancellationToken cancellationToken)
+    private async Task<(List<Dependency> dependencies, SourceCodeCollection additionalCode)>
+        GatherDependenciesAsync(CancellationToken cancellationToken)
     {
         var dependencies = new List<Dependency>();
         var additionalCode = new SourceCodeCollection();

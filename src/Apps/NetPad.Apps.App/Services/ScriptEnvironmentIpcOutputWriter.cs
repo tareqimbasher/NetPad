@@ -117,8 +117,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
             return;
         }
 
-        // Since we want the end result to be HTML-encoded, any output that is not an HtmlScriptOutput will be converted to
-        // its corresponding HtmlScriptOutput type before pushing to IPC clients.
+        // Since we want the end result to be HTML-encoded, any output that is not an HtmlScriptOutput will be
+        // converted to its corresponding HtmlScriptOutput type before pushing to IPC clients.
 
         if (output is HtmlResultsScriptOutput htmlResultsScriptOutput)
         {
@@ -150,6 +150,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
         else if (output is SqlScriptOutput sqlScriptOutput)
         {
+            // Convert to HtmlSqlScriptOutput and push immediately
             var htmlSqlScriptOutput = new HtmlSqlScriptOutput(
                 sqlScriptOutput.Order,
                 HtmlPresenter.Serialize(sqlScriptOutput.Body, new DumpOptions(Title: title))
@@ -160,11 +161,13 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
         else if (output is HtmlSqlScriptOutput htmlSqlScriptOutput)
         {
+            // Push immediately
             await PushToIpcAsync(new ScriptOutputEmittedEvent(_scriptEnvironment.Script.Id, htmlSqlScriptOutput),
                 _ctsAccessor.Value.Token);
         }
         else if (output is RawScriptOutput rawScriptOutput)
         {
+            // Convert to HtmlRawScriptOutput and queue
             var htmlRawScriptOutput = new HtmlRawScriptOutput(
                 rawScriptOutput.Order,
                 HtmlPresenter.SerializeToElement(
@@ -183,6 +186,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
         else if (output is ErrorScriptOutput errorScriptOutput)
         {
+            // Convert to HtmlErrorScriptOutput and queue
             var htmlErrorOutput = new HtmlErrorScriptOutput(
                 errorScriptOutput.Order,
                 HtmlPresenter.Serialize(
@@ -200,6 +204,7 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         }
         else if (output is ScriptOutput scriptOutput)
         {
+            // Convert to HtmlRawScriptOutput and queue
             var htmlRawOutput = new HtmlRawScriptOutput(
                 scriptOutput.Order,
                 HtmlPresenter.Serialize(output, new DumpOptions(Title: title))
