@@ -50,20 +50,8 @@ public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptio
         return Task.CompletedTask;
     }
 
-    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var context = CreateDbContext(passwordProtector);
-        await using var command = context.Database.GetDbConnection().CreateCommand();
-        await context.Database.OpenConnectionAsync();
-        command.CommandText = "SELECT username FROM dba_users";
-        await using var result = await command.ExecuteReaderAsync();
-        List<string> schemas = [];
-
-        while (await result.ReadAsync())
-        {
-            schemas.Add((string)result["username"]);
-        }
-
-        return schemas;
+        return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
     }
 }
