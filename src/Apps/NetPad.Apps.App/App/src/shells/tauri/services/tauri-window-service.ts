@@ -64,7 +64,7 @@ export class TauriWindowService extends WindowApiClient implements IWindowServic
     }
 
     private setZoomFactor(zoomFactor: number) {
-        document.body.style.zoom = zoomFactor;
+        document.body.style.zoom = zoomFactor.toString();
         TauriWindowService.zoomFactor = zoomFactor;
     }
 
@@ -87,6 +87,6 @@ declare global {
     export interface CSSStyleDeclaration {
         // 'zoom' is newly standardized in Firefox and is already supported in Chrome/Webkit, not yet added to TypeScript
         // https://developer.mozilla.org/en-US/docs/Web/CSS/zoom
-        zoom: number;
+        zoom: string;
     }
 }
