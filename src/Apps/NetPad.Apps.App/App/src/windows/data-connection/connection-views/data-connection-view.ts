@@ -6,7 +6,8 @@ import {
     PostgreSqlDatabaseConnection,
     SQLiteDatabaseConnection,
     MySqlDatabaseConnection,
-    MariaDbDatabaseConnection
+    MariaDbDatabaseConnection,
+    OracleDatabaseConnection
 } from "@application";
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
@@ -63,6 +64,8 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
             connection.type = "MySQL";
         } else if (ctor.name === MariaDbDatabaseConnection.name) {
             connection.type = "MariaDB";
+        } else if (ctor.name === OracleDatabaseConnection.name) {
+            connection.type = "Oracle";
         } else {
             throw new Error("Unhandled data connection type: " + ctor.name);
         }

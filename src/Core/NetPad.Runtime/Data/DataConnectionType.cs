@@ -6,5 +6,6 @@ public enum DataConnectionType
     PostgreSQL,
     SQLite,
     MySQL,
-    MariaDB
+    MariaDB,
+    Oracle,
 }

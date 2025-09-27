@@ -1,4 +1,6 @@
 using System.Data.Common;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Data.Metadata;
 using NetPad.Data.Security;
@@ -22,5 +24,16 @@ public abstract class EntityFrameworkSchemaChangeDetectionStrategyBase(
         await using var result = await command.ExecuteReaderAsync();
 
         await process(result);
+    }
+
+    protected static byte[] CalculateHash(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return [];
+        }
+
+        using var md5 = MD5.Create();
+        return md5.ComputeHash(Encoding.UTF8.GetBytes(input));
     }
 }

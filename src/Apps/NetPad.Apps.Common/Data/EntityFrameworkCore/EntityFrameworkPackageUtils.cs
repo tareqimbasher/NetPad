@@ -22,7 +22,7 @@ public static class EntityFrameworkPackageUtils
         string providerName = connection.EntityFrameworkProviderName;
         var packages = new List<PackageReference>();
 
-        if (providerName == "Microsoft.EntityFrameworkCore.SqlServer")
+        if (providerName == MsSqlServerDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -49,7 +49,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Microsoft.EntityFrameworkCore.Sqlite")
+        else if (providerName == SQLiteDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -76,7 +76,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        else if (providerName == PostgreSqlDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -103,7 +103,7 @@ public static class EntityFrameworkPackageUtils
                 packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
             }
         }
-        else if (providerName == "Pomelo.EntityFrameworkCore.MySql")
+        else if (providerName == MySqlDatabaseConnection.ProviderName)
         {
             var version = dotNetFrameworkVersion switch
             {
@@ -123,6 +123,33 @@ public static class EntityFrameworkPackageUtils
                     DotNetFrameworkVersion.DotNet6 => "6.0.28",
                     DotNetFrameworkVersion.DotNet7 => "7.0.2",
                     DotNetFrameworkVersion.DotNet8 => "8.0.2",
+                    DotNetFrameworkVersion.DotNet9 => "9.0.0",
+                    _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
+                };
+
+                packages.Add(new PackageReference("Microsoft.EntityFrameworkCore.Design", "Microsoft.EntityFrameworkCore.Design", version));
+            }
+        }
+        else if (providerName == OracleDatabaseConnection.ProviderName)
+        {
+            var version = dotNetFrameworkVersion switch
+            {
+                DotNetFrameworkVersion.DotNet6 => "6.21.170",
+                DotNetFrameworkVersion.DotNet7 => "7.21.13",
+                DotNetFrameworkVersion.DotNet8 => "8.23.90",
+                DotNetFrameworkVersion.DotNet9 => "9.23.60",
+                _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
+            };
+
+            packages.Add(new PackageReference(providerName, providerName, version));
+
+            if (includeDesignPackage)
+            {
+                version = dotNetFrameworkVersion switch
+                {
+                    DotNetFrameworkVersion.DotNet6 => "6.0.36",
+                    DotNetFrameworkVersion.DotNet7 => "7.0.20",
+                    DotNetFrameworkVersion.DotNet8 => "8.0.8",
                     DotNetFrameworkVersion.DotNet9 => "9.0.0",
                     _ => throw new ArgumentOutOfRangeException(nameof(dotNetFrameworkVersion), dotNetFrameworkVersion, "Unsupported framework version")
                 };

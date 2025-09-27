@@ -7,8 +7,10 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MariaDbDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MariaDB, "Pomelo.EntityFrameworkCore.MySql", scaffoldOptions)
+    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MariaDB, ProviderName, scaffoldOptions)
 {
+    public const string ProviderName = "Pomelo.EntityFrameworkCore.MySql";
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         ConnectionStringBuilder connectionStringBuilder = [];

@@ -104,7 +104,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -803,8 +803,8 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return result200;
+
+                return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -882,8 +882,8 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return result200;
+
+                return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -1663,8 +1663,8 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return result200;
+
+                return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -2492,8 +2492,8 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
-            return result200;
+
+                return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -3860,6 +3860,11 @@ export abstract class DataConnection implements IDataConnection {
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "OracleDatabaseConnection") {
+            let result = new OracleDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
     }
 
@@ -3884,7 +3889,7 @@ export interface IDataConnection {
     type: DataConnectionType;
 }
 
-export type DataConnectionType = "MSSQLServer" | "PostgreSQL" | "SQLite" | "MySQL" | "MariaDB";
+export type DataConnectionType = "MSSQLServer" | "PostgreSQL" | "SQLite" | "MySQL" | "MariaDB" | "Oracle";
 
 export class DataConnectionTestResult implements IDataConnectionTestResult {
     success!: boolean;
@@ -5877,6 +5882,7 @@ export class Types implements ITypes {
     sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
     mySqlDatabaseConnection?: MySqlDatabaseConnection | undefined;
     mariaDbDatabaseConnection?: MariaDbDatabaseConnection | undefined;
+    oracleDatabaseConnection?: OracleDatabaseConnection | undefined;
 
     constructor(data?: ITypes) {
         if (data) {
@@ -5927,6 +5933,7 @@ export class Types implements ITypes {
             this.sqLiteDatabaseConnection = _data["sqLiteDatabaseConnection"] ? SQLiteDatabaseConnection.fromJS(_data["sqLiteDatabaseConnection"]) : <any>undefined;
             this.mySqlDatabaseConnection = _data["mySqlDatabaseConnection"] ? MySqlDatabaseConnection.fromJS(_data["mySqlDatabaseConnection"]) : <any>undefined;
             this.mariaDbDatabaseConnection = _data["mariaDbDatabaseConnection"] ? MariaDbDatabaseConnection.fromJS(_data["mariaDbDatabaseConnection"]) : <any>undefined;
+            this.oracleDatabaseConnection = _data["oracleDatabaseConnection"] ? OracleDatabaseConnection.fromJS(_data["oracleDatabaseConnection"]) : <any>undefined;
         }
     }
 
@@ -5977,6 +5984,7 @@ export class Types implements ITypes {
         data["sqLiteDatabaseConnection"] = this.sqLiteDatabaseConnection ? this.sqLiteDatabaseConnection.toJSON() : <any>undefined;
         data["mySqlDatabaseConnection"] = this.mySqlDatabaseConnection ? this.mySqlDatabaseConnection.toJSON() : <any>undefined;
         data["mariaDbDatabaseConnection"] = this.mariaDbDatabaseConnection ? this.mariaDbDatabaseConnection.toJSON() : <any>undefined;
+        data["oracleDatabaseConnection"] = this.oracleDatabaseConnection ? this.oracleDatabaseConnection.toJSON() : <any>undefined;
         return data;
     }
 
@@ -6027,6 +6035,7 @@ export interface ITypes {
     sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
     mySqlDatabaseConnection?: MySqlDatabaseConnection | undefined;
     mariaDbDatabaseConnection?: MariaDbDatabaseConnection | undefined;
+    oracleDatabaseConnection?: OracleDatabaseConnection | undefined;
 }
 
 export type YesNoCancel = "Yes" | "No" | "Cancel";
@@ -7908,6 +7917,11 @@ For example, if this value is Timeout=300:
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "OracleDatabaseConnection") {
+            let result = new OracleDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
     }
 
@@ -7995,6 +8009,11 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "OracleDatabaseConnection") {
+            let result = new OracleDatabaseConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
     }
 
@@ -8051,6 +8070,11 @@ export abstract class EntityFrameworkRelationalDatabaseConnection extends Entity
         }
         if (data["discriminator"] === "MariaDbDatabaseConnection") {
             let result = new MariaDbDatabaseConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "OracleDatabaseConnection") {
+            let result = new OracleDatabaseConnection();
             result.init(data);
             return result;
         }
@@ -8323,6 +8347,40 @@ export class MariaDbDatabaseConnection extends EntityFrameworkRelationalDatabase
 }
 
 export interface IMariaDbDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class OracleDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IOracleDatabaseConnection {
+    constructor(data?: IOracleDatabaseConnection) {
+        super(data);
+        this._discriminator = "OracleDatabaseConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): OracleDatabaseConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new OracleDatabaseConnection();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): OracleDatabaseConnection {
+        const json = this.toJSON();
+        let result = new OracleDatabaseConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IOracleDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
 }
 
 export interface FileResponse {

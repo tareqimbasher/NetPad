@@ -3,7 +3,7 @@ using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
 
-public class MsSqlServerDatabaseConnectionTests() : CommonTests(DataConnectionType.MSSQLServer, "Microsoft.EntityFrameworkCore.SqlServer")
+public class MsSqlServerDatabaseConnectionTests() : CommonTests(DataConnectionType.MSSQLServer, MsSqlServerDatabaseConnection.ProviderName)
 {
     [Theory]
     [MemberData(nameof(ConnectionStringTestData))]

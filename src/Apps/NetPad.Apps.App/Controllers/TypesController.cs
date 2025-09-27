@@ -66,5 +66,6 @@ public class TypesController : ControllerBase
         public SQLiteDatabaseConnection? SQLiteDatabaseConnection { get; set; }
         public MySqlDatabaseConnection? MySqlDatabaseConnection { get; set; }
         public MariaDbDatabaseConnection? MariaDbDatabaseConnection { get; set; }
+        public OracleDatabaseConnection? OracleDatabaseConnection { get; set; }
     }
 }

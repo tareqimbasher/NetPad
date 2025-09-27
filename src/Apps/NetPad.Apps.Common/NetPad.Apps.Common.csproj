@@ -7,23 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediatR" Version="10.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.33" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.33" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.33" />
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.29" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.3" />
+        <PackageReference Include="MediatR" Version="10.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.33"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.33"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.33"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.29"/>
+        <PackageReference Include="Oracle.EntityFrameworkCore" Version="6.21.160"/>
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="6.0.3"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj" />
+        <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Data\EntityFrameworkCore\EmbeddedCode\DatabaseStructureEmbedded.cs" />
+        <EmbeddedResource Include="Data\EntityFrameworkCore\EmbeddedCode\DatabaseStructureEmbedded.cs"/>
     </ItemGroup>
 
 </Project>
