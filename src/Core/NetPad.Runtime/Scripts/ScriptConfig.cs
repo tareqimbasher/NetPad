@@ -62,42 +62,38 @@ public class ScriptConfig(
         private set => this.RaiseAndSetIfChanged(ref _references, value);
     }
 
-    public void SetKind(ScriptKind newKind)
+    public ScriptConfig SetKind(ScriptKind newKind)
     {
         if (newKind == Kind)
-            return;
-
-        Kind = newKind;
+            Kind = newKind;
+        return this;
     }
 
-    public void SetTargetFrameworkVersion(DotNetFrameworkVersion newTargetFrameworkVersion)
+    public ScriptConfig SetTargetFrameworkVersion(DotNetFrameworkVersion newTargetFrameworkVersion)
     {
         if (newTargetFrameworkVersion == TargetFrameworkVersion)
-            return;
-
-        TargetFrameworkVersion = newTargetFrameworkVersion;
+            TargetFrameworkVersion = newTargetFrameworkVersion;
+        return this;
     }
 
-    public void SetOptimizationLevel(OptimizationLevel level)
+    public ScriptConfig SetOptimizationLevel(OptimizationLevel level)
     {
-        if (level == _optimizationLevel)
-            return;
-
-        OptimizationLevel = level;
+        if (level != _optimizationLevel)
+            OptimizationLevel = level;
+        return this;
     }
 
-    public void SetUseAspNet(bool use)
+    public ScriptConfig SetUseAspNet(bool use)
     {
-        if (use == _useAspNet)
-            return;
-
-        UseAspNet = use;
+        if (use != _useAspNet)
+            UseAspNet = use;
+        return this;
     }
 
-    public void SetNamespaces(IList<string> namespaces)
+    public ScriptConfig SetNamespaces(IList<string> namespaces)
     {
         if (Namespaces.SequenceEqual(namespaces))
-            return;
+            return this;
 
         var clean = namespaces
             .Where(ns => !string.IsNullOrWhiteSpace(ns))
@@ -111,17 +107,19 @@ public class ScriptConfig(
         }
 
         Namespaces = clean;
+        return this;
     }
 
-    public void SetReferences(IList<Reference> references)
+    public ScriptConfig SetReferences(IList<Reference> references)
     {
         if (References.SequenceEqual(references))
-            return;
+            return this;
 
         foreach (var reference in references)
             reference.EnsureValid();
 
         References = references.ToList();
+        return this;
     }
 }
 

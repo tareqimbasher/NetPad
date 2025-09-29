@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using NetPad.DotNet;
 using NetPad.Scripts;
 using NetPad.Tests.Helpers;
 using Xunit;
@@ -166,5 +168,26 @@ public class ScriptTests
         script.SetPath(path);
 
         Assert.Equal("test", script.Name);
+    }
+
+    [Fact]
+    public void UpdateConfig()
+    {
+        var script = ScriptTestHelper.CreateScript();
+        Assert.NotEqual(ScriptKind.SQL, script.Config.Kind);
+        Assert.NotEqual(DotNetFrameworkVersion.DotNet5, script.Config.TargetFrameworkVersion);
+        Assert.NotEqual(OptimizationLevel.Release, script.Config.OptimizationLevel);
+        Assert.False(script.Config.UseAspNet);
+
+        var newConfig = new ScriptConfig(ScriptKind.SQL, DotNetFrameworkVersion.DotNet5)
+            .SetOptimizationLevel(OptimizationLevel.Release)
+            .SetUseAspNet(true);
+
+        script.UpdateConfig(newConfig);
+
+        Assert.Equal(ScriptKind.SQL, script.Config.Kind);
+        Assert.Equal(DotNetFrameworkVersion.DotNet5, script.Config.TargetFrameworkVersion);
+        Assert.Equal(OptimizationLevel.Release, script.Config.OptimizationLevel);
+        Assert.True(script.Config.UseAspNet);
     }
 }
