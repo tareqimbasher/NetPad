@@ -84,7 +84,7 @@ public partial class ClientServerScriptRunner
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
                 .Select(d => CorrectDiagnosticErrorLineNumber(d, parsingResult.UserProgramStartLineNumber));
 
-            await _output.WriteAsync(
+            await _combinedOutputWriter.WriteAsync(
                 new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),
                 cancellationToken: cancellationToken);
 

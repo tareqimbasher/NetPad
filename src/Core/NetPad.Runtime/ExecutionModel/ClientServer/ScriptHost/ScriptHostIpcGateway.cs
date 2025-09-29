@@ -6,9 +6,16 @@ using NetPad.IO.IPC.Stdio;
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
 /// <summary>
-/// A specialized <see cref="StdioIpcGateway{TMessage}"/> to interface with script-host process.
+/// A specialized <see cref="StdioIpcGateway{TMessage}"/> for two-way communication between NetPad (client)
+/// and the script-host (server) process. An instance of this is created by each application and is used
+/// to interface with the other.
 /// </summary>
-/// <param name="sendChannel">The STD Input of the script-host process.</param>
+/// <param name="sendChannel">
+/// A text writer that will be written to when a message is sent.
+/// <remarks>
+/// This is typically the STDOUT of the current process, or the STDIN of another process.
+/// </remarks>
+/// </param>
 /// <param name="logger">An optional logger.</param>
 public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger = null)
     : StdioIpcGateway<ScriptHostIpcMessage>(sendChannel)
@@ -16,17 +23,25 @@ public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger
     private readonly Dictionary<Type, IpcMessageHandler> _ipcMessageHandlers = new();
 
     /// <summary>
-    /// Starts listening to messages sent by script-host process.
+    /// Starts listening to messages written to the specified text reader.
     /// </summary>
-    /// <param name="receiveChannel">The STD Output of the script-host process.</param>
-    /// <param name="onNonMessageReceived">A handler to process script-host output that cannot be deserialized to a <see cref="ScriptHostIpcMessage"/>.</param>
+    /// <param name="receiveChannel">
+    /// The text reader to read received messages from.
+    /// <remarks>
+    /// This is typically the STDIN of the current process, or the STDOUT of another process.
+    /// </remarks>
+    /// </param>
+    /// <param name="onNonMessageReceived">
+    /// A handler to process output written to the text reader that cannot be parsed
+    /// to a <see cref="ScriptHostIpcMessage"/>.
+    /// </param>
     public void Listen(
         TextReader receiveChannel,
         Action<string>? onNonMessageReceived = null)
     {
         base.Listen(
             receiveChannel,
-            OnMessageReceivedFromScriptHost,
+            OnMessageReceived,
             onNonMessageReceived);
     }
 
@@ -48,7 +63,7 @@ public sealed class ScriptHostIpcGateway(TextWriter sendChannel, ILogger? logger
         ((IpcMessageHandler<TMessage>)handler).Actions.Add(action);
     }
 
-    private void OnMessageReceivedFromScriptHost(ScriptHostIpcMessage ipcMessage)
+    private void OnMessageReceived(ScriptHostIpcMessage ipcMessage)
     {
         var ipcMsgType = Type.GetType(ipcMessage.Type);
 

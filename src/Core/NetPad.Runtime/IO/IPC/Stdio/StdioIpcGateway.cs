@@ -5,9 +5,14 @@ using NetPad.Common;
 namespace NetPad.IO.IPC.Stdio;
 
 /// <summary>
-/// Used for two-way communication between two processes over standard IO (STDIN/STDOUT).
+/// Used for two-way inter-process communication between two processes over standard IO (STDIN/STDOUT).
 /// </summary>
-/// <param name="sendChannel">The IO channel to use to send messages.</param>
+/// <param name="sendChannel">
+/// A text writer that will be written to when a message is sent.
+/// <remarks>
+/// This is typically the STDOUT of the current process, or the STDIN of another process.
+/// </remarks>
+/// </param>
 /// <typeparam name="TMessage">The type of messages both processes agree to send and receive.</typeparam>
 public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable where TMessage : class
 {
@@ -17,7 +22,12 @@ public class StdioIpcGateway<TMessage>(TextWriter sendChannel) : IDisposable whe
     /// <summary>
     /// Start listening for messages on the specified IO channel.
     /// </summary>
-    /// <param name="receiveChannel">The IO stream to listen for messages on.</param>
+    /// <param name="receiveChannel">
+    /// The text reader to read received messages from.
+    /// <remarks>
+    /// This is typically the STDIN of the current process, or the STDOUT of another process.
+    /// </remarks>
+    /// </param>
     /// <param name="onMessageReceived">An action to execute when a message is received.</param>
     /// <param name="onNonMessageReceived">An action to execute when data is received and cannot be parsed into a
     /// message of type <typeparamref name="TMessage"/>.</param>
