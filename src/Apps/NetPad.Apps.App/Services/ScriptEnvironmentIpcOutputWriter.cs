@@ -83,20 +83,25 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
                 // Starting a new run
                 _sendMessageQueueTimer.Stop();
 
-                _ctsAccessor.Value.Cancel();
-                _ctsAccessor.Value.Dispose();
+                // Cancel the old CTS, don't dispose it till further down
+                var old = _ctsAccessor.Value;
+                Try.Run(old.Cancel);
+
                 _sendMessageQueue.Clear();
                 _userOutputMessagesSentThisRun = 0;
                 _sentOutputLimitReachedMessage = false;
+
+                // Swap in a new CTS for this run then dispose old one
                 _ctsAccessor.Update(new CancellationTokenSource());
+                Try.Run(old.Dispose);
 
                 _sendMessageQueueTimer.Start();
             }
             else if (newStatus == ScriptStatus.Stopping)
             {
                 // When a script is stopped explicitly, cancel sending all cancellable output messages
-                _ctsAccessor.Value.Cancel();
-                _ctsAccessor.Value.Dispose();
+                Try.Run(_ctsAccessor.Value.Cancel);
+                Try.Run(_ctsAccessor.Value.Dispose);
             }
         }
         catch (Exception e)
@@ -230,11 +235,24 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
 
     private void QueueMessage(ScriptOutput output, bool isCancellable)
     {
-        var cancellationToken = isCancellable ? _ctsAccessor.Value.Token : CancellationToken.None;
+        var cancellationToken = CancellationToken.None;
 
-        if (isCancellable && cancellationToken.IsCancellationRequested)
+        if (isCancellable)
         {
-            return;
+            try
+            {
+                cancellationToken = _ctsAccessor.Value.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                // CTS was disposed or swapped out; treat as canceled and drop the message
+                return;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
         }
 
         var message = new IpcMessage(
@@ -285,15 +303,8 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     {
         Try.Run(() =>
         {
-            try
-            {
-                _ctsAccessor.Value.Cancel();
-                _ctsAccessor.Value.Dispose();
-            }
-            catch
-            {
-                // Ignore
-            }
+            Try.Run(_ctsAccessor.Value.Cancel);
+            Try.Run(_ctsAccessor.Value.Dispose);
         });
         _sendMessageQueueTimer.Stop();
         _sendMessageQueueTimer.Dispose();
