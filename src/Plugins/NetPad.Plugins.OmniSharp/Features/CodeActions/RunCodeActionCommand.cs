@@ -14,10 +14,10 @@ public class RunCodeActionCommand(Guid scriptId, OmniSharpRunCodeActionRequest i
     {
         private static readonly FileOperationResponseCollectionJsonConverter _fileOperationResponseCollectionJsonConverter = new();
 
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = JsonSerializer.Configure(new()
         {
             Converters = { _fileOperationResponseCollectionJsonConverter }
-        };
+        });
 
         public async Task<RunCodeActionResponse?> Handle(RunCodeActionCommand request, CancellationToken cancellationToken)
         {

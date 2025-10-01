@@ -75,10 +75,10 @@ export class TextChangeUtil {
 
         return (
             // For when we get the normal/expected text format, ex: "using System.Text.Json;\n\n"
-            (newText.startsWith("using ") && textChange.startLine === 1)
+            (newText.startsWith("using ") && newText.endsWith("\n"))
 
             // For when OmniSharp server gives an unusual format, ex: "System.Text.Json;\n\nusing "
-            || (newText.endsWith(";\n\nusing ") && textChange.startLine === 1 && textChange.endLine === 1)
+            || (newText.endsWith(";\n\nusing "))
         );
     }
 
