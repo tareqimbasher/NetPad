@@ -12,6 +12,7 @@ using NetPad.ExecutionModel.ClientServer.ScriptHost;
 using NetPad.ExecutionModel.External;
 using NetPad.ExecutionModel.External.Interface;
 using NetPad.IO;
+using NetPad.IO.IPC.Stdio;
 using NetPad.Packages;
 using NetPad.Presentation;
 using NetPad.Scripts;
@@ -268,13 +269,10 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     /// <summary>
     /// Adds listeners that react to messages output by the script-host process.
     /// </summary>
-    private void AddScriptHostOnMessageReceivedHandlers(ScriptHostIpcGateway ipcGateway)
+    private void AddScriptHostOnMessageReceivedHandlers(StdioIpcGateway ipcGateway)
     {
         ipcGateway.On<RequestUserInputMessage>(OnRequestUserInputMessage);
         ipcGateway.On<ScriptOutputMessage>(OnScriptOutputMessage);
-        ipcGateway.On<HtmlResultsScriptOutput>(msg => _combinedOutputWriter.WriteAsync(msg));
-        ipcGateway.On<HtmlSqlScriptOutput>(msg => _combinedOutputWriter.WriteAsync(msg));
-        ipcGateway.On<HtmlErrorScriptOutput>(msg => _combinedOutputWriter.WriteAsync(msg));
         ipcGateway.On<ScriptRunCompleteMessage>(OnScriptRunCompleteMessage);
         ipcGateway.On<ScriptHostExitedMessage>(OnScriptHostExitedMessage);
         ipcGateway.On<MemCacheItemInfoChangedMessage>(msg =>

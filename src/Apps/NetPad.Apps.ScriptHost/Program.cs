@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using NetPad.Apps.ScriptHost;
 using NetPad.ExecutionModel.ClientServer.Messages;
-using NetPad.ExecutionModel.ClientServer.ScriptHost;
 using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.IO.IPC.Stdio;
 
 var parentPid = TerminateProcessOnParentExit(args);
 
@@ -14,7 +14,7 @@ var defaultConsoleIn = Console.In;
 var defaultConsoleOut = Console.Out;
 
 // Create the interface which will be used for two-way communication with parent.
-var ipc = new ScriptHostIpcGateway(defaultConsoleOut);
+var ipc = new StdioIpcGateway(defaultConsoleOut);
 
 // Listen for messages from parent.
 var runner = new ScriptRunner(ipc);
@@ -26,7 +26,7 @@ ipc.On<ClearMemCacheMessage>(msg => ScriptRunner.ClearMemCache(msg));
 ipc.Listen(defaultConsoleIn, _ => { });
 
 // Notify parent that this process (script-host) is ready.
-ipc.Send(0, new ScriptHostReadyMessage());
+ipc.Send(new ScriptHostReadyMessage());
 
 // Wait indefinitely. This process will terminate when the parent process terminates it, or when the parent process
 // itself is terminated.

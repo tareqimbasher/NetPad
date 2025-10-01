@@ -4,8 +4,8 @@ using NetPad.Assemblies;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.ExecutionModel.ClientServer.Messages;
-using NetPad.ExecutionModel.ClientServer.ScriptHost;
 using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.IO.IPC.Stdio;
 using NetPad.Presentation;
 using NetPad.Utilities;
 
@@ -13,12 +13,12 @@ namespace NetPad.Apps.ScriptHost;
 
 public class ScriptRunner
 {
-    private readonly ScriptHostIpcGateway _ipcGateway;
+    private readonly StdioIpcGateway _ipcGateway;
     private readonly HashSet<string> _scriptHostLoadedAssemblies = new();
     private TaskCompletionSource<string?>? _userInputRequest;
     private bool _firstRun = true;
 
-    public ScriptRunner(ScriptHostIpcGateway ipcGateway)
+    public ScriptRunner(StdioIpcGateway ipcGateway)
     {
         _ipcGateway = ipcGateway;
         DumpExtension.UseSink(ClientServerDumpSink.Instance);
@@ -38,13 +38,13 @@ public class ScriptRunner
         ClientServerDumpSink.Instance.RedirectStdIO(
             str =>
             {
-                _ipcGateway.Send(0, new ScriptOutputMessage(str));
+                _ipcGateway.Send(new ScriptOutputMessage(str));
                 return Task.CompletedTask;
             },
             () =>
             {
                 _userInputRequest = new TaskCompletionSource<string?>();
-                _ipcGateway.Send(0, new RequestUserInputMessage());
+                _ipcGateway.Send(new RequestUserInputMessage());
                 return _userInputRequest.Task.Result;
             }
         );
@@ -69,7 +69,7 @@ public class ScriptRunner
 
             Execute(message.ScriptAssemblyPath, message.ProbingPaths);
 
-            _ipcGateway.Send(0, new ScriptRunCompleteMessage(
+            _ipcGateway.Send(new ScriptRunCompleteMessage(
                 RunResult.Success(Util.Stopwatch.ElapsedMilliseconds),
                 Util.RestartHostOnEveryRun
             ));
@@ -78,12 +78,11 @@ public class ScriptRunner
         {
             Util.Stopwatch.Stop();
 
-            _ipcGateway.Send(0,
-                new ScriptRunCompleteMessage(
-                    RunResult.ScriptCompletionFailure(Util.Stopwatch.ElapsedMilliseconds),
-                    Util.RestartHostOnEveryRun,
-                    e.ToString()
-                ));
+            _ipcGateway.Send(new ScriptRunCompleteMessage(
+                RunResult.ScriptCompletionFailure(Util.Stopwatch.ElapsedMilliseconds),
+                Util.RestartHostOnEveryRun,
+                e.ToString()
+            ));
         }
         finally
         {
@@ -123,7 +122,7 @@ public class ScriptRunner
     private void StartForwardingMemCacheItemInfoChanges()
     {
         var debounced = DelegateUtil.Debounce(
-            () => _ipcGateway.Send(0, new MemCacheItemInfoChangedMessage(Util.Cache.GetItemInfos())),
+            () => _ipcGateway.Send(new MemCacheItemInfoChangedMessage(Util.Cache.GetItemInfos())),
             100);
 
         Util.Cache.MemCacheItemInfoChanged += (_, _) => debounced();

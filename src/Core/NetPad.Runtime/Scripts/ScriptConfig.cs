@@ -64,14 +64,14 @@ public class ScriptConfig(
 
     public ScriptConfig SetKind(ScriptKind newKind)
     {
-        if (newKind == Kind)
+        if (newKind != Kind)
             Kind = newKind;
         return this;
     }
 
     public ScriptConfig SetTargetFrameworkVersion(DotNetFrameworkVersion newTargetFrameworkVersion)
     {
-        if (newTargetFrameworkVersion == TargetFrameworkVersion)
+        if (newTargetFrameworkVersion != TargetFrameworkVersion)
             TargetFrameworkVersion = newTargetFrameworkVersion;
         return this;
     }

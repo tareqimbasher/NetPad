@@ -8,8 +8,8 @@ using NetPad.Events;
 using NetPad.ExecutionModel.ClientServer.Events;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.IO;
+using NetPad.IO.IPC.Stdio;
 using NetPad.Scripts;
-using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
@@ -27,7 +27,7 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 public class ScriptHostProcessManager(
     Script script,
     WorkingDirectory workingDirectory,
-    Action<ScriptHostIpcGateway> addMessageHandlers,
+    Action<StdioIpcGateway> addMessageHandlers,
     Action<string> nonMessageOutputHandler,
     Action<string> errorOutputHandler,
     IEventBus eventBus,
@@ -35,18 +35,17 @@ public class ScriptHostProcessManager(
 {
     private static readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
     private Process? _scriptHostProcess;
-    private ScriptHostIpcGateway? _ipcGateway;
-    private uint _sendIpcMessageSeq;
+    private StdioIpcGateway? _ipcGateway;
 
     private readonly ILogger _logger = loggerFactory.CreateLogger(
         $"{nameof(ScriptHostProcessManager)} | [{script.Id.ToString()[..8]}] {script.Name}");
 
-    private readonly Channel<ScriptHostIpcMessage> _sendQueue = Channel.CreateUnbounded<ScriptHostIpcMessage>(
+    // Think about making this bounded and adding backpressure via writer.WriteAsync()
+    private readonly Channel<object> _sendQueue = Channel.CreateUnbounded<object>(
         new UnboundedChannelOptions
         {
             SingleReader = true,
             SingleWriter = false,
-            AllowSynchronousContinuations = true
         });
 
     public bool IsScriptHostRunning() => _scriptHostProcess?.IsProcessRunning() == true;
@@ -78,13 +77,7 @@ public class ScriptHostProcessManager(
     public void Send<T>(T message) where T : class
     {
         _logger.LogDebug("Sending message: {MessageType}", typeof(T).Name);
-
-        _sendQueue.Writer.TryWrite(new ScriptHostIpcMessage(
-            Interlocked.Increment(ref _sendIpcMessageSeq),
-            typeof(T).FullName ??
-            throw new InvalidOperationException($"Expected type '{typeof(T).Name}' to have a FullName"),
-            JsonSerializer.Serialize(message)
-        ));
+        _sendQueue.Writer.TryWrite(message);
     }
 
     private async Task ProcessSendQueueAsync()
@@ -92,9 +85,9 @@ public class ScriptHostProcessManager(
         var reader = _sendQueue.Reader;
         while (_ipcGateway != null && await reader.WaitToReadAsync())
         {
-            while (reader.TryRead(out var message))
+            while (reader.TryRead(out var item))
             {
-                _ipcGateway.Send(message);
+                _ipcGateway.Send(item);
             }
         }
     }
@@ -147,7 +140,7 @@ public class ScriptHostProcessManager(
             }
 
             _scriptHostProcess = Process.Start(startInfo) ?? throw new Exception("Could not start script-host process");
-            _ipcGateway = new ScriptHostIpcGateway(_scriptHostProcess.StandardInput, _logger);
+            _ipcGateway = new StdioIpcGateway(_scriptHostProcess.StandardInput, logger: _logger);
 
             _ipcGateway.On<ScriptHostReadyMessage>(msg =>
             {
@@ -157,9 +150,7 @@ public class ScriptHostProcessManager(
 
             addMessageHandlers(_ipcGateway);
 
-            _ipcGateway.Listen(
-                _scriptHostProcess.StandardOutput,
-                nonMessageOutputHandler);
+            _ipcGateway.Listen(_scriptHostProcess.StandardOutput, nonMessageOutputHandler);
 
             _scriptHostProcess.ErrorDataReceived += (_, ev) =>
             {

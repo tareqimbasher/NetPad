@@ -2,54 +2,76 @@ using System.IO;
 
 namespace NetPad.IO.IPC.Stdio;
 
-internal class StdioInputChannel(TextReader reader, Action<string> onInputReceived)
+internal sealed class StdioInputChannel(TextReader reader, Action<string> onInputReceived)
 {
-    private CancellationTokenSource? _listenForInput = new();
+    private readonly TextReader _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+
+    private readonly Action<string> _onInputReceived =
+        onInputReceived ?? throw new ArgumentNullException(nameof(onInputReceived));
+
+    private CancellationTokenSource? _cts;
+    private Task? _pump;
 
     public void StartListening()
     {
-        if (_listenForInput?.IsCancellationRequested == true)
+        if (_cts is { IsCancellationRequested: false } || _pump is { IsCompleted: false })
         {
-            return;
+            throw new InvalidOperationException("Already listening");
         }
 
-        _listenForInput = new();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
 
-        // This thread will exit when cancellation is requested or the TextReader stream is closed.
-        Task.Factory.StartNew(cancellationToken =>
+        _pump = Task.Factory.StartNew(() =>
         {
-            var ct = (CancellationToken)cancellationToken!;
-            while (!ct.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
-                var input = reader.ReadLine();
-                if (input == null)
+                string? line;
+                try
                 {
-                    continue;
+                    line = _reader.ReadLine();
+                }
+                catch (Exception)
+                {
+                    // Reader faulted or disposed
+                    break;
                 }
 
-                // Execute handler on thread pool
-                _ = Task.Run(() =>
+                if (line is null || token.IsCancellationRequested)
                 {
-                    try
-                    {
-                        onInputReceived(input);
-                    }
-                    catch
-                    {
-                        // Should be handled in message handlers
-                    }
-                });
+                    // EOF/closed
+                    break;
+                }
+
+                try
+                {
+                    _onInputReceived(line);
+                }
+                catch
+                {
+                    // Should be handled in message handlers
+                }
             }
-        }, _listenForInput.Token, _listenForInput.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
     }
 
     public void CancelListening()
     {
-        if (_listenForInput != null)
+        var cts = _cts;
+        if (cts == null) return;
+
+        try
         {
-            _listenForInput.Cancel();
-            _listenForInput.Dispose();
-            _listenForInput = null;
+            cts.Cancel();
         }
+        catch
+        {
+            // Ignore
+        }
+
+        cts.Dispose();
+        _cts = null;
+        _pump = null;
     }
 }

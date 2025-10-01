@@ -49,4 +49,9 @@ public static class JsonSerializer
         Configure(options);
         return System.Text.Json.JsonSerializer.Deserialize<T>(json, options);
     }
+
+    public static object? Deserialize(string json, Type returnType)
+    {
+        return System.Text.Json.JsonSerializer.Deserialize(json, returnType, DefaultOptions);
+    }
 }
