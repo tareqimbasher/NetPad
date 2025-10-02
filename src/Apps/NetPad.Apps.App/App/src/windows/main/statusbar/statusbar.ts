@@ -13,6 +13,7 @@ import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-chec
 import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {Util} from "@common";
 
 export class Statusbar {
     public appStatusMessage: IAppStatusMessage | null;
@@ -29,6 +30,14 @@ export class Statusbar {
 
     public get activeEnvironment(): ScriptEnvironment | null | undefined {
         return this.session.active;
+    }
+
+    public get runDuration(): string | null {
+        const env = this.session.active;
+        if (!env || env.runDurationMilliseconds === undefined || env.runDurationMilliseconds === null) {
+            return null;
+        }
+        return Util.formatDurationMs(env.runDurationMilliseconds);
     }
 
     public binding() {

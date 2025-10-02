@@ -93,7 +93,7 @@ export class ResultsView extends OutputViewBase {
         const buffer = (await workbook.xlsx.writeBuffer()) as unknown as Buffer;
 
         System.downloadFile(
-            `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
+            `${this.model.environment.script.name}_${Util.formatDate(new Date(), "yyyy-MM-dd_HH-mm-ss")}.xlsx`,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             buffer
         );
@@ -104,7 +104,7 @@ export class ResultsView extends OutputViewBase {
             return;
         }
 
-        const name = `${this.model.environment.script.name}_${Util.dateToFormattedString(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
+        const name = `${this.model.environment.script.name}_${Util.formatDate(new Date(), "yyyy-MM-dd_HH-mm-ss")}`
 
         const metas = [...new Set<string>(
             Array.from(document.head.querySelectorAll("meta"))

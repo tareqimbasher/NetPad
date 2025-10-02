@@ -12,7 +12,65 @@ export class Util {
         });
     }
 
-    public static dateToFormattedString(date: Date, format: string): string {
+    /**
+     * Converts a duration in milliseconds into a human-readable string.
+     *
+     * Examples:
+     * - `formatDurationMs(1234)` → `"1s 234ms"`
+     * - `formatDurationMs(65)`   → `"1m 5s"`
+     * - `formatDurationMs(0)`    → `"0ms"`
+     *
+     * @param ms The duration in milliseconds. Negative values return `"0ms"`.
+     * @returns A string representing the duration.
+     */
+    public static formatDurationMs(ms: number): string {
+        if (ms < 0) return "0ms";
+
+        const milliseconds = ms % 1000;
+        const seconds = Math.floor(ms / 1000) % 60;
+        const minutes = Math.floor(ms / (1000 * 60)) % 60;
+        const hours = Math.floor(ms / (1000 * 60 * 60)) % 24;
+        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+        const parts: string[] = [];
+
+        if (days > 0) parts.push(`${days}d`);
+        if (hours > 0) parts.push(`${hours}h`);
+        if (minutes > 0) parts.push(`${minutes}m`);
+        if (seconds > 0) parts.push(`${seconds}s`);
+        if (milliseconds > 0 || parts.length === 0) parts.push(`${milliseconds}ms`);
+
+        return parts.join(" ");
+    }
+
+    /**
+     * Formats a `Date` into a string based on a custom pattern.
+     *
+     * Supported format tokens (case-sensitive):
+     * - `yyyy` → full year (e.g. `2025`)
+     * - `MM` → month (2-digit, `01`–`12`)
+     * - `M` → month (no padding, `1`–`12`)
+     * - `dd` → day of month (2-digit, `01`–`31`)
+     * - `d` → day of month (no padding, `1`–`31`)
+     * - `HH` → hours (24-hour, 2-digit, `00`–`23`)
+     * - `H` → hours (24-hour, no padding, `0`–`23`)
+     * - `mm` → minutes (2-digit, `00`–`59`)
+     * - `m` → minutes (no padding, `0`–`59`)
+     * - `ss` → seconds (2-digit, `00`–`59`)
+     * - `s` → seconds (no padding, `0`–`59`)
+     * - `fff` → milliseconds (3-digit, `000`–`999`)
+     * - `ff` → first two digits of milliseconds (2-digit)
+     * - `f` → first digit of milliseconds (1-digit)
+     *
+     * Examples:
+     * - `formatDate(new Date(2025, 0, 1), "yyyy-MM-dd")` → `"2025-01-01"`
+     * - `formatDate(new Date(), "HH:mm:ss.fff")` → `"13:45:09.123"`
+     *
+     * @param date The `Date` to format. If null/undefined, returns an empty string.
+     * @param format The pattern string controlling the output. If empty, returns an empty string.
+     * @returns A formatted string representation of the date.
+     */
+    public static formatDate(date: Date, format: string): string {
         if (!date || !format) return "";
 
         return format.replaceAll("yyyy", date.getFullYear().toString())
@@ -33,8 +91,6 @@ export class Util {
 
     /**
      * Gets the difference of 2 dates in number of days.
-     * @param a
-     * @param b
      */
     public static dateDiffInDays(a: Date, b: Date): number {
         // Discard the time and time-zone information.
@@ -47,7 +103,6 @@ export class Util {
 
     /**
      * Converts a string to title case.
-     * @param str string.
      */
     public static toTitleCase(str: string) {
         return str.replace(/\w\S*/g, function (txt) {

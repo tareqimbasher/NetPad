@@ -1,11 +1,18 @@
 <div class="left-column">
-    <span class="script-status">${activeEnvironment.status}</span>
+    <div class="script-status">${activeEnvironment.status}</div>
 
-    <span show.bind="activeEnvironment.status !== 'Running' && activeEnvironment.runDurationMilliseconds != null"
-          title="The time it took to run the script (in milliseconds).
-This includes the time it took to start the host process.">
-        (Took: ${activeEnvironment.runDurationMilliseconds}ms)
-    </span>
+    <div show.bind="activeEnvironment.status !== 'Running' && runDuration !== null"
+         title="The time it took to run the script (in milliseconds).">
+        (Took: ${runDuration})
+    </div>
+
+    <spinner show.bind="activeEnvironment.status === 'Running'"
+             class="script-running-indicator"
+             title="Running..."
+             style="height: 1.5rem; width: 1.5rem"></spinner>
+    <spinner show.bind="activeEnvironment.status === 'Stopping'"
+             class="script-stopping-indicator"
+             title="Stopping..."></spinner>
 
     <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
         <au-compose component.bind="item.component"
