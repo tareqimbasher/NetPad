@@ -16,8 +16,11 @@ namespace NetPad.IO.IPC.Stdio;
 /// </remarks>
 /// </param>
 /// <param name="resolver"></param>
-/// <param name="logger"></param>
-public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver = null, ILogger? logger = null)
+/// <param name="loggerFactory"></param>
+public class StdioIpcGateway(
+    TextWriter sendChannel,
+    ITypeNameResolver? resolver = null,
+    ILoggerFactory? loggerFactory = null)
     : IDisposable
 {
     private interface IHandler
@@ -39,6 +42,7 @@ public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver
     private readonly Dictionary<Type, List<IHandler>> _handlers = new();
     private readonly object _handlersLock = new();
     private long _seq;
+    private readonly ILogger? _logger = loggerFactory?.CreateLogger<StdioIpcGateway>();
 
     /// <summary>
     /// Starts listening to messages written to the specified text reader.
@@ -68,17 +72,19 @@ public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver
                 if (!TryParseEnvelope(input, out var envelope) ||
                     !TryParseMessage(envelope.Type, envelope.Data, out var messageType, out var message))
                 {
+                    _logger?.LogDebug("Received non-message");
                     onNonMessageReceived?.Invoke(input);
                     return;
                 }
 
+                _logger?.LogDebug("Received message: {MessageType}", messageType);
                 Dispatch(messageType, message);
             }
             catch (Exception e)
             {
-                logger?.LogError(e, "Error handling input received");
+                _logger?.LogError(e, "Error handling input received");
             }
-        });
+        }, loggerFactory?.CreateLogger<StdioInputChannel>());
 
         _inputChannel.StartListening();
     }
@@ -148,7 +154,10 @@ public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver
     {
         ArgumentNullException.ThrowIfNull(message);
         var seq = Interlocked.Increment(ref _seq);
+
         var typeName = _resolver.GetName(message.GetType());
+        _logger?.LogDebug("Sending message: {MessageType}", typeName);
+
         var data = JsonSerializer.Serialize(message);
         _outputChannel.Write(new StdioIpcEnvelope(seq, typeName, data));
     }
@@ -169,11 +178,16 @@ public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver
         {
             if (!_handlers.TryGetValue(messageType, out var messageHandlers))
             {
+                _logger?.LogDebug("Could not dispatch message because it has no handlers: {Type}", messageType.Name);
                 return;
             }
 
             handlers = [..messageHandlers];
         }
+
+        _logger?.LogDebug("Dispatching message to {HandlerCount} handlers for processing: {Type}",
+            handlers.Count,
+            messageType.Name);
 
         foreach (var h in handlers)
         {
@@ -183,7 +197,7 @@ public class StdioIpcGateway(TextWriter sendChannel, ITypeNameResolver? resolver
             }
             catch (Exception ex)
             {
-                logger?.LogError(ex, "Error invoking handler for {MessageType}", messageType);
+                _logger?.LogError(ex, "Error invoking a handler for {MessageType}", messageType);
             }
         }
     }

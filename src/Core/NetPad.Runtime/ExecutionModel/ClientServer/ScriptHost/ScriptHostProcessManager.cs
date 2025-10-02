@@ -76,19 +76,26 @@ public class ScriptHostProcessManager(
 
     public void Send<T>(T message) where T : class
     {
-        _logger.LogDebug("Sending message: {MessageType}", typeof(T).Name);
+        _logger.LogDebug("Queuing message to send: {MessageType}", typeof(T).Name);
         _sendQueue.Writer.TryWrite(message);
     }
 
     private async Task ProcessSendQueueAsync()
     {
-        var reader = _sendQueue.Reader;
-        while (_ipcGateway != null && await reader.WaitToReadAsync())
+        try
         {
-            while (reader.TryRead(out var item))
+            var reader = _sendQueue.Reader;
+            while (_ipcGateway != null && await reader.WaitToReadAsync())
             {
-                _ipcGateway.Send(item);
+                while (_ipcGateway != null && reader.TryRead(out var item))
+                {
+                    _ipcGateway.Send(item);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error processing send queue");
         }
     }
 
@@ -140,11 +147,11 @@ public class ScriptHostProcessManager(
             }
 
             _scriptHostProcess = Process.Start(startInfo) ?? throw new Exception("Could not start script-host process");
-            _ipcGateway = new StdioIpcGateway(_scriptHostProcess.StandardInput, logger: _logger);
+            _ipcGateway = new StdioIpcGateway(_scriptHostProcess.StandardInput, loggerFactory: loggerFactory);
 
             _ipcGateway.On<ScriptHostReadyMessage>(msg =>
             {
-                _logger.LogDebug("script-host is ready");
+                _logger.LogDebug("Received script-host is ready message");
                 _ = ProcessSendQueueAsync();
             });
 
