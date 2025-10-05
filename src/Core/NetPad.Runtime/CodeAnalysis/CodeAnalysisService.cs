@@ -1,8 +1,12 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.IO;
+using ICSharpCode.Decompiler;
+using ICSharpCode.Decompiler.Disassembler;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using NetPad.Compilation;
 using NetPad.DotNet;
+using ICSharpCode.Decompiler.Metadata;
 
 namespace NetPad.CodeAnalysis;
 
@@ -42,6 +46,21 @@ public class CodeAnalysisService : ICodeAnalysisService
         var root = syntaxTree.GetRoot(cancellationToken);
 
         return Build(root, cancellationToken);
+    }
+    public string GetIntermediateLanguage(byte[] assembly, CancellationToken cancellationToken = default)
+    {
+        if (assembly.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        using var stream = new MemoryStream(assembly);
+        using var module = new PEFile("TempAssembly", stream);
+        using var writer = new StringWriter();
+        var output = new PlainTextOutput(writer);
+        var disassembler = new ReflectionDisassembler(output, cancellationToken);
+        disassembler.WriteModuleContents(module);
+        return writer.ToString();
     }
 
     private static SyntaxNodeOrTokenSlim Build(SyntaxNodeOrToken nodeOrToken, CancellationToken cancellationToken)

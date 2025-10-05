@@ -32,4 +32,12 @@ public interface ICodeAnalysisService
         DotNetFrameworkVersion targetFrameworkVersion,
         OptimizationLevel optimizationLevel,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates the Intermediate Language (IL) code representation from a compiled assembly.
+    /// </summary>
+    /// <param name="assembly">The compiled assembly bytes to disassemble into IL code.</param>
+    /// /// <param name="cancellationToken"></param>
+    /// <returns>A string containing the IL code representation of the assembly, formatted for readability.</returns>
+    string GetIntermediateLanguage(byte[] assembly, CancellationToken cancellationToken = default);
 }
