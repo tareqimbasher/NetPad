@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;
-using NetPad.Compilation;
+using NetPad.Compilation.Scripts;
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
 using NetPad.Data.Events;
-using NetPad.Data.Metadata;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.ExecutionModel.ClientServer.Messages;
@@ -13,11 +13,9 @@ using NetPad.ExecutionModel.External;
 using NetPad.ExecutionModel.External.Interface;
 using NetPad.IO;
 using NetPad.IO.IPC.Stdio;
-using NetPad.Packages;
 using NetPad.Presentation;
 using NetPad.Scripts;
 using NetPad.Scripts.Events;
-using O2Html;
 using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.ExecutionModel.ClientServer;
@@ -47,10 +45,12 @@ namespace NetPad.ExecutionModel.ClientServer;
 public sealed partial class ClientServerScriptRunner : IScriptRunner
 {
     private readonly Script _script;
-    private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
+    private readonly IScriptDependencyResolver _scriptDependencyResolver;
+    private readonly IScriptCompiler _scriptCompiler;
     private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly IEventBus _eventBus;
+    private readonly Settings _settings;
     private readonly ILogger<ClientServerScriptRunner> _logger;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly HashSet<IOutputWriter<object>> _externalOutputWriters;
@@ -73,10 +73,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
     public ClientServerScriptRunner(
         Script script,
-        ICodeParser codeParser,
-        ICodeCompiler codeCompiler,
-        IPackageProvider packageProvider,
-        IDataConnectionResourcesCache dataConnectionResourcesCache,
+        IScriptDependencyResolver scriptDependencyResolver,
+        IScriptCompiler scriptCompiler,
         IAppStatusMessagePublisher appStatusMessagePublisher,
         IDotNetInfo dotNetInfo,
         IEventBus eventBus,
@@ -85,10 +83,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         ILoggerFactory loggerFactory)
     {
         _script = script;
-        _codeParser = codeParser;
-        _codeCompiler = codeCompiler;
-        _packageProvider = packageProvider;
-        _dataConnectionResourcesCache = dataConnectionResourcesCache;
+        _scriptDependencyResolver = scriptDependencyResolver;
+        _scriptCompiler = scriptCompiler;
         _appStatusMessagePublisher = appStatusMessagePublisher;
         _dotNetInfo = dotNetInfo;
         _eventBus = eventBus;
