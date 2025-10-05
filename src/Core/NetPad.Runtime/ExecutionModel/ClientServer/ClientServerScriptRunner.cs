@@ -65,12 +65,6 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private bool _userRequestedStop;
     private bool _restartScriptHostOnNextRun;
 
-    private static readonly string[] _userVisibleAssemblies =
-    [
-        typeof(INetPadRuntimeLibMarker).Assembly.Location,
-        typeof(HtmlSerializer).Assembly.Location
-    ];
-
     public ClientServerScriptRunner(
         Script script,
         IScriptDependencyResolver scriptDependencyResolver,
@@ -140,8 +134,6 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             return Task.CompletedTask;
         }));
     }
-
-    public string[] GetUserVisibleAssemblies() => _userVisibleAssemblies;
 
     public Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {

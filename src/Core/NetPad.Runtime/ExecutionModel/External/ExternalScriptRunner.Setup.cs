@@ -10,6 +10,7 @@ using NetPad.DotNet.References;
 using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Presentation;
+using O2Html;
 using SourceCodeCollection = NetPad.DotNet.CodeAnalysis.SourceCodeCollection;
 
 namespace NetPad.ExecutionModel.External;
@@ -75,7 +76,11 @@ public partial class ExternalScriptRunner
 
 
         // Add assembly files needed to support running external process
-        foreach (var assemblyPath in _supportAssemblies.Concat(_userVisibleAssemblies))
+        var supportAssemblies = _supportAssemblies.Concat([
+            typeof(INetPadRuntimeLibMarker).Assembly.Location,
+            typeof(HtmlSerializer).Assembly.Location
+        ]);
+        foreach (var assemblyPath in supportAssemblies)
         {
             assemblyFilePaths.Add(assemblyPath);
         }

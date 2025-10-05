@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Xml.Linq;
 using NetPad.Compilation;
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.Data.Events;
@@ -29,6 +30,7 @@ public class AppOmniSharpServer(
     IOmniSharpServerFactory omniSharpServerFactory,
     IOmniSharpServerLocator omniSharpServerLocator,
     IDataConnectionResourcesCache dataConnectionResourcesCache,
+    IScriptDependencyResolver scriptDependencyResolver,
     Settings settings,
     ICodeParser codeParser,
     IEventBus eventBus,
@@ -70,7 +72,9 @@ public class AppOmniSharpServer(
         await SetPreprocessorSymbolsAsync();
 
         await Project.AddReferencesAsync(
-            environment.GetUserVisibleAssemblies().Select(a => new AssemblyFileReference(a)));
+            scriptDependencyResolver
+                .GetUserVisibleAssemblies()
+                .Select(a => new AssemblyFileReference(a)));
 
         await Project.RestoreAsync();
 

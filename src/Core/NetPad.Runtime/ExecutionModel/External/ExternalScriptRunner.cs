@@ -31,12 +31,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     private readonly RawOutputHandler _rawOutputHandler;
     private ProcessStartResult? _scriptProcess;
 
-    private static readonly string[] _userVisibleAssemblies =
-    [
-        typeof(INetPadRuntimeLibMarker).Assembly.Location,
-        typeof(O2Html.HtmlSerializer).Assembly.Location
-    ];
-
     private static readonly string[] _supportAssemblies =
     [
         typeof(Dumpify.DumpExtensions).Assembly.Location,
@@ -93,8 +87,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
         _rawOutputHandler = new RawOutputHandler(_output);
     }
-
-    public string[] GetUserVisibleAssemblies() => _userVisibleAssemblies;
 
     public async Task<RunResult> RunScriptAsync(RunOptions runOptions)
     {

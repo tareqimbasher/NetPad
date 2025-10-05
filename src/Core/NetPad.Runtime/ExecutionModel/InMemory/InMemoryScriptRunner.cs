@@ -108,11 +108,6 @@ public sealed class InMemoryScriptRunner : IScriptRunner
         throw new InvalidOperationException("Cannot stop a script running in-memory.");
     }
 
-    public string[] GetUserVisibleAssemblies()
-    {
-        return [];
-    }
-
     public void AddInput(IInputReader<string> inputReader)
     {
         _externalInputAdapters.Add(inputReader);
