@@ -45,4 +45,26 @@ public class CodeController : ControllerBase
 
         return new JsonResult(tree, _jsonSerializerOptions);
     }
+
+    [HttpGet("{scriptId:guid}/il-code")]
+    public ActionResult<string?> GetIntermediateLanguage(
+        Guid scriptId,
+        [FromServices] ISession session)
+    {
+        var env = session.Get(scriptId);
+
+        if (env == null)
+        {
+            throw new ScriptNotFoundException(scriptId);
+        }
+
+        var script = env.Script;
+
+        if (string.IsNullOrWhiteSpace(script.Code))
+        {
+            return Ok(null);
+        }
+
+        return "<Intermediate Language/>";
+    }
 }
