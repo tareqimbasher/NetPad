@@ -8,6 +8,8 @@ using NetPad.Apps.Scripts;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
+using NetPad.Compilation.Scripts;
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.Data.Metadata;
@@ -36,6 +38,8 @@ public static class DependencyInjection
         services.TryAddSingleton<IDotNetInfo, DotNetInfo>();
         services.TryAddTransient<ICodeCompiler, CSharpCodeCompiler>();
         services.TryAddTransient<ICodeAnalysisService, CodeAnalysisService>();
+        services.TryAddTransient<IScriptCompiler, ScriptCompiler>();
+        services.TryAddTransient<IScriptDependencyResolver, ScriptDependencyResolver>();
         services.TryAddSingleton<IAppStatusMessagePublisher, AppStatusMessagePublisher>();
         services.AddTransient<ISettingsRepository, FileSystemSettingsRepository>();
         services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);

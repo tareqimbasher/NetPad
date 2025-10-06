@@ -34,6 +34,9 @@ public interface IDataConnectionResourcesCache
     /// </summary>
     /// <param name="dataConnection"></param>
     /// <param name="targetFrameworkVersion"></param>
-    /// <returns></returns>
-    Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion);
+    /// <param name="cancellationToken"></param>
+    Task<DataConnectionResources> GetResourcesAsync(
+        DataConnection dataConnection,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        CancellationToken cancellationToken = default);
 }

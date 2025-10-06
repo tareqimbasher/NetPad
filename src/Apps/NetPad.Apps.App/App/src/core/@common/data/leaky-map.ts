@@ -5,34 +5,37 @@
  * removed from the map. Using `get()` or `set()` will reset the key's timer.
  */
 export class LeakyMap<K, V> extends Map<K, V> {
-    private timeoutMap = new Map<K, NodeJS.Timeout>();
+    private timeoutMap = new Map<K, ReturnType<typeof setTimeout>>();
 
     constructor(private readonly timeout: number) {
         super();
+        if (!Number.isFinite(timeout) || timeout < 0) {
+            throw new TypeError(`timeout must be a non-negative finite number; got ${timeout}`);
+        }
     }
 
-    private resetTimeout(key: K) {
+    private resetTimeoutIfPresent(key: K) {
+        if (!super.has(key)) return;
+
         const handle = this.timeoutMap.get(key);
+        if (handle) clearTimeout(handle);
 
-        if (handle) {
-            clearTimeout(handle);
-        }
-
-        this.timeoutMap.set(key, setTimeout(() => super.delete(key), this.timeout));
+        const newHandle = setTimeout(() => this.delete(key), this.timeout);
+        this.timeoutMap.set(key, newHandle);
     }
 
     public override get(key: K): V | undefined {
-        this.resetTimeout(key);
+        if (super.has(key)) this.resetTimeoutIfPresent(key);
         return super.get(key);
     }
 
-    public override set(key: K, value: V) {
+    public override set(key: K, value: V): this {
         super.set(key, value);
-        this.resetTimeout(key);
+        this.resetTimeoutIfPresent(key);
         return this;
     }
 
-    public override delete(key: K) {
+    public override delete(key: K): boolean {
         const handle = this.timeoutMap.get(key);
         if (handle) {
             clearTimeout(handle);
@@ -41,9 +44,9 @@ export class LeakyMap<K, V> extends Map<K, V> {
         return super.delete(key);
     }
 
-    public override clear() {
-        super.clear();
-        this.timeoutMap.forEach((handle) => clearTimeout(handle));
+    public override clear(): void {
+        this.timeoutMap.forEach((h) => clearTimeout(h));
         this.timeoutMap.clear();
+        super.clear();
     }
 }

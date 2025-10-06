@@ -1,12 +1,19 @@
 <import from="./syntax-tree-view/syntax-tree-view"></import>
+<import from="./il-view/il-view"></import>
 
 <let active-tab.bind="'SyntaxTree'"></let>
 
 <pane-toolbar>
     <div class="tabs">
         <div class="tab-button ${activeTab === 'SyntaxTree' ? 'active' : ''}"
-             click.trigger="activeTab = 'SyntaxTree'">
+             click.trigger="activeTab = 'SyntaxTree'"
+             title="Syntax Tree Viewer">
             Syntax Tree
+        </div>
+        <div class="tab-button ${activeTab === 'IL' ? 'active' : ''}"
+             click.trigger="activeTab = 'IL'"
+             title="Intermediate Language (IL) Viewer">
+            IL
         </div>
     </div>
 
@@ -21,5 +28,9 @@
 
 <div class="flex-fill overflow-auto">
     <syntax-tree-view show.bind="activeTab === 'SyntaxTree'"
-                      pane.bind="$this"></syntax-tree-view>
+                      pane.bind="$this"
+                      is-active.bind="activeTab === 'SyntaxTree'"></syntax-tree-view>
+    <il-view show.bind="activeTab === 'IL'"
+             pane.bind="$this"
+             is-active.bind="activeTab === 'IL'"></il-view>
 </div>

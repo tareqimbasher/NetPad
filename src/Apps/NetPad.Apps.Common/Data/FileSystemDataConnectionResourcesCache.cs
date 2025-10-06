@@ -88,7 +88,10 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
         }
     }
 
-    public async Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<DataConnectionResources> GetResourcesAsync(
+        DataConnection dataConnection,
+        DotNetFrameworkVersion targetFrameworkVersion,
+        CancellationToken cancellationToken = default)
     {
         DataConnectionResources? resources;
 
@@ -97,10 +100,12 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
             return resources;
         }
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         var lckKey = new ResourceGenerationLock(dataConnection.Id, targetFrameworkVersion);
         var lck = _resourceGenerationLocks.GetOrAdd(lckKey, static _ => new SemaphoreSlim(1, 1));
 
-        await lck.WaitAsync();
+        await lck.WaitAsync(cancellationToken);
 
         try
         {

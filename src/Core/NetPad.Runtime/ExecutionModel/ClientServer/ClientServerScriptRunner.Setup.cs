@@ -1,28 +1,18 @@
 using System.IO;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Compilation;
-using NetPad.Configuration;
-using NetPad.Data;
+using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
-using NetPad.ExecutionModel.External;
 using NetPad.IO;
-using NetPad.Packages;
 using NetPad.Presentation;
-using SourceCodeCollection = NetPad.DotNet.CodeAnalysis.SourceCodeCollection;
 
 namespace NetPad.ExecutionModel.ClientServer;
 
 public partial class ClientServerScriptRunner
 {
-    private readonly ICodeParser _codeParser;
-    private readonly ICodeCompiler _codeCompiler;
-    private readonly IPackageProvider _packageProvider;
-    private readonly Settings _settings;
-
     /// <summary>
     /// Contains post-setup info needed to run the script.
     /// </summary>
@@ -60,7 +50,7 @@ public partial class ClientServerScriptRunner
 
         // Resolve and collect all dependencies needed by script-host and script
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
-        var (dependencies, additionalCode) = await GatherDependenciesAsync(cancellationToken);
+        var dependencies = await _scriptDependencyResolver.GetDependenciesAsync(_script, cancellationToken);
 
         if (cancellationToken.IsCancellationRequested)
         {
@@ -69,7 +59,11 @@ public partial class ClientServerScriptRunner
 
         // Parse and compile the script
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
-        var parseCompileResult = ParseAndCompileInner(runOptions, dependencies, additionalCode, cancellationToken);
+        var parseCompileResult = await _scriptCompiler.ParseAndCompileAsync(
+            runOptions.SpecificCodeToRun ?? _script.Code,
+            _script,
+            cancellationToken);
+
         if (parseCompileResult == null || cancellationToken.IsCancellationRequested)
         {
             _logger.LogError("Parse and compile failed");
@@ -82,7 +76,7 @@ public partial class ClientServerScriptRunner
             var errors = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => CorrectDiagnosticErrorLineNumber(d, parsingResult.UserProgramStartLineNumber));
+                .Select(d => DiagnosicsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             await _combinedOutputWriter.WriteAsync(
                 new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),
@@ -103,151 +97,19 @@ public partial class ClientServerScriptRunner
             compilationResult.AssemblyBytes,
             dependencies);
 
+        string[] inPlaceDependencyDirectories = dependencies.References
+            .Where(x => x.LoadStrategy == DependencyLoadStrategy.LoadInPlace)
+            .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet()
+            .ToArray()!;
+
         return new SetupInfo(
             scriptDir,
             scriptAssemblyFilePath,
-            dependencies.Where(x => x.LoadStrategy == LoadStrategy.LoadInPlace)
-                .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
-                .Where(x => !string.IsNullOrEmpty(x))
-                .ToHashSet()
-                .ToArray()!,
+            inPlaceDependencyDirectories,
             parsingResult.UserProgramStartLineNumber
         );
-    }
-
-    private async Task<(List<Dependency> dependencies, SourceCodeCollection additionalCode)>
-        GatherDependenciesAsync(CancellationToken cancellationToken)
-    {
-        var dependencies = new List<Dependency>();
-        var additionalCode = new SourceCodeCollection();
-
-        // Add script references
-        dependencies.AddRange(_script.Config.References
-            .Select(x => new Dependency(x, NeededBy.Script, LoadStrategy.LoadInPlace)));
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return (dependencies, additionalCode);
-        }
-
-        // Add data connection resources
-        if (_script.DataConnection != null)
-        {
-            var dcResources = await GetDataConnectionResourcesAsync(_script.DataConnection);
-
-            if (dcResources.Code.Count > 0)
-            {
-                additionalCode.AddRange(dcResources.Code);
-            }
-
-            if (dcResources.References.Count > 0)
-            {
-                dependencies.AddRange(dcResources.References
-                    .Select(x => new Dependency(x, NeededBy.Shared, LoadStrategy.DeployAndLoad)));
-            }
-
-            if (dcResources.Assembly != null)
-            {
-                dependencies.Add(
-                    new Dependency(new AssemblyImageReference(dcResources.Assembly), NeededBy.Shared,
-                        LoadStrategy.DeployAndLoad));
-            }
-        }
-
-        // Add assembly files needed to support running script
-        dependencies.AddRange(_userVisibleAssemblies
-            .Select(assemblyPath => new Dependency(
-                new AssemblyFileReference(assemblyPath),
-                NeededBy.Shared,
-                LoadStrategy.DeployAndLoad))
-        );
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return (dependencies, additionalCode);
-        }
-
-        Task.WaitAll(dependencies
-                .Select(d => d.LoadAssetsAsync(
-                    _script.Config.TargetFrameworkVersion,
-                    _packageProvider,
-                    cancellationToken))
-                .ToArray(),
-            cancellationToken
-        );
-
-        return (dependencies, additionalCode);
-    }
-
-    private async Task<(SourceCodeCollection Code, IReadOnlyList<Reference> References, AssemblyImage? Assembly)>
-        GetDataConnectionResourcesAsync(DataConnection dataConnection)
-    {
-        var code = new SourceCodeCollection();
-        var references = new List<Reference>();
-
-        var targetFrameworkVersion = _script.Config.TargetFrameworkVersion;
-
-        var connectionResources =
-            await _dataConnectionResourcesCache.GetResourcesAsync(dataConnection, targetFrameworkVersion);
-
-        var applicationCode = connectionResources.SourceCode?.ApplicationCode;
-        if (applicationCode?.Count > 0)
-        {
-            code.AddRange(applicationCode);
-        }
-
-        var requiredReferences = connectionResources.RequiredReferences;
-        if (requiredReferences?.Length > 0)
-        {
-            references.AddRange(requiredReferences);
-        }
-
-        return (code, references, connectionResources.Assembly);
-    }
-
-    private ParseAndCompileResult? ParseAndCompileInner(
-        RunOptions runOptions,
-        List<Dependency> dependencies,
-        SourceCodeCollection additionalCode,
-        CancellationToken cancellationToken)
-    {
-        var compileAssemblyImageDeps = dependencies
-            .Select(d =>
-                d.NeededBy != NeededBy.ScriptHost && d.Reference is AssemblyImageReference air
-                    ? air.AssemblyImage
-                    : null!)
-            .Where(x => x != null!)
-            .ToArray();
-
-        var compileAssemblyFileDeps = dependencies
-            .Where(x => x.NeededBy != NeededBy.ScriptHost)
-            .SelectMany(x => x.Assets)
-            .DistinctBy(x => x.Path)
-            .Where(x => x.IsManagedAssembly)
-            .Select(x => new
-            {
-                x.Path,
-                AssemblyName = AssemblyName.GetAssemblyName(x.Path)
-            })
-            // Choose the highest version of duplicate assemblies
-            .GroupBy(a => a.AssemblyName.Name)
-            .Select(grp => grp.OrderBy(x => x.AssemblyName.Version).Last())
-            .Select(x => x.Path)
-            .ToHashSet();
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return null;
-        }
-
-        return ParseAndCompile.Do(
-            runOptions.SpecificCodeToRun ?? _script.Code,
-            _script,
-            _codeParser,
-            _codeCompiler,
-            compileAssemblyImageDeps,
-            compileAssemblyFileDeps,
-            additionalCode);
     }
 
     private static void DeployScriptHostExecutable(WorkingDirectory workingDirectory)
@@ -265,25 +127,26 @@ public partial class ClientServerScriptRunner
             true);
     }
 
-    private static async Task DeploySharedDependenciesAsync(WorkingDirectory workingDirectory,
-        IList<Dependency> dependencies)
+    private static async Task DeploySharedDependenciesAsync(
+        WorkingDirectory workingDirectory,
+        ScriptDependencies dependencies)
     {
         workingDirectory.SharedDependenciesDirectory.CreateIfNotExists();
 
-        var sharedDeps = dependencies
-            .Where(x => x.NeededBy is NeededBy.ScriptHost or NeededBy.Shared);
+        var sharedDeps = dependencies.References
+            .Where(x => x.Dependant is Dependant.ScriptHost or Dependant.Shared);
 
         await DeployAsync(workingDirectory.SharedDependenciesDirectory, sharedDeps);
     }
 
     private async Task<(DirectoryPath, FilePath)> DeployScriptDependenciesAsync(
         byte[] scriptAssembly,
-        IList<Dependency> dependencies)
+        ScriptDependencies dependencies)
     {
         var scriptDeployDir = _workingDirectory.CreateNewScriptDeployDirectory();
         scriptDeployDir.CreateIfNotExists();
 
-        var scriptDeps = dependencies.Where(x => x.NeededBy is NeededBy.Script).ToArray();
+        var scriptDeps = dependencies.References.Where(x => x.Dependant is Dependant.Script).ToArray();
 
         await DeployAsync(scriptDeployDir, scriptDeps);
 
@@ -332,9 +195,10 @@ public partial class ClientServerScriptRunner
         return (scriptDeployDir, scriptAssemblyFilePath);
     }
 
-    private static async Task DeployAsync(DirectoryPath destination, IEnumerable<Dependency> dependencies)
+    private static async Task DeployAsync(DirectoryPath destination,
+        IEnumerable<ReferenceDependency> referenceDependencies)
     {
-        foreach (var dependency in dependencies)
+        foreach (var dependency in referenceDependencies)
         {
             var reference = dependency.Reference;
 
@@ -354,7 +218,7 @@ public partial class ClientServerScriptRunner
                 }
             }
 
-            if (dependency.LoadStrategy == LoadStrategy.LoadInPlace)
+            if (dependency.LoadStrategy == DependencyLoadStrategy.LoadInPlace)
             {
                 continue;
             }
@@ -403,73 +267,5 @@ public partial class ClientServerScriptRunner
                      }
                  }
                  """;
-    }
-
-    /// <summary>
-    /// Corrects line numbers in compilation errors relative to the line number where user code starts.
-    /// </summary>
-    private static string CorrectDiagnosticErrorLineNumber(Diagnostic diagnostic, int userProgramStartLineNumber)
-    {
-        var err = diagnostic.ToString();
-
-        if (!err.StartsWith('('))
-        {
-            return err;
-        }
-
-        var errParts = err.Split(':');
-        var span = errParts.First().Trim(['(', ')']);
-        var spanParts = span.Split(',');
-        var lineNumberStr = spanParts[0];
-
-        return int.TryParse(lineNumberStr, out int lineNumber)
-            ? $"({lineNumber - userProgramStartLineNumber},{spanParts[1]}):{errParts.Skip(1).JoinToString(":")}"
-            : err;
-    }
-
-    /// <summary>
-    /// The component that a dependency is needed by.
-    /// </summary>
-    enum NeededBy
-    {
-        Script,
-        ScriptHost,
-        Shared,
-    }
-
-    /// <summary>
-    /// How a dependency is deployed and loaded.
-    /// </summary>
-    enum LoadStrategy
-    {
-        /// <summary>
-        /// Dependency will be copied to output directory and loaded from there.
-        /// </summary>
-        DeployAndLoad,
-
-        /// <summary>
-        /// Dependency will not be copied, and will be loaded from its original location (in-place).
-        /// </summary>
-        LoadInPlace
-    }
-
-    /// <summary>
-    /// A dependency needed by the run environment.
-    /// </summary>
-    /// <param name="Reference">A reference dependency.</param>
-    /// <param name="NeededBy">Which components need this dependency to run.</param>
-    /// <param name="LoadStrategy">How will this dependency be deployed.</param>
-    record Dependency(Reference Reference, NeededBy NeededBy, LoadStrategy LoadStrategy)
-    {
-        public ReferenceAsset[] Assets { get; private set; } = [];
-
-        public async Task LoadAssetsAsync(
-            DotNetFrameworkVersion dotNetFrameworkVersion,
-            IPackageProvider packageProvider,
-            CancellationToken cancellationToken = default)
-        {
-            var assets = await Reference.GetAssetsAsync(dotNetFrameworkVersion, packageProvider, cancellationToken);
-            Assets = assets.ToArray();
-        }
     }
 }

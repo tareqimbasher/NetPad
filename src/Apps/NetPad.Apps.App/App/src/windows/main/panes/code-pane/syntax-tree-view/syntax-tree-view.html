@@ -1,11 +1,11 @@
 <div class="p-3" mouseleave.trigger="onMouseLeave()" if.bind="!error">
     <tree-node if.bind="!!current" syntax-node.bind="current" vm.bind="$this"></tree-node>
 </div>
-<div else class="text-danger p-3">
+<div else class="text-salmon p-3">
     ${error}
 </div>
 
-<div portal="#codePaneToolbarRightPortal">
+<div portal="#codePaneToolbarRightPortal" show.bind="isActive">
     <i class="icon-button fa-solid fa-list-ol ${showCharSpans ? 'active' : ''}"
        click.trigger="showCharSpans = !showCharSpans"
        title="Show Line/Char Spans"></i>
@@ -37,7 +37,7 @@
             <i class="fa-fw fa-solid ${syntaxNode.isNode ? 'fa-code-commit text-blue' : 'fa-minus text-yellow'}"
                title="${syntaxNode.isNode ? 'Node' : 'Token'}"></i>
 
-            <span class="${syntaxNode.isMissing ? 'text-danger' : ''}"
+            <span class="${syntaxNode.isMissing ? 'text-salmon' : ''}"
                   title.bind="syntaxNode.type">
                 ${syntaxNode.kind}
             </span>
@@ -56,7 +56,7 @@
             </span>
 
             <span if.bind="syntaxNode.isMissing"
-                  class="ms-auto text-danger"><i>Missing</i></span>
+                  class="ms-auto text-salmon"><i>Missing</i></span>
         </div>
     </div>
 

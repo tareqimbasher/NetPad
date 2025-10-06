@@ -260,8 +260,6 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         AddScriptRunnerIOHandlers();
     }
 
-    public string[] GetUserVisibleAssemblies() => _runner.GetUserVisibleAssemblies();
-
     public void DumpMemCacheItem(string key)
     {
         _runner.DumpMemCacheItem(key);

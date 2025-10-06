@@ -34,21 +34,6 @@ export class DumpContainer implements IDisposable {
 
         this.resultControls = new ResultControls(this.element);
         this.disposables.add(() => this.resultControls.dispose());
-
-        // Confine select all to the container
-        const selectAllKeyHandler = (ev: KeyboardEvent) => {
-            if (ev.code === KeyCode.KeyA && (ev.ctrlKey || ev.metaKey)) {
-                const range = document.createRange();
-                range.selectNode(this.element);
-                window.getSelection()?.removeAllRanges();
-                window.getSelection()?.addRange(range);
-
-                ev.preventDefault();
-            }
-        };
-
-        this.element.addEventListener("keydown", selectAllKeyHandler);
-        this.disposables.add(() => this.element.removeEventListener("keydown", selectAllKeyHandler));
     }
 
 

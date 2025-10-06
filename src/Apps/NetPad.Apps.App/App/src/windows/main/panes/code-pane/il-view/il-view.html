@@ -1,0 +1,8 @@
+<pre show.bind="error" class="p-3"><code class="text-salmon">${error}</code></pre>
+<pre show.bind="current" class="p-3"><code innerHTML.bind="current"></code></pre>
+
+<div portal="#codePaneToolbarRightPortal" show.bind="isActive">
+    <i class="icon-button fa-solid fa-barcode ${includeAssemblyHeaders ? 'active' : ''}"
+       click.trigger="includeAssemblyHeaders = !includeAssemblyHeaders"
+       title="Include assembly headers in the generated IL."></i>
+</div>

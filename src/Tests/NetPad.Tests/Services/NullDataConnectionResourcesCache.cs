@@ -26,7 +26,7 @@ public class NullDataConnectionResourcesCache : IDataConnectionResourcesCache
         return Task.CompletedTask;
     }
 
-    public Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion)
+    public Task<DataConnectionResources> GetResourcesAsync(DataConnection dataConnection, DotNetFrameworkVersion targetFrameworkVersion, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new DataConnectionResources(dataConnection, DateTime.UtcNow));
     }
