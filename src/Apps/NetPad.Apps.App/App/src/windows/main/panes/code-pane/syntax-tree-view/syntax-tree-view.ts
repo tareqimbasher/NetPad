@@ -32,6 +32,7 @@ export class SyntaxTreeView extends ViewModelBase {
     private showCharSpans = false;
 
     @bindable public pane: Pane;
+    @bindable public isActive: boolean;
 
     constructor(@ISession private readonly session: ISession,
                 @ICodeService private readonly codeService: ICodeService,
@@ -139,8 +140,12 @@ export class SyntaxTreeView extends ViewModelBase {
         this.loadSyntaxTree();
     }
 
+    private isActiveChanged() {
+        this.loadSyntaxTree();
+    }
+
     private loadSyntaxTree = Util.debounce(this, async () => {
-            if (!this.pane.isOpen) {
+            if (!this.pane.isOpen || !this.isActive) {
                 return;
             }
 

@@ -55,7 +55,7 @@ public class ScriptCompiler(
             return null;
         }
 
-        var compileAssemblyImageDeps = dependencies.References
+        var referenceAssemblyImages = dependencies.References
             .Select(d =>
                 d.Dependant != Dependant.ScriptHost && d.Reference is AssemblyImageReference air
                     ? air.AssemblyImage
@@ -63,7 +63,7 @@ public class ScriptCompiler(
             .Where(x => x != null!)
             .ToArray();
 
-        var compileAssemblyFileDeps = dependencies.References
+        var referenceAssemblyFiles = dependencies.References
             .Where(x => x.Dependant != Dependant.ScriptHost)
             .SelectMany(x => x.Assets)
             .DistinctBy(x => x.Path)
@@ -82,8 +82,8 @@ public class ScriptCompiler(
         return TryPermutations(
             code,
             script,
-            compileAssemblyImageDeps,
-            compileAssemblyFileDeps,
+            referenceAssemblyImages,
+            referenceAssemblyFiles,
             new SourceCodeCollection(dependencies.Code.SelectMany(x => x.Code)),
             cancellationToken);
     }

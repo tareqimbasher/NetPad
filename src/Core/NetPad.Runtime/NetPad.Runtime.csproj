@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Dumpify" Version="0.6.6"/>
-        <PackageReference Include="ICSharpCode.Decompiler" Version="6.2.1.6137"/>
+        <PackageReference Include="ICSharpCode.Decompiler" Version="9.1.0.7988" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="6.0.31"/>
         <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.31"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2"/>

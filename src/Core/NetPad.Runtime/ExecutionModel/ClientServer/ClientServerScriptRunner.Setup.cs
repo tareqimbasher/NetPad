@@ -2,6 +2,7 @@ using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
+using NetPad.Compilation;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
@@ -75,7 +76,7 @@ public partial class ClientServerScriptRunner
             var errors = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => CorrectDiagnosticErrorLineNumber(d, parsingResult.UserProgramStartLineNumber));
+                .Select(d => DiagnosicsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             await _combinedOutputWriter.WriteAsync(
                 new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),
@@ -266,27 +267,5 @@ public partial class ClientServerScriptRunner
                      }
                  }
                  """;
-    }
-
-    /// <summary>
-    /// Corrects line numbers in compilation errors relative to the line number where user code starts.
-    /// </summary>
-    private static string CorrectDiagnosticErrorLineNumber(Diagnostic diagnostic, int userProgramStartLineNumber)
-    {
-        var err = diagnostic.ToString();
-
-        if (!err.StartsWith('('))
-        {
-            return err;
-        }
-
-        var errParts = err.Split(':');
-        var span = errParts.First().Trim(['(', ')']);
-        var spanParts = span.Split(',');
-        var lineNumberStr = spanParts[0];
-
-        return int.TryParse(lineNumberStr, out int lineNumber)
-            ? $"({lineNumber - userProgramStartLineNumber},{spanParts[1]}):{errParts.Skip(1).JoinToString(":")}"
-            : err;
     }
 }

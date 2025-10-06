@@ -104,7 +104,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+    
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -420,6 +420,8 @@ export class AssembliesApiClient extends ApiClientBase implements IAssembliesApi
 export interface ICodeApiClient {
 
     getSyntaxTree(scriptId: string, signal?: AbortSignal | undefined): Promise<SyntaxNodeOrTokenSlim>;
+
+    getIntermediateLanguage(scriptId: string, includeAssemblyHeader: boolean | undefined, signal?: AbortSignal | undefined): Promise<string>;
 }
 
 export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
@@ -469,6 +471,49 @@ export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
             });
         }
         return Promise.resolve<SyntaxNodeOrTokenSlim>(null as any);
+    }
+
+    getIntermediateLanguage(scriptId: string, includeAssemblyHeader: boolean | undefined, signal?: AbortSignal): Promise<string> {
+        let url_ = this.baseUrl + "/code/{scriptId}/il?";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        if (includeAssemblyHeader === null)
+            throw new Error("The parameter 'includeAssemblyHeader' cannot be null.");
+        else if (includeAssemblyHeader !== undefined)
+            url_ += "includeAssemblyHeader=" + encodeURIComponent("" + includeAssemblyHeader) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetIntermediateLanguage(_response);
+        });
+    }
+
+    protected processGetIntermediateLanguage(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(null as any);
     }
 }
 
@@ -803,8 +848,8 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
-                return result200;
+    
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -882,8 +927,8 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
-                return result200;
+    
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -1663,8 +1708,8 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
-                return result200;
+    
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -2492,8 +2537,8 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
-                return result200;
+    
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
@@ -8350,6 +8395,7 @@ export interface IMariaDbDatabaseConnection extends IEntityFrameworkRelationalDa
 }
 
 export class OracleDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IOracleDatabaseConnection {
+
     constructor(data?: IOracleDatabaseConnection) {
         super(data);
         this._discriminator = "OracleDatabaseConnection";
