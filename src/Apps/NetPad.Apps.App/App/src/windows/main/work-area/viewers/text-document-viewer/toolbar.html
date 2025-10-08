@@ -52,8 +52,8 @@
         <select class="form-select form-select-sm optimization-level-selector ms-3"
                 value.bind="optimizationLevel"
                 disabled.bind="isBusy">
-            <option model.bind="'Debug'" title="Optimize-: Optimizations disabled.">- Debug</option>
-            <option model.bind="'Release'" title="Optimize+: Optimizations enabled.">+ Release</option>
+            <option value="Debug" title="Optimize-: Optimizations disabled.">- Debug</option>
+            <option value="Release" title="Optimize+: Optimizations enabled.">+ Release</option>
         </select>
     </div>
     <div class="group">
