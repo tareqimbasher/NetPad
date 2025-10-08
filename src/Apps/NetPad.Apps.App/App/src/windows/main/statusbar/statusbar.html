@@ -23,7 +23,7 @@
     <div class="active-app-status-message text-truncate-1-line"
          show.bind="appStatusMessage"
          contextmenu.trigger="dismissCurrentAppStatusMessage($event)"
-         title="${appStatusMessage.persistant ? '' : 'Right click to dismiss'}">
+         title="Right click to dismiss">
         <i class="${appStatusMessage.priority === 'High' ? 'attention-icon text-red' : 'info-icon text-blue'} pe-2"></i>
         ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
     </div>
