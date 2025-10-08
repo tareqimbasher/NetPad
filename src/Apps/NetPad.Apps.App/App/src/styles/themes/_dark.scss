@@ -1,10 +1,17 @@
+$color-full: black;
+$color-contrast-full: white;
+
+$color-background: #222222;
+
 $dark: (
+    color-full: $color-full,
+    color-contrast-full: $color-contrast-full,
     // TEXT
     text-color: #dcdcdc,
-    text-strong-color: #ffffff,
-    text-hover-color: #ffffff,
+    text-strong-color: $color-contrast-full,
+    text-hover-color: $color-contrast-full,
     // BACKGROUND
-    background-color: #222222,
+    background-color: $color-background,
     background-lighter-color: #333333,
     list-background: #282828,
     list-item-clicked-background: #444444,
@@ -16,6 +23,7 @@ $dark: (
     border-contrast-color: #555555,
     // ACTIONS
     hover-color: rgba(255 255 255 / 7.5%),
+    hover-color-contrast: rgba(255 255 255 / 17.5%),
     active-color: #0d6efd,
     action-icon-color: silver,
     action-icon-hover-color: white,
@@ -32,17 +40,17 @@ $dark: (
     find-text-box-background: #1c1c1c,
     // PANES
     pane-ribbon-background: #252525,
-    pane-background: #222222,
-    pane-toolbar-background: #222222,
+    pane-background: $color-background,
+    pane-toolbar-background: $color-background,
     // CONTEXT MENU
     context-menu-background: #323232,
     context-menu-item-hover-background: #15539e,
     // DIALOG
-    dialog-background: #222222,
+    dialog-background: $color-background,
     // TABS
-    tab-background: #2d2d2d,
-    tab-active-background: #0b0b0b,
-    tab-active-text-color: #ffffff,
+    tab-background: #151515,
+    tab-active-background: #1e1e1e,
+    tab-active-text-color: $color-contrast-full,
     tab-inactive-text-color: rgb(255 255 255 / 65%),
     // SCROLLBARS & SPLITTER
     scrollbar-track-color: #343434,

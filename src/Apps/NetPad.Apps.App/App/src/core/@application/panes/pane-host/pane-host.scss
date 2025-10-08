@@ -1,4 +1,4 @@
-$ribbon-width: 23px;
+$ribbon-width: 30px;
 
 pane-host {
     display: flex;
@@ -9,18 +9,25 @@ pane-host {
         background: var(--pane-ribbon-background);
         user-select: none;
         cursor: default;
+        flex-shrink: 0;
 
         .pane-tag {
-            font-size: 0.9rem;
             display: flex;
             align-items: center;
+            justify-content: center;
 
-            &.active {
-                background: var(--tab-active-background);
+            .pane-icon {
+                font-size: 1.1rem;
+                padding: 0.1rem 0.3rem;
+                border-radius: 5px;
+
+                &:hover {
+                    background: var(--hover-color-contrast);
+                }
             }
 
-            &:hover {
-                background: var(--hover-color);
+            &.active .pane-icon {
+                background: var(--color-full);
             }
         }
     }
@@ -37,7 +44,7 @@ pane-host.orientation-floatingwindow {
 pane-host.orientation-left,
 pane-host.orientation-right {
     flex-direction: row;
-    min-width: $ribbon-width;
+    width: $ribbon-width;
 
     .ribbon {
         flex-direction: column;
@@ -45,15 +52,7 @@ pane-host.orientation-right {
     }
 
     .pane-tag {
-        writing-mode: vertical-lr;
-        line-height: $ribbon-width;
-        width: $ribbon-width;
-        padding: 0.5rem 0.1rem;
-        align-items: end;
-
-        .pane-icon {
-            margin-bottom: 0.5rem;
-        }
+        margin: 0.35rem 0;
     }
 
     .pane-content {
@@ -61,20 +60,11 @@ pane-host.orientation-right {
     }
 }
 
-pane-host.orientation-left {
-    .pane-tag {
-        transform: rotate(180deg);
-
-        .pane-icon {
-            transform: rotate(180deg);
-        }
-    }
-}
 
 pane-host.orientation-bottom,
 pane-host.orientation-floatingwindow {
     flex-direction: column-reverse;
-    min-height: $ribbon-width;
+    height: $ribbon-width;
 
     .ribbon {
         flex-direction: row;
@@ -82,13 +72,7 @@ pane-host.orientation-floatingwindow {
     }
 
     .pane-tag {
-        line-height: $ribbon-width;
-        height: $ribbon-width;
-        padding: 0.1rem 0.5rem;
-
-        .pane-icon {
-            margin-right: 0.5rem;
-        }
+        margin: 0 0.35rem;
     }
 
     .pane-content {
