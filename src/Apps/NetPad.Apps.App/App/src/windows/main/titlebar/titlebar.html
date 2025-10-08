@@ -15,13 +15,13 @@
        click.trigger="openAppUpdateDialog()"
        title="Update available"
        if.bind="appService.appHasUpdate"></i>
-    <i class="settings-icon action-icon"
-       click.trigger="openSettingsWindow()"
-       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
     <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
        shells="!browser"
        click.trigger="toggleWindowAlwaysOnTop()"
        title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
+    <i class="settings-icon action-icon"
+       click.trigger="openSettingsWindow()"
+       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
 </div>
 
 <div class="window-controls ${leftWinCtrls ? 'order-first' : ''}" shells="!browser">
