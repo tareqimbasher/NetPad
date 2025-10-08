@@ -27,8 +27,8 @@ tab-bar {
         cursor: default;
         background: var(--tab-background);
 
-        &:not(:last-child) {
-            margin-right: 1px;
+        &:not(.new-tab) {
+            border-top: 1px solid transparent;
         }
 
         .view-tab-content {
@@ -115,8 +115,6 @@ tab-bar {
     .view-tab {
         background: var(--tab-background);
         font-weight: normal !important;
-        border-top: transparent 2px solid;
-        border-bottom: transparent 2px solid;
 
         .script-name {
             color: var(--tab-inactive-text-color);
@@ -126,7 +124,6 @@ tab-bar {
 
         &.active {
             background: var(--tab-active-background);
-            border-bottom: var(borderContrastColor) 2px solid;
 
             .script-name {
                 color: var(--tab-active-text-color);
@@ -134,11 +131,11 @@ tab-bar {
         }
 
         &.status-Running {
-            border-bottom-color: orange !important;
+            border-top-color: orange !important;
         }
 
         &.status-Stopping {
-            border-bottom-color: salmon !important;
+            border-top-color: salmon !important;
         }
 
         &.new-tab {
@@ -148,7 +145,7 @@ tab-bar {
 
     .viewer-host.active {
         .view-tab.active {
-            border-bottom-color: var(--active-color);
+            border-top-color: var(--active-color);
         }
     }
 }
