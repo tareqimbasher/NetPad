@@ -79,7 +79,7 @@ export class Statusbar {
     }
 
     private dismissCurrentAppStatusMessage() {
-        this.appStatusMessage = this.lastPersistentPriorityMessage
+        this.appStatusMessage = this.lastPersistentPriorityMessage && this.appStatusMessage !== this.lastPersistentPriorityMessage
             ? this.lastPersistentPriorityMessage
             : null;
     }

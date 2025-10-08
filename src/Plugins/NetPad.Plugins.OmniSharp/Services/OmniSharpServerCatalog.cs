@@ -67,8 +67,7 @@ public class OmniSharpServerCatalog(
                 await appStatusMessagePublisher.PublishAsync(
                     environment.Script.Id,
                     "OmniSharp server failed to start. Check log file for details.",
-                    AppStatusMessagePriority.High,
-                    true);
+                    AppStatusMessagePriority.High);
             }
             else if (t.IsCompletedSuccessfully)
             {
