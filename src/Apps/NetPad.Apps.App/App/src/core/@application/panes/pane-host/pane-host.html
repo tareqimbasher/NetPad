@@ -7,9 +7,8 @@
         <div repeat.for="pane of panes"
              class="pane-tag ${pane === active ? 'active' : ''}"
              click.trigger="toggle(pane)"
-             title="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
+             tooltip="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
             <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
-            <span>${pane.name}</span>
         </div>
     </div>
     <div class="pane-content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
