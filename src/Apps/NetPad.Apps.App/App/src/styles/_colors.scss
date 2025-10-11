@@ -3,28 +3,39 @@
 @import "bootstrap/scss/variables";
 
 // Additional colors
-$colors: map.merge(
-    $colors,
+$all-colors: map.merge($colors, $blues);
+$all-colors: map.merge($all-colors, $indigos);
+$all-colors: map.merge($all-colors, $purples);
+$all-colors: map.merge($all-colors, $pinks);
+$all-colors: map.merge($all-colors, $reds);
+$all-colors: map.merge($all-colors, $reds);
+$all-colors: map.merge($all-colors, $oranges);
+$all-colors: map.merge($all-colors, $yellows);
+$all-colors: map.merge($all-colors, $greens);
+$all-colors: map.merge($all-colors, $teals);
+$all-colors: map.merge($all-colors, $cyans);
+$all-colors: map.merge(
+    $all-colors,
     (
-        "blue-muted":       rgb(13 110 253 / 50%),
-        "salmon":       salmon,
+        "blue-muted": rgb(13 110 253 / 50%),
+        "salmon": salmon,
     )
 );
 
-@each $color in map-keys($colors) {
+@each $color in map-keys($all-colors) {
     .text-#{"" + $color}, %text-#{"" + $color} {
-        color: map.get($colors, $color) !important;
+        color: map.get($all-colors, $color) !important;
     }
 
     .hover-text-#{"" + $color}:hover, %hover-text-#{"" + $color}:hover {
-        color: map.get($colors, $color) !important;
+        color: map.get($all-colors, $color) !important;
     }
 
     .bg-#{"" + $color}, %bg-#{"" + $color} {
-        background-color: map.get($colors, $color) !important;
+        background-color: map.get($all-colors, $color) !important;
     }
 
     .hover-bg-#{"" + $color}:hover, %hover-bg-#{"" + $color}:hover {
-        background-color: map.get($colors, $color) !important;
+        background-color: map.get($all-colors, $color) !important;
     }
 }

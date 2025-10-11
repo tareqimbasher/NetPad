@@ -6,14 +6,6 @@
         (Took: ${runDuration})
     </div>
 
-    <spinner show.bind="activeEnvironment.status === 'Running'"
-             class="script-running-indicator"
-             title="Running..."
-             style="height: 1.5rem; width: 1.5rem"></spinner>
-    <spinner show.bind="activeEnvironment.status === 'Stopping'"
-             class="script-stopping-indicator"
-             title="Stopping..."></spinner>
-
     <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
         <au-compose component.bind="item.component"
                     class="statusbar-item"></au-compose>
