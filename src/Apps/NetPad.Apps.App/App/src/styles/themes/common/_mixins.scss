@@ -44,23 +44,23 @@
       background-color: var(--theme-dark-backgroundLight, #141519);
     }
 */
-@mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
-    @each $theme in $themes {
-        @if theme-exists($key, $theme) {
-            $value: get-theme-value($key, $theme);
-
-            // if using css-modules, use this instead of the @at-root line below
-            // :global(.#{$theme}) & {
-            @at-root .#{$theme} #{&} {
-                // fallback for older browsers
-                #{$property}: #{$inlineExtra} #{$value} #{$postExtra};
-                #{$property}: #{$inlineExtra} var(--#{$key}, #{$value}) #{$postExtra};
-            }
-        } @else {
-            @error "Property #{$key} doesn't exist in #{$theme}";
-        }
-    }
-}
+//@mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
+//    @each $theme in $themes {
+//        @if theme-exists($key, $theme) {
+//            $value: get-theme-value($key, $theme);
+//
+//            // if using css-modules, use this instead of the @at-root line below
+//            // :global(.#{$theme}) & {
+//            @at-root .#{$theme} #{&} {
+//                // fallback for older browsers
+//                #{$property}: #{$inlineExtra} #{$value} #{$postExtra};
+//                #{$property}: #{$inlineExtra} var(--#{$key}, #{$value}) #{$postExtra};
+//            }
+//        } @else {
+//            @error "Property #{$key} doesn't exist in #{$theme}";
+//        }
+//    }
+//}
 
 /*
   @mixin generate-theme-mappings(theme-name: string, themeMap: map)

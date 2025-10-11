@@ -61,20 +61,4 @@ statusbar {
             background: var(--hover-color);
         }
     }
-
-    .script-running-indicator,
-    .script-stopping-indicator {
-        height: 1.5rem;
-        width: 1.5rem;
-    }
-
-    .script-running-indicator svg {
-        stroke: orange;
-        stroke-width: 2
-    }
-
-    .script-stopping-indicator svg {
-        stroke: red;
-        stroke-width: 2
-    }
 }

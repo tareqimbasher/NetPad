@@ -14,7 +14,8 @@ const sassLoader = {
     options: {
         api: "modern", // switch off the legacy API
         sassOptions: {
-            loadPaths: ["node_modules", "src"]
+            loadPaths: ["node_modules", "src"],
+            quietDeps: true,
         }
     }
 };

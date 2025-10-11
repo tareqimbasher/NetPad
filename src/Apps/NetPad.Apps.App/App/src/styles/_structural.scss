@@ -74,10 +74,8 @@ body {
 
 .tab-content {
     @extend %flex-grow-height-restricted;
-    /* stylelint-disable scss/at-extend-no-missing-placeholder -- bootstrap doesn't provide placeholders */
-    @extend .d-flex;
-    @extend .flex-column;
-    /* stylelint-enable scss/at-extend-no-missing-placeholder */
+    display: flex;
+    flex-direction: column;
 }
 
 .dialog {
