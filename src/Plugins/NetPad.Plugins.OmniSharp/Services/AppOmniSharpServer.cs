@@ -129,7 +129,7 @@ public class AppOmniSharpServer(
 
         _bufferUpdateSemaphores.Clear();
 
-        await Project.DeleteAsync();
+        Project.Delete();
     }
 
     public async Task<bool> RestartAsync(Action<string>? progress = null)
