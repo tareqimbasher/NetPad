@@ -10,24 +10,22 @@ namespace NetPad.Apps.Configuration;
 /// </summary>
 public class FileSystemSettingsRepository : ISettingsRepository
 {
-    private readonly FilePath _settingsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("settings.json");
-
     public Task<FilePath> GetSettingsFileLocationAsync()
     {
-        return Task.FromResult(_settingsFilePath);
+        return Task.FromResult(AppDataProvider.SettingsFilePath);
     }
 
     public async Task<Settings> GetSettingsAsync()
     {
         Settings settings;
 
-        if (!_settingsFilePath.Exists())
+        if (!AppDataProvider.SettingsFilePath.Exists())
         {
             settings = new Settings();
         }
         else
         {
-            var json = await File.ReadAllTextAsync(_settingsFilePath.Path).ConfigureAwait(false);
+            var json = await File.ReadAllTextAsync(AppDataProvider.SettingsFilePath.Path).ConfigureAwait(false);
 
             // Validate settings file has a valid version
             var jsonRoot = JsonDocument.Parse(json).RootElement;
@@ -56,15 +54,15 @@ public class FileSystemSettingsRepository : ISettingsRepository
     {
         if (backupOld)
         {
-            File.Copy(_settingsFilePath.Path, Path.Combine(
-                    Path.GetDirectoryName(_settingsFilePath.Path)!,
+            File.Copy(AppDataProvider.SettingsFilePath.Path, Path.Combine(
+                    Path.GetDirectoryName(AppDataProvider.SettingsFilePath.Path)!,
                     "Backups",
-                    $"{Path.GetFileNameWithoutExtension(_settingsFilePath.Path)}_backup_{DateTime.Now:s}",
-                    Path.GetExtension(_settingsFilePath.Path)),
+                    $"{Path.GetFileNameWithoutExtension(AppDataProvider.SettingsFilePath.Path)}_backup_{DateTime.Now:s}",
+                    Path.GetExtension(AppDataProvider.SettingsFilePath.Path)),
                 false);
         }
 
         var json = JsonSerializer.Serialize(settings, true);
-        await File.WriteAllTextAsync(_settingsFilePath.Path, json).ConfigureAwait(false);
+        await File.WriteAllTextAsync(AppDataProvider.SettingsFilePath.Path, json).ConfigureAwait(false);
     }
 }

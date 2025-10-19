@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using NetPad.Scripts;
 
@@ -5,7 +6,11 @@ namespace NetPad.Apps.Cli;
 
 public static class ScriptFinder
 {
-    public const string ScriptSearchPattern = $"*.{Script.STANDARD_EXTENSION_WO_DOT}";
+    public static readonly ImmutableArray<string> AutoFindFileExtensions =
+    [
+        Script.STANDARD_EXTENSION,
+        ".cs"
+    ];
 
     private static readonly EnumerationOptions _scriptEnumerationOptions = new()
     {
@@ -31,8 +36,13 @@ public static class ScriptFinder
 
         var name = pathOrName;
 
-        var matches = Directory
-            .EnumerateFiles(searchDirectory, ScriptSearchPattern, _scriptEnumerationOptions)
+        IEnumerable<string> files = [];
+        foreach (var extension in AutoFindFileExtensions)
+        {
+            files = files.Concat(Directory.EnumerateFiles(searchDirectory, $"*{extension}", _scriptEnumerationOptions));
+        }
+
+        var matches = files
             .Select(fullPath => new
             {
                 FullPath = fullPath,

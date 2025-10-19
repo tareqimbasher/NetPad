@@ -1,7 +1,9 @@
 ﻿namespace NetPad.ExecutionModel.External;
 
-public class ExternalScriptRunnerOptions(string[] processCliArgs, bool redirectIo)
+public class ExternalScriptRunnerOptions
 {
-    public string[] ProcessCliArgs { get; set; } = processCliArgs;
-    public bool RedirectIo { get; set; } = redirectIo;
+    public bool NoCache { get; set; }
+    public bool ForceRebuild { get; set; }
+    public string[] ProcessCliArgs { get; set; } = [];
+    public bool RedirectIo { get; set; }
 }

@@ -43,4 +43,18 @@ public record DirectoryPath(string Path) : AbsolutePath(Path)
             Directory.Delete(Path, true);
         }
     }
+
+    public static bool TryParse(string str, [NotNullWhen(true)] out DirectoryPath? dirPath)
+    {
+        try
+        {
+            dirPath = new DirectoryPath(str);
+            return true;
+        }
+        catch
+        {
+            dirPath = null;
+            return false;
+        }
+    }
 }

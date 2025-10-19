@@ -80,6 +80,14 @@ public class Script : INotifyOnPropertyChanged
         set => this.RaiseAndSetIfChanged(ref _isDirty, value);
     }
 
+    /// <summary>
+    /// Gets a new <see cref="ScriptFingerprint"/> instance that deterministically identifies the state of this script.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="ScriptFingerprint"/> that uniquely represents the state of the script.
+    /// </returns>
+    public ScriptFingerprint GetFingerprint() => ScriptFingerprint.Create(this);
+
     public void SetName(string newName)
     {
         if (_name == newName)

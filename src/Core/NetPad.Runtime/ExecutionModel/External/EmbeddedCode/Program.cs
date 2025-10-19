@@ -37,27 +37,19 @@ public partial class Program
 
         TerminateProcessOnParentExit(args);
 
-        if (System.Linq.Enumerable.Contains(args, "-html"))
+        if (System.Linq.Enumerable.Contains(args, "-html") || System.Linq.Enumerable.Contains(args, "-html-msg"))
         {
             if (verbose) System.Console.WriteLine("Output: HTML");
-            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput();
+            bool dumpRawHtml = System.Linq.Enumerable.Contains(args, "-html-msg") == false;
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRawHtml);
         }
         else
         {
             bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "-no-color");
 
-            if (System.Linq.Enumerable.Contains(args, "-text"))
-            {
-                if (verbose) System.Console.WriteLine("Output: Text");
-                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseTextOutput(
-                    useConsoleColors);
-            }
-            else
-            {
-                if (verbose) System.Console.WriteLine("Output: Console");
-                NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
-                    useConsoleColors);
-            }
+            if (verbose) System.Console.WriteLine("Output: Console");
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
+                useConsoleColors);
         }
 
         DumpExtension.UseSink(NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance);
@@ -89,8 +81,8 @@ Usage:
 
 Output Format:
     -console        Optimized for console output (default)
-    -text           Text output
     -html           HTML output
+    -html-msg       HTML message output
 
 Options:
     -no-color       Do not color output. Does not apply to ""HTML"" format

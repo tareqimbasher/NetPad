@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using NetPad.IO;
 using NetPad.Presentation;
 
-namespace NetPad.ExecutionModel.External;
+namespace NetPad.ExecutionModel;
 
 /// <summary>
 /// Handles unstructured raw process output. Used to buffer output and give it order. Usually raw process output

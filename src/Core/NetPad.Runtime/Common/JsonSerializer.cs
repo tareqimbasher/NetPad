@@ -27,6 +27,11 @@ public static class JsonSerializer
         return options;
     }
 
+    public static string Serialize(object? value, JsonSerializerOptions options)
+    {
+        return System.Text.Json.JsonSerializer.Serialize(value, options);
+    }
+
     public static string Serialize(object? value, bool indented = false)
     {
         var options = indented ? Configure(new JsonSerializerOptions { WriteIndented = true }) : DefaultOptions;

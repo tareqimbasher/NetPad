@@ -26,6 +26,9 @@ public static class PlatformUtil
     }
 
     public static bool IsOSWindows() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    public static bool IsOSMacOs() => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    public static bool IsOSLinuxOrFreeBsd() => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                                               RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
 
     public static bool IsOsArchitectureSupported(bool throwIfNotSupported = false)
     {
