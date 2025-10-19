@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using NetPad.Common;
@@ -11,14 +12,14 @@ namespace NetPad.Scripts;
 public class ScriptConfig(
     ScriptKind kind,
     DotNetFrameworkVersion targetFrameworkVersion,
-    List<string>? namespaces = null,
-    List<Reference>? references = null,
+    IList<string>? namespaces = null,
+    IList<Reference>? references = null,
     OptimizationLevel optimizationLevel = OptimizationLevel.Debug,
     bool useAspNet = false)
     : INotifyOnPropertyChanged
 {
-    private List<string> _namespaces = namespaces ?? [];
-    private List<Reference> _references = references ?? [];
+    private List<string> _namespaces = namespaces?.ToList() ?? [];
+    private List<Reference> _references = references?.ToList() ?? [];
     private ScriptKind _kind = kind;
     private DotNetFrameworkVersion _targetFrameworkVersion = targetFrameworkVersion;
     private OptimizationLevel _optimizationLevel = optimizationLevel;
@@ -125,7 +126,7 @@ public class ScriptConfig(
 
 public static class ScriptConfigDefaults
 {
-    public static readonly string[] DefaultNamespaces =
+    public static readonly ImmutableArray<string> DefaultNamespaces =
     [
         "System",
         "System.Collections",

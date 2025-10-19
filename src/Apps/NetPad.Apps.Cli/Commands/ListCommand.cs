@@ -7,6 +7,12 @@ namespace NetPad.Apps.Cli.Commands;
 
 public static class ListCommand
 {
+    private static readonly EnumerationOptions _scriptEnumerationOptions = new()
+    {
+        IgnoreInaccessible = true,
+        MatchCasing = MatchCasing.CaseInsensitive
+    };
+
     public static void AddListCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
         var listCmd = new Command("list", "List known scripts.")
@@ -29,8 +35,13 @@ public static class ListCommand
 
     private static void PrintScriptsRecursive(string rootDirPath, DirectoryInfo currentDir, ref int order)
     {
-        var scriptPaths = currentDir
-            .EnumerateFiles(ScriptFinder.ScriptSearchPattern)
+        IEnumerable<FileInfo> files = [];
+        foreach (var extension in ScriptFinder.AutoFindFileExtensions)
+        {
+            files = files.Concat(currentDir.EnumerateFiles($"*{extension}", _scriptEnumerationOptions));
+        }
+
+        var scriptPaths = files
             .OrderBy(f => f.Name)
             .Select(f => f.FullName[(rootDirPath.Length + 1)..]);
 

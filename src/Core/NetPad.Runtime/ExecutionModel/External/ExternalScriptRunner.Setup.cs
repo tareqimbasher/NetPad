@@ -22,7 +22,26 @@ public partial class ExternalScriptRunner
     private readonly IPackageProvider _packageProvider;
     private readonly Settings _settings;
 
-    private async Task<RunDependencies?> GetRunDependencies(RunOptions runOptions)
+    private async Task<DeploymentDirectory?> BuildAndDeployAsync(RunOptions runOptions)
+    {
+        var deploymentDirectory = _deploymentCache.GetOrCreateDeploymentDirectory(_script);
+        if (deploymentDirectory.ContainsDeployment)
+        {
+            return deploymentDirectory;
+        }
+
+        var deployDependencies = await BuildAsync(runOptions);
+        if (deployDependencies == null)
+        {
+            return null;
+        }
+
+        var deploymentInfo = await DeployAsync(deploymentDirectory, deployDependencies);
+        deploymentDirectory.SaveDeploymentInfo(deploymentInfo);
+        return deploymentDirectory;
+    }
+
+    private async Task<DeployDependencies?> BuildAsync(RunOptions runOptions)
     {
         var references = new List<Reference>();
         var additionalCode = new SourceCodeCollection();
@@ -113,7 +132,7 @@ public partial class ExternalScriptRunner
             .Select(a => new FileAssetCopy(a.Path, $"./{Path.GetFileName(a.Path)}"))
             .ToHashSet();
 
-        return new RunDependencies(
+        return new DeployDependencies(
             parsingResult,
             compilationResult.AssemblyBytes,
             images,
@@ -130,7 +149,8 @@ public partial class ExternalScriptRunner
 
         var targetFrameworkVersion = _script.Config.TargetFrameworkVersion;
 
-        var connectionResources = await _dataConnectionResourcesCache.GetResourcesAsync(dataConnection, targetFrameworkVersion);
+        var connectionResources =
+            await _dataConnectionResourcesCache.GetResourcesAsync(dataConnection, targetFrameworkVersion);
 
         var applicationCode = connectionResources.SourceCode?.ApplicationCode;
         if (applicationCode?.Count > 0)
@@ -153,17 +173,9 @@ public partial class ExternalScriptRunner
         return (code, references);
     }
 
-    private async Task<FilePath> SetupExternalProcessRootDirectoryAsync(RunDependencies runDependencies)
+    private async Task<DeploymentInfo> DeployAsync(DeploymentDirectory deploymentDirectory, DeployDependencies deployDependencies)
     {
-        // Create a new dir for each run
-        _externalProcessRootDirectory.Refresh();
-
-        if (_externalProcessRootDirectory.Exists)
-        {
-            _externalProcessRootDirectory.Delete(true);
-        }
-
-        _externalProcessRootDirectory.Create();
+        var buildDirectoryPath = deploymentDirectory.Path;
 
         // Write compiled assembly to dir
         var fileSafeScriptName = StringUtil
@@ -176,20 +188,19 @@ public partial class ExternalScriptRunner
                                  // to the output directory, resulting in the referenced assembly not being found.
                                  + "__";
 
-        FilePath scriptAssemblyFilePath =
-            Path.Combine(_externalProcessRootDirectory.FullName, $"{fileSafeScriptName}.dll");
+        FilePath scriptAssemblyFilePath = deploymentDirectory.CombineFilePath($"{fileSafeScriptName}.dll");
 
-        await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, runDependencies.ScriptAssemblyBytes);
+        await File.WriteAllBytesAsync(scriptAssemblyFilePath.Path, deployDependencies.ScriptAssemblyBytes);
 
         // A runtimeconfig.json file tells .NET how to run the assembly
         await File.WriteAllTextAsync(
-            Path.Combine(_externalProcessRootDirectory.FullName, $"{fileSafeScriptName}.runtimeconfig.json"),
-            GenerateRuntimeConfigFileContents(runDependencies)
+            Path.Combine(buildDirectoryPath, $"{fileSafeScriptName}.runtimeconfig.json"),
+            GenerateRuntimeConfigFileContents(deployDependencies)
         );
 
         // The scriptconfig.json is custom and passes some options to the running script
         await File.WriteAllTextAsync(
-            Path.Combine(_externalProcessRootDirectory.FullName, "scriptconfig.json"),
+            Path.Combine(buildDirectoryPath, "scriptconfig.json"),
             $@"{{
     ""output"": {{
         ""maxDepth"": {_settings.Results.MaxSerializationDepth},
@@ -197,19 +208,18 @@ public partial class ExternalScriptRunner
     }}
 }}");
 
-        foreach (var referenceAssemblyImage in runDependencies.AssemblyImageDependencies)
+        foreach (var referenceAssemblyImage in deployDependencies.AssemblyImageDependencies)
         {
             var fileName = referenceAssemblyImage.ConstructAssemblyFileName();
 
             await File.WriteAllBytesAsync(
-                Path.Combine(_externalProcessRootDirectory.FullName, fileName),
+                Path.Combine(buildDirectoryPath, fileName),
                 referenceAssemblyImage.Image);
         }
 
-        foreach (var referenceAssemblyPath in runDependencies.AssemblyPathDependencies)
+        foreach (var referenceAssemblyPath in deployDependencies.AssemblyPathDependencies)
         {
-            var destPath = Path.Combine(_externalProcessRootDirectory.FullName,
-                Path.GetFileName(referenceAssemblyPath));
+            var destPath = Path.Combine(buildDirectoryPath, Path.GetFileName(referenceAssemblyPath));
 
             // Checking file exists means that the first assembly in the list of paths will win.
             // Later assemblies with the same file name will not be copied to the output directory.
@@ -217,16 +227,16 @@ public partial class ExternalScriptRunner
                 File.Copy(referenceAssemblyPath, destPath, true);
         }
 
-        foreach (var asset in runDependencies.FileAssetsToCopy)
+        foreach (var asset in deployDependencies.FileAssetsToCopy)
         {
             if (!asset.CopyFrom.Exists())
             {
                 continue;
             }
 
-            var copyTo = Path.GetFullPath(Path.Combine(_externalProcessRootDirectory.FullName, asset.CopyTo.Path));
+            var copyTo = Path.GetFullPath(Path.Combine(buildDirectoryPath, asset.CopyTo.Path));
 
-            if (!copyTo.StartsWith(_externalProcessRootDirectory.FullName))
+            if (!copyTo.StartsWith(buildDirectoryPath))
             {
                 throw new Exception("Cannot copy asset to path outside the script start directory");
             }
@@ -234,26 +244,33 @@ public partial class ExternalScriptRunner
             File.Copy(asset.CopyFrom.Path, copyTo, true);
         }
 
-        return scriptAssemblyFilePath;
+        return new DeploymentInfo(
+            _script.GetFingerprint().CalculateHash(),
+            scriptAssemblyFilePath.FileName,
+            deployDependencies.ParsingResult.UserProgramStartLineNumber);
     }
 
-    private string GenerateRuntimeConfigFileContents(RunDependencies runDependencies)
+    private string GenerateRuntimeConfigFileContents(DeployDependencies deployDependencies)
     {
         var tfm = _script.Config.TargetFrameworkVersion.GetTargetFrameworkMoniker();
         var frameworkName = _script.Config.UseAspNet ? "Microsoft.AspNetCore.App" : "Microsoft.NETCore.App";
         int majorVersion = _script.Config.TargetFrameworkVersion.GetMajorVersion();
 
         var runtimeVersion = _dotNetInfo.GetDotNetRuntimeVersionsOrThrow()
-            .Where(v => v.Version.Major == majorVersion && v.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
+            .Where(v => v.Version.Major == majorVersion &&
+                        v.FrameworkName.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
             .MaxBy(v => v.Version)?
             .Version;
 
         if (runtimeVersion == null)
         {
-            throw new Exception($"Could not find a {tfm} runtime with the name {frameworkName} and version {majorVersion}");
+            throw new Exception(
+                $"Could not find a {tfm} runtime with the name {frameworkName} and version {majorVersion}");
         }
 
-        var probingPaths = JsonSerializer.Serialize(runDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName).Distinct());
+        var probingPaths =
+            JsonSerializer.Serialize(deployDependencies.AssemblyPathDependencies.Select(Path.GetDirectoryName)
+                .Distinct());
 
         return $$"""
                  {
@@ -270,7 +287,7 @@ public partial class ExternalScriptRunner
                  """;
     }
 
-    private record RunDependencies(
+    private record DeployDependencies(
         CodeParsingResult ParsingResult,
         byte[] ScriptAssemblyBytes,
         List<AssemblyImage> AssemblyImageDependencies,

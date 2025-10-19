@@ -27,7 +27,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     private readonly IOutputWriter<object> _output;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly HashSet<IOutputWriter<object>> _externalOutputWriters;
-    private readonly DirectoryInfo _externalProcessRootDirectory;
+    private readonly DeploymentCache _deploymentCache;
     private readonly RawOutputHandler _rawOutputHandler;
     private ProcessStartResult? _scriptProcess;
 
@@ -60,9 +60,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
         _externalInputReaders = [];
         _externalOutputWriters = [];
-        _externalProcessRootDirectory = AppDataProvider.ExternalProcessesDirectoryPath
-            .Combine(_script.Id.ToString())
-            .GetInfo();
+        _deploymentCache = new DeploymentCache(AppDataProvider.ExternalExecutionModelDeploymentCacheDirectoryPath);
 
         // Forward output to configured external output writers
         _output = new AsyncActionOutputWriter<object>(async (output, title) =>
@@ -94,12 +92,14 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
         try
         {
-            var runDependencies = await GetRunDependencies(runOptions);
-
-            if (runDependencies == null)
+            var deploymentDir = await BuildAndDeployAsync(runOptions);
+            var deploymentInfo = deploymentDir?.GetDeploymentInfo();
+            if (deploymentDir == null || deploymentInfo == null)
+            {
                 return RunResult.RunAttemptFailure();
+            }
 
-            var scriptAssemblyFilePath = await SetupExternalProcessRootDirectoryAsync(runDependencies);
+            var scriptAssemblyFilePath = Path.Combine(deploymentDir.Path, deploymentInfo.ScriptAssemblyFileName);
 
             // Reset raw output order
             _rawOutputHandler.Reset();
@@ -110,7 +110,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             var startInfo = new ProcessStartInfo(
                     _dotNetInfo.LocateDotNetExecutableOrThrow(),
-                    $"\"{scriptAssemblyFilePath.Path}\" -- {string.Join(' ', args)}")
+                    $"\"{scriptAssemblyFilePath}\" -- {string.Join(' ', args)}")
                 .CopyCurrentEnvironmentVariables();
 
             if (_options.RedirectIo)
@@ -129,9 +129,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             _scriptProcess = startInfo.Run(
                 output => _ = OnProcessOutputReceived(output),
-                error => OnProcessErrorReceived(error, runDependencies.ParsingResult.UserProgramStartLineNumber)
+                error => OnProcessErrorReceived(error, deploymentInfo.UserProgramStartLineNumber)
             );
 
+            var runStart = DateTime.Now;
             var stopWatch = Stopwatch.StartNew();
 
             if (!_scriptProcess.Started)
@@ -148,6 +149,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 "Script run completed with exit code: {ExitCode}. Duration: {Duration} ms",
                 exitCode,
                 elapsed);
+
+            // Set last run datetime
+            deploymentInfo.LastRunAt = runStart;
+            deploymentDir.SaveDeploymentInfo(deploymentInfo);
 
             return exitCode switch
             {
@@ -185,23 +190,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         }
 
         _scriptProcess = null;
-
-        _externalProcessRootDirectory.Refresh();
-
-        if (_externalProcessRootDirectory.Exists)
-        {
-            try
-            {
-                _externalProcessRootDirectory.Delete(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Could not delete process root directory: {Path}. Error: {ErrorMessage}",
-                    _externalProcessRootDirectory.FullName,
-                    ex.Message);
-            }
-        }
-
         return Task.CompletedTask;
     }
 
