@@ -1,4 +1,4 @@
-using NetPad.ExecutionModel.External.Interface;
+using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 
@@ -9,7 +9,7 @@ namespace NetPad.ExecutionModel.ClientServer;
 /// </summary>
 public class ClientServerDumpSink : IDumpSink
 {
-    private static IExternalProcessOutputWriter? _output;
+    private static IClientServerProcessOutputWriter? _output;
     private static bool _isHtmlOutput;
     private static readonly Lazy<ClientServerDumpSink> _instance = new(() => new ClientServerDumpSink());
 

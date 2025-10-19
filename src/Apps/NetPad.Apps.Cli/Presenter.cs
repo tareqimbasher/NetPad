@@ -45,4 +45,19 @@ public static class Presenter
 
         return order - initialOrder.Value;
     }
+
+    public static void Error(string message)
+    {
+        AnsiConsole.MarkupLineInterpolated($"[red]err:[/] {message}");
+    }
+
+    public static void Warn(string message)
+    {
+        AnsiConsole.MarkupLineInterpolated($"[yellow]wrn:[/] {message}");
+    }
+
+    public static void Info(string message)
+    {
+        AnsiConsole.MarkupLineInterpolated($"[cyan]inf:[/] {message}");
+    }
 }

@@ -20,14 +20,13 @@ namespace NetPad.ExecutionModel.External;
 public sealed partial class ExternalScriptRunner : IScriptRunner
 {
     private readonly Script _script;
-    private readonly ExternalScriptRunnerOptions _options;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<ExternalScriptRunner> _logger;
     private readonly IOutputWriter<object> _output;
     private readonly HashSet<IInputReader<string>> _externalInputReaders;
     private readonly HashSet<IOutputWriter<object>> _externalOutputWriters;
-    private readonly DirectoryInfo _externalProcessRootDirectory;
+    private readonly DeploymentCache _deploymentCache;
     private readonly RawOutputHandler _rawOutputHandler;
     private ProcessStartResult? _scriptProcess;
 
@@ -38,7 +37,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     ];
 
     public ExternalScriptRunner(
-        ExternalScriptRunnerOptions options,
         Script script,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
@@ -48,7 +46,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         Settings settings,
         ILogger<ExternalScriptRunner> logger)
     {
-        _options = options;
         _script = script;
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _codeParser = codeParser;
@@ -60,9 +57,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
         _externalInputReaders = [];
         _externalOutputWriters = [];
-        _externalProcessRootDirectory = AppDataProvider.ExternalProcessesDirectoryPath
-            .Combine(_script.Id.ToString())
-            .GetInfo();
+        _deploymentCache = new DeploymentCache(AppDataProvider.ExternalExecutionModelDeploymentCacheDirectoryPath);
 
         // Forward output to configured external output writers
         _output = new AsyncActionOutputWriter<object>(async (output, title) =>
@@ -92,28 +87,37 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     {
         _logger.LogDebug("Starting to run script");
 
+        DeploymentDirectory? deploymentDir = null;
+
         try
         {
-            var runDependencies = await GetRunDependencies(runOptions);
+            if (!runOptions.TryGet<ExternalScriptRunnerOptions>(out var options))
+            {
+                throw new InvalidOperationException($"{nameof(ExternalScriptRunnerOptions)} are required.");
+            }
 
-            if (runDependencies == null)
+            deploymentDir = await BuildAndDeployAsync(runOptions, options.NoCache, options.ForceRebuild);
+            var deploymentInfo = deploymentDir?.GetDeploymentInfo();
+            if (deploymentDir == null || deploymentInfo == null)
+            {
                 return RunResult.RunAttemptFailure();
+            }
 
-            var scriptAssemblyFilePath = await SetupExternalProcessRootDirectoryAsync(runDependencies);
+            var scriptAssemblyFilePath = Path.Combine(deploymentDir.Path, deploymentInfo.ScriptAssemblyFileName);
 
             // Reset raw output order
             _rawOutputHandler.Reset();
 
-            var args = _options.ProcessCliArgs.Contains("-parent")
-                ? _options.ProcessCliArgs
-                : _options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
+            var args = options.ProcessCliArgs.Contains("-parent")
+                ? options.ProcessCliArgs
+                : options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
 
             var startInfo = new ProcessStartInfo(
                     _dotNetInfo.LocateDotNetExecutableOrThrow(),
-                    $"\"{scriptAssemblyFilePath.Path}\" -- {string.Join(' ', args)}")
+                    $"\"{scriptAssemblyFilePath}\" -- {string.Join(' ', args)}")
                 .CopyCurrentEnvironmentVariables();
 
-            if (_options.RedirectIo)
+            if (options.RedirectIo)
             {
                 startInfo
                     .WithRedirectIO()
@@ -129,9 +133,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             _scriptProcess = startInfo.Run(
                 output => _ = OnProcessOutputReceived(output),
-                error => OnProcessErrorReceived(error, runDependencies.ParsingResult.UserProgramStartLineNumber)
+                error => OnProcessErrorReceived(error, deploymentInfo.UserProgramStartLineNumber)
             );
 
+            var runStart = DateTime.Now;
             var stopWatch = Stopwatch.StartNew();
 
             if (!_scriptProcess.Started)
@@ -149,6 +154,11 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 exitCode,
                 elapsed);
 
+            // Set last run datetime
+            deploymentInfo.LastRunAt = runStart;
+            deploymentInfo.LastRunSucceeded = exitCode == 0;
+            deploymentDir.SaveDeploymentInfo(deploymentInfo);
+
             return exitCode switch
             {
                 0 => RunResult.Success(elapsed),
@@ -165,6 +175,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         finally
         {
             _ = StopScriptAsync();
+            if (deploymentDir?.IsTemporary == true)
+            {
+                Try.Run(() => Directory.Delete(deploymentDir.Path, true));
+            }
         }
     }
 
@@ -185,23 +199,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         }
 
         _scriptProcess = null;
-
-        _externalProcessRootDirectory.Refresh();
-
-        if (_externalProcessRootDirectory.Exists)
-        {
-            try
-            {
-                _externalProcessRootDirectory.Delete(true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("Could not delete process root directory: {Path}. Error: {ErrorMessage}",
-                    _externalProcessRootDirectory.FullName,
-                    ex.Message);
-            }
-        }
-
         return Task.CompletedTask;
     }
 

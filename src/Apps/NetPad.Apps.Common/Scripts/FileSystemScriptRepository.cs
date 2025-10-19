@@ -85,7 +85,7 @@ public class FileSystemScriptRepository : IScriptRepository
     public Task<Script> CreateAsync(string name, DotNetFrameworkVersion targetFrameworkVersion)
     {
         var script = new Script(
-            Guid.NewGuid(),
+            ScriptIdGenerator.NewId(),
             name,
             new ScriptConfig(ScriptKind.Program, targetFrameworkVersion));
 

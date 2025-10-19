@@ -8,7 +8,7 @@ namespace NetPad.ExecutionModel.External.Interface;
 /// Converts output emitted by the script (ex. using Dump() or Console.Write)
 /// to <see cref="ScriptOutput"/> and writes it to the main output.
 /// </summary>
-public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut) : IExternalProcessOutputWriter
+public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, bool dumpRawHtml) : IExternalProcessOutputWriter
 {
     private static readonly Lazy<Regex> _ansiColorsRegex = new(() => new Regex(@"\x1B\[[^@-~]*[@-~]"));
     private uint _resultOutputCounter;
@@ -28,9 +28,15 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut) 
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
-        var resultOutput = new HtmlResultsScriptOutput(order, html);
-
-        await WriteAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
+        if (dumpRawHtml)
+        {
+            await writeToMainOut(html);
+        }
+        else
+        {
+            var resultOutput = new HtmlResultsScriptOutput(order, html);
+            await WriteAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
+        }
     }
 
     public async Task WriteSqlAsync(object? output, DumpOptions? options = null)
@@ -41,9 +47,15 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut) 
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
-        var sqlOutput = new HtmlSqlScriptOutput(order, html);
-
-        await WriteAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
+        if (dumpRawHtml)
+        {
+            await writeToMainOut(html);
+        }
+        else
+        {
+            var sqlOutput = new HtmlSqlScriptOutput(order, html);
+            await WriteAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
+        }
     }
 
     private async Task WriteAsync(ExternalProcessOutput processOutput)
