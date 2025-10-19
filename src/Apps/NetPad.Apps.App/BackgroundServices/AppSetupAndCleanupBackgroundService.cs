@@ -66,7 +66,7 @@ public class AppSetupAndCleanupBackgroundService(
             Logger.LogError(e, "Error closing environments");
         }
 
-        Try.Run(() => AppDataProvider.ExternalProcessesDirectoryPath.DeleteIfExists());
+        Try.Run(() => AppDataProvider.ClientServerProcessesDirectoryPath.DeleteIfExists());
         Try.Run(() => AppDataProvider.TypedDataContextTempDirectoryPath.DeleteIfExists());
 
         foreach (var registration in pluginManager.PluginRegistrations)

@@ -8,7 +8,7 @@ namespace NetPad.ExecutionModel.ClientServer;
 /// </summary>
 public record WorkingDirectory : DirectoryPath
 {
-    public WorkingDirectory(Guid scriptId) : base(AppDataProvider.ExternalProcessesDirectoryPath.Combine(scriptId.ToString()))
+    public WorkingDirectory(Guid scriptId) : base(AppDataProvider.ClientServerProcessesDirectoryPath.Combine(scriptId.ToString()))
     {
         ScriptHostExecutableSourceDirectory = System.IO.Path.Combine(
             System.IO.Path.GetDirectoryName(typeof(ClientServerScriptRunner).Assembly.Location) ?? string.Empty,
