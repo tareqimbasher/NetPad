@@ -18,7 +18,8 @@ public static class AppDataProvider
 
     public static readonly DirectoryPath LogDirectoryPath = AppDataDirectoryPath.Combine("Logs");
     public static readonly DirectoryPath TempDirectoryPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
-    public static readonly DirectoryPath ExternalProcessesDirectoryPath = TempDirectoryPath.Combine("Processes");
+    public static readonly DirectoryPath ExternalProcessesDirectoryPath = TempDirectoryPath.Combine("Processes/External");
+    public static readonly DirectoryPath ClientServerProcessesDirectoryPath = TempDirectoryPath.Combine("Processes/ClientServer");
     public static readonly DirectoryPath TypedDataContextTempDirectoryPath = TempDirectoryPath.Combine("TypedDataContexts");
     public static readonly DirectoryPath TypedDataContextCacheDirectoryPath = AppDataDirectoryPath.Combine("Cache", "TypedDataContexts");
 
