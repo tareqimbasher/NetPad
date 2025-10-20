@@ -6,6 +6,13 @@ namespace NetPad.ExecutionModel.External;
 
 public class DeploymentCache(DirectoryPath cacheDirectory)
 {
+    public IEnumerable<DeploymentDirectory> ListDeploymentDirectories()
+    {
+        return Directory.EnumerateDirectories(cacheDirectory.Path)
+            .Where(d => File.Exists(DeploymentDirectory.GetDeploymentInfoFilePath(d)))
+            .Select(d => new DeploymentDirectory(d));
+    }
+
     public DeploymentDirectory GetOrCreateDeploymentDirectory(Script script)
     {
         // Build cache folders are named like this:
