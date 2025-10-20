@@ -10,10 +10,17 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
     {
         return Directory.EnumerateDirectories(cacheDirectory.Path)
             .Where(d => File.Exists(DeploymentDirectory.GetDeploymentInfoFilePath(d)))
-            .Select(d => new DeploymentDirectory(d));
+            .Select(d => new DeploymentDirectory(d, false));
     }
 
-    public DeploymentDirectory GetOrCreateDeploymentDirectory(Script script)
+    public DeploymentDirectory CreateTempDeploymentDirectory()
+    {
+        var dirPath = Path.Combine(cacheDirectory.Path, Path.GetRandomFileName());
+        Directory.CreateDirectory(dirPath);
+        return new DeploymentDirectory(dirPath, true);
+    }
+
+    public DeploymentDirectory GetOrCreateDeploymentDirectory(Script script, bool forceCreateNew = false)
     {
         // Build cache folders are named like this:
         // {ScriptId}_{ScriptFingerprint}
@@ -29,10 +36,20 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         var expectedDirName = $"{scriptId}_{fingerprintUuid}";
         var expectedDirPath = Path.Combine(cacheDir.FullName, expectedDirName);
 
+        if (forceCreateNew)
+        {
+            if (Directory.Exists(expectedDirPath))
+            {
+                Directory.Delete(expectedDirPath, true);
+            }
+
+            Directory.CreateDirectory(expectedDirPath);
+            return new DeploymentDirectory(expectedDirPath, false);
+        }
+
         if (!cacheDir.Exists)
         {
-            Directory.CreateDirectory(expectedDirPath);
-            return new DeploymentDirectory(expectedDirPath);
+            cacheDir.Create();
         }
 
         // First try to find builds for this script (by ID)
@@ -43,7 +60,7 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         if (relatedBuildDirs.Length == 0)
         {
             Directory.CreateDirectory(expectedDirPath);
-            return new DeploymentDirectory(expectedDirPath);
+            return new DeploymentDirectory(expectedDirPath, false);
         }
 
         var byId = relatedBuildDirs
@@ -62,7 +79,7 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
 
             if (exactMatch != null)
             {
-                return new DeploymentDirectory(exactMatch.FullName);
+                return new DeploymentDirectory(exactMatch.FullName, false);
             }
         }
 
@@ -76,11 +93,11 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         if (byFingerprint.Length > 0)
         {
             var latest = relatedBuildDirs.OrderByDescending(x => x.CreationTime).First().FullName;
-            return new DeploymentDirectory(latest);
+            return new DeploymentDirectory(latest, false);
         }
 
         // If we cannot find any matches
         Directory.CreateDirectory(expectedDirPath);
-        return new DeploymentDirectory(expectedDirPath);
+        return new DeploymentDirectory(expectedDirPath, false);
     }
 }

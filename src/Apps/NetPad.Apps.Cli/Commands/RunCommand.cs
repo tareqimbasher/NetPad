@@ -20,9 +20,10 @@ public static class RunCommand
         ScriptKind ScriptKind,
         OptimizationLevel OptimizationLevel,
         Guid? DataConnectionId,
+        bool NoCache,
+        bool ForceRebuild,
         bool Verbose,
         List<string> ScriptArgs);
-
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
         var pathOrNameArg = new Argument<string>("script")
@@ -30,6 +31,18 @@ public static class RunCommand
             Description = "The script to run. If this matches more than 1 script, you will be prompted to select one.",
             Arity = ArgumentArity.ExactlyOne,
             HelpName = "PATH|NAME"
+        };
+
+        var noCacheOption = new Option<bool>("--no-cache")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Do not use a cached script build, if any, and do not cache the build from this run.",
+        };
+
+        var forceRebuildOption = new Option<bool>("--rebuild")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "If a cached script build exists, delete it, rebuild and cache the new build.",
         };
 
         var consoleOption = new Option<bool>("--console")
@@ -65,11 +78,13 @@ public static class RunCommand
         var runCmd = new Command("run", "Run a script by path or name.");
         parent.Subcommands.Add(runCmd);
         runCmd.Arguments.Add(pathOrNameArg);
+        runCmd.Options.Add(noCacheOption);
+        runCmd.Options.Add(forceRebuildOption);
         runCmd.Options.Add(consoleOption);
         runCmd.Options.Add(noColorOption);
         runCmd.Options.Add(htmlOption);
-        runCmd.Options.Add(htmlOption);
         runCmd.Options.Add(htmlMessageOption);
+        runCmd.Options.Add(verboseOption);
         runCmd.SetAction(async p =>
         {
             var scriptArgs = new List<string>();
@@ -78,6 +93,8 @@ public static class RunCommand
                 ScriptKind.Program,
                 OptimizationLevel.Debug,
                 null,
+                p.GetValue(noCacheOption),
+                p.GetValue(forceRebuildOption),
                 p.GetValue(verboseOption),
                 scriptArgs
             );
@@ -207,6 +224,8 @@ public static class RunCommand
         var runOptions = new RunOptions();
         runOptions.Set(new ExternalScriptRunnerOptions
         {
+            NoCache = options.NoCache,
+            ForceRebuild = options.ForceRebuild,
             ProcessCliArgs = options.ScriptArgs.ToArray(),
             RedirectIo = false
         });

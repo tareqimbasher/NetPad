@@ -44,15 +44,6 @@ public class ExternalProcessDumpSink : IDumpSink
             dumpRawHtml);
     }
 
-    public void UseTextOutput(bool useConsoleColors)
-    {
-        Console.SetIn(_defaultConsoleInput);
-        Console.SetOut(_defaultConsoleOutput);
-
-        _isHtmlOutput = false;
-        _output = new ExternalProcessOutputTextWriter(useConsoleColors, async str => await _defaultConsoleOutput.WriteLineAsync(str));
-    }
-
     public void UseConsoleOutput(bool useConsoleColors)
     {
         Console.SetIn(_defaultConsoleInput);

@@ -22,9 +22,12 @@ public partial class ExternalScriptRunner
     private readonly IPackageProvider _packageProvider;
     private readonly Settings _settings;
 
-    private async Task<DeploymentDirectory?> BuildAndDeployAsync(RunOptions runOptions)
+    private async Task<DeploymentDirectory?> BuildAndDeployAsync(RunOptions runOptions, bool noCache, bool forceRebuild)
     {
-        var deploymentDirectory = _deploymentCache.GetOrCreateDeploymentDirectory(_script);
+        var deploymentDirectory = noCache
+            ? _deploymentCache.CreateTempDeploymentDirectory()
+            : _deploymentCache.GetOrCreateDeploymentDirectory(_script, forceRebuild);
+
         if (deploymentDirectory.ContainsDeployment)
         {
             return deploymentDirectory;
@@ -173,7 +176,8 @@ public partial class ExternalScriptRunner
         return (code, references);
     }
 
-    private async Task<DeploymentInfo> DeployAsync(DeploymentDirectory deploymentDirectory, DeployDependencies deployDependencies)
+    private async Task<DeploymentInfo> DeployAsync(DeploymentDirectory deploymentDirectory,
+        DeployDependencies deployDependencies)
     {
         var buildDirectoryPath = deploymentDirectory.Path;
 

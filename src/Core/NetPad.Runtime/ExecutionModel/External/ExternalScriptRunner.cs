@@ -87,6 +87,8 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     {
         _logger.LogDebug("Starting to run script");
 
+        DeploymentDirectory? deploymentDir = null;
+
         try
         {
             if (!runOptions.TryGet<ExternalScriptRunnerOptions>(out var options))
@@ -94,7 +96,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 throw new InvalidOperationException($"{nameof(ExternalScriptRunnerOptions)} are required.");
             }
 
-            var deploymentDir = await BuildAndDeployAsync(runOptions);
+            deploymentDir = await BuildAndDeployAsync(runOptions, options.NoCache, options.ForceRebuild);
             var deploymentInfo = deploymentDir?.GetDeploymentInfo();
             if (deploymentDir == null || deploymentInfo == null)
             {
@@ -173,6 +175,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         finally
         {
             _ = StopScriptAsync();
+            if (deploymentDir?.IsTemporary == true)
+            {
+                Try.Run(() => Directory.Delete(deploymentDir.Path, true));
+            }
         }
     }
 

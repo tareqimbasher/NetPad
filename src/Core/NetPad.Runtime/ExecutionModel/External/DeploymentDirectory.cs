@@ -4,7 +4,7 @@ using NetPad.IO;
 
 namespace NetPad.ExecutionModel.External;
 
-public record DeploymentDirectory(string Path) : DirectoryPath(Path)
+public record DeploymentDirectory(string Path, bool IsTemporary) : DirectoryPath(Path)
 {
     private readonly FilePath _deploymentInfoFilePath = GetDeploymentInfoFilePath(Path);
 
