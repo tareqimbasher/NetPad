@@ -20,7 +20,6 @@ namespace NetPad.ExecutionModel.External;
 public sealed partial class ExternalScriptRunner : IScriptRunner
 {
     private readonly Script _script;
-    private readonly ExternalScriptRunnerOptions _options;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<ExternalScriptRunner> _logger;
@@ -38,7 +37,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
     ];
 
     public ExternalScriptRunner(
-        ExternalScriptRunnerOptions options,
         Script script,
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
@@ -48,7 +46,6 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         Settings settings,
         ILogger<ExternalScriptRunner> logger)
     {
-        _options = options;
         _script = script;
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _codeParser = codeParser;
@@ -92,6 +89,11 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
         try
         {
+            if (!runOptions.TryGet<ExternalScriptRunnerOptions>(out var options))
+            {
+                throw new InvalidOperationException($"{nameof(ExternalScriptRunnerOptions)} are required.");
+            }
+
             var deploymentDir = await BuildAndDeployAsync(runOptions);
             var deploymentInfo = deploymentDir?.GetDeploymentInfo();
             if (deploymentDir == null || deploymentInfo == null)
@@ -104,16 +106,16 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
             // Reset raw output order
             _rawOutputHandler.Reset();
 
-            var args = _options.ProcessCliArgs.Contains("-parent")
-                ? _options.ProcessCliArgs
-                : _options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
+            var args = options.ProcessCliArgs.Contains("-parent")
+                ? options.ProcessCliArgs
+                : options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
 
             var startInfo = new ProcessStartInfo(
                     _dotNetInfo.LocateDotNetExecutableOrThrow(),
                     $"\"{scriptAssemblyFilePath}\" -- {string.Join(' ', args)}")
                 .CopyCurrentEnvironmentVariables();
 
-            if (_options.RedirectIo)
+            if (options.RedirectIo)
             {
                 startInfo
                     .WithRedirectIO()
@@ -152,6 +154,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             // Set last run datetime
             deploymentInfo.LastRunAt = runStart;
+            deploymentInfo.LastRunSucceeded = exitCode == 0;
             deploymentDir.SaveDeploymentInfo(deploymentInfo);
 
             return exitCode switch

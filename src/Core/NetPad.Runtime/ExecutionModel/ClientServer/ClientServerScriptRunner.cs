@@ -9,7 +9,6 @@ using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.ExecutionModel.ClientServer.ScriptHost;
-using NetPad.ExecutionModel.External;
 using NetPad.ExecutionModel.External.Interface;
 using NetPad.IO;
 using NetPad.IO.IPC.Stdio;

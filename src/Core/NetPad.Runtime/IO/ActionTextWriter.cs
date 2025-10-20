@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace NetPad.ExecutionModel.External.Interface;
+namespace NetPad.IO;
 
 internal class ActionTextWriter(Action<object?, bool> write) : TextWriter
 {

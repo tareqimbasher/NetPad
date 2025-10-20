@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace NetPad.ExecutionModel.External.Interface;
+namespace NetPad.IO;
 
 internal class ActionTextReader(Func<string?> readLine) : TextReader
 {

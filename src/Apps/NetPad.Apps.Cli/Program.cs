@@ -35,11 +35,7 @@ IServiceProvider BuildServiceProvider()
     services.AddLogging();
 
     // Script execution mechanism
-    services.AddExternalExecutionModel(options =>
-    {
-        options.ProcessCliArgs = args.Skip(2).ToArray();
-        options.RedirectIo = false;
-    });
+    services.AddExternalExecutionModel();
 
     // Data connections
     services

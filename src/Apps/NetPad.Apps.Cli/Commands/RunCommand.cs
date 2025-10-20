@@ -5,6 +5,7 @@ using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.ExecutionModel;
+using NetPad.ExecutionModel.External;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts;
@@ -19,7 +20,8 @@ public static class RunCommand
         ScriptKind ScriptKind,
         OptimizationLevel OptimizationLevel,
         Guid? DataConnectionId,
-        bool Verbose);
+        bool Verbose,
+        List<string> ScriptArgs);
 
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
@@ -30,29 +32,31 @@ public static class RunCommand
             HelpName = "PATH|NAME"
         };
 
-        // Passthrough to running script
-        var consoleOption = new Option<string>("-console")
+        var consoleOption = new Option<bool>("--console")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Print output as console formatted text.",
         };
 
-        // Passthrough to running script
-        var noColorOption = new Option<string>("-no-color")
+        var noColorOption = new Option<bool>("--no-color")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output without colors. Useful for then piping to a file.",
+            Description = "Don't use ANSI colors when printing output to console. Useful for then piping to a file.",
         };
 
-        // Passthrough to running script
-        var htmlOption = new Option<string>("-html")
+        var htmlOption = new Option<bool>("--html")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output in HTML format. For internal use only.",
+            Description = "Print output in raw HTML format.",
         };
 
-        // Passthrough to running script
-        var verboseOption = new Option<bool>("-verbose")
+        var htmlMessageOption = new Option<bool>("--html-msg")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Print output in envelope message format where the body is raw HTML.",
+        };
+
+        var verboseOption = new Option<bool>("--verbose")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Be verbose.",
@@ -64,16 +68,49 @@ public static class RunCommand
         runCmd.Options.Add(consoleOption);
         runCmd.Options.Add(noColorOption);
         runCmd.Options.Add(htmlOption);
-        runCmd.Options.Add(verboseOption);
-        runCmd.SetAction(async p => await SelectScriptAsync(
-            new Options(
+        runCmd.Options.Add(htmlOption);
+        runCmd.Options.Add(htmlMessageOption);
+        runCmd.SetAction(async p =>
+        {
+            var scriptArgs = new List<string>();
+            var options = new Options(
                 p.GetRequiredValue(pathOrNameArg),
                 ScriptKind.Program,
                 OptimizationLevel.Debug,
                 null,
-                p.GetRequiredValue(verboseOption)
-            ),
-            serviceProvider));
+                p.GetValue(verboseOption),
+                scriptArgs
+            );
+
+            if (p.GetValue(consoleOption))
+            {
+                options.ScriptArgs.Add("-console");
+            }
+
+            if (p.GetValue(noColorOption))
+            {
+                options.ScriptArgs.Add("-no-color");
+            }
+
+            if (p.GetValue(htmlOption))
+            {
+                options.ScriptArgs.Add("-html");
+            }
+
+            if (p.GetValue(htmlMessageOption))
+            {
+                options.ScriptArgs.Add("-html-msg");
+            }
+
+            if (p.GetValue(verboseOption))
+            {
+                options.ScriptArgs.Add("-verbose");
+            }
+
+            scriptArgs.AddRange(p.UnmatchedTokens);
+
+            return await SelectScriptAsync(options,serviceProvider);
+        });
     }
 
     private static async Task<int> SelectScriptAsync(Options options, IServiceProvider serviceProvider)
@@ -167,7 +204,13 @@ public static class RunCommand
             Console.WriteLine(o);
         }));
 
-        await scriptRunner.RunScriptAsync(new RunOptions());
+        var runOptions = new RunOptions();
+        runOptions.Set(new ExternalScriptRunnerOptions
+        {
+            ProcessCliArgs = options.ScriptArgs.ToArray(),
+            RedirectIo = false
+        });
+        await scriptRunner.RunScriptAsync(runOptions);
         return 0;
     }
 

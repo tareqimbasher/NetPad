@@ -1,4 +1,5 @@
 using System.IO;
+using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 
@@ -28,7 +29,7 @@ public class ExternalProcessDumpSink : IDumpSink
 
     public static ExternalProcessDumpSink Instance => _instance.Value;
 
-    public void UseHtmlOutput()
+    public void UseHtmlOutput(bool dumpRawHtml)
     {
         Console.SetIn(new ActionTextReader(() =>
         {
@@ -38,7 +39,9 @@ public class ExternalProcessDumpSink : IDumpSink
         Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, new DumpOptions(AppendNewLineToAllTextOutput: appendNewLine))));
 
         _isHtmlOutput = true;
-        _output = new ExternalProcessOutputHtmlWriter(async str => await _defaultConsoleOutput.WriteLineAsync(str));
+        _output = new ExternalProcessOutputHtmlWriter(
+            async str => await _defaultConsoleOutput.WriteLineAsync(str),
+            dumpRawHtml);
     }
 
     public void UseTextOutput(bool useConsoleColors)
