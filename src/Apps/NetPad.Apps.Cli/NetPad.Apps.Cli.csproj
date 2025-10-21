@@ -23,4 +23,9 @@
       <PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\styles.css" />
+      <EmbeddedResource Include="Assets\styles.css" />
+    </ItemGroup>
+
 </Project>

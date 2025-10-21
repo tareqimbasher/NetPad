@@ -1,0 +1,143 @@
+/* ===== Root ===== */
+:root {
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --border-strong: #9891c0;
+    --accent: #2563eb;
+    --thead: #f8fafc;
+    --row-alt: #fbfcfe;
+    --row-hover: #f3f6fd;
+    --code-bg: #f3f4f6;
+    --danger: #b91c1c;
+}
+
+/* ===== Base ===== */
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+    padding: 20px;
+}
+
+.group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 14px 0;
+}
+
+.group.text {
+    padding: 10px 14px;
+}
+
+.titled .title, h6.title {
+    margin: 0 0 8px;
+    font-size: 0.975rem;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+}
+
+/* ===== Tables ===== */
+table {
+    border-collapse: collapse;
+    margin: 6px 0 0;
+    font-size: 0.95rem;
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+th, td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    vertical-align: top;
+    text-align: left;
+}
+
+thead th {
+    background: var(--thead);
+    font-weight: 600;
+}
+
+/* Title/header rows that span columns */
+.table-info-header th {
+    background: #eef2ff;
+    color: #27386b;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-strong);
+}
+
+/* Column header rows */
+.table-data-header th {
+    background: var(--thead);
+    color: #374151;
+}
+
+/* Body stripes + hover */
+tbody tr:nth-child(even) td { background: var(--row-alt); }
+tbody tr:hover td { background: var(--row-hover); }
+
+/* Property columns */
+.property-name {
+    color: #374151;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.property-value {
+    color: #111827;
+    word-break: break-word;
+}
+
+.null, .empty-collection {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.cyclic-reference {
+    color: var(--danger);
+    font-style: italic;
+    font-weight: 500;
+}
+
+/* Nested tables */
+.property-value table {
+    font-size: 0.92rem;
+    border-color: var(--border);
+}
+.property-value table thead th {
+    background: #f9fbff;
+}
+
+/* Code/inline technical text */
+code, .text code {
+    background: var(--code-bg);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.92em;
+}
+
+/* Spacing helpers inside text groups */
+.group.text br + br { line-height: 1.2; }
+
+@media print {
+    body { background: #fff; padding: 0.5in; }
+    .group { box-shadow: none; page-break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+}

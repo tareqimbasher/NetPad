@@ -1,8 +1,8 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps;
-using NetPad.Apps.Cli;
 using NetPad.Apps.Cli.Commands;
+using NetPad.Apps.Cli.Commands.Run;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.ExecutionModel;
 

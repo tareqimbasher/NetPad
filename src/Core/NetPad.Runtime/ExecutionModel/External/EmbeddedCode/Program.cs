@@ -37,17 +37,18 @@ public partial class Program
 
         TerminateProcessOnParentExit(args);
 
-        if (System.Linq.Enumerable.Contains(args, "-html") || System.Linq.Enumerable.Contains(args, "-html-msg"))
+        if (System.Linq.Enumerable.Contains(args, "-html")
+            || System.Linq.Enumerable.Contains(args, "-html-msg"))
         {
             if (verbose) System.Console.WriteLine("Output: HTML");
-            bool dumpRawHtml = System.Linq.Enumerable.Contains(args, "-html-msg") == false;
-            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRawHtml);
+            bool dumpRaw = System.Linq.Enumerable.Contains(args, "-html");
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRaw);
         }
         else
         {
             bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "-no-color");
 
-            if (verbose) System.Console.WriteLine("Output: Console");
+            if (verbose) System.Console.WriteLine("Output: Console2");
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
                 useConsoleColors);
         }
@@ -81,8 +82,9 @@ Usage:
 
 Output Format:
     -console        Optimized for console output (default)
-    -html           HTML output
-    -html-msg       HTML message output
+    -html           Output in raw HTML
+    -html-doc       Output to a HTML document
+    -html-msg       Output in a message envelope with the body in HTML. For inter-process communication use.
 
 Options:
     -no-color       Do not color output. Does not apply to ""HTML"" format

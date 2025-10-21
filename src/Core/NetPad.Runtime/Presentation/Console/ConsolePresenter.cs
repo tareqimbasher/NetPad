@@ -6,15 +6,21 @@ namespace NetPad.Presentation.Console;
 /// </summary>
 public static class ConsolePresenter
 {
-    private static readonly int _maxDepth;
+    private static readonly ConsoleDumpOptions _consoleDumpOptions;
 
     static ConsolePresenter()
     {
         var configFileValues = PresentationSettings.GetConfigFileValues();
-        var maxDepth = configFileValues.maxDepth ?? PresentationSettings.MaxDepth;
+        var configuredMaxDepth = configFileValues.maxDepth ?? PresentationSettings.MaxDepth;
 
-        // Dumpify lib used here doesn't do well with dumping very deep structures and just hangs.
-        _maxDepth = maxDepth > 10 ? 10 : (int)maxDepth;
+        // Deep trees on the console aren't needed
+        var maxDepth = configuredMaxDepth > 10 ? 10 : (int)configuredMaxDepth;
+
+        _consoleDumpOptions = new ConsoleDumpOptions
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+            MaxDepth = maxDepth,
+        };
     }
 
     public static void Serialize(object? value, string? title = null, bool useConsoleColors = true)

@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Configuration;
@@ -9,40 +10,51 @@ using NetPad.ExecutionModel.External;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts;
+using NetPad.Utilities;
 using Spectre.Console;
 
-namespace NetPad.Apps.Cli.Commands;
+namespace NetPad.Apps.Cli.Commands.Run;
 
 public static class RunCommand
 {
-    public sealed record Options(
-        string PathOrName,
+    private sealed record Options(
+        string? PathOrName,
         ScriptKind ScriptKind,
         OptimizationLevel OptimizationLevel,
         Guid? DataConnectionId,
         bool NoCache,
         bool ForceRebuild,
         bool Verbose,
-        List<string> ScriptArgs);
+        List<string> ScriptArgs,
+        bool OutputHtmlDocument);
+
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var pathOrNameArg = new Argument<string>("script")
+        var runCmd = new Command(
+            "run",
+            "Run a script. Script builds are cached for faster executions.");
+        parent.Subcommands.Add(runCmd);
+
+        var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
-            Description = "The script to run. If this matches more than 1 script, you will be prompted to select one.",
-            Arity = ArgumentArity.ExactlyOne,
+            Description =
+                "A path to a script file, or a name (or partial name) to search for in your script library.\n" +
+                "If omitted, or if multiple matches are found, you’ll be prompted to choose from a list.",
+            Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
         };
 
         var noCacheOption = new Option<bool>("--no-cache")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Do not use a cached script build, if any, and do not cache the build from this run.",
+            Description =
+                "Skip the build cache; do not use a cached build, if one exists, and do not cache the build from this run.",
         };
 
         var forceRebuildOption = new Option<bool>("--rebuild")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "If a cached script build exists, delete it, rebuild and cache the new build.",
+            Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
         };
 
         var consoleOption = new Option<bool>("--console")
@@ -63,10 +75,17 @@ public static class RunCommand
             Description = "Print output in raw HTML format.",
         };
 
+        var htmlDocOption = new Option<bool>("--html-doc")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Print output as a HTML document.",
+        };
+
         var htmlMessageOption = new Option<bool>("--html-msg")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output in envelope message format where the body is raw HTML.",
+            Description =
+                "Print output in envelope message format where the body is raw HTML. For inter-process communication use.",
         };
 
         var verboseOption = new Option<bool>("--verbose")
@@ -75,30 +94,31 @@ public static class RunCommand
             Description = "Be verbose.",
         };
 
-        var runCmd = new Command("run", "Run a script by path or name.");
-        parent.Subcommands.Add(runCmd);
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
         runCmd.Options.Add(consoleOption);
         runCmd.Options.Add(noColorOption);
         runCmd.Options.Add(htmlOption);
+        runCmd.Options.Add(htmlDocOption);
         runCmd.Options.Add(htmlMessageOption);
         runCmd.Options.Add(verboseOption);
         runCmd.SetAction(async p =>
         {
             var scriptArgs = new List<string>();
             var options = new Options(
-                p.GetRequiredValue(pathOrNameArg),
+                p.GetValue(pathOrNameArg),
                 ScriptKind.Program,
                 OptimizationLevel.Debug,
                 null,
                 p.GetValue(noCacheOption),
                 p.GetValue(forceRebuildOption),
                 p.GetValue(verboseOption),
-                scriptArgs
+                scriptArgs,
+                p.GetValue(htmlDocOption)
             );
 
+            // Some args should be forwarded to the script
             if (p.GetValue(consoleOption))
             {
                 options.ScriptArgs.Add("-console");
@@ -114,7 +134,7 @@ public static class RunCommand
                 options.ScriptArgs.Add("-html");
             }
 
-            if (p.GetValue(htmlMessageOption))
+            if (p.GetValue(htmlMessageOption) || p.GetValue(htmlDocOption))
             {
                 options.ScriptArgs.Add("-html-msg");
             }
@@ -126,18 +146,33 @@ public static class RunCommand
 
             scriptArgs.AddRange(p.UnmatchedTokens);
 
-            return await SelectScriptAsync(options,serviceProvider);
+            return await ExecuteAsync(options, serviceProvider);
         });
+
+        runCmd.AddRunCacheCommand(serviceProvider);
     }
 
-    private static async Task<int> SelectScriptAsync(Options options, IServiceProvider serviceProvider)
+    private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
+    {
+        var selectedScriptPath = SelectScript(serviceProvider, options);
+        if (selectedScriptPath == null) return 1;
+
+        var script = await LoadScriptAsync(serviceProvider, selectedScriptPath, options);
+        if (script == null) return 1;
+
+        await ApplyOptionsAsync(script, options, serviceProvider);
+
+        return await RunScriptAsync(serviceProvider, script, options);
+    }
+
+    private static string? SelectScript(IServiceProvider serviceProvider, Options options)
     {
         var settings = serviceProvider.GetRequiredService<Settings>();
         var matches = ScriptFinder.FindMatches(settings.ScriptsDirectoryPath, options.PathOrName);
         if (matches.Length == 0)
         {
             AnsiConsole.MarkupLine("[yellow]Did not match any known scripts[/]");
-            return 1;
+            return null;
         }
 
         var selectedScriptFilePath = matches[0];
@@ -148,7 +183,7 @@ public static class RunCommand
 
             var selection = new SelectionPrompt<string>()
                 .Title("Which script do you want to [green]run[/]?")
-                .PageSize(20)
+                .PageSize(50)
                 .MoreChoicesText("[grey](Move up and down to reveal more)[/]")
                 .AddChoices(matches);
 
@@ -161,10 +196,13 @@ public static class RunCommand
             selectedScriptFilePath = AnsiConsole.Prompt(selection);
         }
 
-        return await RunAsync(serviceProvider, selectedScriptFilePath, options);
+        return selectedScriptFilePath;
     }
 
-    private static async Task<int> RunAsync(IServiceProvider serviceProvider, string scriptFilePath, Options options)
+    private static async Task<Script?> LoadScriptAsync(
+        IServiceProvider serviceProvider,
+        string scriptFilePath,
+        Options options)
     {
         Script? script = null;
 
@@ -186,55 +224,21 @@ public static class RunCommand
         }
 
         // If the normal way failed, assume the contents of the file is C# code and create a new script
-        if (script == null)
-        {
-            var dotNetInfo = serviceProvider.GetRequiredService<IDotNetInfo>();
-            var latestInstalledSdkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion();
-            if (latestInstalledSdkVersion == null)
-            {
-                Presenter.Error("Could not find an installed .NET SDK.");
-                return 1;
-            }
+        script ??= CreateScriptFromFile(serviceProvider, scriptFilePath);
 
-            script = CreateScriptFromFile(scriptFilePath, latestInstalledSdkVersion.Value);
-        }
-
-        await ApplyOptionsAsync(script, options, serviceProvider);
-
-
-        if (options.Verbose) Presenter.Info("Starting run...");
-        using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
-
-        var scriptRunnerFactory = scope.ServiceProvider.GetRequiredService<IScriptRunnerFactory>();
-        var scriptRunner = scriptRunnerFactory.CreateRunner(script);
-        scriptRunner.AddOutput(new ActionOutputWriter<object>((o, _) =>
-        {
-            // When the script process runs it outputs to STDOUT directly; we do not redirect.
-            // But errors might occur before the script is run, ie: compilation errors. In that
-            // case the script runner will emit those errors using this output handler.
-            if (o is ScriptOutput error)
-            {
-                Presenter.Error(error.Body?.ToString() ?? "An error occured.");
-                return;
-            }
-
-            Console.WriteLine(o);
-        }));
-
-        var runOptions = new RunOptions();
-        runOptions.Set(new ExternalScriptRunnerOptions
-        {
-            NoCache = options.NoCache,
-            ForceRebuild = options.ForceRebuild,
-            ProcessCliArgs = options.ScriptArgs.ToArray(),
-            RedirectIo = false
-        });
-        await scriptRunner.RunScriptAsync(runOptions);
-        return 0;
+        return script;
     }
 
-    private static Script CreateScriptFromFile(string scriptPath, DotNetFrameworkVersion latestInstalledSdkVersion)
+    private static Script? CreateScriptFromFile(IServiceProvider serviceProvider, string scriptPath)
     {
+        var dotNetInfo = serviceProvider.GetRequiredService<IDotNetInfo>();
+        var latestInstalledSdkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion();
+        if (latestInstalledSdkVersion == null)
+        {
+            Presenter.Error("Could not find an installed .NET SDK.");
+            return null;
+        }
+
         var code = File.ReadAllText(scriptPath);
         var namespaces = ScriptConfigDefaults.DefaultNamespaces;
         var kind = ScriptKind.Program;
@@ -246,7 +250,7 @@ public static class RunCommand
             Path.GetFileName(scriptPath),
             new ScriptConfig(
                 kind,
-                latestInstalledSdkVersion,
+                latestInstalledSdkVersion.Value,
                 namespaces: namespaces,
                 optimizationLevel: optimizationLevel
             ),
@@ -276,5 +280,78 @@ public static class RunCommand
                 script.SetDataConnection(connection);
             }
         }
+    }
+
+    private static async Task<int> RunScriptAsync(IServiceProvider serviceProvider, Script script, Options options)
+    {
+        if (options.Verbose) Presenter.Info("Starting run...");
+
+        bool redirectScriptProcessIo = options.OutputHtmlDocument;
+        var htmlDocumentOutput = options.OutputHtmlDocument ? new StringBuilder() : null;
+
+        // Create a script runner
+        using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var scriptRunnerFactory = scope.ServiceProvider.GetRequiredService<IScriptRunnerFactory>();
+        var scriptRunner = scriptRunnerFactory.CreateRunner(script);
+
+        // Handle script & runner output
+        scriptRunner.AddOutput(new ActionOutputWriter<object>((o, _) =>
+        {
+            if (htmlDocumentOutput != null && o is HtmlResultsScriptOutput htmlScriptOutput)
+            {
+                htmlDocumentOutput.Append(htmlScriptOutput.Body);
+                return;
+            }
+
+            // If the script process outputs to STDOUT directly it prints to the console directly.
+            // But errors might occur before the script is run, ie: compilation errors. In that
+            // case the script runner will emit those errors using this output handler.
+            if (!redirectScriptProcessIo && o is ScriptOutput error)
+            {
+                Presenter.Error(error.Body?.ToString() ?? "An error occured.");
+                return;
+            }
+
+            if (o is ScriptOutput scriptOutput)
+            {
+                Console.WriteLine(scriptOutput.Body);
+            }
+
+            Console.WriteLine(o);
+        }));
+
+        // Configure run options
+        var runOptions = new RunOptions();
+        runOptions.SetOption(new ExternalScriptRunnerOptions
+        {
+            NoCache = options.NoCache,
+            ForceRebuild = options.ForceRebuild,
+            ProcessCliArgs = options.ScriptArgs.ToArray(),
+            RedirectIo = redirectScriptProcessIo
+        });
+
+        await scriptRunner.RunScriptAsync(runOptions);
+
+        if (htmlDocumentOutput != null)
+        {
+            var styles = AssemblyUtil.ReadEmbeddedResource(typeof(RunCommand).Assembly, "Assets.styles.css");
+            var html = $"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                          <meta charset="utf-8" />
+                          <meta name="viewport" content="width=device-width" />
+                          <style>{styles}</style>
+                        </head>
+                        <body>
+                        {htmlDocumentOutput}
+                        </body>
+                        </html>
+                        """;
+
+            Console.WriteLine(html);
+        }
+
+        return 0;
     }
 }

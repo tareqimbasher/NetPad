@@ -4,33 +4,34 @@ using NetPad.ExecutionModel.External;
 using NetPad.Utilities;
 using Spectre.Console;
 
-namespace NetPad.Apps.Cli.Commands;
+namespace NetPad.Apps.Cli.Commands.Run;
 
 public static class CacheCommand
 {
-    public static void AddCacheCommand(this RootCommand parent, IServiceProvider serviceProvider)
+    public static void AddRunCacheCommand(this Command parent, IServiceProvider serviceProvider)
     {
-        var cacheCmd = new Command("cache", "Show information about cached script deployments.");
+        var cacheCmd = new Command("cache", "Show information about cached script builds.");
         parent.Subcommands.Add(cacheCmd);
         cacheCmd.SetAction(_ => ListCachedScriptDeployments(serviceProvider));
 
-        var listCmd = new Command("ls", "List all script deployments.");
+        var listCmd = new Command("ls", "List all script builds.");
         cacheCmd.Subcommands.Add(listCmd);
         listCmd.SetAction(_ => ListCachedScriptDeployments(serviceProvider));
 
         var numberToRemoveArg = new Argument<int?>("number")
         {
-            Description = "A number that corresponds to the listing shown when running the 'ls' subcommand.",
+            Description =
+                "A build number to remove. The number must correspond wity the listing shown when running the 'ls' command.",
             Arity = ArgumentArity.ZeroOrOne
         };
 
         var removeAllOption = new Option<bool>("--all")
         {
-            Description = "Remove all script deployments.",
+            Description = "Remove all cached script builds.",
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        var removeCmd = new Command("rm", "Remove a cached script deployment.");
+        var removeCmd = new Command("rm", "Remove a cached script build.");
         cacheCmd.Subcommands.Add(removeCmd);
         removeCmd.Arguments.Add(numberToRemoveArg);
         removeCmd.Options.Add(removeAllOption);
@@ -47,7 +48,8 @@ public static class CacheCommand
 
             if (!num.HasValue && !all)
             {
-                Presenter.Error("Specify a number to remove (use ls to list) or --all to remove all.");
+                Presenter.Error(
+                    "Specify a number to remove (use ls to list existing cached builds), or --all to remove all.");
                 return 1;
             }
 
@@ -69,20 +71,26 @@ public static class CacheCommand
         table.AddColumn(new TableColumn(new Markup("[bold][olive]#[/][/]")));
         table.AddColumn(new TableColumn(new Markup("[bold][olive]Script[/][/]")));
         table.AddColumn(new TableColumn(new Markup("[bold][olive]Size[/][/]")));
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]Last Run[/][/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold][olive]Last Run ▼[/][/]")));
         table.AddColumn(new TableColumn(new Markup("[bold][olive]Last Run Result[/][/]")));
 
         int order = 0;
-        foreach (var deploymentDir in cache.ListDeploymentDirectories())
+        var deployments = cache.ListDeploymentDirectories()
+            .Select(x => new
+            {
+                Directory = x,
+                Info = x.GetDeploymentInfo()!
+            });
+
+        foreach (var deployment in deployments.OrderByDescending(x => x.Info.LastRunAt))
         {
-            var info = deploymentDir.GetDeploymentInfo();
-            var sizeMb = Math.Round(deploymentDir.GetSize() / 1024.0 / 1024.0, 3);
+            var sizeMb = Math.Round(deployment.Directory.GetSize() / 1024.0 / 1024.0, 3);
             table.AddRow(
-                new Markup($"[blue]{++order}.[/]"),
-                new Markup(info!.GetScriptName()),
+                new Markup($"[blue]{++order}[/]"),
+                new Markup(deployment.Info.GetScriptName()),
                 new Markup($"{sizeMb} MB"),
-                new Markup(info.LastRunAt?.ToString() ?? "Never"),
-                new Markup(info.LastRunSucceeded == true ? "[green]success[/]" : "[red]fail[/]")
+                new Markup(deployment.Info.LastRunAt?.ToString() ?? "Never"),
+                new Markup(deployment.Info.LastRunSucceeded == true ? "[green]success[/]" : "[red]fail[/]")
             );
         }
 

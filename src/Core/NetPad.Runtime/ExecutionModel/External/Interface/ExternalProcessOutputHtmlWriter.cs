@@ -8,7 +8,8 @@ namespace NetPad.ExecutionModel.External.Interface;
 /// Converts output emitted by the script (ex. using Dump() or Console.Write)
 /// to <see cref="ScriptOutput"/> and writes it to the main output.
 /// </summary>
-public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, bool dumpRawHtml) : IExternalProcessOutputWriter
+public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, bool dumpRawHtml)
+    : IExternalProcessOutputWriter
 {
     private static readonly Lazy<Regex> _ansiColorsRegex = new(() => new Regex(@"\x1B\[[^@-~]*[@-~]"));
     private uint _resultOutputCounter;
@@ -35,7 +36,7 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, 
         else
         {
             var resultOutput = new HtmlResultsScriptOutput(order, html);
-            await WriteAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
+            await WriteMessageAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
         }
     }
 
@@ -54,11 +55,11 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, 
         else
         {
             var sqlOutput = new HtmlSqlScriptOutput(order, html);
-            await WriteAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
+            await WriteMessageAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
         }
     }
 
-    private async Task WriteAsync(ExternalProcessOutput processOutput)
+    private async Task WriteMessageAsync(ExternalProcessOutput processOutput)
     {
         var serializedOutput = Common.JsonSerializer.Serialize(processOutput);
 
