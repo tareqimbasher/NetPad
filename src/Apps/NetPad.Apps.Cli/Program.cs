@@ -21,7 +21,7 @@ var rootCommand = new RootCommand("NetPad command line tool.")
 
 rootCommand.AddRunCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
-rootCommand.AddCacheCommand(serviceProvider);
+rootCommand.AddSettingsCommand(serviceProvider);
 rootCommand.AddLogsCommand(serviceProvider);
 
 var parseResult = rootCommand.Parse(args);
