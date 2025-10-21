@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace NetPad.ExecutionModel.ClientServer.ScriptServices;
+namespace NetPad.ExecutionModel.ScriptServices;
 
 /// <summary>
 /// Info about an item stored in MemCache.

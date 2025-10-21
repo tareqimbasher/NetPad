@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+        <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
         <RootNamespace>NetPad.Apps</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>

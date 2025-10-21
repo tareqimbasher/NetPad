@@ -11,7 +11,7 @@ using O2Html.Dom;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable InvokeAsExtensionMethod
 
-namespace NetPad.ExecutionModel.ClientServer.ScriptServices;
+namespace NetPad.ExecutionModel.ScriptServices;
 
 /// <summary>
 /// Helpers for dumping data, caching, environment access, and more.
@@ -39,12 +39,22 @@ public static class Util
     /// <summary>
     /// The current script.
     /// </summary>
-    public static UserScript Script { get; internal set; } = null!;
+    public static UserScript Script { get; private set; } = null!;
+
+    /// <summary>
+    /// Sets the <see cref="Script"/>. For internal use only.
+    /// </summary>
+    public static void SetUserScript(UserScript script) => Script = script;
 
     /// <summary>
     /// Information about the current script-host environment.
     /// </summary>
-    public static HostEnvironment Environment { get; set; } = null!;
+    public static HostEnvironment Environment { get; private set; } = null!;
+
+    /// <summary>
+    /// Sets the <see cref="Environment"/>. For internal use only.
+    /// </summary>
+    public static void SetHostEnvironment(HostEnvironment environment) => Environment = environment;
 
     /// <summary>
     /// This stopwatch is started when user code starts executing.
@@ -293,7 +303,7 @@ public static class Util
 /// <summary>
 /// Information about the current script-host environment.
 /// </summary>
-public class HostEnvironment(int parentPid)
+public class HostEnvironment(int? parentPid)
 {
     /// <summary>
     /// The UTC date and time the script-host process started.
@@ -308,7 +318,7 @@ public class HostEnvironment(int parentPid)
     /// <summary>
     /// The process ID (PID) of the parent process that started the script-host process.
     /// </summary>
-    public int ParentPid => parentPid;
+    public int? ParentPid => parentPid;
 
     /// <summary>
     /// The .NET runtime version the script-host process is running on.

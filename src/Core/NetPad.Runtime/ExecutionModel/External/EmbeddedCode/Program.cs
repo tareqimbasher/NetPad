@@ -1,7 +1,9 @@
-using NetPad.Presentation;
-
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable InvokeAsExtensionMethod
+using NetPad.Presentation;
+// ReSharper disable once RedundantUsingDirective
+using Util = NetPad.ExecutionModel.ScriptServices.Util;
+
 
 /// <summary>
 /// Meant to be injected into script code so it can initialize <see cref="NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink"/>.
@@ -25,31 +27,45 @@ public partial class Program
 
         if (verbose)
         {
-            System.Console.WriteLine("Args: " + string.Join(" ", args));
+            WriteColor("inf: ", ConsoleColor.Cyan);
+            System.Console.Error.WriteLine(
+                $"Script process started with args: {string.Join(" ", args)}");
         }
 
         if (System.Linq.Enumerable.Contains(args, "-help"))
         {
-            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true, false);
             PrintHelp();
             System.Environment.Exit(0);
         }
 
-        TerminateProcessOnParentExit(args);
+        var parentProcessId = TerminateProcessOnParentExit(args);
 
-        if (System.Linq.Enumerable.Contains(args, "-html") || System.Linq.Enumerable.Contains(args, "-html-msg"))
+        if (System.Linq.Enumerable.Contains(args, "-html")
+            || System.Linq.Enumerable.Contains(args, "-html-msg"))
         {
-            if (verbose) System.Console.WriteLine("Output: HTML");
-            bool dumpRawHtml = System.Linq.Enumerable.Contains(args, "-html-msg") == false;
-            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRawHtml);
+            if (verbose)
+            {
+                WriteColor("inf: ", ConsoleColor.Cyan);
+                System.Console.Error.WriteLine("Output format: HTML");
+            }
+
+            bool dumpRaw = System.Linq.Enumerable.Contains(args, "-html");
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRaw);
         }
         else
         {
-            bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "-no-color");
+            bool plainText = System.Linq.Enumerable.Contains(args, "-text");
+            bool minimal = System.Linq.Enumerable.Contains(args, "-minimal");
 
-            if (verbose) System.Console.WriteLine("Output: Console");
+            if (verbose)
+            {
+                WriteColor("inf: ", ConsoleColor.Cyan);
+                System.Console.Error.WriteLine("Output format: " + (plainText ? "Text" : "Console"));
+            }
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
-                useConsoleColors);
+                plainText,
+                minimal);
         }
 
         DumpExtension.UseSink(NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance);
@@ -60,10 +76,25 @@ public partial class Program
             NetPad.Utilities.WindowsNative.DisableWindowsErrorReporting();
         }
 
+        Util.SetHostEnvironment(new NetPad.ExecutionModel.ScriptServices.HostEnvironment(parentProcessId));
+        Util.SetUserScript(new NetPad.ExecutionModel.ScriptServices.UserScript( // TODO fill real values
+            Guid.Empty,
+            "Unknown",
+            "Unknown",
+            false
+        ));
+
         if (verbose)
         {
             System.Console.WriteLine();
         }
+    }
+
+    private static void WriteColor(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        System.Console.Error.Write(text);
+        Console.ResetColor();
     }
 
     private static void PrintHelp()
@@ -77,35 +108,35 @@ public partial class Program
         System.Console.WriteLine($"{UserScript.Name}");
         System.Console.WriteLine($@"
 Usage:
-    dotnet {currentAssemblyPath} [-console|-text|-html] [OPTIONS]
-
-Output Format:
-    -console        Optimized for console output (default)
-    -html           HTML output
-    -html-msg       HTML message output
+    dotnet {currentAssemblyPath} [OPTIONS]
 
 Options:
-    -no-color       Do not color output. Does not apply to ""HTML"" format
+    -console        Optimized for console output (default)
+    -text           Output to plain text
+    -html           Output in raw HTML
+    -html-msg       Output in a message envelope with the body in HTML. For inter-process communication use.
+    -minimal        If possible, use more minimal output formatting.
+
     -parent <ID>    Instructs process to terminate itself when this process ID is terminated.
     -help           Display this help
 ");
     }
 
-    private static void TerminateProcessOnParentExit(string[] args)
+    private static int? TerminateProcessOnParentExit(string[] args)
     {
         var parentIx = System.Array.IndexOf(args, "-parent");
 
         if (parentIx < 0)
         {
             // No parent
-            return;
+            return null;
         }
 
         if (args.Length < parentIx + 1 || !int.TryParse(args[parentIx + 1], out var parentProcessId))
         {
             System.Console.Error.WriteLine("Invalid parent process ID");
             System.Environment.Exit(1);
-            return;
+            return null;
         }
 
         System.Diagnostics.Process? parentProcess = null;
@@ -129,5 +160,7 @@ Options:
             System.Console.Error.WriteLine($"Parent process {parentProcessId} is not running");
             System.Environment.Exit(1);
         }
+
+        return parentProcessId;
     }
 }

@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Dumpify" Version="0.6.6"/>
-        <PackageReference Include="ICSharpCode.Decompiler" Version="9.1.0.7988" />
+        <PackageReference Include="Dumpy.Console" Version="1.1.1" />
+        <PackageReference Include="ICSharpCode.Decompiler" Version="9.1.0.7988"/>
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="6.0.31"/>
         <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.31"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2"/>
@@ -16,10 +16,13 @@
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="NJsonSchema" Version="11.3.2"/>
+        <!-- Downgraded from 11.3.2 because versions newer than 11.1.0 require .NET 8 (and also System.Text.Json v8)-->
+        <PackageReference Include="NJsonSchema" Version="11.1.0"/>
         <PackageReference Include="NuGet.Protocol" Version="6.6.1"/>
         <PackageReference Include="NuGet.Resolver" Version="6.6.1"/>
-        <PackageReference Include="System.Reactive" Version="6.0.1" />
+        <PackageReference Include="System.Reactive" Version="6.0.1"/>
+        <!-- Added to pin System.Text.Json to .NET 6-->
+        <PackageReference Include="System.Text.Json" Version="6.0.11"/>
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
