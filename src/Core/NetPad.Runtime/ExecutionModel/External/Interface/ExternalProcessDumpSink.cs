@@ -44,13 +44,13 @@ public class ExternalProcessDumpSink : IDumpSink
             dumpRawHtml);
     }
 
-    public void UseConsoleOutput(bool useConsoleColors)
+    public void UseConsoleOutput(bool plainText, bool minimal)
     {
         Console.SetIn(_defaultConsoleInput);
         Console.SetOut(_defaultConsoleOutput);
 
         _isHtmlOutput = false;
-        _output = new ExternalProcessOutputConsoleWriter(useConsoleColors);
+        _output = new ExternalProcessOutputConsoleWriter(plainText, minimal);
     }
 
     public void RawConsoleWriteLine(string text)

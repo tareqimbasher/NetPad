@@ -14,6 +14,7 @@ namespace NetPad.Scripts;
 /// </remarks>
 public static class ScriptIdGenerator
 {
+    public static Guid InlineScript { get; } = Guid.Parse("5103c5b6-aad0-4057-a40b-6fd10a07af07");
     public static Guid NewId() => Guid.NewGuid();
     public static Guid IdFromFilePath(string filePath) => Uuid5.Create(filePath);
 }

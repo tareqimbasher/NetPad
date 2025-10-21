@@ -1,13 +1,13 @@
 using System.Diagnostics;
 using NetPad.Apps.ScriptHost;
 using NetPad.ExecutionModel.ClientServer.Messages;
-using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.ExecutionModel.ScriptServices;
 using NetPad.IO.IPC.Stdio;
 
 var parentPid = TerminateProcessOnParentExit(args);
 
 // Init environment information that can be used in user scripts.
-Util.Environment = new HostEnvironment(parentPid);
+Util.SetHostEnvironment(new HostEnvironment(parentPid));
 
 // IO streams are used for IPC (inter-process communication) between this process and the parent (NetPad) process.
 var defaultConsoleIn = Console.In;

@@ -246,7 +246,25 @@ public partial class DotNetCSharpProject
     public Task<DotNetCliResult> RestoreAsync(
         string[]? additionalArgs = null,
         CancellationToken cancellationToken = default)
-        => InvokeDotNetAsync("restore", additionalArgs, true, cancellationToken);
+    {
+        var args = new List<string>
+        {
+            ProjectFilePath.Path
+        };
+
+        if (additionalArgs?.Length > 0)
+        {
+            args.AddRange(additionalArgs);
+        }
+
+        if (PackageCacheDirectoryPath != null)
+        {
+            args.Add($"-p:RestorePackagesPath=\"{PackageCacheDirectoryPath.Path}\"");
+        }
+
+        return InvokeDotNetAsync("restore", args.ToArray(), true, cancellationToken);
+    }
+
 
     /// <summary>
     /// Builds the project by invoking <c>dotnet build</c>.
@@ -260,7 +278,24 @@ public partial class DotNetCSharpProject
     public Task<DotNetCliResult> BuildAsync(
         string[]? additionalArgs = null,
         CancellationToken cancellationToken = default)
-        => InvokeDotNetAsync("build", additionalArgs, true, cancellationToken);
+    {
+        var args = new List<string>
+        {
+            ProjectFilePath.Path
+        };
+
+        if (additionalArgs?.Length > 0)
+        {
+            args.AddRange(additionalArgs);
+        }
+
+        if (PackageCacheDirectoryPath != null)
+        {
+            args.Add($"-p:RestorePackagesPath=\"{PackageCacheDirectoryPath.Path}\"");
+        }
+
+        return InvokeDotNetAsync("build", args.ToArray(), true, cancellationToken);
+    }
 
     /// <summary>
     /// Runs the project by invoking <c>dotnet run</c>.
@@ -274,7 +309,24 @@ public partial class DotNetCSharpProject
     public Task<DotNetCliResult> RunAsync(
         string[]? additionalArgs = null,
         CancellationToken cancellationToken = default)
-        => InvokeDotNetAsync("run", additionalArgs, true, cancellationToken);
+    {
+        var args = new List<string>()
+        {
+            ProjectFilePath.Path
+        };
+
+        if (additionalArgs?.Length > 0)
+        {
+            args.AddRange(additionalArgs);
+        }
+
+        if (PackageCacheDirectoryPath != null)
+        {
+            args.Add($"-p:RestorePackagesPath=\"{PackageCacheDirectoryPath.Path}\"");
+        }
+
+        return InvokeDotNetAsync("run", args.ToArray(), true, cancellationToken);
+    }
 
     private async Task<DotNetCliResult> InvokeDotNetAsync(
         string command,
@@ -293,17 +345,10 @@ public partial class DotNetCSharpProject
 
         psi.ArgumentList.Add(command);
 
-        if (PackageCacheDirectoryPath != null)
-        {
-            psi.ArgumentList.Add($"-p:RestorePackagesPath=\"{PackageCacheDirectoryPath.Path}\"");
-        }
-
         if (args != null)
         {
             foreach (var a in args) psi.ArgumentList.Add(a);
         }
-
-        psi.ArgumentList.Add(ProjectFilePath.Path);
 
         using var process = Process.Start(psi);
         if (process == null)

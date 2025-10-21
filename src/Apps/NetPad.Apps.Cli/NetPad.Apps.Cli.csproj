@@ -2,11 +2,13 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+        <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
         <AssemblyName>npad</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
-        <AssemblyVersion>0.11.0</AssemblyVersion>
-        <FileVersion>0.11.0</FileVersion>
+        <Version>0.11.0</Version>
+
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <PublishSingleFile>false</PublishSingleFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,6 +23,11 @@
 
     <ItemGroup>
       <PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Assets\styles.css" />
+      <EmbeddedResource Include="Assets\styles.css" />
     </ItemGroup>
 
 </Project>

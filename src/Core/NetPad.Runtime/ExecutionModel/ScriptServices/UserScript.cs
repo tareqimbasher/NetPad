@@ -1,4 +1,4 @@
-namespace NetPad.ExecutionModel.ClientServer.ScriptServices;
+namespace NetPad.ExecutionModel.ScriptServices;
 
 /// <summary>
 /// Information about the current script.

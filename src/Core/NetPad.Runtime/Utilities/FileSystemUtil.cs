@@ -5,6 +5,34 @@ namespace NetPad.Utilities;
 public static class FileSystemUtil
 {
     /// <summary>
+    /// Returns a human-readable string representation of the specified file size.
+    /// </summary>
+    /// <param name="bytes">The file size in bytes.</param>
+    /// <param name="decimalPlaces">The number of decimal places to show in the output.</param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="bytes"/> is less than 0.</exception>
+    public static string GetReadableFileSize(long bytes, int decimalPlaces = 3)
+    {
+        if (bytes < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bytes), "File size cannot be negative.");
+        }
+
+        string[] sizeUnits = ["B ", "KB", "MB", "GB", "TB", "PB", "EB"];
+        double len = bytes;
+        int order = 0;
+
+        while (len >= 1024 && order < sizeUnits.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+
+        // Format with up to 2 decimal places, unless it's in bytes
+        string format = "0." + new string('#', decimalPlaces);
+        return $"{len.ToString(format)} {sizeUnits[order]}";
+    }
+
+    /// <summary>
     /// Determines if a directory path is readable.
     /// </summary>
     /// <param name="path">The path to the directory to check.</param>
