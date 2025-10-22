@@ -32,7 +32,8 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
     private static readonly string[] _supportAssemblies =
     [
-        typeof(Dumpify.DumpExtensions).Assembly.Location,
+        typeof(Dumpy.DumpOptions).Assembly.Location,
+        typeof(Dumpy.Console.ConsoleDumper).Assembly.Location,
         typeof(Spectre.Console.IAnsiConsole).Assembly.Location
     ];
 

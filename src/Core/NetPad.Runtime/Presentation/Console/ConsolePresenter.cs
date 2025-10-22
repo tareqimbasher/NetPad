@@ -1,3 +1,6 @@
+using Dumpy;
+using Dumpy.Console;
+
 namespace NetPad.Presentation.Console;
 
 /// <summary>
@@ -25,10 +28,6 @@ public static class ConsolePresenter
 
     public static void Serialize(object? value, string? title = null, bool useConsoleColors = true)
     {
-        var colors = useConsoleColors
-            ? Dumpify.ColorConfig.DefaultColors
-            : Dumpify.ColorConfig.NoColors;
-
-        Dumpify.DumpExtensions.Dump(value, label: title, colors: colors, maxDepth: _maxDepth);
+        value.DumpConsole(title, _consoleDumpOptions);
     }
 }
