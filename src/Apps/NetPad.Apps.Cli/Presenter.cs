@@ -39,7 +39,7 @@ public static class Presenter
         {
             order++;
             var num = order.ToString().PadLeft(numberPadding);
-            var markup = $"[blue]{num}.[/] {getMarkup(item)}";
+            var markup = $"[violet]{num}.[/] {getMarkup(item)}";
             AnsiConsole.MarkupLine(markup);
         }
 

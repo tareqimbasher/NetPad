@@ -84,11 +84,10 @@ public static class CacheCommand
 
         foreach (var deployment in deployments.OrderByDescending(x => x.Info.LastRunAt))
         {
-            var sizeMb = Math.Round(deployment.Directory.GetSize() / 1024.0 / 1024.0, 3);
             table.AddRow(
                 new Markup($"[blue]{++order}[/]"),
                 new Markup(deployment.Info.GetScriptName()),
-                new Markup($"{sizeMb} MB"),
+                new Markup(FileSystemUtil.GetReadableFileSize(deployment.Directory.GetSize(), 3)),
                 new Markup(deployment.Info.LastRunAt?.ToString() ?? "Never"),
                 new Markup(deployment.Info.LastRunSucceeded == true ? "[green]success[/]" : "[red]fail[/]")
             );
