@@ -10,7 +10,7 @@ var serviceProvider = BuildServiceProvider();
 
 var rootCommand = new RootCommand("NetPad command line tool.")
 {
-    TreatUnmatchedTokensAsErrors = true
+    TreatUnmatchedTokensAsErrors = false
 };
 
 rootCommand.AddInfoCommand(serviceProvider);

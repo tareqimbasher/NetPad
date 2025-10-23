@@ -25,7 +25,9 @@ public partial class Program
 
         if (verbose)
         {
-            System.Console.WriteLine("Args: " + string.Join(" ", args));
+            WriteColor("inf: ", ConsoleColor.Cyan);
+            System.Console.Error.WriteLine(
+                $"Script process started with args: {string.Join(" ", args)}");
         }
 
         if (System.Linq.Enumerable.Contains(args, "-help"))
@@ -40,17 +42,26 @@ public partial class Program
         if (System.Linq.Enumerable.Contains(args, "-html")
             || System.Linq.Enumerable.Contains(args, "-html-msg"))
         {
-            if (verbose) System.Console.WriteLine("Output: HTML");
+            if (verbose)
+            {
+                WriteColor("inf: ", ConsoleColor.Cyan);
+                System.Console.Error.WriteLine("Output format: HTML");
+            }
+
             bool dumpRaw = System.Linq.Enumerable.Contains(args, "-html");
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseHtmlOutput(dumpRaw);
         }
         else
         {
-            bool useConsoleColors = !System.Linq.Enumerable.Contains(args, "-no-color");
+            bool plainText = System.Linq.Enumerable.Contains(args, "-text");
 
-            if (verbose) System.Console.WriteLine("Output: Console2");
+            if (verbose)
+            {
+                WriteColor("inf: ", ConsoleColor.Cyan);
+                System.Console.Error.WriteLine("Output format: " + (plainText ? "Text" : "Console"));
+            }
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
-                useConsoleColors);
+                plainText);
         }
 
         DumpExtension.UseSink(NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance);
@@ -67,6 +78,13 @@ public partial class Program
         }
     }
 
+    private static void WriteColor(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        System.Console.Error.Write(text);
+        Console.ResetColor();
+    }
+
     private static void PrintHelp()
     {
         var currentAssemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
@@ -78,16 +96,14 @@ public partial class Program
         System.Console.WriteLine($"{UserScript.Name}");
         System.Console.WriteLine($@"
 Usage:
-    dotnet {currentAssemblyPath} [-console|-text|-html] [OPTIONS]
-
-Output Format:
-    -console        Optimized for console output (default)
-    -html           Output in raw HTML
-    -html-doc       Output to a HTML document
-    -html-msg       Output in a message envelope with the body in HTML. For inter-process communication use.
+    dotnet {currentAssemblyPath} [OPTIONS]
 
 Options:
-    -no-color       Do not color output. Does not apply to ""HTML"" format
+    -console        Optimized for console output (default)
+    -text           Output to plain text
+    -html           Output in raw HTML
+    -html-msg       Output in a message envelope with the body in HTML. For inter-process communication use.
+
     -parent <ID>    Instructs process to terminate itself when this process ID is terminated.
     -help           Display this help
 ");

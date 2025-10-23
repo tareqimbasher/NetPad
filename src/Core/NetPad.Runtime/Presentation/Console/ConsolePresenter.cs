@@ -1,5 +1,6 @@
 using Dumpy;
 using Dumpy.Console;
+using Spectre.Console;
 
 namespace NetPad.Presentation.Console;
 
@@ -9,25 +10,35 @@ namespace NetPad.Presentation.Console;
 /// </summary>
 public static class ConsolePresenter
 {
-    private static readonly ConsoleDumpOptions _consoleDumpOptions;
+    private static readonly ConsoleDumpOptions _coloredOptions;
+    private static readonly ConsoleDumpOptions _plainTextOptions;
 
     static ConsolePresenter()
     {
         var configFileValues = PresentationSettings.GetConfigFileValues();
         var configuredMaxDepth = configFileValues.maxDepth ?? PresentationSettings.MaxDepth;
 
-        // Deep trees on the console aren't needed
+        // Deep object graphs are unwieldy on the console
         var maxDepth = configuredMaxDepth > 10 ? 10 : (int)configuredMaxDepth;
 
-        _consoleDumpOptions = new ConsoleDumpOptions
+        _coloredOptions = new ConsoleDumpOptions
         {
             ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
             MaxDepth = maxDepth,
         };
+
+        var plainTextStyles = StyleOptions.Plain;
+        plainTextStyles.TableBorderType = TableBorder.Rounded; // Keep rounded table borders
+        _plainTextOptions = new ConsoleDumpOptions
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+            MaxDepth = maxDepth,
+            Styles = plainTextStyles
+        };
     }
 
-    public static void Serialize(object? value, string? title = null, bool useConsoleColors = true)
+    public static void Serialize(object? value, string? title = null, bool plainText = false)
     {
-        value.DumpConsole(title, _consoleDumpOptions);
+        value.DumpConsole(title, plainText ? _plainTextOptions : _coloredOptions);
     }
 }

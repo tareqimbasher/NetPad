@@ -5,6 +5,11 @@ namespace NetPad.Apps.Cli;
 
 public static class Presenter
 {
+    private static readonly IAnsiConsole _errConsole = AnsiConsole.Create(new AnsiConsoleSettings
+    {
+        Out = new AnsiConsoleOutput(Console.Error)
+    });
+
     public static string GetScriptPathMarkup(string scriptPath, string? highlight = null)
     {
         if (!string.IsNullOrWhiteSpace(highlight))
@@ -48,16 +53,16 @@ public static class Presenter
 
     public static void Error(string message)
     {
-        AnsiConsole.MarkupLineInterpolated($"[red]err:[/] {message}");
+        _errConsole.MarkupLineInterpolated($"[red]err:[/] {message}");
     }
 
     public static void Warn(string message)
     {
-        AnsiConsole.MarkupLineInterpolated($"[yellow]wrn:[/] {message}");
+        _errConsole.MarkupLineInterpolated($"[yellow]wrn:[/] {message}");
     }
 
     public static void Info(string message)
     {
-        AnsiConsole.MarkupLineInterpolated($"[cyan]inf:[/] {message}");
+        _errConsole.MarkupLineInterpolated($"[cyan]inf:[/] {message}");
     }
 }

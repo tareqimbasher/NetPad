@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.ComponentModel;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,14 @@ using Spectre.Console;
 
 namespace NetPad.Apps.Cli.Commands.Run;
 
+enum OutputFormat
+{
+    Console = 0,
+    Text,
+    Html,
+    HtmlDoc
+}
+
 public static class RunCommand
 {
     private sealed record Options(
@@ -26,7 +35,7 @@ public static class RunCommand
         bool ForceRebuild,
         bool Verbose,
         List<string> ScriptArgs,
-        bool OutputHtmlDocument);
+        OutputFormat OutputFormat);
 
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
@@ -57,35 +66,16 @@ public static class RunCommand
             Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
         };
 
-        var consoleOption = new Option<bool>("--console")
+        var formatOption = new Option<OutputFormat>("--format")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output as console formatted text.",
-        };
-
-        var noColorOption = new Option<bool>("--no-color")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = "Don't use ANSI colors when printing output to console. Useful for then piping to a file.",
-        };
-
-        var htmlOption = new Option<bool>("--html")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output in raw HTML format.",
-        };
-
-        var htmlDocOption = new Option<bool>("--html-doc")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            Description = "Print output as a HTML document.",
-        };
-
-        var htmlMessageOption = new Option<bool>("--html-msg")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
+            HelpName = "text|html|htmldoc",
             Description =
-                "Print output in envelope message format where the body is raw HTML. For inter-process communication use.",
+                "The format of script output. If not specified, will emit structured console output (default).\n" +
+                "Values:\n" +
+                "  - text       Plain text format; useful when piping to a file\n" +
+                "  - html       HTML fragments\n" +
+                "  - htmldoc    A complete HTML document",
         };
 
         var verboseOption = new Option<bool>("--verbose")
@@ -97,11 +87,7 @@ public static class RunCommand
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
-        runCmd.Options.Add(consoleOption);
-        runCmd.Options.Add(noColorOption);
-        runCmd.Options.Add(htmlOption);
-        runCmd.Options.Add(htmlDocOption);
-        runCmd.Options.Add(htmlMessageOption);
+        runCmd.Options.Add(formatOption);
         runCmd.Options.Add(verboseOption);
         runCmd.SetAction(async p =>
         {
@@ -115,26 +101,20 @@ public static class RunCommand
                 p.GetValue(forceRebuildOption),
                 p.GetValue(verboseOption),
                 scriptArgs,
-                p.GetValue(htmlDocOption)
+                p.GetValue(formatOption)
             );
 
-            // Some args should be forwarded to the script
-            if (p.GetValue(consoleOption))
+            if (options.OutputFormat == OutputFormat.Text)
             {
-                options.ScriptArgs.Add("-console");
+                options.ScriptArgs.Add("-text");
             }
 
-            if (p.GetValue(noColorOption))
-            {
-                options.ScriptArgs.Add("-no-color");
-            }
-
-            if (p.GetValue(htmlOption))
+            if (options.OutputFormat == OutputFormat.Html)
             {
                 options.ScriptArgs.Add("-html");
             }
 
-            if (p.GetValue(htmlMessageOption) || p.GetValue(htmlDocOption))
+            if (options.OutputFormat == OutputFormat.HtmlDoc)
             {
                 options.ScriptArgs.Add("-html-msg");
             }
@@ -286,8 +266,8 @@ public static class RunCommand
     {
         if (options.Verbose) Presenter.Info("Starting run...");
 
-        bool redirectScriptProcessIo = options.OutputHtmlDocument;
-        var htmlDocumentOutput = options.OutputHtmlDocument ? new StringBuilder() : null;
+        bool redirectScriptProcessIo = options.OutputFormat == OutputFormat.HtmlDoc;
+        var htmlDocumentOutput = options.OutputFormat == OutputFormat.HtmlDoc ? new StringBuilder() : null;
 
         // Create a script runner
         using var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope();
