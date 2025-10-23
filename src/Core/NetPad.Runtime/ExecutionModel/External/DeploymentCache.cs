@@ -26,7 +26,7 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         // {ScriptId}_{ScriptFingerprint}
 
         // A .netpad file that is formatted correctly will contain a unique guid ID.
-        // A file that is not a .netpad script file (ex. a .cs file) will not have an ID. The ID is generated
+        // A file that is not a .netpad script file (a plain text file) will not have an ID. The ID is generated
         // from the file path of that file.
 
         var cacheDir = cacheDirectory.GetInfo();
@@ -83,7 +83,7 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
             }
         }
 
-        // Script ID can change example: .cs files that are with npad CLI base the script ID off file's path which
+        // Script ID can change example: plain text files that are run with npad CLI base the script ID off file's path which
         // if moved/renamed will change its ID on the next run, but the contents might still be the same.
         // Lookup by fingerprint
         var byFingerprint = cacheDir.EnumerateDirectories()

@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.ComponentModel;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +40,7 @@ public static class RunCommand
     {
         var runCmd = new Command(
             "run",
-            "Run a script or .cs file. Script builds are cached for faster executions.");
+            "Run a script or a plain-text file. Script builds are cached for faster executions.");
         parent.Subcommands.Add(runCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
@@ -51,6 +50,12 @@ public static class RunCommand
                 "If omitted, or if multiple matches are found, you’ll be prompted to choose from a list.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
+        };
+
+        var optimizeOption = new Option<bool>("--optimize")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Enable compiler optimizations."
         };
 
         var noCacheOption = new Option<bool>("--no-cache")
@@ -85,6 +90,7 @@ public static class RunCommand
         };
 
         runCmd.Arguments.Add(pathOrNameArg);
+        runCmd.Options.Add(optimizeOption);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
         runCmd.Options.Add(formatOption);
@@ -95,7 +101,7 @@ public static class RunCommand
             var options = new Options(
                 p.GetValue(pathOrNameArg),
                 ScriptKind.Program,
-                OptimizationLevel.Debug,
+                p.GetValue(optimizeOption) ? OptimizationLevel.Release : OptimizationLevel.Debug,
                 null,
                 p.GetValue(noCacheOption),
                 p.GetValue(forceRebuildOption),
