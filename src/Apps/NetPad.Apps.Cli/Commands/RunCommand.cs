@@ -58,6 +58,24 @@ public static class RunCommand
             Description = "Enable compiler optimizations."
         };
 
+        var formatOption = new Option<OutputFormat>("--format")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            HelpName = "text|html|htmldoc",
+            Description =
+                "The format of script output. If not specified, will emit structured console output (default).\n" +
+                "Values:\n" +
+                "  - text       Plain text format; useful when piping to a file\n" +
+                "  - html       HTML fragments\n" +
+                "  - htmldoc    A complete HTML document",
+        };
+
+        var minimalOption = new Option<bool>("--minimal")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "If possible, use more minimal output formatting.",
+        };
+
         var noCacheOption = new Option<bool>("--no-cache")
         {
             Arity = ArgumentArity.ZeroOrOne,
@@ -71,18 +89,6 @@ public static class RunCommand
             Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
         };
 
-        var formatOption = new Option<OutputFormat>("--format")
-        {
-            Arity = ArgumentArity.ZeroOrOne,
-            HelpName = "text|html|htmldoc",
-            Description =
-                "The format of script output. If not specified, will emit structured console output (default).\n" +
-                "Values:\n" +
-                "  - text       Plain text format; useful when piping to a file\n" +
-                "  - html       HTML fragments\n" +
-                "  - htmldoc    A complete HTML document",
-        };
-
         var verboseOption = new Option<bool>("--verbose")
         {
             Arity = ArgumentArity.ZeroOrOne,
@@ -91,9 +97,10 @@ public static class RunCommand
 
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(optimizeOption);
+        runCmd.Options.Add(formatOption);
+        runCmd.Options.Add(minimalOption);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
-        runCmd.Options.Add(formatOption);
         runCmd.Options.Add(verboseOption);
         runCmd.SetAction(async p =>
         {
@@ -116,6 +123,7 @@ public static class RunCommand
                 return 1;
             }
 
+            // Forward some args to script
             if (options.OutputFormat == OutputFormat.Text)
             {
                 options.ScriptArgs.Add("-text");
@@ -129,6 +137,11 @@ public static class RunCommand
             if (options.OutputFormat == OutputFormat.HtmlDoc)
             {
                 options.ScriptArgs.Add("-html-msg");
+            }
+
+            if (p.GetValue(minimalOption))
+            {
+                options.ScriptArgs.Add("-minimal");
             }
 
             if (p.GetValue(verboseOption))

@@ -11,7 +11,9 @@ namespace NetPad.Presentation.Console;
 public static class ConsolePresenter
 {
     private static readonly ConsoleDumpOptions _coloredOptions;
+    private static readonly ConsoleDumpOptions _coloredMinimalOptions;
     private static readonly ConsoleDumpOptions _plainTextOptions;
+    private static readonly ConsoleDumpOptions _plainTextMinimalOptions;
 
     static ConsolePresenter()
     {
@@ -27,18 +29,49 @@ public static class ConsolePresenter
             MaxDepth = maxDepth,
         };
 
+        _coloredMinimalOptions = new ConsoleDumpOptions
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+            MaxDepth = maxDepth,
+            Tables = { ShowRowSeparators = false, ShowTitles = false }
+        };
+
         var plainTextStyles = StyleOptions.Plain;
         plainTextStyles.TableBorderType = TableBorder.Rounded; // Keep rounded table borders
+
         _plainTextOptions = new ConsoleDumpOptions
         {
             ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
             MaxDepth = maxDepth,
             Styles = plainTextStyles
         };
+
+        _plainTextMinimalOptions = new ConsoleDumpOptions
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.IgnoreAndSerializeCyclicReference,
+            MaxDepth = maxDepth,
+            Styles = plainTextStyles,
+            Tables = { ShowRowSeparators = false, ShowTitles = false }
+        };
     }
 
-    public static void Serialize(object? value, string? title = null, bool plainText = false)
+    public static void Serialize(object? value, string? title = null, bool plainText = false, bool minimal = false)
     {
-        value.DumpConsole(title, plainText ? _plainTextOptions : _coloredOptions);
+        if (!plainText && !minimal)
+        {
+            value.DumpConsole(title, _coloredOptions);
+        }
+        else if (!plainText && minimal)
+        {
+            value.DumpConsole(title, _coloredMinimalOptions);
+        }
+        else if (plainText && !minimal)
+        {
+            value.DumpConsole(title, _plainTextOptions);
+        }
+        else
+        {
+            value.DumpConsole(title, _plainTextMinimalOptions);
+        }
     }
 }

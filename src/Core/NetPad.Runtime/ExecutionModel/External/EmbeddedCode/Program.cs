@@ -32,7 +32,7 @@ public partial class Program
 
         if (System.Linq.Enumerable.Contains(args, "-help"))
         {
-            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true);
+            NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(true, false);
             PrintHelp();
             System.Environment.Exit(0);
         }
@@ -54,6 +54,7 @@ public partial class Program
         else
         {
             bool plainText = System.Linq.Enumerable.Contains(args, "-text");
+            bool minimal = System.Linq.Enumerable.Contains(args, "-minimal");
 
             if (verbose)
             {
@@ -61,7 +62,8 @@ public partial class Program
                 System.Console.Error.WriteLine("Output format: " + (plainText ? "Text" : "Console"));
             }
             NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance.UseConsoleOutput(
-                plainText);
+                plainText,
+                minimal);
         }
 
         DumpExtension.UseSink(NetPad.ExecutionModel.External.Interface.ExternalProcessDumpSink.Instance);
@@ -103,6 +105,7 @@ Options:
     -text           Output to plain text
     -html           Output in raw HTML
     -html-msg       Output in a message envelope with the body in HTML. For inter-process communication use.
+    -minimal        If possible, use more minimal output formatting.
 
     -parent <ID>    Instructs process to terminate itself when this process ID is terminated.
     -help           Display this help

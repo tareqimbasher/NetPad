@@ -6,13 +6,13 @@ namespace NetPad.ExecutionModel.External.Interface;
 /// <summary>
 /// Writes output emitted by the script to the console as console-formatted text.
 /// </summary>
-internal class ExternalProcessOutputConsoleWriter(bool plainText) : IExternalProcessOutputWriter
+internal class ExternalProcessOutputConsoleWriter(bool plainText, bool minimal) : IExternalProcessOutputWriter
 {
     public Task WriteResultAsync(object? output, DumpOptions? options = null)
     {
         options ??= new DumpOptions();
 
-        ConsolePresenter.Serialize(output, options.Title, plainText);
+        ConsolePresenter.Serialize(output, options.Title, plainText, minimal);
 
         return Task.CompletedTask;
     }
