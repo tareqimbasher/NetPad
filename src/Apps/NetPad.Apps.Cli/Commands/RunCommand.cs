@@ -29,7 +29,7 @@ public static class RunCommand
         string? PathOrName,
         ScriptKind ScriptKind,
         OptimizationLevel OptimizationLevel,
-        Guid? DataConnectionId,
+        DataConnection? DataConnection,
         bool NoCache,
         bool ForceRebuild,
         bool Verbose,
@@ -46,10 +46,17 @@ public static class RunCommand
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
             Description =
-                "A path to a script file, or a name (or partial name) to search for in your script library.\n" +
+                "A path to a script or plain-text file, or a name (or partial name) to search for in your script library.\n" +
                 "If omitted, or if multiple matches are found, you’ll be prompted to choose from a list.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
+        };
+
+        var connectionOption = new Option<string?>("--connection")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "The name of the database connection to use.",
+            HelpName = "name"
         };
 
         var optimizeOption = new Option<bool>("--optimize")
@@ -96,6 +103,7 @@ public static class RunCommand
         };
 
         runCmd.Arguments.Add(pathOrNameArg);
+        runCmd.Options.Add(connectionOption);
         runCmd.Options.Add(optimizeOption);
         runCmd.Options.Add(formatOption);
         runCmd.Options.Add(minimalOption);
@@ -104,12 +112,25 @@ public static class RunCommand
         runCmd.Options.Add(verboseOption);
         runCmd.SetAction(async p =>
         {
+            // Resolve the target connection
+            var connectionName = p.GetValue(connectionOption);
+            DataConnection? connection = null;
+            if (!string.IsNullOrWhiteSpace(connectionName))
+            {
+                connection = await GetConnectionByNameAsync(connectionName, serviceProvider);
+                if (connection == null)
+                {
+                    return 1;
+                }
+            }
+
             var scriptArgs = new List<string>();
+
             var options = new Options(
                 p.GetValue(pathOrNameArg),
                 ScriptKind.Program,
                 p.GetValue(optimizeOption) ? OptimizationLevel.Release : OptimizationLevel.Debug,
-                null,
+                connection,
                 p.GetValue(noCacheOption),
                 p.GetValue(forceRebuildOption),
                 p.GetValue(verboseOption),
@@ -155,6 +176,29 @@ public static class RunCommand
         });
     }
 
+    private static async Task<DataConnection?> GetConnectionByNameAsync(string connectionName,
+        IServiceProvider serviceProvider)
+    {
+        var dataConnectionRepository = serviceProvider.GetRequiredService<IDataConnectionRepository>();
+        var matches = (await dataConnectionRepository.GetAllAsync())
+            .Where(x => x.Name.Equals(connectionName, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (matches.Length == 0)
+        {
+            Presenter.Error($"No connection with the name '{connectionName}' was found.");
+            return null;
+        }
+
+        if (matches.Length > 1)
+        {
+            Presenter.Error($"More than one connection with the name '{connectionName}' was found.");
+            return null;
+        }
+
+        return matches[0];
+    }
+
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
     {
         var selectedScriptPath = SelectScript(serviceProvider, options);
@@ -163,7 +207,7 @@ public static class RunCommand
         var script = await LoadScriptAsync(serviceProvider, selectedScriptPath, options);
         if (script == null) return 1;
 
-        await ApplyOptionsAsync(script, options, serviceProvider);
+        ApplyOptions(script, options, serviceProvider);
 
         return await RunScriptAsync(serviceProvider, script, options);
     }
@@ -264,24 +308,14 @@ public static class RunCommand
         return script;
     }
 
-    private static async Task ApplyOptionsAsync(Script script, Options options, IServiceProvider serviceProvider)
+    private static void ApplyOptions(Script script, Options options, IServiceProvider serviceProvider)
     {
         script.Config.SetKind(options.ScriptKind);
         script.Config.SetOptimizationLevel(options.OptimizationLevel);
 
-        if (options.DataConnectionId.HasValue)
+        if (options.DataConnection != null)
         {
-            var dataConnectionRepository = serviceProvider.GetRequiredService<IDataConnectionRepository>();
-            var connection = await dataConnectionRepository.GetAsync(options.DataConnectionId.Value);
-
-            if (connection == null)
-            {
-                Presenter.Error("Could not find a data connection with the specified id.");
-            }
-            else
-            {
-                script.SetDataConnection(connection);
-            }
+            script.SetDataConnection(options.DataConnection);
         }
     }
 

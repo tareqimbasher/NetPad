@@ -10,6 +10,7 @@ public static class LogsCommand
     {
         var logsCmd = new Command("logs", "NetPad log files.");
         parent.Subcommands.Add(logsCmd);
+        logsCmd.SetAction(_ => PrintLogFiles(serviceProvider));
 
         var listCmd = new Command("list", "List log files.")
         {
