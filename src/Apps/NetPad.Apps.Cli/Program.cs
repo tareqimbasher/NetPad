@@ -2,7 +2,6 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps;
 using NetPad.Apps.Cli.Commands;
-using NetPad.Apps.Cli.Commands.Run;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.ExecutionModel;
 
@@ -13,9 +12,10 @@ var rootCommand = new RootCommand("NetPad command line tool.")
     TreatUnmatchedTokensAsErrors = false
 };
 
-rootCommand.AddInfoCommand(serviceProvider);
 rootCommand.AddRunCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
+rootCommand.AddCacheCommand(serviceProvider);
+rootCommand.AddInfoCommand(serviceProvider);
 rootCommand.AddSettingsCommand(serviceProvider);
 rootCommand.AddLogsCommand(serviceProvider);
 

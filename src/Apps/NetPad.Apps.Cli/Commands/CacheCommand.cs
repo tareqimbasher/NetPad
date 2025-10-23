@@ -4,13 +4,13 @@ using NetPad.ExecutionModel.External;
 using NetPad.Utilities;
 using Spectre.Console;
 
-namespace NetPad.Apps.Cli.Commands.Run;
+namespace NetPad.Apps.Cli.Commands;
 
 public static class CacheCommand
 {
-    public static void AddRunCacheCommand(this Command parent, IServiceProvider serviceProvider)
+    public static void AddCacheCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var cacheCmd = new Command("cache", "Show information about cached script builds.");
+        var cacheCmd = new Command("cache", "Show information about the script build cache.");
         parent.Subcommands.Add(cacheCmd);
         cacheCmd.SetAction(_ => ListCachedScriptDeployments(serviceProvider));
 
@@ -21,7 +21,7 @@ public static class CacheCommand
         var numberToRemoveArg = new Argument<int?>("number")
         {
             Description =
-                "A build number to remove. The number must correspond wity the listing shown when running the 'ls' command.",
+                "A build number to remove. The number must correspond with the listing shown when running the 'ls' command.",
             Arity = ArgumentArity.ZeroOrOne
         };
 
@@ -68,11 +68,11 @@ public static class CacheCommand
             BorderStyle = new Style(Color.PaleTurquoise4)
         };
 
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]#[/][/]")));
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]Script[/][/]")));
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]Size[/][/]")));
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]Last Run ▼[/][/]")));
-        table.AddColumn(new TableColumn(new Markup("[bold][olive]Last Run Result[/][/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold]#[/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold]Script[/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold]Size[/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold]Last Run ▼[/]")));
+        table.AddColumn(new TableColumn(new Markup("[bold]Last Run Result[/]")));
 
         int order = 0;
         var deployments = cache.ListDeploymentDirectories()
@@ -108,11 +108,13 @@ public static class CacheCommand
             return 0;
         }
 
+        bool removeAll = numberToRemove == null;
+
         dirs = numberToRemove.HasValue
             ? dirs.Skip(numberToRemove.Value - 1).Take(1).ToArray()
             : dirs;
 
-        var description = numberToRemove == null || dirs.Length > 1
+        var description = removeAll || dirs.Length > 1
             ? $"Delete {dirs.Length} cached deployments"
             : $"Delete the cached deployment for: [green]{dirs.First().GetDeploymentInfo()!.GetScriptName()}[/]";
 
@@ -128,7 +130,8 @@ public static class CacheCommand
             Try.Run(() => dir.DeleteIfExists());
         }
 
-        AnsiConsole.MarkupLine("[green]success:[/] cache was emptied");
+        var message = removeAll ? "cache was emptied" : $"{dirs.Length} cached builds were removed";
+        AnsiConsole.MarkupLineInterpolated($"[green]success:[/] {message}");
         return 0;
     }
 }

@@ -13,7 +13,7 @@ using NetPad.Scripts;
 using NetPad.Utilities;
 using Spectre.Console;
 
-namespace NetPad.Apps.Cli.Commands.Run;
+namespace NetPad.Apps.Cli.Commands;
 
 enum OutputFormat
 {
@@ -40,7 +40,7 @@ public static class RunCommand
     {
         var runCmd = new Command(
             "run",
-            "Run a script or a plain-text file. Script builds are cached for faster executions.");
+            "Run a script or a plain-text file.");
         parent.Subcommands.Add(runCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
@@ -110,6 +110,12 @@ public static class RunCommand
                 p.GetValue(formatOption)
             );
 
+            if (options.NoCache && options.ForceRebuild)
+            {
+                Presenter.Error($"Cannot use {noCacheOption.Name} and {forceRebuildOption.Name} at the same time.");
+                return 1;
+            }
+
             if (options.OutputFormat == OutputFormat.Text)
             {
                 options.ScriptArgs.Add("-text");
@@ -134,8 +140,6 @@ public static class RunCommand
 
             return await ExecuteAsync(options, serviceProvider);
         });
-
-        runCmd.AddRunCacheCommand(serviceProvider);
     }
 
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)

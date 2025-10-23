@@ -15,7 +15,7 @@ public static class ListCommand
 
     public static void AddListCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var listCmd = new Command("list", "List known scripts.")
+        var listCmd = new Command("list", "List scripts in your scripts library.")
         {
             Aliases = { "ls" }
         };
