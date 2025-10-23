@@ -4,7 +4,7 @@ using NetPad.Common;
 using NetPad.Events;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.ClientServer.Events;
-using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.ExecutionModel.ScriptServices;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts.Events;

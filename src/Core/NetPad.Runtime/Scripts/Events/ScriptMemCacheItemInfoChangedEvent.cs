@@ -1,5 +1,5 @@
 ﻿using NetPad.Events;
-using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.ExecutionModel.ScriptServices;
 
 namespace NetPad.Scripts.Events;
 

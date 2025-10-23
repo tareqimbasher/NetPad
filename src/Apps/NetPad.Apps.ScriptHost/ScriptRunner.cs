@@ -4,7 +4,7 @@ using NetPad.Assemblies;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.ExecutionModel.ClientServer.Messages;
-using NetPad.ExecutionModel.ClientServer.ScriptServices;
+using NetPad.ExecutionModel.ScriptServices;
 using NetPad.IO.IPC.Stdio;
 using NetPad.Presentation;
 using NetPad.Utilities;
@@ -28,12 +28,12 @@ public class ScriptRunner
     {
         Util.Stopwatch.Reset();
 
-        Util.Script = new UserScript(
+        Util.SetUserScript(new UserScript(
             message.ScriptId,
             message.ScriptName,
             message.ScriptFilePath,
             message.IsDirty
-        );
+        ));
 
         ClientServerDumpSink.Instance.RedirectStdIO(
             str =>
@@ -88,13 +88,16 @@ public class ScriptRunner
         {
             GcUtil.CollectAndWait();
 
-            if (Directory.Exists(message.ScriptDirPath))
-            {
-                Retry.Execute(
-                    3,
-                    TimeSpan.FromSeconds(1),
-                    () => Directory.Delete(message.ScriptDirPath, true));
-            }
+            Retry.Execute(
+                3,
+                TimeSpan.FromSeconds(1),
+                () =>
+                {
+                    if (Directory.Exists(message.ScriptDirPath))
+                    {
+                        Directory.Delete(message.ScriptDirPath, true);
+                    }
+                });
         }
     }
 
