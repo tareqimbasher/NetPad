@@ -85,7 +85,7 @@ public static class CacheCommand
         foreach (var deployment in deployments.OrderByDescending(x => x.Info.LastRunAt))
         {
             table.AddRow(
-                new Markup($"[blue]{++order}[/]"),
+                new Markup($"[violet]{++order}[/]"),
                 new Markup(deployment.Info.GetScriptName()),
                 new Markup(FileSystemUtil.GetReadableFileSize(deployment.Directory.GetSize(), 3)),
                 new Markup(deployment.Info.LastRunAt?.ToString() ?? "Never"),

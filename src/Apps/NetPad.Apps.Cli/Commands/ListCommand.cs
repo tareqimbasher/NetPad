@@ -28,7 +28,7 @@ public static class ListCommand
         var settings = serviceProvider.GetRequiredService<Settings>();
         var libDir = new DirectoryInfo(settings.ScriptsDirectoryPath);
 
-        AnsiConsole.MarkupLineInterpolated($"Scripts in your library ([blue]{libDir.FullName}[/]):");
+        AnsiConsole.MarkupLineInterpolated($"Scripts in your library ([violet]{libDir.FullName}[/]):");
         int order = 0;
         PrintScriptsRecursive(libDir.FullName, libDir, ref order);
     }

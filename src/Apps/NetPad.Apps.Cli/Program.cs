@@ -6,19 +6,14 @@ using NetPad.Apps.Cli.Commands.Run;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.ExecutionModel;
 
-#if !DEBUG
-// So app does not get affected by users dev environment
-Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Production");
-#endif
-
 var serviceProvider = BuildServiceProvider();
 
 var rootCommand = new RootCommand("NetPad command line tool.")
 {
-    // Extra args are passed to the running script
-    TreatUnmatchedTokensAsErrors = false
+    TreatUnmatchedTokensAsErrors = true
 };
 
+rootCommand.AddInfoCommand(serviceProvider);
 rootCommand.AddRunCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
 rootCommand.AddSettingsCommand(serviceProvider);

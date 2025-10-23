@@ -32,7 +32,7 @@ public static class RunCommand
     {
         var runCmd = new Command(
             "run",
-            "Run a script. Script builds are cached for faster executions.");
+            "Run a script or .cs file. Script builds are cached for faster executions.");
         parent.Subcommands.Add(runCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
