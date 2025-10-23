@@ -215,22 +215,22 @@ public partial class DotNetCSharpProject
         {
             var args = new List<string>
             {
+                ProjectFilePath.Path,
                 "package",
                 reference.PackageId,
                 "--version", reference.Version,
-                "--project", ProjectFilePath.Path
             };
 
             if (PackageCacheDirectoryPath is not null)
             {
                 args.Add("--package-directory");
-                args.Add(PackageCacheDirectoryPath.Path);
+                args.Add($"\"{PackageCacheDirectoryPath.Path}\"");
             }
 
             var result = await InvokeDotNetAsync(
                 "add",
                 args.ToArray(),
-                false,
+                true,
                 cancellationToken);
 
             if (!result.Succeeded)
@@ -267,15 +267,15 @@ public partial class DotNetCSharpProject
         {
             var args = new[]
             {
+                ProjectFilePath.Path,
                 "package",
                 reference.PackageId,
-                "--project", ProjectFilePath.Path
             };
 
             var result = await InvokeDotNetAsync(
                 "remove",
                 args,
-                false,
+                true,
                 cancellationToken);
 
             if (!result.Succeeded)

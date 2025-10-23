@@ -28,8 +28,9 @@ public static class RunCommand
     private sealed record Options(
         string? PathOrName,
         ScriptKind ScriptKind,
-        OptimizationLevel OptimizationLevel,
+        DotNetFrameworkVersion? SdkVersion,
         DataConnection? DataConnection,
+        OptimizationLevel OptimizationLevel,
         bool NoCache,
         bool ForceRebuild,
         bool Verbose,
@@ -52,6 +53,16 @@ public static class RunCommand
             HelpName = "PATH|NAME"
         };
 
+        var sdkOption = new Option<int?>("--sdk")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "The .NET SDK major version to use.",
+            HelpName = string.Join("|", Enumerable.Range(
+                DotNetFrameworkVersionUtil.MinSupportedDotNetVersion,
+                DotNetFrameworkVersionUtil.MaxSupportedDotNetVersion + 1 -
+                DotNetFrameworkVersionUtil.MinSupportedDotNetVersion))
+        };
+
         var connectionOption = new Option<string?>("--connection")
         {
             Arity = ArgumentArity.ZeroOrOne,
@@ -72,9 +83,9 @@ public static class RunCommand
             Description =
                 "The format of script output. If not specified, will emit structured console output (default).\n" +
                 "Values:\n" +
-                "  - text       Plain text format; useful when piping to a file\n" +
-                "  - html       HTML fragments\n" +
-                "  - htmldoc    A complete HTML document",
+                "    text       Plain text format; useful when piping to a file\n" +
+                "    html       HTML fragments\n" +
+                "    htmldoc    A complete HTML document",
         };
 
         var minimalOption = new Option<bool>("--minimal")
@@ -103,6 +114,7 @@ public static class RunCommand
         };
 
         runCmd.Arguments.Add(pathOrNameArg);
+        runCmd.Options.Add(sdkOption);
         runCmd.Options.Add(connectionOption);
         runCmd.Options.Add(optimizeOption);
         runCmd.Options.Add(formatOption);
@@ -124,13 +136,18 @@ public static class RunCommand
                 }
             }
 
+            var sdkMajor = p.GetValue(sdkOption);
+            DotNetFrameworkVersion? sdkVersion =
+                sdkMajor == null ? null : DotNetFrameworkVersionUtil.GetFrameworkVersion(sdkMajor.Value);
+
             var scriptArgs = new List<string>();
 
             var options = new Options(
                 p.GetValue(pathOrNameArg),
                 ScriptKind.Program,
-                p.GetValue(optimizeOption) ? OptimizationLevel.Release : OptimizationLevel.Debug,
+                sdkVersion,
                 connection,
+                p.GetValue(optimizeOption) ? OptimizationLevel.Release : OptimizationLevel.Debug,
                 p.GetValue(noCacheOption),
                 p.GetValue(forceRebuildOption),
                 p.GetValue(verboseOption),
@@ -313,6 +330,11 @@ public static class RunCommand
         script.Config.SetKind(options.ScriptKind);
         script.Config.SetOptimizationLevel(options.OptimizationLevel);
 
+        if (options.SdkVersion != null)
+        {
+            script.Config.SetTargetFrameworkVersion(options.SdkVersion.Value);
+        }
+
         if (options.DataConnection != null)
         {
             script.SetDataConnection(options.DataConnection);
@@ -321,7 +343,7 @@ public static class RunCommand
 
     private static async Task<int> RunScriptAsync(IServiceProvider serviceProvider, Script script, Options options)
     {
-        if (options.Verbose) Presenter.Info("Starting run...");
+        if (options.Verbose) Presenter.Info("Setting up...");
 
         bool redirectScriptProcessIo = options.OutputFormat == OutputFormat.HtmlDoc;
         var htmlDocumentOutput = options.OutputFormat == OutputFormat.HtmlDoc ? new StringBuilder() : null;

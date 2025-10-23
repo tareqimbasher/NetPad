@@ -5,9 +5,9 @@ namespace NetPad.DotNet;
 
 public static class DotNetFrameworkVersionUtil
 {
-    private const int MinSupportedDotNetVersion = 6;
-    private const int MaxSupportedDotNetVersion = 9;
-    private const int MinSupportedEfToolVersion = 5;
+    public const int MinSupportedDotNetVersion = 6;
+    public const int MaxSupportedDotNetVersion = 9;
+    public const int MinSupportedEfToolVersion = 5;
 
     private static readonly Dictionary<int, DotNetFrameworkVersion> _majorToFrameworkVersion = new()
     {
