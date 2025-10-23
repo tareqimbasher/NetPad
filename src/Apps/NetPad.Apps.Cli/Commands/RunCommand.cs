@@ -27,6 +27,7 @@ public static class RunCommand
 {
     private sealed record Options(
         string? PathOrName,
+        string? Code,
         ScriptKind ScriptKind,
         DotNetFrameworkVersion? SdkVersion,
         DataConnection? DataConnection,
@@ -35,7 +36,10 @@ public static class RunCommand
         bool ForceRebuild,
         bool Verbose,
         List<string> ScriptArgs,
-        OutputFormat OutputFormat);
+        OutputFormat OutputFormat)
+    {
+        public bool NoCache { get; set; } = NoCache;
+    }
 
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
@@ -47,10 +51,24 @@ public static class RunCommand
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
             Description =
-                "A path to a script or plain-text file, or a name (or partial name) to search for in your script library.\n" +
-                "If omitted, or if multiple matches are found, you’ll be prompted to choose from a list.",
+                "A path to a script or text file, or a name (or partial name) to search for in your script library.\n" +
+                "Examples:\n" +
+                "    run /path/to/myscript.netpad   <= absolute path to a .netpad script\n" +
+                "    run ./myscript.netpad          <= relative path to a .netpad script\n" +
+                "    run /path/to/myscript.cs       <= path to a text file that contains code to be executed\n" +
+                "    run myscript                   <= looks for a script in your library with a path containing the word 'myscript' \n" +
+                "Notes:\n" +
+                "    1. If omitted, or if name matches multiple scripts from your library, you’ll be prompted to select from a list.\n" +
+                "    2. If omitted and the --code (-x) option is used you will not be prompted to select a script.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
+        };
+
+        var codeOption = new Option<string?>("--code", "-x")
+        {
+            Description =
+                "The code to execute. Will override the code in the target script, or will be executed it as-is if no script was provided.",
+            Arity = ArgumentArity.ZeroOrOne,
         };
 
         var sdkOption = new Option<int?>("--sdk")
@@ -114,6 +132,7 @@ public static class RunCommand
         };
 
         runCmd.Arguments.Add(pathOrNameArg);
+        runCmd.Options.Add(codeOption);
         runCmd.Options.Add(sdkOption);
         runCmd.Options.Add(connectionOption);
         runCmd.Options.Add(optimizeOption);
@@ -144,6 +163,7 @@ public static class RunCommand
 
             var options = new Options(
                 p.GetValue(pathOrNameArg),
+                p.GetValue(codeOption),
                 ScriptKind.Program,
                 sdkVersion,
                 connection,
@@ -218,13 +238,32 @@ public static class RunCommand
 
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
     {
-        var selectedScriptPath = SelectScript(serviceProvider, options);
-        if (selectedScriptPath == null) return 1;
+        Script? script;
 
-        var script = await LoadScriptAsync(serviceProvider, selectedScriptPath, options);
+        if (!string.IsNullOrWhiteSpace(options.PathOrName))
+        {
+            var selectedScriptPath = SelectScript(serviceProvider, options);
+            if (selectedScriptPath == null) return 1;
+
+            script = await LoadScriptAsync(serviceProvider, selectedScriptPath, options);
+        }
+        else if (!string.IsNullOrEmpty(options.Code))
+        {
+            script = CreateScriptFromCode(serviceProvider, options.Code);
+
+            // Force a no-cache run
+            options.NoCache = true;
+        }
+        else
+        {
+            Presenter.Error(
+                "A path|name argument must be passed or the --code (-x) option must be used. Both values are currently empty.");
+            return 1;
+        }
+
         if (script == null) return 1;
 
-        ApplyOptions(script, options, serviceProvider);
+        ApplyOptions(script, options);
 
         return await RunScriptAsync(serviceProvider, script, options);
     }
@@ -325,8 +364,43 @@ public static class RunCommand
         return script;
     }
 
-    private static void ApplyOptions(Script script, Options options, IServiceProvider serviceProvider)
+    private static Script? CreateScriptFromCode(IServiceProvider serviceProvider, string code)
     {
+        var dotNetInfo = serviceProvider.GetRequiredService<IDotNetInfo>();
+        var latestInstalledSdkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion();
+        if (latestInstalledSdkVersion == null)
+        {
+            Presenter.Error("Could not find an installed .NET SDK.");
+            return null;
+        }
+
+        var namespaces = ScriptConfigDefaults.DefaultNamespaces;
+        var kind = ScriptKind.Program;
+        var optimizationLevel = OptimizationLevel.Debug;
+        var scriptId = ScriptIdGenerator.NewId();
+
+        var script = new Script(
+            scriptId,
+            $"Inline Script {scriptId}",
+            new ScriptConfig(
+                kind,
+                latestInstalledSdkVersion.Value,
+                namespaces: namespaces,
+                optimizationLevel: optimizationLevel
+            ),
+            code
+        );
+
+        return script;
+    }
+
+    private static void ApplyOptions(Script script, Options options)
+    {
+        if (!string.IsNullOrEmpty(options.Code))
+        {
+            script.UpdateCode(options.Code);
+        }
+
         script.Config.SetKind(options.ScriptKind);
         script.Config.SetOptimizationLevel(options.OptimizationLevel);
 
@@ -359,6 +433,12 @@ public static class RunCommand
             if (htmlDocumentOutput != null && o is HtmlResultsScriptOutput htmlScriptOutput)
             {
                 htmlDocumentOutput.Append(htmlScriptOutput.Body);
+                return;
+            }
+
+            if (o is HtmlSqlScriptOutput)
+            {
+                // Do not output
                 return;
             }
 
