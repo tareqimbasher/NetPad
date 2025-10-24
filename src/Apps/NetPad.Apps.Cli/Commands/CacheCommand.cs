@@ -53,7 +53,7 @@ public static class CacheCommand
                 return 1;
             }
 
-            return RemoveCachedScriptDeployments(num, serviceProvider);
+            return RemoveCachedScriptDeployments(num);
         });
     }
 
@@ -98,7 +98,7 @@ public static class CacheCommand
         return 0;
     }
 
-    private static int RemoveCachedScriptDeployments(int? numberToRemove, IServiceProvider serviceProvider)
+    private static int RemoveCachedScriptDeployments(int? numberToRemove)
     {
         var cache = new DeploymentCache(AppDataProvider.ExternalExecutionModelDeploymentCacheDirectoryPath);
         var dirs = cache.ListDeploymentDirectories().ToArray();
@@ -114,23 +114,12 @@ public static class CacheCommand
             ? dirs.Skip(numberToRemove.Value - 1).Take(1).ToArray()
             : dirs;
 
-        var description = removeAll || dirs.Length > 1
-            ? $"Delete {dirs.Length} cached deployments"
-            : $"Delete the cached deployment for: [green]{dirs.First().GetDeploymentInfo()!.GetScriptName()}[/]";
-
-        AnsiConsole.Markup($"[bold][violet]Q:[/][/] {description}? [[y/N]]: ");
-        var response = Console.ReadLine();
-        if (response?.ToLower() != "y")
-        {
-            return 1;
-        }
-
         foreach (var dir in dirs)
         {
             Try.Run(() => dir.DeleteIfExists());
         }
 
-        var message = removeAll ? "cache was emptied" : $"{dirs.Length} cached builds were removed";
+        var message = removeAll ? "cache was emptied" : $"cached build was removed";
         AnsiConsole.MarkupLineInterpolated($"[green]success:[/] {message}");
         return 0;
     }

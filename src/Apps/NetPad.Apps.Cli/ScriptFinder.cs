@@ -9,7 +9,8 @@ public static class ScriptFinder
     public static readonly ImmutableArray<string> AutoFindFileExtensions =
     [
         Script.STANDARD_EXTENSION,
-        ".cs"
+        ".cs",
+        ".csx",
     ];
 
     private static readonly EnumerationOptions _scriptEnumerationOptions = new()
@@ -25,7 +26,7 @@ public static class ScriptFinder
     /// <param name="searchDirectory">The directory from which to start the search. The search is recursive.</param>
     /// <param name="pathOrName">
     /// An absolute or relative path to a script, or a name to match against script
-    /// files and their directories.</param>
+    /// files and their directory path.</param>
     /// <returns>Full paths to script files that match the query.</returns>
     public static string[] FindMatches(string searchDirectory, string? pathOrName)
     {
@@ -36,13 +37,8 @@ public static class ScriptFinder
 
         var name = pathOrName;
 
-        IEnumerable<string> files = [];
-        foreach (var extension in AutoFindFileExtensions)
-        {
-            files = files.Concat(Directory.EnumerateFiles(searchDirectory, $"*{extension}", _scriptEnumerationOptions));
-        }
-
-        var matches = files
+        var matches = AutoFindFileExtensions
+            .SelectMany(e => Directory.EnumerateFiles(searchDirectory, $"*{e}", _scriptEnumerationOptions))
             .Select(fullPath => new
             {
                 FullPath = fullPath,

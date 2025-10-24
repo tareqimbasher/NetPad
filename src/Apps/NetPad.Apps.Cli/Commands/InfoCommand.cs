@@ -29,7 +29,8 @@ public static class InfoCommand
         AnsiConsole.MarkupLine("[bold]General[/]");
         Print("Version", AppIdentifier.PRODUCT_VERSION);
         Print("Runtime version", RuntimeInformation.FrameworkDescription);
-        Print("OS", PlatformUtil.GetOSPlatform().ToString());
+        Print("Runtime identifier", RuntimeInformation.RuntimeIdentifier);
+        Print("OS", $"{RuntimeInformation.OSDescription} ({Environment.OSVersion.VersionString})");
         Print("Processor", RuntimeInformation.ProcessArchitecture.ToString());
 
         AnsiConsole.MarkupLine("\n[bold]Paths[/]");

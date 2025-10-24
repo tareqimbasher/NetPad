@@ -148,7 +148,7 @@ public static class RunCommand
             DataConnection? connection = null;
             if (!string.IsNullOrWhiteSpace(connectionName))
             {
-                connection = await GetConnectionByNameAsync(connectionName, serviceProvider);
+                connection = await Helper.GetConnectionByNameAsync(serviceProvider, connectionName);
                 if (connection == null)
                 {
                     return 1;
@@ -175,13 +175,14 @@ public static class RunCommand
                 p.GetValue(formatOption)
             );
 
+            // Validate options
             if (options.NoCache && options.ForceRebuild)
             {
                 Presenter.Error($"Cannot use {noCacheOption.Name} and {forceRebuildOption.Name} at the same time.");
                 return 1;
             }
 
-            // Forward some args to script
+            // Forward some options to script
             if (options.OutputFormat == OutputFormat.Text)
             {
                 options.ScriptArgs.Add("-text");
@@ -207,33 +208,11 @@ public static class RunCommand
                 options.ScriptArgs.Add("-verbose");
             }
 
+            // Forward all unmatched tokens to script
             scriptArgs.AddRange(p.UnmatchedTokens);
 
             return await ExecuteAsync(options, serviceProvider);
         });
-    }
-
-    private static async Task<DataConnection?> GetConnectionByNameAsync(string connectionName,
-        IServiceProvider serviceProvider)
-    {
-        var dataConnectionRepository = serviceProvider.GetRequiredService<IDataConnectionRepository>();
-        var matches = (await dataConnectionRepository.GetAllAsync())
-            .Where(x => x.Name.Equals(connectionName, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        if (matches.Length == 0)
-        {
-            Presenter.Error($"No connection with the name '{connectionName}' was found.");
-            return null;
-        }
-
-        if (matches.Length > 1)
-        {
-            Presenter.Error($"More than one connection with the name '{connectionName}' was found.");
-            return null;
-        }
-
-        return matches[0];
     }
 
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
@@ -245,14 +224,11 @@ public static class RunCommand
             var selectedScriptPath = SelectScript(serviceProvider, options);
             if (selectedScriptPath == null) return 1;
 
-            script = await LoadScriptAsync(serviceProvider, selectedScriptPath, options);
+            script = await LoadScriptFileAsync(serviceProvider, selectedScriptPath, options);
         }
         else if (!string.IsNullOrEmpty(options.Code))
         {
-            script = CreateScriptFromCode(serviceProvider, options.Code);
-
-            // Force a no-cache run
-            options.NoCache = true;
+            script = Helper.CreateScriptFromCode(serviceProvider, options.Code);
         }
         else
         {
@@ -302,7 +278,7 @@ public static class RunCommand
         return selectedScriptFilePath;
     }
 
-    private static async Task<Script?> LoadScriptAsync(
+    private static async Task<Script?> LoadScriptFileAsync(
         IServiceProvider serviceProvider,
         string scriptFilePath,
         Options options)
@@ -327,69 +303,7 @@ public static class RunCommand
         }
 
         // If the normal way failed, assume the contents of the file is C# code and create a new script
-        script ??= CreateScriptFromFile(serviceProvider, scriptFilePath);
-
-        return script;
-    }
-
-    private static Script? CreateScriptFromFile(IServiceProvider serviceProvider, string scriptPath)
-    {
-        var dotNetInfo = serviceProvider.GetRequiredService<IDotNetInfo>();
-        var latestInstalledSdkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion();
-        if (latestInstalledSdkVersion == null)
-        {
-            Presenter.Error("Could not find an installed .NET SDK.");
-            return null;
-        }
-
-        var code = File.ReadAllText(scriptPath);
-        var namespaces = ScriptConfigDefaults.DefaultNamespaces;
-        var kind = ScriptKind.Program;
-        var optimizationLevel = OptimizationLevel.Debug;
-        var scriptId = ScriptIdGenerator.IdFromFilePath(scriptPath);
-
-        var script = new Script(
-            scriptId,
-            Path.GetFileName(scriptPath),
-            new ScriptConfig(
-                kind,
-                latestInstalledSdkVersion.Value,
-                namespaces: namespaces,
-                optimizationLevel: optimizationLevel
-            ),
-            code
-        );
-
-        script.SetPath(scriptPath);
-        return script;
-    }
-
-    private static Script? CreateScriptFromCode(IServiceProvider serviceProvider, string code)
-    {
-        var dotNetInfo = serviceProvider.GetRequiredService<IDotNetInfo>();
-        var latestInstalledSdkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion();
-        if (latestInstalledSdkVersion == null)
-        {
-            Presenter.Error("Could not find an installed .NET SDK.");
-            return null;
-        }
-
-        var namespaces = ScriptConfigDefaults.DefaultNamespaces;
-        var kind = ScriptKind.Program;
-        var optimizationLevel = OptimizationLevel.Debug;
-        var scriptId = ScriptIdGenerator.NewId();
-
-        var script = new Script(
-            scriptId,
-            $"Inline Script {scriptId}",
-            new ScriptConfig(
-                kind,
-                latestInstalledSdkVersion.Value,
-                namespaces: namespaces,
-                optimizationLevel: optimizationLevel
-            ),
-            code
-        );
+        script ??= Helper.CreateScriptFromFile(serviceProvider, scriptFilePath);
 
         return script;
     }
