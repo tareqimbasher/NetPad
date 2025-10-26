@@ -1,4 +1,5 @@
 - [Wiki](/wiki/)
+    - [CLI](wiki/CLI)
     - [.NET SDK](wiki/NET-SDK)
     - [Data Connections](wiki/Data-Connections)
     - [Dump](wiki/Dump)

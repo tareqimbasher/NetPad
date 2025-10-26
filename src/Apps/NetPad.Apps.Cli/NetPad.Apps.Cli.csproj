@@ -3,12 +3,25 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>$(EarliestSupportedTargetFramework)</TargetFramework>
+        <!-- Roll forward to the latest installed major instead of targeting multiple frameworks -->
+        <RollForward>Major</RollForward>
         <AssemblyName>npad</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Version>0.11.0</Version>
+        <Version>0.1.0</Version>
 
-        <PublishReadyToRun>true</PublishReadyToRun>
-        <PublishSingleFile>false</PublishSingleFile>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>npad</ToolCommandName>
+        <PackageId>NetPad.CLI</PackageId>
+        <Description>Brings the power of NetPad to the terminal.</Description>
+        <Product>NetPad</Product>
+        <Authors>Tareq Imbasher</Authors>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/tareqimbasher/NetPad/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/tareqimbasher/NetPad/</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageTags>script;netpad;linqpad;roslynpad;dump;cli</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,16 +31,17 @@
         <ProjectReference Include="..\..\External\O2Html\O2Html.csproj">
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </ProjectReference>
-        <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
+        <ProjectReference Include="..\NetPad.Apps.Common\NetPad.Apps.Common.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107" />
+        <PackageReference Include="System.CommandLine" Version="2.0.0-rc.1.25451.107"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\styles.css" />
-      <EmbeddedResource Include="Assets\styles.css" />
+        <None Remove="Assets\styles.css"/>
+        <EmbeddedResource Include="Assets\styles.css"/>
+        <None Include="Assets\logo.png" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>
