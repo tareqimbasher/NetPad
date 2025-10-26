@@ -9,8 +9,6 @@ namespace NetPad.Configuration;
 /// </summary>
 public static class AppDataProvider
 {
-    private static readonly DirectoryPath _cacheDirectoryPath = GetCacheDirectoryPath();
-
     /// <summary>
     /// Path of NetPad's local data directory.
     /// </summary>
@@ -23,6 +21,9 @@ public static class AppDataProvider
 
     /// <summary>A "NetPad" directory inside the system's default temp directory.</summary>
     public static readonly DirectoryPath TempDirectoryPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
+
+    // We need TempDirectoryPath to be defined first
+    private static readonly DirectoryPath _cacheDirectoryPath = GetCacheDirectoryPath();
 
     /// <summary>A directory where the "External" execution model caches its script build/deployments.</summary>
     public static readonly DirectoryPath ExternalExecutionModelDeploymentCacheDirectoryPath =
