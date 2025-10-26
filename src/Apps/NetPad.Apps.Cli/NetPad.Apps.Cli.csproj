@@ -7,7 +7,7 @@
         <RollForward>Major</RollForward>
         <AssemblyName>npad</AssemblyName>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
 
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>npad</ToolCommandName>
