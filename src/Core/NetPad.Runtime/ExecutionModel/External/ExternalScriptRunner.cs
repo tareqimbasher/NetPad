@@ -176,7 +176,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         finally
         {
             _ = StopScriptAsync();
-            if (deploymentDir?.IsTemporary == true)
+            if (deploymentDir != null && (deploymentDir.IsTemporary || !deploymentDir.ContainsDeployment))
             {
                 Try.Run(() => Directory.Delete(deploymentDir.Path, true));
             }

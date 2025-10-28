@@ -4,18 +4,18 @@ using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.External;
 
-public class DeploymentCache(DirectoryPath cacheDirectory)
+public class DeploymentCache(DirectoryPath cacheRoot)
 {
     public IEnumerable<DeploymentDirectory> ListDeploymentDirectories()
     {
-        return Directory.EnumerateDirectories(cacheDirectory.Path)
+        return Directory.EnumerateDirectories(cacheRoot.Path)
             .Where(d => File.Exists(DeploymentDirectory.GetDeploymentInfoFilePath(d)))
             .Select(d => new DeploymentDirectory(d, false));
     }
 
     public DeploymentDirectory CreateTempDeploymentDirectory()
     {
-        var dirPath = Path.Combine(cacheDirectory.Path, Path.GetRandomFileName());
+        var dirPath = Path.Combine(cacheRoot.Path, Path.GetRandomFileName());
         Directory.CreateDirectory(dirPath);
         return new DeploymentDirectory(dirPath, true);
     }
@@ -29,12 +29,12 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         // A file that is not a .netpad script file (a plain text file) will not have an ID. The ID is generated
         // from the file path of that file.
 
-        var cacheDir = cacheDirectory.GetInfo();
+        var cacheRootDir = cacheRoot.GetInfo();
         var scriptId = script.Id.ToString();
         var fingerprint = script.GetFingerprint();
         var fingerprintUuid = fingerprint.CalculateUuid().ToString();
         var expectedDirName = $"{scriptId}_{fingerprintUuid}";
-        var expectedDirPath = Path.Combine(cacheDir.FullName, expectedDirName);
+        var expectedDirPath = Path.Combine(cacheRootDir.FullName, expectedDirName);
 
         if (forceCreateNew)
         {
@@ -47,13 +47,13 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
             return new DeploymentDirectory(expectedDirPath, false);
         }
 
-        if (!cacheDir.Exists)
+        if (!cacheRootDir.Exists)
         {
-            cacheDir.Create();
+            cacheRootDir.Create();
         }
 
         // First try to find builds for this script (by ID)
-        var relatedBuildDirs = cacheDir.EnumerateDirectories()
+        var relatedBuildDirs = cacheRootDir.EnumerateDirectories()
             .Where(p => p.Name.Contains(scriptId) || p.Name.Contains(fingerprintUuid))
             .ToArray();
 
@@ -86,7 +86,7 @@ public class DeploymentCache(DirectoryPath cacheDirectory)
         // Script ID can change example: plain text files that are run with npad CLI base the script ID off file's path which
         // if moved/renamed will change its ID on the next run, but the contents might still be the same.
         // Lookup by fingerprint
-        var byFingerprint = cacheDir.EnumerateDirectories()
+        var byFingerprint = cacheRootDir.EnumerateDirectories()
             .Where(p => p.Name.EndsWith(fingerprintUuid))
             .ToArray();
 

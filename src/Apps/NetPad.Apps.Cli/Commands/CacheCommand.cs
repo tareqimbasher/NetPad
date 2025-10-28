@@ -119,7 +119,7 @@ public static class CacheCommand
             Try.Run(() => dir.DeleteIfExists());
         }
 
-        var message = removeAll ? "cache was emptied" : $"cached build was removed";
+        var message = removeAll ? "cache was emptied" : "cached build was removed";
         AnsiConsole.MarkupLineInterpolated($"[green]success:[/] {message}");
         return 0;
     }
