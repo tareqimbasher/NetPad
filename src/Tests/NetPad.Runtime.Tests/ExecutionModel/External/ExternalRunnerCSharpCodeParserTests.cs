@@ -21,7 +21,7 @@ public class ExternalRunnerCSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new ExternalRunnerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
+        var parsingResult = parser.Parse(script);
         var parsedUsings = parsingResult.UserProgram.Usings.Select(u => u.Value);
 
         Assert.Equal(scriptNamespaces, parsedUsings);
@@ -40,7 +40,7 @@ public class ExternalRunnerCSharpCodeParserTests
         var script = GetScript();
         var parser = new ExternalRunnerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
+        var parsingResult = parser.Parse(script, options: parseOptions);
         var parsedUsings = parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value);
 
         Assert.NotNull(parsedUsings);
@@ -67,7 +67,7 @@ public class ExternalRunnerCSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new ExternalRunnerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
+        var parsingResult = parser.Parse(script, options: parseOptions);
         var parsedUserProgramUsings = parsingResult.UserProgram.Usings.Select(u => u.Value);
         var parsedAdditionalCodeUsings = parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value);
 
@@ -80,8 +80,7 @@ public class ExternalRunnerCSharpCodeParserTests
     [Fact]
     public void EmbeddedBootstrapperProgramIsParsable()
     {
-        var bootstrapperProgram = ExternalRunnerCSharpCodeParser.GetEmbeddedBootstrapperProgram();
-
+        var bootstrapperProgram = ExternalRunnerCSharpCodeParser.GetEmbeddedBootstrapperProgram(GetScript());
         SourceCode.Parse(bootstrapperProgram);
     }
 
@@ -89,7 +88,6 @@ public class ExternalRunnerCSharpCodeParserTests
     public void GetEmbeddedSqlProgramIsParsable()
     {
         var bootstrapperProgram = ExternalRunnerCSharpCodeParser.GetEmbeddedSqlProgram();
-
         SourceCode.Parse(bootstrapperProgram);
     }
 

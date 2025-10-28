@@ -10,13 +10,11 @@ public interface ICodeParser
     /// <summary>
     /// Parses script code into a program that is ready to compile.
     /// </summary>
-    /// <param name="scriptCode">The code to parse.</param>
-    /// <param name="scriptKind">The kind of code.</param>
-    /// <param name="usings">Additional usings to include in parsed program.</param>
+    /// <param name="script">The target script.</param>
+    /// <param name="code">If not null, will be used instead of <see cref="Script.Code"/>.</param>
     /// <param name="options">Parsing options.</param>
     CodeParsingResult Parse(
-        string scriptCode,
-        ScriptKind scriptKind,
-        IEnumerable<string>? usings = null,
+        Script script,
+        string? code = null,
         CodeParsingOptions? options = null);
 }

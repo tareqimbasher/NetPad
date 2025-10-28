@@ -19,6 +19,20 @@ namespace NetPad.ExecutionModel.ScriptServices;
 public static class Util
 {
     /// <summary>
+    /// Initializes properties. For internal use only.
+    /// </summary>
+    internal static void Init(int? parentProcessId)
+    {
+        Environment = new HostEnvironment(parentProcessId);
+    }
+
+    /// <summary>
+    /// Sets the <see cref="Script"/>. For internal use only.
+    /// </summary>
+    internal static void SetUserScript(UserScript script) => Script = script;
+
+
+    /// <summary>
     /// <para>
     /// If true a new script-host process will be started for each script run.
     /// </para>
@@ -42,19 +56,9 @@ public static class Util
     public static UserScript Script { get; private set; } = null!;
 
     /// <summary>
-    /// Sets the <see cref="Script"/>. For internal use only.
-    /// </summary>
-    public static void SetUserScript(UserScript script) => Script = script;
-
-    /// <summary>
     /// Information about the current script-host environment.
     /// </summary>
     public static HostEnvironment Environment { get; private set; } = null!;
-
-    /// <summary>
-    /// Sets the <see cref="Environment"/>. For internal use only.
-    /// </summary>
-    public static void SetHostEnvironment(HostEnvironment environment) => Environment = environment;
 
     /// <summary>
     /// This stopwatch is started when user code starts executing.

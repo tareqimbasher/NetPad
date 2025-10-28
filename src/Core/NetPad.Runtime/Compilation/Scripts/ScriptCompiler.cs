@@ -142,9 +142,8 @@ public class ScriptCompiler(
         CancellationToken cancellationToken)
     {
         var parsingResult = codeParser.Parse(
+            script,
             code,
-            script.Config.Kind,
-            script.Config.Namespaces,
             new CodeParsingOptions
             {
                 IncludeAspNetUsings = script.Config.UseAspNet,
