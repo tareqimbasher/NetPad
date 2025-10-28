@@ -137,9 +137,8 @@ public sealed class InMemoryScriptRunner : IScriptRunner
         CompileAndGetReferencesAsync(RunOptions runOptions)
     {
         var parsingResult = _codeParser.Parse(
-            runOptions.SpecificCodeToRun ?? _script.Code,
-            _script.Config.Kind,
-            _script.Config.Namespaces,
+            _script,
+            runOptions.SpecificCodeToRun,
             new CodeParsingOptions
             {
                 //AdditionalCode = runOptions.AdditionalCode

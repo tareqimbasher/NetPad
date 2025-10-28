@@ -76,11 +76,11 @@ public partial class Program
             NetPad.Utilities.WindowsNative.DisableWindowsErrorReporting();
         }
 
-        Util.SetHostEnvironment(new NetPad.ExecutionModel.ScriptServices.HostEnvironment(parentProcessId));
-        Util.SetUserScript(new NetPad.ExecutionModel.ScriptServices.UserScript( // TODO fill real values
-            Guid.Empty,
-            "Unknown",
-            "Unknown",
+        Util.Init(parentProcessId);
+        Util.SetUserScript(new NetPad.ExecutionModel.ScriptServices.UserScript(
+            Guid.Parse("USERSCRIPT_ID"),
+            "USERSCRIPT_NAME",
+            "USERSCRIPT_PATH",
             false
         ));
 

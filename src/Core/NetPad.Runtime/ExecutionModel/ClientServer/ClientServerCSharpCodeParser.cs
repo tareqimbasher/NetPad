@@ -19,55 +19,51 @@ public class ClientServerCSharpCodeParser : ICodeParser
         "Microsoft.Extensions.Logging"
     ];
 
-    public CodeParsingResult Parse(
-        string scriptCode,
-        ScriptKind scriptKind,
-        IEnumerable<string>? usings = null,
-        CodeParsingOptions? options = null)
+    public CodeParsingResult Parse(Script script, string? code = null, CodeParsingOptions? options = null)
     {
-        var userProgramCode = new SourceCode(GetUserProgram(scriptCode, scriptKind));
-
-        if (usings != null)
-        {
-            foreach (var u in usings)
-            {
-                userProgramCode.AddUsing(u);
-            }
-        }
-
-        if (options?.IncludeAspNetUsings == true)
-        {
-            foreach (var u in _aspNetUsings)
-            {
-                userProgramCode.AddUsing(u);
-            }
-        }
-
-        var bootstrapperProgramCode = SourceCode.Parse(GetEmbeddedBootstrapperProgram());
-
+        var userCode = code ?? script.Code;
+        var userProgram = GetUserProgram(script, userCode, options);
+        var bootstrapperProgram = SourceCode.Parse(GetEmbeddedBootstrapperProgram());
         var additionalCode = options?.AdditionalCode.ToSourceCodeCollection();
 
-        return new CodeParsingResult(userProgramCode, bootstrapperProgramCode, additionalCode);
+        return new CodeParsingResult(userProgram, bootstrapperProgram, additionalCode);
     }
 
-    private static string GetUserProgram(string scriptCode, ScriptKind kind)
+    private static SourceCode GetUserProgram(Script script, string userCode, CodeParsingOptions? options)
     {
-        string userProgram;
+        SourceCode userProgram;
 
-        if (kind == ScriptKind.Expression)
+        if (script.Config.Kind == ScriptKind.Expression)
         {
             throw new NotImplementedException("Expression code parsing is not implemented yet.");
         }
 
-        if (kind == ScriptKind.SQL)
+        if (script.Config.Kind == ScriptKind.SQL)
         {
-            scriptCode = scriptCode.Replace("\"", "\"\"");
-
-            userProgram = GetEmbeddedSqlProgram().Replace("SQL_CODE", scriptCode);
+            userCode = userCode.Replace("\"", "\"\"");
+            userProgram = new SourceCode(GetEmbeddedSqlProgram().Replace("SQL_CODE", userCode));
         }
         else
         {
-            userProgram = scriptCode;
+            userProgram = new SourceCode(userCode);
+        }
+
+        // Add usings
+        var usings = script.Config.Namespaces.ToHashSet();
+
+        if (options?.AdditionalUsings != null)
+        {
+            usings.AddRange(options.AdditionalUsings);
+        }
+
+        if (options?.IncludeAspNetUsings == true)
+        {
+            usings.AddRange(_aspNetUsings);
+        }
+
+        foreach (var u in usings)
+        {
+            userProgram.AddUsing(u);
         }
 
         return userProgram;

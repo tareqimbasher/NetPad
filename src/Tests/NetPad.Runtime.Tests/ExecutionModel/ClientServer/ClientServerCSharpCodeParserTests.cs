@@ -21,7 +21,7 @@ public class ClientServerCSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new ClientServerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces);
+        var parsingResult = parser.Parse(script);
         var parsedUsings = parsingResult.UserProgram.Usings.Select(u => u.Value);
 
         Assert.Equal(scriptNamespaces, parsedUsings);
@@ -40,7 +40,7 @@ public class ClientServerCSharpCodeParserTests
         var script = GetScript();
         var parser = new ClientServerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
+        var parsingResult = parser.Parse(script, options: parseOptions);
         var parsedUsings = parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value);
 
         Assert.NotNull(parsedUsings);
@@ -67,7 +67,7 @@ public class ClientServerCSharpCodeParserTests
         script.Config.SetNamespaces(scriptNamespaces);
         var parser = new ClientServerCSharpCodeParser();
 
-        var parsingResult = parser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, parseOptions);
+        var parsingResult = parser.Parse(script, options: parseOptions);
         var parsedUserProgramUsings = parsingResult.UserProgram.Usings.Select(u => u.Value);
         var parsedAdditionalCodeUsings = parsingResult.AdditionalCodeProgram?.GetAllUsings().Select(u => u.Value);
 

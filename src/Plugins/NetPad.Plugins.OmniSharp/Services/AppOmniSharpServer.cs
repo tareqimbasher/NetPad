@@ -383,8 +383,7 @@ public class AppOmniSharpServer(
         var script = environment.Script;
         _codeParsingOptions.IncludeAspNetUsings = script.Config.UseAspNet;
 
-        var parsingResult =
-            codeParser.Parse(script.Code, script.Config.Kind, script.Config.Namespaces, _codeParsingOptions);
+        var parsingResult = codeParser.Parse(script, options: _codeParsingOptions);
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
     }

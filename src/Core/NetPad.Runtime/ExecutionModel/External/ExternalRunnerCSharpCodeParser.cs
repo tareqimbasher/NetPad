@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using NetPad.Compilation;
 using NetPad.DotNet.CodeAnalysis;
 using NetPad.Scripts;
@@ -19,64 +20,70 @@ public class ExternalRunnerCSharpCodeParser : ICodeParser
         "Microsoft.Extensions.Logging"
     ];
 
-    public CodeParsingResult Parse(
-        string scriptCode,
-        ScriptKind scriptKind,
-        IEnumerable<string>? usings = null,
-        CodeParsingOptions? options = null)
+    public CodeParsingResult Parse(Script script, string? code = null, CodeParsingOptions? options = null)
     {
-        var userProgramCode = new SourceCode(GetUserProgram(scriptCode, scriptKind));
-
-        if (usings != null)
-        {
-            foreach (var u in usings)
-            {
-                userProgramCode.AddUsing(u);
-            }
-        }
-
-        if (options?.IncludeAspNetUsings == true)
-        {
-            foreach (var u in _aspNetUsings)
-            {
-                userProgramCode.AddUsing(u);
-            }
-        }
-
-        var bootstrapperProgramCode = SourceCode.Parse(GetEmbeddedBootstrapperProgram());
-
+        var userCode = code ?? script.Code;
+        var userProgram = GetUserProgram(script, userCode, options);
+        var bootstrapperProgram = SourceCode.Parse(GetEmbeddedBootstrapperProgram(script));
         var additionalCode = options?.AdditionalCode.ToSourceCodeCollection();
 
-        return new CodeParsingResult(userProgramCode, bootstrapperProgramCode, additionalCode);
+        return new CodeParsingResult(userProgram, bootstrapperProgram, additionalCode);
     }
 
-    private static string GetUserProgram(string scriptCode, ScriptKind kind)
+    private static SourceCode GetUserProgram(Script script, string userCode, CodeParsingOptions? options)
     {
-        string userProgram;
+        SourceCode userProgram;
 
-        if (kind == ScriptKind.Expression)
+        if (script.Config.Kind == ScriptKind.Expression)
         {
             throw new NotImplementedException("Expression code parsing is not implemented yet.");
         }
 
-        if (kind == ScriptKind.SQL)
+        if (script.Config.Kind == ScriptKind.SQL)
         {
-            scriptCode = scriptCode.Replace("\"", "\"\"");
-
-            userProgram = GetEmbeddedSqlProgram().Replace("SQL_CODE", scriptCode);
+            userCode = userCode.Replace("\"", "\"\"");
+            userProgram = new SourceCode(GetEmbeddedSqlProgram().Replace("SQL_CODE", userCode));
         }
         else
         {
-            userProgram = scriptCode;
+            userProgram = new SourceCode(userCode);
+        }
+
+        // Add usings
+        var usings = script.Config.Namespaces.ToHashSet();
+
+        if (options?.AdditionalUsings != null)
+        {
+            usings.AddRange(options.AdditionalUsings);
+        }
+
+        if (options?.IncludeAspNetUsings == true)
+        {
+            usings.AddRange(_aspNetUsings);
+        }
+
+        foreach (var u in usings)
+        {
+            userProgram.AddUsing(u);
         }
 
         return userProgram;
     }
 
-    internal static string GetEmbeddedBootstrapperProgram()
+    internal static string GetEmbeddedBootstrapperProgram(Script script)
     {
-        return AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly,
+        var program = AssemblyUtil.ReadEmbeddedResource(typeof(ExternalRunnerCSharpCodeParser).Assembly,
             "ExecutionModel.External.EmbeddedCode.Program.cs");
+
+        var replacements = new Dictionary<string, string>
+        {
+            { "USERSCRIPT_ID", script.Id.ToString() },
+            { "USERSCRIPT_NAME", script.Name },
+            { "\"USERSCRIPT_PATH\"", script.Path == null ? "null" : $"\"{script.Path}\"" }
+        };
+        var pattern = string.Join("|", replacements.Keys.Select(Regex.Escape));
+        program = Regex.Replace(program, pattern, m => replacements[m.Value]);
+        return program;
     }
 
     internal static string GetEmbeddedSqlProgram()

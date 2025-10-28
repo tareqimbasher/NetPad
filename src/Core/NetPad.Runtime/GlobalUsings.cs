@@ -11,3 +11,6 @@ global using NetPad.Utilities;
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("npad")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Apps.Common")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPad.Runtime.Tests")]
+
+// For compiled NetPad script assemblies to be able to access things like Util.Init()
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("NetPadScript")]
