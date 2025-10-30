@@ -16,5 +16,14 @@
         </div>
 
         <statusbar></statusbar>
+
+        <div class="toast-container overflow-hidden"
+             data-bs-theme.bind="settings.appearance.theme === 'Dark' ? 'dark' : 'light'"
+             style="overflow-y: auto; bottom: 30px; left: 50%; transform: translateX(-50%)">
+
+            <div class="d-flex flex-column align-items-center overflow-x-hidden hide-scrollbar gap-2"
+                 style="max-height: 250px;">
+            </div>
+        </div>
     </div>
 </template>

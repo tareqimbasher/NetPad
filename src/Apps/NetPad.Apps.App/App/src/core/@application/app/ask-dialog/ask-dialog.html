@@ -1,6 +1,6 @@
 <template class="ask-dialog">
-    <div class="title" if.bind="input.title">${input.title}</div>
-    <div class="message">${input.message}</div>
+    <div class="title" if.bind="input.title" innerHTML.bind="input.title"></div>
+    <div class="message" innerHTML.bind="input.message"></div>
 
     <div class="buttons">
         <button repeat.for="btn of input.buttons"

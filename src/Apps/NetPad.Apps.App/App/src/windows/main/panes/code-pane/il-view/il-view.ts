@@ -16,6 +16,7 @@ import {ProblemDetails} from "@application/api-problem-details";
 import "highlight.js/styles/monokai.min.css";
 import hljs from "highlight.js/lib/common";
 import {observable} from "@aurelia/runtime";
+import {UiUtil} from "@common/utils/ui-util";
 
 interface ICacheItem {
     il: string | null;
@@ -30,7 +31,8 @@ export class IlView extends ViewModelBase {
     @bindable public isActive: boolean;
     @observable private includeAssemblyHeaders: boolean;
 
-    constructor(@ISession private readonly session: ISession,
+    constructor(private readonly element: Element,
+                @ISession private readonly session: ISession,
                 @ICodeService private readonly codeService: ICodeService,
                 @IEventBus private readonly eventBus: IEventBus,
                 @ILogger logger: ILogger) {
@@ -38,6 +40,9 @@ export class IlView extends ViewModelBase {
     }
 
     public attached() {
+        const token = UiUtil.confineSelectAllToElement(this.element);
+        this.addDisposable(token);
+
         this.loadIL();
         this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, () => this.loadIL()));
         this.addDisposable(this.eventBus.subscribeToServer(ScriptPropertyChangedEvent, () => this.loadIL()));

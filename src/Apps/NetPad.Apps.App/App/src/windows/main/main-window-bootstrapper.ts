@@ -9,25 +9,26 @@ import {
     IPaneManager,
     IScriptService,
     IShortcutManager,
+    IUserSecretService,
     IWindowBootstrapper,
     PaneHost,
     PaneManager,
     Settings,
     ShortcutManager,
 } from "@application";
-import {Window} from "./window";
 import {Workbench} from "./workbench";
+import {Window} from "./window";
 import {IStatusbarService, StatusbarService} from "./statusbar/statusbar-service";
 import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-appearance";
 import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
+import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {TextEditorService} from "@application/editor/text-editor-service";
 import {AppWindows} from "@application/windows/app-windows";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";
-import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {MainMenuService} from "@application/main-menu/main-menu-service";
 import {PaneToolbar} from "@application/panes/pane-toolbar";
 import {CodeService} from "@application/code/code-service";
@@ -37,6 +38,7 @@ import {DataConnectionName} from "@application/data-connections/data-connection-
 import {BuiltinActionProvider} from "@application/editor/providers/builtin-action-provider";
 import {BuiltinCSharpCompletionProvider} from "@application/editor/providers/builtin-csharp-completion-provider";
 import {BuiltinSqlCompletionProvider} from "@application/editor/providers/builtin-sql-completion-provider";
+import {UserSecretService} from "@application/user-secrets/user-secret-service";
 
 export class MainWindowBootstrapper implements IWindowBootstrapper {
     constructor(private readonly logger: ILogger) {
@@ -50,6 +52,7 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IScriptService, ScriptService),
             Registration.singleton(ITextEditorService, TextEditorService),
             Registration.singleton(ICodeService, CodeService),
+            Registration.singleton(IUserSecretService, UserSecretService),
             Registration.singleton(IDataConnectionService, DataConnectionService),
             Registration.singleton(IBackgroundService, DialogBackgroundService),
             Registration.singleton(IWorkAreaService, WorkAreaService),

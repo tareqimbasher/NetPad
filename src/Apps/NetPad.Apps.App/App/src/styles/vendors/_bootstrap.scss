@@ -27,6 +27,8 @@ $dropdown-padding-y: 0.3rem;
 $tooltip-font-size: $font-size-base;
 $tooltip-padding-y: $spacer * 0.5;
 $tooltip-padding-x: $spacer * 1;
+$table-border-color: var(--border-color);
+$table-group-separator-color: var(--border-contrast-color);
 
 // Should be the last line after overrides
 @import "bootstrap/scss/bootstrap";
@@ -105,6 +107,18 @@ textarea.form-control {
 }
 
 .table {
+    thead tr th {
+        background: var(--hover-color);
+    }
+
+    &.sticky-header thead th {
+        position: sticky;
+        top: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
     tr {
         td, th {
             background: transparent;
@@ -157,4 +171,13 @@ textarea.form-control {
 
 .badge {
     color: var(--text-strong-color);
+}
+
+
+.toast-container {
+    .toast {
+        background-color: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
 }

@@ -16,6 +16,9 @@ public static class AppDataProvider
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         AppIdentifier.AppName);
 
+    /// <summary>Where user-defined data is stored.</summary>
+    public static readonly DirectoryPath UserDataDirectoryPath = AppDataDirectoryPath.Combine("User");
+
     /// <summary>Where log files are stored.</summary>
     public static readonly DirectoryPath LogDirectoryPath = AppDataDirectoryPath.Combine("Logs");
 

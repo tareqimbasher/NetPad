@@ -9,11 +9,10 @@
     <ItemGroup>
         <PackageReference Include="Dumpy.Console" Version="1.1.1" />
         <PackageReference Include="ICSharpCode.Decompiler" Version="9.1.0.7988"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="6.0.31"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="6.0.31"/>
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="6.0.36"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.2"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <!-- Downgraded from 11.3.2 because versions newer than 11.1.0 require .NET 8 (and also System.Text.Json v8)-->

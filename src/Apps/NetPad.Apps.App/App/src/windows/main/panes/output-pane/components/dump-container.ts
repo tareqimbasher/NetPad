@@ -3,6 +3,7 @@ import {DisposableCollection, IDisposable, KeyCode, Util} from "@common";
 import {ResultControls} from "./result-controls";
 import {NavigationControls} from "./navigation-controls";
 import "highlight.js/styles/monokai.min.css";
+import {UiUtil} from "@common/utils/ui-util";
 
 export class DumpContainer implements IDisposable {
     public readonly element: HTMLElement;
@@ -34,6 +35,9 @@ export class DumpContainer implements IDisposable {
 
         this.resultControls = new ResultControls(this.element);
         this.disposables.add(() => this.resultControls.dispose());
+
+        const token = UiUtil.confineSelectAllToElement(this.element);
+        this.disposables.add(token);
     }
 
 

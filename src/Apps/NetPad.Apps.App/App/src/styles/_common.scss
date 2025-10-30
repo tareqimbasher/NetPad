@@ -88,6 +88,11 @@ kbd {
         border-radius: 5px;
     }
 
+    &:active {
+        background: var(--hover-color-contrast);
+        border-radius: 5px;
+    }
+
     &.active {
         color: var(--active-color) !important;
     }
@@ -128,6 +133,10 @@ kbd {
     &::-webkit-scrollbar {
         display: none; /* Safari and Chrome */
     }
+}
+
+.hide-scrollbar {
+    @extend %hide-scrollbar;
 }
 
 ::-webkit-scrollbar {
