@@ -102,6 +102,17 @@ export class Util {
     }
 
     /**
+     * Formats a string using a template and positional replacements.
+     */
+    public static formatString(template: string, ...args: (string | null | undefined)[]): string {
+        return template.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != 'undefined'
+                ? (args[number] ?? "")
+                : match;
+        });
+    }
+
+    /**
      * Converts a string to title case.
      */
     public static toTitleCase(str: string) {

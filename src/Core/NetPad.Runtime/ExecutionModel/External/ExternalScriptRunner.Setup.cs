@@ -52,6 +52,14 @@ public partial class ExternalScriptRunner
         // Add script references
         references.AddRange(_script.Config.References);
 
+        // TODO find another way. 2 issues with this:
+        // 1. It increases build time because it has to resolve dependency graph of package, download missing...etc
+        // 2. Version is explicit
+        references.Add(new PackageReference(
+            "Microsoft.AspNetCore.DataProtection.Extensions",
+            "Microsoft.AspNetCore.DataProtection.Extensions",
+            "6.0.36"));
+
         // Add data connection resources
         if (_script.DataConnection != null)
         {

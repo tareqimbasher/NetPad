@@ -52,26 +52,12 @@ export class PaneHost {
             const tabKeysHandler = (ev: Event) => {
                 if (this.hideKeyBinding.matches(ev as KeyboardEvent)) {
                     this.collapse();
+                    ev.preventDefault();
                 }
             };
 
             this.element.addEventListener("keydown", tabKeysHandler);
             this.disposables.add(() => this.element?.removeEventListener("keydown", tabKeysHandler));
-
-            // Confine select all to the container
-            const selectAllKeyHandler = (ev: KeyboardEvent) => {
-                if (this.element && this.active?.isOpen && ev.code === KeyCode.KeyA && (ev.ctrlKey || ev.metaKey)) {
-                    const range = document.createRange();
-                    range.selectNode(this.element);
-                    window.getSelection()?.removeAllRanges();
-                    window.getSelection()?.addRange(range);
-
-                    ev.preventDefault();
-                }
-            };
-
-            this.element.addEventListener("keydown", selectAllKeyHandler);
-            this.disposables.add(() => this.element?.removeEventListener("keydown", selectAllKeyHandler));
         }
     }
 

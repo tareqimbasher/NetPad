@@ -108,7 +108,7 @@ button > .icon-base {
 
 .actions-icon {
     @extend %icon-base;
-    @extend .fa-bolt;
+    @extend .fa-gear;
 }
 
 .up-icon {
@@ -205,6 +205,11 @@ button > .icon-base {
 .angles-left-icon {
     @extend %icon-base;
     @extend .fa-angles-left;
+}
+
+.add-icon {
+    @extend %icon-base;
+    @extend .fa-plus;
 }
 
 .star-icon {
@@ -585,6 +590,11 @@ button > .icon-base {
     @extend .fa-github;
 }
 
+.secrets-manager-icon {
+    @extend %icon-base;
+    @extend .fa-key;
+}
+
 .uncolored-icons [class*="-icon"] {
     color: unset !important;
 }
@@ -625,6 +635,7 @@ button > .icon-base {
         color: #bce388;
     }
 
+    .add-icon,
     .add-script-icon,
     .add-data-connection-icon,
     .use-data-connection-new-script-icon,
@@ -719,6 +730,7 @@ button > .icon-base {
         color: #99d44a;
     }
 
+    .add-icon,
     .add-script-icon,
     .add-data-connection-icon,
     .use-data-connection-new-script-icon,

@@ -2774,6 +2774,197 @@ export class TypesApiClient extends ApiClientBase implements ITypesApiClient {
     }
 }
 
+export interface IUserSecretsApiClient {
+
+    getAll(signal?: AbortSignal | undefined): Promise<UserSecretListingDto[]>;
+
+    save(key: string | undefined, value: string, signal?: AbortSignal | undefined): Promise<UserSecretListingDto>;
+
+    delete(key: string | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
+
+    getUnprotectedValue(key: string | undefined, signal?: AbortSignal | undefined): Promise<string>;
+}
+
+export class UserSecretsApiClient extends ApiClientBase implements IUserSecretsApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        super();
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    getAll(signal?: AbortSignal): Promise<UserSecretListingDto[]> {
+        let url_ = this.baseUrl + "/user-secrets";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetAll(_response);
+        });
+    }
+
+    protected processGetAll(response: Response): Promise<UserSecretListingDto[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(UserSecretListingDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserSecretListingDto[]>(null as any);
+    }
+
+    save(key: string | undefined, value: string, signal?: AbortSignal): Promise<UserSecretListingDto> {
+        let url_ = this.baseUrl + "/user-secrets?";
+        if (key === null)
+            throw new Error("The parameter 'key' cannot be null.");
+        else if (key !== undefined)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(value);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSave(_response);
+        });
+    }
+
+    protected processSave(response: Response): Promise<UserSecretListingDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserSecretListingDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserSecretListingDto>(null as any);
+    }
+
+    delete(key: string | undefined, signal?: AbortSignal): Promise<FileResponse | null> {
+        let url_ = this.baseUrl + "/user-secrets?";
+        if (key === null)
+            throw new Error("The parameter 'key' cannot be null.");
+        else if (key !== undefined)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            signal,
+            headers: {
+                "Accept": "application/octet-stream"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processDelete(_response);
+        });
+    }
+
+    protected processDelete(response: Response): Promise<FileResponse | null> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return response.blob().then(blob => { return { fileName: fileName, data: blob, status: status, headers: _headers }; });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<FileResponse | null>(null as any);
+    }
+
+    getUnprotectedValue(key: string | undefined, signal?: AbortSignal): Promise<string> {
+        let url_ = this.baseUrl + "/user-secrets/unprotected-value?";
+        if (key === null)
+            throw new Error("The parameter 'key' cannot be null.");
+        else if (key !== undefined)
+            url_ += "key=" + encodeURIComponent("" + key) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetUnprotectedValue(_response);
+        });
+    }
+
+    protected processGetUnprotectedValue(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(null as any);
+    }
+}
+
 export interface IWindowApiClient {
 
     openOutputWindow(signal?: AbortSignal | undefined): Promise<void>;
@@ -4765,10 +4956,9 @@ export interface ICreateScriptDto {
     runImmediately: boolean;
 }
 
-/** Options that configure the running of a script. */
+/** Represents a set of options that control how a script is executed. */
 export class RunOptions implements IRunOptions {
-    /** If not null, this code will run instead of script code. Typically used to only run code that user has
-highlighted in the editor. */
+    /** Gets or sets a snippet of code to run instead of the full script. */
     specificCodeToRun?: string | undefined;
 
     constructor(data?: IRunOptions) {
@@ -4807,10 +4997,9 @@ highlighted in the editor. */
     }
 }
 
-/** Options that configure the running of a script. */
+/** Represents a set of options that control how a script is executed. */
 export interface IRunOptions {
-    /** If not null, this code will run instead of script code. Typically used to only run code that user has
-highlighted in the editor. */
+    /** Gets or sets a snippet of code to run instead of the full script. */
     specificCodeToRun?: string | undefined;
 }
 
@@ -8427,6 +8616,57 @@ export class OracleDatabaseConnection extends EntityFrameworkRelationalDatabaseC
 }
 
 export interface IOracleDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+}
+
+export class UserSecretListingDto implements IUserSecretListingDto {
+    key!: string;
+    shortValue!: string;
+    updatedAtUtc!: Date;
+
+    constructor(data?: IUserSecretListingDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.key = _data["key"];
+            this.shortValue = _data["shortValue"];
+            this.updatedAtUtc = _data["updatedAtUtc"] ? new Date(_data["updatedAtUtc"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): UserSecretListingDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserSecretListingDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key;
+        data["shortValue"] = this.shortValue;
+        data["updatedAtUtc"] = this.updatedAtUtc ? this.updatedAtUtc.toISOString() : <any>undefined;
+        return data;
+    }
+
+    clone(): UserSecretListingDto {
+        const json = this.toJSON();
+        let result = new UserSecretListingDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IUserSecretListingDto {
+    key: string;
+    shortValue: string;
+    updatedAtUtc: Date;
 }
 
 export interface FileResponse {

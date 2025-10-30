@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection;
+using NetPad.Application;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 using O2Html.Dom;
@@ -16,14 +17,19 @@ namespace NetPad.ExecutionModel.ScriptServices;
 /// <summary>
 /// Helpers for dumping data, caching, environment access, and more.
 /// </summary>
-public static class Util
+public static partial class Util
 {
+    private static IDataProtector _dataProtector = null!;
+
     /// <summary>
     /// Initializes properties. For internal use only.
     /// </summary>
     internal static void Init(int? parentProcessId)
     {
         Environment = new HostEnvironment(parentProcessId);
+        _dataProtector = DataProtectionProvider
+            .Create(AppIdentifier.AppId)
+            .CreateProtector("UserData");
     }
 
     /// <summary>
@@ -61,14 +67,14 @@ public static class Util
     public static HostEnvironment Environment { get; private set; } = null!;
 
     /// <summary>
-    /// This stopwatch is started when user code starts executing.
-    /// </summary>
-    public static Stopwatch Stopwatch { get; } = new();
-
-    /// <summary>
     /// A memory-cache that persists between script runs.
     /// </summary>
     public static MemCache Cache { get; } = new();
+
+    /// <summary>
+    /// This stopwatch is started when user code starts executing.
+    /// </summary>
+    public static Stopwatch Stopwatch { get; } = new();
 
     /// <summary>
     /// Terminates script-host process and current script execution.
@@ -205,6 +211,7 @@ public static class Util
     {
         return DumpExtension.Dump(o, title, css, code, clear);
     }
+
     /// <summary>
     /// Dumps an object, or value, to the results console, awaiting the call first.
     /// </summary>
@@ -302,60 +309,4 @@ public static class Util
     {
         return DumpExtension.Dump(span, title, css, clear);
     }
-}
-
-/// <summary>
-/// Information about the current script-host environment.
-/// </summary>
-public class HostEnvironment(int? parentPid)
-{
-    /// <summary>
-    /// The UTC date and time the script-host process started.
-    /// </summary>
-    public DateTime HostStarted { get; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// The process ID (PID) of the script-host process.
-    /// </summary>
-    public int ProcessPid => Environment.ProcessId;
-
-    /// <summary>
-    /// The process ID (PID) of the parent process that started the script-host process.
-    /// </summary>
-    public int? ParentPid => parentPid;
-
-    /// <summary>
-    /// The .NET runtime version the script-host process is running on.
-    /// </summary>
-    public Version DotNetRuntimeVersion => Environment.Version;
-
-    /// <summary>
-    /// Gets the name of the .NET installation on which the script-host process is running.
-    /// </summary>
-    public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
-
-    /// <summary>
-    /// Gets the current platform identifier and version number.
-    /// </summary>
-    public OperatingSystem OSVersion => Environment.OSVersion;
-
-    /// <summary>
-    /// Gets the platform on which an app is running.
-    /// </summary>
-    public string RuntimeIdentifier => RuntimeInformation.RuntimeIdentifier;
-
-    /// <summary>
-    /// Gets a string that describes the operating system on which the app is running.
-    /// </summary>
-    public string OSDescription => RuntimeInformation.OSDescription;
-
-    /// <summary>
-    /// Gets the process architecture of the currently running app.
-    /// </summary>
-    public Architecture ProcessArchitecture => RuntimeInformation.ProcessArchitecture;
-
-    /// <summary>
-    /// Gets the platform architecture on which the current app is running.
-    /// </summary>
-    public Architecture OSArchitecture => RuntimeInformation.OSArchitecture;
 }

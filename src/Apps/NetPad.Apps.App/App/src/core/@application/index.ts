@@ -24,6 +24,7 @@ export * from "./scripts/iscript-service";
 export * from "./sessions/isession";
 export * from "./windows/window-state";
 export * from "./windows/iwindow-service";
+export * from "./user-secrets/iuser-secret-service";
 
 // Logging
 export * from "./logging/console-log-sink";

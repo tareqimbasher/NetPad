@@ -13,31 +13,12 @@ describe("DateTime Value Converter", () => {
         }
     });
 
-    it("should return a UTC formatted string", () => {
+    it("should return locale formatted date", () => {
         const converter = getConverter();
-        const date = new Date();
-
-        const result = converter.toView(date, "UTC");
-
-        expect(result).toBe(date.toUTCString());
-    });
-
-    it("should return a locale formatted string", () => {
-        const converter = getConverter();
-        const date = new Date();
-
-        const result = converter.toView(date, "Local");
-
-        expect(result).toBe(date.toLocaleString());
-    });
-
-    it("should return a UTC formatted string by default", () => {
-        const converter = getConverter();
-        const date = new Date();
+        const date = new Date("2020-01-01T08:01:30.000Z");
 
         const result = converter.toView(date);
-
-        expect(result).toBe(date.toUTCString());
+        expect(result).toBe(date.toLocaleString());
     });
 });
 

@@ -8,7 +8,7 @@ public class DataConnectionPasswordProtector(IDataProtectionProvider dataProtect
 {
     private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(purpose);
 
-    public IDataProtector CreateProtector(string purpose) => _protector.CreateProtector(purpose);
+    public IDataProtector CreateProtector(string purpose) => dataProtectionProvider.CreateProtector(purpose);
 
     public byte[] Protect(byte[] plaintext) => _protector.Protect(plaintext);
     public string Protect(string plaintext) => _protector.Protect(plaintext);

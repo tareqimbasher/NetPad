@@ -22,6 +22,7 @@ import {
 } from "./panes";
 import {Workbench} from "./workbench";
 import {WindowBase} from "@application/windows/window-base";
+import {SecretsManagerPane} from "./panes/secrets-manager-pane/secrets-manager-pane";
 
 export class Window extends WindowBase {
     private workbench: Workbench
@@ -82,7 +83,7 @@ export class Window extends WindowBase {
         this.bottomPaneHost = this.paneManager.createPaneHost(PaneHostOrientation.Bottom, topBottomController);
         const outputPane = this.paneManager.addPaneToHost(OutputPane, this.bottomPaneHost);
         this.paneManager.addPaneToHost(CodePane, this.bottomPaneHost);
-
+        this.paneManager.addPaneToHost(SecretsManagerPane, this.bottomPaneHost);
 
         // Start explorer expanded by default
         if (!sideToSideController.hasSavedState()) {

@@ -16,6 +16,8 @@ export abstract class WindowBase extends ViewModelBase {
     }
 
     public override attaching() {
+        super.attaching();
+
         const observers = [
             this.observerLocator.getObserver(this, x => x.settings.styles.enabled),
             this.observerLocator.getObserver(this, x => x.settings.styles.customCss),
