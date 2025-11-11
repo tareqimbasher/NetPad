@@ -10,4 +10,5 @@ public enum DotNetFrameworkVersion
     DotNet7 = 70,
     DotNet8 = 80,
     DotNet9 = 90,
+    DotNet10 = 100,
 }

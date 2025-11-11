@@ -123,6 +123,26 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
         Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
     }
 
+    [Fact]
+    public void Can_Compile_CSharp13_Features()
+    {
+        var code = GetProgram("var lck = new System.Threading.Lock();");
+
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet9));
+
+        Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
+    }
+
+    [Fact]
+    public void Can_Compile_CSharp14_Features()
+    {
+        var code = GetProgram("var name = nameof(System.Collections.Generic.List<>);");
+
+        var result = CreateCSharpCodeCompiler().Compile(new CompilationInput(code, DotNetFrameworkVersion.DotNet10));
+
+        Assert.True(result.Success, result.Diagnostics.JoinToString(Environment.NewLine));
+    }
+
     private CSharpCodeCompiler CreateCSharpCodeCompiler()
     {
         return new CSharpCodeCompiler(new DotNetInfo(new Settings()), new CodeAnalysisService());

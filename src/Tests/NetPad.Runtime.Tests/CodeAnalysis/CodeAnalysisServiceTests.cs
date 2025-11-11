@@ -13,6 +13,8 @@ public class CodeAnalysisServiceTests
     [InlineData(DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10)]
     [InlineData(DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11)]
     [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
+    [InlineData(DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13)]
+    [InlineData(DotNetFrameworkVersion.DotNet10, LanguageVersion.Preview)]
     public void Compiler_Uses_Correct_CSharp_LanguageVersion(DotNetFrameworkVersion targetFrameworkVersion, LanguageVersion? expectedLangVersion)
     {
         var codeAnalysisService = new CodeAnalysisService();

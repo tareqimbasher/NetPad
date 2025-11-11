@@ -6,7 +6,7 @@ namespace NetPad.DotNet;
 public static class DotNetFrameworkVersionUtil
 {
     public const int MinSupportedDotNetVersion = 6;
-    public const int MaxSupportedDotNetVersion = 9;
+    public const int MaxSupportedDotNetVersion = 10;
     public const int MinSupportedEfToolVersion = 5;
 
     private static readonly Dictionary<int, DotNetFrameworkVersion> _majorToFrameworkVersion = new()
@@ -16,6 +16,7 @@ public static class DotNetFrameworkVersionUtil
         { 7, DotNetFrameworkVersion.DotNet7 },
         { 8, DotNetFrameworkVersion.DotNet8 },
         { 9, DotNetFrameworkVersion.DotNet9 },
+        { 10, DotNetFrameworkVersion.DotNet10 },
     };
 
     private static readonly Dictionary<DotNetFrameworkVersion, int> _frameworkVersionToMajor =
@@ -28,6 +29,7 @@ public static class DotNetFrameworkVersionUtil
         { DotNetFrameworkVersion.DotNet7, "net7.0" },
         { DotNetFrameworkVersion.DotNet8, "net8.0" },
         { DotNetFrameworkVersion.DotNet9, "net9.0" },
+        { DotNetFrameworkVersion.DotNet10, "net10.0" },
     };
 
     private static readonly Dictionary<string, DotNetFrameworkVersion> _tfmToFrameworkVersion =
@@ -39,7 +41,8 @@ public static class DotNetFrameworkVersionUtil
         { DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10 },
         { DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11 },
         { DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12 },
-        { DotNetFrameworkVersion.DotNet9, LanguageVersion.Preview },
+        { DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13 },
+        { DotNetFrameworkVersion.DotNet10, LanguageVersion.Preview },
     };
 
 
