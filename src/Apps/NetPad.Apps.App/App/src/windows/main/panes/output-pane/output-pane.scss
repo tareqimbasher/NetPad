@@ -79,9 +79,13 @@ output-pane {
 
             &.error {
                 padding: 1.25rem 0.75rem;
-                color: red;
                 background: rgba(250 128 114 / 6%);
                 border-left: red 2px solid;
+
+                .error-title {
+                    color: salmon;
+                    font-weight: 600;
+                }
 
                 &:hover {
                     background: rgba(250 128 114 / 10%);
@@ -212,7 +216,13 @@ output-pane {
     }
 }
 
-.theme-netpad-light output-view table.table tr:not(.table-info-header) th {
-    color: black;
-    background-color: #dcdcdc;
+.theme-netpad-light {
+    .group table.table tr:not(.table-info-header) th {
+        color: black;
+        background-color: #dcdcdc;
+    }
+
+    .group.error .error-title {
+        color: red;
+    }
 }

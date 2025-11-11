@@ -167,6 +167,24 @@ export class DumpContainer implements IDisposable {
                             });
                     }
                 }
+            } else if (group.classList.contains("error")) {
+                const first = group.childNodes[0];
+                const firstTextContent = first?.textContent
+                if (firstTextContent) {
+                    const ix = firstTextContent.indexOf(":");
+                    if (ix >= 0 && ix < firstTextContent.length - 1) {
+                        const partOne = firstTextContent.substring(0, ix);
+                        const partTwo = firstTextContent.substring(ix);
+
+                        const spanOne = document.createElement("span");
+                        spanOne.textContent = partOne;
+                        spanOne.classList.add("error-title");
+
+                        const spanTwo = document.createTextNode(partTwo);
+
+                        first.replaceWith(spanOne, spanTwo);
+                    }
+                }
             } else if (group.lastElementChild?.tagName.toLowerCase() === "script") {
                 // Script tags cannot be injected as is, they must be recreated and appended to the DOM for
                 // them to execute.

@@ -74,15 +74,13 @@ public class ScriptRunner
                 Util.RestartHostOnEveryRun
             ));
         }
+        catch (TargetInvocationException e) when (e.InnerException != null)
+        {
+            HandleRunException(e.InnerException);
+        }
         catch (Exception e)
         {
-            Util.Stopwatch.Stop();
-
-            _ipcGateway.Send(new ScriptRunCompleteMessage(
-                RunResult.ScriptCompletionFailure(Util.Stopwatch.ElapsedMilliseconds),
-                Util.RestartHostOnEveryRun,
-                e.ToString()
-            ));
+            HandleRunException(e);
         }
         finally
         {
@@ -115,6 +113,16 @@ public class ScriptRunner
         assembly.EntryPoint!.Invoke(null, [Array.Empty<string>()]);
 
         Util.Stopwatch.Stop();
+    }
+
+    private void HandleRunException(Exception exception)
+    {
+        Util.Stopwatch.Stop();
+        _ipcGateway.Send(new ScriptRunCompleteMessage(
+            RunResult.ScriptCompletionFailure(Util.Stopwatch.ElapsedMilliseconds),
+            Util.RestartHostOnEveryRun,
+            exception.ToString()
+        ));
     }
 
     public void ReceiveUserInput(ReceiveUserInputMessage message)
