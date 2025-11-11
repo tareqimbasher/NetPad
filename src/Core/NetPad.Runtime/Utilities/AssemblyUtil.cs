@@ -13,7 +13,7 @@ public static class AssemblyUtil
         // Format: "{Namespace}.{Folder}.{filename}.{Extension}"
         var resourcePath = assembly
             .GetManifestResourceNames()
-            .FirstOrDefault(str => str.EndsWith(name));
+            .SingleOrDefault(str => str.EndsWith(name));
 
         if (resourcePath == null)
         {

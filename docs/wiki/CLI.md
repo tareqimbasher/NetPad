@@ -1,6 +1,7 @@
 # NetPad CLI: `npad`
 
-`npad` brings the power of NetPad to your terminal. It lets you execute NetPad scripts or plain C# text files directly from the command line, making it easy to automate tasks or integrate NetPad scripts into other tools and CI pipelines.
+`npad` brings the power of NetPad to your terminal. It lets you execute NetPad scripts or plain C# text files directly
+from the command line, making it easy to automate tasks or integrate NetPad scripts into other tools and CI pipelines.
 
 ```
 npad [command] [options] [[--] <additional arguments>...]]
@@ -32,8 +33,7 @@ Additional Arguments:
 dotnet tool install -g netpad.cli
 ```
 
-
-# Commands
+# Usage
 
 ## `npad run`
 
@@ -51,7 +51,8 @@ npad run /path/to/script.netpad
 npad run report
 ```
 
-This will look for a script with a path or name that matches "report" (case-insensitive). If multiple matches are found, you will get a list to select the script you want to run. For example, the command above will match scripts like:
+This will look for a script with a path or name that matches "report" (case-insensitive). If multiple matches are found,
+you will get a list to select the script you want to run. For example, the command above will match scripts like:
 
 - Report Jan.netpad
 - Report Feb.netpad
@@ -106,7 +107,7 @@ npad run myscript.netpad --aspnet
 `--format` changes how the output is formatted.
 
 ```shell
-npad run myscript.netpad --format text      # Plain text format; useful when piping to a file
+npad run myscript.netpad --format text      # Plain text format. Useful when piping to a file.
 npad run myscript.netpad --format html      # Outputs HTML fragments
 npad run myscript.netpad --format htmldoc   # Outputs a complete HTML document
 ```
@@ -117,7 +118,8 @@ npad run myscript.netpad --format htmldoc   # Outputs a complete HTML document
 npad run myscript.netpad --minimal
 ```
 
-`--no-cache` skips the build cache; does not use a cached build, if one exists, and does not cache the build from the new run. More about caching [here](#Caching).
+`--no-cache` skips the build cache; does not use a cached build, if one exists, and does not cache the build from the
+new run. More about caching [here](#Caching).
 
 ```shell
 npad run myscript.netpad --no-cache
@@ -129,11 +131,21 @@ npad run myscript.netpad --no-cache
 npad run myscript.netpad --rebuild
 ```
 
-`--verbose` emits process logs. These are written to stderr (Console.Error) so they are not included in the output in case you are redirecting (>).
+`--verbose` emits process logs. These are written to stderr (Console.Error) so they are not included in the output in
+case you are redirecting (>).
 
 ```shell
 npad run myscript.netpad --verbose
 ```
+
+### Output
+
+By default `npad` prints output to the console in a colored and structured format similar to what you would see when
+dumping data in NetPad (GUI). You can select from 3 other formats using the `--format` option:
+
+- **text**: Uses a safe plain text format. Useful when piping to a file.
+- **html**: Formats output as HTML fragments that can be injected into an HTML document.
+- **htmldoc**: A complete HTML document with same basic styles.
 
 ### Plain Text Files
 
@@ -146,21 +158,26 @@ npad run ./query.cs --connection Chinook
 
 ### Caching
 
-`npad` builds your script before running it. The build is then cached and reused the next time you run the same script, significantly speeding up subsequent runs.
+`npad` builds your script before running it. The build is then cached and reused the next time you run the same script,
+significantly speeding up subsequent runs.
 
 The cached build will continue to be reused unless one of the following occurs:
 
-1. **The script's code or configuration changes.**
+1. **The script's code or configuration changes**.
 2. **A cache-invalidating option is used** that differs from the last time the script ran.<br/>
    Examples include: `--sdk`, `--connection`, `--optimize`.<br/>
-   Options such as `--format` or `--minimal`, on the other hand, do **not** require the script to be rebuilt and therefore do **not** invalidate the cache.
-3. A different version of `npad` cli is used.
+   Options such as `--format` or `--minimal`, on the other hand, do **not** require the script to be rebuilt and
+   therefore do **not** invalidate the cache.
+3. **A different version of `npad` cli is used**.
+
+You can always change caching options per-run using the `--no-cache` and `--rebuild` options explained above.
 
 > See `npad cache -h` for cache management commands, and `npad info` to see the location of the build cache on disk.
 
 ### Inline Code
 
-You don't need a file to run C# code. The `npad run -x` (or: `--code`) option allows you to run arbitrary code right from the command-line.
+You don't need a file to run C# code. The `--code` (or `-x`) option allows you to run arbitrary code right from the
+command-line.
 
 ```shell
 npad run -x 'Console.WriteLine("Hello World")'
@@ -182,19 +199,19 @@ You can also access the `Util` class in inline code:
 npad run -x Util.Environment
 ```
 
-> All inline scripts share a single cache directory. So if the code, or a cache-invalidating option changes (ex: `--sdk`), a new build will be started.
-
+> All inline scripts share a single cache directory. So if the code, or a cache-invalidating option changes, a new build
+> will be started.
 
 ## `npad list`
 
 **alias:** `ls`
 
-Lists all scripts found in your configured scripts library. You can configure the location of your scripts library from NetPad settings.
+Lists all scripts found in your configured scripts library. You can configure the location of your scripts library from
+NetPad settings.
 
 ```shell
 npad list
 ```
-
 
 ## `npad cat`
 
@@ -207,8 +224,6 @@ npad cat /path/to/myscript.netpad
 npad cat myscript
 ```
 
-
-
 ## `npad info`
 
 Prints information about NetPad and the current environment.
@@ -216,8 +231,6 @@ Prints information about NetPad and the current environment.
 ```shell
 npad info
 ```
-
-
 
 ## `npad cache`
 
@@ -236,8 +249,6 @@ npad cache rm 1           # Remove a specific cached build
 npad run cache rm --all   # Remove all cached builds
 ```
 
-
-
 ## `npad logs`
 
 Prints log files.
@@ -245,8 +256,6 @@ Prints log files.
 ```shell
 npad logs ls
 ```
-
-
 
 ## `npad settings`
 

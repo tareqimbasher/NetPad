@@ -29,7 +29,7 @@ public class DataSetHtmlConverter : HtmlConverter
             tr.AddAndGetElement("td").AddChild(htmlSerializer.Serialize(dataTable, typeof(DataTable), serializationScope));
         });
 
-        string headerRowText = (!string.IsNullOrWhiteSpace(dataSet.DataSetName) ? dataSet.DataSetName : "DataTable") +
+        string headerRowText = (!string.IsNullOrWhiteSpace(dataSet.DataSetName) ? dataSet.DataSetName : "DataSet") +
                                $" ({(enumerationResult.CollectionLengthExceedsMax ? "First " : "")}{enumerationResult.ItemsProcessed} tables)";
 
         table.Head
