@@ -112,6 +112,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("6.0.0", DotNetFrameworkVersion.DotNet6)]
     [InlineData("7.0.0", DotNetFrameworkVersion.DotNet7)]
     [InlineData("8.0.0", DotNetFrameworkVersion.DotNet8)]
+    [InlineData("9.0.0", DotNetFrameworkVersion.DotNet9)]
+    [InlineData("10.0.0", DotNetFrameworkVersion.DotNet10)]
     public void GetFrameworkVersion_By_DotNetSdkVersion_Returns_Correct_Version(
         string semanticVersion,
         DotNetFrameworkVersion expectedVersion)
@@ -127,6 +129,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(6, DotNetFrameworkVersion.DotNet6)]
     [InlineData(7, DotNetFrameworkVersion.DotNet7)]
     [InlineData(8, DotNetFrameworkVersion.DotNet8)]
+    [InlineData(9, DotNetFrameworkVersion.DotNet9)]
+    [InlineData(10, DotNetFrameworkVersion.DotNet10)]
     public void GetFrameworkVersion_By_MajorVersion_Returns_Correct_Version(
         int majorVersion,
         DotNetFrameworkVersion expectedVersion)
@@ -141,7 +145,8 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(DotNetFrameworkVersion.DotNet6, LanguageVersion.CSharp10)]
     [InlineData(DotNetFrameworkVersion.DotNet7, LanguageVersion.CSharp11)]
     [InlineData(DotNetFrameworkVersion.DotNet8, LanguageVersion.CSharp12)]
-    [InlineData(DotNetFrameworkVersion.DotNet9, LanguageVersion.Preview)]
+    [InlineData(DotNetFrameworkVersion.DotNet9, LanguageVersion.CSharp13)]
+    [InlineData(DotNetFrameworkVersion.DotNet10, LanguageVersion.Preview)]
     public void GetLatestSupportedCSharpLanguageVersion_Returns_Correct_LangVersion(
         DotNetFrameworkVersion frameworkVersion,
         LanguageVersion expectedLangVersion)

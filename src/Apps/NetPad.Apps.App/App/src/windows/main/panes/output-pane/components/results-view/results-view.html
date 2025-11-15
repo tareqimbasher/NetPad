@@ -10,68 +10,64 @@
            value.bind="model.inputRequest.userInput">
 </div>
 
-<div portal="#resultsOutputPaneToolbarRightPortal" class="d-flex align-items-center gap-3">
+<div portal="#resultsOutputPaneToolbarRightPortal" class="d-flex align-items-center gap-2">
     <div>
-        <div data-bs-toggle="dropdown">
-            <span class="dropdown-toggle text-semibold">
-                Export
-            </span>
-            <ul class="dropdown-menu">
-                <li click.trigger="exportOutputToExcel()">
-                    <button class="dropdown-item">
-                        <i class="excel-file-icon text-green me-3"></i>
-                        <span>Export to Excel</span>
-                    </button>
-                </li>
-                <li click.trigger="exportOutputToHtml()">
-                    <button class="dropdown-item">
-                        <i class="html-icon text-orange me-3"></i>
-                        <span>Export to HTML</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
+        <span class="dropdown-toggle text-semibold" data-bs-toggle="dropdown">
+            Export
+        </span>
+        <ul class="dropdown-menu">
+            <li click.trigger="exportOutputToExcel()">
+                <button class="dropdown-item">
+                    <i class="excel-file-icon text-green me-3"></i>
+                    <span>Export to Excel</span>
+                </button>
+            </li>
+            <li click.trigger="exportOutputToHtml()">
+                <button class="dropdown-item">
+                    <i class="html-icon text-orange me-3"></i>
+                    <span>Export to HTML</span>
+                </button>
+            </li>
+        </ul>
     </div>
 
     <div>
-        <div data-bs-toggle="dropdown">
-            <span class="dropdown-toggle text-semibold">
-                Format
-            </span>
-            <ul class="dropdown-menu">
-                <li click.trigger="dumpContainer.resultControls.collapseAll(1)">
-                    <button class="dropdown-item">
-                        Collapse to Level 1
-                    </button>
-                </li>
-                <li click.trigger="dumpContainer.resultControls.collapseAll(2)">
-                    <button class="dropdown-item">
-                        Collapse to Level 2
-                    </button>
-                </li>
-                <li click.trigger="dumpContainer.resultControls.collapseAll(3)">
-                    <button class="dropdown-item">
-                        Collapse to Level 3
-                    </button>
-                </li>
-                <div class="dropdown-divider"></div>
-                <li click.trigger="dumpContainer.resultControls.expandAll(1)">
-                    <button class="dropdown-item">
-                        Expand to Level 1
-                    </button>
-                </li>
-                <li click.trigger="dumpContainer.resultControls.expandAll(2)">
-                    <button class="dropdown-item">
-                        Expand to Level 2
-                    </button>
-                </li>
-                <li click.trigger="dumpContainer.resultControls.expandAll(3)">
-                    <button class="dropdown-item">
-                        Expand to Level 3
-                    </button>
-                </li>
-            </ul>
-        </div>
+        <span class="dropdown-toggle text-semibold" data-bs-toggle="dropdown">
+            Format
+        </span>
+        <ul class="dropdown-menu">
+            <li click.trigger="dumpContainer.resultControls.collapseAll(1)">
+                <button class="dropdown-item">
+                    Collapse to Level 1
+                </button>
+            </li>
+            <li click.trigger="dumpContainer.resultControls.collapseAll(2)">
+                <button class="dropdown-item">
+                    Collapse to Level 2
+                </button>
+            </li>
+            <li click.trigger="dumpContainer.resultControls.collapseAll(3)">
+                <button class="dropdown-item">
+                    Collapse to Level 3
+                </button>
+            </li>
+            <div class="dropdown-divider"></div>
+            <li click.trigger="dumpContainer.resultControls.expandAll(1)">
+                <button class="dropdown-item">
+                    Expand to Level 1
+                </button>
+            </li>
+            <li click.trigger="dumpContainer.resultControls.expandAll(2)">
+                <button class="dropdown-item">
+                    Expand to Level 2
+                </button>
+            </li>
+            <li click.trigger="dumpContainer.resultControls.expandAll(3)">
+                <button class="dropdown-item">
+                    Expand to Level 3
+                </button>
+            </li>
+        </ul>
     </div>
 
     <i class="icon-button navigate-top-icon"

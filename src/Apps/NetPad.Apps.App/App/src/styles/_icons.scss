@@ -240,6 +240,8 @@ button > .icon-base {
 .actions-dropdown-icon {
     @extend %icon-base;
     @extend .fa-ellipsis-v;
+    width: 1.7rem;
+    text-align: center;
 }
 
 .open-external-icon {
