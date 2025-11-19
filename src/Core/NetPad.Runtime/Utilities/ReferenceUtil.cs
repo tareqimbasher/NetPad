@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
 using NetPad.Packages;
@@ -6,6 +7,8 @@ namespace NetPad.Utilities;
 
 public static class ReferenceUtil
 {
+    private static readonly ConcurrentDictionary<string, Task<HashSet<PackageAsset>>> _assetCache = new();
+
     /// <summary>
     /// Gets the file assets that belong to the specified <paramref name="references"/>.
     /// </summary>
@@ -32,13 +35,14 @@ public static class ReferenceUtil
             }
             else if (reference is PackageReference packageReference)
             {
-                var packageAssets = await packageProvider
+                var cacheKey = $"{packageReference.PackageId}:{packageReference.Version}:{dotNetFrameworkVersion}";
+                var cached = _assetCache.GetOrAdd(cacheKey, _ => packageProvider
                     .GetRecursivePackageAssetsAsync(
                         packageReference.PackageId,
                         packageReference.Version,
-                        dotNetFrameworkVersion)
-                    .ConfigureAwait(false);
+                        dotNetFrameworkVersion));
 
+                var packageAssets = await cached.ConfigureAwait(false);
                 assets.AddRange(packageAssets);
             }
         }
