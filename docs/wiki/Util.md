@@ -60,6 +60,24 @@ Util.RawHtml("<h1>Heading 1</h1>");
 Util.RawHtml(XElement.Parse("<h1>Heading 1</h1>"));
 ```
 
+## User Secrets
+
+Secrets are encrypted strings that can be stored and retreived from code (ex. an API key). Use `Util.Secrets` to get a secret that you've already stored:
+
+```csharp
+string value = Util.Secrets.Get("secretkey");
+```
+
+You can also list/add/update/remove secrets directly from code using these methods on `Util.Secrets`:
+
+```csharp
+void Save("secretkey", "value");
+UserSecret[] List();
+UserSecret? GetSecret(string key);
+bool Delete(string key);
+void Delete(Func<UserSecret, bool> filter);
+```
+
 ## Host Lifecycle
 
 Control how the script host behaves:

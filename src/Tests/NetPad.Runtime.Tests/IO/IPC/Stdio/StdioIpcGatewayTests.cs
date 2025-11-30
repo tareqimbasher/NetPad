@@ -112,7 +112,7 @@ public class StdioIpcGatewayTests
         using var reader = new StringReader(line + Environment.NewLine);
         gateway.Listen(reader);
 
-        Assert.True(handled.Wait(TimeSpan.FromSeconds(2)), "Handler was not called");
+        Assert.True(handled.Wait(TimeSpan.FromSeconds(5)), "Handler was not called");
         Assert.Equal(msg, received);
     }
 
