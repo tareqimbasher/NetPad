@@ -1,6 +1,6 @@
 # The `Util` class
 
-NetPad provides a handy static `Util` class to enhance your scripting experience with built-in helpers for 
+NetPad provides a handy static `Util` class to enhance your scripting experience with built-in helpers for
 dumping data, caching, environment access, and more.
 
 ## Environment
@@ -14,6 +14,7 @@ Util.Stopwatch.Elapsed.Dump();
 ```
 
 ## Caching
+
 Store and retrieve values with `Util.Cache`. Useful for expensive computations or repeated lookups:
 
 ```csharp
@@ -62,7 +63,8 @@ Util.RawHtml(XElement.Parse("<h1>Heading 1</h1>"));
 
 ## User Secrets
 
-Secrets are encrypted strings that can be stored and retreived from code (ex. an API key). Use `Util.Secrets` to get a secret that you've already stored:
+Secrets are encrypted strings that can be stored and retreived from code (ex. an API key). Use `Util.Secrets` to get a
+secret that you've already stored:
 
 ```csharp
 string value = Util.Secrets.Get("secretkey");
@@ -77,6 +79,20 @@ UserSecret? GetSecret(string key);
 bool Delete(string key);
 void Delete(Func<UserSecret, bool> filter);
 ```
+
+You can always get to secrets from the **Secrets** pane in NetPad.
+
+## Data Protection
+
+You can protect/unprotect data using
+.NET [Data Protection](https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/introduction) APIs:
+
+```csharp
+string encrypted = Util.Protect("my secret");
+string unencrypted = Util.Unprotect("protected data");
+```
+
+There are `byte[]` overrides to both methods.
 
 ## Host Lifecycle
 

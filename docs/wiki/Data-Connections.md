@@ -11,6 +11,7 @@ To access database connections, NetPad uses EntityFramework Core, and supports t
 * SQLite
 * MySQL
 * MariaDB
+* Oracle DB
 
 :computer_mouse: To add a new connection, click the `+` icon in the <kbd>Connections</kbd> explorer pane. When you're
 finished, click <kbd>Save</kbd> to store your settings and auto-generate the scaffolding, making the connection

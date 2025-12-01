@@ -20,6 +20,7 @@ These packages are maintained by community members.
 | Installer                                                                                                                                                     | Channel    | Command                                              |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|------------------------------------------------------|
 | [![AUR Version](https://img.shields.io/aur/version/netpad-bin)](https://aur.archlinux.org/packages/netpad-bin)                                                | **stable** | `yay -S netpad-bin`                                  |
+| [![AUR Version](https://img.shields.io/aur/version/netpad-vnext-bin)](https://aur.archlinux.org/packages/netpad-vnext-bin)                                    | **vNext**  | `yay -S netpad-vnext-bin`                            |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad)             | **stable** | `winget install --id=TareqImbasher.NetPad  -e`       |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad.vNext?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad.vNext) | **vNext**  | `winget install --id=TareqImbasher.NetPad.vNext  -e` |
 

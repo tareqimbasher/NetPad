@@ -2,9 +2,9 @@
 
 A cross-platform C# editor and playground.
 
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml)](https://github.com/tareqimbasher/NetPad/actions)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/tareqimbasher/NetPad/build.yml?label=main)](https://github.com/tareqimbasher/NetPad/actions)
 [![GitHub Release](https://img.shields.io/github/v/release/tareqimbasher/NetPad?color=%23097bbb)](https://github.com/tareqimbasher/NetPad/releases/latest)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/tareqimbasher/NetPad/total)
+[![npad cli version](https://img.shields.io/nuget/vpre/NetPad.CLI?label=npad%20cli&color=097bbb)](https://tareqimbasher.github.io/NetPad/#/wiki/CLI)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/tareqimbasher/netpad/latest)
 [![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)](https://discord.gg/FrgzNBYQFW)
 
@@ -30,11 +30,16 @@ See [Features](https://github.com/tareqimbasher/NetPad?tab=readme-ov-file#featur
 
 ## Motivation
 
-We love LINQPad, but we miss its tremendous utility when working on non-Windows platforms.
-This project aims to create an open-source, web-enabled, cross-platform alternative.
-
-The goal isn't to reach 100% feature parity with LINQPad, but to offer an effective alternative that
+This project aims to create an open-source, web-enabled, cross-platform alternative to LINQPad. The
+goal is not to reach 100% feature parity with LINQPad, but to offer an effective alternative that
 covers features most commonly used and to introduce a few new useful ones.
+
+## Discord
+
+Join the [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate, ask questions and get the
+latest announcements.
+
+**All** feedback is welcome!
 
 ## Requirements
 
@@ -61,7 +66,8 @@ Both channels have the same feature set. The native vNext version is lighter on 
 will eventually
 become the main package. At which point, the Electron version will be deprecated.
 
-> On **macOS**
+> [!NOTE]
+>On **macOS**
 > see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
 > if you have trouble opening NetPad.
 
@@ -72,6 +78,7 @@ These packages are maintained by community members.
 | Installer                                                                                                                                                     | Channel    | Command                                              |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|------------------------------------------------------|
 | [![AUR Version](https://img.shields.io/aur/version/netpad-bin)](https://aur.archlinux.org/packages/netpad-bin)                                                | **stable** | `yay -S netpad-bin`                                  |
+| [![AUR Version](https://img.shields.io/aur/version/netpad-vnext-bin)](https://aur.archlinux.org/packages/netpad-vnext-bin)                                    | **vNext**  | `yay -S netpad-vnext-bin`                            |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad)             | **stable** | `winget install --id=TareqImbasher.NetPad  -e`       |
 | [![WinGet Package Version](https://img.shields.io/winget/v/TareqImbasher.NetPad.vNext?color=%23097bbb)](https://winstall.app/apps/TareqImbasher.NetPad.vNext) | **vNext**  | `winget install --id=TareqImbasher.NetPad.vNext  -e` |
 
@@ -118,11 +125,6 @@ consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A 
 helps immensely with maintenance and the addition of new features.
 Thank you for your support! :heart:
 
-## Discord
-
-Join the [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate, ask questions and get the
-latest announcements!
-
 ## Features :rocket:
 
 * The basics:
@@ -136,7 +138,10 @@ latest announcements!
 * Add NuGet packages and reference assemblies from disk.
 * Vim keybindings.
 * Syntax Tree Visualizer.
+* IL Viewer
 * User-defined results styling.
+* Ability to run a script from the command-line using
+  [npad](https://tareqimbasher.github.io/NetPad/#/wiki/CLI).
 * LSP powered by OmniSharp:
     * Code Completion (Intellisense)
     * Semantic Highlighting
@@ -156,12 +161,9 @@ latest announcements!
 ## Roadmap :construction:
 
 * Debugging
-* Support for more database providers (Oracle, Mongo...etc)
 * Hyperlink driven Lazy-loading of results, and a DataGrid view
 * Benchmark your code
 * Referencing other scripts
-* Ability to run a script from the command-line
-* IL Viewer
 * Export a script as a "ready to run" .NET app
 * Export a script as a C# project
 * Git tracking of script changes
@@ -176,19 +178,10 @@ latest announcements!
 
 ## Tech Stack :computer:
 
-* .NET
-* ElectronSharp ([github](https://github.com/theolivenbaum/electron-sharp)) for the Electron shell
-  desktop version
-* Tauri ([docs](https://tauri.app/)) for the native shell desktop version
-* Aurelia 2 ([docs](https://docs.aurelia.io/))
-
-### How it works
-
-NetPad runs an ASP.NET web app that hosts a web user interface. It can be
-packaged as a desktop app or served and accessed on any browser.
-
-Communication between the user interface and the ASP.NET backend occurs via HTTP
-and SignalR.
+* **.NET** for the backend.
+* **ElectronSharp** ([github](https://github.com/theolivenbaum/electron-sharp)) for the Electron
+  desktop app and Tauri ([docs](https://tauri.app/)) for the native desktop app.
+* **Aurelia 2** ([docs](https://docs.aurelia.io/)) for the UI.
 
 ## Build
 
@@ -197,5 +190,6 @@ source. NetPad can be run as a desktop app or as a web application accessed with
 
 ## Resources :books::
 
-* Technical Docs: [Go](https://tareqimbasher.github.io/NetPad)
-* Build & RUn: [Go](./CONTRIBUTING.md)
+* [Wiki](https://tareqimbasher.github.io/NetPad)
+* [Build & Run](./CONTRIBUTING.md)
+* [Technical Docs](https://tareqimbasher.github.io/NetPad/#/technical-docs/)
