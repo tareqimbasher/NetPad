@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using NetPad.DotNet.References;
@@ -224,7 +224,7 @@ public partial class DotNetCSharpProject
             if (PackageCacheDirectoryPath is not null)
             {
                 args.Add("--package-directory");
-                args.Add($"\"{PackageCacheDirectoryPath.Path}\"");
+                args.Add(PackageCacheDirectoryPath.Path);
             }
 
             var result = await InvokeDotNetAsync(
