@@ -224,7 +224,7 @@ public partial class DotNetCSharpProject
             if (PackageCacheDirectoryPath is not null)
             {
                 args.Add("--package-directory");
-                args.Add($"\"{PackageCacheDirectoryPath.Path}\"");
+                args.Add($"{PackageCacheDirectoryPath.Path}");
             }
 
             var result = await InvokeDotNetAsync(
