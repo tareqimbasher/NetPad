@@ -13,7 +13,7 @@ namespace NetPad.Apps.Data;
 public class FileSystemDataConnectionRepository(ILogger<FileSystemDataConnectionRepository> logger)
     : IDataConnectionRepository
 {
-    private readonly FilePath _connectionsFilePath = AppDataProvider.AppDataDirectoryPath.CombineFilePath("data-connections.json");
+    private readonly FilePath _connectionsFilePath = AppDataProvider.ConnectionsFilePath;
 
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
     {
