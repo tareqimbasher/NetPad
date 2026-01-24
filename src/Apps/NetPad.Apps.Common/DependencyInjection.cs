@@ -57,13 +57,13 @@ public static class DependencyInjection
     /// </summary>
     public static DataConnectionFeatureBuilder AddDataConnectionFeature(this IServiceCollection services)
     {
-        services.AddTransient<IDataConnectionRepository, FileSystemDataConnectionRepository>();
-        services.AddTransient<IDataConnectionResourcesRepository, FileSystemDataConnectionResourcesRepository>();
+        services.AddSingleton<IDataConnectionRepository, FileSystemDataConnectionRepository>();
+        services.AddSingleton<IDataConnectionResourcesRepository, FileSystemDataConnectionResourcesRepository>();
         services.AddSingleton<IDataConnectionResourcesCache, FileSystemDataConnectionResourcesCache>();
         services.AddSingleton<Lazy<IDataConnectionResourcesCache>>(sp =>
             new Lazy<IDataConnectionResourcesCache>(sp.GetRequiredService<IDataConnectionResourcesCache>()));
 
-        services.AddTransient<IDataConnectionPasswordProtector>(s =>
+        services.AddSingleton<IDataConnectionPasswordProtector>(s =>
             new DataConnectionPasswordProtector(s.GetRequiredService<IDataProtectionProvider>(), "DataConnectionPasswords"));
 
         services.AddTransient<

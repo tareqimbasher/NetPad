@@ -1,5 +1,5 @@
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
+using NetPad.Apps.Data.DataConnectionFiles;
+using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.IO;
@@ -10,119 +10,68 @@ namespace NetPad.Apps.Data;
 /// <summary>
 /// An implementation of <see cref="IDataConnectionRepository"/> that persists data connections to the local file system.
 /// </summary>
-public class FileSystemDataConnectionRepository(ILogger<FileSystemDataConnectionRepository> logger)
-    : IDataConnectionRepository
+public class FileSystemDataConnectionRepository : IDataConnectionRepository
 {
     private readonly FilePath _connectionsFilePath = AppDataProvider.ConnectionsFilePath;
 
+    private readonly JsonMigrationPipeline _fileMigrationPipeline = new([new DataConnectionFileV0ToV1MigrationStep()]);
+
     public async Task<IEnumerable<DataConnection>> GetAllAsync()
     {
-        return (await GetFromFileAsync()).Values;
+        return (await LoadFileAsync()).Connections;
     }
 
     public async Task<DataConnection?> GetAsync(Guid id)
     {
-        (await GetFromFileAsync()).TryGetValue(id, out var connection);
-        return connection;
+        var file = await LoadFileAsync();
+        return file.Connections.FirstOrDefault(x => x.Id == id);
     }
 
     public async Task SaveAsync(DataConnection connection)
     {
-        var connections = await GetFromFileAsync();
+        var file = await LoadFileAsync();
 
-        if (connections.ContainsKey(connection.Id))
+        var index = file.Connections.FindIndex(x => x.Id == connection.Id);
+        if (index == -1)
         {
-            connections[connection.Id] = connection;
+            file.Connections.Add(connection);
         }
         else
         {
-            connections.Add(connection.Id, connection);
+            file.Connections[index] = connection;
         }
 
-        await SaveToFileAsync(connections);
+        await SaveToFileAsync(file);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var connections = await GetFromFileAsync();
+        var file = await LoadFileAsync();
+        var index = file.Connections.FindIndex(x => x.Id == id);
 
-        if (!connections.ContainsKey(id))
+        if (index == -1)
         {
             return;
         }
 
-        connections.Remove(id);
-
-        await SaveToFileAsync(connections);
+        file.Connections.RemoveAt(index);
+        await SaveToFileAsync(file);
     }
 
-    private async Task<Dictionary<Guid, DataConnection>> GetFromFileAsync()
+    private async Task<DataConnectionFileV1> LoadFileAsync()
     {
         if (!_connectionsFilePath.Exists())
         {
-            return new Dictionary<Guid, DataConnection>();
+            return new DataConnectionFileV1();
         }
 
-        var connections = new Dictionary<Guid, DataConnection>();
-
-        try
-        {
-            var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
-
-            var jsonDocument = JsonDocument.Parse(json);
-
-            int itemIndex = -1;
-            foreach (var o in jsonDocument.RootElement.EnumerateObject())
-            {
-                itemIndex++;
-                Guid? connectionId = null;
-
-                try
-                {
-                    if (!Guid.TryParse(o.Name, out var id))
-                    {
-                        logger.LogError("Could not deserialize data connection ID at index: {Index}. Data connections file: {Path}",
-                            itemIndex,
-                            _connectionsFilePath.Path);
-                        continue;
-                    }
-
-                    connectionId = id;
-
-                    var connection = o.Value.Deserialize<DataConnection>(JsonSerializer.DefaultOptions);
-
-                    if (connection == null)
-                    {
-                        logger.LogError("Could not deserialize data connection at index: {Index}. Connection ID: {ConnectionId}. Data connections file: {Path}",
-                            itemIndex,
-                            connectionId,
-                            _connectionsFilePath.Path);
-                        continue;
-                    }
-
-                    connections.Add(connectionId.Value, connection);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex,
-                        "Could not deserialize data connection at index: {Index}. Connection ID: {ConnectionId}. Data connections file: {Path}",
-                        itemIndex,
-                        connectionId,
-                        _connectionsFilePath.Path);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while deserializing data connections file at: {Path}", _connectionsFilePath.Path);
-        }
-
-        return connections;
+        var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
+        return _fileMigrationPipeline.MigrateToLatest<DataConnectionFileV1>(json, JsonSerializer.DefaultOptions);
     }
 
-    private async Task SaveToFileAsync(Dictionary<Guid, DataConnection> connections)
+    private async Task SaveToFileAsync(DataConnectionFileV1 file)
     {
-        var json = JsonSerializer.Serialize(connections, true);
+        var json = JsonSerializer.Serialize(file, true);
         await File.WriteAllTextAsync(_connectionsFilePath.Path, json);
     }
 }
