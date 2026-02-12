@@ -33,15 +33,16 @@ public sealed class PostgreSqlDatabaseServerConnection(Guid id, string name)
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector)
     {
         builder.UseNpgsql(GetConnectionString(passwordProtector));
-        return Task.CompletedTask;
     }
 
     public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var context = CreateDbContext(passwordProtector);
+        await using var context = DatabaseContext.Create(this, passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = "select datname from pg_database where datistemplate = false;";

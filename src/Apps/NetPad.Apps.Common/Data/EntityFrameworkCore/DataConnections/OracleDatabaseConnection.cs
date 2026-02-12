@@ -43,11 +43,11 @@ public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptio
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder,
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
         IDataConnectionPasswordProtector passwordProtector)
     {
         builder.UseOracle(GetConnectionString(passwordProtector));
-        return Task.CompletedTask;
     }
 
     public override Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)

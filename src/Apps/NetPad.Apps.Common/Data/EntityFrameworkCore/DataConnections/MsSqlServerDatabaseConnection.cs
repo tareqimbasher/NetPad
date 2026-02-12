@@ -40,15 +40,16 @@ public sealed class MsSqlServerDatabaseConnection(Guid id, string name, Scaffold
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector)
     {
         builder.UseSqlServer(GetConnectionString(passwordProtector));
-        return Task.CompletedTask;
     }
 
     public override async Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var context = CreateDbContext(passwordProtector);
+        await using var context = DatabaseContext.Create(this, passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = "SELECT name FROM master.dbo.sysdatabases;";

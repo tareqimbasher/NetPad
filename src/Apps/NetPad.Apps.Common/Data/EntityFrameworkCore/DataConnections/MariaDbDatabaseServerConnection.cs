@@ -34,17 +34,18 @@ public sealed class MariaDbDatabaseServerConnection(Guid id, string name)
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = GetConnectionString(passwordProtector);
         var serverVersion = MariaDbServerVersion.AutoDetect(connectionString);
         builder.UseMySql(connectionString, serverVersion);
-        return Task.CompletedTask;
     }
 
     public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        await using DatabaseContext context = CreateDbContext(passwordProtector);
+        await using DatabaseContext context = DatabaseContext.Create(this, passwordProtector);
         await using DbCommand command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = "select schema_name from information_schema.schemata;";

@@ -43,7 +43,8 @@ public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOption
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder,
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
         IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = GetConnectionString(passwordProtector);
@@ -51,14 +52,12 @@ public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOption
         var serverVersion = MySqlServerVersion.AutoDetect(connectionString);
 
         builder.UseMySql(connectionString, serverVersion);
-
-        return Task.CompletedTask;
     }
 
     public override async Task<IReadOnlyList<string>> GetDatabasesAsync(
         IDataConnectionPasswordProtector passwordProtector)
     {
-        await using DatabaseContext context = CreateDbContext(passwordProtector);
+        await using DatabaseContext context = DatabaseContext.Create(this, passwordProtector);
         await using DbCommand command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = "select schema_name from information_schema.schemata;";
