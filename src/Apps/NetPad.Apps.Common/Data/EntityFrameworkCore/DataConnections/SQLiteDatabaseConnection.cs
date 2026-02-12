@@ -6,7 +6,7 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class SQLiteDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.SQLite,
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.SQLite,
         ProviderName, scaffoldOptions)
 {
     public const string ProviderName = "Microsoft.EntityFrameworkCore.Sqlite";
@@ -34,8 +34,8 @@ public sealed class SQLiteDatabaseConnection(Guid id, string name, ScaffoldOptio
         return Task.CompletedTask;
     }
 
-    public override Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
-        return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+        return Task.FromResult<IReadOnlyList<string>>([]);
     }
 }

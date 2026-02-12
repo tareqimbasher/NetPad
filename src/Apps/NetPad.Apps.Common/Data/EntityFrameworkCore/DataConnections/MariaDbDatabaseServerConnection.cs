@@ -1,16 +1,13 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
-public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.MySQL, ProviderName, scaffoldOptions)
+public sealed class MariaDbDatabaseServerConnection(Guid id, string name)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MariaDB)
 {
-    public const string ProviderName = "Pomelo.EntityFrameworkCore.MySql";
-
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         ConnectionStringBuilder connectionStringBuilder = [];
@@ -23,7 +20,6 @@ public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOption
         }
 
         connectionStringBuilder.TryAdd("Server", host);
-        connectionStringBuilder.TryAdd("Database", DatabaseName);
 
         if (UserId != null)
         {
@@ -35,28 +31,18 @@ public sealed class MySqlDatabaseConnection(Guid id, string name, ScaffoldOption
             connectionStringBuilder.TryAdd("Pwd", passwordProtector.Unprotect(Password));
         }
 
-        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
-        {
-            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
-        }
-
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder,
-        IDataConnectionPasswordProtector passwordProtector)
+    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = GetConnectionString(passwordProtector);
-
-        var serverVersion = MySqlServerVersion.AutoDetect(connectionString);
-
+        var serverVersion = MariaDbServerVersion.AutoDetect(connectionString);
         builder.UseMySql(connectionString, serverVersion);
-
         return Task.CompletedTask;
     }
 
-    public override async Task<IReadOnlyList<string>> GetDatabasesAsync(
-        IDataConnectionPasswordProtector passwordProtector)
+    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
         await using DatabaseContext context = CreateDbContext(passwordProtector);
         await using DbCommand command = context.Database.GetDbConnection().CreateCommand();

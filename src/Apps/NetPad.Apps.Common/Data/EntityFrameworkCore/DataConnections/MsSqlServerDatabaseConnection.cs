@@ -6,7 +6,7 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MsSqlServerDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MSSQLServer,
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.MSSQLServer,
         ProviderName, scaffoldOptions)
 {
     public const string ProviderName = "Microsoft.EntityFrameworkCore.SqlServer";
@@ -46,7 +46,7 @@ public sealed class MsSqlServerDatabaseConnection(Guid id, string name, Scaffold
         return Task.CompletedTask;
     }
 
-    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override async Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
         await using var context = CreateDbContext(passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();

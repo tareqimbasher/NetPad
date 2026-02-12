@@ -1,32 +1,28 @@
 using Microsoft.EntityFrameworkCore;
-using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
-public sealed class PostgreSqlDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.PostgreSQL,
-        ProviderName, scaffoldOptions)
+public sealed class MsSqlServerDatabaseServerConnection(Guid id, string name)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MSSQLServer)
 {
-    public const string ProviderName = "Npgsql.EntityFrameworkCore.PostgreSQL";
-
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionStringBuilder = new ConnectionStringBuilder();
 
-        string host = Host ?? "";
+        string dataSource = Host ?? "";
         if (!string.IsNullOrWhiteSpace(Port))
         {
-            host += $":{Port}";
+            dataSource += $",{Port}";
         }
 
-        connectionStringBuilder.TryAdd("Host", host);
-        connectionStringBuilder.TryAdd("Database", DatabaseName);
+        connectionStringBuilder.TryAdd("Data Source", dataSource);
+        //connectionStringBuilder.TryAdd("Initial Catalog", "master");
 
         if (UserId != null)
         {
-            connectionStringBuilder.TryAdd("UserId", UserId);
+            connectionStringBuilder.TryAdd("User Id", UserId);
         }
 
         if (Password != null)
@@ -34,24 +30,21 @@ public sealed class PostgreSqlDatabaseConnection(Guid id, string name, ScaffoldO
             connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
         }
 
-        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
-            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
-
         return connectionStringBuilder.Build();
     }
 
     public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
     {
-        builder.UseNpgsql(GetConnectionString(passwordProtector));
+        builder.UseSqlServer(GetConnectionString(passwordProtector));
         return Task.CompletedTask;
     }
 
-    public override async Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
     {
         await using var context = CreateDbContext(passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
-        command.CommandText = "select datname from pg_database;";
+        command.CommandText = "SELECT name FROM master.dbo.sysdatabases;";
         await context.Database.OpenConnectionAsync();
 
         await using var result = await command.ExecuteReaderAsync();
@@ -59,7 +52,7 @@ public sealed class PostgreSqlDatabaseConnection(Guid id, string name, ScaffoldO
         var databases = new List<string>();
         while (await result.ReadAsync())
         {
-            databases.Add((string)result["datname"]);
+            databases.Add((string)result["name"]);
         }
 
         return databases;

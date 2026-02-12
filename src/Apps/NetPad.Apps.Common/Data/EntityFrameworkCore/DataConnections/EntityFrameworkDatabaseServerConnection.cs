@@ -1,24 +1,15 @@
 using Microsoft.EntityFrameworkCore;
-using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
-/// <summary>
-/// A data connection that uses EntityFramework to connect to a database.
-/// </summary>
-public abstract class EntityFrameworkDatabaseConnection(
+public abstract class EntityFrameworkDatabaseServerConnection(
     Guid id,
     string name,
-    DataConnectionType type,
-    string entityFrameworkProviderName,
-    ScaffoldOptions? scaffoldOptions)
-    : DatabaseConnection(id, name, type)
+    DataConnectionType type)
+    : DatabaseServerConnection(id, name, type)
 {
-    public string EntityFrameworkProviderName { get; } = entityFrameworkProviderName;
-    public ScaffoldOptions? ScaffoldOptions { get; } = scaffoldOptions;
-
     public abstract Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector);
 
     public override async Task<DataConnectionTestResult> TestConnectionAsync(IDataConnectionPasswordProtector passwordProtector)
@@ -38,7 +29,7 @@ public abstract class EntityFrameworkDatabaseConnection(
         }
     }
 
-    public DatabaseContext CreateDbContext(IDataConnectionPasswordProtector passwordProtector)
+    protected DatabaseContext CreateDbContext(IDataConnectionPasswordProtector passwordProtector)
     {
         return DatabaseContext.Create(options => ConfigureDbContextOptionsAsync(options, passwordProtector));
     }

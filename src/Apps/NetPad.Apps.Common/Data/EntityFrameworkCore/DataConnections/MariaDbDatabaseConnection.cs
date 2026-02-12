@@ -7,7 +7,7 @@ using NetPad.Data.Security;
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 
 public sealed class MariaDbDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkRelationalDatabaseConnection(id, name, DataConnectionType.MariaDB, ProviderName, scaffoldOptions)
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.MariaDB, ProviderName, scaffoldOptions)
 {
     public const string ProviderName = "Pomelo.EntityFrameworkCore.MySql";
 
@@ -43,7 +43,8 @@ public sealed class MariaDbDatabaseConnection(Guid id, string name, ScaffoldOpti
         return connectionStringBuilder.Build();
     }
 
-    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector)
+    public override Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector)
     {
         var connectionString = GetConnectionString(passwordProtector);
 
@@ -54,7 +55,8 @@ public sealed class MariaDbDatabaseConnection(Guid id, string name, ScaffoldOpti
         return Task.CompletedTask;
     }
 
-    public override async Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override async Task<IReadOnlyList<string>> GetDatabasesAsync(
+        IDataConnectionPasswordProtector passwordProtector)
     {
         await using DatabaseContext context = CreateDbContext(passwordProtector);
         await using DbCommand command = context.Database.GetDbConnection().CreateCommand();
