@@ -18,14 +18,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     }
 
     public static DatabaseContext Create(
-        EntityFrameworkDatabaseConnection connection,
-        IDataConnectionPasswordProtector passwordProtector)
-    {
-        return Create(options => connection.ConfigureDbContextOptions(options, passwordProtector));
-    }
-
-    public static DatabaseContext Create(
-        EntityFrameworkDatabaseServerConnection connection,
+        IEntityFrameworkDatabaseConnection connection,
         IDataConnectionPasswordProtector passwordProtector)
     {
         return Create(options => connection.ConfigureDbContextOptions(options, passwordProtector));
@@ -44,5 +37,15 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         {
             return new DataConnectionTestResult(false, ex.Message);
         }
+    }
+}
+
+public static class DatabaseContextExtensions
+{
+    public static DatabaseContext CreateDbContext(
+        this IEntityFrameworkDatabaseConnection connection,
+        IDataConnectionPasswordProtector passwordProtector)
+    {
+        return DatabaseContext.Create(connection, passwordProtector);
     }
 }

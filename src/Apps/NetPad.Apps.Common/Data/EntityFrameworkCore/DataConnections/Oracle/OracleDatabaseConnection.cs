@@ -3,11 +3,11 @@ using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
-namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.Oracle;
 
 public sealed class OracleDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.Oracle, ProviderName,
-        scaffoldOptions)
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.Oracle, ProviderName, scaffoldOptions),
+        IOracleConnection
 {
     public const string ProviderName = "Oracle.EntityFrameworkCore";
 

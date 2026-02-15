@@ -4,7 +4,7 @@ using NetPad.Data.Metadata;
 using NetPad.Data.Metadata.ChangeDetection;
 using NetPad.Data.Security;
 
-namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 
 internal class MsSqlServerDatabaseSchemaChangeDetectionStrategy(
     IDataConnectionResourcesRepository dataConnectionResourcesRepository,

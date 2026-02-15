@@ -3,11 +3,11 @@ using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
-namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
 
 public sealed class SQLiteDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
-    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.SQLite,
-        ProviderName, scaffoldOptions)
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.SQLite, ProviderName, scaffoldOptions),
+        ISQLiteConnection
 {
     public const string ProviderName = "Microsoft.EntityFrameworkCore.Sqlite";
 

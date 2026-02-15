@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using NetPad.Application;
 using NetPad.Data;
@@ -6,9 +5,9 @@ using NetPad.Data.Metadata;
 using NetPad.Data.Metadata.ChangeDetection;
 using NetPad.Data.Security;
 
-namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 
-internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
+internal class PostgreSqlDatabaseSchemaChangeDetectionStrategy(
     IDataConnectionResourcesRepository dataConnectionResourcesRepository,
     IDataConnectionPasswordProtector passwordProtector)
     : EntityFrameworkSchemaChangeDetectionStrategyBase(dataConnectionResourcesRepository, passwordProtector),
@@ -16,17 +15,14 @@ internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
 {
     public bool CanSupport(DataConnection dataConnection)
     {
-        return dataConnection is MariaDbDatabaseConnection;
+        return dataConnection is PostgreSqlDatabaseConnection;
     }
 
     public async Task<bool?> DidSchemaChangeAsync(DataConnection dataConnection)
     {
-        if (dataConnection is not MariaDbDatabaseConnection connection)
-        {
-            return null;
-        }
+        if (dataConnection is not PostgreSqlDatabaseConnection connection) return null;
 
-        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<MariaDbSchemaCompareInfo>(connection.Id);
+        var schemaCompareInfo = await DataConnectionResourcesRepository.GetSchemaCompareInfoAsync<PostGreSqlSchemaCompareInfo>(connection.Id);
 
         if (schemaCompareInfo == null)
         {
@@ -50,31 +46,29 @@ internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
 
     public async Task<SchemaCompareInfo?> GenerateSchemaCompareInfoAsync(DataConnection dataConnection)
     {
-        if (dataConnection is not MariaDbDatabaseConnection connection)
-        {
-            return null;
-        }
+        if (dataConnection is not PostgreSqlDatabaseConnection connection) return null;
 
         var hash = await GetSchemaHashAsync(connection);
 
-        return hash == null ? null : new MariaDbSchemaCompareInfo(hash)
+        return hash == null ? null : new PostGreSqlSchemaCompareInfo(hash)
         {
             GeneratedOnAppVersion = AppIdentifier.PRODUCT_VERSION
         };
     }
 
-    private async Task<string?> GetSchemaHashAsync(MariaDbDatabaseConnection connection)
+    private async Task<string?> GetSchemaHashAsync(PostgreSqlDatabaseConnection connection)
     {
-        string[] interestingColumns = [ "table_schema", "table_name", "column_name", "is_nullable", "data_type" ];
+        var interestingColumns = new[] { "table_schema", "table_name", "column_name", "is_nullable", "data_type", "is_identity" };
 
         var sql = $"""
-                    SELECT {string.Join(",", interestingColumns)}
-                    FROM information_schema.columns
-                    WHERE table_schema NOT IN ('mysql', 'performance_schema', 'information_schema', 'sys')
-                    ORDER BY table_schema, table_name, column_name;
-                    """;
+                   select {interestingColumns.JoinToString(",")}
+                   from information_schema.columns
+                   where table_schema not in ('pg_catalog', 'information_schema')
+                     and table_schema not like 'pg_toast%'
+                   order by table_schema, table_name, column_name
+                   """;
 
-        StringBuilder sb = new();
+        var sb = new StringBuilder();
 
         await ExecuteSqlCommandAsync(connection, sql, async result =>
         {
@@ -88,10 +82,10 @@ internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
             }
         });
 
-        return sb.Length == 0 ? null : Convert.ToBase64String(CalculateHash(sb.ToString()));
+        return sb.Length == 0 ? null : Convert.ToHexString(CalculateHash(sb.ToString()));
     }
 
-    private class MariaDbSchemaCompareInfo(string schemaHash) : SchemaCompareInfo(DateTime.UtcNow)
+    private class PostGreSqlSchemaCompareInfo(string schemaHash) : SchemaCompareInfo(DateTime.UtcNow)
     {
         public string? SchemaHash { get; } = schemaHash;
     }

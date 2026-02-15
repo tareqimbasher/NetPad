@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using NetPad.Application;
 using NetPad.Data;
@@ -6,7 +5,7 @@ using NetPad.Data.Metadata;
 using NetPad.Data.Metadata.ChangeDetection;
 using NetPad.Data.Security;
 
-namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.Oracle;
 
 public class OracleSchemaChangeDetectionStrategy(IDataConnectionResourcesRepository dataConnectionResourcesRepository, IDataConnectionPasswordProtector passwordProtector)
     : EntityFrameworkSchemaChangeDetectionStrategyBase(dataConnectionResourcesRepository, passwordProtector), IDataConnectionSchemaChangeDetectionStrategy

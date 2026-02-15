@@ -1,4 +1,5 @@
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
@@ -26,7 +27,7 @@ public class PostgreSqlDatabaseConnectionTests() : CommonTests(DataConnectionTyp
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
 
-        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+        var connectionString = connection.GetConnectionString(new NoOpDataConnectionPasswordProtector());
 
         Assert.Equal(expected, connectionString);
     }

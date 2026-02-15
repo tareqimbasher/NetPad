@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.CodeAnalysis;
 using NetPad.Common;

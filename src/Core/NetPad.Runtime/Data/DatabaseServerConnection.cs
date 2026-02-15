@@ -27,5 +27,5 @@ public abstract class DatabaseServerConnection(Guid id, string name, DataConnect
 
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 
-    public abstract Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
+    public abstract Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
 }

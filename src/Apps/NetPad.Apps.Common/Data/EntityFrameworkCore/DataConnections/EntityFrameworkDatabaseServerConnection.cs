@@ -8,7 +8,7 @@ public abstract class EntityFrameworkDatabaseServerConnection(
     Guid id,
     string name,
     DataConnectionType type)
-    : DatabaseServerConnection(id, name, type)
+    : DatabaseServerConnection(id, name, type), IEntityFrameworkDatabaseConnection
 {
     public abstract void ConfigureDbContextOptions(
         DbContextOptionsBuilder builder,

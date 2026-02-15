@@ -14,7 +14,7 @@ public abstract class EntityFrameworkDatabaseConnection(
     DataConnectionType type,
     string entityFrameworkProviderName,
     ScaffoldOptions? scaffoldOptions)
-    : DatabaseConnection(id, name, type)
+    : DatabaseConnection(id, name, type), IEntityFrameworkDatabaseConnection
 {
     public string EntityFrameworkProviderName { get; } = entityFrameworkProviderName;
     public ScaffoldOptions? ScaffoldOptions { get; } = scaffoldOptions;

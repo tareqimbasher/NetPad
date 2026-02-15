@@ -1,5 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MariaDb;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.Oracle;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
 using NetPad.Data.Metadata;
 using NetPad.Data.Metadata.ChangeDetection;
 
