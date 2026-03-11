@@ -22,6 +22,15 @@ public class ScriptRunner
     {
         _ipcGateway = ipcGateway;
         DumpExtension.UseSink(ClientServerDumpSink.Instance);
+
+        Task.Run(async () =>
+        {
+            while (true)
+            {
+                await Task.Delay(1000);
+                Console.WriteLine($"ALC alive? {alcRefs.Count} > {alcRefs.All(x => x.IsAlive)}");
+            }
+        });
     }
 
     public void Run(RunScriptMessage message)
@@ -35,24 +44,28 @@ public class ScriptRunner
             message.IsDirty
         ));
 
-        ClientServerDumpSink.Instance.RedirectStdIO(
-            str =>
-            {
-                _ipcGateway.Send(new ScriptOutputMessage(str));
-                return Task.CompletedTask;
-            },
-            () =>
-            {
-                _userInputRequest = new TaskCompletionSource<string?>();
-                _ipcGateway.Send(new RequestUserInputMessage());
-                return _userInputRequest.Task.Result;
-            }
-        );
-
         if (_firstRun)
         {
+            ClientServerDumpSink.Instance.RedirectStdIO(
+                str =>
+                {
+                    _ipcGateway.Send(new ScriptOutputMessage(str));
+                    return Task.CompletedTask;
+                },
+                () =>
+                {
+                    _userInputRequest = new TaskCompletionSource<string?>();
+                    _ipcGateway.Send(new RequestUserInputMessage());
+                    return _userInputRequest.Task.Result;
+                }
+            );
+
             StartForwardingMemCacheItemInfoChanges();
             _firstRun = false;
+        }
+        else
+        {
+            ClientServerDumpSink.Instance.ResetCounters();
         }
 
         try
@@ -68,6 +81,13 @@ public class ScriptRunner
             }
 
             Execute(message.ScriptAssemblyPath, message.ProbingPaths);
+
+            for (int i = 0; alcRefs.Any(x => x.IsAlive) && i < 10; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
 
             _ipcGateway.Send(new ScriptRunCompleteMessage(
                 RunResult.Success(Util.Stopwatch.ElapsedMilliseconds),
@@ -99,10 +119,13 @@ public class ScriptRunner
         }
     }
 
+    List<WeakReference> alcRefs = new();
+
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void Execute(string scriptAssemblyPath, string[] probingPaths)
+    private void Execute(string scriptAssemblyPath, string[] probingPaths)
     {
         using var assemblyLoader = new UnloadableAssemblyLoadContext(scriptAssemblyPath);
+        alcRefs.Add(new WeakReference(assemblyLoader, trackResurrection: false));
 
         assemblyLoader.UseProbing(probingPaths);
 
@@ -111,6 +134,54 @@ public class ScriptRunner
         Util.Stopwatch.Restart();
 
         assembly.EntryPoint!.Invoke(null, [Array.Empty<string>()]);
+
+        var programType = assembly.GetType("Program", throwOnError: true)!;
+        programType.GetMethod("Cleanup", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!.Invoke(
+            null, Array.Empty<object>());
+        // var prop = programType.GetProperty(
+        //     "DataContext",
+        //     BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        //
+        // if (prop is null)
+        //     throw new MissingMemberException(programType.FullName, "DataContext");
+        //
+        // // Get current value
+        // var ctx = prop.GetValue(null);
+        // if (ctx is null)
+        //     return;
+        //
+        // try
+        // {
+        //     // Prefer DisposeAsync if present
+        //     if (ctx is IAsyncDisposable asyncDisposable)
+        //     {
+        //         // If you can make Execute async, await this instead.
+        //         asyncDisposable.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        //     }
+        //     else if (ctx is IDisposable disposable)
+        //     {
+        //         disposable.Dispose();
+        //     }
+        //     else
+        //     {
+        //         // Last-resort reflection (in case type identity prevents interface cast)
+        //         var dispose = ctx.GetType().GetMethod("Dispose", Type.EmptyTypes);
+        //         dispose?.Invoke(ctx, null);
+        //     }
+        // }
+        // finally
+        // {
+        //     // Important: clear static to release reference and help ALC unload
+        //     if (prop.CanWrite)
+        //     {
+        //         prop.SetValue(null, null);
+        //         Console.WriteLine("Set to NULL");
+        //     }
+        //     else
+        //     {
+        //         // If it's get-only, see note below: you should add a Clear method in plugin.
+        //     }
+        // }
 
         Util.Stopwatch.Stop();
     }

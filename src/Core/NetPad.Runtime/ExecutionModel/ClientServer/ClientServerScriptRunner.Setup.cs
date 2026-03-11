@@ -97,17 +97,18 @@ public partial class ClientServerScriptRunner
             compilationResult.AssemblyBytes,
             dependencies);
 
-        string[] inPlaceDependencyDirectories = dependencies.References
-            .Where(x => x.LoadStrategy == DependencyLoadStrategy.LoadInPlace)
+        HashSet<string> inPlaceDependencyDirectories = dependencies.References
+            //.Where(x => x.LoadStrategy == DependencyLoadStrategy.LoadInPlace)
             .SelectMany(x => x.Assets.Select(a => Path.GetDirectoryName(a.Path)))
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToHashSet()
-            .ToArray()!;
+            .ToHashSet()!;
+
+        inPlaceDependencyDirectories.Add(_workingDirectory.SharedDependenciesDirectory.Path);
 
         return new SetupInfo(
             scriptDir,
             scriptAssemblyFilePath,
-            inPlaceDependencyDirectories,
+            inPlaceDependencyDirectories.ToArray(),
             parsingResult.UserProgramStartLineNumber
         );
     }

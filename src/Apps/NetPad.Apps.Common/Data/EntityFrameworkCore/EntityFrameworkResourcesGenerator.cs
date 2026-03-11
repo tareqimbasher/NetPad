@@ -101,14 +101,14 @@ internal class EntityFrameworkResourcesGenerator(
                   /// </summary>
                   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
                   {
-                      optionsBuilder
-                          .EnableSensitiveDataLogging()
-                          .LogTo(
-                              output =>
-                              {
-                                  DumpExtension.Sink.SqlWrite(output + "\n");
-                              }
-                          );
+                      //optionsBuilder
+                      //    .EnableSensitiveDataLogging()
+                      //    .LogTo(
+                      //        output =>
+                      //        {
+                      //            DumpExtension.Sink.SqlWrite(output + "\n");
+                      //        }
+                      //    );
 
                       base.OnConfiguring(optionsBuilder);
                       {{(efDbConnection.ScaffoldOptions?.OptimizeDbContext == true
@@ -138,21 +138,44 @@ internal class EntityFrameworkResourcesGenerator(
                   {
                       return DataContext.SaveChangesAsync(cancellationToken);
                   }
+
+                  public override ValueTask DisposeAsync()
+                  {
+                      System.Console.WriteLine("DISPOSING");
+                      return base.DisposeAsync();
+                  }
+
+                  public static void Cleanup()
+                  {
+                      _dataContext?.Dispose();
+                      _dataContext = null;
+                      for (int i = 0; i < 10; i++)
+                      {
+                          GC.Collect();
+                          GC.WaitForPendingFinalizers();
+                          GC.Collect();
+                      }
+                      System.Console.WriteLine("CLEANUP DONE");
+                  }
               """);
 
         // 2. Add the DbContext property
         code.AppendLine($$"""
+                              private static {{dbContextClassName}}? _dataContext;
+
                               /// <summary>
                               /// The DbContext instance used to access the database.
                               /// </summary>
-                              public static {{dbContextClassName}} DataContext { get; } = new Program();
+                              public static {{dbContextClassName}} DataContext
+                              {
+                                  get => _dataContext ??= new Program();
+                                  set => _dataContext = value;
+                              }
 
                           """);
 
 
-
         // 3. Add properties for all the generated DbSet's
-        var programProperties = new List<string>();
         var dbContextCodeLines = dbContextCode.Split(Environment.NewLine).ToList();
 
         foreach (var line in dbContextCodeLines)
@@ -167,17 +190,15 @@ internal class EntityFrameworkResourcesGenerator(
             var entityType = parts[0].SubstringBetween("<", ">");
             var propertyName = parts[1];
 
-            programProperties.Add($"""
-                                       /// <summary>
-                                       /// The {propertyName} table (DbSet).
-                                       /// </summary>
-                                       public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{propertyName};
-                                   """);
+            code.AppendLine($"""
+                                 /// <summary>
+                                 /// The {propertyName} table (DbSet).
+                                 /// </summary>
+                                 public static Microsoft.EntityFrameworkCore.DbSet<{entityType}> {propertyName} => DataContext.{propertyName};
+                             """);
         }
 
-        code.AppendJoin(Environment.NewLine, programProperties)
-            .AppendLine()
-            .AppendLine("}");
+        code.AppendLine("}");
 
         var applicationCode = new SourceCode(code.ToString());
         applicationCode.AddUsing("Microsoft.EntityFrameworkCore");

@@ -11,11 +11,12 @@ namespace NetPad.Assemblies;
 /// </summary>
 public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isCollectible: true), IDisposable
 {
-    private readonly AssemblyDependencyResolver? _resolver;
+    private AssemblyDependencyResolver? _resolver;
     private bool _unloaded;
     private IList<string> _probingPaths = [];
     private IList<Func<FilePath, AssemblyName, bool>> _probedAssemblyUseConditions = [];
     private Dictionary<string, string>? _assembliesInProbingPaths;
+    private string _file = $"/home/tips/test/asm/{DateTime.Now:h:mm:ss}.log";
 
     /// <summary>
     /// Initializes a collectible <see cref="AssemblyLoadContext"/> that will attempt to unload any loaded assemblies
@@ -28,6 +29,7 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
     public UnloadableAssemblyLoadContext(string mainAssemblyPath) : this()
     {
         _resolver = new AssemblyDependencyResolver(mainAssemblyPath);
+        File.AppendAllText(_file, $"mainAssemblyPath={mainAssemblyPath}\n");
     }
 
     /// <summary>
@@ -38,22 +40,24 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
     /// assembly found while scanning probe paths. If one of these conditions fail, the assembly will not be
     /// loaded from the probed assembly and will be loaded from the default assembly load context instead.
     /// </param>
-    public UnloadableAssemblyLoadContext UseProbing(
+    public void UseProbing(
         IList<string> probingPaths,
         IList<Func<FilePath, AssemblyName, bool>>? probedAssemblyUseConditions = null)
     {
         _probingPaths = probingPaths;
         _probedAssemblyUseConditions = probedAssemblyUseConditions ?? [];
-
-        return this;
+        File.AppendAllText(_file, $"probingPaths={string.Join(",", probingPaths)}\n");
     }
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        File.AppendAllText(_file, $"Load={assemblyName}\n");
+
         // First attempt to resolve assembly using resolver
         var assemblyPath = _resolver?.ResolveAssemblyToPath(assemblyName);
         if (assemblyPath != null)
         {
+            File.AppendAllText(_file, $"   ResolveAssemblyToPath={assemblyPath}\n");
             return LoadFromAssemblyPath(assemblyPath);
         }
 
@@ -61,6 +65,8 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
         var probedAssembly = SearchForAssemblyInProbingPaths(assemblyName);
         if (probedAssembly != null && File.Exists(probedAssembly))
         {
+            File.AppendAllText(_file, $"   probedAssembly={probedAssembly}\n");
+
             var useProbedAssembly =
                 _probedAssemblyUseConditions.Count == 0
                 || _probedAssemblyUseConditions.All(condition => condition(probedAssembly, assemblyName));
@@ -71,12 +77,35 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
             }
         }
 
+        // if (assemblyName.Name is not null &&
+        //     !assemblyName.Name.Contains("EntityFramework") &&
+        //     (assemblyName.Name.StartsWith("System.") ||
+        //      assemblyName.Name.StartsWith("Microsoft.") /* maybe refine */))
+        //     return null;
+        //
+        // throw new FileNotFoundException($"Could not resolve {assemblyName} for plugin ALC.");
+
+        File.AppendAllText(_file, $"   not found, loading default={probedAssembly}\n");
+
         // If still not found, attempt to load from default load context
         return base.Load(assemblyName);
     }
 
+    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    {
+        File.AppendAllText(_file, $"LoadUnmanagedDll={unmanagedDllName}\n");
+
+        var path = _resolver?.ResolveUnmanagedDllToPath(unmanagedDllName);
+        if (path != null)
+            return LoadUnmanagedDllFromPath(path);
+
+        return base.LoadUnmanagedDll(unmanagedDllName);
+    }
+
     public Assembly LoadFrom(byte[] assemblyBytes)
     {
+        File.AppendAllText(_file, $"LoadFrom={assemblyBytes.Length}\n");
+
         if (_unloaded)
         {
             throw new InvalidOperationException("Assemblies have been unloaded. You cannot load a new assembly");
@@ -127,6 +156,9 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
                 return;
             }
 
+            _resolver = null;
+            _probedAssemblyUseConditions.Clear();
+            _assembliesInProbingPaths?.Clear();
             Unload();
         }
         finally

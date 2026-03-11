@@ -9,7 +9,7 @@ namespace NetPad.ExecutionModel.ClientServer;
 /// </summary>
 public class ClientServerDumpSink : IDumpSink
 {
-    private static IClientServerProcessOutputWriter? _output;
+    private static ClientServerOutputHtmlWriter? _output;
     private static bool _isHtmlOutput;
     private static readonly Lazy<ClientServerDumpSink> _instance = new(() => new ClientServerDumpSink());
 
@@ -18,6 +18,8 @@ public class ClientServerDumpSink : IDumpSink
     }
 
     public static ClientServerDumpSink Instance => _instance.Value;
+
+    public void ResetCounters() => _output?.ResetCounters();
 
     public void RedirectStdIO(Func<string, Task> onWrite, Func<string?> onRequestInput)
     {

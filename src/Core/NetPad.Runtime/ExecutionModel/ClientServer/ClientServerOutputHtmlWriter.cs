@@ -9,11 +9,17 @@ namespace NetPad.ExecutionModel.ClientServer;
 /// Converts output emitted by the script (ex. using Dump() or Console.Write)
 /// to <see cref="ScriptOutput"/> and writes it to the main output.
 /// </summary>
-public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : IClientServerProcessOutputWriter
+public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut)
 {
     private static readonly Lazy<Regex> _ansiColorsRegex = new(() => new Regex(@"\x1B\[[^@-~]*[@-~]"));
     private uint _resultOutputCounter;
     private uint _sqlOutputCounter;
+
+    public void ResetCounters()
+    {
+        _resultOutputCounter = 0;
+        _sqlOutputCounter = 0;
+    }
 
     public async Task WriteResultAsync(object? output, DumpOptions? options = null)
     {

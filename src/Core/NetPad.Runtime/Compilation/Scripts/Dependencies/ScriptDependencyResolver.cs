@@ -1,6 +1,7 @@
 using NetPad.Data;
 using NetPad.Data.Metadata;
 using NetPad.DotNet;
+using NetPad.DotNet.CodeAnalysis;
 using NetPad.DotNet.References;
 using NetPad.Packages;
 using NetPad.Scripts;
@@ -11,6 +12,10 @@ public class ScriptDependencyResolver(
     IDataConnectionResourcesCache dataConnectionResourcesCache,
     IPackageProvider packageProvider) : IScriptDependencyResolver
 {
+    private static readonly CodeDependency _disposeDbContextCode = new CodeDependency(new SourceCodeCollection([
+        //new SourceCode("DataContext.Dispose();")
+    ]));
+
     /// <summary>
     /// Gets all dependencies a script needs to run.
     /// </summary>
@@ -79,6 +84,7 @@ public class ScriptDependencyResolver(
         var applicationCode = connectionResources.SourceCode?.ApplicationCode;
         if (applicationCode?.Count > 0)
         {
+            code.Add(_disposeDbContextCode);
             code.Add(new CodeDependency(applicationCode));
         }
 

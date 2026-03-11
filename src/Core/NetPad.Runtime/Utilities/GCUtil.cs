@@ -9,5 +9,6 @@ public static class GcUtil
     {
         GC.Collect();
         GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 }
