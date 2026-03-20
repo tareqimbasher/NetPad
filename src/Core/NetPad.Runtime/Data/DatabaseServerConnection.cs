@@ -25,6 +25,11 @@ public abstract class DatabaseServerConnection(Guid id, string name, DataConnect
     /// </summary>
     public string? ConnectionStringAugment { get; set; }
 
+    /// <summary>
+    /// The databases hosted on this server that the user has selected to include.
+    /// </summary>
+    public HashSet<string> SelectedDatabaseNames { get; set; } = [];
+
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 
     public abstract Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);

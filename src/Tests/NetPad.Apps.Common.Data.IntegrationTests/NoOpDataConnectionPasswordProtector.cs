@@ -1,8 +1,8 @@
-using NetPad.Data.Security;
+﻿using NetPad.Data.Security;
 
-namespace NetPad.Apps.Common.Tests.Data;
+namespace NetPad.Apps.Common.Data.IntegrationTests;
 
-public class NullDataConnectionPasswordProtector : IDataConnectionPasswordProtector
+public class NoOpDataConnectionPasswordProtector : IDataConnectionPasswordProtector
 {
     public byte[] Protect(byte[] plaintext) => plaintext;
 

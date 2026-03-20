@@ -66,7 +66,17 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
         }
 
         var json = await File.ReadAllTextAsync(_connectionsFilePath.Path);
-        return _fileMigrationPipeline.MigrateToLatest<DataConnectionFileV1>(json, JsonSerializer.DefaultOptions);
+        var file = _fileMigrationPipeline.MigrateToLatest<DataConnectionFileV1>(json, JsonSerializer.DefaultOptions);
+
+        // Hydrate server references
+        var serverMap = file.DatabaseServers.ToDictionary(s => s.Id);
+        foreach (var conn in file.Connections.OfType<DatabaseConnection>())
+        {
+            if (conn.ServerId is { } serverId && serverMap.TryGetValue(serverId, out var server))
+                conn.SetServer(server);
+        }
+
+        return file;
     }
 
     private async Task SaveToFileAsync(DataConnectionFileV1 file)

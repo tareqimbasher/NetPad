@@ -7,4 +7,5 @@ public class DataConnectionFileV1 : IVersionedJson
 {
     public int Version => 1;
     public List<DataConnection> Connections { get; set; } = [];
+    public List<DatabaseServerConnection> DatabaseServers { get; set; } = [];
 }

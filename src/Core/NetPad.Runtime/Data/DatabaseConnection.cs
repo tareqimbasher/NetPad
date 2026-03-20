@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using NetPad.Data.Security;
 
 namespace NetPad.Data;
@@ -14,8 +15,9 @@ public abstract class DatabaseConnection(Guid id, string name, DataConnectionTyp
     private bool _containsProductionData;
     private string? _connectionStringAugment;
 
-    public Guid? ServerId { get; set; }
-    public DatabaseServerConnection? Server { get; set; }
+    public Guid? ServerId { get; private set; }
+
+    [JsonIgnore] public DatabaseServerConnection? Server { get; private set; }
 
     public string? Host
     {
@@ -117,6 +119,12 @@ public abstract class DatabaseConnection(Guid id, string name, DataConnectionTyp
 
             _connectionStringAugment = value;
         }
+    }
+
+    public void SetServer(DatabaseServerConnection? server)
+    {
+        Server = server;
+        ServerId = server?.Id;
     }
 
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);

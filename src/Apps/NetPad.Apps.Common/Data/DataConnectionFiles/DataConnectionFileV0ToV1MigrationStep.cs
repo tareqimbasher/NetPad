@@ -12,7 +12,7 @@ public class DataConnectionFileV0ToV1MigrationStep : IJsonMigrationStep
     {
         var keys = doc.Select(kvp => kvp.Key).ToList();
 
-        var list = new JsonArray();
+        var connections = new JsonArray();
 
         foreach (var key in keys)
         {
@@ -26,11 +26,12 @@ public class DataConnectionFileV0ToV1MigrationStep : IJsonMigrationStep
                 continue;
 
             connection["id"] ??= key; // Ensure ID is set
-            list.Add(connection);
+            connections.Add(connection);
         }
 
         doc.Clear();
-        doc["connections"] = list;
         doc["version"] = ToVersion;
+        doc["connections"] = connections;
+        doc["databaseServers"] = new JsonArray();
     }
 }
