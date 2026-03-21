@@ -58,6 +58,52 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
         await SaveToFileAsync(file);
     }
 
+    public async Task<IEnumerable<DatabaseServerConnection>> GetAllServersAsync()
+    {
+        return (await LoadFileAsync()).DatabaseServers;
+    }
+
+    public async Task<DatabaseServerConnection?> GetServerAsync(Guid id)
+    {
+        var file = await LoadFileAsync();
+        return file.DatabaseServers.FirstOrDefault(x => x.Id == id);
+    }
+
+    public async Task SaveServerAsync(DatabaseServerConnection server)
+    {
+        var file = await LoadFileAsync();
+
+        var index = file.DatabaseServers.FindIndex(x => x.Id == server.Id);
+        if (index == -1)
+        {
+            file.DatabaseServers.Add(server);
+        }
+        else
+        {
+            file.DatabaseServers[index] = server;
+        }
+
+        await SaveToFileAsync(file);
+    }
+
+    public async Task DeleteServerAsync(Guid id)
+    {
+        var file = await LoadFileAsync();
+        var index = file.DatabaseServers.FindIndex(x => x.Id == id);
+
+        if (index == -1)
+        {
+            return;
+        }
+
+        file.DatabaseServers.RemoveAt(index);
+
+        // Cascade-delete connections attached to this server
+        file.Connections.RemoveAll(c => c is DatabaseConnection dc && dc.ServerId == id);
+
+        await SaveToFileAsync(file);
+    }
+
     private async Task<DataConnectionFileV1> LoadFileAsync()
     {
         if (!_connectionsFilePath.Exists())

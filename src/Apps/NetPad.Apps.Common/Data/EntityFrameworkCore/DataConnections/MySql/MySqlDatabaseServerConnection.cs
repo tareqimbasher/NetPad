@@ -8,6 +8,14 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
 public sealed class MySqlDatabaseServerConnection(Guid id, string name)
     : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MySQL), IMySqlConnection
 {
+    public override DatabaseConnection CreateDatabaseConnection(string databaseName)
+    {
+        var connection = new MySqlDatabaseConnection(Guid.NewGuid(), databaseName);
+        connection.DatabaseName = databaseName;
+        connection.SetServer(this);
+        return connection;
+    }
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
         => MySqlUtils.GetConnectionString(this, null, passwordProtector);
 

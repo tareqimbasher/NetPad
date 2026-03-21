@@ -7,6 +7,14 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 public sealed class MsSqlServerDatabaseServerConnection(Guid id, string name)
     : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MSSQLServer), IMsSqlServerConnection
 {
+    public override DatabaseConnection CreateDatabaseConnection(string databaseName)
+    {
+        var connection = new MsSqlServerDatabaseConnection(Guid.NewGuid(), databaseName);
+        connection.DatabaseName = databaseName;
+        connection.SetServer(this);
+        return connection;
+    }
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
         => MsSqlServerUtils.GetConnectionString(this, null, passwordProtector);
 

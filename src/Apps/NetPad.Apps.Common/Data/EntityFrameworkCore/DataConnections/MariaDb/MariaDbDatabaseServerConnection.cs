@@ -8,6 +8,14 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MariaDb;
 public sealed class MariaDbDatabaseServerConnection(Guid id, string name)
     : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MariaDB), IMariaDbConnection
 {
+    public override DatabaseConnection CreateDatabaseConnection(string databaseName)
+    {
+        var connection = new MariaDbDatabaseConnection(Guid.NewGuid(), databaseName);
+        connection.DatabaseName = databaseName;
+        connection.SetServer(this);
+        return connection;
+    }
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
         => MariaDbUtils.GetConnectionString(this, null, passwordProtector);
 

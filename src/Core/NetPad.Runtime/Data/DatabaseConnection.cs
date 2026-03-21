@@ -6,7 +6,8 @@ namespace NetPad.Data;
 /// <summary>
 /// A connection to a database.
 /// </summary>
-public abstract class DatabaseConnection(Guid id, string name, DataConnectionType type) : DataConnection(id, name, type)
+public abstract class DatabaseConnection(Guid id, string name, DataConnectionType type)
+    : DataConnection(id, name, type), IDatabaseConnection
 {
     private string? _host;
     private string? _port;

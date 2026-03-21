@@ -7,6 +7,14 @@ namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 public sealed class PostgreSqlDatabaseServerConnection(Guid id, string name)
     : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.PostgreSQL), IPostgreSqlConnection
 {
+    public override DatabaseConnection CreateDatabaseConnection(string databaseName)
+    {
+        var connection = new PostgreSqlDatabaseConnection(Guid.NewGuid(), databaseName);
+        connection.DatabaseName = databaseName;
+        connection.SetServer(this);
+        return connection;
+    }
+
     public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
         => PostgreSqlUtils.GetConnectionString(this, null, passwordProtector);
 

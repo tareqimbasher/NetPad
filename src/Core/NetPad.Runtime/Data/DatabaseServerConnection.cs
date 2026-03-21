@@ -5,7 +5,8 @@ namespace NetPad.Data;
 /// <summary>
 /// A connection to a database server.
 /// </summary>
-public abstract class DatabaseServerConnection(Guid id, string name, DataConnectionType type) : DataConnection(id, name, type)
+public abstract class DatabaseServerConnection(Guid id, string name, DataConnectionType type)
+    : DataConnection(id, name, type), IDatabaseConnection
 {
     public string? Host { get; set; }
     public string? Port { get; set; }
@@ -29,6 +30,8 @@ public abstract class DatabaseServerConnection(Guid id, string name, DataConnect
     /// The databases hosted on this server that the user has selected to include.
     /// </summary>
     public HashSet<string> SelectedDatabaseNames { get; set; } = [];
+
+    public abstract DatabaseConnection CreateDatabaseConnection(string databaseName);
 
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 
