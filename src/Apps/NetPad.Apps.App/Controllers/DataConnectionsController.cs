@@ -31,7 +31,7 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<DataConnection>> GetAll() => await mediator.Send(new GetDataConnectionsQuery());
+    public async Task<GetAllConnectionsQuery.Response> GetAll() => await mediator.Send(new GetAllConnectionsQuery());
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DataConnection?>> Get(Guid id)
@@ -56,8 +56,10 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpGet("names")]
     public async Task<IEnumerable<string>> GetAllNames()
     {
-        var dataConnections = await GetAll();
-        return dataConnections.Select(c => c.Name).ToArray();
+        var result = await GetAll();
+        return result.Connections.Select(c => c.Name)
+            .Concat(result.Servers.Select(s => s.Name))
+            .ToArray();
     }
 
     [HttpPut]
@@ -103,6 +105,43 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
 
         return await dbConnection.GetDatabasesAsync(passwordProtector);
     }
+
+    [HttpGet("servers/{id:guid}")]
+    public async Task<ActionResult<DatabaseServerConnection?>> GetServer(Guid id)
+    {
+        var server = await mediator.Send(new GetDatabaseServerQuery(id));
+
+        if (server == null) return server;
+
+        var json = JsonSerializer.Serialize(server, typeof(DatabaseServerConnection));
+
+        return new ContentResult
+        {
+            StatusCode = 200,
+            Content = json,
+            ContentType = "application/json"
+        };
+    }
+
+    [HttpPut("servers")]
+    public async Task SaveServer(DatabaseServerConnection server) =>
+        await mediator.Send(new SaveDatabaseServerCommand(server));
+
+    [HttpDelete("servers/{id:guid}")]
+    public async Task DeleteServer(Guid id) =>
+        await mediator.Send(new DeleteDatabaseServerCommand(id));
+
+    [HttpPatch("servers/test")]
+    public async Task<DataConnectionTestResult> TestServer(
+        [FromBody] DatabaseServerConnection server,
+        [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
+        await server.TestConnectionAsync(passwordProtector);
+
+    [HttpPatch("servers/databases")]
+    public async Task<IEnumerable<string>> GetServerDatabases(
+        [FromBody] DatabaseServerConnection server,
+        [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
+        await server.GetDatabasesAsync(passwordProtector);
 
     [HttpPatch("{id:guid}/database-structure")]
     public async Task<DatabaseStructure> GetDatabaseStructure(Guid id)
