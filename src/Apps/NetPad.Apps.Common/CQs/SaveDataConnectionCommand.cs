@@ -41,7 +41,8 @@ public class SaveDataConnectionCommand(DataConnection connection) : Command
         private static readonly HashSet<string> _propertiesThatDoNotTriggerResourceRefresh =
         [
             nameof(DataConnection.Name),
-            nameof(DatabaseConnection.ContainsProductionData)
+            nameof(DatabaseConnection.ContainsProductionData),
+            nameof(DatabaseConnection.Server),
         ];
 
         private bool ShouldRefreshResources(DataConnection existing, DataConnection updated)

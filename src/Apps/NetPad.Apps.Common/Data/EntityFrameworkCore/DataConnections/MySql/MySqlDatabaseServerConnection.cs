@@ -1,12 +1,13 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
 
-public sealed class MySqlDatabaseServerConnection(Guid id, string name)
-    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MySQL), IMySqlConnection
+public sealed class MySqlDatabaseServerConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MySQL, scaffoldOptions), IMySqlConnection
 {
     public override DatabaseConnection CreateDatabaseConnection(string databaseName)
     {

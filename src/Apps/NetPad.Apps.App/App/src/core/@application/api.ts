@@ -8891,6 +8891,7 @@ export interface IScaffoldOptions {
 }
 
 export abstract class EntityFrameworkDatabaseServerConnection extends DatabaseServerConnection implements IEntityFrameworkDatabaseServerConnection {
+    scaffoldOptions?: ScaffoldOptions | undefined;
 
     constructor(data?: IEntityFrameworkDatabaseServerConnection) {
         super(data);
@@ -8899,6 +8900,9 @@ export abstract class EntityFrameworkDatabaseServerConnection extends DatabaseSe
 
     override init(_data?: any) {
         super.init(_data);
+        if (_data) {
+            this.scaffoldOptions = _data["scaffoldOptions"] ? ScaffoldOptions.fromJS(_data["scaffoldOptions"]) : <any>undefined;
+        }
     }
 
     static override fromJS(data: any): EntityFrameworkDatabaseServerConnection {
@@ -8928,6 +8932,7 @@ export abstract class EntityFrameworkDatabaseServerConnection extends DatabaseSe
 
     override toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["scaffoldOptions"] = this.scaffoldOptions ? this.scaffoldOptions.toJSON() : <any>undefined;
         super.toJSON(data);
         return data;
     }
@@ -8938,6 +8943,7 @@ export abstract class EntityFrameworkDatabaseServerConnection extends DatabaseSe
 }
 
 export interface IEntityFrameworkDatabaseServerConnection extends IDatabaseServerConnection {
+    scaffoldOptions?: ScaffoldOptions | undefined;
 }
 
 export class MsSqlServerDatabaseServerConnection extends EntityFrameworkDatabaseServerConnection implements IMsSqlServerDatabaseServerConnection {

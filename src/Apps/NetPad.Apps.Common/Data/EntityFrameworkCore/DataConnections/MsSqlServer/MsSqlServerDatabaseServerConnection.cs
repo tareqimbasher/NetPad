@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 
-public sealed class MsSqlServerDatabaseServerConnection(Guid id, string name)
-    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MSSQLServer), IMsSqlServerConnection
+public sealed class MsSqlServerDatabaseServerConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MSSQLServer, scaffoldOptions), IMsSqlServerConnection
 {
     public override DatabaseConnection CreateDatabaseConnection(string databaseName)
     {

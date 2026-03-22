@@ -8,17 +8,24 @@ public class PostgreSqlDatabaseServerConnectionTests
     [Fact]
     public void DatabaseConnectionUsesServerProperties()
     {
-        var serverConnection = new PostgreSqlDatabaseServerConnection(Guid.NewGuid(), "test")
+        var serverScaffoldOptions = new ScaffoldOptions
+        {
+            NoPluralize = true,
+            Schemas = ["public"]
+        };
+
+        var serverConnection = new PostgreSqlDatabaseServerConnection(Guid.NewGuid(), "test", serverScaffoldOptions)
         {
             Host = "foo1",
             Port = "foo2",
             UserId = "foo3",
             Password = "foo4",
             ContainsProductionData = true,
-            ConnectionStringAugment =  "foo5"
+            ConnectionStringAugment = "foo5"
         };
 
-        var dbConnection = new PostgreSqlDatabaseConnection(Guid.NewGuid(), "test", new ScaffoldOptions());
+        var localScaffoldOptions = new ScaffoldOptions { UseDatabaseNames = true };
+        var dbConnection = new PostgreSqlDatabaseConnection(Guid.NewGuid(), "test", localScaffoldOptions);
         dbConnection.SetServer(serverConnection);
 
         Assert.Equal("foo1", dbConnection.Host);
@@ -27,6 +34,7 @@ public class PostgreSqlDatabaseServerConnectionTests
         Assert.Equal("foo4", dbConnection.Password);
         Assert.True(dbConnection.ContainsProductionData);
         Assert.Equal("foo5", dbConnection.ConnectionStringAugment);
+        Assert.Same(serverScaffoldOptions, dbConnection.ScaffoldOptions);
     }
 
     [Fact]

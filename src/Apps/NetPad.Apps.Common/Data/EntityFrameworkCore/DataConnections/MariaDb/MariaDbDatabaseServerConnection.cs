@@ -1,12 +1,13 @@
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MariaDb;
 
-public sealed class MariaDbDatabaseServerConnection(Guid id, string name)
-    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MariaDB), IMariaDbConnection
+public sealed class MariaDbDatabaseServerConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.MariaDB, scaffoldOptions), IMariaDbConnection
 {
     public override DatabaseConnection CreateDatabaseConnection(string databaseName)
     {

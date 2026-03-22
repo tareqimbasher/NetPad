@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 
-public sealed class PostgreSqlDatabaseServerConnection(Guid id, string name)
-    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.PostgreSQL), IPostgreSqlConnection
+public sealed class PostgreSqlDatabaseServerConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkDatabaseServerConnection(id, name, DataConnectionType.PostgreSQL, scaffoldOptions), IPostgreSqlConnection
 {
     public override DatabaseConnection CreateDatabaseConnection(string databaseName)
     {
