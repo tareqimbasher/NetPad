@@ -147,7 +147,12 @@
                             </div>
 
                             <div class="tab-content scaffolding-settings" show.bind="activeTab === 'Scaffolding'">
-                                <scaffolding-options connection.bind="connectionView.connection"></scaffolding-options>
+                                <div if.bind="connectionView.connection.serverId" class="alert alert-info small mb-3">
+                                    Scaffolding options are managed by this connection's server.
+                                </div>
+                                <fieldset disabled.bind="connectionView.connection.serverId">
+                                    <scaffolding-options connection.bind="connectionView.connection"></scaffolding-options>
+                                </fieldset>
                             </div>
                         </div>
                     </div>

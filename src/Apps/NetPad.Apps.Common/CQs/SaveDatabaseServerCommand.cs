@@ -1,9 +1,8 @@
 using MediatR;
-using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
-using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;
 using NetPad.Data.Events;
 using NetPad.Events;
+using NetPad.Utilities;
 
 namespace NetPad.Apps.CQs;
 
@@ -17,6 +16,13 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
         IEventBus eventBus)
         : IRequestHandler<SaveDatabaseServerCommand, Unit>
     {
+        private static readonly HashSet<string> _propertiesThatDoNotTriggerRefresh =
+        [
+            nameof(DatabaseServerConnection.Name),
+            nameof(DatabaseServerConnection.ContainsProductionData),
+            nameof(DatabaseServerConnection.SelectedDatabaseNames),
+        ];
+
         public async Task<Unit> Handle(SaveDatabaseServerCommand request, CancellationToken cancellationToken)
         {
             var server = request.Server;
@@ -26,9 +32,11 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
                 throw new InvalidOperationException("Database server connection cannot have a null or empty ID.");
             }
 
-            // Check if scaffold options changed compared to existing server
+            // Check if connection-relevant properties changed compared to existing server
             var existingServer = await dataConnectionRepository.GetServerAsync(server.Id);
-            bool scaffoldOptionsChanged = DidScaffoldOptionsChange(existingServer, server);
+            bool connectionDetailsChanged = existingServer != null
+                                            && PropertyChangeDetector.HasChanges(existingServer, server,
+                                                _propertiesThatDoNotTriggerRefresh);
 
             // Get existing connections attached to this server
             var allConnections = (await dataConnectionRepository.GetAllAsync())
@@ -68,11 +76,13 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
                 await mediator.Send(new SaveDataConnectionCommand(connection), cancellationToken);
             }
 
-            // If scaffold options changed, refresh existing connections that weren't added or removed
-            if (scaffoldOptionsChanged)
+            // If connection details changed, refresh existing connections that weren't added or removed
+            if (connectionDetailsChanged)
             {
                 var retained = allConnections
-                    .Where(c => c.DatabaseName != null && !added.Contains(c.DatabaseName) && !removed.Contains(c.DatabaseName));
+                    .Where(c => c.DatabaseName != null
+                                && !added.Contains(c.DatabaseName)
+                                && !removed.Contains(c.DatabaseName));
 
                 foreach (var connection in retained)
                 {
@@ -83,14 +93,6 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
             await eventBus.PublishAsync(new DatabaseServerSavedEvent(server));
 
             return Unit.Value;
-        }
-
-        private static bool DidScaffoldOptionsChange(DatabaseServerConnection? existing, DatabaseServerConnection updated)
-        {
-            var existingOptions = (existing as EntityFrameworkDatabaseServerConnection)?.ScaffoldOptions;
-            var updatedOptions = (updated as EntityFrameworkDatabaseServerConnection)?.ScaffoldOptions;
-
-            return existingOptions != updatedOptions;
         }
     }
 }

@@ -1,4 +1,3 @@
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
 using NetPad.Data;

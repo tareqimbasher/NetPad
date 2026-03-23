@@ -127,6 +127,14 @@ public class FileSystemDataConnectionRepository : IDataConnectionRepository
 
     private async Task SaveToFileAsync(DataConnectionFileV1 file)
     {
+        // Ensure connections reference the latest server instances before serializing
+        var serverMap = file.DatabaseServers.ToDictionary(s => s.Id);
+        foreach (var conn in file.Connections.OfType<DatabaseConnection>())
+        {
+            if (conn.ServerId is { } serverId && serverMap.TryGetValue(serverId, out var server))
+                conn.SetServer(server);
+        }
+
         var json = JsonSerializer.Serialize(file, true);
         await File.WriteAllTextAsync(_connectionsFilePath.Path, json);
     }

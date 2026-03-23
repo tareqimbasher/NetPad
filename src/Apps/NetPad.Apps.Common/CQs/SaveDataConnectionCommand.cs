@@ -1,8 +1,8 @@
-using System.Reflection;
 using MediatR;
 using NetPad.Data;
 using NetPad.Data.Events;
 using NetPad.Events;
+using NetPad.Utilities;
 
 namespace NetPad.Apps.CQs;
 
@@ -45,39 +45,14 @@ public class SaveDataConnectionCommand(DataConnection connection) : Command
             nameof(DatabaseConnection.Server),
         ];
 
-        private bool ShouldRefreshResources(DataConnection existing, DataConnection updated)
+        private static bool ShouldRefreshResources(DataConnection existing, DataConnection updated)
         {
-            var existingConnectionType = existing.GetType();
-            var updatedConnectionType = updated.GetType();
-
-            if (existingConnectionType != updatedConnectionType)
+            if (existing.GetType() != updated.GetType())
             {
                 return true;
             }
 
-            var properties = updatedConnectionType
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => !_propertiesThatDoNotTriggerResourceRefresh.Contains(p.Name));
-
-            foreach (var property in properties)
-            {
-                var existingConnectionValue = property.GetValue(existing);
-                var updatedConnectionValue = property.GetValue(updated);
-
-                bool changed = !(existingConnectionValue == null && updatedConnectionValue == null) &&
-                               (
-                                   (existingConnectionValue != null && updatedConnectionValue == null)
-                                   || (existingConnectionValue == null && updatedConnectionValue != null)
-                                   || existingConnectionValue!.Equals(updatedConnectionValue) != true
-                               );
-
-                if (changed)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return PropertyChangeDetector.HasChanges(existing, updated, _propertiesThatDoNotTriggerResourceRefresh);
         }
     }
 }

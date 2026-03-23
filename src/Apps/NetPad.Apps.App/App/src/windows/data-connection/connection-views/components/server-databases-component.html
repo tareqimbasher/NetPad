@@ -3,23 +3,26 @@
         <label class="col-form-label">Databases</label>
     </div>
     <div class="input-column d-flex flex-column">
-        <button class="btn btn-sm btn-secondary bg-transparent mb-2"
-                click.trigger="loadDatabases()"
-                disabled.bind="loadingDatabases">
-            ${loadingDatabases ? 'Loading...' : 'Load Databases'}
-            <span if.bind="loadingDatabases"
-                  class="spinner-border spinner-border-sm text-yellow ms-2"
-                  title="Loading databases..."></span>
-        </button>
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <button class="btn btn-sm btn-secondary"
+                    click.trigger="loadDatabases()"
+                    disabled.bind="loadingDatabases">
+                <i class="database-icon me-1"></i>
+                <span>${loadingDatabases ? 'Loading...' : 'Load Databases'}</span>
+                <span if.bind="loadingDatabases"
+                      class="spinner-border spinner-border-sm"
+                      title="Loading databases..."></span>
+            </button>
+            <small if.bind="databasesOnServer && databasesOnServer.length" class="text-muted ms-2">
+                Selected ${connection.selectedDatabaseNames.length} of ${databasesOnServer.length}
+            </small>
+            <button if.bind="databasesOnServer && databasesOnServer.length"
+               class="btn btn-sm btn-link" click.trigger="selectAll()">Select All</button>
+            <button if.bind="databasesOnServer && databasesOnServer.length"
+               class="btn btn-sm btn-link" click.trigger="clearSelection()">Clear</button>
+        </div>
 
         <div if.bind="databasesOnServer && databasesOnServer.length">
-            <div class="d-flex justify-content-between mb-1">
-                <small class="text-muted">${connection.selectedDatabaseNames.length} of ${databasesOnServer.length} selected</small>
-                <div class="d-flex gap-2">
-                    <a href="javascript:void(0)" class="small" click.trigger="selectAll()">Select All</a>
-                    <a href="javascript:void(0)" class="small" click.trigger="clearSelection()">Clear</a>
-                </div>
-            </div>
             <div class="database-selection-list" style="max-height: 200px; overflow-y: auto;">
                 <div class="form-check" repeat.for="dbName of databasesOnServer">
                     <input class="form-check-input"

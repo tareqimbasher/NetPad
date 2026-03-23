@@ -35,7 +35,8 @@ export class ServerDatabasesComponent implements IDataConnectionViewComponent {
         this.loadingDatabases = true;
 
         try {
-            this.databasesOnServer = await this.commonServices.dataConnectionService.getDatabases(this.connection);
+            const databases = await this.commonServices.dataConnectionService.getDatabases(this.connection);
+            this.databasesOnServer = databases.sort((a, b) => a.localeCompare(b));
         } finally {
             this.loadingDatabases = false;
         }
