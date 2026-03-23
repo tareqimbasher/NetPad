@@ -1,8 +1,9 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetPad.Data;
 using NetPad.Data.Events;
 using NetPad.Events;
-using NetPad.Utilities;
 
 namespace NetPad.Apps.CQs;
 
@@ -13,7 +14,9 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
     public class Handler(
         IDataConnectionRepository dataConnectionRepository,
         IMediator mediator,
-        IEventBus eventBus)
+        IServiceScopeFactory serviceScopeFactory,
+        IEventBus eventBus,
+        ILogger<Handler> logger)
         : IRequestHandler<SaveDatabaseServerCommand, Unit>
     {
         private static readonly HashSet<string> _propertiesThatDoNotTriggerRefresh =
@@ -86,7 +89,7 @@ public class SaveDatabaseServerCommand(DatabaseServerConnection server) : Comman
 
                 foreach (var connection in retained)
                 {
-                    _ = mediator.Send(new RefreshDataConnectionCommand(connection.Id));
+                    RefreshDataConnectionCommand.RunInBackground(connection.Id, serviceScopeFactory, logger);
                 }
             }
 

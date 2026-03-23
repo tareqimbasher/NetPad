@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.CQs;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
@@ -68,7 +69,13 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
         await mediator.Send(new SaveDataConnectionCommand(dataConnection));
 
     [HttpPatch("{id:guid}/refresh")]
-    public async Task Refresh(Guid id) => await mediator.Send(new RefreshDataConnectionCommand(id));
+    public void Refresh(
+        Guid id,
+        [FromServices] IServiceScopeFactory serviceScopeFactory,
+        [FromServices] ILogger<DataConnectionsController> logger)
+    {
+        RefreshDataConnectionCommand.RunInBackground(id, serviceScopeFactory, logger);
+    }
 
     [HttpDelete("{id:guid}")]
     public async Task Delete(Guid id) => await mediator.Send(new DeleteDataConnectionCommand(id));

@@ -31,27 +31,10 @@ public class RefreshDatabaseServerCommand(Guid serverId) : Command
                 return Unit.Value;
             }
 
-            _ = Task.Run(async () =>
+            foreach (var connection in connections)
             {
-                using var scope = serviceScopeFactory.CreateScope();
-                var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-
-                var tasks = connections.Select(async connection =>
-                {
-                    try
-                    {
-                        await mediator.Send(new RefreshDataConnectionCommand(connection.Id));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex,
-                            "Error refreshing resources for connection {ConnectionId} on server {ServerId}",
-                            connection.Id, request.ServerId);
-                    }
-                });
-
-                await Task.WhenAll(tasks);
-            });
+                RefreshDataConnectionCommand.RunInBackground(connection.Id, serviceScopeFactory, logger);
+            }
 
             return Unit.Value;
         }
