@@ -15,7 +15,7 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
     private bool _unloaded;
     private IList<string> _probingPaths = [];
     private IList<Func<FilePath, AssemblyName, bool>> _probedAssemblyUseConditions = [];
-    private Dictionary<string, string>? _assembliesInProbingPaths;
+    private Dictionary<string, (string Path, Version? Version)>? _assembliesInProbingPaths;
 
     /// <summary>
     /// Initializes a collectible <see cref="AssemblyLoadContext"/> that will attempt to unload any loaded assemblies
@@ -96,7 +96,7 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
 
         if (_assembliesInProbingPaths == null)
         {
-            _assembliesInProbingPaths = new Dictionary<string, string>();
+            _assembliesInProbingPaths = new Dictionary<string, (string Path, Version? Version)>();
             foreach (var probingPath in _probingPaths)
             {
                 if (!Directory.Exists(probingPath))
@@ -107,15 +107,34 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
                 foreach (var filePath in Directory.GetFiles(probingPath))
                 {
                     var name = Try.Run(() => AssemblyName.GetAssemblyName(filePath));
-                    if (name != null)
+                    if (name?.Name == null)
                     {
-                        _assembliesInProbingPaths.TryAdd(name.ToString(), filePath);
+                        continue;
+                    }
+
+                    // Key by simple name (without version) to allow version roll-forward,
+                    // matching the .NET runtime's native behavior. When multiple versions
+                    // exist across probing paths, keep the highest version.
+                    if (_assembliesInProbingPaths.TryGetValue(name.Name, out var existing))
+                    {
+                        if (name.Version != null &&
+                            (existing.Version == null || name.Version > existing.Version))
+                        {
+                            _assembliesInProbingPaths[name.Name] = (filePath, name.Version);
+                        }
+                    }
+                    else
+                    {
+                        _assembliesInProbingPaths[name.Name] = (filePath, name.Version);
                     }
                 }
             }
         }
 
-        return _assembliesInProbingPaths.TryGetValue(assemblyName.ToString(), out var path) ? path : null;
+        return assemblyName.Name != null
+            && _assembliesInProbingPaths.TryGetValue(assemblyName.Name, out var match)
+            ? match.Path
+            : null;
     }
 
     public void Dispose()
