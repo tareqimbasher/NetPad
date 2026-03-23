@@ -257,10 +257,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async refreshServerConnections(serverId: string) {
-        const serverVm = this.serverViewModels.find(v => v.server.id === serverId);
-        if (serverVm) {
-            await serverVm.refresh();
-        }
+        await this.dataConnectionService.refreshServer(serverId);
     }
 
     public async editConnection(connectionId: string) {

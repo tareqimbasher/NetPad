@@ -11,8 +11,4 @@ export class DatabaseServerViewModel {
     public toggleExpand() {
         this.expanded = !this.expanded;
     }
-
-    public async refresh() {
-        await Promise.all(this.connections.map(connVm => connVm.refresh()));
-    }
 }

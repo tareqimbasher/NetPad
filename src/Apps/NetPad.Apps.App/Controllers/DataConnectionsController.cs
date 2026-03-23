@@ -134,6 +134,10 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     public async Task SaveServer(DatabaseServerConnection server) =>
         await mediator.Send(new SaveDatabaseServerCommand(server));
 
+    [HttpPatch("servers/{id:guid}/refresh")]
+    public async Task RefreshServer(Guid id) =>
+        await mediator.Send(new RefreshDatabaseServerCommand(id));
+
     [HttpDelete("servers/{id:guid}")]
     public async Task DeleteServer(Guid id) =>
         await mediator.Send(new DeleteDatabaseServerCommand(id));
