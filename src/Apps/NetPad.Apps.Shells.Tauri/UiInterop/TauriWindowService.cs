@@ -35,7 +35,7 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
         await ipcService.SendAsync(command);
     }
 
-    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false, bool isServer = false)
     {
         if (copy && dataConnectionId == null)
         {
@@ -43,7 +43,7 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
         }
 
         var command = new OpenWindowCommand(WindowIds.DataConnection);
-        command.Options.Height = 0.5;
+        command.Options.Height = 0.65;
         command.Options.Width = 0.5;
 
         if (dataConnectionId != null)
@@ -54,6 +54,11 @@ public class TauriWindowService(IIpcService ipcService) : IUiWindowService
         if (copy)
         {
             command.Metadata.Add("copy", "true");
+        }
+
+        if (isServer)
+        {
+            command.Metadata.Add("is-server", "true");
         }
 
         await ipcService.SendAsync(command);

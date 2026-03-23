@@ -15,7 +15,7 @@ public abstract class EntityFrameworkSchemaChangeDetectionStrategyBase(
 
     protected async Task ExecuteSqlCommandAsync(EntityFrameworkDatabaseConnection connection, string commandText, Func<DbDataReader, Task> process)
     {
-        await using var context = connection.CreateDbContext(passwordProtector);
+        await using var context = DatabaseContext.Create(connection, passwordProtector);
         await using var command = context.Database.GetDbConnection().CreateCommand();
 
         command.CommandText = commandText;

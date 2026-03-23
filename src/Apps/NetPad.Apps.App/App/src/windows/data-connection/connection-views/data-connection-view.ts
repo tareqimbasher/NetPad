@@ -1,17 +1,36 @@
 import {Constructable} from "aurelia";
 import {
     DatabaseConnection,
+    DatabaseServerConnection,
     DataConnection,
+    DataConnectionType,
+    MariaDbDatabaseServerConnection,
     MsSqlServerDatabaseConnection,
-    PostgreSqlDatabaseConnection,
-    SQLiteDatabaseConnection,
+    MsSqlServerDatabaseServerConnection,
     MySqlDatabaseConnection,
+    MySqlDatabaseServerConnection,
+    OracleDatabaseConnection,
+    PostgreSqlDatabaseConnection,
+    PostgreSqlDatabaseServerConnection,
+    SQLiteDatabaseConnection,
     MariaDbDatabaseConnection,
-    OracleDatabaseConnection
 } from "@application";
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
 import {Util} from "@common";
+
+const connectionTypeMap = new Map<Constructable, DataConnectionType>([
+    [MsSqlServerDatabaseConnection, "MSSQLServer"],
+    [MsSqlServerDatabaseServerConnection, "MSSQLServer"],
+    [PostgreSqlDatabaseConnection, "PostgreSQL"],
+    [PostgreSqlDatabaseServerConnection, "PostgreSQL"],
+    [SQLiteDatabaseConnection, "SQLite"],
+    [MySqlDatabaseConnection, "MySQL"],
+    [MySqlDatabaseServerConnection, "MySQL"],
+    [MariaDbDatabaseConnection, "MariaDB"],
+    [MariaDbDatabaseServerConnection, "MariaDB"],
+    [OracleDatabaseConnection, "Oracle"],
+]);
 
 export abstract class DataConnectionView<TDataConnection extends DataConnection> implements IDataConnectionView {
     public readonly connection: TDataConnection;
@@ -44,7 +63,7 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
         connection.id ||= Util.newGuid();
         connection.name ??= "@localhost";
 
-        if (connection instanceof DatabaseConnection) {
+        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
             connection.host ||= "localhost";
         }
 
@@ -54,21 +73,11 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
     private createEmptyConnection(ctor: Constructable<TDataConnection>): TDataConnection {
         const connection = new ctor();
 
-        if (ctor.name === MsSqlServerDatabaseConnection.name) {
-            connection.type = "MSSQLServer";
-        } else if (ctor.name === PostgreSqlDatabaseConnection.name) {
-            connection.type = "PostgreSQL";
-        } else if (ctor.name === SQLiteDatabaseConnection.name) {
-            connection.type = "SQLite";
-        } else if (ctor.name === MySqlDatabaseConnection.name) {
-            connection.type = "MySQL";
-        } else if (ctor.name === MariaDbDatabaseConnection.name) {
-            connection.type = "MariaDB";
-        } else if (ctor.name === OracleDatabaseConnection.name) {
-            connection.type = "Oracle";
-        } else {
+        const type = connectionTypeMap.get(ctor);
+        if (!type) {
             throw new Error("Unhandled data connection type: " + ctor.name);
         }
+        connection.type = type;
 
         return connection;
     }

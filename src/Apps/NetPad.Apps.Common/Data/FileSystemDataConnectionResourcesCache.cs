@@ -22,6 +22,7 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
 {
     record ResourceGenerationLock(Guid DataConnectionId, DotNetFrameworkVersion TargetFrameworkVersion);
 
+    private static readonly SemaphoreSlim _resourceGenerationThrottle = new(Math.Clamp(Environment.ProcessorCount / 2, 1, 3));
     private readonly ConcurrentDictionary<ResourceGenerationLock, SemaphoreSlim> _resourceGenerationLocks = new();
     private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<DotNetFrameworkVersion, DataConnectionResources>> _memoryCache = new();
 
@@ -115,18 +116,26 @@ public sealed partial class FileSystemDataConnectionResourcesCache(
                 return resources;
             }
 
-            logger.LogTrace("Generating data connection resources for: {DataConnectionId}", dataConnection.Id);
-            _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, targetFrameworkVersion));
+            await _resourceGenerationThrottle.WaitAsync(cancellationToken);
+            try
+            {
+                logger.LogTrace("Generating data connection resources for: {DataConnectionId}", dataConnection.Id);
+                _ = eventBus.PublishAsync(new DataConnectionResourcesUpdatingEvent(dataConnection, targetFrameworkVersion));
 
-            var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
+                var generator = dataConnectionResourcesGeneratorFactory.Create(dataConnection);
 
-            resources = await generator.GenerateResourcesAsync(dataConnection, targetFrameworkVersion);
+                resources = await generator.GenerateResourcesAsync(dataConnection, targetFrameworkVersion);
 
-            await OnResourceGeneratedAsync(resources, targetFrameworkVersion);
+                await OnResourceGeneratedAsync(resources, targetFrameworkVersion);
 
-            UpdateMemCacheAndGetCachedValue(resources, targetFrameworkVersion);
+                UpdateMemCacheAndGetCachedValue(resources, targetFrameworkVersion);
 
-            return resources;
+                return resources;
+            }
+            finally
+            {
+                _resourceGenerationThrottle.Release();
+            }
         }
         catch (Exception ex)
         {

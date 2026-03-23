@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NetPad.Data;
 using NetPad.Data.Metadata;
 using NetPad.DotNet;
@@ -9,6 +11,24 @@ namespace NetPad.Apps.CQs;
 public class RefreshDataConnectionCommand(Guid id) : Command
 {
     public Guid ConnectionId { get; } = id;
+
+    public static void RunInBackground(Guid connectionId, IServiceScopeFactory serviceScopeFactory, ILogger logger)
+    {
+        _ = Task.Run(async () =>
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+            try
+            {
+                await mediator.Send(new RefreshDataConnectionCommand(connectionId));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error refreshing resources for connection {ConnectionId}", connectionId);
+            }
+        });
+    }
 
     public class Handler(
         IDataConnectionResourcesCache dataConnectionResourcesCache,

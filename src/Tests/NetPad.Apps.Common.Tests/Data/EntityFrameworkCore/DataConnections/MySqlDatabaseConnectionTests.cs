@@ -1,4 +1,5 @@
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
 using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
@@ -26,7 +27,7 @@ public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MyS
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
 
-        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+        var connectionString = connection.GetConnectionString(new NoOpDataConnectionPasswordProtector());
 
         Assert.Equal(expected, connectionString);
     }
@@ -36,7 +37,7 @@ public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MyS
         ["localhost", "port", "db name", "user id", "password", null, "Server=localhost;Port=port;Database=db name;Uid=user id;Pwd=password;"],
         [null, "port", "db name", "user id", "password", null, "Server=;Port=port;Database=db name;Uid=user id;Pwd=password;"],
         ["localhost", null, "db name", "user id", "password", null, "Server=localhost;Database=db name;Uid=user id;Pwd=password;"],
-        ["localhost", "port", null, "user id", "password", null, "Server=localhost;Port=port;Database=;Uid=user id;Pwd=password;"],
+        ["localhost", "port", null, "user id", "password", null, "Server=localhost;Port=port;Uid=user id;Pwd=password;"],
         ["localhost", "port", "db name", null, "password", null, "Server=localhost;Port=port;Database=db name;Pwd=password;"],
         ["localhost", "port", "db name", "user id", null, null, "Server=localhost;Port=port;Database=db name;Uid=user id;"],
         ["localhost", "port", "db name", null, null, null, "Server=localhost;Port=port;Database=db name;"],

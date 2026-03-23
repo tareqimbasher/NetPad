@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.CQs;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
@@ -25,13 +26,14 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     public async Task OpenDataConnectionWindow(
         [FromServices] IUiWindowService uiWindowService,
         [FromQuery] Guid? dataConnectionId = null,
-        [FromQuery] bool copy = false)
+        [FromQuery] bool copy = false,
+        [FromQuery] bool isServer = false)
     {
-        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy);
+        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy, isServer);
     }
 
     [HttpGet]
-    public async Task<IEnumerable<DataConnection>> GetAll() => await mediator.Send(new GetDataConnectionsQuery());
+    public async Task<GetAllConnectionsQuery.Response> GetAll() => await mediator.Send(new GetAllConnectionsQuery());
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DataConnection?>> Get(Guid id)
@@ -56,8 +58,10 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpGet("names")]
     public async Task<IEnumerable<string>> GetAllNames()
     {
-        var dataConnections = await GetAll();
-        return dataConnections.Select(c => c.Name).ToArray();
+        var result = await GetAll();
+        return result.Connections.Select(c => c.Name)
+            .Concat(result.Servers.Select(s => s.Name))
+            .ToArray();
     }
 
     [HttpPut]
@@ -65,7 +69,13 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
         await mediator.Send(new SaveDataConnectionCommand(dataConnection));
 
     [HttpPatch("{id:guid}/refresh")]
-    public async Task Refresh(Guid id) => await mediator.Send(new RefreshDataConnectionCommand(id));
+    public void Refresh(
+        Guid id,
+        [FromServices] IServiceScopeFactory serviceScopeFactory,
+        [FromServices] ILogger<DataConnectionsController> logger)
+    {
+        RefreshDataConnectionCommand.RunInBackground(id, serviceScopeFactory, logger);
+    }
 
     [HttpDelete("{id:guid}")]
     public async Task Delete(Guid id) => await mediator.Send(new DeleteDataConnectionCommand(id));
@@ -73,9 +83,12 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpPost("connection-string")]
     public string GetConnectionString([FromBody] DataConnection dataConnection)
     {
-        return dataConnection is not DatabaseConnection dbConnection
-            ? string.Empty
-            : dbConnection.GetConnectionString(new FakeDataConnectionPasswordProtector());
+        if (dataConnection is DatabaseServerConnection serverConnection)
+            return serverConnection.GetConnectionString(new FakeDataConnectionPasswordProtector());
+
+        return dataConnection is DatabaseConnection dbConnection
+            ? dbConnection.GetConnectionString(new FakeDataConnectionPasswordProtector())
+            : string.Empty;
     }
 
     [HttpPatch("test")]
@@ -95,6 +108,9 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
         [FromBody] DataConnection dataConnection,
         [FromServices] IDataConnectionPasswordProtector passwordProtector)
     {
+        if (dataConnection is DatabaseServerConnection serverConnection)
+            return await serverConnection.GetDatabasesAsync(passwordProtector);
+
         if (dataConnection is not EntityFrameworkDatabaseConnection dbConnection)
         {
             throw new InvalidOperationException(
@@ -103,6 +119,35 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
 
         return await dbConnection.GetDatabasesAsync(passwordProtector);
     }
+
+    [HttpGet("servers/{id:guid}")]
+    public async Task<ActionResult<DatabaseServerConnection?>> GetServer(Guid id)
+    {
+        var server = await mediator.Send(new GetDatabaseServerQuery(id));
+
+        if (server == null) return server;
+
+        var json = JsonSerializer.Serialize(server, typeof(DatabaseServerConnection));
+
+        return new ContentResult
+        {
+            StatusCode = 200,
+            Content = json,
+            ContentType = "application/json"
+        };
+    }
+
+    [HttpPut("servers")]
+    public async Task SaveServer(DatabaseServerConnection server) =>
+        await mediator.Send(new SaveDatabaseServerCommand(server));
+
+    [HttpPatch("servers/{id:guid}/refresh")]
+    public async Task RefreshServer(Guid id) =>
+        await mediator.Send(new RefreshDatabaseServerCommand(id));
+
+    [HttpDelete("servers/{id:guid}")]
+    public async Task DeleteServer(Guid id) =>
+        await mediator.Send(new DeleteDatabaseServerCommand(id));
 
     [HttpPatch("{id:guid}/database-structure")]
     public async Task<DatabaseStructure> GetDatabaseStructure(Guid id)

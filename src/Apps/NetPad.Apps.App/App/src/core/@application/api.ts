@@ -519,9 +519,9 @@ export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
 
 export interface IDataConnectionsApiClient {
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, isServer: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    getAll(signal?: AbortSignal | undefined): Promise<DataConnection[]>;
+    getAll(signal?: AbortSignal | undefined): Promise<Response>;
 
     save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -541,6 +541,14 @@ export interface IDataConnectionsApiClient {
 
     getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]>;
 
+    getServer(id: string, signal?: AbortSignal | undefined): Promise<DatabaseServerConnection>;
+
+    deleteServer(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    saveServer(server: DatabaseServerConnection, signal?: AbortSignal | undefined): Promise<void>;
+
+    refreshServer(id: string, signal?: AbortSignal | undefined): Promise<void>;
+
     getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure>;
 
     scaffoldToProject(id: string, projectDirectoryPath: string | undefined, frameworkVersion: DotNetFrameworkVersion | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
@@ -557,7 +565,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         this.baseUrl = baseUrl ?? "";
     }
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal): Promise<void> {
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, isServer: boolean | undefined, signal?: AbortSignal): Promise<void> {
         let url_ = this.baseUrl + "/data-connections/open?";
         if (dataConnectionId !== undefined && dataConnectionId !== null)
             url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
@@ -565,6 +573,10 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             throw new Error("The parameter 'copy' cannot be null.");
         else if (copy !== undefined)
             url_ += "copy=" + encodeURIComponent("" + copy) + "&";
+        if (isServer === null)
+            throw new Error("The parameter 'isServer' cannot be null.");
+        else if (isServer !== undefined)
+            url_ += "isServer=" + encodeURIComponent("" + isServer) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -594,7 +606,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         return Promise.resolve<void>(null as any);
     }
 
-    getAll(signal?: AbortSignal): Promise<DataConnection[]> {
+    getAll(signal?: AbortSignal): Promise<Response> {
         let url_ = this.baseUrl + "/data-connections";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -611,21 +623,14 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         });
     }
 
-    protected processGetAll(response: Response): Promise<DataConnection[]> {
+    protected processGetAll(response: Response): Promise<Response> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(DataConnection.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
+            result200 = Response.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -633,7 +638,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<DataConnection[]>(null as any);
+        return Promise.resolve<Response>(null as any);
     }
 
     save(dataConnection: DataConnection, signal?: AbortSignal): Promise<void> {
@@ -982,6 +987,147 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             });
         }
         return Promise.resolve<string[]>(null as any);
+    }
+
+    getServer(id: string, signal?: AbortSignal): Promise<DatabaseServerConnection> {
+        let url_ = this.baseUrl + "/data-connections/servers/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetServer(_response);
+        });
+    }
+
+    protected processGetServer(response: Response): Promise<DatabaseServerConnection> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DatabaseServerConnection.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DatabaseServerConnection>(null as any);
+    }
+
+    deleteServer(id: string, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/servers/{id}";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processDeleteServer(_response);
+        });
+    }
+
+    protected processDeleteServer(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    saveServer(server: DatabaseServerConnection, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/servers";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(server);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PUT",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSaveServer(_response);
+        });
+    }
+
+    protected processSaveServer(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    refreshServer(id: string, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/data-connections/servers/{id}/refresh";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "PATCH",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRefreshServer(_response);
+        });
+    }
+
+    protected processRefreshServer(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
     }
 
     getDatabaseStructure(id: string, signal?: AbortSignal): Promise<DatabaseStructure> {
@@ -3880,7 +4026,7 @@ export interface ISyntaxNodeOrTokenSlim {
     children: SyntaxNodeOrTokenSlim[];
 }
 
-export type SyntaxKind = "None" | "List" | "TildeToken" | "ExclamationToken" | "DollarToken" | "PercentToken" | "CaretToken" | "AmpersandToken" | "AsteriskToken" | "OpenParenToken" | "CloseParenToken" | "MinusToken" | "PlusToken" | "EqualsToken" | "OpenBraceToken" | "CloseBraceToken" | "OpenBracketToken" | "CloseBracketToken" | "BarToken" | "BackslashToken" | "ColonToken" | "SemicolonToken" | "DoubleQuoteToken" | "SingleQuoteToken" | "LessThanToken" | "CommaToken" | "GreaterThanToken" | "DotToken" | "QuestionToken" | "HashToken" | "SlashToken" | "DotDotToken" | "SlashGreaterThanToken" | "LessThanSlashToken" | "XmlCommentStartToken" | "XmlCommentEndToken" | "XmlCDataStartToken" | "XmlCDataEndToken" | "XmlProcessingInstructionStartToken" | "XmlProcessingInstructionEndToken" | "BarBarToken" | "AmpersandAmpersandToken" | "MinusMinusToken" | "PlusPlusToken" | "ColonColonToken" | "QuestionQuestionToken" | "MinusGreaterThanToken" | "ExclamationEqualsToken" | "EqualsEqualsToken" | "EqualsGreaterThanToken" | "LessThanEqualsToken" | "LessThanLessThanToken" | "LessThanLessThanEqualsToken" | "GreaterThanEqualsToken" | "GreaterThanGreaterThanToken" | "GreaterThanGreaterThanEqualsToken" | "SlashEqualsToken" | "AsteriskEqualsToken" | "BarEqualsToken" | "AmpersandEqualsToken" | "PlusEqualsToken" | "MinusEqualsToken" | "CaretEqualsToken" | "PercentEqualsToken" | "QuestionQuestionEqualsToken" | "GreaterThanGreaterThanGreaterThanToken" | "GreaterThanGreaterThanGreaterThanEqualsToken" | "BoolKeyword" | "ByteKeyword" | "SByteKeyword" | "ShortKeyword" | "UShortKeyword" | "IntKeyword" | "UIntKeyword" | "LongKeyword" | "ULongKeyword" | "DoubleKeyword" | "FloatKeyword" | "DecimalKeyword" | "StringKeyword" | "CharKeyword" | "VoidKeyword" | "ObjectKeyword" | "TypeOfKeyword" | "SizeOfKeyword" | "NullKeyword" | "TrueKeyword" | "FalseKeyword" | "IfKeyword" | "ElseKeyword" | "WhileKeyword" | "ForKeyword" | "ForEachKeyword" | "DoKeyword" | "SwitchKeyword" | "CaseKeyword" | "DefaultKeyword" | "TryKeyword" | "CatchKeyword" | "FinallyKeyword" | "LockKeyword" | "GotoKeyword" | "BreakKeyword" | "ContinueKeyword" | "ReturnKeyword" | "ThrowKeyword" | "PublicKeyword" | "PrivateKeyword" | "InternalKeyword" | "ProtectedKeyword" | "StaticKeyword" | "ReadOnlyKeyword" | "SealedKeyword" | "ConstKeyword" | "FixedKeyword" | "StackAllocKeyword" | "VolatileKeyword" | "NewKeyword" | "OverrideKeyword" | "AbstractKeyword" | "VirtualKeyword" | "EventKeyword" | "ExternKeyword" | "RefKeyword" | "OutKeyword" | "InKeyword" | "IsKeyword" | "AsKeyword" | "ParamsKeyword" | "ArgListKeyword" | "MakeRefKeyword" | "RefTypeKeyword" | "RefValueKeyword" | "ThisKeyword" | "BaseKeyword" | "NamespaceKeyword" | "UsingKeyword" | "ClassKeyword" | "StructKeyword" | "InterfaceKeyword" | "EnumKeyword" | "DelegateKeyword" | "CheckedKeyword" | "UncheckedKeyword" | "UnsafeKeyword" | "OperatorKeyword" | "ExplicitKeyword" | "ImplicitKeyword" | "YieldKeyword" | "PartialKeyword" | "AliasKeyword" | "GlobalKeyword" | "AssemblyKeyword" | "ModuleKeyword" | "TypeKeyword" | "FieldKeyword" | "MethodKeyword" | "ParamKeyword" | "PropertyKeyword" | "TypeVarKeyword" | "GetKeyword" | "SetKeyword" | "AddKeyword" | "RemoveKeyword" | "WhereKeyword" | "FromKeyword" | "GroupKeyword" | "JoinKeyword" | "IntoKeyword" | "LetKeyword" | "ByKeyword" | "SelectKeyword" | "OrderByKeyword" | "OnKeyword" | "EqualsKeyword" | "AscendingKeyword" | "DescendingKeyword" | "NameOfKeyword" | "AsyncKeyword" | "AwaitKeyword" | "WhenKeyword" | "OrKeyword" | "AndKeyword" | "NotKeyword" | "WithKeyword" | "InitKeyword" | "RecordKeyword" | "ManagedKeyword" | "UnmanagedKeyword" | "RequiredKeyword" | "ScopedKeyword" | "FileKeyword" | "ElifKeyword" | "EndIfKeyword" | "RegionKeyword" | "EndRegionKeyword" | "DefineKeyword" | "UndefKeyword" | "WarningKeyword" | "ErrorKeyword" | "LineKeyword" | "PragmaKeyword" | "HiddenKeyword" | "ChecksumKeyword" | "DisableKeyword" | "RestoreKeyword" | "ReferenceKeyword" | "InterpolatedStringStartToken" | "InterpolatedStringEndToken" | "InterpolatedVerbatimStringStartToken" | "LoadKeyword" | "NullableKeyword" | "EnableKeyword" | "WarningsKeyword" | "AnnotationsKeyword" | "VarKeyword" | "UnderscoreToken" | "OmittedTypeArgumentToken" | "OmittedArraySizeExpressionToken" | "EndOfDirectiveToken" | "EndOfDocumentationCommentToken" | "EndOfFileToken" | "BadToken" | "IdentifierToken" | "NumericLiteralToken" | "CharacterLiteralToken" | "StringLiteralToken" | "XmlEntityLiteralToken" | "XmlTextLiteralToken" | "XmlTextLiteralNewLineToken" | "InterpolatedStringToken" | "InterpolatedStringTextToken" | "SingleLineRawStringLiteralToken" | "MultiLineRawStringLiteralToken" | "Utf8StringLiteralToken" | "Utf8SingleLineRawStringLiteralToken" | "Utf8MultiLineRawStringLiteralToken" | "EndOfLineTrivia" | "WhitespaceTrivia" | "SingleLineCommentTrivia" | "MultiLineCommentTrivia" | "DocumentationCommentExteriorTrivia" | "SingleLineDocumentationCommentTrivia" | "MultiLineDocumentationCommentTrivia" | "DisabledTextTrivia" | "PreprocessingMessageTrivia" | "IfDirectiveTrivia" | "ElifDirectiveTrivia" | "ElseDirectiveTrivia" | "EndIfDirectiveTrivia" | "RegionDirectiveTrivia" | "EndRegionDirectiveTrivia" | "DefineDirectiveTrivia" | "UndefDirectiveTrivia" | "ErrorDirectiveTrivia" | "WarningDirectiveTrivia" | "LineDirectiveTrivia" | "PragmaWarningDirectiveTrivia" | "PragmaChecksumDirectiveTrivia" | "ReferenceDirectiveTrivia" | "BadDirectiveTrivia" | "SkippedTokensTrivia" | "ConflictMarkerTrivia" | "XmlElement" | "XmlElementStartTag" | "XmlElementEndTag" | "XmlEmptyElement" | "XmlTextAttribute" | "XmlCrefAttribute" | "XmlNameAttribute" | "XmlName" | "XmlPrefix" | "XmlText" | "XmlCDataSection" | "XmlComment" | "XmlProcessingInstruction" | "TypeCref" | "QualifiedCref" | "NameMemberCref" | "IndexerMemberCref" | "OperatorMemberCref" | "ConversionOperatorMemberCref" | "CrefParameterList" | "CrefBracketedParameterList" | "CrefParameter" | "IdentifierName" | "QualifiedName" | "GenericName" | "TypeArgumentList" | "AliasQualifiedName" | "PredefinedType" | "ArrayType" | "ArrayRankSpecifier" | "PointerType" | "NullableType" | "OmittedTypeArgument" | "ParenthesizedExpression" | "ConditionalExpression" | "InvocationExpression" | "ElementAccessExpression" | "ArgumentList" | "BracketedArgumentList" | "Argument" | "NameColon" | "CastExpression" | "AnonymousMethodExpression" | "SimpleLambdaExpression" | "ParenthesizedLambdaExpression" | "ObjectInitializerExpression" | "CollectionInitializerExpression" | "ArrayInitializerExpression" | "AnonymousObjectMemberDeclarator" | "ComplexElementInitializerExpression" | "ObjectCreationExpression" | "AnonymousObjectCreationExpression" | "ArrayCreationExpression" | "ImplicitArrayCreationExpression" | "StackAllocArrayCreationExpression" | "OmittedArraySizeExpression" | "InterpolatedStringExpression" | "ImplicitElementAccess" | "IsPatternExpression" | "RangeExpression" | "ImplicitObjectCreationExpression" | "AddExpression" | "SubtractExpression" | "MultiplyExpression" | "DivideExpression" | "ModuloExpression" | "LeftShiftExpression" | "RightShiftExpression" | "LogicalOrExpression" | "LogicalAndExpression" | "BitwiseOrExpression" | "BitwiseAndExpression" | "ExclusiveOrExpression" | "EqualsExpression" | "NotEqualsExpression" | "LessThanExpression" | "LessThanOrEqualExpression" | "GreaterThanExpression" | "GreaterThanOrEqualExpression" | "IsExpression" | "AsExpression" | "CoalesceExpression" | "SimpleMemberAccessExpression" | "PointerMemberAccessExpression" | "ConditionalAccessExpression" | "UnsignedRightShiftExpression" | "MemberBindingExpression" | "ElementBindingExpression" | "SimpleAssignmentExpression" | "AddAssignmentExpression" | "SubtractAssignmentExpression" | "MultiplyAssignmentExpression" | "DivideAssignmentExpression" | "ModuloAssignmentExpression" | "AndAssignmentExpression" | "ExclusiveOrAssignmentExpression" | "OrAssignmentExpression" | "LeftShiftAssignmentExpression" | "RightShiftAssignmentExpression" | "CoalesceAssignmentExpression" | "UnsignedRightShiftAssignmentExpression" | "UnaryPlusExpression" | "UnaryMinusExpression" | "BitwiseNotExpression" | "LogicalNotExpression" | "PreIncrementExpression" | "PreDecrementExpression" | "PointerIndirectionExpression" | "AddressOfExpression" | "PostIncrementExpression" | "PostDecrementExpression" | "AwaitExpression" | "IndexExpression" | "ThisExpression" | "BaseExpression" | "ArgListExpression" | "NumericLiteralExpression" | "StringLiteralExpression" | "CharacterLiteralExpression" | "TrueLiteralExpression" | "FalseLiteralExpression" | "NullLiteralExpression" | "DefaultLiteralExpression" | "Utf8StringLiteralExpression" | "TypeOfExpression" | "SizeOfExpression" | "CheckedExpression" | "UncheckedExpression" | "DefaultExpression" | "MakeRefExpression" | "RefValueExpression" | "RefTypeExpression" | "QueryExpression" | "QueryBody" | "FromClause" | "LetClause" | "JoinClause" | "JoinIntoClause" | "WhereClause" | "OrderByClause" | "AscendingOrdering" | "DescendingOrdering" | "SelectClause" | "GroupClause" | "QueryContinuation" | "Block" | "LocalDeclarationStatement" | "VariableDeclaration" | "VariableDeclarator" | "EqualsValueClause" | "ExpressionStatement" | "EmptyStatement" | "LabeledStatement" | "GotoStatement" | "GotoCaseStatement" | "GotoDefaultStatement" | "BreakStatement" | "ContinueStatement" | "ReturnStatement" | "YieldReturnStatement" | "YieldBreakStatement" | "ThrowStatement" | "WhileStatement" | "DoStatement" | "ForStatement" | "ForEachStatement" | "UsingStatement" | "FixedStatement" | "CheckedStatement" | "UncheckedStatement" | "UnsafeStatement" | "LockStatement" | "IfStatement" | "ElseClause" | "SwitchStatement" | "SwitchSection" | "CaseSwitchLabel" | "DefaultSwitchLabel" | "TryStatement" | "CatchClause" | "CatchDeclaration" | "CatchFilterClause" | "FinallyClause" | "LocalFunctionStatement" | "CompilationUnit" | "GlobalStatement" | "NamespaceDeclaration" | "UsingDirective" | "ExternAliasDirective" | "FileScopedNamespaceDeclaration" | "AttributeList" | "AttributeTargetSpecifier" | "Attribute" | "AttributeArgumentList" | "AttributeArgument" | "NameEquals" | "ClassDeclaration" | "StructDeclaration" | "InterfaceDeclaration" | "EnumDeclaration" | "DelegateDeclaration" | "BaseList" | "SimpleBaseType" | "TypeParameterConstraintClause" | "ConstructorConstraint" | "ClassConstraint" | "StructConstraint" | "TypeConstraint" | "ExplicitInterfaceSpecifier" | "EnumMemberDeclaration" | "FieldDeclaration" | "EventFieldDeclaration" | "MethodDeclaration" | "OperatorDeclaration" | "ConversionOperatorDeclaration" | "ConstructorDeclaration" | "BaseConstructorInitializer" | "ThisConstructorInitializer" | "DestructorDeclaration" | "PropertyDeclaration" | "EventDeclaration" | "IndexerDeclaration" | "AccessorList" | "GetAccessorDeclaration" | "SetAccessorDeclaration" | "AddAccessorDeclaration" | "RemoveAccessorDeclaration" | "UnknownAccessorDeclaration" | "ParameterList" | "BracketedParameterList" | "Parameter" | "TypeParameterList" | "TypeParameter" | "IncompleteMember" | "ArrowExpressionClause" | "Interpolation" | "InterpolatedStringText" | "InterpolationAlignmentClause" | "InterpolationFormatClause" | "ShebangDirectiveTrivia" | "LoadDirectiveTrivia" | "TupleType" | "TupleElement" | "TupleExpression" | "SingleVariableDesignation" | "ParenthesizedVariableDesignation" | "ForEachVariableStatement" | "DeclarationPattern" | "ConstantPattern" | "CasePatternSwitchLabel" | "WhenClause" | "DiscardDesignation" | "RecursivePattern" | "PropertyPatternClause" | "Subpattern" | "PositionalPatternClause" | "DiscardPattern" | "SwitchExpression" | "SwitchExpressionArm" | "VarPattern" | "ParenthesizedPattern" | "RelationalPattern" | "TypePattern" | "OrPattern" | "AndPattern" | "NotPattern" | "SlicePattern" | "ListPattern" | "DeclarationExpression" | "RefExpression" | "RefType" | "ThrowExpression" | "ImplicitStackAllocArrayCreationExpression" | "SuppressNullableWarningExpression" | "NullableDirectiveTrivia" | "FunctionPointerType" | "FunctionPointerParameter" | "FunctionPointerParameterList" | "FunctionPointerCallingConvention" | "InitAccessorDeclaration" | "WithExpression" | "WithInitializerExpression" | "RecordDeclaration" | "DefaultConstraint" | "PrimaryConstructorBaseType" | "FunctionPointerUnmanagedCallingConventionList" | "FunctionPointerUnmanagedCallingConvention" | "RecordStructDeclaration" | "ExpressionColon" | "LineDirectivePosition" | "LineSpanDirectiveTrivia" | "InterpolatedSingleLineRawStringStartToken" | "InterpolatedMultiLineRawStringStartToken" | "InterpolatedRawStringEndToken" | "ScopedType" | "CollectionExpression" | "ExpressionElement" | "SpreadElement";
+export type SyntaxKind = "None" | "List" | "TildeToken" | "ExclamationToken" | "DollarToken" | "PercentToken" | "CaretToken" | "AmpersandToken" | "AsteriskToken" | "OpenParenToken" | "CloseParenToken" | "MinusToken" | "PlusToken" | "EqualsToken" | "OpenBraceToken" | "CloseBraceToken" | "OpenBracketToken" | "CloseBracketToken" | "BarToken" | "BackslashToken" | "ColonToken" | "SemicolonToken" | "DoubleQuoteToken" | "SingleQuoteToken" | "LessThanToken" | "CommaToken" | "GreaterThanToken" | "DotToken" | "QuestionToken" | "HashToken" | "SlashToken" | "DotDotToken" | "SlashGreaterThanToken" | "LessThanSlashToken" | "XmlCommentStartToken" | "XmlCommentEndToken" | "XmlCDataStartToken" | "XmlCDataEndToken" | "XmlProcessingInstructionStartToken" | "XmlProcessingInstructionEndToken" | "BarBarToken" | "AmpersandAmpersandToken" | "MinusMinusToken" | "PlusPlusToken" | "ColonColonToken" | "QuestionQuestionToken" | "MinusGreaterThanToken" | "ExclamationEqualsToken" | "EqualsEqualsToken" | "EqualsGreaterThanToken" | "LessThanEqualsToken" | "LessThanLessThanToken" | "LessThanLessThanEqualsToken" | "GreaterThanEqualsToken" | "GreaterThanGreaterThanToken" | "GreaterThanGreaterThanEqualsToken" | "SlashEqualsToken" | "AsteriskEqualsToken" | "BarEqualsToken" | "AmpersandEqualsToken" | "PlusEqualsToken" | "MinusEqualsToken" | "CaretEqualsToken" | "PercentEqualsToken" | "QuestionQuestionEqualsToken" | "GreaterThanGreaterThanGreaterThanToken" | "GreaterThanGreaterThanGreaterThanEqualsToken" | "BoolKeyword" | "ByteKeyword" | "SByteKeyword" | "ShortKeyword" | "UShortKeyword" | "IntKeyword" | "UIntKeyword" | "LongKeyword" | "ULongKeyword" | "DoubleKeyword" | "FloatKeyword" | "DecimalKeyword" | "StringKeyword" | "CharKeyword" | "VoidKeyword" | "ObjectKeyword" | "TypeOfKeyword" | "SizeOfKeyword" | "NullKeyword" | "TrueKeyword" | "FalseKeyword" | "IfKeyword" | "ElseKeyword" | "WhileKeyword" | "ForKeyword" | "ForEachKeyword" | "DoKeyword" | "SwitchKeyword" | "CaseKeyword" | "DefaultKeyword" | "TryKeyword" | "CatchKeyword" | "FinallyKeyword" | "LockKeyword" | "GotoKeyword" | "BreakKeyword" | "ContinueKeyword" | "ReturnKeyword" | "ThrowKeyword" | "PublicKeyword" | "PrivateKeyword" | "InternalKeyword" | "ProtectedKeyword" | "StaticKeyword" | "ReadOnlyKeyword" | "SealedKeyword" | "ConstKeyword" | "FixedKeyword" | "StackAllocKeyword" | "VolatileKeyword" | "NewKeyword" | "OverrideKeyword" | "AbstractKeyword" | "VirtualKeyword" | "EventKeyword" | "ExternKeyword" | "RefKeyword" | "OutKeyword" | "InKeyword" | "IsKeyword" | "AsKeyword" | "ParamsKeyword" | "ArgListKeyword" | "MakeRefKeyword" | "RefTypeKeyword" | "RefValueKeyword" | "ThisKeyword" | "BaseKeyword" | "NamespaceKeyword" | "UsingKeyword" | "ClassKeyword" | "StructKeyword" | "InterfaceKeyword" | "EnumKeyword" | "DelegateKeyword" | "CheckedKeyword" | "UncheckedKeyword" | "UnsafeKeyword" | "OperatorKeyword" | "ExplicitKeyword" | "ImplicitKeyword" | "YieldKeyword" | "PartialKeyword" | "AliasKeyword" | "GlobalKeyword" | "AssemblyKeyword" | "ModuleKeyword" | "TypeKeyword" | "FieldKeyword" | "MethodKeyword" | "ParamKeyword" | "PropertyKeyword" | "TypeVarKeyword" | "GetKeyword" | "SetKeyword" | "AddKeyword" | "RemoveKeyword" | "WhereKeyword" | "FromKeyword" | "GroupKeyword" | "JoinKeyword" | "IntoKeyword" | "LetKeyword" | "ByKeyword" | "SelectKeyword" | "OrderByKeyword" | "OnKeyword" | "EqualsKeyword" | "AscendingKeyword" | "DescendingKeyword" | "NameOfKeyword" | "AsyncKeyword" | "AwaitKeyword" | "WhenKeyword" | "OrKeyword" | "AndKeyword" | "NotKeyword" | "WithKeyword" | "InitKeyword" | "RecordKeyword" | "ManagedKeyword" | "UnmanagedKeyword" | "RequiredKeyword" | "ScopedKeyword" | "FileKeyword" | "AllowsKeyword" | "ExtensionKeyword" | "ElifKeyword" | "EndIfKeyword" | "RegionKeyword" | "EndRegionKeyword" | "DefineKeyword" | "UndefKeyword" | "WarningKeyword" | "ErrorKeyword" | "LineKeyword" | "PragmaKeyword" | "HiddenKeyword" | "ChecksumKeyword" | "DisableKeyword" | "RestoreKeyword" | "ReferenceKeyword" | "InterpolatedStringStartToken" | "InterpolatedStringEndToken" | "InterpolatedVerbatimStringStartToken" | "LoadKeyword" | "NullableKeyword" | "EnableKeyword" | "WarningsKeyword" | "AnnotationsKeyword" | "VarKeyword" | "UnderscoreToken" | "OmittedTypeArgumentToken" | "OmittedArraySizeExpressionToken" | "EndOfDirectiveToken" | "EndOfDocumentationCommentToken" | "EndOfFileToken" | "BadToken" | "IdentifierToken" | "NumericLiteralToken" | "CharacterLiteralToken" | "StringLiteralToken" | "XmlEntityLiteralToken" | "XmlTextLiteralToken" | "XmlTextLiteralNewLineToken" | "InterpolatedStringToken" | "InterpolatedStringTextToken" | "SingleLineRawStringLiteralToken" | "MultiLineRawStringLiteralToken" | "Utf8StringLiteralToken" | "Utf8SingleLineRawStringLiteralToken" | "Utf8MultiLineRawStringLiteralToken" | "RazorContentToken" | "EndOfLineTrivia" | "WhitespaceTrivia" | "SingleLineCommentTrivia" | "MultiLineCommentTrivia" | "DocumentationCommentExteriorTrivia" | "SingleLineDocumentationCommentTrivia" | "MultiLineDocumentationCommentTrivia" | "DisabledTextTrivia" | "PreprocessingMessageTrivia" | "IfDirectiveTrivia" | "ElifDirectiveTrivia" | "ElseDirectiveTrivia" | "EndIfDirectiveTrivia" | "RegionDirectiveTrivia" | "EndRegionDirectiveTrivia" | "DefineDirectiveTrivia" | "UndefDirectiveTrivia" | "ErrorDirectiveTrivia" | "WarningDirectiveTrivia" | "LineDirectiveTrivia" | "PragmaWarningDirectiveTrivia" | "PragmaChecksumDirectiveTrivia" | "ReferenceDirectiveTrivia" | "BadDirectiveTrivia" | "SkippedTokensTrivia" | "ConflictMarkerTrivia" | "XmlElement" | "XmlElementStartTag" | "XmlElementEndTag" | "XmlEmptyElement" | "XmlTextAttribute" | "XmlCrefAttribute" | "XmlNameAttribute" | "XmlName" | "XmlPrefix" | "XmlText" | "XmlCDataSection" | "XmlComment" | "XmlProcessingInstruction" | "TypeCref" | "QualifiedCref" | "NameMemberCref" | "IndexerMemberCref" | "OperatorMemberCref" | "ConversionOperatorMemberCref" | "CrefParameterList" | "CrefBracketedParameterList" | "CrefParameter" | "IdentifierName" | "QualifiedName" | "GenericName" | "TypeArgumentList" | "AliasQualifiedName" | "PredefinedType" | "ArrayType" | "ArrayRankSpecifier" | "PointerType" | "NullableType" | "OmittedTypeArgument" | "ParenthesizedExpression" | "ConditionalExpression" | "InvocationExpression" | "ElementAccessExpression" | "ArgumentList" | "BracketedArgumentList" | "Argument" | "NameColon" | "CastExpression" | "AnonymousMethodExpression" | "SimpleLambdaExpression" | "ParenthesizedLambdaExpression" | "ObjectInitializerExpression" | "CollectionInitializerExpression" | "ArrayInitializerExpression" | "AnonymousObjectMemberDeclarator" | "ComplexElementInitializerExpression" | "ObjectCreationExpression" | "AnonymousObjectCreationExpression" | "ArrayCreationExpression" | "ImplicitArrayCreationExpression" | "StackAllocArrayCreationExpression" | "OmittedArraySizeExpression" | "InterpolatedStringExpression" | "ImplicitElementAccess" | "IsPatternExpression" | "RangeExpression" | "ImplicitObjectCreationExpression" | "AddExpression" | "SubtractExpression" | "MultiplyExpression" | "DivideExpression" | "ModuloExpression" | "LeftShiftExpression" | "RightShiftExpression" | "LogicalOrExpression" | "LogicalAndExpression" | "BitwiseOrExpression" | "BitwiseAndExpression" | "ExclusiveOrExpression" | "EqualsExpression" | "NotEqualsExpression" | "LessThanExpression" | "LessThanOrEqualExpression" | "GreaterThanExpression" | "GreaterThanOrEqualExpression" | "IsExpression" | "AsExpression" | "CoalesceExpression" | "SimpleMemberAccessExpression" | "PointerMemberAccessExpression" | "ConditionalAccessExpression" | "UnsignedRightShiftExpression" | "MemberBindingExpression" | "ElementBindingExpression" | "SimpleAssignmentExpression" | "AddAssignmentExpression" | "SubtractAssignmentExpression" | "MultiplyAssignmentExpression" | "DivideAssignmentExpression" | "ModuloAssignmentExpression" | "AndAssignmentExpression" | "ExclusiveOrAssignmentExpression" | "OrAssignmentExpression" | "LeftShiftAssignmentExpression" | "RightShiftAssignmentExpression" | "CoalesceAssignmentExpression" | "UnsignedRightShiftAssignmentExpression" | "UnaryPlusExpression" | "UnaryMinusExpression" | "BitwiseNotExpression" | "LogicalNotExpression" | "PreIncrementExpression" | "PreDecrementExpression" | "PointerIndirectionExpression" | "AddressOfExpression" | "PostIncrementExpression" | "PostDecrementExpression" | "AwaitExpression" | "IndexExpression" | "ThisExpression" | "BaseExpression" | "ArgListExpression" | "NumericLiteralExpression" | "StringLiteralExpression" | "CharacterLiteralExpression" | "TrueLiteralExpression" | "FalseLiteralExpression" | "NullLiteralExpression" | "DefaultLiteralExpression" | "Utf8StringLiteralExpression" | "FieldExpression" | "TypeOfExpression" | "SizeOfExpression" | "CheckedExpression" | "UncheckedExpression" | "DefaultExpression" | "MakeRefExpression" | "RefValueExpression" | "RefTypeExpression" | "QueryExpression" | "QueryBody" | "FromClause" | "LetClause" | "JoinClause" | "JoinIntoClause" | "WhereClause" | "OrderByClause" | "AscendingOrdering" | "DescendingOrdering" | "SelectClause" | "GroupClause" | "QueryContinuation" | "Block" | "LocalDeclarationStatement" | "VariableDeclaration" | "VariableDeclarator" | "EqualsValueClause" | "ExpressionStatement" | "EmptyStatement" | "LabeledStatement" | "GotoStatement" | "GotoCaseStatement" | "GotoDefaultStatement" | "BreakStatement" | "ContinueStatement" | "ReturnStatement" | "YieldReturnStatement" | "YieldBreakStatement" | "ThrowStatement" | "WhileStatement" | "DoStatement" | "ForStatement" | "ForEachStatement" | "UsingStatement" | "FixedStatement" | "CheckedStatement" | "UncheckedStatement" | "UnsafeStatement" | "LockStatement" | "IfStatement" | "ElseClause" | "SwitchStatement" | "SwitchSection" | "CaseSwitchLabel" | "DefaultSwitchLabel" | "TryStatement" | "CatchClause" | "CatchDeclaration" | "CatchFilterClause" | "FinallyClause" | "LocalFunctionStatement" | "CompilationUnit" | "GlobalStatement" | "NamespaceDeclaration" | "UsingDirective" | "ExternAliasDirective" | "FileScopedNamespaceDeclaration" | "AttributeList" | "AttributeTargetSpecifier" | "Attribute" | "AttributeArgumentList" | "AttributeArgument" | "NameEquals" | "ClassDeclaration" | "StructDeclaration" | "InterfaceDeclaration" | "EnumDeclaration" | "DelegateDeclaration" | "BaseList" | "SimpleBaseType" | "TypeParameterConstraintClause" | "ConstructorConstraint" | "ClassConstraint" | "StructConstraint" | "TypeConstraint" | "ExplicitInterfaceSpecifier" | "EnumMemberDeclaration" | "FieldDeclaration" | "EventFieldDeclaration" | "MethodDeclaration" | "OperatorDeclaration" | "ConversionOperatorDeclaration" | "ConstructorDeclaration" | "AllowsConstraintClause" | "RefStructConstraint" | "BaseConstructorInitializer" | "ThisConstructorInitializer" | "DestructorDeclaration" | "PropertyDeclaration" | "EventDeclaration" | "IndexerDeclaration" | "AccessorList" | "GetAccessorDeclaration" | "SetAccessorDeclaration" | "AddAccessorDeclaration" | "RemoveAccessorDeclaration" | "UnknownAccessorDeclaration" | "ParameterList" | "BracketedParameterList" | "Parameter" | "TypeParameterList" | "TypeParameter" | "IncompleteMember" | "ArrowExpressionClause" | "Interpolation" | "InterpolatedStringText" | "InterpolationAlignmentClause" | "InterpolationFormatClause" | "ShebangDirectiveTrivia" | "LoadDirectiveTrivia" | "TupleType" | "TupleElement" | "TupleExpression" | "SingleVariableDesignation" | "ParenthesizedVariableDesignation" | "ForEachVariableStatement" | "DeclarationPattern" | "ConstantPattern" | "CasePatternSwitchLabel" | "WhenClause" | "DiscardDesignation" | "RecursivePattern" | "PropertyPatternClause" | "Subpattern" | "PositionalPatternClause" | "DiscardPattern" | "SwitchExpression" | "SwitchExpressionArm" | "VarPattern" | "ParenthesizedPattern" | "RelationalPattern" | "TypePattern" | "OrPattern" | "AndPattern" | "NotPattern" | "SlicePattern" | "ListPattern" | "DeclarationExpression" | "RefExpression" | "RefType" | "ThrowExpression" | "ImplicitStackAllocArrayCreationExpression" | "SuppressNullableWarningExpression" | "NullableDirectiveTrivia" | "FunctionPointerType" | "FunctionPointerParameter" | "FunctionPointerParameterList" | "FunctionPointerCallingConvention" | "InitAccessorDeclaration" | "WithExpression" | "WithInitializerExpression" | "RecordDeclaration" | "DefaultConstraint" | "PrimaryConstructorBaseType" | "FunctionPointerUnmanagedCallingConventionList" | "FunctionPointerUnmanagedCallingConvention" | "RecordStructDeclaration" | "ExpressionColon" | "LineDirectivePosition" | "LineSpanDirectiveTrivia" | "InterpolatedSingleLineRawStringStartToken" | "InterpolatedMultiLineRawStringStartToken" | "InterpolatedRawStringEndToken" | "ScopedType" | "CollectionExpression" | "ExpressionElement" | "SpreadElement" | "ExtensionDeclaration" | "IgnoredDirectiveTrivia";
 
 export class LinePositionSpan implements ILinePositionSpan {
     start!: LinePosition;
@@ -4034,6 +4180,73 @@ export interface ISyntaxTriviaSlim {
     displayValue?: string | undefined;
 }
 
+export class Response implements IResponse {
+    connections!: DataConnection[];
+    servers!: DatabaseServerConnection[];
+
+    constructor(data?: IResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.connections = [];
+            this.servers = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["connections"])) {
+                this.connections = [] as any;
+                for (let item of _data["connections"])
+                    this.connections!.push(DataConnection.fromJS(item));
+            }
+            if (Array.isArray(_data["servers"])) {
+                this.servers = [] as any;
+                for (let item of _data["servers"])
+                    this.servers!.push(DatabaseServerConnection.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Response {
+        data = typeof data === 'object' ? data : {};
+        let result = new Response();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.connections)) {
+            data["connections"] = [];
+            for (let item of this.connections)
+                data["connections"].push(item ? item.toJSON() : <any>undefined);
+        }
+        if (Array.isArray(this.servers)) {
+            data["servers"] = [];
+            for (let item of this.servers)
+                data["servers"].push(item ? item.toJSON() : <any>undefined);
+        }
+        return data;
+    }
+
+    clone(): Response {
+        const json = this.toJSON();
+        let result = new Response();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IResponse {
+    connections: DataConnection[];
+    servers: DatabaseServerConnection[];
+}
+
 /** A connection to a data source (ex. a database, a flat file...etc.) */
 export abstract class DataConnection implements IDataConnection {
     id!: string;
@@ -4068,9 +4281,6 @@ export abstract class DataConnection implements IDataConnection {
         if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
             throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
         }
-        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
-            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
-        }
         if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
             let result = new MsSqlServerDatabaseConnection();
             result.init(data);
@@ -4101,6 +4311,32 @@ export abstract class DataConnection implements IDataConnection {
             result.init(data);
             return result;
         }
+        if (data["discriminator"] === "DatabaseServerConnection") {
+            throw new Error("The abstract class 'DatabaseServerConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkDatabaseServerConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseServerConnection") {
+            let result = new MsSqlServerDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseServerConnection") {
+            let result = new PostgreSqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MySqlDatabaseServerConnection") {
+            let result = new MySqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MariaDbDatabaseServerConnection") {
+            let result = new MariaDbDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
         throw new Error("The abstract class 'DataConnection' cannot be instantiated.");
     }
 
@@ -4126,6 +4362,123 @@ export interface IDataConnection {
 }
 
 export type DataConnectionType = "MSSQLServer" | "PostgreSQL" | "SQLite" | "MySQL" | "MariaDB" | "Oracle";
+
+/** A connection to a database server. */
+export abstract class DatabaseServerConnection extends DataConnection implements IDatabaseServerConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData!: boolean;
+    /** A partial connection string that is used to add or override values in the final connection string.
+For example, if this value is Timeout=300:
+  - When connection string is "Server=file.db;Password=123;Timeout=100" the resulting final
+    connection string will be:
+      "Server=file.db;Password=123;Timeout=300"
+  - When connection string is "Server=file.db;Password=123;" the resulting final
+    connection string will be:
+      "Server=file.db;Password=123;Timeout=300" */
+    connectionStringAugment?: string | undefined;
+    /** The databases hosted on this server that the user has selected to include. */
+    selectedDatabaseNames!: string[];
+
+    protected _discriminator: string;
+
+    constructor(data?: IDatabaseServerConnection) {
+        super(data);
+        if (!data) {
+            this.selectedDatabaseNames = [];
+        }
+        this._discriminator = "DatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.host = _data["host"];
+            this.port = _data["port"];
+            this.userId = _data["userId"];
+            this.password = _data["password"];
+            this.containsProductionData = _data["containsProductionData"];
+            this.connectionStringAugment = _data["connectionStringAugment"];
+            if (Array.isArray(_data["selectedDatabaseNames"])) {
+                this.selectedDatabaseNames = [] as any;
+                for (let item of _data["selectedDatabaseNames"])
+                    this.selectedDatabaseNames!.push(item);
+            }
+        }
+    }
+
+    static override fromJS(data: any): DatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "EntityFrameworkDatabaseServerConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseServerConnection") {
+            let result = new MsSqlServerDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseServerConnection") {
+            let result = new PostgreSqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MySqlDatabaseServerConnection") {
+            let result = new MySqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MariaDbDatabaseServerConnection") {
+            let result = new MariaDbDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'DatabaseServerConnection' cannot be instantiated.");
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
+        data["host"] = this.host;
+        data["port"] = this.port;
+        data["userId"] = this.userId;
+        data["password"] = this.password;
+        data["containsProductionData"] = this.containsProductionData;
+        data["connectionStringAugment"] = this.connectionStringAugment;
+        if (Array.isArray(this.selectedDatabaseNames)) {
+            data["selectedDatabaseNames"] = [];
+            for (let item of this.selectedDatabaseNames)
+                data["selectedDatabaseNames"].push(item);
+        }
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): DatabaseServerConnection {
+        throw new Error("The abstract class 'DatabaseServerConnection' cannot be instantiated.");
+    }
+}
+
+/** A connection to a database server. */
+export interface IDatabaseServerConnection extends IDataConnection {
+    host?: string | undefined;
+    port?: string | undefined;
+    userId?: string | undefined;
+    password?: string | undefined;
+    containsProductionData: boolean;
+    /** A partial connection string that is used to add or override values in the final connection string.
+For example, if this value is Timeout=300:
+  - When connection string is "Server=file.db;Password=123;Timeout=100" the resulting final
+    connection string will be:
+      "Server=file.db;Password=123;Timeout=300"
+  - When connection string is "Server=file.db;Password=123;" the resulting final
+    connection string will be:
+      "Server=file.db;Password=123;Timeout=300" */
+    connectionStringAugment?: string | undefined;
+    /** The databases hosted on this server that the user has selected to include. */
+    selectedDatabaseNames: string[];
+}
 
 export class DataConnectionTestResult implements IDataConnectionTestResult {
     success!: boolean;
@@ -4555,7 +4908,7 @@ export interface IDatabaseTableNavigation {
 }
 
 /** A version of the .NET framework. */
-export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9";
+export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10";
 
 /** Information about a package. */
 export class PackageMetadata implements IPackageMetadata {
@@ -6103,6 +6456,8 @@ export class Types implements ITypes {
     dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     dataConnectionSchemaValidationStartedEvent?: DataConnectionSchemaValidationStartedEvent | undefined;
     dataConnectionSchemaValidationCompletedEvent?: DataConnectionSchemaValidationCompletedEvent | undefined;
+    databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
+    databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -6112,10 +6467,14 @@ export class Types implements ITypes {
     promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    msSqlServerDatabaseServerConnection?: MsSqlServerDatabaseServerConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
+    postgreSqlDatabaseServerConnection?: PostgreSqlDatabaseServerConnection | undefined;
     sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
     mySqlDatabaseConnection?: MySqlDatabaseConnection | undefined;
+    mySqlDatabaseServerConnection?: MySqlDatabaseServerConnection | undefined;
     mariaDbDatabaseConnection?: MariaDbDatabaseConnection | undefined;
+    mariaDbDatabaseServerConnection?: MariaDbDatabaseServerConnection | undefined;
     oracleDatabaseConnection?: OracleDatabaseConnection | undefined;
 
     constructor(data?: ITypes) {
@@ -6154,6 +6513,8 @@ export class Types implements ITypes {
             this.dataConnectionResourcesUpdateFailedEvent = _data["dataConnectionResourcesUpdateFailedEvent"] ? DataConnectionResourcesUpdateFailedEvent.fromJS(_data["dataConnectionResourcesUpdateFailedEvent"]) : <any>undefined;
             this.dataConnectionSchemaValidationStartedEvent = _data["dataConnectionSchemaValidationStartedEvent"] ? DataConnectionSchemaValidationStartedEvent.fromJS(_data["dataConnectionSchemaValidationStartedEvent"]) : <any>undefined;
             this.dataConnectionSchemaValidationCompletedEvent = _data["dataConnectionSchemaValidationCompletedEvent"] ? DataConnectionSchemaValidationCompletedEvent.fromJS(_data["dataConnectionSchemaValidationCompletedEvent"]) : <any>undefined;
+            this.databaseServerSavedEvent = _data["databaseServerSavedEvent"] ? DatabaseServerSavedEvent.fromJS(_data["databaseServerSavedEvent"]) : <any>undefined;
+            this.databaseServerDeletedEvent = _data["databaseServerDeletedEvent"] ? DatabaseServerDeletedEvent.fromJS(_data["databaseServerDeletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
             this.requestScriptSavePath = _data["requestScriptSavePath"] ? RequestScriptSavePathCommand.fromJS(_data["requestScriptSavePath"]) : <any>undefined;
@@ -6163,10 +6524,14 @@ export class Types implements ITypes {
             this.promptUserForInputCommand = _data["promptUserForInputCommand"] ? PromptUserForInputCommand.fromJS(_data["promptUserForInputCommand"]) : <any>undefined;
             this.alertUserAboutMissingAppDependencies = _data["alertUserAboutMissingAppDependencies"] ? AlertUserAboutMissingAppDependencies.fromJS(_data["alertUserAboutMissingAppDependencies"]) : <any>undefined;
             this.msSqlServerDatabaseConnection = _data["msSqlServerDatabaseConnection"] ? MsSqlServerDatabaseConnection.fromJS(_data["msSqlServerDatabaseConnection"]) : <any>undefined;
+            this.msSqlServerDatabaseServerConnection = _data["msSqlServerDatabaseServerConnection"] ? MsSqlServerDatabaseServerConnection.fromJS(_data["msSqlServerDatabaseServerConnection"]) : <any>undefined;
             this.postgreSqlDatabaseConnection = _data["postgreSqlDatabaseConnection"] ? PostgreSqlDatabaseConnection.fromJS(_data["postgreSqlDatabaseConnection"]) : <any>undefined;
+            this.postgreSqlDatabaseServerConnection = _data["postgreSqlDatabaseServerConnection"] ? PostgreSqlDatabaseServerConnection.fromJS(_data["postgreSqlDatabaseServerConnection"]) : <any>undefined;
             this.sqLiteDatabaseConnection = _data["sqLiteDatabaseConnection"] ? SQLiteDatabaseConnection.fromJS(_data["sqLiteDatabaseConnection"]) : <any>undefined;
             this.mySqlDatabaseConnection = _data["mySqlDatabaseConnection"] ? MySqlDatabaseConnection.fromJS(_data["mySqlDatabaseConnection"]) : <any>undefined;
+            this.mySqlDatabaseServerConnection = _data["mySqlDatabaseServerConnection"] ? MySqlDatabaseServerConnection.fromJS(_data["mySqlDatabaseServerConnection"]) : <any>undefined;
             this.mariaDbDatabaseConnection = _data["mariaDbDatabaseConnection"] ? MariaDbDatabaseConnection.fromJS(_data["mariaDbDatabaseConnection"]) : <any>undefined;
+            this.mariaDbDatabaseServerConnection = _data["mariaDbDatabaseServerConnection"] ? MariaDbDatabaseServerConnection.fromJS(_data["mariaDbDatabaseServerConnection"]) : <any>undefined;
             this.oracleDatabaseConnection = _data["oracleDatabaseConnection"] ? OracleDatabaseConnection.fromJS(_data["oracleDatabaseConnection"]) : <any>undefined;
         }
     }
@@ -6205,6 +6570,8 @@ export class Types implements ITypes {
         data["dataConnectionResourcesUpdateFailedEvent"] = this.dataConnectionResourcesUpdateFailedEvent ? this.dataConnectionResourcesUpdateFailedEvent.toJSON() : <any>undefined;
         data["dataConnectionSchemaValidationStartedEvent"] = this.dataConnectionSchemaValidationStartedEvent ? this.dataConnectionSchemaValidationStartedEvent.toJSON() : <any>undefined;
         data["dataConnectionSchemaValidationCompletedEvent"] = this.dataConnectionSchemaValidationCompletedEvent ? this.dataConnectionSchemaValidationCompletedEvent.toJSON() : <any>undefined;
+        data["databaseServerSavedEvent"] = this.databaseServerSavedEvent ? this.databaseServerSavedEvent.toJSON() : <any>undefined;
+        data["databaseServerDeletedEvent"] = this.databaseServerDeletedEvent ? this.databaseServerDeletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
         data["requestScriptSavePath"] = this.requestScriptSavePath ? this.requestScriptSavePath.toJSON() : <any>undefined;
@@ -6214,10 +6581,14 @@ export class Types implements ITypes {
         data["promptUserForInputCommand"] = this.promptUserForInputCommand ? this.promptUserForInputCommand.toJSON() : <any>undefined;
         data["alertUserAboutMissingAppDependencies"] = this.alertUserAboutMissingAppDependencies ? this.alertUserAboutMissingAppDependencies.toJSON() : <any>undefined;
         data["msSqlServerDatabaseConnection"] = this.msSqlServerDatabaseConnection ? this.msSqlServerDatabaseConnection.toJSON() : <any>undefined;
+        data["msSqlServerDatabaseServerConnection"] = this.msSqlServerDatabaseServerConnection ? this.msSqlServerDatabaseServerConnection.toJSON() : <any>undefined;
         data["postgreSqlDatabaseConnection"] = this.postgreSqlDatabaseConnection ? this.postgreSqlDatabaseConnection.toJSON() : <any>undefined;
+        data["postgreSqlDatabaseServerConnection"] = this.postgreSqlDatabaseServerConnection ? this.postgreSqlDatabaseServerConnection.toJSON() : <any>undefined;
         data["sqLiteDatabaseConnection"] = this.sqLiteDatabaseConnection ? this.sqLiteDatabaseConnection.toJSON() : <any>undefined;
         data["mySqlDatabaseConnection"] = this.mySqlDatabaseConnection ? this.mySqlDatabaseConnection.toJSON() : <any>undefined;
+        data["mySqlDatabaseServerConnection"] = this.mySqlDatabaseServerConnection ? this.mySqlDatabaseServerConnection.toJSON() : <any>undefined;
         data["mariaDbDatabaseConnection"] = this.mariaDbDatabaseConnection ? this.mariaDbDatabaseConnection.toJSON() : <any>undefined;
+        data["mariaDbDatabaseServerConnection"] = this.mariaDbDatabaseServerConnection ? this.mariaDbDatabaseServerConnection.toJSON() : <any>undefined;
         data["oracleDatabaseConnection"] = this.oracleDatabaseConnection ? this.oracleDatabaseConnection.toJSON() : <any>undefined;
         return data;
     }
@@ -6256,6 +6627,8 @@ export interface ITypes {
     dataConnectionResourcesUpdateFailedEvent?: DataConnectionResourcesUpdateFailedEvent | undefined;
     dataConnectionSchemaValidationStartedEvent?: DataConnectionSchemaValidationStartedEvent | undefined;
     dataConnectionSchemaValidationCompletedEvent?: DataConnectionSchemaValidationCompletedEvent | undefined;
+    databaseServerSavedEvent?: DatabaseServerSavedEvent | undefined;
+    databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
@@ -6265,10 +6638,14 @@ export interface ITypes {
     promptUserForInputCommand?: PromptUserForInputCommand | undefined;
     alertUserAboutMissingAppDependencies?: AlertUserAboutMissingAppDependencies | undefined;
     msSqlServerDatabaseConnection?: MsSqlServerDatabaseConnection | undefined;
+    msSqlServerDatabaseServerConnection?: MsSqlServerDatabaseServerConnection | undefined;
     postgreSqlDatabaseConnection?: PostgreSqlDatabaseConnection | undefined;
+    postgreSqlDatabaseServerConnection?: PostgreSqlDatabaseServerConnection | undefined;
     sqLiteDatabaseConnection?: SQLiteDatabaseConnection | undefined;
     mySqlDatabaseConnection?: MySqlDatabaseConnection | undefined;
+    mySqlDatabaseServerConnection?: MySqlDatabaseServerConnection | undefined;
     mariaDbDatabaseConnection?: MariaDbDatabaseConnection | undefined;
+    mariaDbDatabaseServerConnection?: MariaDbDatabaseServerConnection | undefined;
     oracleDatabaseConnection?: OracleDatabaseConnection | undefined;
 }
 
@@ -7555,6 +7932,92 @@ export interface IDataConnectionSchemaValidationCompletedEvent {
     dataConnectionId: string;
 }
 
+export class DatabaseServerSavedEvent implements IDatabaseServerSavedEvent {
+    server!: DatabaseServerConnection;
+
+    constructor(data?: IDatabaseServerSavedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.server = _data["server"] ? DatabaseServerConnection.fromJS(_data["server"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DatabaseServerSavedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseServerSavedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["server"] = this.server ? this.server.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DatabaseServerSavedEvent {
+        const json = this.toJSON();
+        let result = new DatabaseServerSavedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseServerSavedEvent {
+    server: DatabaseServerConnection;
+}
+
+export class DatabaseServerDeletedEvent implements IDatabaseServerDeletedEvent {
+    server!: DatabaseServerConnection;
+
+    constructor(data?: IDatabaseServerDeletedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.server = _data["server"] ? DatabaseServerConnection.fromJS(_data["server"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): DatabaseServerDeletedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new DatabaseServerDeletedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["server"] = this.server ? this.server.toJSON() : <any>undefined;
+        return data;
+    }
+
+    clone(): DatabaseServerDeletedEvent {
+        const json = this.toJSON();
+        let result = new DatabaseServerDeletedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDatabaseServerDeletedEvent {
+    server: DatabaseServerConnection;
+}
+
 export abstract class CommandBase implements ICommandBase {
     id!: string;
 
@@ -8084,13 +8547,14 @@ export interface IAlertUserAboutMissingAppDependencies extends ICommand {
 
 /** A connection to a database. */
 export abstract class DatabaseConnection extends DataConnection implements IDatabaseConnection {
+    serverId?: string | undefined;
     host?: string | undefined;
     port?: string | undefined;
     databaseName?: string | undefined;
     userId?: string | undefined;
     password?: string | undefined;
     containsProductionData!: boolean;
-    /** A partial connection string that is used to override values in the final connection string.
+    /** A partial connection string that is used to add or override values in the final connection string.
 For example, if this value is Timeout=300:
   - When connection string is "Server=file.db;Password=123;Timeout=100" the resulting final
     connection string will be:
@@ -8108,6 +8572,7 @@ For example, if this value is Timeout=300:
     override init(_data?: any) {
         super.init(_data);
         if (_data) {
+            this.serverId = _data["serverId"];
             this.host = _data["host"];
             this.port = _data["port"];
             this.databaseName = _data["databaseName"];
@@ -8122,9 +8587,6 @@ For example, if this value is Timeout=300:
         data = typeof data === 'object' ? data : {};
         if (data["discriminator"] === "EntityFrameworkDatabaseConnection") {
             throw new Error("The abstract class 'EntityFrameworkDatabaseConnection' cannot be instantiated.");
-        }
-        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
-            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
         }
         if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
             let result = new MsSqlServerDatabaseConnection();
@@ -8161,6 +8623,7 @@ For example, if this value is Timeout=300:
 
     override toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["serverId"] = this.serverId;
         data["host"] = this.host;
         data["port"] = this.port;
         data["databaseName"] = this.databaseName;
@@ -8179,13 +8642,14 @@ For example, if this value is Timeout=300:
 
 /** A connection to a database. */
 export interface IDatabaseConnection extends IDataConnection {
+    serverId?: string | undefined;
     host?: string | undefined;
     port?: string | undefined;
     databaseName?: string | undefined;
     userId?: string | undefined;
     password?: string | undefined;
     containsProductionData: boolean;
-    /** A partial connection string that is used to override values in the final connection string.
+    /** A partial connection string that is used to add or override values in the final connection string.
 For example, if this value is Timeout=300:
   - When connection string is "Server=file.db;Password=123;Timeout=100" the resulting final
     connection string will be:
@@ -8215,9 +8679,6 @@ export abstract class EntityFrameworkDatabaseConnection extends DatabaseConnecti
 
     static override fromJS(data: any): EntityFrameworkDatabaseConnection {
         data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "EntityFrameworkRelationalDatabaseConnection") {
-            throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
-        }
         if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
             let result = new MsSqlServerDatabaseConnection();
             result.init(data);
@@ -8269,67 +8730,7 @@ export interface IEntityFrameworkDatabaseConnection extends IDatabaseConnection 
     scaffoldOptions?: ScaffoldOptions | undefined;
 }
 
-export abstract class EntityFrameworkRelationalDatabaseConnection extends EntityFrameworkDatabaseConnection implements IEntityFrameworkRelationalDatabaseConnection {
-
-    constructor(data?: IEntityFrameworkRelationalDatabaseConnection) {
-        super(data);
-        this._discriminator = "EntityFrameworkRelationalDatabaseConnection";
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-    }
-
-    static override fromJS(data: any): EntityFrameworkRelationalDatabaseConnection {
-        data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "MsSqlServerDatabaseConnection") {
-            let result = new MsSqlServerDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
-            let result = new PostgreSqlDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "SQLiteDatabaseConnection") {
-            let result = new SQLiteDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "MySqlDatabaseConnection") {
-            let result = new MySqlDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "MariaDbDatabaseConnection") {
-            let result = new MariaDbDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "OracleDatabaseConnection") {
-            let result = new OracleDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): EntityFrameworkRelationalDatabaseConnection {
-        throw new Error("The abstract class 'EntityFrameworkRelationalDatabaseConnection' cannot be instantiated.");
-    }
-}
-
-export interface IEntityFrameworkRelationalDatabaseConnection extends IEntityFrameworkDatabaseConnection {
-}
-
-export class MsSqlServerDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMsSqlServerDatabaseConnection {
+export class MsSqlServerDatabaseConnection extends EntityFrameworkDatabaseConnection implements IMsSqlServerDatabaseConnection {
 
     constructor(data?: IMsSqlServerDatabaseConnection) {
         super(data);
@@ -8361,7 +8762,7 @@ export class MsSqlServerDatabaseConnection extends EntityFrameworkRelationalData
     }
 }
 
-export interface IMsSqlServerDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface IMsSqlServerDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
 export class ScaffoldOptions implements IScaffoldOptions {
@@ -8443,7 +8844,98 @@ export interface IScaffoldOptions {
     optimizeDbContext: boolean;
 }
 
-export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IPostgreSqlDatabaseConnection {
+export abstract class EntityFrameworkDatabaseServerConnection extends DatabaseServerConnection implements IEntityFrameworkDatabaseServerConnection {
+    scaffoldOptions?: ScaffoldOptions | undefined;
+
+    constructor(data?: IEntityFrameworkDatabaseServerConnection) {
+        super(data);
+        this._discriminator = "EntityFrameworkDatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.scaffoldOptions = _data["scaffoldOptions"] ? ScaffoldOptions.fromJS(_data["scaffoldOptions"]) : <any>undefined;
+        }
+    }
+
+    static override fromJS(data: any): EntityFrameworkDatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        if (data["discriminator"] === "MsSqlServerDatabaseServerConnection") {
+            let result = new MsSqlServerDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseServerConnection") {
+            let result = new PostgreSqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MySqlDatabaseServerConnection") {
+            let result = new MySqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MariaDbDatabaseServerConnection") {
+            let result = new MariaDbDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scaffoldOptions"] = this.scaffoldOptions ? this.scaffoldOptions.toJSON() : <any>undefined;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): EntityFrameworkDatabaseServerConnection {
+        throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
+    }
+}
+
+export interface IEntityFrameworkDatabaseServerConnection extends IDatabaseServerConnection {
+    scaffoldOptions?: ScaffoldOptions | undefined;
+}
+
+export class MsSqlServerDatabaseServerConnection extends EntityFrameworkDatabaseServerConnection implements IMsSqlServerDatabaseServerConnection {
+
+    constructor(data?: IMsSqlServerDatabaseServerConnection) {
+        super(data);
+        this._discriminator = "MsSqlServerDatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): MsSqlServerDatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new MsSqlServerDatabaseServerConnection();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): MsSqlServerDatabaseServerConnection {
+        const json = this.toJSON();
+        let result = new MsSqlServerDatabaseServerConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMsSqlServerDatabaseServerConnection extends IEntityFrameworkDatabaseServerConnection {
+}
+
+export class PostgreSqlDatabaseConnection extends EntityFrameworkDatabaseConnection implements IPostgreSqlDatabaseConnection {
 
     constructor(data?: IPostgreSqlDatabaseConnection) {
         super(data);
@@ -8475,10 +8967,45 @@ export class PostgreSqlDatabaseConnection extends EntityFrameworkRelationalDatab
     }
 }
 
-export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface IPostgreSqlDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
-export class SQLiteDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements ISQLiteDatabaseConnection {
+export class PostgreSqlDatabaseServerConnection extends EntityFrameworkDatabaseServerConnection implements IPostgreSqlDatabaseServerConnection {
+
+    constructor(data?: IPostgreSqlDatabaseServerConnection) {
+        super(data);
+        this._discriminator = "PostgreSqlDatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): PostgreSqlDatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new PostgreSqlDatabaseServerConnection();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): PostgreSqlDatabaseServerConnection {
+        const json = this.toJSON();
+        let result = new PostgreSqlDatabaseServerConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPostgreSqlDatabaseServerConnection extends IEntityFrameworkDatabaseServerConnection {
+}
+
+export class SQLiteDatabaseConnection extends EntityFrameworkDatabaseConnection implements ISQLiteDatabaseConnection {
 
     constructor(data?: ISQLiteDatabaseConnection) {
         super(data);
@@ -8510,10 +9037,10 @@ export class SQLiteDatabaseConnection extends EntityFrameworkRelationalDatabaseC
     }
 }
 
-export interface ISQLiteDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface ISQLiteDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
-export class MySqlDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMySqlDatabaseConnection {
+export class MySqlDatabaseConnection extends EntityFrameworkDatabaseConnection implements IMySqlDatabaseConnection {
 
     constructor(data?: IMySqlDatabaseConnection) {
         super(data);
@@ -8545,10 +9072,45 @@ export class MySqlDatabaseConnection extends EntityFrameworkRelationalDatabaseCo
     }
 }
 
-export interface IMySqlDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface IMySqlDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
-export class MariaDbDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IMariaDbDatabaseConnection {
+export class MySqlDatabaseServerConnection extends EntityFrameworkDatabaseServerConnection implements IMySqlDatabaseServerConnection {
+
+    constructor(data?: IMySqlDatabaseServerConnection) {
+        super(data);
+        this._discriminator = "MySqlDatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): MySqlDatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new MySqlDatabaseServerConnection();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): MySqlDatabaseServerConnection {
+        const json = this.toJSON();
+        let result = new MySqlDatabaseServerConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMySqlDatabaseServerConnection extends IEntityFrameworkDatabaseServerConnection {
+}
+
+export class MariaDbDatabaseConnection extends EntityFrameworkDatabaseConnection implements IMariaDbDatabaseConnection {
 
     constructor(data?: IMariaDbDatabaseConnection) {
         super(data);
@@ -8580,10 +9142,45 @@ export class MariaDbDatabaseConnection extends EntityFrameworkRelationalDatabase
     }
 }
 
-export interface IMariaDbDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface IMariaDbDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
-export class OracleDatabaseConnection extends EntityFrameworkRelationalDatabaseConnection implements IOracleDatabaseConnection {
+export class MariaDbDatabaseServerConnection extends EntityFrameworkDatabaseServerConnection implements IMariaDbDatabaseServerConnection {
+
+    constructor(data?: IMariaDbDatabaseServerConnection) {
+        super(data);
+        this._discriminator = "MariaDbDatabaseServerConnection";
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): MariaDbDatabaseServerConnection {
+        data = typeof data === 'object' ? data : {};
+        let result = new MariaDbDatabaseServerConnection();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): MariaDbDatabaseServerConnection {
+        const json = this.toJSON();
+        let result = new MariaDbDatabaseServerConnection();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IMariaDbDatabaseServerConnection extends IEntityFrameworkDatabaseServerConnection {
+}
+
+export class OracleDatabaseConnection extends EntityFrameworkDatabaseConnection implements IOracleDatabaseConnection {
 
     constructor(data?: IOracleDatabaseConnection) {
         super(data);
@@ -8615,7 +9212,7 @@ export class OracleDatabaseConnection extends EntityFrameworkRelationalDatabaseC
     }
 }
 
-export interface IOracleDatabaseConnection extends IEntityFrameworkRelationalDatabaseConnection {
+export interface IOracleDatabaseConnection extends IEntityFrameworkDatabaseConnection {
 }
 
 export class UserSecretListingDto implements IUserSecretListingDto {

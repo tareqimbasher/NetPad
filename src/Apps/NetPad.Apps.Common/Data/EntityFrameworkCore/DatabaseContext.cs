@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Data;
+using NetPad.Data.Security;
 
 namespace NetPad.Apps.Data.EntityFrameworkCore;
 
@@ -12,5 +15,37 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
         var dbOptionsBuilder = new DbContextOptionsBuilder<DatabaseContext>();
         configure(dbOptionsBuilder);
         return new DatabaseContext(dbOptionsBuilder.Options);
+    }
+
+    public static DatabaseContext Create(
+        IEntityFrameworkDatabaseConnection connection,
+        IDataConnectionPasswordProtector passwordProtector)
+    {
+        return Create(options => connection.ConfigureDbContextOptions(options, passwordProtector));
+    }
+
+    public async Task<DataConnectionTestResult> TestConnectionAsync()
+    {
+        try
+        {
+            var connection = Database.GetDbConnection();
+            await connection.OpenAsync();
+            await connection.CloseAsync();
+            return new DataConnectionTestResult(true);
+        }
+        catch (Exception ex)
+        {
+            return new DataConnectionTestResult(false, ex.Message);
+        }
+    }
+}
+
+public static class DatabaseContextExtensions
+{
+    public static DatabaseContext CreateDbContext(
+        this IEntityFrameworkDatabaseConnection connection,
+        IDataConnectionPasswordProtector passwordProtector)
+    {
+        return DatabaseContext.Create(connection, passwordProtector);
     }
 }

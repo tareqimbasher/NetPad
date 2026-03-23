@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding.Transforms;
 using NetPad.CodeAnalysis;
 using NetPad.Common;
@@ -62,34 +63,43 @@ public class EntityFrameworkDatabaseScaffolder(
                     $"Failed to complete scaffold process. Error building scaffolded project. {buildResult.FormattedOutput}");
             }
 
-            var assemblyFilePath = Directory.GetFiles(
-                    project.BinDirectoryPath.Combine("Release").Path,
-                    $"{project.ProjectFilePath.FileNameWithoutExtension}.dll",
-                    SearchOption.AllDirectories)
-                .FirstOrDefault();
+            var assemblyFilePath = project.GetBuiltAssembly(DotNetBuildConfiguration.Release)
+                                   ?? throw new Exception(
+                                       "Failed to complete scaffolding process. Could not find output assembly.");
 
-            if (assemblyFilePath == null)
-            {
-                throw new Exception("Failed to complete scaffold process. Could not find output assembly.");
-            }
-
-            var databaseStructure = await GetDatabaseStructureAsync(project, model.DbContextFile.ClassName);
+            DatabaseStructure? databaseStructure =
+                await GetDatabaseStructureAsync(project, model.DbContextFile.ClassName);
 
             return new ScaffoldResult(model, new AssemblyImage(assemblyFilePath), databaseStructure);
         }
         finally
         {
-            await project.DeleteAsync();
+            try
+            {
+                project.Delete();
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error deleting temporary project.");
+            }
         }
     }
 
+    /// <summary>
+    /// Scaffolds a database connection to a C# project at the provided directory path.
+    /// </summary>
+    /// <param name="projectDirectory">The project directory path.</param>
+    /// <param name="projectName">The project name.</param>
+    /// <param name="targetFrameworkVersion">The .NET SDK version the project targets.</param>
+    /// <param name="connection">The connection to scaffold.</param>
+    /// <returns>The created C# project.</returns>
     public async Task<DotNetCSharpProject> ScaffoldToProjectAsync(
         DirectoryPath projectDirectory,
         string projectName,
         DotNetFrameworkVersion targetFrameworkVersion,
         EntityFrameworkDatabaseConnection connection)
     {
-        var project = await InitProjectAsync(
+        var project = await CreateNewProjectAsync(
             projectDirectory,
             projectName,
             targetFrameworkVersion,
@@ -158,15 +168,14 @@ public class EntityFrameworkDatabaseScaffolder(
                   """);
 
             var result = await project.RunAsync(["-c", "Release", "--property", "WarningLevel=0", "/clp:ErrorsOnly"]);
-
             if (!result.Succeeded)
             {
                 logger.LogError("Failed to get database structure. Run failed with output: {Output}",
                     result.FormattedOutput);
+                return null;
             }
 
             var output = result.Output;
-
             if (string.IsNullOrWhiteSpace(output))
             {
                 logger.LogError("Ran database structure generation successfully but output was empty");
@@ -196,7 +205,8 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task<DotNetCSharpProject> InitProjectAsync(
+
+    private async Task<DotNetCSharpProject> CreateNewProjectAsync(
         DirectoryPath projectDirectory,
         string projectName,
         DotNetFrameworkVersion targetFrameworkVersion,
@@ -286,7 +296,9 @@ public class EntityFrameworkDatabaseScaffolder(
 
         if (!startResult.Started)
         {
-            throw new Exception("Scaffolding process failed to start");
+            throw new Exception("Scaffolding process failed to start.\n" +
+                                $"Output: {outputs.JoinToString("\n")}\n" +
+                                $"Error: {errors.JoinToString("\n")}");
         }
 
         if (exitCode != 0)

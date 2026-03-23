@@ -270,6 +270,11 @@ button > .icon-base {
     @extend .fa-file-excel;
 }
 
+.database-server-icon {
+    @extend %icon-base;
+    @extend .fa-server;
+}
+
 .database-icon {
     @extend %icon-base;
     @extend .fa-database;

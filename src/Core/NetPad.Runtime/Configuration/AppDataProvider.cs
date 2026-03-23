@@ -47,6 +47,12 @@ public static class AppDataProvider
     /// <summary>The path to the settings file.</summary>
     public static readonly FilePath SettingsFilePath = AppDataDirectoryPath.CombineFilePath("settings.json");
 
+    /// <summary>The path to the file where data connections are stored.</summary>
+    public static readonly FilePath ConnectionsFilePath = AppDataDirectoryPath.CombineFilePath("data-connections.json");
+
+    /// <summary>The path to the file where trivial data is stored.</summary>
+    public static readonly FilePath TrivialDataFilePath = AppDataDirectoryPath.CombineFilePath("key-values.txt");
+
     /// <summary>
     /// All environment variables defined by this application.
     /// </summary>

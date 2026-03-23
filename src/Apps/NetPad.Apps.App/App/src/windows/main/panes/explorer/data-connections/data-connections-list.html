@@ -1,116 +1,93 @@
-<h6>
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="ps-3 user-select-none text-semibold">Connections</span>
+<template as-custom-element="connection-node">
+    <bindable name="connectionViewModel"></bindable>
+    <bindable name="vm"></bindable>
 
-        <span class="add-data-connection-action-icon pe-3"
-              title="Add Data Connection"
-              click.trigger="addConnection()">
-            <i class="add-data-connection-icon icon-button"></i>
-        </span>
-    </div>
-    <hr class="m-0 mt-2" style="height: 2px"/>
-</h6>
+    <div class="list-group">
+        <div class="list-group-item data-connection d-flex align-items-center justify-content-between pe-2">
+            <div class="d-flex align-items-center text-truncate flex-grow-1">
+                <i class="${connectionViewModel.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                   click.trigger="connectionViewModel.toggleExpand()"></i>
+                <data-connection-name connection.bind="connectionViewModel.connection"
+                                      class="flex-grow-1"
+                                      draggable="true"
+                                      dragstart.trigger="vm.connectionDragged($event)"
+                                      data-connection-id="${connectionViewModel.connection.id}"></data-connection-name>
+            </div>
+            <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
+                ${connectionViewModel.loadingMessage}...
+            </span>
+            <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
+                  if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
+                  title.bind="'(Click to copy to clipboard)\n\n' + connectionViewModel.error"
+                  click.trigger="vm.copyErrorToClipboard(connectionViewModel)">
+                ${connectionViewModel.error}
+            </span>
+            <span class="badge bg-orange text-white rounded-pill ms-2"
+                  if.bind="connectionViewModel.connection.containsProductionData"
+                  title="Contains Production Data!">
+                P
+            </span>
+        </div>
 
-<div if.bind="!dataConnectionViewModels.length" class="flex-grow-1 d-flex align-items-center justify-content-center">
-    <p class="text-muted user-select-none">
-        No connections
-    </p>
-</div>
-
-<div else class="flex-grow-height-restricted d-flex">
-    <div class="list-group overflow-y-auto" style="width: 100%">
-        <div class="list-group-item d-flex flex-column"
-             repeat.for="connectionViewModel of dataConnectionViewModels"
-             data-connection-id="${connectionViewModel.connection.id}">
-
-            <div class="list-group">
-                <div class="list-group-item data-connection d-flex align-items-center justify-content-between pe-2">
-                    <div class="d-flex align-items-center text-truncate flex-grow-1">
-                        <i class="${connectionViewModel.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
-                           click.trigger="connectionViewModel.toggleExpand()"></i>
-                        <data-connection-name connection.bind="connectionViewModel.connection"
-                                              class="flex-grow-1"
-                                              draggable="true"
-                                              dragstart.trigger="connectionDragged($event)"
-                                              data-connection-id="${connectionViewModel.connection.id}"></data-connection-name>
+        <div
+            class="list-group-item data-connection-structure-tree ${connectionViewModel.structure.schemas.length == 1 ? 'single-schema' : ''}"
+            show.bind="connectionViewModel.expanded">
+            <div class="list-group"
+                 if.bind="connectionViewModel.structure">
+                <div class="list-group-item db-schema"
+                     repeat.for="schema of connectionViewModel.structure.schemas"
+                     title="Schema">
+                    <div class="display-text" if.bind="connectionViewModel.structure.schemas.length > 1">
+                        <i class="${schema.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                           click.trigger="schema.expanded = !schema.expanded"></i>
+                        <span if.bind="schema.name">${schema.name}</span>
+                        <span else class="text-muted">default</span>
                     </div>
-                    <span class="badge bg-secondary rounded-pill ms-2" if.bind="connectionViewModel.loadingMessage">
-                        ${connectionViewModel.loadingMessage}...
-                    </span>
-                    <span class="badge bg-danger rounded-pill ms-2 text-truncate data-connection-error"
-                          if.bind="!connectionViewModel.loadingMessage && connectionViewModel.error"
-                          title.bind="'(Click to copy to clipboard)\n\n' + connectionViewModel.error"
-                          click.trigger="copyErrorToClipboard(connectionViewModel)">
-                        ${connectionViewModel.error}
-                    </span>
-                    <span class="badge bg-orange text-white rounded-pill ms-2"
-                          if.bind="connectionViewModel.connection.containsProductionData"
-                          title="Production">
-                        P
-                    </span>
-                </div>
-
-                <div
-                    class="list-group-item data-connection-structure-tree ${connectionViewModel.structure.schemas.length == 1 ? 'single-schema' : ''}"
-                    show.bind="connectionViewModel.expanded">
                     <div class="list-group"
-                         if.bind="connectionViewModel.structure">
-                        <div class="list-group-item db-schema"
-                             repeat.for="schema of connectionViewModel.structure.schemas"
-                             title="Schema">
-                            <div class="display-text" if.bind="connectionViewModel.structure.schemas.length > 1">
-                                <i class="${schema.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
-                                   click.trigger="schema.expanded = !schema.expanded"></i>
-                                <span if.bind="schema.name">${schema.name}</span>
-                                <span else class="text-muted">default</span>
+                         if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
+                        <div class="list-group-item db-table"
+                             repeat.for="table of schema.tables"
+                             title="Table name: ${table.name}">
+                            <div class="display-text">
+                                <i class="${table.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                                   click.trigger="table.expanded = !table.expanded"></i>
+                                <div class="row-icon"><img src="/img/table.png" alt="table"/></div>
+                                <b>${table.displayName}</b>
                             </div>
-                            <div class="list-group"
-                                 if.bind="connectionViewModel.structure.schemas.length == 1 || schema.expanded">
-                                <div class="list-group-item db-table"
-                                     repeat.for="table of schema.tables"
-                                     title="Table name: ${table.name}">
+                            <div class="list-group" if.bind="table.expanded">
+                                <div class="list-group-item db-column"
+                                     repeat.for="column of table.columns"
+                                     title="Column Type: ${column.type}">
                                     <div class="display-text">
-                                        <i class="${table.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
-                                           click.trigger="table.expanded = !table.expanded"></i>
-                                        <div class="row-icon"><img src="/img/table.png" alt="table"/></div>
-                                        <b>${table.displayName}</b>
+                                        <div class="row-icon"><img src="/img/column.png" alt="column"/></div>
+                                        ${column.name}
+                                        <i class="db-primary-key-icon icon-xs text-yellow ms-2"
+                                           title="Primary key"
+                                           if.bind="column.isPrimaryKey"></i>
+                                        <i class="db-foreign-key-icon icon-xs text-blue ms-2"
+                                           title="Foreign key"
+                                           if.bind="column.isForeignKey"></i>
+                                        <span class="extra-info text-muted">(${column.clrType})</span>
                                     </div>
-                                    <div class="list-group" if.bind="table.expanded">
-                                        <div class="list-group-item db-column"
-                                             repeat.for="column of table.columns"
-                                             title="Column Type: ${column.type}">
-                                            <div class="display-text">
-                                                <div class="row-icon"><img src="/img/column.png" alt="column"/></div>
-                                                ${column.name}
-                                                <i class="db-primary-key-icon icon-xs text-yellow ms-2"
-                                                   title="Primary key"
-                                                   if.bind="column.isPrimaryKey"></i>
-                                                <i class="db-foreign-key-icon icon-xs text-blue ms-2"
-                                                   title="Foreign key"
-                                                   if.bind="column.isForeignKey"></i>
-                                                <span class="extra-info text-muted">(${column.clrType})</span>
-                                            </div>
+                                </div>
+                                <div class="list-group-item db-navigation"
+                                     if.bind="table.navigations.length"
+                                     repeat.for="nav of table.navigations"
+                                     title="Navigation property (${nav.clrType})">
+                                    <div class="display-text">
+                                        <div class="row-icon">
+                                            <i class="db-navigation-icon icon-xs text-green"></i>
                                         </div>
-                                        <div class="list-group-item db-navigation"
-                                             if.bind="table.navigations.length"
-                                             repeat.for="nav of table.navigations"
-                                             title="Navigation property (${nav.clrType})">
-                                            <div class="display-text">
-                                                <div class="row-icon">
-                                                    <i class="db-navigation-icon icon-xs text-green"></i>
-                                                </div>
-                                                ${nav.name}
-                                            </div>
-                                        </div>
-                                        <div class="list-group-item db-index"
-                                             if.bind="table.indexes.length"
-                                             repeat.for="index of table.indexes"
-                                             title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}">
-                                            <div class="display-text">
-                                                <div class="row-icon"><i class="db-index-icon icon-xs"></i></div>
-                                                ${index.name}
-                                            </div>
-                                        </div>
+                                        ${nav.name}
+                                    </div>
+                                </div>
+                                <div class="list-group-item db-index"
+                                     if.bind="table.indexes.length"
+                                     repeat.for="index of table.indexes"
+                                     title="Index on: ${index.columns.join(' + ')}\nUnique: ${index.isUnique}">
+                                    <div class="display-text">
+                                        <div class="row-icon"><i class="db-index-icon icon-xs"></i></div>
+                                        ${index.name}
                                     </div>
                                 </div>
                             </div>
@@ -118,10 +95,91 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</template>
+
+<div>
+    <div class="d-flex justify-content-between align-items-center pe-3">
+        <span class="ps-3 user-select-none text-semibold">Connections</span>
+
+        <div class="d-flex align-items-center gap-1 small">
+            <span class="icon-button"
+                  title="Add Server"
+                  click.trigger="addServer()">
+                <i class="add-data-connection-icon"></i>
+                <i class="database-server-icon"></i>
+            </span>
+            <span class="icon-button"
+                  title="Add Database"
+                  click.trigger="addConnection()">
+                <i class="add-data-connection-icon"></i>
+                <i class="database-icon"></i>
+            </span>
+        </div>
+    </div>
+    <hr class="m-0 mt-2" style="height: 2px"/>
+</div>
+
+<div if.bind="!serverViewModels.length && !standaloneConnectionViewModels.length"
+     class="flex-grow-1 d-flex align-items-center justify-content-center">
+    <p class="text-muted user-select-none">
+        No connections
+    </p>
+</div>
+
+<div else class="flex-grow-height-restricted d-flex">
+    <let list-vm.bind="$this"></let>
+    <div class="list-group overflow-y-auto" style="width: 100%">
+
+        <!-- Server nodes -->
+        <div class="list-group-item d-flex flex-column"
+             repeat.for="serverVm of serverViewModels"
+             data-server-id="${serverVm.server.id}">
+
+            <div class="list-group">
+                <div class="list-group-item database-server d-flex align-items-center justify-content-between pe-2">
+                    <div class="d-flex align-items-center text-truncate flex-grow-1">
+                        <i class="${serverVm.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm"
+                           click.trigger="serverVm.toggleExpand()"></i>
+                        <data-connection-name connection.bind="serverVm.server"
+                                              class="flex-grow-1 server-name"
+                                              data-server-id="${serverVm.server.id}"></data-connection-name>
+                    </div>
+                    <i class="database-server-icon fa-sm ms-4 me-2" title="Database server"></i>
+                    <span class="badge bg-secondary rounded-pill ms-2"
+                          title="${serverVm.connections.length} connection(s)">
+                        ${serverVm.connections.length}
+                    </span>
+                    <span class="badge bg-orange text-white rounded-pill ms-2"
+                          if.bind="serverVm.server.containsProductionData"
+                          title="Contains Production Data!">
+                        P
+                    </span>
+                </div>
+
+                <div class="server-connections" show.bind="serverVm.expanded">
+                    <div class="list-group-item d-flex flex-column"
+                         repeat.for="connectionViewModel of serverVm.connections"
+                         data-connection-id="${connectionViewModel.connection.id}">
+                        <connection-node connection-view-model.bind="connectionViewModel"
+                                         vm.bind="listVm"></connection-node>
+                    </div>
+                </div>
+            </div>
 
         </div>
+
+        <!-- Standalone connections -->
+        <div class="list-group-item d-flex flex-column"
+             repeat.for="connectionViewModel of standaloneConnectionViewModels"
+             data-connection-id="${connectionViewModel.connection.id}">
+            <connection-node connection-view-model.bind="connectionViewModel" vm.bind="listVm"></connection-node>
+        </div>
+
     </div>
 </div>
 
 <context-menu options.bind="dataConnectionContextOptions"></context-menu>
+<context-menu options.bind="serverContextOptions"></context-menu>
 <context-menu options.bind="tableContextOptions"></context-menu>

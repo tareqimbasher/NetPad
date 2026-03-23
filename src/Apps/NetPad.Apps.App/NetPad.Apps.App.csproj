@@ -27,7 +27,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\NetPad.Runtime\NetPad.Runtime.csproj"/>
-        <ProjectReference Include="..\..\External\O2Html\O2Html.csproj"/>
         <ProjectReference Include="..\NetPad.Apps.Shells.Electron\NetPad.Apps.Shells.Electron.csproj"/>
         <ProjectReference Include="..\NetPad.Apps.Shells.Tauri\NetPad.Apps.Shells.Tauri.csproj"/>
         <ProjectReference Include="..\NetPad.Apps.Shells.Web\NetPad.Apps.Shells.Web.csproj"/>
@@ -45,6 +44,8 @@
         <Content Remove="$(SpaRoot)**"/>
         <None Remove="$(SpaRoot)**"/>
         <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**"/>
+        <!-- Exclude SPA files from dotnet watch; webpack handles frontend hot-reload -->
+        <Watch Remove="$(SpaRoot)**"/>
         <Compile Remove="App\dist\**"/>
         <Content Remove="App\dist\**"/>
         <EmbeddedResource Remove="App\dist\**"/>

@@ -41,6 +41,8 @@ public class EventForwardToIpcBackgroundService(
         SubscribeAndForwardToIpc<AppStatusMessagePublishedEvent>();
         SubscribeAndForwardToIpc<DataConnectionSavedEvent>();
         SubscribeAndForwardToIpc<DataConnectionDeletedEvent>();
+        SubscribeAndForwardToIpc<DatabaseServerSavedEvent>();
+        SubscribeAndForwardToIpc<DatabaseServerDeletedEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatingEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdatedEvent>();
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdateFailedEvent>();

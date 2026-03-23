@@ -1,0 +1,42 @@
+using Microsoft.EntityFrameworkCore;
+using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;
+using NetPad.Data;
+using NetPad.Data.Security;
+
+namespace NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
+
+public sealed class SQLiteDatabaseConnection(Guid id, string name, ScaffoldOptions? scaffoldOptions = null)
+    : EntityFrameworkDatabaseConnection(id, name, DataConnectionType.SQLite, ProviderName, scaffoldOptions),
+        ISQLiteConnection
+{
+    public const string ProviderName = "Microsoft.EntityFrameworkCore.Sqlite";
+
+    public override string GetConnectionString(IDataConnectionPasswordProtector passwordProtector)
+    {
+        var connectionStringBuilder = new ConnectionStringBuilder();
+
+        connectionStringBuilder.TryAdd("Data Source", DatabaseName);
+
+        if (Password != null)
+        {
+            connectionStringBuilder.TryAdd("Password", passwordProtector.Unprotect(Password));
+        }
+
+        if (!string.IsNullOrWhiteSpace(ConnectionStringAugment))
+            connectionStringBuilder.Augment(new ConnectionStringBuilder(ConnectionStringAugment));
+
+        return connectionStringBuilder.Build();
+    }
+
+    public override void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector)
+    {
+        builder.UseSqlite(GetConnectionString(passwordProtector));
+    }
+
+    public override Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector)
+    {
+        return Task.FromResult<IReadOnlyList<string>>([]);
+    }
+}

@@ -14,34 +14,21 @@ public abstract class EntityFrameworkDatabaseConnection(
     DataConnectionType type,
     string entityFrameworkProviderName,
     ScaffoldOptions? scaffoldOptions)
-    : DatabaseConnection(id, name, type)
+    : DatabaseConnection(id, name, type), IEntityFrameworkDatabaseConnection
 {
     public string EntityFrameworkProviderName { get; } = entityFrameworkProviderName;
-    public ScaffoldOptions? ScaffoldOptions { get; } = scaffoldOptions;
 
-    public abstract Task ConfigureDbContextOptionsAsync(DbContextOptionsBuilder builder, IDataConnectionPasswordProtector passwordProtector);
+    public ScaffoldOptions? ScaffoldOptions =>
+        (Server as EntityFrameworkDatabaseServerConnection)?.ScaffoldOptions ?? scaffoldOptions;
 
-    public abstract Task<IEnumerable<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
+    public abstract void ConfigureDbContextOptions(
+        DbContextOptionsBuilder builder,
+        IDataConnectionPasswordProtector passwordProtector);
 
-    public override async Task<DataConnectionTestResult> TestConnectionAsync(IDataConnectionPasswordProtector passwordProtector)
+    public override async Task<DataConnectionTestResult> TestConnectionAsync(
+        IDataConnectionPasswordProtector passwordProtector)
     {
-        await using var dbContext = CreateDbContext(passwordProtector);
-
-        try
-        {
-            var connection = dbContext.Database.GetDbConnection();
-            await connection.OpenAsync();
-            await connection.CloseAsync();
-            return new DataConnectionTestResult(true);
-        }
-        catch (Exception ex)
-        {
-            return new DataConnectionTestResult(false, ex.Message);
-        }
-    }
-
-    public DatabaseContext CreateDbContext(IDataConnectionPasswordProtector passwordProtector)
-    {
-        return DatabaseContext.Create(options => ConfigureDbContextOptionsAsync(options, passwordProtector));
+        await using var dbContext = DatabaseContext.Create(this, passwordProtector);
+        return await dbContext.TestConnectionAsync();
     }
 }

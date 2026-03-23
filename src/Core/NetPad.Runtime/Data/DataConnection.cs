@@ -21,7 +21,6 @@ public abstract class DataConnection(Guid id, string name, DataConnectionType ty
     /// <summary>
     /// Tests if the connection is valid.
     /// </summary>
-    /// <returns></returns>
     public abstract Task<DataConnectionTestResult> TestConnectionAsync(
         IDataConnectionPasswordProtector passwordProtector);
 

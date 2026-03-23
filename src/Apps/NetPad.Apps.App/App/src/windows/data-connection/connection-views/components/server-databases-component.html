@@ -1,0 +1,44 @@
+<div class="input-row">
+    <div class="label-column">
+        <label class="col-form-label">Databases</label>
+    </div>
+    <div class="input-column d-flex flex-column">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <button class="btn btn-sm btn-secondary"
+                    click.trigger="loadDatabases()"
+                    disabled.bind="loadingDatabases">
+                <i class="database-icon me-1"></i>
+                <span>${loadingDatabases ? 'Loading...' : 'Load Databases'}</span>
+                <span if.bind="loadingDatabases"
+                      class="spinner-border spinner-border-sm"
+                      title="Loading databases..."></span>
+            </button>
+            <small if.bind="databasesOnServer && databasesOnServer.length" class="text-muted ms-2">
+                Selected ${connection.selectedDatabaseNames.length} of ${databasesOnServer.length}
+            </small>
+            <button if.bind="databasesOnServer && databasesOnServer.length"
+               class="btn btn-sm btn-link" click.trigger="selectAll()">Select All</button>
+            <button if.bind="databasesOnServer && databasesOnServer.length"
+               class="btn btn-sm btn-link" click.trigger="clearSelection()">Clear</button>
+        </div>
+
+        <div if.bind="databasesOnServer && databasesOnServer.length">
+            <div class="database-selection-list" style="max-height: 200px; overflow-y: auto;">
+                <div class="form-check" repeat.for="dbName of databasesOnServer">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="db-${$index}"
+                           checked.bind="connection.selectedDatabaseNames?.includes(dbName)"
+                           change.trigger="toggleDatabase(dbName)">
+                    <label class="form-check-label" for="db-${$index}">
+                        ${dbName}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div if.bind="databasesOnServer && !databasesOnServer.length" class="text-muted">
+            No databases found on server.
+        </div>
+    </div>
+</div>

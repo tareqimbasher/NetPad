@@ -1,4 +1,5 @@
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
@@ -26,7 +27,7 @@ public class PostgreSqlDatabaseConnectionTests() : CommonTests(DataConnectionTyp
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
 
-        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+        var connectionString = connection.GetConnectionString(new NoOpDataConnectionPasswordProtector());
 
         Assert.Equal(expected, connectionString);
     }
@@ -36,7 +37,7 @@ public class PostgreSqlDatabaseConnectionTests() : CommonTests(DataConnectionTyp
         ["host", "port", "db name", "user id", "password", null, "Host=host:port;Database=db name;UserId=user id;Password=password;"],
         [null, "port", "db name", "user id", "password", null, "Host=:port;Database=db name;UserId=user id;Password=password;"],
         ["host", null, "db name", "user id", "password", null, "Host=host;Database=db name;UserId=user id;Password=password;"],
-        ["host", "port", null, "user id", "password", null, "Host=host:port;Database=;UserId=user id;Password=password;"],
+        ["host", "port", null, "user id", "password", null, "Host=host:port;UserId=user id;Password=password;"],
         ["host", "port", "db name", null, "password", null, "Host=host:port;Database=db name;Password=password;"],
         ["host", "port", "db name", "user id", null, null, "Host=host:port;Database=db name;UserId=user id;"],
         ["host", "port", "db name", null, null, null, "Host=host:port;Database=db name;"],

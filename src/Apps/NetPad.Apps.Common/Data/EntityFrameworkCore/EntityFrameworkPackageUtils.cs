@@ -1,4 +1,9 @@
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.Oracle;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
 

@@ -1,4 +1,5 @@
 ﻿using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;
@@ -26,7 +27,7 @@ public class MsSqlServerDatabaseConnectionTests() : CommonTests(DataConnectionTy
         connection.Password = password;
         connection.ConnectionStringAugment = connectionStringAugment;
 
-        var connectionString = connection.GetConnectionString(new NullDataConnectionPasswordProtector());
+        var connectionString = connection.GetConnectionString(new NoOpDataConnectionPasswordProtector());
 
         Assert.Equal(expected, connectionString);
     }
@@ -36,7 +37,7 @@ public class MsSqlServerDatabaseConnectionTests() : CommonTests(DataConnectionTy
         ["host", "port", "db name", "user id", "password", null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;Password=password;"],
         [null, "port", "db name", "user id", "password", null, "Data Source=,port;Initial Catalog=db name;User Id=user id;Password=password;"],
         ["host", null, "db name", "user id", "password", null, "Data Source=host;Initial Catalog=db name;User Id=user id;Password=password;"],
-        ["host", "port", null, "user id", "password", null, "Data Source=host,port;Initial Catalog=;User Id=user id;Password=password;"],
+        ["host", "port", null, "user id", "password", null, "Data Source=host,port;User Id=user id;Password=password;"],
         ["host", "port", "db name", null, "password", null, "Data Source=host,port;Initial Catalog=db name;Password=password;"],
         ["host", "port", "db name", "user id", null, null, "Data Source=host,port;Initial Catalog=db name;User Id=user id;"],
         ["host", "port", "db name", null, null, null, "Data Source=host,port;Initial Catalog=db name;"],

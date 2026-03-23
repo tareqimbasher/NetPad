@@ -84,7 +84,7 @@ public partial class DotNetCSharpProjectTests : IAsyncLifetime
         var proj = NewProject();
         await proj.CreateAsync(DotNetFrameworkVersion.DotNet8, ProjectOutputType.Library);
 
-        await proj.DeleteAsync();
+        proj.Delete();
 
         Assert.False(Directory.Exists(_projectDir));
     }

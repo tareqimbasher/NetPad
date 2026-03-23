@@ -34,7 +34,7 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
         await ipcService.SendAsync(command);
     }
 
-    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false, bool isServer = false)
     {
         if (copy && dataConnectionId == null)
         {
@@ -53,6 +53,11 @@ public class WebWindowService(IIpcService ipcService) : IUiWindowService
         if (copy)
         {
             command.Metadata.Add("copy", "true");
+        }
+
+        if (isServer)
+        {
+            command.Metadata.Add("is-server", "true");
         }
 
         await ipcService.SendAsync(command);

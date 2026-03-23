@@ -127,7 +127,7 @@ public class ElectronWindowService(
         await ShowModalWindowAsync(window, 0.75, 0.8);
     }
 
-    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false)
+    public async Task OpenDataConnectionWindowAsync(Guid? dataConnectionId, bool copy = false, bool isServer = false)
     {
         if (copy && dataConnectionId == null)
         {
@@ -151,9 +151,14 @@ public class ElectronWindowService(
             queryParams.Add(("copy", "true"));
         }
 
+        if (isServer)
+        {
+            queryParams.Add(("is-server", "true"));
+        }
+
         var window = await windowManager.CreateWindowAsync(WindowIds.DataConnection, true, new BrowserWindowOptions
         {
-            Title = (dataConnectionId.HasValue ? "Edit" : "New") + "Connection",
+            Title = (dataConnectionId.HasValue ? "Edit" : "New") + (isServer ? " Server" : " Connection"),
             AutoHideMenuBar = true,
             MinWidth = 550,
             MinHeight = 630,

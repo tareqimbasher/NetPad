@@ -50,6 +50,11 @@ data-connections-list {
         max-width: 50%;
     }
 
+    .server-connections {
+        padding-left: 0.5rem;
+    }
+
+    .database-server:hover,
     .data-connection:hover,
     .display-text:hover {
         background: var(--hover-color);
