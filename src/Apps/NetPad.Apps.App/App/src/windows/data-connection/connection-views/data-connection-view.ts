@@ -1,13 +1,18 @@
 import {Constructable} from "aurelia";
 import {
     DatabaseConnection,
+    DatabaseServerConnection,
     DataConnection,
+    MariaDbDatabaseServerConnection,
     MsSqlServerDatabaseConnection,
-    PostgreSqlDatabaseConnection,
-    SQLiteDatabaseConnection,
+    MsSqlServerDatabaseServerConnection,
     MySqlDatabaseConnection,
+    MySqlDatabaseServerConnection,
+    OracleDatabaseConnection,
+    PostgreSqlDatabaseConnection,
+    PostgreSqlDatabaseServerConnection,
+    SQLiteDatabaseConnection,
     MariaDbDatabaseConnection,
-    OracleDatabaseConnection
 } from "@application";
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
@@ -44,7 +49,7 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
         connection.id ||= Util.newGuid();
         connection.name ??= "@localhost";
 
-        if (connection instanceof DatabaseConnection) {
+        if (connection instanceof DatabaseConnection || connection instanceof DatabaseServerConnection) {
             connection.host ||= "localhost";
         }
 
@@ -54,15 +59,15 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
     private createEmptyConnection(ctor: Constructable<TDataConnection>): TDataConnection {
         const connection = new ctor();
 
-        if (ctor.name === MsSqlServerDatabaseConnection.name) {
+        if (ctor.name === MsSqlServerDatabaseConnection.name || ctor.name === MsSqlServerDatabaseServerConnection.name) {
             connection.type = "MSSQLServer";
-        } else if (ctor.name === PostgreSqlDatabaseConnection.name) {
+        } else if (ctor.name === PostgreSqlDatabaseConnection.name || ctor.name === PostgreSqlDatabaseServerConnection.name) {
             connection.type = "PostgreSQL";
         } else if (ctor.name === SQLiteDatabaseConnection.name) {
             connection.type = "SQLite";
-        } else if (ctor.name === MySqlDatabaseConnection.name) {
+        } else if (ctor.name === MySqlDatabaseConnection.name || ctor.name === MySqlDatabaseServerConnection.name) {
             connection.type = "MySQL";
-        } else if (ctor.name === MariaDbDatabaseConnection.name) {
+        } else if (ctor.name === MariaDbDatabaseConnection.name || ctor.name === MariaDbDatabaseServerConnection.name) {
             connection.type = "MariaDB";
         } else if (ctor.name === OracleDatabaseConnection.name) {
             connection.type = "Oracle";

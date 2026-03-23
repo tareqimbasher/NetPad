@@ -16,7 +16,7 @@ public abstract class DatabaseConnection(Guid id, string name, DataConnectionTyp
     private bool _containsProductionData;
     private string? _connectionStringAugment;
 
-    public Guid? ServerId { get; private set; }
+    [JsonInclude] public Guid? ServerId { get; private set; }
 
     [JsonIgnore] public DatabaseServerConnection? Server { get; private set; }
 

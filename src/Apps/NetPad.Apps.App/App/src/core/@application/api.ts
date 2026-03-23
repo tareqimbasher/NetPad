@@ -519,7 +519,7 @@ export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
 
 export interface IDataConnectionsApiClient {
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, isServer: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     getAll(signal?: AbortSignal | undefined): Promise<Response>;
 
@@ -547,10 +547,6 @@ export interface IDataConnectionsApiClient {
 
     saveServer(server: DatabaseServerConnection, signal?: AbortSignal | undefined): Promise<void>;
 
-    testServer(server: DatabaseServerConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
-
-    getServerDatabases(server: DatabaseServerConnection, signal?: AbortSignal | undefined): Promise<string[]>;
-
     getDatabaseStructure(id: string, signal?: AbortSignal | undefined): Promise<DatabaseStructure>;
 
     scaffoldToProject(id: string, projectDirectoryPath: string | undefined, frameworkVersion: DotNetFrameworkVersion | undefined, signal?: AbortSignal | undefined): Promise<FileResponse | null>;
@@ -567,7 +563,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         this.baseUrl = baseUrl ?? "";
     }
 
-    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, signal?: AbortSignal): Promise<void> {
+    openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, isServer: boolean | undefined, signal?: AbortSignal): Promise<void> {
         let url_ = this.baseUrl + "/data-connections/open?";
         if (dataConnectionId !== undefined && dataConnectionId !== null)
             url_ += "dataConnectionId=" + encodeURIComponent("" + dataConnectionId) + "&";
@@ -575,6 +571,10 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             throw new Error("The parameter 'copy' cannot be null.");
         else if (copy !== undefined)
             url_ += "copy=" + encodeURIComponent("" + copy) + "&";
+        if (isServer === null)
+            throw new Error("The parameter 'isServer' cannot be null.");
+        else if (isServer !== undefined)
+            url_ += "isServer=" + encodeURIComponent("" + isServer) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
@@ -1092,91 +1092,6 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             });
         }
         return Promise.resolve<void>(null as any);
-    }
-
-    testServer(server: DatabaseServerConnection, signal?: AbortSignal): Promise<DataConnectionTestResult> {
-        let url_ = this.baseUrl + "/data-connections/servers/test";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(server);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PATCH",
-            signal,
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processTestServer(_response);
-        });
-    }
-
-    protected processTestServer(response: Response): Promise<DataConnectionTestResult> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = DataConnectionTestResult.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<DataConnectionTestResult>(null as any);
-    }
-
-    getServerDatabases(server: DatabaseServerConnection, signal?: AbortSignal): Promise<string[]> {
-        let url_ = this.baseUrl + "/data-connections/servers/databases";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(server);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PATCH",
-            signal,
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        };
-
-        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processGetServerDatabases(_response);
-        });
-    }
-
-    protected processGetServerDatabases(response: Response): Promise<string[]> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(item);
-            }
-            else {
-                result200 = <any>null;
-            }
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<string[]>(null as any);
     }
 
     getDatabaseStructure(id: string, signal?: AbortSignal): Promise<DatabaseStructure> {
@@ -4324,9 +4239,6 @@ export abstract class DataConnection implements IDataConnection {
 
     static fromJS(data: any): DataConnection {
         data = typeof data === 'object' ? data : {};
-        if (data["discriminator"] === "DatabaseServerConnection") {
-            throw new Error("The abstract class 'DatabaseServerConnection' cannot be instantiated.");
-        }
         if (data["discriminator"] === "DatabaseConnection") {
             throw new Error("The abstract class 'DatabaseConnection' cannot be instantiated.");
         }
@@ -4338,21 +4250,8 @@ export abstract class DataConnection implements IDataConnection {
             result.init(data);
             return result;
         }
-        if (data["discriminator"] === "EntityFrameworkDatabaseServerConnection") {
-            throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
-        }
-        if (data["discriminator"] === "MsSqlServerDatabaseServerConnection") {
-            let result = new MsSqlServerDatabaseServerConnection();
-            result.init(data);
-            return result;
-        }
         if (data["discriminator"] === "PostgreSqlDatabaseConnection") {
             let result = new PostgreSqlDatabaseConnection();
-            result.init(data);
-            return result;
-        }
-        if (data["discriminator"] === "PostgreSqlDatabaseServerConnection") {
-            let result = new PostgreSqlDatabaseServerConnection();
             result.init(data);
             return result;
         }
@@ -4366,23 +4265,39 @@ export abstract class DataConnection implements IDataConnection {
             result.init(data);
             return result;
         }
-        if (data["discriminator"] === "MySqlDatabaseServerConnection") {
-            let result = new MySqlDatabaseServerConnection();
-            result.init(data);
-            return result;
-        }
         if (data["discriminator"] === "MariaDbDatabaseConnection") {
             let result = new MariaDbDatabaseConnection();
             result.init(data);
             return result;
         }
-        if (data["discriminator"] === "MariaDbDatabaseServerConnection") {
-            let result = new MariaDbDatabaseServerConnection();
+        if (data["discriminator"] === "OracleDatabaseConnection") {
+            let result = new OracleDatabaseConnection();
             result.init(data);
             return result;
         }
-        if (data["discriminator"] === "OracleDatabaseConnection") {
-            let result = new OracleDatabaseConnection();
+        if (data["discriminator"] === "DatabaseServerConnection") {
+            throw new Error("The abstract class 'DatabaseServerConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "EntityFrameworkDatabaseServerConnection") {
+            throw new Error("The abstract class 'EntityFrameworkDatabaseServerConnection' cannot be instantiated.");
+        }
+        if (data["discriminator"] === "MsSqlServerDatabaseServerConnection") {
+            let result = new MsSqlServerDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "PostgreSqlDatabaseServerConnection") {
+            let result = new PostgreSqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MySqlDatabaseServerConnection") {
+            let result = new MySqlDatabaseServerConnection();
+            result.init(data);
+            return result;
+        }
+        if (data["discriminator"] === "MariaDbDatabaseServerConnection") {
+            let result = new MariaDbDatabaseServerConnection();
             result.init(data);
             return result;
         }
@@ -4430,6 +4345,8 @@ For example, if this value is Timeout=300:
     connectionStringAugment?: string | undefined;
     /** The databases hosted on this server that the user has selected to include. */
     selectedDatabaseNames!: string[];
+
+    protected _discriminator: string;
 
     constructor(data?: IDatabaseServerConnection) {
         super(data);
@@ -4486,6 +4403,7 @@ For example, if this value is Timeout=300:
 
     override toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["discriminator"] = this._discriminator;
         data["host"] = this.host;
         data["port"] = this.port;
         data["userId"] = this.userId;

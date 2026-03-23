@@ -1,9 +1,9 @@
 import {bindable} from "aurelia";
 import {observable} from "@aurelia/runtime";
-import {EntityFrameworkDatabaseConnection, ScaffoldOptions} from "@application";
+import {EntityFrameworkDatabaseConnection, EntityFrameworkDatabaseServerConnection, ScaffoldOptions} from "@application";
 
 export class ScaffoldingOptions {
-    @bindable public connection?: EntityFrameworkDatabaseConnection;
+    @bindable public connection?: EntityFrameworkDatabaseConnection | EntityFrameworkDatabaseServerConnection;
     @observable public schemas: string | undefined;
     @observable public tables: string | undefined;
 
@@ -11,7 +11,7 @@ export class ScaffoldingOptions {
         this.connectionChanged(this.connection);
     }
 
-    private connectionChanged(newValue: EntityFrameworkDatabaseConnection | undefined) {
+    private connectionChanged(newValue: EntityFrameworkDatabaseConnection | EntityFrameworkDatabaseServerConnection | undefined) {
         this.schemas = newValue?.scaffoldOptions?.schemas?.join("\n") ?? "";
         this.tables = newValue?.scaffoldOptions?.tables?.join("\n") ?? "";
     }

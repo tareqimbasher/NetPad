@@ -24,6 +24,17 @@ public class DeleteDataConnectionCommand(Guid id) : Command
 
             await dataConnectionRepository.DeleteAsync(connection.Id);
 
+            // If server-attached, remove the database from the server's selected databases
+            if (connection is DatabaseConnection { ServerId: { } serverId, DatabaseName: { } databaseName })
+            {
+                var server = await dataConnectionRepository.GetServerAsync(serverId);
+                if (server != null && server.SelectedDatabaseNames.Remove(databaseName))
+                {
+                    await dataConnectionRepository.SaveServerAsync(server);
+                    await eventBus.PublishAsync(new DatabaseServerSavedEvent(server));
+                }
+            }
+
             await dataConnectionResourcesCache.RemoveCachedResourcesAsync(connection.Id);
 
             await eventBus.PublishAsync(new DataConnectionDeletedEvent(connection));

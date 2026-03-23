@@ -25,9 +25,10 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     public async Task OpenDataConnectionWindow(
         [FromServices] IUiWindowService uiWindowService,
         [FromQuery] Guid? dataConnectionId = null,
-        [FromQuery] bool copy = false)
+        [FromQuery] bool copy = false,
+        [FromQuery] bool isServer = false)
     {
-        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy);
+        await uiWindowService.OpenDataConnectionWindowAsync(dataConnectionId, copy, isServer);
     }
 
     [HttpGet]
@@ -75,9 +76,12 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpPost("connection-string")]
     public string GetConnectionString([FromBody] DataConnection dataConnection)
     {
-        return dataConnection is not DatabaseConnection dbConnection
-            ? string.Empty
-            : dbConnection.GetConnectionString(new FakeDataConnectionPasswordProtector());
+        if (dataConnection is DatabaseServerConnection serverConnection)
+            return serverConnection.GetConnectionString(new FakeDataConnectionPasswordProtector());
+
+        return dataConnection is DatabaseConnection dbConnection
+            ? dbConnection.GetConnectionString(new FakeDataConnectionPasswordProtector())
+            : string.Empty;
     }
 
     [HttpPatch("test")]
@@ -97,6 +101,9 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
         [FromBody] DataConnection dataConnection,
         [FromServices] IDataConnectionPasswordProtector passwordProtector)
     {
+        if (dataConnection is DatabaseServerConnection serverConnection)
+            return await serverConnection.GetDatabasesAsync(passwordProtector);
+
         if (dataConnection is not EntityFrameworkDatabaseConnection dbConnection)
         {
             throw new InvalidOperationException(
@@ -130,18 +137,6 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     [HttpDelete("servers/{id:guid}")]
     public async Task DeleteServer(Guid id) =>
         await mediator.Send(new DeleteDatabaseServerCommand(id));
-
-    [HttpPatch("servers/test")]
-    public async Task<DataConnectionTestResult> TestServer(
-        [FromBody] DatabaseServerConnection server,
-        [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
-        await server.TestConnectionAsync(passwordProtector);
-
-    [HttpPatch("servers/databases")]
-    public async Task<IEnumerable<string>> GetServerDatabases(
-        [FromBody] DatabaseServerConnection server,
-        [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
-        await server.GetDatabasesAsync(passwordProtector);
 
     [HttpPatch("{id:guid}/database-structure")]
     public async Task<DatabaseStructure> GetDatabaseStructure(Guid id)

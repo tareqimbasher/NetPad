@@ -1,4 +1,7 @@
 import {
+    DatabaseServerConnection,
+    DatabaseServerDeletedEvent,
+    DatabaseServerSavedEvent,
     DataConnection,
     DataConnectionDeletedEvent,
     DataConnectionSavedEvent,
@@ -11,6 +14,7 @@ export class DataConnectionStore {
     private readonly logger: ILogger;
 
     public connections: DataConnection[] = [];
+    public servers: DatabaseServerConnection[] = [];
 
     constructor(
         @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
@@ -22,7 +26,9 @@ export class DataConnectionStore {
 
     public async initialize() {
         try {
-            this.connections = await this.dataConnectionService.getAll();
+            const response = await this.dataConnectionService.getAll();
+            this.connections = response.connections;
+            this.servers = response.servers;
         } catch (ex) {
             this.logger.error("Error loading data connections", ex);
         }
@@ -44,6 +50,23 @@ export class DataConnectionStore {
             const ix = this.connections.findIndex(c => c.id === msg.dataConnection.id);
             if (ix >= 0)
                 this.connections.splice(ix, 1);
+        });
+
+        this.eventBus.subscribeToServer(DatabaseServerSavedEvent, msg => {
+            const ix = this.servers.findIndex(s => s.id === msg.server.id);
+            const server = DatabaseServerConnection.fromJS(msg.server);
+
+            if (ix >= 0) {
+                this.servers[ix].init(server);
+            } else {
+                this.servers.push(server);
+            }
+        });
+
+        this.eventBus.subscribeToServer(DatabaseServerDeletedEvent, msg => {
+            const ix = this.servers.findIndex(s => s.id === msg.server.id);
+            if (ix >= 0)
+                this.servers.splice(ix, 1);
         });
     }
 }

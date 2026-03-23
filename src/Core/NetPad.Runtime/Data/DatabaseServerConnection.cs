@@ -1,10 +1,16 @@
+using System.Runtime.Serialization;
 using NetPad.Data.Security;
+using Newtonsoft.Json;
+using NJsonSchema.Converters;
 
 namespace NetPad.Data;
 
 /// <summary>
 /// A connection to a database server.
 /// </summary>
+[JsonConverter(typeof(JsonInheritanceConverter<DatabaseServerConnection>), "discriminator")]
+[System.Text.Json.Serialization.JsonConverter(typeof(Common.JsonInheritanceConverter<DatabaseServerConnection>))]
+[KnownType("GetKnownTypes")]
 public abstract class DatabaseServerConnection(Guid id, string name, DataConnectionType type)
     : DataConnection(id, name, type), IDatabaseConnection
 {
@@ -36,4 +42,29 @@ public abstract class DatabaseServerConnection(Guid id, string name, DataConnect
     public abstract string GetConnectionString(IDataConnectionPasswordProtector passwordProtector);
 
     public abstract Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
+
+    private static Type[] GetKnownTypes()
+    {
+        var serverConnectionType = typeof(DatabaseServerConnection);
+
+        return AppDomain.CurrentDomain.GetAssemblies()
+        .Where(x => x.GetName().FullName.Contains("NetPad"))
+        .SelectMany(x => x.GetExportedTypes())
+        .Where(t => t is { IsClass: true, IsAbstract: false } && serverConnectionType.IsAssignableFrom(t))
+        .ToArray();
+    }
+
+    private static class ServerConnectionKnownTypes
+    {
+        public static readonly Lazy<Type[]> KnownTypes = new(() =>
+        {
+            var serverConnectionType = typeof(DatabaseServerConnection);
+
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Where(x => x.GetName().FullName.Contains("NetPad"))
+                .SelectMany(x => x.GetExportedTypes())
+                .Where(t => t is { IsClass: true, IsAbstract: false } && serverConnectionType.IsAssignableFrom(t))
+                .ToArray();
+        });
+    }
 }

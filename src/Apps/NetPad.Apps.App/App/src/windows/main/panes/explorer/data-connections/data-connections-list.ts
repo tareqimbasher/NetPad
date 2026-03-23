@@ -3,6 +3,7 @@ import {watch} from "@aurelia/runtime-html";
 import {
     ContextMenuOptions,
     CreateScriptDto,
+    DatabaseConnection,
     DataConnectionResourcesUpdatedEvent,
     DataConnectionResourcesUpdateFailedEvent,
     DataConnectionResourcesUpdatingEvent,
@@ -16,13 +17,17 @@ import {
     ViewModelBase
 } from "@application";
 import {DataConnectionViewModel} from "./data-connection-view-model";
+import {DatabaseServerViewModel} from "./database-server-view-model";
 import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {ScaffoldToProjectDialog} from "./scaffold-to-project/scaffold-to-project-dialog";
 
 export class DataConnectionsList extends ViewModelBase {
     public dataConnectionViewModels: DataConnectionViewModel[] = [];
+    public serverViewModels: DatabaseServerViewModel[] = [];
+    public standaloneConnectionViewModels: DataConnectionViewModel[] = [];
     public dataConnectionContextOptions: ContextMenuOptions;
+    public serverContextOptions: ContextMenuOptions;
     public tableContextOptions: ContextMenuOptions;
 
     constructor(
@@ -38,7 +43,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public binding() {
-        this.dataConnectionContextOptions = new ContextMenuOptions("data-connection-name", [
+        this.dataConnectionContextOptions = new ContextMenuOptions("data-connection-name:not(.server-name)", [
             {
                 icon: "use-data-connection-current-script-icon",
                 text: "Use in Current Script",
@@ -92,6 +97,30 @@ export class DataConnectionsList extends ViewModelBase {
                 icon: "properties-icon",
                 text: "Properties",
                 onSelected: async (target) => this.editConnection(this.getElementOrParentDataConnectionId(target))
+            }
+        ]);
+
+        this.serverContextOptions = new ContextMenuOptions("data-connection-name.server-name", [
+            {
+                icon: "refresh-icon",
+                text: "Refresh All",
+                onSelected: async (target) => this.refreshServerConnections(this.getElementOrParentServerConnectionId(target))
+            },
+            {
+                isDivider: true
+            },
+            {
+                icon: "delete-icon",
+                text: "Delete Server",
+                onSelected: async (target) => this.deleteServer(this.getElementOrParentServerConnectionId(target))
+            },
+            {
+                isDivider: true
+            },
+            {
+                icon: "properties-icon",
+                text: "Properties",
+                onSelected: async (target) => this.editServer(this.getElementOrParentServerConnectionId(target))
             }
         ]);
 
@@ -201,26 +230,57 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public async attached() {
-        this.constructDataConnectionViewModels();
+        this.constructViewModels();
     }
 
     public async addConnection() {
-        await this.dataConnectionService.openDataConnectionWindow(null, false);
+        await this.dataConnectionService.openDataConnectionWindow(null, false, false);
+    }
+
+    public async addServer() {
+        await this.dataConnectionService.openDataConnectionWindow(null, false, true);
+    }
+
+    public async editServer(serverId: string) {
+        await this.dataConnectionService.openDataConnectionWindow(serverId, false, true);
+    }
+
+    public async deleteServer(serverId: string) {
+        const serverVm = this.serverViewModels.find(v => v.server.id === serverId);
+        if (!serverVm) return;
+
+        const confirmation = await this.dialogUtil.ask({message: `Are you sure you want to delete server "${serverVm.server.name}"?`});
+
+        if (confirmation.value === "OK") {
+            await this.dataConnectionService.deleteServer(serverId);
+        }
+    }
+
+    public async refreshServerConnections(serverId: string) {
+        const serverVm = this.serverViewModels.find(v => v.server.id === serverId);
+        if (serverVm) {
+            await serverVm.refresh();
+        }
     }
 
     public async editConnection(connectionId: string) {
-        await this.dataConnectionService.openDataConnectionWindow(connectionId, false);
+        await this.dataConnectionService.openDataConnectionWindow(connectionId, false, false);
     }
 
     public async copyConnection(connectionId: string) {
-        await this.dataConnectionService.openDataConnectionWindow(connectionId, true);
+        await this.dataConnectionService.openDataConnectionWindow(connectionId, true, false);
     }
 
     public async delete(connectionId: string) {
         const connection = this.dataConnectionViewModels.find(v => v.connection.id === connectionId);
         if (!connection) return;
 
-        if (confirm(`Are you sure you want to delete "${connection.connection.name}"?`)) {
+        const confirmation = await this.dialogUtil.ask(
+            {
+                message: `Are you sure you want to delete "${connection.connection.name}"? This only deletes the connection.`
+            });
+
+        if (confirmation.value === "OK") {
             await this.dataConnectionService.delete(connectionId);
         }
     }
@@ -248,19 +308,66 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     @watch<DataConnectionsList>(vm => vm.dataConnectionStore.connections.length)
-    private constructDataConnectionViewModels() {
+    @watch<DataConnectionsList>(vm => vm.dataConnectionStore.servers.length)
+    private constructViewModels() {
+        // Build all connection VMs
         this.dataConnectionViewModels = this.dataConnectionStore.connections
             .sort((a, b) => a.name.localeCompare(b.name))
             .map(c => new DataConnectionViewModel(c, this.dataConnectionService));
+
+        // Build server VMs
+        const serverIds = new Set(this.dataConnectionStore.servers.map(s => s.id));
+        this.serverViewModels = this.dataConnectionStore.servers
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(s => new DatabaseServerViewModel(s));
+
+        // Group connections by serverId
+        const serverVmMap = new Map(this.serverViewModels.map(vm => [vm.server.id, vm]));
+        const standalone: DataConnectionViewModel[] = [];
+
+        for (const connVm of this.dataConnectionViewModels) {
+            const dbConn = connVm.connection as DatabaseConnection;
+            const serverId = dbConn.serverId;
+
+            if (serverId && serverVmMap.has(serverId)) {
+                serverVmMap.get(serverId)!.connections.push(connVm);
+            } else {
+                standalone.push(connVm);
+            }
+        }
+
+        this.standaloneConnectionViewModels = standalone;
     }
 
-    private async copyErrorToClipboard(vm: DataConnectionViewModel) {
+    public async copyErrorToClipboard(vm: DataConnectionViewModel) {
         if (!vm.error) {
             return;
         }
 
         await navigator.clipboard.writeText(vm.error);
         vm.error = null;
+    }
+
+    private getElementOrParentServerConnectionId(element: Element) {
+        let id: string | null;
+        let el: Element | null = element;
+
+        do {
+            id = el.getAttribute("data-server-id");
+
+            if (id) {
+                break;
+            }
+
+            el = el.parentElement == this.element.parentElement ? null : el.parentElement;
+        } while (!id && !!el);
+
+        if (!id) {
+            this.logger.error("Could not get server connection ID from element", element);
+            throw new Error("Could not get server connection ID from element");
+        }
+
+        return id;
     }
 
     private getElementOrParentDataConnectionId(element: Element) {
@@ -324,7 +431,7 @@ export class DataConnectionsList extends ViewModelBase {
         };
     }
 
-    private connectionDragged(event: DragEvent) {
+    public connectionDragged(event: DragEvent) {
         const connectionId = (event.target as HTMLElement).getAttribute("data-connection-id");
 
         if (!connectionId) return false;
