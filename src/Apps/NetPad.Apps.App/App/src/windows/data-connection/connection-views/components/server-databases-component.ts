@@ -41,8 +41,13 @@ export class ServerDatabasesComponent implements IDataConnectionViewComponent {
         }
     }
 
-    public isDatabaseSelected(dbName: string): boolean {
-        return this.connection.selectedDatabaseNames?.includes(dbName) ?? false;
+    public selectAll() {
+        if (!this.databasesOnServer) return;
+        this.connection.selectedDatabaseNames = [...this.databasesOnServer];
+    }
+
+    public clearSelection() {
+        this.connection.selectedDatabaseNames = [];
     }
 
     public toggleDatabase(dbName: string) {

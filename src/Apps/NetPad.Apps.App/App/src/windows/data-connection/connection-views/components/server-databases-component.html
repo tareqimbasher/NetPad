@@ -12,17 +12,25 @@
                   title="Loading databases..."></span>
         </button>
 
-        <div if.bind="databasesOnServer && databasesOnServer.length" class="database-selection-list"
-             style="max-height: 200px; overflow-y: auto;">
-            <div class="form-check" repeat.for="dbName of databasesOnServer">
-                <input class="form-check-input"
-                       type="checkbox"
-                       id="db-${$index}"
-                       checked.bind="isDatabaseSelected(dbName)"
-                       change.trigger="toggleDatabase(dbName)">
-                <label class="form-check-label" for="db-${$index}">
-                    ${dbName}
-                </label>
+        <div if.bind="databasesOnServer && databasesOnServer.length">
+            <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">${connection.selectedDatabaseNames.length} of ${databasesOnServer.length} selected</small>
+                <div class="d-flex gap-2">
+                    <a href="javascript:void(0)" class="small" click.trigger="selectAll()">Select All</a>
+                    <a href="javascript:void(0)" class="small" click.trigger="clearSelection()">Clear</a>
+                </div>
+            </div>
+            <div class="database-selection-list" style="max-height: 200px; overflow-y: auto;">
+                <div class="form-check" repeat.for="dbName of databasesOnServer">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           id="db-${$index}"
+                           checked.bind="connection.selectedDatabaseNames?.includes(dbName)"
+                           change.trigger="toggleDatabase(dbName)">
+                    <label class="form-check-label" for="db-${$index}">
+                        ${dbName}
+                    </label>
+                </div>
             </div>
         </div>
 
