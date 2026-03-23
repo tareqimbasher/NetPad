@@ -2,27 +2,27 @@ import {IDataConnectionViewComponent} from "./idata-connection-view-component";
 import {DatabaseConnection} from "@application";
 import {CommonServices} from "../common-services";
 
-export interface IDatabaseComponentOptions {
+export interface IConnectionDatabaseComponentOptions {
     allowSelectDatabaseFile: boolean;
 }
 
 /**
  * Options to control if and when database names are loaded from server.
  */
-export interface IDatabaseLoadingOptions {
+export interface IConnectionDatabaseLoadingOptions {
     enabled: boolean;
     requirementsToLoadAreMet: () => boolean;
 }
 
-export class DatabaseComponent implements IDataConnectionViewComponent {
+export class ConnectionDatabaseComponent implements IDataConnectionViewComponent {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
 
     constructor(
         private readonly connection: DatabaseConnection,
         private readonly commonServices: CommonServices,
-        private readonly options?: IDatabaseComponentOptions,
-        private readonly dbLoadingOptions?: IDatabaseLoadingOptions) {
+        private readonly options?: IConnectionDatabaseComponentOptions,
+        private readonly dbLoadingOptions?: IConnectionDatabaseLoadingOptions) {
 
         if (!options) this.options = {allowSelectDatabaseFile: false};
     }

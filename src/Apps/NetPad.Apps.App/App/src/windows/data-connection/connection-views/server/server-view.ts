@@ -2,20 +2,20 @@ import {Constructable} from "aurelia";
 import {DatabaseServerConnection, DataConnection, MsSqlServerDatabaseServerConnection} from "@application";
 import {HostAndPortComponent} from "../components/host-and-port-component";
 import {AuthComponent} from "../components/auth-component";
-import {DatabaseSelectionComponent} from "../components/database-selection-component";
+import {ServerDatabasesComponent} from "../components/server-databases-component";
 import {DataConnectionView} from "../data-connection-view";
 import {CommonServices} from "../common-services";
 import {hasTrustServerCertificate, setConnectionStringKey} from "../connection-string-util";
 
 export class ServerView extends DataConnectionView<DatabaseServerConnection> {
-    public databaseSelectionComponent: DatabaseSelectionComponent;
+    public serverDatabasesComponent: ServerDatabasesComponent;
 
     constructor(ctor: Constructable<DatabaseServerConnection>, connection: DataConnection | undefined, commonServices: CommonServices) {
         super(ctor, connection);
 
         const hostAndPort = new HostAndPortComponent(this.connection);
         const auth = new AuthComponent(this.connection, commonServices);
-        this.databaseSelectionComponent = new DatabaseSelectionComponent(
+        this.serverDatabasesComponent = new ServerDatabasesComponent(
             this.connection,
             commonServices,
             {
@@ -25,7 +25,7 @@ export class ServerView extends DataConnectionView<DatabaseServerConnection> {
         this.components = [
             hostAndPort,
             auth,
-            this.databaseSelectionComponent,
+            this.serverDatabasesComponent,
         ];
     }
 

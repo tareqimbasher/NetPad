@@ -2,24 +2,22 @@ import {IDataConnectionViewComponent} from "./idata-connection-view-component";
 import {DatabaseServerConnection} from "@application";
 import {CommonServices} from "../common-services";
 
-export interface IDatabaseSelectionLoadingOptions {
+export interface IServerDatabasesLoadingOptions {
     requirementsToLoadAreMet: () => boolean;
 }
 
-export class DatabaseSelectionComponent implements IDataConnectionViewComponent {
+export class ServerDatabasesComponent implements IDataConnectionViewComponent {
     public loadingDatabases = false;
     public databasesOnServer?: string[];
 
     constructor(
         private readonly connection: DatabaseServerConnection,
         private readonly commonServices: CommonServices,
-        private readonly loadingOptions: IDatabaseSelectionLoadingOptions) {
+        private readonly loadingOptions: IServerDatabasesLoadingOptions) {
     }
 
     public get validationError(): string | undefined {
-        return !this.connection.selectedDatabaseNames || this.connection.selectedDatabaseNames.length === 0
-            ? "At least one database must be selected."
-            : undefined;
+        return undefined;
     }
 
     public async loadDatabases() {

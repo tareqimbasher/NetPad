@@ -270,6 +270,11 @@ button > .icon-base {
     @extend .fa-file-excel;
 }
 
+.database-server-icon {
+    @extend %icon-base;
+    @extend .fa-server;
+}
+
 .database-icon {
     @extend %icon-base;
     @extend .fa-database;
@@ -534,11 +539,6 @@ button > .icon-base {
 .monaco-settings-icon {
     @extend %icon-base;
     @extend .fa-align-left;
-}
-
-.database-server-connection {
-    @extend %icon-base;
-    @extend .fa-server;
 }
 
 .add-data-connection-icon {

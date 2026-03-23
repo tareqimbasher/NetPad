@@ -99,27 +99,30 @@
     </div>
 </template>
 
-<h6>
-    <div class="d-flex justify-content-between align-items-center">
+<div>
+    <div class="d-flex justify-content-between align-items-center pe-3">
         <span class="ps-3 user-select-none text-semibold">Connections</span>
 
-        <span class="d-flex align-items-center pe-3">
-            <span class="add-data-connection-action-icon me-2"
+        <div class="d-flex align-items-center gap-1 small">
+            <span class="icon-button"
                   title="Add Server"
                   click.trigger="addServer()">
-                <i class="add-data-connection-icon icon-button"></i>
+                <i class="add-data-connection-icon"></i>
+                <i class="database-server-icon"></i>
             </span>
-            <span class="add-data-connection-action-icon"
-                  title="Add Data Connection"
+            <span class="icon-button"
+                  title="Add Database"
                   click.trigger="addConnection()">
-                <i class="add-data-connection-icon icon-button"></i>
+                <i class="add-data-connection-icon"></i>
+                <i class="database-icon"></i>
             </span>
-        </span>
+        </div>
     </div>
     <hr class="m-0 mt-2" style="height: 2px"/>
-</h6>
+</div>
 
-<div if.bind="!serverViewModels.length && !standaloneConnectionViewModels.length" class="flex-grow-1 d-flex align-items-center justify-content-center">
+<div if.bind="!serverViewModels.length && !standaloneConnectionViewModels.length"
+     class="flex-grow-1 d-flex align-items-center justify-content-center">
     <p class="text-muted user-select-none">
         No connections
     </p>
@@ -143,7 +146,7 @@
                                               class="flex-grow-1 server-name"
                                               data-server-id="${serverVm.server.id}"></data-connection-name>
                     </div>
-                    <i class="database-server-connection fa-sm ms-4 me-2" title="Database server"></i>
+                    <i class="database-server-icon fa-sm ms-4 me-2" title="Database server"></i>
                     <span class="badge bg-secondary rounded-pill ms-2"
                           title="${serverVm.connections.length} connection(s)">
                         ${serverVm.connections.length}
@@ -159,7 +162,8 @@
                     <div class="list-group-item d-flex flex-column"
                          repeat.for="connectionViewModel of serverVm.connections"
                          data-connection-id="${connectionViewModel.connection.id}">
-                        <connection-node connection-view-model.bind="connectionViewModel" vm.bind="listVm"></connection-node>
+                        <connection-node connection-view-model.bind="connectionViewModel"
+                                         vm.bind="listVm"></connection-node>
                     </div>
                 </div>
             </div>
