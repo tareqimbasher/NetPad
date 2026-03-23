@@ -37,7 +37,7 @@ public class MySqlDatabaseConnectionTests() : CommonTests(DataConnectionType.MyS
         ["localhost", "port", "db name", "user id", "password", null, "Server=localhost;Port=port;Database=db name;Uid=user id;Pwd=password;"],
         [null, "port", "db name", "user id", "password", null, "Server=;Port=port;Database=db name;Uid=user id;Pwd=password;"],
         ["localhost", null, "db name", "user id", "password", null, "Server=localhost;Database=db name;Uid=user id;Pwd=password;"],
-        ["localhost", "port", null, "user id", "password", null, "Server=localhost;Port=port;Database=;Uid=user id;Pwd=password;"],
+        ["localhost", "port", null, "user id", "password", null, "Server=localhost;Port=port;Uid=user id;Pwd=password;"],
         ["localhost", "port", "db name", null, "password", null, "Server=localhost;Port=port;Database=db name;Pwd=password;"],
         ["localhost", "port", "db name", "user id", null, null, "Server=localhost;Port=port;Database=db name;Uid=user id;"],
         ["localhost", "port", "db name", null, null, null, "Server=localhost;Port=port;Database=db name;"],
