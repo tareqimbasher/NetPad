@@ -470,13 +470,77 @@ public class NuGetPackageProvider(
                     nugetLogger,
                     cancellationToken);
 
-                packageDependencyTree.Dependencies.Add(depDependencyTree);
+                // If the minimum version couldn't be resolved (e.g., delisted or unavailable),
+                // try finding the best available version within the dependency's version range.
+                if (depDependencyTree.DependencyInfo == null)
+                {
+                    var alternativeVersion = await FindBestAvailableVersionAsync(
+                        dep.Id, dep.VersionRange, repositories,
+                        cacheContext, nugetLogger, cancellationToken);
+
+                    if (alternativeVersion != null)
+                    {
+                        depDependencyTree = await GetPackageDependencyTreeAsync(
+                            new NugetPackageIdentity(dep.Id, alternativeVersion),
+                            framework,
+                            repositories,
+                            hostDependencies,
+                            cacheContext,
+                            nugetLogger,
+                            cancellationToken);
+                    }
+                }
+
+                if (depDependencyTree.DependencyInfo != null)
+                {
+                    packageDependencyTree.Dependencies.Add(depDependencyTree);
+                }
+                else
+                {
+                    logger.LogWarning(
+                        "Could not resolve dependency {PackageId} {VersionRange}. It may be delisted or unavailable",
+                        dep.Id, dep.VersionRange);
+                }
             }
 
             break;
         }
 
         return packageDependencyTree;
+    }
+
+    private async Task<NuGetVersion?> FindBestAvailableVersionAsync(
+        string packageId,
+        VersionRange versionRange,
+        SourceRepository[] repositories,
+        SourceCacheContext cacheContext,
+        INugetLogger nugetLogger,
+        CancellationToken cancellationToken)
+    {
+        foreach (var repository in repositories)
+        {
+            try
+            {
+                var resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
+                var allVersions = await resource.GetAllVersionsAsync(
+                    packageId, cacheContext, nugetLogger, cancellationToken);
+
+                var bestVersion = allVersions
+                    .Where(v => versionRange.Satisfies(v))
+                    .MaxBy(v => v);
+
+                if (bestVersion != null)
+                {
+                    return bestVersion;
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Error finding alternative versions for {PackageId}", packageId);
+            }
+        }
+
+        return null;
     }
 
     private IEnumerable<SourcePackageDependencyInfo> GetPackagesToInstallAsync(
