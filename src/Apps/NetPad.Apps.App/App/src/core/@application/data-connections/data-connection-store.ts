@@ -37,12 +37,11 @@ export class DataConnectionStore {
     private subscribeToServerEvents() {
         this.eventBus.subscribeToServer(DataConnectionSavedEvent, msg => {
             const ix = this.connections.findIndex(c => c.id === msg.dataConnection.id);
-            const connection = DataConnection.fromJS(msg.dataConnection);
 
             if (ix >= 0) {
-                this.connections[ix].init(connection);
+                this.connections[ix].init(msg.dataConnection);
             } else {
-                this.connections.push(connection);
+                this.connections.push(DataConnection.fromJS(msg.dataConnection));
             }
         });
 
@@ -54,12 +53,11 @@ export class DataConnectionStore {
 
         this.eventBus.subscribeToServer(DatabaseServerSavedEvent, msg => {
             const ix = this.servers.findIndex(s => s.id === msg.server.id);
-            const server = DatabaseServerConnection.fromJS(msg.server);
 
             if (ix >= 0) {
-                this.servers[ix].init(server);
+                this.servers[ix].init(msg.server);
             } else {
-                this.servers.push(server);
+                this.servers.push(DatabaseServerConnection.fromJS(msg.server));
             }
         });
 

@@ -24,7 +24,7 @@
             </span>
             <span class="badge bg-orange text-white rounded-pill ms-2"
                   if.bind="connectionViewModel.connection.containsProductionData"
-                  title="Production">
+                  title="Contains Production Data!">
                 P
             </span>
         </div>
@@ -143,13 +143,14 @@
                                               class="flex-grow-1 server-name"
                                               data-server-id="${serverVm.server.id}"></data-connection-name>
                     </div>
+                    <i class="database-server-connection fa-sm ms-4 me-2" title="Database server"></i>
                     <span class="badge bg-secondary rounded-pill ms-2"
                           title="${serverVm.connections.length} connection(s)">
                         ${serverVm.connections.length}
                     </span>
                     <span class="badge bg-orange text-white rounded-pill ms-2"
                           if.bind="serverVm.server.containsProductionData"
-                          title="Production">
+                          title="Contains Production Data!">
                         P
                     </span>
                 </div>

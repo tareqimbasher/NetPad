@@ -29,8 +29,6 @@ public class ElectronShell : IShell
         services.AddTransient<IUiDialogService, ElectronDialogService>();
 
         services.AddHostedService<NotificationBackgroundService>();
-
-        // Add cors here
     }
 
     public void ConfigureRequestPipeline(IApplicationBuilder app, IHostEnvironment env)

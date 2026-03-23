@@ -13,8 +13,6 @@ export class DatabaseServerViewModel {
     }
 
     public async refresh() {
-        for (const connVm of this.connections) {
-            await connVm.refresh();
-        }
+        await Promise.all(this.connections.map(connVm => connVm.refresh()));
     }
 }

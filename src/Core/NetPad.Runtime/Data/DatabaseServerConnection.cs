@@ -43,16 +43,7 @@ public abstract class DatabaseServerConnection(Guid id, string name, DataConnect
 
     public abstract Task<IReadOnlyList<string>> GetDatabasesAsync(IDataConnectionPasswordProtector passwordProtector);
 
-    private static Type[] GetKnownTypes()
-    {
-        var serverConnectionType = typeof(DatabaseServerConnection);
-
-        return AppDomain.CurrentDomain.GetAssemblies()
-        .Where(x => x.GetName().FullName.Contains("NetPad"))
-        .SelectMany(x => x.GetExportedTypes())
-        .Where(t => t is { IsClass: true, IsAbstract: false } && serverConnectionType.IsAssignableFrom(t))
-        .ToArray();
-    }
+    private static Type[] GetKnownTypes() => ServerConnectionKnownTypes.KnownTypes.Value;
 
     private static class ServerConnectionKnownTypes
     {

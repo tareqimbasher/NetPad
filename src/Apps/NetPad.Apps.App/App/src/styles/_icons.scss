@@ -536,6 +536,11 @@ button > .icon-base {
     @extend .fa-align-left;
 }
 
+.database-server-connection {
+    @extend %icon-base;
+    @extend .fa-server;
+}
+
 .add-data-connection-icon {
     @extend %icon-base;
     @extend .fa-plus;

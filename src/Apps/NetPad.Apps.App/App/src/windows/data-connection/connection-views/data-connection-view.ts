@@ -3,6 +3,7 @@ import {
     DatabaseConnection,
     DatabaseServerConnection,
     DataConnection,
+    DataConnectionType,
     MariaDbDatabaseServerConnection,
     MsSqlServerDatabaseConnection,
     MsSqlServerDatabaseServerConnection,
@@ -17,6 +18,19 @@ import {
 import {IDataConnectionView} from "./idata-connection-view";
 import {IDataConnectionViewComponent} from "./components/idata-connection-view-component";
 import {Util} from "@common";
+
+const connectionTypeMap = new Map<Constructable, DataConnectionType>([
+    [MsSqlServerDatabaseConnection, "MSSQLServer"],
+    [MsSqlServerDatabaseServerConnection, "MSSQLServer"],
+    [PostgreSqlDatabaseConnection, "PostgreSQL"],
+    [PostgreSqlDatabaseServerConnection, "PostgreSQL"],
+    [SQLiteDatabaseConnection, "SQLite"],
+    [MySqlDatabaseConnection, "MySQL"],
+    [MySqlDatabaseServerConnection, "MySQL"],
+    [MariaDbDatabaseConnection, "MariaDB"],
+    [MariaDbDatabaseServerConnection, "MariaDB"],
+    [OracleDatabaseConnection, "Oracle"],
+]);
 
 export abstract class DataConnectionView<TDataConnection extends DataConnection> implements IDataConnectionView {
     public readonly connection: TDataConnection;
@@ -59,21 +73,11 @@ export abstract class DataConnectionView<TDataConnection extends DataConnection>
     private createEmptyConnection(ctor: Constructable<TDataConnection>): TDataConnection {
         const connection = new ctor();
 
-        if (ctor.name === MsSqlServerDatabaseConnection.name || ctor.name === MsSqlServerDatabaseServerConnection.name) {
-            connection.type = "MSSQLServer";
-        } else if (ctor.name === PostgreSqlDatabaseConnection.name || ctor.name === PostgreSqlDatabaseServerConnection.name) {
-            connection.type = "PostgreSQL";
-        } else if (ctor.name === SQLiteDatabaseConnection.name) {
-            connection.type = "SQLite";
-        } else if (ctor.name === MySqlDatabaseConnection.name || ctor.name === MySqlDatabaseServerConnection.name) {
-            connection.type = "MySQL";
-        } else if (ctor.name === MariaDbDatabaseConnection.name || ctor.name === MariaDbDatabaseServerConnection.name) {
-            connection.type = "MariaDB";
-        } else if (ctor.name === OracleDatabaseConnection.name) {
-            connection.type = "Oracle";
-        } else {
+        const type = connectionTypeMap.get(ctor);
+        if (!type) {
             throw new Error("Unhandled data connection type: " + ctor.name);
         }
+        connection.type = type;
 
         return connection;
     }

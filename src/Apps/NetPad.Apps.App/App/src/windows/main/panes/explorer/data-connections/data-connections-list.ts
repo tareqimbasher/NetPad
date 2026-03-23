@@ -349,45 +349,31 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     private getElementOrParentServerConnectionId(element: Element) {
-        let id: string | null;
-        let el: Element | null = element;
-
-        do {
-            id = el.getAttribute("data-server-id");
-
-            if (id) {
-                break;
-            }
-
-            el = el.parentElement == this.element.parentElement ? null : el.parentElement;
-        } while (!id && !!el);
-
-        if (!id) {
-            this.logger.error("Could not get server connection ID from element", element);
-            throw new Error("Could not get server connection ID from element");
-        }
-
-        return id;
+        return this.getElementOrParentId(element, "data-server-id");
     }
 
     private getElementOrParentDataConnectionId(element: Element) {
+        return this.getElementOrParentId(element, "data-connection-id");
+    }
+
+    private getElementOrParentId(element: Element, attributeName: string): string {
         let id: string | null;
         let el: Element | null = element;
 
         do {
-            id = el.getAttribute("data-connection-id");
+            id = el.getAttribute(attributeName);
 
             if (id) {
                 break;
             }
 
-            // We want to stop searching up the DOM tree when we leave the scope of this element (component)
+            // Stop searching up the DOM tree when we leave the scope of this element (component)
             el = el.parentElement == this.element.parentElement ? null : el.parentElement;
         } while (!id && !!el);
 
         if (!id) {
-            this.logger.error("Could not get data connection ID from element", element);
-            throw new Error("Could not get data connection ID from element");
+            this.logger.error(`Could not get '${attributeName}' from element`, element);
+            throw new Error(`Could not get '${attributeName}' from element`);
         }
 
         return id;

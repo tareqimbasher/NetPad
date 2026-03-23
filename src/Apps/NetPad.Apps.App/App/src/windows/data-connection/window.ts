@@ -1,3 +1,4 @@
+import {Constructable} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
     DatabaseConnection,
@@ -24,6 +25,22 @@ import {MariaDbView} from "./connection-views/mariadb/mariadb-view";
 import {ServerView} from "./connection-views/server/server-view";
 import {CommonServices} from "./connection-views/common-services";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+
+const serverViewRegistry = new Map<DataConnectionType, Constructable<DatabaseServerConnection>>([
+    ["MSSQLServer", MsSqlServerDatabaseServerConnection],
+    ["PostgreSQL", PostgreSqlDatabaseServerConnection],
+    ["MySQL", MySqlDatabaseServerConnection],
+    ["MariaDB", MariaDbDatabaseServerConnection],
+]);
+
+const connectionViewRegistry = new Map<DataConnectionType, (conn: DataConnection | undefined, svc: CommonServices) => IDataConnectionView>([
+    ["MSSQLServer", (c, s) => new MssqlView(c, s)],
+    ["PostgreSQL", (c, s) => new PostgresqlView(c, s)],
+    ["SQLite", (c, s) => new SqliteView(c, s)],
+    ["MySQL", (c, s) => new MysqlView(c, s)],
+    ["MariaDB", (c, s) => new MariaDbView(c, s)],
+    ["Oracle", (c, s) => new OracleView(c, s)],
+]);
 
 export class Window extends WindowBase {
     public connectionView?: IDataConnectionView;
@@ -176,46 +193,12 @@ export class Window extends WindowBase {
         }
 
         if (this.startupParams.isServer) {
-            if (connectionType === "MSSQLServer") {
-                return new ServerView(MsSqlServerDatabaseServerConnection, connection, commonServices);
-            }
-            if (connectionType === "PostgreSQL") {
-                return new ServerView(PostgreSqlDatabaseServerConnection, connection, commonServices);
-            }
-            if (connectionType === "MySQL") {
-                return new ServerView(MySqlDatabaseServerConnection, connection, commonServices);
-            }
-            if (connectionType === "MariaDB") {
-                return new ServerView(MariaDbDatabaseServerConnection, connection, commonServices);
-            }
-            return undefined;
+            const ctor = serverViewRegistry.get(connectionType);
+            return ctor ? new ServerView(ctor, connection, commonServices) : undefined;
         }
 
-        if (connectionType === "MSSQLServer") {
-            return new MssqlView(connection, commonServices);
-        }
-
-        if (connectionType === "PostgreSQL") {
-            return new PostgresqlView(connection, commonServices);
-        }
-
-        if (connectionType === "SQLite") {
-            return new SqliteView(connection, commonServices);
-        }
-
-        if (connectionType === "MySQL") {
-            return new MysqlView(connection, commonServices);
-        }
-
-        if (connectionType === "MariaDB") {
-            return new MariaDbView(connection, commonServices);
-        }
-
-        if (connectionType === "Oracle") {
-            return new OracleView(connection, commonServices);
-        }
-
-        return undefined;
+        const factory = connectionViewRegistry.get(connectionType);
+        return factory?.(connection, commonServices);
     }
 
     public async testConnection() {
