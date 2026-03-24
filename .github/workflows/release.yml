@@ -181,21 +181,37 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.ScriptHost"
         run: dotnet restore
 
-      - name: 🚚 Package for Linux
-        if: startsWith(matrix.platform, 'ubuntu-')
+      - name: 🚚 Package for Linux (x64)
+        if: matrix.platform == 'ubuntu-24.04'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
           electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
 
-      - name: 🚚 Package for Windows
-        if: startsWith(matrix.platform, 'windows-')
+      - name: 🚚 Package for Linux (ARM64)
+        if: matrix.platform == 'ubuntu-24.04-arm'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronSharp.CLI -g
+          electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for Windows (x64)
+        if: matrix.platform == 'windows-latest'
         working-directory: "src/Apps/NetPad.Apps.App"
         run: |
           dotnet restore
           dotnet tool install ElectronSharp.CLI -g
           electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for Windows (ARM64)
+        if: matrix.platform == 'windows-11-arm'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronSharp.CLI -g
+          electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 
       - name: 🚚 Package for macOS (x86)
         if: matrix.platform == 'macos-latest'
@@ -417,7 +433,11 @@ jobs:
         run: |
           VERSION="${{ needs.create-release.outputs.version }}"
 
-          find artifacts/ -type f | while read -r file; do
+          find artifacts/ -type f \
+            ! -name "*.blockmap" \
+            ! -name "*.yml" \
+            ! -name "*.yaml" \
+            | while read -r file; do
             echo "Uploading: $(basename "$file")"
             gh release upload "v${VERSION}" "$file" --repo "${{ github.repository }}" --clobber
           done
@@ -436,8 +456,12 @@ jobs:
           # Get the existing release body (changelog)
           gh release view "v${VERSION}" --repo "$REPO" --json body --jq '.body' > /tmp/release_body.md
 
-          # Collect actual asset names
-          ASSETS=$(find artifacts/ -type f -exec basename {} \; | sort)
+          # Collect actual asset names (excluding blockmaps/metadata)
+          ASSETS=$(find artifacts/ -type f \
+            ! -name "*.blockmap" \
+            ! -name "*.yml" \
+            ! -name "*.yaml" \
+            -exec basename {} \; | sort -u)
 
           # Helper: classify and append rows to a section file
           classify_asset() {
