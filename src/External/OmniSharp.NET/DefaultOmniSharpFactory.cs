@@ -38,7 +38,11 @@ namespace OmniSharp
             if (!string.IsNullOrWhiteSpace(additionalArgs))
                 args += " " + additionalArgs;
 
-            var config = new OmniSharpStdioServerConfiguration(executablePath, args.Trim(), dotNetSdkRootDirectoryPath);
+            var config = new OmniSharpStdioServerConfiguration(
+                executablePath,
+                args.Trim(),
+                dotNetSdkRootDirectoryPath,
+                projectPath);
 
             var accessor = new OmniSharpServerStdioProcessAccessor(config);
 

@@ -29,17 +29,19 @@ namespace OmniSharp.Utilities
         private readonly string? _commandText;
         private readonly string? _args;
         private readonly Dictionary<string, string?>? _environmentVariables;
+        private readonly string? _workingDirectory;
         private Process? _process;
         private ProcessIO? _io;
         private ProcessStartInfo? _processStartInfo;
         private Task<int>? _processStartTask;
         private bool _isDisposed;
 
-        public ProcessHandler(string commandText, string? args, Dictionary<string, string?>? environmentVariables)
+        public ProcessHandler(string commandText, string? args, Dictionary<string, string?>? environmentVariables, string? workingDirectory = null)
         {
             _commandText = commandText ?? throw new ArgumentNullException(nameof(commandText));
             _args = args;
             _environmentVariables = environmentVariables;
+            _workingDirectory = workingDirectory;
         }
 
         public Process Process
@@ -159,6 +161,9 @@ namespace OmniSharp.Utilities
 
                 if (!string.IsNullOrWhiteSpace(_args))
                     _processStartInfo.Arguments = _args;
+
+                if (!string.IsNullOrWhiteSpace(_workingDirectory))
+                    _processStartInfo.WorkingDirectory = _workingDirectory;
 
                 if (_environmentVariables != null)
                 {

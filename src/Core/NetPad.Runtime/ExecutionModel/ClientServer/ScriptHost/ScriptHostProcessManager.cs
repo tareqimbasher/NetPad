@@ -14,8 +14,8 @@ using NetPad.Scripts;
 namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 
 /// <summary>
-/// Controls the spawning and stopping of a script-host process and provides a high-level interface to send and receive
-/// messages.
+/// A manager that is used to spawn (and stop) a single instance of the script-host application.
+/// It also provides a high-level interface to send and receive messages to and from the child process.
 /// </summary>
 /// <param name="script">The target script.</param>
 /// <param name="workingDirectory">The root working directory where script-host will work within.</param>

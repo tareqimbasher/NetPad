@@ -50,13 +50,19 @@ namespace OmniSharp.Stdio
                     environmentVariables["DOTNET_ROOT"] = dotNetSdkRootDirPath;
                     environmentVariables.TryGetValue("PATH", out string? existingPath);
                     var pathSeparator = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-                        System.Runtime.InteropServices.OSPlatform.Windows) ? ";" : ":";
+                        System.Runtime.InteropServices.OSPlatform.Windows)
+                        ? ";"
+                        : ":";
                     environmentVariables["PATH"] = string.IsNullOrWhiteSpace(existingPath)
                         ? dotNetSdkRootDirPath
                         : $"{dotNetSdkRootDirPath}{pathSeparator}{existingPath}";
                 }
 
-                _processHandler = new ProcessHandler(exePath, exeArgs, environmentVariables);
+                _processHandler = new ProcessHandler(
+                    exePath,
+                    exeArgs,
+                    environmentVariables,
+                    _configuration.WorkingDirectory);
 
                 var startResult = _processHandler.StartProcess();
 

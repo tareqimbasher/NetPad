@@ -32,6 +32,10 @@
                 value.bind="targetFrameworkVersion"
                 disabled.bind="isBusy">
             <option value="" disabled></option>
+            <option if.bind="targetFrameworkVersion && !availableFrameworkVersions.includes(targetFrameworkVersion)"
+                    value.bind="targetFrameworkVersion" disabled>
+                .NET ${targetFrameworkVersion.replace('DotNet', '')} (not installed)
+            </option>
             <option value.bind="framework" repeat.for="framework of availableFrameworkVersions">
                 .NET ${framework.replace('DotNet', '')}
             </option>

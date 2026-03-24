@@ -22,7 +22,14 @@ public static class ProcessUtil
 
     public static bool IsProcessRunning(this Process process)
     {
-        return process.WasProcessStarted() && !process.HasExited;
+        try
+        {
+            return !process.HasExited;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     public static void KillIfRunning(this Process process)
