@@ -30,6 +30,11 @@ pub fn run() -> Result<()> {
         )
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_filter(|label| label == "main")
+                .build(),
+        )
         .manage(server_manager_state)
         .setup(move |app| {
             // Start .NET app and open main window
