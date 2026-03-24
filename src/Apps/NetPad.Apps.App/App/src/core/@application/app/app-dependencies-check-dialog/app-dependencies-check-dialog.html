@@ -1,7 +1,7 @@
 ﻿<template class="app-dependencies-check-dialog">
     <h4 class="d-flex justify-content-between">
-        <div>
-            App Dependency Check
+        <div class="d-flex gap-3">
+            <span>App Dependency Check</span>
             <span class="spinner-border float-end" if.bind="loading"></span>
         </div>
         <i class="app-deps-check-icon"></i>
@@ -38,34 +38,30 @@
                     </ul>
                 </div>
                 <div else>
-                    <div class="mb-3">
-                        Found .NET SDK installation:
-                        <code>${report.resolvedPath.path}</code>
-                    </div>
-
-                    <div if.bind="dotnetSdkMissing">
+                    <div if.bind="dotnetSdkMissing" class="mb-3">
                         <span class="text-red">No supported .NET SDK could be found.</span>
                         <br/>
                         Make sure the .NET SDK version 6 or greater is installed and the <code>dotnet</code>
                         executable is in your <code>PATH</code>.
-
-                        <span if.bind="input.dotNetSdkVersions?.length">All installed SDKs:</span>
                     </div>
-                    <div else>
+                    <div else class="mb-3">
                         <b>${input.supportedDotNetSdkVersionsInstalled.length}</b> supported .NET SDKs are
-                        installed. All installed SDKs:
+                        installed.
                     </div>
 
-                    <div if.bind="input.dotNetSdkVersions?.length">
-                        <ul class="sdk-versions-list">
-                            <li repeat.for="version of input.dotNetSdkVersions">
-                                <code>${version.string}</code>
-                                <span class="badge text-green ms-3"
-                                      if.bind="input.supportedDotNetSdkVersionsInstalled.map(x => x.string).indexOf(version.string) >= 0">
-                                Supported
-                            </span>
-                            </li>
-                        </ul>
+                    <div if.bind="sdkGroups.length">
+                        <div repeat.for="group of sdkGroups" class="mb-2">
+                            <code class="text-muted">${group.path}</code>
+                            <ul class="sdk-versions-list">
+                                <li repeat.for="sdk of group.sdks">
+                                    <code>${sdk.version.string}</code>
+                                    <span class="badge text-green ms-3"
+                                          if.bind="supportedVersionStrings.has(sdk.version.string)">
+                                        Supported
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>

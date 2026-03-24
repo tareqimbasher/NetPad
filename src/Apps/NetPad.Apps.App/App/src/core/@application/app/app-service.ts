@@ -67,7 +67,7 @@ export class AppService extends AppApiClient implements IAppService {
         const frameworks = new Set<DotNetFrameworkVersion>();
 
         for (const sdkVersion of result.supportedDotNetSdkVersionsInstalled) {
-            const major = sdkVersion.major;
+            const major = sdkVersion.version.major;
 
             if (!isNaN(major) && major >= 2) {
                 frameworks.add(`DotNet${major}` as DotNetFrameworkVersion);

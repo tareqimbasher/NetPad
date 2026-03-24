@@ -19,13 +19,10 @@ public class DotNetPathResolver
         if (!string.IsNullOrWhiteSpace(settings.DotNetSdkDirectoryPath))
         {
             report.AddSearchStep(settings.DotNetSdkDirectoryPath);
-
-            // If user has explicitly set this setting, we don't do any more checks
-            return report;
         }
 
-        GetDotNetPathFromShell(report);
         GetDotNetPathFromCommonLocations(report);
+        GetDotNetPathFromShell(report);
         return report;
     }
 
@@ -36,7 +33,7 @@ public class DotNetPathResolver
             // Try getting path using ShellExecute
             using var process = Process.Start(new ProcessStartInfo
             {
-                UseShellExecute = true,
+                UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 FileName = _dotNetExeName,
@@ -72,10 +69,13 @@ public class DotNetPathResolver
         {
             // Give the highest priority to env variables
             Environment.GetEnvironmentVariable("DOTNET_ROOT"),
-            Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR")
+            Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR"),
+
+            // User-level install takes priority over system-level
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".dotnet")
         };
 
-        // Common installation paths in descending priority
+        // System-level installation paths
         if (PlatformUtil.IsOSWindows())
         {
             possibleDirectories.Add(@"C:\Program Files\dotnet\x64");
@@ -89,9 +89,6 @@ public class DotNetPathResolver
             possibleDirectories.Add("/usr/lib64/dotnet");
             possibleDirectories.Add("/opt/dotnet");
         }
-
-        possibleDirectories.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".dotnet"));
 
         foreach (var dir in possibleDirectories)
         {
@@ -123,6 +120,15 @@ public class DotNetPathReport
 
     public List<SearchStep> SearchSteps { get; } = new();
 
+    /// <summary>
+    /// All valid .NET installation directories found, in priority order.
+    /// </summary>
+    public IReadOnlyList<DirectoryPath> AllValidPaths =>
+        SearchSteps
+            .Where(s => s.Result == SearchStepResult.Valid)
+            .Select(s => s.Location)
+            .ToList();
+
     public void AddSearchStep(DirectoryPath dir)
     {
         if (SearchSteps.Any(x => x.Location == dir))
@@ -141,7 +147,7 @@ public class DotNetPathReport
         else
         {
             SearchSteps.Add(new SearchStep(dir, SearchStepResult.Valid));
-            ResolvedPath = dir;
+            ResolvedPath ??= dir;
         }
     }
 }

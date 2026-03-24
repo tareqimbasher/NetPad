@@ -3250,11 +3250,11 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
     /** The version of the .NET runtime the application is currently running on. */
     dotNetRuntimeVersion!: string;
     /** A collection of all .NET SDK versions detected as installed. */
-    dotNetSdkVersions!: SemanticVersion[];
+    dotNetSdkVersions!: DotNetSdkVersion[];
     /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
     dotNetEfToolVersion?: SemanticVersion | undefined;
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
-    supportedDotNetSdkVersionsInstalled!: SemanticVersion[];
+    supportedDotNetSdkVersionsInstalled!: DotNetSdkVersion[];
     /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
     isSupportedDotNetEfToolInstalled!: boolean;
 
@@ -3277,13 +3277,13 @@ export class AppDependencyCheckResult implements IAppDependencyCheckResult {
             if (Array.isArray(_data["dotNetSdkVersions"])) {
                 this.dotNetSdkVersions = [] as any;
                 for (let item of _data["dotNetSdkVersions"])
-                    this.dotNetSdkVersions!.push(SemanticVersion.fromJS(item));
+                    this.dotNetSdkVersions!.push(DotNetSdkVersion.fromJS(item));
             }
             this.dotNetEfToolVersion = _data["dotNetEfToolVersion"] ? SemanticVersion.fromJS(_data["dotNetEfToolVersion"]) : <any>undefined;
             if (Array.isArray(_data["supportedDotNetSdkVersionsInstalled"])) {
                 this.supportedDotNetSdkVersionsInstalled = [] as any;
                 for (let item of _data["supportedDotNetSdkVersionsInstalled"])
-                    this.supportedDotNetSdkVersionsInstalled!.push(SemanticVersion.fromJS(item));
+                    this.supportedDotNetSdkVersionsInstalled!.push(DotNetSdkVersion.fromJS(item));
             }
             this.isSupportedDotNetEfToolInstalled = _data["isSupportedDotNetEfToolInstalled"];
         }
@@ -3327,13 +3327,65 @@ export interface IAppDependencyCheckResult {
     /** The version of the .NET runtime the application is currently running on. */
     dotNetRuntimeVersion: string;
     /** A collection of all .NET SDK versions detected as installed. */
-    dotNetSdkVersions: SemanticVersion[];
+    dotNetSdkVersions: DotNetSdkVersion[];
     /** The version of the Entity Framework Core command‑line tool (ef), if installed; otherwise, null. */
     dotNetEfToolVersion?: SemanticVersion | undefined;
     /** Gets the subset of DotNetSdkVersions that are supported for use in user scripts. */
-    supportedDotNetSdkVersionsInstalled: SemanticVersion[];
+    supportedDotNetSdkVersionsInstalled: DotNetSdkVersion[];
     /** Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported. */
     isSupportedDotNetEfToolInstalled: boolean;
+}
+
+/** A version of .NET SDK. */
+export class DotNetSdkVersion implements IDotNetSdkVersion {
+    version!: SemanticVersion;
+    dotNetRootDirectory?: string | undefined;
+
+    constructor(data?: IDotNetSdkVersion) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.version = new SemanticVersion();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.version = _data["version"] ? SemanticVersion.fromJS(_data["version"]) : new SemanticVersion();
+            this.dotNetRootDirectory = _data["dotNetRootDirectory"];
+        }
+    }
+
+    static fromJS(data: any): DotNetSdkVersion {
+        data = typeof data === 'object' ? data : {};
+        let result = new DotNetSdkVersion();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["version"] = this.version ? this.version.toJSON() : <any>undefined;
+        data["dotNetRootDirectory"] = this.dotNetRootDirectory;
+        return data;
+    }
+
+    clone(): DotNetSdkVersion {
+        const json = this.toJSON();
+        let result = new DotNetSdkVersion();
+        result.init(json);
+        return result;
+    }
+}
+
+/** A version of .NET SDK. */
+export interface IDotNetSdkVersion {
+    version: SemanticVersion;
+    dotNetRootDirectory?: string | undefined;
 }
 
 /** An implementation of semantic versioning (https://semver.org) */
@@ -3422,6 +3474,8 @@ export interface ISemanticVersion {
 export class DotNetPathReport implements IDotNetPathReport {
     resolvedPath?: DirectoryPath | undefined;
     searchSteps!: SearchStep[];
+    /** All valid .NET installation directories found, in priority order. */
+    allValidPaths!: DirectoryPath[];
 
     constructor(data?: IDotNetPathReport) {
         if (data) {
@@ -3432,6 +3486,7 @@ export class DotNetPathReport implements IDotNetPathReport {
         }
         if (!data) {
             this.searchSteps = [];
+            this.allValidPaths = [];
         }
     }
 
@@ -3442,6 +3497,11 @@ export class DotNetPathReport implements IDotNetPathReport {
                 this.searchSteps = [] as any;
                 for (let item of _data["searchSteps"])
                     this.searchSteps!.push(SearchStep.fromJS(item));
+            }
+            if (Array.isArray(_data["allValidPaths"])) {
+                this.allValidPaths = [] as any;
+                for (let item of _data["allValidPaths"])
+                    this.allValidPaths!.push(DirectoryPath.fromJS(item));
             }
         }
     }
@@ -3461,6 +3521,11 @@ export class DotNetPathReport implements IDotNetPathReport {
             for (let item of this.searchSteps)
                 data["searchSteps"].push(item ? item.toJSON() : <any>undefined);
         }
+        if (Array.isArray(this.allValidPaths)) {
+            data["allValidPaths"] = [];
+            for (let item of this.allValidPaths)
+                data["allValidPaths"].push(item ? item.toJSON() : <any>undefined);
+        }
         return data;
     }
 
@@ -3475,6 +3540,8 @@ export class DotNetPathReport implements IDotNetPathReport {
 export interface IDotNetPathReport {
     resolvedPath?: DirectoryPath | undefined;
     searchSteps: SearchStep[];
+    /** All valid .NET installation directories found, in priority order. */
+    allValidPaths: DirectoryPath[];
 }
 
 /** An absolute path to a file or a directory. */

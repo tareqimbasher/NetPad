@@ -48,8 +48,10 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
 
         // Build references to all assemblies we need to include in the compilation, starting with the assemblies
         // of the selected .NET SDK.
+        var dotNetRoot = dotNetInfo.LocateDotNetRootDirectoryForFramework(input.TargetFrameworkVersion)
+                        ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
         var assemblyLocations = FrameworkAssemblies.GetAssemblyLocations(
-            dotNetInfo.LocateDotNetRootDirectoryOrThrow(),
+            dotNetRoot,
             input.TargetFrameworkVersion,
             input.UseAspNet);
 

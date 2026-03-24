@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging.Abstractions;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
@@ -145,7 +146,7 @@ public class CSharpCodeCompilerTests(ITestOutputHelper testOutputHelper)
 
     private CSharpCodeCompiler CreateCSharpCodeCompiler()
     {
-        return new CSharpCodeCompiler(new DotNetInfo(new Settings()), new CodeAnalysisService());
+        return new CSharpCodeCompiler(new DotNetInfo(new Settings(), NullLogger<DotNetInfo>.Instance), new CodeAnalysisService());
     }
 
     private string GetProgram(string code, params string[] additionalNamespaces)

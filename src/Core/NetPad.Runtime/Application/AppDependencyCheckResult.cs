@@ -13,14 +13,14 @@ namespace NetPad.Application;
 /// </param>
 public record AppDependencyCheckResult(
     string DotNetRuntimeVersion,
-    SemanticVersion[] DotNetSdkVersions,
+    DotNetSdkVersion[] DotNetSdkVersions,
     SemanticVersion? DotNetEfToolVersion)
 {
     /// <summary>
     /// Gets the subset of <see cref="DotNetSdkVersions"/> that are supported for use in user scripts.
     /// </summary>
-    public SemanticVersion[] SupportedDotNetSdkVersionsInstalled =>
-        DotNetSdkVersions.Where(DotNetFrameworkVersionUtil.IsSdkVersionSupported).ToArray();
+    public DotNetSdkVersion[] SupportedDotNetSdkVersionsInstalled =>
+        DotNetSdkVersions.Where(v => v.IsSupported()).ToArray();
 
     /// <summary>
     /// Gets a value indicating whether the installed Entity Framework Core command‑line tool (ef) is supported.

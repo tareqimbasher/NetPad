@@ -15,6 +15,7 @@ public partial class DotNetCSharpProject
     private readonly IDotNetInfo _dotNetInfo;
     private readonly HashSet<Reference> _references = [];
     private readonly SemaphoreSlim _projectFileLock = new(1, 1);
+    private DotNetFrameworkVersion? _targetFrameworkVersion;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DotNetCSharpProject"/>.
@@ -101,6 +102,7 @@ public partial class DotNetCSharpProject
         bool enableNullable = true,
         bool enableImplicitUsings = true)
     {
+        _targetFrameworkVersion = targetDotNetFrameworkVersion;
         ProjectDirectoryPath.CreateIfNotExists();
 
         var assemblyOutputType = outputType.ToDotNetProjectPropertyValue();
@@ -378,7 +380,10 @@ public partial class DotNetCSharpProject
         bool redirectOutput = true,
         CancellationToken cancellationToken = default)
     {
-        var psi = new ProcessStartInfo(_dotNetInfo.LocateDotNetExecutableOrThrow())
+        var dotNetExe = (_targetFrameworkVersion != null
+            ? _dotNetInfo.LocateDotNetExecutableForFramework(_targetFrameworkVersion.Value)
+            : null) ?? _dotNetInfo.LocateDotNetExecutableOrThrow();
+        var psi = new ProcessStartInfo(dotNetExe)
         {
             UseShellExecute = false,
             WorkingDirectory = ProjectDirectoryPath.Path,

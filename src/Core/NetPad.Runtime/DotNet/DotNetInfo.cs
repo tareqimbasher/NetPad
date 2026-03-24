@@ -1,30 +1,31 @@
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using NetPad.Configuration;
 
 namespace NetPad.DotNet;
 
-public class DotNetInfo(Settings settings) : IDotNetInfo
+public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNetInfo
 {
     private readonly DotNetEnvironment _environment = new();
     private readonly DotNetCliRunner _dotNetCliRunner = new();
     private readonly DotNetPathResolver _dotNetPathResolver = new();
 
-    private readonly object _dotNetRootDirLocateLock = new();
-    private string? _dotNetRootDirPath;
+    private readonly object _pathReportLock = new();
+    private volatile DotNetPathReport? _pathReport;
 
     private readonly object _dotNetExeLocateLock = new();
-    private string? _dotNetExecutablePath;
+    private volatile string? _dotNetExecutablePath;
 
     private readonly object _dotNetEfToolExeLocateLock = new();
-    private string? _dotNetEfToolPath;
+    private volatile string? _dotNetEfToolPath;
 
     private static readonly object _dotNetRuntimeVersionsLocateLock = new();
-    private static DotNetRuntimeVersion[]? _dotNetRuntimeVersions;
+    private static volatile DotNetRuntimeVersion[]? _dotNetRuntimeVersions;
 
     private static readonly string _dotNetExeName = PlatformUtil.IsOSWindows() ? "dotnet.exe" : "dotnet";
     private static readonly object _dotNetSdkVersionsLocateLock = new();
-    private static DotNetSdkVersion[]? _dotNetSdkVersions;
+    private static volatile DotNetSdkVersion[]? _dotNetSdkVersions;
 
     /// <summary>
     /// Returns the version of the .NET runtime used in the current app domain.
@@ -39,29 +40,43 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
 
     public string? LocateDotNetRootDirectory()
     {
-        if (_dotNetRootDirPath != null)
+        return GetPathReport().ResolvedPath?.Path;
+    }
+
+    private DotNetPathReport GetPathReport()
+    {
+        var report = _pathReport;
+        if (report != null)
         {
-            return _dotNetRootDirPath;
+            return report;
         }
 
-        lock (_dotNetRootDirLocateLock)
+        lock (_pathReportLock)
         {
-            if (_dotNetRootDirPath != null)
+            report = _pathReport;
+            if (report != null)
             {
-                return _dotNetRootDirPath;
+                return report;
             }
 
-            var report = _dotNetPathResolver.FindDotNetInstallDir(settings);
+            report = _dotNetPathResolver.FindDotNetInstallDir(settings);
 
             if (report.ResolvedPath is not null)
             {
                 Environment.SetEnvironmentVariable("DOTNET_ROOT", report.ResolvedPath.Path);
+                logger.LogDebug("Resolved primary .NET installation: {ResolvedPath} ({ValidCount} valid installation(s) found)",
+                    report.ResolvedPath.Path, report.AllValidPaths.Count);
+            }
+            else
+            {
+                logger.LogWarning("No valid .NET installation found across {SearchCount} searched location(s)",
+                    report.SearchSteps.Count);
             }
 
-            _dotNetRootDirPath = report.ResolvedPath?.Path;
+            _pathReport = report;
         }
 
-        return _dotNetRootDirPath;
+        return report;
     }
 
 
@@ -99,6 +114,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
             }
 
             _dotNetExecutablePath = exePath;
+            logger.LogDebug("Resolved dotnet executable: {ExePath}", exePath ?? "(not found)");
         }
 
         return _dotNetExecutablePath;
@@ -128,20 +144,48 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 return _dotNetRuntimeVersions;
             }
 
-            var dotNetExePath = LocateDotNetExecutable();
-            if (dotNetExePath == null) return [];
+            var allRuntimes = new List<DotNetRuntimeVersion>();
 
-            var output = _dotNetCliRunner.ExecuteCommand(dotNetExePath, "--list-runtimes");
+            foreach (var installDir in GetPathReport().AllValidPaths)
+            {
+                var exePath = Path.Combine(installDir.Path, _dotNetExeName);
+                if (!File.Exists(exePath)) continue;
 
-            _dotNetRuntimeVersions = output.Split(Environment.NewLine)
-                .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x.Trim()).ToArray())
-                .Where(a => a.Length == 2 && a.All(x => x.Any()))
-                .Select(a => SemanticVersion.TryParse(a[1], out var version) ? new DotNetRuntimeVersion(a[0], version) : null)
-                .Where(v => v != null)
-                .ToArray()!;
+                try
+                {
+                    var output = _dotNetCliRunner.ExecuteCommand(exePath, "--list-runtimes");
+                    logger.LogDebug("dotnet --list-runtimes output from {ExePath}:\n{Output}", exePath, output);
+                    allRuntimes.AddRange(ParseRuntimeVersions(output, installDir.Path));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to query runtimes from {InstallDir}", installDir.Path);
+                }
+            }
+
+            _dotNetRuntimeVersions = allRuntimes
+                .GroupBy(r => (r.FrameworkName, r.Version))
+                .Select(g => g.First())
+                .OrderBy(r => r.FrameworkName)
+                .ThenBy(r => r.Version)
+                .ToArray();
+
+            logger.LogDebug("Found {Count} unique .NET runtime(s) across all installations", _dotNetRuntimeVersions.Length);
         }
 
         return _dotNetRuntimeVersions;
+    }
+
+    private static DotNetRuntimeVersion[] ParseRuntimeVersions(string output, string dotNetRootDir)
+    {
+        return output.Split(Environment.NewLine)
+            .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x.Trim()).ToArray())
+            .Where(a => a.Length == 2 && a.All(x => x.Any()))
+            .Select(a => SemanticVersion.TryParse(a[1], out var version)
+                ? new DotNetRuntimeVersion(a[0], version, dotNetRootDir)
+                : null)
+            .Where(v => v != null)
+            .ToArray()!;
     }
 
 
@@ -168,20 +212,51 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 return _dotNetSdkVersions;
             }
 
-            var dotNetExePath = LocateDotNetExecutable();
-            if (dotNetExePath == null) return [];
+            var allSdks = new List<DotNetSdkVersion>();
 
-            var output = _dotNetCliRunner.ExecuteCommand(dotNetExePath, "--list-sdks");
+            foreach (var installDir in GetPathReport().AllValidPaths)
+            {
+                var exePath = Path.Combine(installDir.Path, _dotNetExeName);
+                if (!File.Exists(exePath)) continue;
 
-            _dotNetSdkVersions = output.Split(Environment.NewLine)
-                .Select(l => l.Split(" ")[0].Trim())
-                .Where(v => !string.IsNullOrWhiteSpace(v))
-                .Select(v => SemanticVersion.TryParse(v, out var version) ? new DotNetSdkVersion(version) : null)
-                .Where(x => x is not null)
-                .ToArray()!;
+                try
+                {
+                    var output = _dotNetCliRunner.ExecuteCommand(exePath, "--list-sdks");
+                    logger.LogDebug("dotnet --list-sdks output from {ExePath}:\n{Output}", exePath, output);
+                    allSdks.AddRange(ParseSdkVersions(output, installDir.Path));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to query SDKs from {InstallDir}", installDir.Path);
+                }
+            }
+
+            _dotNetSdkVersions = allSdks
+                .GroupBy(s => s.Version)
+                .Select(g => g.First())
+                .OrderBy(s => s.Version)
+                .ToArray();
+
+            logger.LogDebug("Found {Count} unique .NET SDK(s) across all installations", _dotNetSdkVersions.Length);
         }
 
         return _dotNetSdkVersions;
+    }
+
+    private static DotNetSdkVersion[] ParseSdkVersions(string output, string dotNetRootDir)
+    {
+        return output.Split(Environment.NewLine)
+            .Select(line =>
+            {
+                var versionStr = line.Trim().Split(' ', 2)[0].Trim();
+                if (string.IsNullOrWhiteSpace(versionStr) ||
+                    !SemanticVersion.TryParse(versionStr, out var version))
+                    return null;
+
+                return new DotNetSdkVersion(version, dotNetRootDir);
+            })
+            .Where(x => x is not null)
+            .ToArray()!;
     }
 
     public DotNetSdkVersion GetLatestSupportedDotNetSdkVersionOrThrow(bool includePrerelease = false)
@@ -198,6 +273,32 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
             .MaxBy(x => x.Version);
     }
 
+
+    public string? LocateDotNetRootDirectoryForFramework(DotNetFrameworkVersion frameworkVersion)
+    {
+        var matchingSdk = GetDotNetSdkVersions()
+            .Where(s => s.IsSupported()
+                        && s.GetFrameworkVersion() == frameworkVersion
+                        && s.DotNetRootDirectory != null)
+            .MaxBy(s => s.Version);
+
+        var rootDir = matchingSdk?.DotNetRootDirectory;
+        logger.LogDebug("Resolved .NET root for {Framework}: {RootDir} (SDK {Version})",
+            frameworkVersion, rootDir ?? "(none)", matchingSdk?.Version.ToString() ?? "N/A");
+        return rootDir;
+    }
+
+    public string? LocateDotNetExecutableForFramework(DotNetFrameworkVersion frameworkVersion)
+    {
+        var rootDir = LocateDotNetRootDirectoryForFramework(frameworkVersion);
+
+        if (rootDir != null && DotNetPathResolver.IsValidDotNetSdkRootDirectory(rootDir))
+        {
+            return Path.Combine(rootDir, _dotNetExeName);
+        }
+
+        return null;
+    }
 
     public string LocateDotNetEfToolExecutableOrThrow()
     {
@@ -234,7 +335,7 @@ public class DotNetInfo(Settings settings) : IDotNetInfo
                 // Prioritize this over global tool install path in case user defines a different path for dotnet for the execution of this app.
                 using var process = Process.Start(new ProcessStartInfo
                 {
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = exeName,
