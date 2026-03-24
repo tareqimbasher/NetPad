@@ -1,6 +1,6 @@
 {
     "productName": "NetPad vNext",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "mainBinaryName": "NetPad vNext",
     "identifier": "dev.netpad.vnext",
     "build": {
