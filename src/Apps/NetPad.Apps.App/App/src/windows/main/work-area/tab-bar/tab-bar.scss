@@ -29,6 +29,7 @@ tab-bar {
 
         &:not(.new-tab) {
             border-top: 1px solid transparent;
+            border-right: 1px solid var(--tab-border-color);
         }
 
         .view-tab-content {
@@ -80,12 +81,12 @@ tab-bar {
         }
 
         .script-running-indicator svg {
-            stroke: orange;
+            stroke: var(--script-status-running-color);
             stroke-width: 2
         }
 
         .script-stopping-indicator svg {
-            stroke: red;
+            stroke: var(--script-status-stopping-color);
             stroke-width: 2
         }
 
@@ -131,11 +132,11 @@ tab-bar {
         }
 
         &.status-Running {
-            border-top-color: orange !important;
+            border-top-color: var(--script-status-running-color) !important;
         }
 
         &.status-Stopping {
-            border-top-color: salmon !important;
+            border-top-color: var(--script-status-stopping-color) !important;
         }
 
         &.new-tab {

@@ -35,6 +35,14 @@ $light: (
     titlebar-background: #e1e1e1,
     // STATUSBAR
     statusbar-background: #e3e3e3,
+    // SCRIPT STATUS
+    script-status-running-color: orange,
+    script-status-stopping-color: salmon,
+    script-status-error-color: red,
+    script-status-success-color: #02c13d,
+    script-status-running-background: #e8b44a,
+    script-status-stopping-background: #e8a090,
+    script-status-error-background: #d44040,
     // SCRIPT VIEW
     script-toolbar-background: $color-full,
     find-text-box-background: #ededed,
@@ -51,6 +59,7 @@ $light: (
     tab-active-background: $color-full,
     tab-active-text-color: $color-contrast-full,
     tab-inactive-text-color: rgb(0 0 0 / 65%),
+    tab-border-color: #d2d2d2,
     // SCROLLBARS & SPLITTER
     scrollbar-track-color: #cecece,
     scrollbar-thumb-color: #7e8182,

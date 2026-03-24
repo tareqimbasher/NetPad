@@ -1,6 +1,6 @@
 @import "styles/variables";
 
-statusbar {
+.statusbar-container {
     background: var(--statusbar-background);
     height: $statusbar-height;
     max-height: $statusbar-height;
@@ -8,6 +8,19 @@ statusbar {
     display: flex;
     line-height: $statusbar-height;
     overflow: hidden;
+    transition: background-color 0.3s ease;
+
+    &.status-Running {
+        background-color: var(--script-status-running-background);
+    }
+
+    &.status-Stopping {
+        background-color: var(--script-status-stopping-background);
+    }
+
+    &.status-Error {
+        background-color: var(--script-status-error-background);
+    }
 
     .left-column,
     .middle-column,

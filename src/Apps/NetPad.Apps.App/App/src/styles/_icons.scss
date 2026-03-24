@@ -454,13 +454,13 @@ button > .icon-base {
 .script-status-success-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    color: #02c13d;
+    color: var(--script-status-success-color);
 }
 
 .script-status-error-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    color: #d60303;
+    color: var(--script-status-error-color);
 }
 
 .script-status-dirty-icon {

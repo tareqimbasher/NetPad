@@ -71,6 +71,23 @@ scripts-list {
                 }
             }
 
+
+            &.folder-content {
+                position: relative;
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: 0.5rem;
+                    top: 0;
+                    bottom: 0;
+                    width: 1px;
+                    background-color: var(--border-color);
+                    opacity: 0.4;
+                    pointer-events: none;
+                }
+            }
+
             .script-folder-open-icon {
                 visibility: hidden;
             }
@@ -82,12 +99,12 @@ scripts-list {
             }
 
             .script-running-indicator svg {
-                stroke: orange;
+                stroke: var(--script-status-running-color);
                 stroke-width: 2
             }
 
             .script-stopping-indicator svg {
-                stroke: red;
+                stroke: var(--script-status-stopping-color);
                 stroke-width: 2
             }
         }

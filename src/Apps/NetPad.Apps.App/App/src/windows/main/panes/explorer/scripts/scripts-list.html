@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <div class="list-group-item" show.bind="folder.expanded">
+        <div class="list-group-item folder-content" show.bind="folder.expanded">
             <div class="list-group">
                 <div class="list-group-item" repeat.for="childFolder of folder.folders | sort:'name':'ordinalIgnoreCase'">
                     <script-folder folder.bind="childFolder" vm.bind="vm"></script-folder>

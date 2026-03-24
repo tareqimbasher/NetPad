@@ -80,7 +80,7 @@ output-pane {
             &.error {
                 padding: 1.25rem 0.75rem;
                 background: rgba(250 128 114 / 6%);
-                border-left: red 2px solid;
+                border-left: var(--script-status-error-color) 2px solid;
 
                 .error-title {
                     color: salmon;
@@ -223,6 +223,6 @@ output-pane {
     }
 
     .group.error .error-title {
-        color: red;
+        color: var(--script-status-error-color);
     }
 }

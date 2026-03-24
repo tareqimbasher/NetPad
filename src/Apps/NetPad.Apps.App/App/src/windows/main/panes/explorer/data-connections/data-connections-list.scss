@@ -5,6 +5,20 @@ data-connections-list {
     cursor: default;
 
     .data-connection-structure-tree {
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: var(--border-color);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
         > .list-group {
             padding: 0;
         }
@@ -52,6 +66,35 @@ data-connections-list {
 
     .server-connections {
         padding-left: 0.5rem;
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0.25rem;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: var(--border-color);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    }
+
+    .db-table > .list-group {
+        position: relative;
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 0.65rem;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: var(--border-color);
+            opacity: 0.4;
+            pointer-events: none;
+        }
     }
 
     .database-server:hover,

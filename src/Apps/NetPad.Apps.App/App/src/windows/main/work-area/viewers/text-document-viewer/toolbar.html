@@ -27,7 +27,7 @@
         </button>
     </div>
     <div class="group" title="The .NET SDK to use for this script.">
-        <b>SDK:</b>
+        <span class="group-label">SDK:</span>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
                 value.bind="targetFrameworkVersion"
                 disabled.bind="isBusy">
@@ -42,7 +42,7 @@
         </select>
     </div>
     <div class="group">
-        <b>Kind:</b>
+        <span class="group-label">Kind:</span>
         <select class="form-select form-select-sm script-kind-selector ms-3"
                 value.bind="kind"
                 disabled.bind="isBusy">
@@ -52,7 +52,7 @@
     </div>
     <div class="group"
          title="Compiler optimizations (Optimize -/+)">
-        <b>Optimize:</b>
+        <span class="group-label">Optimize:</span>
         <select class="form-select form-select-sm optimization-level-selector ms-3"
                 value.bind="optimizationLevel"
                 disabled.bind="isBusy">
@@ -61,7 +61,7 @@
         </select>
     </div>
     <div class="group">
-        <b>Connection:</b>
+        <span class="group-label">Connection:</span>
         <select class="form-select form-select-sm data-connection-selector ms-3"
                 value.bind="dataConnection"
                 disabled.bind="isBusy">

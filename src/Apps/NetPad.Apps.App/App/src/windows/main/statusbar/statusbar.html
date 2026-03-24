@@ -1,42 +1,44 @@
-<div class="left-column">
-    <div class="script-status">${activeEnvironment.status}</div>
+<div class="statusbar-container status-${activeEnvironment.status}">
+    <div class="left-column">
+        <div class="script-status">${activeEnvironment.status}</div>
 
-    <div show.bind="activeEnvironment.status !== 'Running' && runDuration !== null"
-         title="The time it took to run the script (in milliseconds).">
-        (Took: ${runDuration})
-    </div>
+        <div show.bind="activeEnvironment.status !== 'Running' && runDuration !== null"
+             title="The time it took to run the script (in milliseconds).">
+            (Took: ${runDuration})
+        </div>
 
-    <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
-        <au-compose component.bind="item.component"
-                    class="statusbar-item"></au-compose>
+        <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'left')">
+            <au-compose component.bind="item.component"
+                        class="statusbar-item"></au-compose>
+        </div>
     </div>
-</div>
-<div class="middle-column">
-    <div class="active-app-status-message text-truncate-1-line"
-         show.bind="appStatusMessage"
-         contextmenu.trigger="dismissCurrentAppStatusMessage($event)"
-         title="Right click to dismiss">
-        <i class="${appStatusMessage.priority === 'High' ? 'attention-icon text-red' : 'info-icon text-blue'} pe-2"></i>
-        ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
+    <div class="middle-column">
+        <div class="active-app-status-message text-truncate-1-line"
+             show.bind="appStatusMessage"
+             contextmenu.trigger="dismissCurrentAppStatusMessage($event)"
+             title="Right click to dismiss">
+            <i class="${appStatusMessage.priority === 'High' ? 'attention-icon text-red' : 'info-icon text-blue'} pe-2"></i>
+            ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
+        </div>
     </div>
-</div>
-<div class="right-column">
-    <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
-        <au-compose component.bind="item.component"
-                    class="statusbar-item"></au-compose>
-    </div>
+    <div class="right-column">
+        <div repeat.for="item of workbench.statusbarService.items.filter(i => i.position === 'right')">
+            <au-compose component.bind="item.component"
+                        class="statusbar-item"></au-compose>
+        </div>
 
-    <i class="quick-tips-icon action-icon"
-       click.trigger="showQuickTipsDialog()"
-       title="Quick Tips"></i>
-    <i class="app-deps-check-icon action-icon"
-       click.trigger="showAppDepsCheckDialog()"
-       title="App Dependencies Check"></i>
-    <i class="theme-icon action-icon"
-       click.trigger="settingsService.toggleTheme()"
-       title="Toggle Theme"></i>
-    <i class="settings-icon action-icon"
-       if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
-       click.trigger="settingsService.openSettingsWindow()"
-       title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+        <i class="quick-tips-icon action-icon"
+           click.trigger="showQuickTipsDialog()"
+           title="Quick Tips"></i>
+        <i class="app-deps-check-icon action-icon"
+           click.trigger="showAppDepsCheckDialog()"
+           title="App Dependencies Check"></i>
+        <i class="theme-icon action-icon"
+           click.trigger="settingsService.toggleTheme()"
+           title="Toggle Theme"></i>
+        <i class="settings-icon action-icon"
+           if.bind="settings.appearance.titlebar.type === 'Native' & oneTime"
+           click.trigger="settingsService.openSettingsWindow()"
+           title="${shortcutManager.getShortcutByName('Settings').toString()}"></i>
+    </div>
 </div>

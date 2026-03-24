@@ -146,11 +146,11 @@
                                               class="flex-grow-1 server-name"
                                               data-server-id="${serverVm.server.id}"></data-connection-name>
                     </div>
-                    <i class="database-server-icon fa-sm ms-4 me-2" title="Database server"></i>
-                    <span class="badge bg-secondary rounded-pill ms-2"
+                    <span class="badge text-muted ms-4"
                           title="${serverVm.connections.length} connection(s)">
                         ${serverVm.connections.length}
                     </span>
+                    <i class="database-server-icon fa-sm me-2" title="Database server"></i>
                     <span class="badge bg-orange text-white rounded-pill ms-2"
                           if.bind="serverVm.server.containsProductionData"
                           title="Contains Production Data!">
