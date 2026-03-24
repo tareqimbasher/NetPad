@@ -6,7 +6,7 @@ namespace NetPad.ExecutionModel.ClientServer;
 /// <summary>
 /// A single occurrence of running a script.
 /// </summary>
-internal class ScriptRun(Script script)
+internal class ScriptRun(Script script) : IDisposable
 {
     private readonly TaskCompletionSource<RunResult> _taskCompletionSource = new();
     private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -41,5 +41,10 @@ internal class ScriptRun(Script script)
 
         IsComplete = true;
         _taskCompletionSource.TrySetResult(result);
+    }
+
+    public void Dispose()
+    {
+        _cancellationTokenSource.Dispose();
     }
 }

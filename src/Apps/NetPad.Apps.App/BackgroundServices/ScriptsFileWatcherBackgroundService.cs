@@ -62,4 +62,11 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
 
         _scriptDirWatcher.EnableRaisingEvents = true;
     }
+
+    protected override Task StoppingAsync(CancellationToken cancellationToken)
+    {
+        _scriptDirWatcher?.Dispose();
+        _scriptDirWatcher = null;
+        return Task.CompletedTask;
+    }
 }

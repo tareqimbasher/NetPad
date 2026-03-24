@@ -50,7 +50,8 @@ public static class SettingsCommand
         }
         else if (jsonFormat)
         {
-            JsonDocument.Parse(File.ReadAllText(AppDataProvider.SettingsFilePath.Path)).Dump();
+            using var doc = JsonDocument.Parse(File.ReadAllText(AppDataProvider.SettingsFilePath.Path));
+            doc.Dump();
         }
         else
         {

@@ -28,7 +28,8 @@ public class FileSystemSettingsRepository : ISettingsRepository
             var json = await File.ReadAllTextAsync(AppDataProvider.SettingsFilePath.Path).ConfigureAwait(false);
 
             // Validate settings file has a valid version
-            var jsonRoot = JsonDocument.Parse(json).RootElement;
+            using var jsonDoc = JsonDocument.Parse(json);
+            var jsonRoot = jsonDoc.RootElement;
             if (!jsonRoot.TryGetProperty(nameof(Settings.Version).ToLowerInvariant(), out var versionProp)
                 || !Version.TryParse(versionProp.GetString(), out _))
             {

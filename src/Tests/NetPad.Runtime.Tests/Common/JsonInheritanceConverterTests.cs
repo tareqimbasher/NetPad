@@ -36,7 +36,8 @@ public class JsonInheritanceConverterTests
 
         var array = new BaseTypeUsingInheritanceConverter[] { o1, o2 };
         var jsonStr = JsonSerializer.Serialize(array);
-        var json = JsonDocument.Parse(jsonStr).RootElement;
+        using var doc = JsonDocument.Parse(jsonStr);
+        var json = doc.RootElement;
         var element1 = json[0];
         var element2 = json[1];
 
@@ -60,7 +61,8 @@ public class JsonInheritanceConverterTests
 
         var array = new BaseTypeNotUsingInheritanceConverter[] { o1, o2 };
         var jsonStr = JsonSerializer.Serialize(array);
-        var json = JsonDocument.Parse(jsonStr).RootElement;
+        using var doc = JsonDocument.Parse(jsonStr);
+        var json = doc.RootElement;
         var element1 = json[0];
         var element2 = json[1];
 

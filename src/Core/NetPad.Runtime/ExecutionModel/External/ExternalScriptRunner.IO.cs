@@ -68,9 +68,10 @@ public partial class ExternalScriptRunner
 
         try
         {
-            var json = JsonDocument.Parse(raw).RootElement;
+            using var doc = JsonDocument.Parse(raw);
+            var json = doc.RootElement;
             type = json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ?? string.Empty;
-            outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant());
+            outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant()).Clone();
         }
         catch
         {

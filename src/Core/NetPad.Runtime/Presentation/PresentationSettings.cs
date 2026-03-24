@@ -27,7 +27,7 @@ public static class PresentationSettings
 
         try
         {
-            var json = JsonDocument.Parse(File.ReadAllText(scriptConfigFilePath));
+            using var json = JsonDocument.Parse(File.ReadAllText(scriptConfigFilePath));
 
             if (!json.RootElement.TryGetProperty("output", out var outputSettings)) return (null, null);
 

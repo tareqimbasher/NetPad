@@ -178,6 +178,8 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
                         || _restartScriptHostOnNextRun
                         || previousRun.HasScriptChangedEnoughToRestartScriptHost(_script);
 
+                    previousRun.Dispose();
+
                     if (stopScriptHost)
                     {
                         _logger.LogDebug("Will restart script-host");
@@ -318,11 +320,12 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
             try
             {
-                var json = JsonDocument.Parse(raw).RootElement;
+                using var doc = JsonDocument.Parse(raw);
+                var json = doc.RootElement;
                 type =
                     json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ??
                     string.Empty;
-                outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant());
+                outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant()).Clone();
             }
             catch
             {
@@ -486,6 +489,15 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error stopping script");
+        }
+
+        try
+        {
+            _currentRun?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disposing current run");
         }
 
         foreach (var subscription in _subscriptions)

@@ -182,8 +182,9 @@ jobs:
           BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
           if [ "$VERSION" != "$BASE_VERSION" ]; then
             echo "Injecting InformationalVersion: $BASE_VERSION → $VERSION"
-            sed -i "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
+            sed -i.bak "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
               Apps/NetPad.Apps.App/NetPad.Apps.App.csproj
+            rm -f Apps/NetPad.Apps.App/NetPad.Apps.App.csproj.bak
           fi
 
       - name: 🔨 Restore Script Host
@@ -339,8 +340,9 @@ jobs:
           BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
           if [ "$VERSION" != "$BASE_VERSION" ]; then
             echo "Injecting InformationalVersion: $BASE_VERSION → $VERSION"
-            sed -i "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
+            sed -i.bak "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
               Apps/NetPad.Apps.App/NetPad.Apps.App.csproj
+            rm -f Apps/NetPad.Apps.App/NetPad.Apps.App.csproj.bak
           fi
 
       - name: 🔨 Restore
