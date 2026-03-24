@@ -130,7 +130,10 @@ module.exports = function (env, {analyze}) {
                     "css"
                 ]
             }),
-            analyze && new BundleAnalyzerPlugin()
+            analyze && new BundleAnalyzerPlugin(env.analyzeStatic
+                ? { analyzerMode: "static", reportFilename: "bundle-report.html", openAnalyzer: false }
+                : {}
+            )
         ].filter(p => p),
         experiments: {
             topLevelAwait: true // Enables us to use await in src/main.ts

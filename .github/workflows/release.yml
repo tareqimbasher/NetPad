@@ -144,8 +144,6 @@ jobs:
           - platform: "windows-11-arm"
 
     runs-on: ${{ matrix.platform }}
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
