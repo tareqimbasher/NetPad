@@ -486,17 +486,19 @@ jobs:
             -exec basename {} \; | sort -u)
 
           # Helper: classify and append rows to a section file
+          # Rows are prefixed with a sort key (variant~arch~filename) so the
+          # final table is ordered: Variant (Electron → Tauri) → Arch (x64 → ARM64) → filename
           classify_asset() {
             local f="$1" out_file="$2"
-            local arch variant
+            local arch variant sort_variant sort_arch
 
-            if [[ "$f" == *-x64.* ]] || [[ "$f" == *-x64-* ]] || [[ "$f" == *-amd64.* ]] || [[ "$f" == *-x86_64.* ]]; then arch="x64"
-            elif [[ "$f" == *-arm64.* ]] || [[ "$f" == *-arm64-* ]] || [[ "$f" == *-aarch64.* ]]; then arch="ARM64"
+            if [[ "$f" == *-x64.* ]] || [[ "$f" == *-x64-* ]] || [[ "$f" == *-amd64.* ]] || [[ "$f" == *-x86_64.* ]]; then arch="x64"; sort_arch="1"
+            elif [[ "$f" == *-arm64.* ]] || [[ "$f" == *-arm64-* ]] || [[ "$f" == *-aarch64.* ]]; then arch="ARM64"; sort_arch="2"
             else return; fi
 
-            if [[ "$f" == netpad_vnext-* ]]; then variant="Tauri (vNext)"; else variant="Electron"; fi
+            if [[ "$f" == netpad_vnext-* ]]; then variant="Tauri (vNext)"; sort_variant="2"; else variant="Electron"; sort_variant="1"; fi
 
-            echo "| [${f}](${BASE_URL}/${f}) | ${variant} | ${arch} |" >> "$out_file"
+            echo "${sort_variant}~${sort_arch}~${f}	| [${f}](${BASE_URL}/${f}) | ${variant} | ${arch} |" >> "$out_file"
           }
 
           > /tmp/win_rows.md
@@ -509,6 +511,11 @@ jobs:
             elif [[ "$f" == *linux-* ]]; then classify_asset "$f" /tmp/linux_rows.md
             fi
           done <<< "$ASSETS"
+
+          # Sort each section and strip the sort-key prefix (everything up to the first tab)
+          for f in /tmp/win_rows.md /tmp/mac_rows.md /tmp/linux_rows.md; do
+            sort "$f" | sed 's/^[^\t]*\t//' > "${f}.sorted" && mv "${f}.sorted" "$f"
+          done
 
           # Append download tables to the release body
           {

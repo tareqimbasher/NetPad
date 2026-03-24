@@ -74,6 +74,6 @@ export class AppService extends AppApiClient implements IAppService {
             }
         }
 
-        return [...frameworks].sort((a, b) => a.localeCompare(b));
+        return [...frameworks].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     }
 }

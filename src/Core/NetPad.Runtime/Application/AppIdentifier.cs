@@ -41,7 +41,16 @@ public class AppIdentifier
             .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
             .FirstOrDefault();
 
-        PRODUCT_VERSION = infoVersion?.InformationalVersion ?? _version.ToString();
+        var version = infoVersion?.InformationalVersion ?? _version.ToString();
+
+        // Strip build metadata (+commitsha) appended by the .NET SDK — not meaningful for display
+        var plusIndex = version.IndexOf('+');
+        if (plusIndex >= 0)
+        {
+            version = version[..plusIndex];
+        }
+
+        PRODUCT_VERSION = version;
     }
 
     public string Name => AppName;

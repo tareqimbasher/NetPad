@@ -11,13 +11,13 @@
 
     <div class="versions" if.bind="!loading">
         <div class="version-item">
-            <span class="version-description">Latest version:</span>
-            <b>v${input.latest.toString()}</b>
+            <span class="version-description">You are currently on:</span>
+            v${input.current.toString()}
         </div>
 
         <div class="version-item">
-            <span class="version-description">You are currently on:</span>
-            v${input.current.toString()}
+            <span class="version-description">Latest version:</span>
+            <b>v${input.latest.toString()}</b>
         </div>
     </div>
 

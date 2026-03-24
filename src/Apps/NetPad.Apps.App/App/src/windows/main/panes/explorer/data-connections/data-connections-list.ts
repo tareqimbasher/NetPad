@@ -111,7 +111,7 @@ export class DataConnectionsList extends ViewModelBase {
             },
             {
                 icon: "delete-icon",
-                text: "Delete Server",
+                text: "Delete",
                 onSelected: async (target) => this.deleteServer(this.getElementOrParentServerConnectionId(target))
             },
             {
