@@ -294,12 +294,9 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
             packageVersion,
             DotNetFrameworkVersion.DotNet8);
 
-        // Use ToHashSet at the end because different versions of the same assembly can come back
-        // in the depedency tree of some packages. For example: "Serilog.Sinks.Seq" will include
-        // two versions of the "Serilog.dll" assembly.
         var assetNames = assets.Select(x => Path.GetFileName(x.Path)).ToHashSet();
 
-        Assert.Equal(expectedAssetNames, assetNames);
+        Assert.Equal(expectedAssetNames.Order(), assetNames.Order());
     }
 
     [Fact]

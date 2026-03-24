@@ -1,10 +1,12 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Loader;
 using NetPad.Assemblies;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.ExecutionModel.ClientServer.Messages;
 using NetPad.ExecutionModel.ScriptServices;
+using NetPad.IO;
 using NetPad.IO.IPC.Stdio;
 using NetPad.Presentation;
 using NetPad.Utilities;
@@ -104,7 +106,7 @@ public class ScriptRunner
     {
         using var assemblyLoader = new UnloadableAssemblyLoadContext(scriptAssemblyPath);
 
-        assemblyLoader.UseProbing(probingPaths);
+        assemblyLoader.UseProbing(probingPaths, [IsNotAlreadyLoadedInDefaultContext]);
 
         var assembly = assemblyLoader.LoadFromAssemblyPath(scriptAssemblyPath);
 
@@ -113,6 +115,29 @@ public class ScriptRunner
         assembly.EntryPoint!.Invoke(null, [Array.Empty<string>()]);
 
         Util.Stopwatch.Stop();
+    }
+
+    /// <summary>
+    /// Prevents loading assemblies from probing paths if they are already loaded in the default
+    /// AssemblyLoadContext. Loading the same assembly in both the custom ALC and the default ALC
+    /// creates type identity splits that cause TypeLoadExceptions.
+    /// </summary>
+    private static bool IsNotAlreadyLoadedInDefaultContext(FilePath filePath, AssemblyName assemblyName)
+    {
+        if (assemblyName.Name == null)
+        {
+            return true;
+        }
+
+        foreach (var loadedAssembly in AssemblyLoadContext.Default.Assemblies)
+        {
+            if (string.Equals(loadedAssembly.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void HandleRunException(Exception exception)

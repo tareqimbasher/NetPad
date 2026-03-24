@@ -141,7 +141,7 @@ public class NuGetPackageProvider(
         var dependencyContext = DependencyContext.Default
                                 ?? throw new Exception("No DependencyContext set for application");
 
-        var packageDependencyTree = await GetPackageDependencyTreeAsync(
+        var candidates = await CollectDependencyInfoAsync(
             packageIdentity,
             NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker()),
             repositories,
@@ -151,8 +151,9 @@ public class NuGetPackageProvider(
             cancellationToken
         );
 
-        var packagesToInstall = GetPackagesToInstallAsync(
-            packageDependencyTree,
+        var packagesToInstall = ResolvePackageVersions(
+            candidates,
+            packageIdentity.Id,
             sourceRepositoryProvider,
             nugetLogger);
 
@@ -243,38 +244,45 @@ public class NuGetPackageProvider(
     {
         var packageIdentity = new NugetPackageIdentity(packageId, new NuGetVersion(packageVersion));
 
-        if (!IsInstalled(packageIdentity))
-        {
-            await InstallPackageAsync(packageId, packageVersion, dotNetFrameworkVersion);
-        }
-
+        var sourceRepositoryProvider = GetSourceRepositoryProvider();
+        var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
         var nugetFramework = NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker());
+
         using var sourceCacheContext = new SourceCacheContext();
         var nugetLogger = new NuGetNullLogger();
         var cancellationToken = CancellationToken.None;
         var dependencyContext = DependencyContext.Default
                                 ?? throw new Exception("No DependencyContext set for application");
 
-        var packageDependencyTree = await GetPackageDependencyTreeAsync(
+        var candidates = await CollectDependencyInfoAsync(
             packageIdentity,
             nugetFramework,
-            GetSourceRepositoryProvider().GetRepositories().ToArray(),
+            repositories,
             dependencyContext,
             sourceCacheContext,
             nugetLogger,
             cancellationToken
         );
 
-        var allPackages = packageDependencyTree.GetAllPackages();
+        var resolvedPackages = ResolvePackageVersions(
+            candidates,
+            packageIdentity.Id,
+            sourceRepositoryProvider,
+            nugetLogger);
+
+        // Install any packages that aren't already cached locally
+        await InstallPackagesAsync(
+            packageIdentity,
+            resolvedPackages,
+            sourceCacheContext,
+            nugetLogger,
+            cancellationToken);
+
+        // Gather assets from all resolved packages
         var assets = new HashSet<PackageAsset>();
 
-        foreach (var package in allPackages)
+        foreach (var package in resolvedPackages)
         {
-            if (!IsInstalled(package))
-            {
-                await InstallPackageAsync(package.Id, package.Version.ToString(), dotNetFrameworkVersion);
-            }
-
             var packageAssets = await GetCachedPackageAssetsAsync(
                 package.Id,
                 package.Version.ToString(),
@@ -408,8 +416,13 @@ public class NuGetPackageProvider(
         return cachedPackages.ToArray();
     }
 
-    private async Task<PackageDependencyTree> GetPackageDependencyTreeAsync(
-        NugetPackageIdentity package,
+    /// <summary>
+    /// Collects dependency info for a package and all its transitive dependencies.
+    /// Uses ResolvePackages (plural) for transitive dependencies to get ALL available versions,
+    /// allowing the NuGet resolver to make globally optimal version selections.
+    /// </summary>
+    private async Task<HashSet<SourcePackageDependencyInfo>> CollectDependencyInfoAsync(
+        NugetPackageIdentity rootPackage,
         NuGetFramework framework,
         SourceRepository[] repositories,
         DependencyContext hostDependencies,
@@ -417,94 +430,113 @@ public class NuGetPackageProvider(
         INugetLogger nugetLogger,
         CancellationToken cancellationToken)
     {
-        var packageDependencyTree = new PackageDependencyTree(package);
+        var allDependencies = new HashSet<SourcePackageDependencyInfo>(PackageIdentityComparer.Default);
+        var processedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var toProcess = new Queue<(string Id, NuGetVersion? ExactVersion)>();
 
-        foreach (var repository in repositories)
+        // Start with the root package (exact version known)
+        toProcess.Enqueue((rootPackage.Id, rootPackage.Version));
+
+        while (toProcess.Count > 0)
         {
-            // Get the dependency info for the package.
-            SourcePackageDependencyInfo? dependencyInfo;
+            var (packageId, exactVersion) = toProcess.Dequeue();
 
-            try
-            {
-                var dependencyInfoResource =
-                    await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
-                dependencyInfo = await dependencyInfoResource.ResolvePackage(
-                    package,
-                    framework,
-                    cacheContext,
-                    nugetLogger,
-                    cancellationToken);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Error getting dependency info of package: {Id} {Version}", package.Id,
-                    package.Version);
-                continue;
-            }
-
-            // No info for the package in this repository.
-            if (dependencyInfo == null)
+            if (!processedIds.Add(packageId))
             {
                 continue;
             }
 
-            // Filter the dependency info. Don't bring in any dependencies that are provided by the host.
-            var actualDependencyInfo = new SourcePackageDependencyInfo(
-                dependencyInfo.Id,
-                dependencyInfo.Version,
-                dependencyInfo.Dependencies.Where(dep => !DependencySuppliedByHost(hostDependencies, dep)),
-                dependencyInfo.Listed,
-                dependencyInfo.Source);
-
-            packageDependencyTree.DependencyInfo = actualDependencyInfo;
-
-            // Recurse through each dependency package.
-            foreach (var dep in actualDependencyInfo.Dependencies)
+            foreach (var repository in repositories)
             {
-                var depDependencyTree = await GetPackageDependencyTreeAsync(
-                    new NugetPackageIdentity(dep.Id, dep.VersionRange.MinVersion),
-                    framework,
-                    repositories,
-                    hostDependencies,
-                    cacheContext,
-                    nugetLogger,
-                    cancellationToken);
+                try
+                {
+                    var resource = await repository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
 
-                packageDependencyTree.Dependencies.Add(depDependencyTree);
+                    IEnumerable<SourcePackageDependencyInfo> resolvedInfos;
+
+                    if (exactVersion != null)
+                    {
+                        // Root package: resolve the specific version
+                        var info = await resource.ResolvePackage(
+                            new NugetPackageIdentity(packageId, exactVersion),
+                            framework,
+                            cacheContext,
+                            nugetLogger,
+                            cancellationToken);
+
+                        resolvedInfos = info != null ? [info] : [];
+                    }
+                    else
+                    {
+                        // Transitive dependency: get ALL available versions and let the resolver pick
+                        resolvedInfos = await resource.ResolvePackages(
+                            packageId,
+                            framework,
+                            cacheContext,
+                            nugetLogger,
+                            cancellationToken);
+                    }
+
+                    if (!resolvedInfos.Any())
+                    {
+                        continue;
+                    }
+
+                    foreach (var info in resolvedInfos)
+                    {
+                        // Filter out dependencies that are provided by the host runtime
+                        var filtered = new SourcePackageDependencyInfo(
+                            info.Id,
+                            info.Version,
+                            info.Dependencies.Where(dep => !DependencySuppliedByHost(hostDependencies, dep)),
+                            info.Listed,
+                            info.Source);
+
+                        allDependencies.Add(filtered);
+
+                        // Enqueue sub-dependencies for processing
+                        foreach (var dep in filtered.Dependencies)
+                        {
+                            if (!processedIds.Contains(dep.Id))
+                            {
+                                toProcess.Enqueue((dep.Id, null));
+                            }
+                        }
+                    }
+
+                    break; // Found in this repository, don't check others
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, "Error resolving dependency info for {PackageId}", packageId);
+                }
             }
-
-            break;
         }
 
-        return packageDependencyTree;
+        return allDependencies;
     }
 
-    private IEnumerable<SourcePackageDependencyInfo> GetPackagesToInstallAsync(
-        PackageDependencyTree packageDependencyTree,
+    private IEnumerable<SourcePackageDependencyInfo> ResolvePackageVersions(
+        HashSet<SourcePackageDependencyInfo> candidates,
+        string rootPackageId,
         SourceRepositoryProvider sourceRepositoryProvider,
         INugetLogger nugetLogger)
     {
-        var allPackages = packageDependencyTree.GetAllPackages();
-
-        // Create a package resolver context (this is used to help figure out which actual package versions to install).
         var resolverContext = new PackageResolverContext(
             DependencyBehavior.Lowest,
-            [packageDependencyTree.Identity.Id],
+            [rootPackageId],
             [],
             [],
             [],
-            allPackages,
+            candidates,
             sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
             nugetLogger);
 
         var resolver = new PackageResolver();
 
-        // Work out the actual set of packages to install.
-        var packagesToInstall = resolver
+        return resolver
             .Resolve(resolverContext, CancellationToken.None)
-            .Select(p => allPackages.Single(x => PackageIdentityComparer.Default.Equals(x, p)));
-
-        return packagesToInstall;
+            .Select(p => candidates.Single(x => PackageIdentityComparer.Default.Equals(x, p)));
     }
 
     private bool IsInstalled(NugetPackageIdentity packageIdentity) => GetInstallPath(packageIdentity) != null;
