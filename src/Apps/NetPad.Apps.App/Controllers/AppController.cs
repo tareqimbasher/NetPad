@@ -27,36 +27,21 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
     }
 
     [HttpGet("latest-version")]
-    public async Task<string?> GetLatestVersion([FromServices] HttpClient httpClient)
+    public async Task<string?> GetLatestVersion(
+        [FromServices] HttpClient httpClient,
+        [FromServices] AppIdentifier appIdentifier)
     {
         try
         {
-            const string url = "https://api.github.com/repos/tareqimbasher/netpad/releases/latest";
+            var includePreRelease = SemanticVersion.TryParse(appIdentifier.ProductVersion, out var currentVersion)
+                                    && currentVersion.IsPrerelease;
 
-            var json = await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
+            if (includePreRelease)
             {
-                var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                httpMessage.Headers.Add("User-Agent", "NetPad");
-
-                var result = await httpClient.SendAsync(httpMessage);
-                return await result.Content.ReadAsStringAsync();
-            });
-
-            if (json == null)
-            {
-                return null;
+                return await GetLatestVersionIncludingPreReleases(httpClient);
             }
 
-            var jsonDocument = JsonDocument.Parse(json);
-            var latestVersion = jsonDocument.RootElement.GetProperty("tag_name").GetString();
-            latestVersion = latestVersion?.TrimStart('v');
-
-            if (latestVersion == null || !SemanticVersion.TryParse(latestVersion, out var version))
-            {
-                return null;
-            }
-
-            return version.ToString();
+            return await GetLatestStableVersion(httpClient);
         }
         catch (Exception ex)
         {
@@ -64,6 +49,77 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         }
 
         return null;
+    }
+
+    private async Task<string?> GetLatestStableVersion(HttpClient httpClient)
+    {
+        var json = await FetchGitHubJsonAsync(httpClient,
+            "https://api.github.com/repos/tareqimbasher/netpad/releases/latest");
+
+        if (json == null)
+        {
+            return null;
+        }
+
+        using var jsonDocument = JsonDocument.Parse(json);
+        var latestVersion = jsonDocument.RootElement.GetProperty("tag_name").GetString();
+        latestVersion = latestVersion?.TrimStart('v');
+
+        if (latestVersion == null || !SemanticVersion.TryParse(latestVersion, out var version))
+        {
+            return null;
+        }
+
+        return version.ToString();
+    }
+
+    private async Task<string?> GetLatestVersionIncludingPreReleases(HttpClient httpClient)
+    {
+        var json = await FetchGitHubJsonAsync(httpClient,
+            "https://api.github.com/repos/tareqimbasher/netpad/releases?per_page=20");
+
+        if (json == null)
+        {
+            return null;
+        }
+
+        SemanticVersion? highest = null;
+
+        using var jsonDocument = JsonDocument.Parse(json);
+
+        foreach (var release in jsonDocument.RootElement.EnumerateArray())
+        {
+            if (release.TryGetProperty("draft", out var draft) && draft.GetBoolean())
+            {
+                continue;
+            }
+
+            var tagName = release.GetProperty("tag_name").GetString()?.TrimStart('v');
+
+            if (tagName == null || !SemanticVersion.TryParse(tagName, out var version))
+            {
+                continue;
+            }
+
+            if (highest == null || version > highest)
+            {
+                highest = version;
+            }
+        }
+
+        return highest?.ToString();
+    }
+
+    private static async Task<string?> FetchGitHubJsonAsync(HttpClient httpClient, string url)
+    {
+        return await Retry.ExecuteAsync(2, TimeSpan.FromSeconds(2), async () =>
+        {
+            var httpMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            httpMessage.Headers.Add("User-Agent", "NetPad");
+
+            var result = await httpClient.SendAsync(httpMessage);
+            return await result.Content.ReadAsStringAsync();
+        });
     }
 
     [HttpPost("client/ready")]

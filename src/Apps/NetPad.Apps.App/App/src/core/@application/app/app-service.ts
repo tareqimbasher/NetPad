@@ -40,7 +40,7 @@ export class AppService extends AppApiClient implements IAppService {
 
     public async getCurrentAndLatestVersions(): Promise<{ current: Version, latest: Version } | null> {
         const appId = await this.getIdentifier();
-        const current = new Version(appId.version);
+        const current = new Version(appId.productVersion);
 
         if (current.isEmpty) {
             return null;

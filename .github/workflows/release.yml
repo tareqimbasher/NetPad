@@ -175,6 +175,17 @@ jobs:
         working-directory: "src/Apps/NetPad.Apps.App"
         run: npm install electron-builder@^24 -g
 
+      - name: 🏷️ Inject pre-release version into binary
+        shell: bash
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
+          if [ "$VERSION" != "$BASE_VERSION" ]; then
+            echo "Injecting InformationalVersion: $BASE_VERSION → $VERSION"
+            sed -i "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
+              Apps/NetPad.Apps.App/NetPad.Apps.App.csproj
+          fi
+
       - name: 🔨 Restore Script Host
         working-directory: "src/Apps/NetPad.Apps.ScriptHost"
         run: dotnet restore
@@ -320,6 +331,17 @@ jobs:
       - name: 🧲 Install frontend dependencies (Tauri)
         working-directory: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
         run: npm install
+
+      - name: 🏷️ Inject pre-release version into binary
+        shell: bash
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
+          if [ "$VERSION" != "$BASE_VERSION" ]; then
+            echo "Injecting InformationalVersion: $BASE_VERSION → $VERSION"
+            sed -i "s|<InformationalVersion>${BASE_VERSION}</InformationalVersion>|<InformationalVersion>${VERSION}</InformationalVersion>|" \
+              Apps/NetPad.Apps.App/NetPad.Apps.App.csproj
+          fi
 
       - name: 🔨 Restore
         run: dotnet restore

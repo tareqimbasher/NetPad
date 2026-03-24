@@ -43,7 +43,11 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
     }
 
     public async openLatestVersionPage() {
-        await System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/releases/latest");
+        const version = this.input?.latest.toString();
+        const url = version
+            ? `https://github.com/tareqimbasher/NetPad/releases/tag/v${version}`
+            : "https://github.com/tareqimbasher/NetPad/releases/latest";
+        await System.openUrlInBrowser(url);
         await this.ok();
     }
 }

@@ -71,6 +71,8 @@ public static class Program
 
         var host = CreateHostBuilder<Startup>(args).Build();
 
+        Log.Information("NetPad {Version} (Shell: {Shell})", AppIdentifier.PRODUCT_VERSION, args.ShellType);
+
         if (args.ParentPid.HasValue)
         {
             ParentProcessTracker.SetThisHost(host);

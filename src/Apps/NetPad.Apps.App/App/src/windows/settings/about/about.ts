@@ -12,9 +12,6 @@ export class About {
 
     public binding() {
         this.appService.getIdentifier().then(id => {
-            if (id.version.endsWith(".0"))
-                id.version = id.version.substring(0, id.version.length - 2);
-
             this.appId = id;
         });
     }

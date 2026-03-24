@@ -42,6 +42,7 @@ public class Startup
         _configuration = configuration;
         _webHostEnvironment = webHostEnvironment;
         Console.WriteLine("Configuration:");
+        Console.WriteLine($"   - NetPad Version: {Application.AppIdentifier.PRODUCT_VERSION}");
         Console.WriteLine($"   - .NET Runtime Version: {Environment.Version.ToString()}");
         Console.WriteLine($"   - Environment: {webHostEnvironment.EnvironmentName}");
         Console.WriteLine($"   - WebRootPath: {webHostEnvironment.WebRootPath}");
