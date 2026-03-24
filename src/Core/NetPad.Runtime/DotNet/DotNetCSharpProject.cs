@@ -121,6 +121,40 @@ public partial class DotNetCSharpProject
                    """;
 
         await File.WriteAllTextAsync(ProjectFilePath.Path, xml);
+        await WriteGlobalJsonAsync(targetDotNetFrameworkVersion);
+    }
+
+    /// <summary>
+    /// Writes a <c>global.json</c> that pins the SDK to the target framework's major version.
+    /// This prevents a higher installed SDK (e.g. 10.0.x when targeting net9.0) from being
+    /// selected by the dotnet CLI, which would cause analyzer/assembly version mismatches.
+    /// </summary>
+    public async Task WriteGlobalJsonAsync(DotNetFrameworkVersion targetDotNetFrameworkVersion)
+    {
+        var majorVersion = targetDotNetFrameworkVersion.GetMajorVersion();
+        var globalJson = $$"""
+                           {
+                             "sdk": {
+                               "version": "{{majorVersion}}.0.100",
+                               "rollForward": "latestFeature"
+                             }
+                           }
+                           """;
+
+        await File.WriteAllTextAsync(
+            ProjectDirectoryPath.CombineFilePath("global.json").Path,
+            globalJson);
+    }
+
+    /// <summary>
+    /// Updates the project's target framework version, including the <c>.csproj</c> TargetFramework
+    /// property and the <c>global.json</c> SDK pin.
+    /// </summary>
+    public async Task UpdateTargetFrameworkAsync(DotNetFrameworkVersion newVersion)
+    {
+        _targetFrameworkVersion = newVersion;
+        await SetProjectGroupItemAsync("TargetFramework", newVersion.GetTargetFrameworkMoniker());
+        await WriteGlobalJsonAsync(newVersion);
     }
 
     /// <summary>

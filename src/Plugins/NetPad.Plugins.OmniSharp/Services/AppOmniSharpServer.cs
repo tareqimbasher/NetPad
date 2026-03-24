@@ -190,11 +190,14 @@ public class AppOmniSharpServer(
             $"RoslynExtensionsOptions:InlayHintsOptions:ForImplicitObjectCreation={settings.OmniSharp.InlayHints.EnableImplicitObjectCreation}"
         }.JoinToString(" ");
 
+        var dotNetRootDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(
+            environment.Script.Config.TargetFrameworkVersion) ?? dotNetInfo.LocateDotNetRootDirectory();
+
         var omniSharpServer = omniSharpServerFactory.CreateStdioServerFromNewProcess(
             executablePath!,
             Project.ProjectDirectoryPath.Path,
             args,
-            dotNetInfo.LocateDotNetRootDirectory());
+            dotNetRootDir);
 
         _logger.LogDebug(
             "Starting omnisharp server\nFrom path: {OmniSharpExePath}\nProject dir: {ProjDirPath}\nWith args: {Args}",
@@ -280,13 +283,14 @@ public class AppOmniSharpServer(
         {
             if (ev.Script.Id != environment.Script.Id) return;
 
-            await Project.SetProjectGroupItemAsync("TargetFramework", ev.NewVersion.GetTargetFrameworkMoniker());
+            await Project.UpdateTargetFrameworkAsync(ev.NewVersion);
+            await Project.RestoreAsync();
 
-            if (ev.Script.DataConnection == null)
-            {
-                await NotifyOmniSharpServerProjectFileChangedAsync();
-            }
-            else
+            // OmniSharp must be restarted because DOTNET_ROOT (set at process startup) may
+            // point to a different .NET installation for the new target framework.
+            await RestartAsync();
+
+            if (ev.Script.DataConnection != null)
             {
                 // When target framework version changes, we need to update OmniSharp's data connection assembly references
                 _ = Task.Run(async () =>
