@@ -1,0 +1,50 @@
+name: "Publish CLI"
+
+on:
+  push:
+    tags:
+      - 'cli-v*'
+
+jobs:
+  publish-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup .NET
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: |
+            6.0.x
+            9.0.x
+
+      - name: 🚩 Extract version from tag
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/cli-v}"
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+      - name: ✅ Validate version
+        run: |
+          TAG_VERSION="${{ steps.version.outputs.version }}"
+          CSPROJ_VERSION=$(grep -oP '<Version>\K[^<]+' src/Apps/NetPad.Apps.Cli/NetPad.Apps.Cli.csproj)
+
+          if [ "$CSPROJ_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch! Tag version is '$TAG_VERSION' but NetPad.Apps.Cli.csproj has '$CSPROJ_VERSION'"
+            exit 1
+          fi
+
+          echo "Version validated: $TAG_VERSION"
+
+      - name: 📦 Pack
+        run: |
+          dotnet pack src/Apps/NetPad.Apps.Cli -c Release -o nupkgs \
+            -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg \
+            -p:ContinuousIntegrationBuild=true
+
+      - name: 🚚 Push to NuGet.org
+        run: |
+          dotnet nuget push "nupkgs/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

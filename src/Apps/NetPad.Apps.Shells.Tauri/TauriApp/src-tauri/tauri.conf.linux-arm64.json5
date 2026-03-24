@@ -1,0 +1,12 @@
+{
+    "mainBinaryName": "netpad-vnext",
+    "build": {
+        "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r linux-arm64 -c \"Release\" --output ../../NetPad.Apps.App/bin/tauri/linux-arm64 /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --self-contained"
+    },
+    "bundle": {
+        "targets": ["rpm", "deb"],
+        "resources": {
+            "../../../NetPad.Apps.App/bin/tauri/linux-arm64": "resources/netpad-server"
+        }
+    }
+}

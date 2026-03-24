@@ -1,0 +1,10 @@
+{
+    "build": {
+        "beforeBuildCommand": "dotnet publish ../../NetPad.Apps.App/NetPad.Apps.App.csproj -r win-arm64 -c \"Release\" --output ../../NetPad.Apps.App/bin/tauri/win-arm64 /p:PublishReadyToRun=true /p:PublishSingleFile=false /p:WebBuild=true --self-contained"
+    },
+    "bundle": {
+        "resources": {
+            "../../../NetPad.Apps.App/bin/tauri/win-arm64": "resources/netpad-server"
+        }
+    }
+}

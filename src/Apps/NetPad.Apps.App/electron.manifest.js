@@ -6,7 +6,7 @@ const electronBuilderConfig = {
     appId: "com.netpad.app",
     productName: "NetPad",
     copyright: "Copyright © 2021 Tareq Imbasher",
-    buildVersion: "0.11.0",
+    buildVersion: "0.12.0",
     compression: "maximum",
     directories: {
         output: "../../../bin/Desktop"

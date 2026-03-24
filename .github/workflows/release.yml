@@ -1,0 +1,539 @@
+name: "Release"
+permissions:
+  contents: read
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Create a draft GitHub release after validating versions
+  # ─────────────────────────────────────────────────────────────
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      base_version: ${{ steps.version.outputs.base_version }}
+      release_id: ${{ steps.create-release.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: 📝 Generate changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PREV_TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName // empty' 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "Changelog: $PREV_TAG → $GITHUB_REF_NAME"
+            gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...${{ github.sha }}" \
+              --jq '[.commits[].commit.message | split("\n")[0]] | reverse | map("- " + .) | join("\n")' \
+              > /tmp/changelog.md 2>/dev/null || echo "- See commit history for changes" > /tmp/changelog.md
+          else
+            echo "- Initial release" > /tmp/changelog.md
+          fi
+
+          cat /tmp/changelog.md
+
+      - name: 🚩 Extract version from tag
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+          # Strip pre-release suffix for config comparison: "0.12.0-beta.1" → "0.12.0"
+          BASE_VERSION=$(echo "$TAG_VERSION" | sed 's/-.*//')
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+
+          # Detect pre-release (version contains '-')
+          if [[ "$TAG_VERSION" == *-* ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: ✅ Validate version consistency
+        run: |
+          BASE_VERSION="${{ steps.version.outputs.base_version }}"
+          ERRORS=""
+
+          # .NET app (csproj)
+          CSPROJ_VERSION=$(grep -oP '<InformationalVersion>\K[^<]+' src/Apps/NetPad.Apps.App/NetPad.Apps.App.csproj)
+          if [ "$CSPROJ_VERSION" != "$BASE_VERSION" ]; then
+            ERRORS="${ERRORS}\n  NetPad.Apps.App.csproj InformationalVersion: '$CSPROJ_VERSION'"
+          fi
+
+          # Electron (electron.manifest.js)
+          ELECTRON_VERSION=$(node -p "require('./src/Apps/NetPad.Apps.App/electron.manifest.js').build.buildVersion")
+          if [ "$ELECTRON_VERSION" != "$BASE_VERSION" ]; then
+            ERRORS="${ERRORS}\n  electron.manifest.js buildVersion: '$ELECTRON_VERSION'"
+          fi
+
+          # Tauri (tauri.conf.json5) — use grep because JSON5 trailing commas break Node's JSON parser
+          TAURI_VERSION=$(grep -oP '"version"\s*:\s*"\K[^"]+' src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/tauri.conf.json5)
+          if [ "$TAURI_VERSION" != "$BASE_VERSION" ]; then
+            ERRORS="${ERRORS}\n  tauri.conf.json5 version: '$TAURI_VERSION'"
+          fi
+
+          # Cargo.toml
+          CARGO_VERSION=$(grep -oP '^version\s*=\s*"\K[^"]+' src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/Cargo.toml)
+          if [ "$CARGO_VERSION" != "$BASE_VERSION" ]; then
+            ERRORS="${ERRORS}\n  Cargo.toml version: '$CARGO_VERSION'"
+          fi
+
+          if [ -n "$ERRORS" ]; then
+            echo "::error::Version mismatch! Tag base version is '$BASE_VERSION' but these differ:${ERRORS}"
+            exit 1
+          fi
+
+          echo "All versions match: $BASE_VERSION"
+
+      - name: 🚚 Create draft release
+        id: create-release
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        with:
+          script: |
+            const fs = require('fs');
+            const changelog = fs.readFileSync('/tmp/changelog.md', 'utf8').trim();
+            const body = `## What's Changed\n\n${changelog}\n\n---\n*Take a look at the assets to download and install this app.*`;
+
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${process.env.VERSION}`,
+              name: `NetPad v${process.env.VERSION}`,
+              body: body,
+              draft: true,
+              prerelease: process.env.PRERELEASE === 'true'
+            })
+            return data.id
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Build Electron app (runs in parallel with Tauri)
+  # ─────────────────────────────────────────────────────────────
+  package-electron:
+    needs: create-release
+    defaults:
+      run:
+        working-directory: ./src
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+          - platform: "ubuntu-24.04"
+          - platform: "ubuntu-24.04-arm"
+          - platform: "windows-latest"
+          - platform: "windows-11-arm"
+
+    runs-on: ${{ matrix.platform }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: 🧲 Setup .NET 9
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: 9.0.x
+
+      - name: 🧲 Install dependencies (ubuntu only)
+        if: startsWith(matrix.platform, 'ubuntu-')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder libarchive-tools
+
+      - name: 🧲 Install frontend dependencies (SPA)
+        working-directory: "src/Apps/NetPad.Apps.App/App"
+        run: npm install
+
+      - name: 🧲 Install frontend dependencies (ElectronHostHook)
+        working-directory: "src/Apps/NetPad.Apps.App/ElectronHostHook"
+        run: npm install
+
+      - name: 🧲 Install electron-builder
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: npm install electron-builder@^24 -g
+
+      - name: 🔨 Restore Script Host
+        working-directory: "src/Apps/NetPad.Apps.ScriptHost"
+        run: dotnet restore
+
+      - name: 🚚 Package for Linux
+        if: startsWith(matrix.platform, 'ubuntu-')
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronSharp.CLI -g
+          electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for Windows
+        if: startsWith(matrix.platform, 'windows-')
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronSharp.CLI -g
+          electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for macOS (x86)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          dotnet restore
+          dotnet tool install ElectronSharp.CLI -g
+          electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 🚚 Package for macOS (ARM)
+        if: matrix.platform == 'macos-latest'
+        working-directory: "src/Apps/NetPad.Apps.App"
+        run: |
+          electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+
+      - name: 📋 Rename Electron artifacts
+        shell: bash
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
+          OUTPUT_DIR="Apps/NetPad.Apps.App/bin/Desktop"
+
+          if [ "$VERSION" != "$BASE_VERSION" ]; then
+            echo "Renaming artifacts: $BASE_VERSION → $VERSION"
+            for f in "$OUTPUT_DIR"/netpad-"${BASE_VERSION}"-*; do
+              if [ -f "$f" ]; then
+                newname=$(echo "$f" | sed "s/netpad-${BASE_VERSION}-/netpad-${VERSION}-/")
+                mv "$f" "$newname"
+                echo "  $(basename "$f") → $(basename "$newname")"
+              fi
+            done
+          else
+            echo "No rename needed (version = base_version = $VERSION)"
+          fi
+
+          echo "Electron artifacts:"
+          ls -la "$OUTPUT_DIR"/netpad-* 2>/dev/null || echo "  (no artifacts on this platform)"
+
+      - name: 📦 Upload Electron artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-${{ matrix.platform }}
+          path: src/Apps/NetPad.Apps.App/bin/Desktop/netpad-*
+          retention-days: 1
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Build Tauri app (runs in parallel with Electron)
+  # ─────────────────────────────────────────────────────────────
+  package-tauri:
+    needs: create-release
+    defaults:
+      run:
+        working-directory: ./src
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5"
+            artifact_name: "tauri-mac-aarch64"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5"
+            artifact_name: "tauri-mac-x64"
+          - platform: "ubuntu-22.04"
+            args: "--verbose -c src-tauri/tauri.conf.linux-x64.json5"
+            artifact_name: "tauri-linux-x64"
+          - platform: "ubuntu-22.04-arm"
+            args: "--verbose -c src-tauri/tauri.conf.linux-arm64.json5"
+            artifact_name: "tauri-linux-arm64"
+          - platform: "windows-latest"
+            args: "-c src-tauri/tauri.conf.win-x64.json5"
+            artifact_name: "tauri-win-x64"
+          - platform: "windows-11-arm"
+            args: "-c src-tauri/tauri.conf.win-arm64.json5"
+            artifact_name: "tauri-win-arm64"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧲 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: 🧲 Setup .NET 9
+        uses: actions/setup-dotnet@v4.0.0
+        with:
+          dotnet-version: 9.0.x
+
+      - name: 🧲 Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # These targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: 🧲 Install dependencies (ubuntu only)
+        if: startsWith(matrix.platform, 'ubuntu-')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf liblttng-ust1
+
+      - name: 🧲 Install frontend dependencies (SPA)
+        working-directory: "src/Apps/NetPad.Apps.App/App"
+        run: npm install
+
+      - name: 🧲 Install frontend dependencies (Tauri)
+        working-directory: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+        run: npm install
+
+      - name: 🔨 Restore
+        run: dotnet restore
+
+      # releaseId and tagName intentionally omitted — tauri-action will only build, not upload.
+      - name: 🚚 Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+          projectPath: "src/Apps/NetPad.Apps.Shells.Tauri/TauriApp"
+          tauriScript: "npx tauri"
+
+      - name: 📋 Rename Tauri artifacts
+        shell: bash
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          BASE_VERSION="${{ needs.create-release.outputs.base_version }}"
+          TAURI_TARGET="Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/target"
+          STAGING="staging"
+          mkdir -p "$STAGING"
+
+          # Tauri configs use the base version, so native filenames contain BASE_VERSION.
+          # We rename to the full VERSION (which includes any pre-release suffix).
+
+          case "${{ matrix.artifact_name }}" in
+            tauri-win-x64)
+              find "$TAURI_TARGET/release/bundle/nsis" -maxdepth 1 -name "*.exe" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-win-x64.exe" \;
+              find "$TAURI_TARGET/release/bundle/msi" -maxdepth 1 -name "*.msi" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-win-x64.msi" \;
+              ;;
+            tauri-mac-aarch64)
+              find "$TAURI_TARGET/aarch64-apple-darwin/release/bundle/dmg" -maxdepth 1 -name "*.dmg" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-mac-aarch64.dmg" \;
+              find "$TAURI_TARGET/aarch64-apple-darwin/release/bundle/macos" -maxdepth 1 -name "*.app.tar.gz" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-mac-aarch64.app.tar.gz" \;
+              ;;
+            tauri-mac-x64)
+              find "$TAURI_TARGET/x86_64-apple-darwin/release/bundle/dmg" -maxdepth 1 -name "*.dmg" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-mac-x64.dmg" \;
+              find "$TAURI_TARGET/x86_64-apple-darwin/release/bundle/macos" -maxdepth 1 -name "*.app.tar.gz" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-mac-x64.app.tar.gz" \;
+              ;;
+            tauri-linux-x64)
+              find "$TAURI_TARGET/release/bundle/deb" -maxdepth 1 -name "*.deb" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-linux-amd64.deb" \;
+              # RPM: extract build number from native filename (which uses BASE_VERSION)
+              # e.g. netpad-vnext-0.12.0-1.x86_64.rpm → netpad_vnext-0.12.0-test.1-1-linux-x86_64.rpm
+              for f in "$TAURI_TARGET/release/bundle/rpm"/*.rpm; do
+                if [ -f "$f" ]; then
+                  fname=$(basename "$f")
+                  build_num=$(echo "$fname" | sed -E "s/.*-${BASE_VERSION}-([0-9]+)\..*/\1/")
+                  cp "$f" "$STAGING/netpad_vnext-${VERSION}-${build_num}-linux-x86_64.rpm"
+                fi
+              done
+              ;;
+            tauri-linux-arm64)
+              find "$TAURI_TARGET/release/bundle/deb" -maxdepth 1 -name "*.deb" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-linux-arm64.deb" \;
+              for f in "$TAURI_TARGET/release/bundle/rpm"/*.rpm; do
+                if [ -f "$f" ]; then
+                  fname=$(basename "$f")
+                  build_num=$(echo "$fname" | sed -E "s/.*-${BASE_VERSION}-([0-9]+)\..*/\1/")
+                  cp "$f" "$STAGING/netpad_vnext-${VERSION}-${build_num}-linux-aarch64.rpm"
+                fi
+              done
+              ;;
+            tauri-win-arm64)
+              find "$TAURI_TARGET/release/bundle/nsis" -maxdepth 1 -name "*.exe" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-win-arm64.exe" \;
+              find "$TAURI_TARGET/release/bundle/msi" -maxdepth 1 -name "*.msi" -exec \
+                cp {} "$STAGING/netpad_vnext-${VERSION}-win-arm64.msi" \;
+              ;;
+          esac
+
+          echo "Staged artifacts:"
+          ls -la "$STAGING/"
+
+      - name: 📦 Upload Tauri artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: src/staging/
+          retention-days: 1
+          if-no-files-found: error
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 4: Download all artifacts and upload to the draft release
+  # ─────────────────────────────────────────────────────────────
+  upload-release-assets:
+    needs: [create-release, package-electron, package-tauri]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 📥 Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: 📋 List all artifacts
+        run: find artifacts/ -type f | sort
+
+      - name: 🚚 Upload assets to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          find artifacts/ -type f | while read -r file; do
+            echo "Uploading: $(basename "$file")"
+            gh release upload "v${VERSION}" "$file" --repo "${{ github.repository }}" --clobber
+          done
+
+          echo ""
+          echo "✅ All assets uploaded to draft release: NetPad v${VERSION}"
+
+      - name: 📝 Update release body with asset table
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          REPO="${{ github.repository }}"
+          BASE_URL="https://github.com/${REPO}/releases/download/v${VERSION}"
+
+          # Get the existing release body (changelog)
+          gh release view "v${VERSION}" --repo "$REPO" --json body --jq '.body' > /tmp/release_body.md
+
+          # Collect actual asset names
+          ASSETS=$(find artifacts/ -type f -exec basename {} \; | sort)
+
+          # Helper: classify and append rows to a section file
+          classify_asset() {
+            local f="$1" out_file="$2"
+            local arch variant
+
+            if [[ "$f" == *-x64.* ]] || [[ "$f" == *-x64-* ]] || [[ "$f" == *-amd64.* ]] || [[ "$f" == *-x86_64.* ]]; then arch="x64"
+            elif [[ "$f" == *-arm64.* ]] || [[ "$f" == *-arm64-* ]] || [[ "$f" == *-aarch64.* ]]; then arch="ARM64"
+            else return; fi
+
+            if [[ "$f" == netpad_vnext-* ]]; then variant="Tauri (vNext)"; else variant="Electron"; fi
+
+            echo "| [${f}](${BASE_URL}/${f}) | ${variant} | ${arch} |" >> "$out_file"
+          }
+
+          > /tmp/win_rows.md
+          > /tmp/mac_rows.md
+          > /tmp/linux_rows.md
+
+          while IFS= read -r f; do
+            if [[ "$f" == *win-* ]]; then classify_asset "$f" /tmp/win_rows.md
+            elif [[ "$f" == *mac-* ]]; then classify_asset "$f" /tmp/mac_rows.md
+            elif [[ "$f" == *linux-* ]]; then classify_asset "$f" /tmp/linux_rows.md
+            fi
+          done <<< "$ASSETS"
+
+          # Append download tables to the release body
+          {
+            echo ""
+            echo "## Downloads"
+            echo ""
+            echo "### Windows"
+            echo "| File | Variant | Arch |"
+            echo "|------|---------|------|"
+            cat /tmp/win_rows.md
+            echo ""
+            echo "### macOS"
+            echo "| File | Variant | Arch |"
+            echo "|------|---------|------|"
+            cat /tmp/mac_rows.md
+            echo ""
+            echo "### Linux"
+            echo "| File | Variant | Arch |"
+            echo "|------|---------|------|"
+            cat /tmp/linux_rows.md
+          } >> /tmp/release_body.md
+
+          gh release edit "v${VERSION}" --repo "$REPO" --notes-file /tmp/release_body.md
+
+          echo "✅ Release body updated with asset table"
+
+      - name: 📊 Build summary
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.create-release.outputs.version }}"
+          RUN_ID="${{ github.run_id }}"
+
+          echo "## Release Build Summary — v${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Fetch job durations from the workflow run
+          gh api "repos/${{ github.repository }}/actions/runs/${RUN_ID}/jobs" --paginate \
+            --jq '.jobs[] | select(.conclusion != null) | {name, conclusion, started_at, completed_at}' \
+            | jq -s '.' > /tmp/jobs.json 2>/dev/null || echo "[]" > /tmp/jobs.json
+
+          echo "| Job | Status | Duration |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|----------|" >> $GITHUB_STEP_SUMMARY
+
+          jq -r '.[] | "\(.name)\t\(.conclusion)\t\(.started_at)\t\(.completed_at)"' /tmp/jobs.json | while IFS=$'\t' read -r name conclusion started completed; do
+            # Calculate duration
+            if [ -n "$started" ] && [ -n "$completed" ] && [ "$started" != "null" ] && [ "$completed" != "null" ]; then
+              start_epoch=$(date -d "$started" +%s 2>/dev/null || echo "0")
+              end_epoch=$(date -d "$completed" +%s 2>/dev/null || echo "0")
+              duration_secs=$((end_epoch - start_epoch))
+              minutes=$((duration_secs / 60))
+              seconds=$((duration_secs % 60))
+              duration="${minutes}m ${seconds}s"
+            else
+              duration="—"
+            fi
+
+            # Status emoji
+            case "$conclusion" in
+              success) status="✅" ;;
+              failure) status="❌" ;;
+              cancelled) status="⏹️" ;;
+              skipped) status="⏭️" ;;
+              *) status="$conclusion" ;;
+            esac
+
+            echo "| $name | $status | $duration |" >> $GITHUB_STEP_SUMMARY
+          done
+
+          # Asset count
+          ASSET_COUNT=$(find artifacts/ -type f 2>/dev/null | wc -l)
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Assets uploaded:** ${ASSET_COUNT}" >> $GITHUB_STEP_SUMMARY
