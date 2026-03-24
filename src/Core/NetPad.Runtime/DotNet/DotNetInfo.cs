@@ -176,14 +176,26 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
         return _dotNetRuntimeVersions;
     }
 
-    private static DotNetRuntimeVersion[] ParseRuntimeVersions(string output, string dotNetRootDir)
+    private static DotNetRuntimeVersion[] ParseRuntimeVersions(string output, string fallbackDotNetRootDir)
     {
+        // Output format: {name} {version} [{runtimePath}]
+        // Example: Microsoft.NETCore.App 9.0.3 [C:\Program Files\dotnet\shared\Microsoft.NETCore.App]
+        // The root is found by walking up from the bracket path past "shared/{FrameworkName}".
         return output.Split(Environment.NewLine)
-            .Select(l => l.Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x.Trim()).ToArray())
-            .Where(a => a.Length == 2 && a.All(x => x.Any()))
-            .Select(a => SemanticVersion.TryParse(a[1], out var version)
-                ? new DotNetRuntimeVersion(a[0], version, dotNetRootDir)
-                : null)
+            .Select(line =>
+            {
+                var trimmed = line.Trim();
+                var parts = trimmed.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length < 2) return null;
+
+                var name = parts[0].Trim();
+                var versionStr = parts[1].Trim();
+                if (string.IsNullOrEmpty(name) || !SemanticVersion.TryParse(versionStr, out var version))
+                    return null;
+
+                var rootDir = ExtractDotNetRootFromBracketPath(trimmed) ?? fallbackDotNetRootDir;
+                return new DotNetRuntimeVersion(name, version, rootDir);
+            })
             .Where(v => v != null)
             .ToArray()!;
     }
@@ -243,17 +255,22 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
         return _dotNetSdkVersions;
     }
 
-    private static DotNetSdkVersion[] ParseSdkVersions(string output, string dotNetRootDir)
+    private static DotNetSdkVersion[] ParseSdkVersions(string output, string fallbackDotNetRootDir)
     {
+        // Output format: {version} [{sdkParentPath}]
+        // Example: 9.0.200 [C:\Program Files\dotnet\sdk]
+        // The root is the parent of the bracket path (removing the trailing "sdk" segment).
         return output.Split(Environment.NewLine)
             .Select(line =>
             {
-                var versionStr = line.Trim().Split(' ', 2)[0].Trim();
+                var trimmed = line.Trim();
+                var versionStr = trimmed.Split(' ', 2)[0].Trim();
                 if (string.IsNullOrWhiteSpace(versionStr) ||
                     !SemanticVersion.TryParse(versionStr, out var version))
                     return null;
 
-                return new DotNetSdkVersion(version, dotNetRootDir);
+                var rootDir = ExtractDotNetRootFromBracketPath(trimmed) ?? fallbackDotNetRootDir;
+                return new DotNetSdkVersion(version, rootDir);
             })
             .Where(x => x is not null)
             .ToArray()!;
@@ -385,6 +402,40 @@ public class DotNetInfo(Settings settings, ILogger<DotNetInfo> logger) : IDotNet
         return SemanticVersion.TryParse(output.Split(Environment.NewLine).Skip(1).FirstOrDefault(), out var version)
             ? version
             : null;
+    }
+
+    /// <summary>
+    /// Extracts the .NET root directory from the bracket path in dotnet CLI output.
+    /// Both --list-sdks and --list-runtimes include a path in square brackets that indicates
+    /// where the SDK/runtime lives. The .NET root is the ancestor directory above the
+    /// well-known subdirectory segments (sdk, shared, etc.).
+    /// </summary>
+    /// <example>
+    /// "9.0.200 [C:\Program Files\dotnet\sdk]" → "C:\Program Files\dotnet"
+    /// "Microsoft.NETCore.App 9.0.3 [C:\Program Files\dotnet\shared\Microsoft.NETCore.App]" → "C:\Program Files\dotnet"
+    /// </example>
+    private static string? ExtractDotNetRootFromBracketPath(string line)
+    {
+        var openBracket = line.LastIndexOf('[');
+        var closeBracket = line.LastIndexOf(']');
+        if (openBracket < 0 || closeBracket <= openBracket) return null;
+
+        var bracketPath = line[(openBracket + 1)..closeBracket].Trim();
+        if (string.IsNullOrEmpty(bracketPath)) return null;
+
+        // Walk up until we find a directory that contains the dotnet executable
+        var dir = new DirectoryInfo(bracketPath);
+        while (dir != null)
+        {
+            if (DotNetPathResolver.IsValidDotNetSdkRootDirectory(dir.FullName))
+            {
+                return dir.FullName;
+            }
+
+            dir = dir.Parent;
+        }
+
+        return null;
     }
 
     private static string GetDotNetEfToolExeName()
