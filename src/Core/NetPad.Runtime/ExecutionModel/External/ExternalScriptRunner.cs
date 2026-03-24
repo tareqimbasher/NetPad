@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data.Metadata;
@@ -20,6 +21,7 @@ namespace NetPad.ExecutionModel.External;
 public sealed partial class ExternalScriptRunner : IScriptRunner
 {
     private readonly Script _script;
+    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly IDataConnectionResourcesCache _dataConnectionResourcesCache;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<ExternalScriptRunner> _logger;
@@ -42,12 +44,14 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         ICodeParser codeParser,
         ICodeCompiler codeCompiler,
         IPackageProvider packageProvider,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
         IDataConnectionResourcesCache dataConnectionResourcesCache,
         IDotNetInfo dotNetInfo,
         Settings settings,
         ILogger<ExternalScriptRunner> logger)
     {
         _script = script;
+        _appStatusMessagePublisher = appStatusMessagePublisher;
         _dataConnectionResourcesCache = dataConnectionResourcesCache;
         _codeParser = codeParser;
         _codeCompiler = codeCompiler;
@@ -146,6 +150,8 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
             {
                 return RunResult.RunAttemptFailure();
             }
+
+            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Running...");
 
             var exitCode = await _scriptProcess.WaitForExitTask;
 

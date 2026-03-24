@@ -65,4 +65,18 @@ public static class Presenter
     {
         _errConsole.MarkupLineInterpolated($"[cyan]inf:[/] {message}");
     }
+
+    public static async Task StatusAsync(string initialStatus, Func<Action<string>, Task> action)
+    {
+        if (Console.IsErrorRedirected)
+        {
+            await action(_ => { });
+            return;
+        }
+
+        await _errConsole.Status().StartAsync(initialStatus, async ctx =>
+        {
+            await action(status => ctx.Status = status);
+        });
+    }
 }

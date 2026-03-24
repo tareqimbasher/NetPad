@@ -2,9 +2,11 @@ using System.CommandLine;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using NetPad.Application.Events;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
+using NetPad.Events;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.External;
 using NetPad.IO;
@@ -272,8 +274,6 @@ public static class RunCommand
 
     private static async Task<int> RunScriptAsync(IServiceProvider serviceProvider, Script script, Options options)
     {
-        if (options.Verbose) Presenter.Info("Setting up...");
-
         bool htmlOutput = options.OutputFormat is OutputFormat.HtmlDoc or OutputFormat.Html;
         var htmlDocumentOutput = htmlOutput ? new StringBuilder() : null;
 
@@ -324,7 +324,39 @@ public static class RunCommand
             RedirectIo = htmlOutput
         });
 
-        await scriptRunner.RunScriptAsync(runOptions);
+        // Run with status spinner on stderr (suppressed when stderr is redirected)
+        if (Console.IsErrorRedirected)
+        {
+            await scriptRunner.RunScriptAsync(runOptions);
+        }
+        else
+        {
+            var eventBus = serviceProvider.GetRequiredService<IEventBus>();
+            Task? scriptTask = null;
+
+            await Presenter.StatusAsync("Setting up...", async updateStatus =>
+            {
+                var runningTcs = new TaskCompletionSource();
+                var token = eventBus.Subscribe<AppStatusMessagePublishedEvent>(e =>
+                {
+                    updateStatus(e.Message.Text);
+                    if (e.Message.Text is "Running...")
+                        runningTcs.TrySetResult();
+                    return Task.CompletedTask;
+                });
+
+                scriptTask = scriptRunner.RunScriptAsync(runOptions);
+
+                // Spinner stays active during build phases, clears when "Running..." arrives
+                // or when script completes (e.g. compilation error)
+                await Task.WhenAny(runningTcs.Task, scriptTask);
+                eventBus.Unsubscribe(token);
+            });
+
+            // Script may still be executing after spinner clears — wait for it
+            if (scriptTask is { IsCompleted: false })
+                await scriptTask;
+        }
 
         if (htmlDocumentOutput != null)
         {
