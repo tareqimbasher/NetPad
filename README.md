@@ -8,7 +8,7 @@ A cross-platform C# editor and playground.
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/tareqimbasher/netpad/latest)
 [![Discord](https://img.shields.io/discord/1121067424146522162?label=discord&color=%235864F2)](https://discord.gg/FrgzNBYQFW)
 
-![](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
+![NetPad preview](https://github.com/tareqimbasher/netpad/blob/main/docs/images/preview.png?raw=true)
 
 ## Get Started
 
@@ -26,20 +26,18 @@ simple.
 
 See [Features](https://github.com/tareqimbasher/NetPad?tab=readme-ov-file#features-rocket).
 
-#### If you like this project, please star it :star2: and consider [sponsoring](https://github.com/sponsors/tareqimbasher)!
+**If you like this project, please star it :star2: and consider [sponsoring](https://github.com/sponsors/tareqimbasher)!**
 
 ## Motivation
 
-This project aims to create an open-source, web-enabled, cross-platform alternative to LINQPad. The
-goal is not to reach 100% feature parity with LINQPad, but to offer an effective alternative that
-covers features most commonly used and to introduce a few new useful ones.
+This project aims to create an open-source, cross-platform alternative to LINQPad. NetPad can run as
+a native desktop app or in a web browser, and aims to cover the most commonly used features while 
+introducing new ones of its own.
 
 ## Discord
 
 Join the [Discord server](https://discord.gg/FrgzNBYQFW) to collaborate, ask questions and get the
 latest announcements.
-
-**All** feedback is welcome!
 
 ## Requirements
 
@@ -57,18 +55,16 @@ Additional requirement if you plan to create and use database connections:
 
 **[Download Now!](https://github.com/tareqimbasher/NetPad/releases)**
 
-NetPad has 2 release channels:
+NetPad comes in 2 variants:
 
-- **Stable**: The Electron.js version of NetPad. Installers that start with `netpad`
-- **vNext**: Uses a native Rust-based shell. Installers that start with `netpad_vnext`
+- **Electron:** The current stable package. Installers start with `netpad`
+- **Native (vNext):** Uses a native desktop shell built with [Tauri](https://tauri.app/) instead of Electron, resulting in a lighter package that uses fewer system resources. Installers start with `netpad_vnext`
 
-Both channels have the same feature set. The native vNext version is lighter on system resources and
-will eventually
-become the main package. At which point, the Electron version will be deprecated.
+Both variants have the same features and are equally maintained. The Native (vNext) variant is planned to become the main package, at which point the Electron variant may be deprecated.
 
 > [!NOTE]
 >On **macOS**
-> see [this](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting#netpad-is-damaged-and-cant-be-opened-you-should-move-it-to-the-trash)
+> see [this](https://tareqimbasher.github.io/NetPad/#/wiki/Troubleshooting?id=netpad-is-damaged-and-can39t-be-opened)
 > if you have trouble opening NetPad.
 
 ### Community Packages
@@ -84,24 +80,76 @@ These packages are maintained by community members.
 
 ## Updates
 
-NetPad automatically checks for updates each time you start the application and will notify
-you when a new version is available.
-
-Automatic updates are not supported, but will be added in the future to make updating
-as seamless as possible. Stay tuned for future updates!
-
-The latest version can be downloaded from
+NetPad checks for updates on startup and will notify you when a new version is available.
+The latest version can always be downloaded from
 the [Releases](https://github.com/tareqimbasher/NetPad/releases) page.
 
 ## Wiki
 
-The [Wiki](https://github.com/tareqimbasher/NetPad/wiki) is a great place to find more information
-about NetPad.
+The [Wiki](https://tareqimbasher.github.io/NetPad/#/wiki/) is a great place to find more information
+about NetPad. See the [Troubleshooting](https://tareqimbasher.github.io/NetPad/#/wiki/Troubleshooting)
+page if you run into any issues.
 
-## Troubleshooting
+## Features :rocket:
 
-See the [Troubleshooting](https://github.com/tareqimbasher/NetPad/wiki/Troubleshooting) section of
-the Wiki.
+* Scripting:
+    * Write, save and run your own scripts
+    * Manage namespaces
+    * Per-script .NET SDK version selection
+    * Auto-open unsaved scripts from previous session on launch
+* Output & Visualization:
+    * Dump complex objects to the results console
+    * Export results to Excel or HTML
+    * User-defined results styling
+* Database:
+    * Add database connections and servers
+    * Query with LINQ or SQL
+* Packages & References:
+    * Add NuGet packages to scripts
+    * Reference assemblies from disk
+* CLI:
+    * Run scripts from the command-line using [npad](https://tareqimbasher.github.io/NetPad/#/wiki/CLI)
+* Code Analysis:
+    * Syntax Tree Visualizer
+    * IL Viewer
+* Editor:
+    * Vim keybindings
+    * User Secrets management
+* Code Intelligence (OmniSharp):
+    * Code Completion (Intellisense)
+    * Semantic Highlighting
+    * CodeLens
+    * Inlay Hints
+    * Hover for Documentation
+    * Go-to implementation
+    * Find References
+    * Find Symbol
+    * Rename Symbol
+    * Action Suggestions
+    * Diagnostics
+    * Document Highlighting
+    * Contextual code folding
+    * Format document/selection/on-type
+
+## Recently Added in [v0.11.0](https://github.com/tareqimbasher/NetPad/releases/tag/v0.11.0) :sparkles:
+
+* **.NET 10 Support:** Support for the .NET 10 SDK.
+* **NetPad CLI (`npad`):** Run scripts, standalone C# files, and inline code directly from the terminal. Install with `dotnet tool install -g netpad.cli`. [Wiki](https://tareqimbasher.github.io/NetPad/#/wiki/CLI)
+* **IL Viewer:** Inspect the generated IL for your scripts in the Code pane.
+* **User Secrets Manager:** Manage and access user secrets via a dedicated pane and `Util.Secrets`. [Wiki](https://tareqimbasher.github.io/NetPad/#/wiki/Util?id=user-secrets)
+* **Oracle Data Connections:** Oracle database connections are now supported.
+
+## Planned Features :construction:
+
+* Debugging
+* Hyperlink driven Lazy-loading of results, and a DataGrid view
+* Benchmark your code
+* Referencing other scripts
+* Export a script as a "ready to run" .NET app
+* Export a script as a C# project
+* Git tracking of script changes
+* Workspaces/Sessions
+* Plugins
 
 ## Contribution & Support
 
@@ -124,51 +172,6 @@ If you enjoy using NetPad and would like to support its continued development,
 consider [sponsoring](https://github.com/sponsors/tareqimbasher) the project. A small contribution
 helps immensely with maintenance and the addition of new features.
 Thank you for your support! :heart:
-
-## Features :rocket:
-
-* The basics:
-    * Write, save and run your own scripts.
-    * Manage namespaces.
-    * Standard code editor features powered by Monaco editor.
-    * Auto-open unsaved scripts from previous session on launch.
-* Dump complex objects to the results console and export results to Excel or HTML.
-* Choose the .NET SDK version you want to use per script.
-* Add database connections and query them with LINQ or T-SQL.
-* Add NuGet packages and reference assemblies from disk.
-* Vim keybindings.
-* Syntax Tree Visualizer.
-* IL Viewer
-* User-defined results styling.
-* Ability to run a script from the command-line using
-  [npad](https://tareqimbasher.github.io/NetPad/#/wiki/CLI).
-* LSP powered by OmniSharp:
-    * Code Completion (Intellisense)
-    * Semantic Highlighting
-    * CodeLens
-    * Inlay Hints
-    * Hover for Documentation
-    * Go-to implementation
-    * Find References
-    * Find Symbol
-    * Rename Symbol
-    * Action Suggestions
-    * Diagnostics
-    * Document Highlighting
-    * Contextual code folding
-    * Format document/selection/on-type
-
-## Roadmap :construction:
-
-* Debugging
-* Hyperlink driven Lazy-loading of results, and a DataGrid view
-* Benchmark your code
-* Referencing other scripts
-* Export a script as a "ready to run" .NET app
-* Export a script as a C# project
-* Git tracking of script changes
-* Workspaces/Sessions
-* Plugins
 
 <br/>
 <br/>

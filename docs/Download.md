@@ -5,13 +5,12 @@
 You can download officials installers for Windows, macOS and Linux from
 the [Releases](https://github.com/tareqimbasher/NetPad/releases) page on GitHub.
 
-NetPad has 2 release channels:
+NetPad comes in 2 variants:
 
-- **Stable**: The Electron.js version of NetPad. Installers that start with `netpad`
-- **vNext**: Uses a native Rust-based shell. Installers that start with `netpad_vnext`
+- **Electron:** The current stable package. Installers start with `netpad`
+- **Native (vNext):** Uses a native desktop shell built with [Tauri](https://tauri.app/) instead of Electron, resulting in a lighter package that uses fewer system resources. Installers start with `netpad_vnext`
 
-Both channels have the same feature set and are equally maintained. The native vNext version is lighter on system
-resources and will eventually become the main package. At which point, the Electron version might be deprecated.
+Both variants have the same features and are equally maintained. The Native (vNext) variant is planned to become the main package, at which point the Electron variant may be deprecated.
 
 ### Unofficial Packages
 

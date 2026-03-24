@@ -496,7 +496,7 @@ jobs:
             elif [[ "$f" == *-arm64.* ]] || [[ "$f" == *-arm64-* ]] || [[ "$f" == *-aarch64.* ]]; then arch="ARM64"; sort_arch="2"
             else return; fi
 
-            if [[ "$f" == netpad_vnext-* ]]; then variant="Tauri (vNext)"; sort_variant="2"; else variant="Electron"; sort_variant="1"; fi
+            if [[ "$f" == netpad_vnext-* ]]; then variant="Native (vNext)"; sort_variant="2"; else variant="Electron"; sort_variant="1"; fi
 
             echo "${sort_variant}~${sort_arch}~${f}	| [${f}](${BASE_URL}/${f}) | ${variant} | ${arch} |" >> "$out_file"
           }
@@ -521,6 +521,13 @@ jobs:
           {
             echo ""
             echo "## Downloads"
+            echo ""
+            echo "NetPad comes in 2 variants:"
+            echo ""
+            echo "- **Electron:** The current stable package. Installers start with \`netpad\`"
+            echo "- **Native (vNext):** Uses a native desktop shell instead of Electron, resulting in a lighter package that uses fewer system resources. Installers start with \`netpad_vnext\`"
+            echo ""
+            echo "Both variants have the same features and are equally maintained. See [wiki](https://tareqimbasher.github.io/NetPad/#/Download) for more info."
             echo ""
             echo "### Windows"
             echo "| File | Variant | Arch |"
