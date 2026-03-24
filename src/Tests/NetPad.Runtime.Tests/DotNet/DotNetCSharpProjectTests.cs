@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Tests.Helpers;
@@ -222,7 +223,7 @@ public partial class DotNetCSharpProjectTests : IAsyncLifetime
         string? projectFileName = null,
         bool includePackageCachePath = true)
     {
-        var info = new DotNetInfo(new Settings());
+        var info = new DotNetInfo(new Settings(), NullLogger<DotNetInfo>.Instance);
         var cacheDir = includePackageCachePath ? _packageCacheDir : null;
 
         return new DotNetCSharpProject(

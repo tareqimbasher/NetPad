@@ -40,7 +40,7 @@ public class CheckAppDependenciesQuery : Query<AppDependencyCheckResult>
 
             var result = new AppDependencyCheckResult(
                 dotNetInfo.GetCurrentDotNetRuntimeVersion().ToString(),
-                dotNetSdkVersions?.Select(v => v.Version).ToArray() ?? [],
+                dotNetSdkVersions ?? [],
                 dotNetEfToolVersion
             );
 

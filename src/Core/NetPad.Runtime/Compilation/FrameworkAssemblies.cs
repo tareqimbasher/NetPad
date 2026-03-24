@@ -10,7 +10,7 @@ namespace NetPad.Compilation;
 /// </summary>
 public static class FrameworkAssemblies
 {
-    private record CacheKey(DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
+    private record CacheKey(string DotNetRootDir, DotNetFrameworkVersion DotNetFrameworkVersion, bool IncludeAspNet);
 
     private static readonly ConcurrentDictionary<CacheKey, HashSet<string>> _systemAssembliesLocations = new();
 
@@ -26,7 +26,7 @@ public static class FrameworkAssemblies
         bool includeAspNet
     )
     {
-        var key = new CacheKey(dotNetFrameworkVersion, includeAspNet);
+        var key = new CacheKey(dotNetRootDir.Path, dotNetFrameworkVersion, includeAspNet);
 
         return _systemAssembliesLocations.GetOrAdd(
                 key,

@@ -44,4 +44,19 @@ public static class PlatformUtil
     }
 
     public static string GetPlatformExecutableExtension() => IsOSWindows() ? ".exe" : string.Empty;
+
+    public static char PathSeparator => IsOSWindows() ? ';' : ':';
+
+    /// <summary>
+    /// Appends a directory to an existing PATH value using the platform-specific separator.
+    /// </summary>
+    public static string AppendToPathVariable(string? existingPath, string directory)
+    {
+        if (string.IsNullOrWhiteSpace(existingPath))
+            return directory;
+
+        return existingPath.EndsWith(PathSeparator)
+            ? $"{existingPath}{directory}"
+            : $"{existingPath}{PathSeparator}{directory}";
+    }
 }

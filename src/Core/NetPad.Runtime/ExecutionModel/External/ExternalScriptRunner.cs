@@ -113,8 +113,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 ? options.ProcessCliArgs
                 : options.ProcessCliArgs.Concat(["-parent", Environment.ProcessId.ToString()]).ToArray();
 
+            var dotNetExe = _dotNetInfo.LocateDotNetExecutableForFramework(_script.Config.TargetFrameworkVersion)
+                           ?? _dotNetInfo.LocateDotNetExecutableOrThrow();
             var startInfo = new ProcessStartInfo(
-                    _dotNetInfo.LocateDotNetExecutableOrThrow(),
+                    dotNetExe,
                     $"\"{scriptAssemblyFilePath}\" -- {string.Join(' ', args)}")
                 .CopyCurrentEnvironmentVariables();
 

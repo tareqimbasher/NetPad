@@ -1,10 +1,12 @@
-﻿import {AppDependencyCheckResult, DotNetPathReport, IAppService, SemanticVersion} from "@application";
+﻿import {AppDependencyCheckResult, DotNetPathReport, DotNetSdkVersion, IAppService} from "@application";
 import {Dialog} from "@application/dialogs/dialog";
 
 export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult> {
     public dotnetSdkMissing = false;
     public dotnetEfCoreToolMissing = false;
     public report?: DotNetPathReport;
+    public sdkGroups: { path: string; sdks: DotNetSdkVersion[] }[] = [];
+    public supportedVersionStrings = new Set<string>();
 
     private loadingCount = 0;
 
@@ -26,8 +28,13 @@ export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult>
             this.input = result;
 
             this.dotnetSdkMissing = this.input.supportedDotNetSdkVersionsInstalled.length === 0;
-
             this.dotnetEfCoreToolMissing = !this.input.isSupportedDotNetEfToolInstalled;
+
+            this.supportedVersionStrings = new Set(
+                this.input.supportedDotNetSdkVersionsInstalled.map(s => s.version.string)
+            );
+
+            this.sdkGroups = this.groupSdksByInstallation(this.input.dotNetSdkVersions);
         }).finally(() => {
             this.loadingCount--;
         });
@@ -38,5 +45,19 @@ export class AppDependenciesCheckDialog extends Dialog<AppDependencyCheckResult>
         }).finally(() => {
             this.loadingCount--;
         });
+    }
+
+    private groupSdksByInstallation(sdks: DotNetSdkVersion[]): { path: string; sdks: DotNetSdkVersion[] }[] {
+        const groups = new Map<string, DotNetSdkVersion[]>();
+
+        for (const sdk of sdks) {
+            const path = sdk.dotNetRootDirectory || "Unknown";
+            if (!groups.has(path)) {
+                groups.set(path, []);
+            }
+            groups.get(path)!.push(sdk);
+        }
+
+        return Array.from(groups.entries()).map(([path, sdks]) => ({path, sdks}));
     }
 }

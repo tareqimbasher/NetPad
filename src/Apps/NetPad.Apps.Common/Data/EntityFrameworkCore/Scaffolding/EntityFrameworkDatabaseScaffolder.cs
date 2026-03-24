@@ -115,11 +115,16 @@ public class EntityFrameworkDatabaseScaffolder(
 
         var dbModelOutputDirPath = project.ProjectDirectoryPath.Combine("DbModel").CreateIfNotExists();
 
-        await RunEfScaffoldAsync(connection, project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path);
+        await RunEfScaffoldAsync(
+            connection,
+            project.ProjectDirectoryPath.Path,
+            dbModelOutputDirPath.Path,
+            targetFrameworkVersion);
 
         if (connection.ScaffoldOptions?.OptimizeDbContext == true)
         {
-            await RunEfOptimizeAsync(project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path);
+            await RunEfOptimizeAsync(project.ProjectDirectoryPath.Path, dbModelOutputDirPath.Path,
+                targetFrameworkVersion);
         }
 
         return project;
@@ -231,7 +236,8 @@ public class EntityFrameworkDatabaseScaffolder(
     private async Task RunEfScaffoldAsync(
         EntityFrameworkDatabaseConnection connection,
         string projectDirectoryPath,
-        string dbModelOutputDirPath)
+        string dbModelOutputDirPath,
+        DotNetFrameworkVersion targetFrameworkVersion)
     {
         var argList = new List<string>
         {
@@ -278,11 +284,10 @@ public class EntityFrameworkDatabaseScaffolder(
 
         // Add dotnet directory to the PATH because when dotnet-ef process starts, if dotnet is not in PATH
         // it will fail as dotnet-ef depends on dotnet
-        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
-        var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
-        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal)
-            ? dotnetExeDir
-            : $"{pathVariableVal}:{dotnetExeDir}";
+        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(targetFrameworkVersion)
+                           ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
+        startInfo.EnvironmentVariables["PATH"] = PlatformUtil.AppendToPathVariable(
+            startInfo.EnvironmentVariables["PATH"], dotnetExeDir);
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
@@ -309,7 +314,8 @@ public class EntityFrameworkDatabaseScaffolder(
         }
     }
 
-    private async Task RunEfOptimizeAsync(string projectDirectoryPath, string dbModelOutputDirPath)
+    private async Task RunEfOptimizeAsync(string projectDirectoryPath, string dbModelOutputDirPath,
+        DotNetFrameworkVersion targetFrameworkVersion)
     {
         var argList = new List<string>
         {
@@ -327,11 +333,10 @@ public class EntityFrameworkDatabaseScaffolder(
             .WithNoUi()
             .CopyCurrentEnvironmentVariables();
 
-        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectory();
-        var pathVariableVal = startInfo.EnvironmentVariables["PATH"]?.TrimEnd(':');
-        startInfo.EnvironmentVariables["PATH"] = string.IsNullOrWhiteSpace(pathVariableVal)
-            ? dotnetExeDir
-            : $"{pathVariableVal}:{dotnetExeDir}";
+        var dotnetExeDir = dotNetInfo.LocateDotNetRootDirectoryForFramework(targetFrameworkVersion)
+                           ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
+        startInfo.EnvironmentVariables["PATH"] = PlatformUtil.AppendToPathVariable(
+            startInfo.EnvironmentVariables["PATH"], dotnetExeDir);
         startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotnetExeDir;
 
         var outputs = new List<string>();
