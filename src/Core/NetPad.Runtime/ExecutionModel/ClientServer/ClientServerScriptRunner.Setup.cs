@@ -3,11 +3,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Compilation;
+using NetPad.Compilation.Scripts;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
 using NetPad.IO;
 using NetPad.Presentation;
+using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.ClientServer;
 
@@ -48,28 +50,62 @@ public partial class ClientServerScriptRunner
     {
         _workingDirectory.CreateIfNotExists();
 
-        // Resolve and collect all dependencies needed by script-host and script
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
-        var dependencies = await _scriptDependencyResolver.GetDependenciesAsync(_script, cancellationToken);
+        // 1. Compute fingerprint for the effective code being run
+        var effectiveCode = runOptions.SpecificCodeToRun ?? _script.Code;
+        var fingerprintHash = ScriptFingerprint.Create(
+            effectiveCode,
+            _script.Config.Namespaces,
+            _script.Config.References,
+            _script.Config.Kind,
+            _script.Config.TargetFrameworkVersion,
+            _script.Config.OptimizationLevel,
+            _script.Config.UseAspNet,
+            _script.DataConnection?.Id
+        ).CalculateHash();
 
-        if (cancellationToken.IsCancellationRequested)
+        // 2. Try compilation cache — local copy avoids TOCTOU if another thread invalidates
+        var cache = _compilationCache;
+        bool compilationCacheHit = cache != null && cache.FingerprintHash == fingerprintHash;
+
+        ScriptDependencies dependencies;
+        ParseAndCompileResult parseCompileResult;
+
+        if (compilationCacheHit)
         {
-            return null;
+            _logger.LogDebug("Compilation cache hit, skipping dependency resolution and compilation");
+            dependencies = cache!.Dependencies;
+            parseCompileResult = cache.ParseAndCompileResult;
+        }
+        else
+        {
+            // Cache miss, resolve dependencies and compile
+            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+            dependencies = await _scriptDependencyResolver.GetDependenciesAsync(_script, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return null;
+            }
+
+            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
+            var result = await _scriptCompiler.ParseAndCompileAsync(effectiveCode, _script, cancellationToken);
+
+            if (result == null || cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogError("Parse and compile failed");
+                return null;
+            }
+
+            parseCompileResult = result;
+
+            // Cache only successful compilations
+            if (result.CompilationResult.Success)
+            {
+                _compilationCache = new CompilationCacheEntry(fingerprintHash, result, dependencies);
+            }
         }
 
-        // Parse and compile the script
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
-        var parseCompileResult = await _scriptCompiler.ParseAndCompileAsync(
-            runOptions.SpecificCodeToRun ?? _script.Code,
-            _script,
-            cancellationToken);
-
-        if (parseCompileResult == null || cancellationToken.IsCancellationRequested)
-        {
-            _logger.LogError("Parse and compile failed");
-            return null;
-        }
-
+        // 3. Check compilation success
         var (parsingResult, compilationResult) = parseCompileResult;
         if (!compilationResult.Success)
         {
@@ -85,17 +121,46 @@ public partial class ClientServerScriptRunner
             return null;
         }
 
-        // Deploy compiled script, the script-host, and their dependencies
+        // 4. Deploy compiled script, the script-host, and their dependencies
         _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
+
         if (!_workingDirectory.ScriptHostExecutableFile.Exists())
         {
             DeployScriptHostExecutable(_workingDirectory);
         }
 
-        await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
-        var (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
-            compilationResult.AssemblyBytes,
-            dependencies);
+        // Capture values, fields can be nulled by InvalidateDeploymentState() on event bus thread
+        var lastDeployedHash = _lastDeployedFingerprintHash;
+        var lastDeploy = _lastScriptDeploy;
+        bool deploymentCurrent = lastDeployedHash == fingerprintHash;
+
+        // Shared deps: skip if deployment is current and directory exists
+        if (!deploymentCurrent || !_workingDirectory.SharedDependenciesDirectory.Exists())
+        {
+            await DeploySharedDependenciesAsync(_workingDirectory, dependencies);
+        }
+
+        // Script deps: reuse directory if deployment is current and directory still exists
+        DirectoryPath scriptDir;
+        FilePath scriptAssemblyFilePath;
+
+        if (deploymentCurrent && lastDeploy != null && lastDeploy.ScriptDir.Exists())
+        {
+            // Reuse existing deployment — only rewrite scriptconfig.json (settings may have changed)
+            scriptDir = lastDeploy.ScriptDir;
+            scriptAssemblyFilePath = lastDeploy.ScriptAssemblyFilePath;
+            await WriteScriptConfigAsync(scriptDir);
+        }
+        else
+        {
+            // Fresh deployment
+            (scriptDir, scriptAssemblyFilePath) = await DeployScriptDependenciesAsync(
+                compilationResult.AssemblyBytes, dependencies);
+        }
+
+        // Update deployment state
+        _lastDeployedFingerprintHash = fingerprintHash;
+        _lastScriptDeploy = new ScriptDeployState(scriptDir, scriptAssemblyFilePath);
 
         string[] inPlaceDependencyDirectories = dependencies.References
             .Where(x => x.LoadStrategy == DependencyLoadStrategy.LoadInPlace)
@@ -181,7 +246,14 @@ public partial class ClientServerScriptRunner
         );
 
         // The scriptconfig.json is custom and passes some options to the running script
-        await File.WriteAllTextAsync(
+        await WriteScriptConfigAsync(scriptDeployDir);
+
+        return (scriptDeployDir, scriptAssemblyFilePath);
+    }
+
+    private Task WriteScriptConfigAsync(DirectoryPath scriptDeployDir)
+    {
+        return File.WriteAllTextAsync(
             Path.Combine(scriptDeployDir.Path, "scriptconfig.json"),
             $$"""
               {
@@ -191,8 +263,6 @@ public partial class ClientServerScriptRunner
                   }
               }
               """);
-
-        return (scriptDeployDir, scriptAssemblyFilePath);
     }
 
     private static async Task DeployAsync(DirectoryPath destination,

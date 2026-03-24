@@ -15,6 +15,30 @@ public static class FrameworkAssemblies
     private static readonly ConcurrentDictionary<CacheKey, HashSet<string>> _systemAssembliesLocations = new();
 
     /// <summary>
+    /// Pre-populates the assembly location cache for the specified framework version.
+    /// </summary>
+    public static void PreWarm(DirectoryPath dotNetRootDir, DotNetFrameworkVersion frameworkVersion)
+    {
+        try
+        {
+            _ = GetAssemblyLocations(dotNetRootDir, frameworkVersion, includeAspNet: false);
+        }
+        catch
+        {
+            // Framework not installed, ignore
+        }
+
+        try
+        {
+            _ = GetAssemblyLocations(dotNetRootDir, frameworkVersion, includeAspNet: true);
+        }
+        catch
+        {
+            // ASP.NET pack not installed for this framework, ignore
+        }
+    }
+
+    /// <summary>
     /// Gets the assembly locations of the specified .NET framework version.
     /// </summary>
     /// <param name="dotNetRootDir">Where .NET is located (installed) on the local machine.</param>

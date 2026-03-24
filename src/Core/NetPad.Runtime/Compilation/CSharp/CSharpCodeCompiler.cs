@@ -16,6 +16,9 @@ namespace NetPad.Compilation.CSharp;
 public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService codeAnalysisService)
     : ICodeCompiler
 {
+    private static readonly ConcurrentDictionary<(string Path, long LastWriteTicks), PortableExecutableReference>
+        _metadataReferenceCache = new();
+
     public CompilationResult Compile(CompilationInput input)
     {
         string assemblyName = !string.IsNullOrWhiteSpace(input.AssemblyName) ? input.AssemblyName : "NetPadScript";
@@ -49,7 +52,7 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
         // Build references to all assemblies we need to include in the compilation, starting with the assemblies
         // of the selected .NET SDK.
         var dotNetRoot = dotNetInfo.LocateDotNetRootDirectoryForFramework(input.TargetFrameworkVersion)
-                        ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
+                         ?? dotNetInfo.LocateDotNetRootDirectoryOrThrow();
         var assemblyLocations = FrameworkAssemblies.GetAssemblyLocations(
             dotNetRoot,
             input.TargetFrameworkVersion,
@@ -98,7 +101,10 @@ public class CSharpCodeCompiler(IDotNetInfo dotNetInfo, ICodeAnalysisService cod
     {
         return assemblyImages
             .Select(i => MetadataReference.CreateFromImage(i))
-            .Union(assemblyLocations.Select(loc => MetadataReference.CreateFromFile(loc)))
+            .Union(assemblyLocations.Select(loc => _metadataReferenceCache.GetOrAdd(
+                (loc, File.GetLastWriteTimeUtc(loc).Ticks),
+                key => MetadataReference.CreateFromFile(key.Path))
+            ))
             .ToArray();
     }
 

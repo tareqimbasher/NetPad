@@ -1,3 +1,4 @@
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -190,7 +191,8 @@ public record ScriptFingerprint(
             return r switch
             {
                 PackageReference packageReference => $"{packageReference.PackageId}{packageReference.Version}",
-                AssemblyFileReference assemblyFileReference => assemblyFileReference.AssemblyPath,
+                AssemblyFileReference assemblyFileReference =>
+                    $"{assemblyFileReference.AssemblyPath}{GetFileLastWriteTicks(assemblyFileReference.AssemblyPath)}",
                 AssemblyImageReference assemblyImageReference =>
                     $"{assemblyImageReference.AssemblyImage.Image.LongLength}{assemblyImageReference.AssemblyImage.AssemblyName.FullName}",
                 _ => throw new NotSupportedException($"{r.GetType().Name} is not supported.")
@@ -205,5 +207,17 @@ public record ScriptFingerprint(
         var sb = new StringBuilder(hash.Length * 2);
         foreach (var b in hash) sb.Append(b.ToString("x2"));
         return sb.ToString();
+    }
+
+    private static long GetFileLastWriteTicks(string path)
+    {
+        try
+        {
+            return File.GetLastWriteTimeUtc(path).Ticks;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 }

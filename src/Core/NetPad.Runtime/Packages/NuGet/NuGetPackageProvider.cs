@@ -27,6 +27,7 @@ public class NuGetPackageProvider(
 {
     private const string NugetApiUri = "https://api.nuget.org/v3/index.json";
     private const string PackageInstallInfoFileName = "netpad.json";
+    private const string ResolvedAssetsCacheFilePrefix = "netpad-resolved-assets-";
 
     // hostDependencyContext = DependencyContext.Load(hostAssembly);
     // FrameworkName = hostDependencyContext.Target.Framework;
@@ -244,6 +245,17 @@ public class NuGetPackageProvider(
     {
         var packageIdentity = new NugetPackageIdentity(packageId, new NuGetVersion(packageVersion));
 
+        // Try disk cache first
+        var installPath = GetInstallPath(packageIdentity);
+        if (installPath != null)
+        {
+            var cached = TryLoadResolvedAssetsCache(installPath, dotNetFrameworkVersion);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
         var sourceRepositoryProvider = GetSourceRepositoryProvider();
         var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
         var nugetFramework = NuGetFramework.Parse(dotNetFrameworkVersion.GetTargetFrameworkMoniker());
@@ -292,6 +304,13 @@ public class NuGetPackageProvider(
             {
                 assets.Add(asset);
             }
+        }
+
+        // Persist to disk for future runs
+        installPath ??= GetInstallPath(packageIdentity);
+        if (installPath != null)
+        {
+            SaveResolvedAssetsCache(installPath, dotNetFrameworkVersion, assets);
         }
 
         return assets;
@@ -1113,5 +1132,55 @@ public class NuGetPackageProvider(
     {
         var json = JsonSerializer.Serialize(info, true);
         File.WriteAllText(Path.Combine(installPath, PackageInstallInfoFileName), json);
+    }
+
+    private static string GetResolvedAssetsCacheFileName(DotNetFrameworkVersion dotNetFrameworkVersion)
+        => $"{ResolvedAssetsCacheFilePrefix}{dotNetFrameworkVersion.GetTargetFrameworkMoniker()}.json";
+
+    private static HashSet<PackageAsset>? TryLoadResolvedAssetsCache(
+        string installPath,
+        DotNetFrameworkVersion framework)
+    {
+        var cacheFilePath = Path.Combine(installPath, GetResolvedAssetsCacheFileName(framework));
+        if (!File.Exists(cacheFilePath)) return null;
+
+        try
+        {
+            var paths = JsonSerializer.Deserialize<string[]>(File.ReadAllText(cacheFilePath));
+            if (paths == null || paths.Length == 0) return null;
+
+            // Validate all paths still exist on disk
+            var assets = new HashSet<PackageAsset>();
+            foreach (var path in paths)
+            {
+                if (!File.Exists(path)) return null;
+                assets.Add(new PackageAsset(path));
+            }
+
+            return assets;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void SaveResolvedAssetsCache(
+        string installPath,
+        DotNetFrameworkVersion framework,
+        HashSet<PackageAsset> assets)
+    {
+        try
+        {
+            var paths = assets.Select(a => a.Path).ToArray();
+            var json = JsonSerializer.Serialize(paths, true);
+            File.WriteAllText(
+                Path.Combine(installPath, GetResolvedAssetsCacheFileName(framework)),
+                json);
+        }
+        catch
+        {
+            // Best-effort — failure to cache is not fatal
+        }
     }
 }

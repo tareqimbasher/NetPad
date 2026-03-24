@@ -87,17 +87,6 @@ public class ScriptRunner
         finally
         {
             GcUtil.CollectAndWait();
-
-            Retry.Execute(
-                3,
-                TimeSpan.FromSeconds(1),
-                () =>
-                {
-                    if (Directory.Exists(message.ScriptDirPath))
-                    {
-                        Directory.Delete(message.ScriptDirPath, true);
-                    }
-                });
         }
     }
 

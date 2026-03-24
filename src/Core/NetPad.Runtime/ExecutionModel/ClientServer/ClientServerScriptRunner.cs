@@ -64,6 +64,11 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private bool _userRequestedStop;
     private bool _restartScriptHostOnNextRun;
 
+    // Compilation and deployment caches
+    private CompilationCacheEntry? _compilationCache;
+    private string? _lastDeployedFingerprintHash;
+    private ScriptDeployState? _lastScriptDeploy;
+
     public ClientServerScriptRunner(
         Script script,
         IScriptDependencyResolver scriptDependencyResolver,
@@ -128,6 +133,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             if (_currentRun?.DataConnectionId == ev.DataConnection.Id)
             {
                 _restartScriptHostOnNextRun = true;
+                InvalidateCompilationCache();
             }
 
             return Task.CompletedTask;
@@ -176,6 +182,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
                     {
                         _logger.LogDebug("Will restart script-host");
                         _scriptHostProcessManager.StopScriptHost();
+                        InvalidateDeploymentState();
                     }
                 }
 
@@ -452,10 +459,23 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         return string.Join("\n", lines);
     }
 
+    private void InvalidateCompilationCache()
+    {
+        _compilationCache = null;
+        InvalidateDeploymentState();
+    }
+
+    private void InvalidateDeploymentState()
+    {
+        _lastDeployedFingerprintHash = null;
+        _lastScriptDeploy = null;
+    }
+
     public void Dispose()
     {
         _logger.LogTrace("Dispose start");
 
+        InvalidateCompilationCache();
         _externalOutputWriters.Clear();
         _externalInputReaders.Clear();
 
@@ -482,4 +502,19 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
 
         _logger.LogTrace("Dispose end");
     }
+
+    /// <summary>
+    /// Cached result of a successful compilation, keyed by script fingerprint hash.
+    /// </summary>
+    private sealed record CompilationCacheEntry(
+        string FingerprintHash,
+        ParseAndCompileResult ParseAndCompileResult,
+        ScriptDependencies Dependencies);
+
+    /// <summary>
+    /// Tracks the last deployed script directory for reuse on unchanged re-runs.
+    /// </summary>
+    private sealed record ScriptDeployState(
+        DirectoryPath ScriptDir,
+        FilePath ScriptAssemblyFilePath);
 }
