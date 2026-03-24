@@ -285,7 +285,7 @@ js-lint:
 # JavaScript: run tests
 [group('javascript')]
 js-test:
-    npm test --prefix "{{ var_spa }}"
+    npm run test --prefix "{{ var_spa }}"
 
 # JavaScript: analyze webpack bundle (interactive server)
 [group('javascript')]
@@ -360,4 +360,4 @@ test-all: dotnet-test js-test rust-test
 
 # Run all tests, lints, and checks
 [group('all')]
-check-all: dotnet-build js-lint dotnet-test js-test rust-test rust-format-check rust-clippy
+check-all: dotnet-test js-test js-lint rust-test rust-format-check rust-clippy
