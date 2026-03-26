@@ -259,8 +259,19 @@ public static class RunCommand
     {
         Script? script;
 
-        // If no code and no script specified, try reading from stdin
-        if (string.IsNullOrEmpty(options.Code) && string.IsNullOrEmpty(options.PathOrName) && Console.IsInputRedirected)
+        // If a script path/name is provided, load it (even if -e is also specified,
+        // so the script's config and data connection are preserved)
+        if (!string.IsNullOrEmpty(options.PathOrName))
+        {
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName);
+            if (selectedScriptPath == null) return 1;
+            script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
+        }
+        else if (!string.IsNullOrEmpty(options.Code))
+        {
+            script = Helper.CreateScriptFromCode(serviceProvider, options.Code);
+        }
+        else if (Console.IsInputRedirected)
         {
             var stdinCode = await Console.In.ReadToEndAsync();
             if (!string.IsNullOrWhiteSpace(stdinCode))
@@ -273,15 +284,12 @@ public static class RunCommand
                 return 1;
             }
         }
-        else if (string.IsNullOrEmpty(options.Code))
-        {
-            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName);
-            if (selectedScriptPath == null) return 1;
-            script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
-        }
         else
         {
-            script = Helper.CreateScriptFromCode(serviceProvider, options.Code);
+            // No path, no code, no stdin — prompt for script selection
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, null);
+            if (selectedScriptPath == null) return 1;
+            script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
         }
 
         if (script == null) return 1;

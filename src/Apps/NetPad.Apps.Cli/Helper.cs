@@ -27,6 +27,18 @@ public static class Helper
 
         var selectedScriptFilePath = matches[0];
 
+        // If exactly one match has a base name that equals the query, auto-select it
+        if (matches.Length > 1 && !string.IsNullOrWhiteSpace(pathOrName))
+        {
+            var exactNameMatches = matches
+                .Where(m => Path.GetFileNameWithoutExtension(m)
+                    .Equals(pathOrName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (exactNameMatches.Length == 1)
+                return exactNameMatches[0];
+        }
+
         if (matches.Length > 1)
         {
             var scriptsDirPath = settings.ScriptsDirectoryPath;
