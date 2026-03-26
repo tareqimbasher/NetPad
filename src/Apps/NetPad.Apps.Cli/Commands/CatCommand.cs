@@ -14,17 +14,18 @@ public static class CatCommand
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
             Description =
-                "A path to a script or text file, or a name (or partial name) to search for in your script library.",
-            Arity = ArgumentArity.ExactlyOne,
+                "A path to a script or text file, or a name (or partial name) to search for in your script library.\n" +
+                "If omitted, or if name matches multiple scripts, you'll be prompted to select from a list.",
+            Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
         };
 
         catCmd.Arguments.Add(pathOrNameArg);
 
-        catCmd.SetAction(p => ExecuteAsync(p.GetRequiredValue(pathOrNameArg), serviceProvider));
+        catCmd.SetAction(p => ExecuteAsync(p.GetValue(pathOrNameArg), serviceProvider));
     }
 
-    private static async Task<int> ExecuteAsync(string pathOrName, IServiceProvider serviceProvider)
+    private static async Task<int> ExecuteAsync(string? pathOrName, IServiceProvider serviceProvider)
     {
         var selectedScriptPath = Helper.SelectScript(serviceProvider, pathOrName);
         if (selectedScriptPath == null) return 1;

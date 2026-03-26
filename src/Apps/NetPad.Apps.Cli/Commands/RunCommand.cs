@@ -114,7 +114,7 @@ public static class RunCommand
         var formatOption = new Option<OutputFormat>("--format")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            HelpName = "text|html|htmldoc",
+            HelpName = "console|text|html|htmldoc",
             Description =
                 "The format of script output. If not specified, will emit structured console output (default).\n" +
                 "Values:\n" +
@@ -145,7 +145,7 @@ public static class RunCommand
         var verboseOption = new Option<bool>("--verbose")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Be verbose.",
+            Description = "Emit diagnostic and process logs to stderr.",
         };
 
         return new RunSymbols(
