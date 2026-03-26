@@ -20,6 +20,9 @@ rootCommand.AddCacheCommand(serviceProvider);
 rootCommand.AddLogsCommand(serviceProvider);
 rootCommand.AddSettingsCommand(serviceProvider);
 
+// Default: when no subcommand is specified, behave as 'run'
+rootCommand.SetDefaultRunAction(serviceProvider);
+
 var parseResult = rootCommand.Parse(args);
 return await parseResult.InvokeAsync();
 

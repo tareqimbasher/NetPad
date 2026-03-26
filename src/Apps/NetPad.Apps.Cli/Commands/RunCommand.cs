@@ -44,13 +44,21 @@ public static class RunCommand
         public bool NoCache { get; set; } = NoCache;
     }
 
-    public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
-    {
-        var runCmd = new Command(
-            "run",
-            "Run a script or a plain text file.");
-        parent.Subcommands.Add(runCmd);
+    private sealed record RunSymbols(
+        Argument<string> PathOrNameArg,
+        Option<string?> CodeOption,
+        Option<int?> SdkOption,
+        Option<string?> ConnectionOption,
+        Option<bool?> OptimizeOption,
+        Option<bool?> UseAspNetOption,
+        Option<OutputFormat> FormatOption,
+        Option<bool> MinimalOption,
+        Option<bool> NoCacheOption,
+        Option<bool> ForceRebuildOption,
+        Option<bool> VerboseOption);
 
+    private static RunSymbols CreateRunSymbols()
+    {
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
             Description =
@@ -61,7 +69,7 @@ public static class RunCommand
                 "    run /path/to/myscript.cs       <= path to a text file that contains code to be executed\n" +
                 "    run myscript                   <= looks for a script in your library with a path containing the word 'myscript' \n" +
                 "Notes:\n" +
-                "    1. If omitted, or if name matches multiple scripts from your library, you’ll be prompted to select from a list.\n" +
+                "    1. If omitted, or if name matches multiple scripts from your library, you'll be prompted to select from a list.\n" +
                 "    2. If omitted and the --code (-x) option is used you will not be prompted to select a script.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
@@ -140,21 +148,41 @@ public static class RunCommand
             Description = "Be verbose.",
         };
 
-        runCmd.Arguments.Add(pathOrNameArg);
-        runCmd.Options.Add(codeOption);
-        runCmd.Options.Add(sdkOption);
-        runCmd.Options.Add(connectionOption);
-        runCmd.Options.Add(optimizeOption);
-        runCmd.Options.Add(useAspNetOption);
-        runCmd.Options.Add(formatOption);
-        runCmd.Options.Add(minimalOption);
-        runCmd.Options.Add(noCacheOption);
-        runCmd.Options.Add(forceRebuildOption);
-        runCmd.Options.Add(verboseOption);
-        runCmd.SetAction(async p =>
+        return new RunSymbols(
+            pathOrNameArg,
+            codeOption,
+            sdkOption,
+            connectionOption,
+            optimizeOption,
+            useAspNetOption,
+            formatOption,
+            minimalOption,
+            noCacheOption,
+            forceRebuildOption,
+            verboseOption);
+    }
+
+    private static void AttachRunSymbols(Command command, RunSymbols symbols)
+    {
+        command.Arguments.Add(symbols.PathOrNameArg);
+        command.Options.Add(symbols.CodeOption);
+        command.Options.Add(symbols.SdkOption);
+        command.Options.Add(symbols.ConnectionOption);
+        command.Options.Add(symbols.OptimizeOption);
+        command.Options.Add(symbols.UseAspNetOption);
+        command.Options.Add(symbols.FormatOption);
+        command.Options.Add(symbols.MinimalOption);
+        command.Options.Add(symbols.NoCacheOption);
+        command.Options.Add(symbols.ForceRebuildOption);
+        command.Options.Add(symbols.VerboseOption);
+    }
+
+    private static void SetRunAction(Command command, RunSymbols symbols, IServiceProvider serviceProvider)
+    {
+        command.SetAction(async p =>
         {
             // Resolve the target connection
-            var connectionName = p.GetValue(connectionOption);
+            var connectionName = p.GetValue(symbols.ConnectionOption);
             DataConnection? connection = null;
             if (!string.IsNullOrWhiteSpace(connectionName))
             {
@@ -165,11 +193,11 @@ public static class RunCommand
                 }
             }
 
-            var sdkMajor = p.GetValue(sdkOption);
+            var sdkMajor = p.GetValue(symbols.SdkOption);
             DotNetFrameworkVersion? sdkVersion =
                 sdkMajor == null ? null : DotNetFrameworkVersionUtil.GetFrameworkVersion(sdkMajor.Value);
 
-            OptimizationLevel? optimizationLevel = p.GetValue(optimizeOption) switch
+            OptimizationLevel? optimizationLevel = p.GetValue(symbols.OptimizeOption) switch
             {
                 null => null,
                 true => OptimizationLevel.Release,
@@ -179,24 +207,24 @@ public static class RunCommand
             var scriptArgs = new List<string>();
 
             var options = new Options(
-                p.GetValue(pathOrNameArg),
-                p.GetValue(codeOption),
+                p.GetValue(symbols.PathOrNameArg),
+                p.GetValue(symbols.CodeOption),
                 ScriptKind.Program,
                 sdkVersion,
                 connection,
                 optimizationLevel,
-                p.GetValue(useAspNetOption),
-                p.GetValue(noCacheOption),
-                p.GetValue(forceRebuildOption),
-                p.GetValue(verboseOption),
+                p.GetValue(symbols.UseAspNetOption),
+                p.GetValue(symbols.NoCacheOption),
+                p.GetValue(symbols.ForceRebuildOption),
+                p.GetValue(symbols.VerboseOption),
                 scriptArgs,
-                p.GetValue(formatOption)
+                p.GetValue(symbols.FormatOption)
             );
 
             // Validate options
             if (options.NoCache && options.ForceRebuild)
             {
-                Presenter.Error($"Cannot use {noCacheOption.Name} and {forceRebuildOption.Name} at the same time.");
+                Presenter.Error($"Cannot use {symbols.NoCacheOption.Name} and {symbols.ForceRebuildOption.Name} at the same time.");
                 return 1;
             }
 
@@ -211,12 +239,12 @@ public static class RunCommand
                 options.ScriptArgs.Add("-html-msg");
             }
 
-            if (p.GetValue(minimalOption))
+            if (p.GetValue(symbols.MinimalOption))
             {
                 options.ScriptArgs.Add("-minimal");
             }
 
-            if (p.GetValue(verboseOption))
+            if (p.GetValue(symbols.VerboseOption))
             {
                 options.ScriptArgs.Add("-verbose");
             }
@@ -226,6 +254,23 @@ public static class RunCommand
 
             return await ExecuteAsync(options, serviceProvider);
         });
+    }
+
+    public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
+    {
+        var runCmd = new Command("run", "Run a script or a plain text file.");
+        parent.Subcommands.Add(runCmd);
+
+        var symbols = CreateRunSymbols();
+        AttachRunSymbols(runCmd, symbols);
+        SetRunAction(runCmd, symbols, serviceProvider);
+    }
+
+    public static void SetDefaultRunAction(this RootCommand rootCommand, IServiceProvider serviceProvider)
+    {
+        var symbols = CreateRunSymbols();
+        AttachRunSymbols(rootCommand, symbols);
+        SetRunAction(rootCommand, symbols, serviceProvider);
     }
 
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
@@ -325,14 +370,16 @@ public static class RunCommand
         });
 
         // Run with status spinner on stderr (suppressed when stderr is redirected)
+        RunResult runResult;
+
         if (Console.IsErrorRedirected)
         {
-            await scriptRunner.RunScriptAsync(runOptions);
+            runResult = await scriptRunner.RunScriptAsync(runOptions);
         }
         else
         {
             var eventBus = serviceProvider.GetRequiredService<IEventBus>();
-            Task? scriptTask = null;
+            Task<RunResult>? scriptTask = null;
 
             await Presenter.StatusAsync("Setting up...", async updateStatus =>
             {
@@ -354,8 +401,9 @@ public static class RunCommand
             });
 
             // Script may still be executing after spinner clears — wait for it
-            if (scriptTask is { IsCompleted: false })
-                await scriptTask;
+            if (scriptTask is null)
+                throw new InvalidOperationException("Script task was not initialized.");
+            runResult = await scriptTask;
         }
 
         if (htmlDocumentOutput != null)
@@ -387,6 +435,14 @@ public static class RunCommand
             Console.WriteLine(html);
         }
 
-        return 0;
+        return MapExitCode(runResult);
+    }
+
+    private static int MapExitCode(RunResult result)
+    {
+        if (result.IsScriptCompletedSuccessfully) return 0;
+        if (result.IsRunCancelled) return 130;
+        if (!result.IsRunAttemptSuccessful) return 2;
+        return 1;
     }
 }

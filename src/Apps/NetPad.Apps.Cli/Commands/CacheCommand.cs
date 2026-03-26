@@ -14,7 +14,10 @@ public static class CacheCommand
         parent.Subcommands.Add(cacheCmd);
         cacheCmd.SetAction(_ => ListCachedScriptDeployments(serviceProvider));
 
-        var listCmd = new Command("ls", "List all script builds.");
+        var listCmd = new Command("list", "List all script builds.")
+        {
+            Aliases = { "ls" }
+        };
         cacheCmd.Subcommands.Add(listCmd);
         listCmd.SetAction(_ => ListCachedScriptDeployments(serviceProvider));
 
