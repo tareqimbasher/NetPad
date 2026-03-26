@@ -13,6 +13,7 @@ var rootCommand = new RootCommand("The NetPad command-line tool.")
 };
 
 rootCommand.AddRunCommand(serviceProvider);
+rootCommand.AddNewCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
 rootCommand.AddShowCommand(serviceProvider);
 rootCommand.AddInfoCommand(serviceProvider);

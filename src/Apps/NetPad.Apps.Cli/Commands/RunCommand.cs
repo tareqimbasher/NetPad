@@ -124,7 +124,7 @@ public static class RunCommand
                 "Skip the build cache; do not use a cached build, if one exists, and do not cache the build from this run.",
         };
 
-        var forceRebuildOption = new Option<bool>("--rebuild", "-r")
+        var forceRebuildOption = new Option<bool>("--rebuild", "-b")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
