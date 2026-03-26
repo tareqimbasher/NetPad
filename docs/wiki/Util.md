@@ -63,7 +63,7 @@ Util.RawHtml(XElement.Parse("<h1>Heading 1</h1>"));
 
 ## User Secrets
 
-Secrets are encrypted strings that can be stored and retreived from code (ex. an API key). Use `Util.Secrets` to get a
+Secrets are encrypted strings that can be stored and retrieved from code (ex. an API key). Use `Util.Secrets` to get a
 secret that you've already stored:
 
 ```csharp

@@ -302,7 +302,7 @@ public static class RunCommand
             // case the script runner will emit those errors using this output handler.
             if (!htmlOutput && o is ScriptOutput error)
             {
-                Presenter.Error(error.Body?.ToString() ?? "An error occured.");
+                Presenter.Error(error.Body?.ToString() ?? "An error occurred.");
                 return;
             }
 
