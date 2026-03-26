@@ -11,51 +11,53 @@ public static class SettingsCommand
 {
     public static void AddSettingsCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var settingsCmd = new Command("settings", "View or edit NetPad settings.");
-        parent.Subcommands.Add(settingsCmd);
-
-        var tableOption = new Option<bool>("--table", "-t")
-        {
-            Description = "Prints settings in a table format.",
-            Arity = ArgumentArity.ZeroOrOne,
-        };
-
         var jsonOption = new Option<bool>("--json", "-j")
         {
-            Description = "Prints settings as a highlighted JSON string.",
+            Description = "Print settings as JSON instead of a table.",
             Arity = ArgumentArity.ZeroOrOne,
         };
 
-        settingsCmd.Options.Add(tableOption);
+        var settingsCmd = new Command("settings", "View or edit NetPad settings.");
+        parent.Subcommands.Add(settingsCmd);
         settingsCmd.Options.Add(jsonOption);
-        settingsCmd.SetAction(p => OpenSettingsFile(
-            serviceProvider,
-            p.GetValue(tableOption),
-            p.GetValue(jsonOption)));
+        settingsCmd.SetAction(p => ShowSettings(serviceProvider, p.GetValue(jsonOption)));
+
+        var showCmd = new Command("show", "Display current settings.");
+        settingsCmd.Subcommands.Add(showCmd);
+        showCmd.Options.Add(jsonOption);
+        showCmd.SetAction(p => ShowSettings(serviceProvider, p.GetValue(jsonOption)));
 
         var editCmd = new Command("edit", "Open settings in your default editor.");
         settingsCmd.Subcommands.Add(editCmd);
         editCmd.SetAction(_ => EditSettingsFile());
     }
 
-    private static int OpenSettingsFile(
-        IServiceProvider serviceProvider,
-        bool tableFormat = false,
-        bool jsonFormat = false)
+    private static int ShowSettings(IServiceProvider serviceProvider, bool jsonFormat)
     {
-        if (tableFormat)
+        if (jsonFormat)
         {
-            var settings = serviceProvider.GetRequiredService<Settings>();
-            settings.Dump();
-        }
-        else if (jsonFormat)
-        {
-            using var doc = JsonDocument.Parse(File.ReadAllText(AppDataProvider.SettingsFilePath.Path));
-            doc.Dump();
+            var json = File.ReadAllText(AppDataProvider.SettingsFilePath.Path);
+
+            if (Console.IsOutputRedirected)
+            {
+                Console.WriteLine(json);
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse(json);
+                doc.Dump();
+            }
         }
         else
         {
-            EditSettingsFile();
+            var settings = serviceProvider.GetRequiredService<Settings>();
+            settings.Dump(new ConsoleDumpOptions
+            {
+                Tables =
+                {
+                    ShowTitles = false
+                }
+            });
         }
 
         return 0;
