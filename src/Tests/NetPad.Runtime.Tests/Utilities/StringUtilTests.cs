@@ -131,22 +131,22 @@ public class StringUtilTests
     }
 
     [Fact]
-    public void SplitLastOccurence_WhenSearchStringExists()
+    public void SplitLastOccurrence_WhenSearchStringExists()
     {
         var str = "one. two. three";
 
-        var parts = StringUtil.SplitLastOccurence(str, ".");
+        var parts = StringUtil.SplitLastOccurrence(str, ".");
 
         Assert.Equal(2, parts.Length);
         Assert.Equal(parts, new[] { "one. two", " three" });
     }
 
     [Fact]
-    public void SplitLastOccurence_WhenSearchStringDoesNotExist()
+    public void SplitLastOccurrence_WhenSearchStringDoesNotExist()
     {
         var str = "one. two. three";
 
-        var parts = StringUtil.SplitLastOccurence(str, "&");
+        var parts = StringUtil.SplitLastOccurrence(str, "&");
 
         Assert.Single(parts);
         Assert.Equal(parts, new[] { "one. two. three" });
