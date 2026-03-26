@@ -112,7 +112,7 @@ public partial class ClientServerScriptRunner
             var errors = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => DiagnosicsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
+                .Select(d => DiagnosticsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             await _combinedOutputWriter.WriteAsync(
                 new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),

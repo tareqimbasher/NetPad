@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace NetPad.Compilation;
 
-public static class DiagnosicsHelper
+public static class DiagnosticsHelper
 {
     /// <summary>
     /// Changes the line number of the diagnostic message by subtracting the specified value from the line number.

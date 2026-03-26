@@ -133,7 +133,7 @@ public partial class ExternalScriptRunner
             var errors = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => DiagnosicsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
+                .Select(d => DiagnosticsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             await _output.WriteAsync(new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")));
 

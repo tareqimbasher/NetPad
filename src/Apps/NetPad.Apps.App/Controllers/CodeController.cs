@@ -87,7 +87,7 @@ public class CodeController : ControllerBase
             var errors = compilationResult
                 .Diagnostics
                 .Where(d => d.Severity == DiagnosticSeverity.Error)
-                .Select(d => DiagnosicsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
+                .Select(d => DiagnosticsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             return Problem(string.Join("\n", errors));
         }
