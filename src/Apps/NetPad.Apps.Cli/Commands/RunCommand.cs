@@ -70,12 +70,12 @@ public static class RunCommand
                 "    run myscript                   <= looks for a script in your library with a path containing the word 'myscript' \n" +
                 "Notes:\n" +
                 "    1. If omitted, or if name matches multiple scripts from your library, you'll be prompted to select from a list.\n" +
-                "    2. If omitted and the --code (-x) option is used you will not be prompted to select a script.",
+                "    2. If omitted and the --eval (-e) option is used you will not be prompted to select a script.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
         };
 
-        var codeOption = new Option<string?>("--code", "-x")
+        var codeOption = new Option<string?>("--eval", "-e")
         {
             Description =
                 "The code to execute. Will override the code in the target script, or will be executed it as-is if no script was provided.",
@@ -277,7 +277,21 @@ public static class RunCommand
     {
         Script? script;
 
-        if (string.IsNullOrEmpty(options.Code))
+        // If no code and no script specified, try reading from stdin
+        if (string.IsNullOrEmpty(options.Code) && string.IsNullOrEmpty(options.PathOrName) && Console.IsInputRedirected)
+        {
+            var stdinCode = await Console.In.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(stdinCode))
+            {
+                script = Helper.CreateScriptFromCode(serviceProvider, stdinCode);
+            }
+            else
+            {
+                Presenter.Error("No input received from stdin.");
+                return 1;
+            }
+        }
+        else if (string.IsNullOrEmpty(options.Code))
         {
             var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName);
             if (selectedScriptPath == null) return 1;
