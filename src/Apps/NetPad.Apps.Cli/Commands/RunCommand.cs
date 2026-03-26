@@ -20,7 +20,8 @@ enum OutputFormat
     Console = 0,
     Text,
     Html,
-    HtmlDoc
+    HtmlDoc,
+    Json
 }
 
 public static class RunCommand
@@ -102,13 +103,14 @@ public static class RunCommand
         var formatOption = new Option<OutputFormat>("--format", "-f")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            HelpName = "console|text|html|htmldoc",
+            HelpName = "console|text|html|htmldoc|json",
             Description =
                 "The format of script output. If not specified, will emit structured console output (default).\n" +
                 "Values:\n" +
                 "    text       Plain text format; useful when piping to a file\n" +
                 "    html       HTML fragments\n" +
-                "    htmldoc    A complete HTML document",
+                "    htmldoc    A complete HTML document\n" +
+                "    json       NDJSON (newline-delimited JSON); pipe to jq for filtering",
         };
 
         var minimalOption = new Option<bool>("--minimal", "-m")
@@ -136,6 +138,12 @@ public static class RunCommand
             Description = "Emit diagnostic and process logs to stderr.",
         };
 
+        var sqlOption = new Option<bool>("--sql")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Include SQL queries in output. Only applies to --format json.",
+        };
+
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(codeOption);
         runCmd.Options.Add(sdkOption);
@@ -147,6 +155,7 @@ public static class RunCommand
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
         runCmd.Options.Add(verboseOption);
+        runCmd.Options.Add(sqlOption);
         runCmd.SetAction(async p =>
         {
             // Resolve the target connection
@@ -207,6 +216,11 @@ public static class RunCommand
                 options.ScriptArgs.Add("-html-msg");
             }
 
+            if (options.OutputFormat == OutputFormat.Json)
+            {
+                options.ScriptArgs.Add("-json");
+            }
+
             if (p.GetValue(minimalOption))
             {
                 options.ScriptArgs.Add("-minimal");
@@ -215,6 +229,11 @@ public static class RunCommand
             if (p.GetValue(verboseOption))
             {
                 options.ScriptArgs.Add("-verbose");
+            }
+
+            if (p.GetValue(sqlOption))
+            {
+                options.ScriptArgs.Add("-sql");
             }
 
             // Forward all unmatched tokens to script
@@ -297,6 +316,7 @@ public static class RunCommand
     private static async Task<int> RunScriptAsync(IServiceProvider serviceProvider, Script script, Options options)
     {
         bool htmlOutput = options.OutputFormat is OutputFormat.HtmlDoc or OutputFormat.Html;
+        bool jsonOutput = options.OutputFormat == OutputFormat.Json;
         var htmlDocumentOutput = htmlOutput ? new StringBuilder() : null;
 
         // Create a script runner
@@ -324,7 +344,17 @@ public static class RunCommand
             // case the script runner will emit those errors using this output handler.
             if (!htmlOutput && o is ScriptOutput error)
             {
-                Presenter.Error(error.Body?.ToString() ?? "An error occured.");
+                if (jsonOutput)
+                {
+                    var errorLine = System.Text.Json.JsonSerializer.Serialize(
+                        new { type = "error", value = error.Body?.ToString() ?? "An error occurred." });
+                    Console.WriteLine(errorLine);
+                }
+                else
+                {
+                    Presenter.Error(error.Body?.ToString() ?? "An error occured.");
+                }
+
                 return;
             }
 
@@ -346,10 +376,10 @@ public static class RunCommand
             RedirectIo = htmlOutput
         });
 
-        // Run with status spinner on stderr (suppressed when stderr is redirected)
         RunResult runResult;
 
-        if (Console.IsErrorRedirected)
+        // Run with status spinner on stderr (suppressed when stderr is redirected or output is JSON)
+        if (Console.IsErrorRedirected || jsonOutput)
         {
             runResult = await scriptRunner.RunScriptAsync(runOptions);
         }
