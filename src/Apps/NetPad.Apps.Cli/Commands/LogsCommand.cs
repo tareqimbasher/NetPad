@@ -74,16 +74,17 @@ public static class LogsCommand
         removeCmd.Options.Add(removeAllOption);
         removeCmd.SetAction(p =>
         {
+            var numberProvided = p.GetResult(removeNumberArg) != null;
             var number = p.GetValue(removeNumberArg);
             var all = p.GetValue(removeAllOption);
 
-            if (number > 0 && all)
+            if (numberProvided && all)
             {
                 Presenter.Error("Cannot specify --all when specifying a log file to remove.");
                 return 1;
             }
 
-            if (number == 0 && !all)
+            if (!numberProvided && !all)
             {
                 Presenter.Error(
                     "Specify a log file number to remove (use 'list' to see log files), or --all to remove all.");

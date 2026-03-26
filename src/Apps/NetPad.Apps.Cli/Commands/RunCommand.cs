@@ -159,11 +159,11 @@ public static class RunCommand
         runCmd.Options.Add(optimizeOption);
         runCmd.Options.Add(useAspNetOption);
         runCmd.Options.Add(formatOption);
+        runCmd.Options.Add(sqlOption);
         runCmd.Options.Add(minimalOption);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
         runCmd.Options.Add(verboseOption);
-        runCmd.Options.Add(sqlOption);
         runCmd.SetAction(async p =>
         {
             // Resolve the target connection
@@ -257,7 +257,14 @@ public static class RunCommand
 
             if (p.GetValue(sqlOption))
             {
-                options.ScriptArgs.Add("-sql");
+                if (options.OutputFormat != OutputFormat.Json)
+                {
+                    Presenter.Warn("--sql only applies to --format json; ignoring.");
+                }
+                else
+                {
+                    options.ScriptArgs.Add("-sql");
+                }
             }
 
             // Forward all unmatched tokens to script
@@ -287,7 +294,7 @@ public static class RunCommand
         // so the script's config and data connection are preserved)
         if (!string.IsNullOrEmpty(options.PathOrName))
         {
-            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName);
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName, "run");
             if (selectedScriptPath == null) return 1;
             script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
         }
@@ -311,7 +318,7 @@ public static class RunCommand
         else
         {
             // No path, no code, no stdin — prompt for script selection
-            var selectedScriptPath = Helper.SelectScript(serviceProvider, null);
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, null, "run");
             if (selectedScriptPath == null) return 1;
             script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
         }

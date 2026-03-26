@@ -36,7 +36,14 @@ public static class SettingsCommand
     {
         if (jsonFormat)
         {
-            var json = File.ReadAllText(AppDataProvider.SettingsFilePath.Path);
+            var settingsPath = AppDataProvider.SettingsFilePath.Path;
+            if (!File.Exists(settingsPath))
+            {
+                Presenter.Error($"Settings file not found: {settingsPath}");
+                return 1;
+            }
+
+            var json = File.ReadAllText(settingsPath);
 
             if (Console.IsOutputRedirected)
             {

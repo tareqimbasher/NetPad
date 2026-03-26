@@ -27,7 +27,7 @@ public static class ShowCommand
 
     private static async Task<int> ExecuteAsync(string? pathOrName, IServiceProvider serviceProvider)
     {
-        var selectedScriptPath = Helper.SelectScript(serviceProvider, pathOrName);
+        var selectedScriptPath = Helper.SelectScript(serviceProvider, pathOrName, "show");
         if (selectedScriptPath == null) return 1;
 
         var script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, false);

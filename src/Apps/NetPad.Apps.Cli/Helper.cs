@@ -15,7 +15,7 @@ public static class Helper
     /// If multiple matches are found, the user will be asked to select from a list.
     /// If no matches are found, null is returned.
     /// </summary>
-    public static string? SelectScript(IServiceProvider serviceProvider, string? pathOrName)
+    public static string? SelectScript(IServiceProvider serviceProvider, string? pathOrName, string action)
     {
         var settings = serviceProvider.GetRequiredService<Settings>();
         var matches = ScriptFinder.FindMatches(settings.ScriptsDirectoryPath, pathOrName);
@@ -44,7 +44,7 @@ public static class Helper
             var scriptsDirPath = settings.ScriptsDirectoryPath;
 
             var selection = new SelectionPrompt<string>()
-                .Title("Which script do you want to [green]run[/]?")
+                .Title($"Which script do you want to [green]{action}[/]?")
                 .PageSize(50)
                 .MoreChoicesText("[grey](Move up and down to reveal more)[/]")
                 .AddChoices(matches);

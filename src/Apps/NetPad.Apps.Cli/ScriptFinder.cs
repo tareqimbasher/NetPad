@@ -85,16 +85,23 @@ public static class ScriptFinder
 
     private static bool TryResolveFilePath(string text, [NotNullWhen(true)] out string? path)
     {
-        if (File.Exists(text))
+        try
         {
-            path = text;
-            return true;
-        }
+            if (File.Exists(text))
+            {
+                path = text;
+                return true;
+            }
 
-        path = Path.GetFullPath(text);
-        if (File.Exists(path))
+            path = Path.GetFullPath(text);
+            if (File.Exists(path))
+            {
+                return true;
+            }
+        }
+        catch (Exception)
         {
-            return true;
+            // Invalid path characters or other path resolution failures
         }
 
         path = null;
