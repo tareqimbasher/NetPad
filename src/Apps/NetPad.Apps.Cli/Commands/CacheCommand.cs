@@ -100,7 +100,7 @@ public static class CacheCommand
                 new Markup(info.GetScriptName()),
                 new Markup(FileSystemUtil.GetReadableFileSize(dir.GetSize())),
                 new Markup(info.LastRunAt?.ToString() ?? "Never"),
-                new Markup(info.LastRunSucceeded == true ? "[green]success[/]" : "[red]fail[/]")
+                new Markup(info.LastRunSucceeded == true ? "[green]success[/]" : info.LastRunSucceeded == false ? "[red]fail[/]" : "[grey]—[/]")
             );
         }
 
@@ -113,7 +113,9 @@ public static class CacheCommand
     {
         var cache = new DeploymentCache(AppDataProvider.ExternalExecutionModelDeploymentCacheDirectoryPath);
         return cache.ListDeploymentDirectories()
-            .Select(x => (Directory: x, Info: x.GetDeploymentInfo()!))
+            .Select(x => (Directory: x, Info: x.GetDeploymentInfo()))
+            .Where(x => x.Info != null)
+            .Select(x => (x.Directory, Info: x.Info!))
             .OrderByDescending(x => x.Info.LastRunAt)
             .ToList();
     }

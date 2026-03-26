@@ -71,6 +71,13 @@ public static class RunCommand
             Arity = ArgumentArity.ZeroOrOne,
         };
 
+        var kindOption = new Option<string?>("--kind", "-k")
+        {
+            Description = "Override the script kind.",
+            Arity = ArgumentArity.ZeroOrOne,
+            HelpName = "program|sql"
+        };
+
         var sdkOption = new Option<int?>("--sdk", "-s")
         {
             Arity = ArgumentArity.ZeroOrOne,
@@ -146,6 +153,7 @@ public static class RunCommand
 
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(codeOption);
+        runCmd.Options.Add(kindOption);
         runCmd.Options.Add(sdkOption);
         runCmd.Options.Add(connectionOption);
         runCmd.Options.Add(optimizeOption);
@@ -170,6 +178,22 @@ public static class RunCommand
                 }
             }
 
+            // Resolve script kind
+            var kindStr = p.GetValue(kindOption);
+            ScriptKind? scriptKind = null;
+            if (kindStr != null)
+            {
+                if (kindStr.Equals("program", StringComparison.OrdinalIgnoreCase))
+                    scriptKind = ScriptKind.Program;
+                else if (kindStr.Equals("sql", StringComparison.OrdinalIgnoreCase))
+                    scriptKind = ScriptKind.SQL;
+                else
+                {
+                    Presenter.Error($"Unknown script kind '{kindStr}'. Supported values: program, sql.");
+                    return 1;
+                }
+            }
+
             var sdkMajor = p.GetValue(sdkOption);
             DotNetFrameworkVersion? sdkVersion =
                 sdkMajor == null ? null : DotNetFrameworkVersionUtil.GetFrameworkVersion(sdkMajor.Value);
@@ -186,7 +210,7 @@ public static class RunCommand
             var options = new Options(
                 p.GetValue(pathOrNameArg),
                 p.GetValue(codeOption),
-                ScriptKind.Program,
+                scriptKind,
                 sdkVersion,
                 connection,
                 optimizationLevel,
@@ -360,7 +384,7 @@ public static class RunCommand
                 }
                 else
                 {
-                    Presenter.Error(error.Body?.ToString() ?? "An error occured.");
+                    Presenter.Error(error.Body?.ToString() ?? "An error occurred.");
                 }
 
                 return;
@@ -370,8 +394,10 @@ public static class RunCommand
             {
                 Console.WriteLine(scriptOutput.Body);
             }
-
-            Console.WriteLine(o);
+            else
+            {
+                Console.WriteLine(o);
+            }
         }));
 
         // Configure run options
