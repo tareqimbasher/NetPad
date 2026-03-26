@@ -21,7 +21,7 @@ rootCommand.AddLogsCommand(serviceProvider);
 rootCommand.AddSettingsCommand(serviceProvider);
 
 // Default: when no subcommand is specified, behave as 'run'
-rootCommand.SetDefaultRunAction(serviceProvider);
+rootCommand.SetDefaultRunAction();
 
 var parseResult = rootCommand.Parse(args);
 return await parseResult.InvokeAsync();
