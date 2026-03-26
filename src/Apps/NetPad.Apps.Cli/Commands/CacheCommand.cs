@@ -10,11 +10,11 @@ public static class CacheCommand
 {
     public static void AddCacheCommand(this RootCommand parent, IServiceProvider _)
     {
-        var cacheCmd = new Command("cache", "Show information about the script build cache.");
+        var cacheCmd = new Command("cache", "Manage the script build cache.");
         parent.Subcommands.Add(cacheCmd);
         cacheCmd.SetAction(_ => ListCachedScriptDeployments());
 
-        var listCmd = new Command("list", "List all script builds.")
+        var listCmd = new Command("list", "List cached script builds.")
         {
             Aliases = { "ls" }
         };

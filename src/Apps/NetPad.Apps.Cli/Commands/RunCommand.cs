@@ -66,7 +66,7 @@ public static class RunCommand
         var codeOption = new Option<string?>("--eval", "-e")
         {
             Description =
-                "The code to execute. Will override the code in the target script, or will be executed it as-is if no script was provided.",
+                "The code to execute. Will override the code in the target script, or will be executed as-is if no script was provided.",
             Arity = ArgumentArity.ZeroOrOne,
         };
 
@@ -114,7 +114,7 @@ public static class RunCommand
         var minimalOption = new Option<bool>("--minimal", "-m")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "If possible, use more minimal output formatting.",
+            Description = "Reduce padding and metadata in output.",
         };
 
         var noCacheOption = new Option<bool>("--no-cache")

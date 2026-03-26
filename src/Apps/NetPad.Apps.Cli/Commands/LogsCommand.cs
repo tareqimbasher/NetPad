@@ -10,7 +10,7 @@ public static class LogsCommand
 {
     public static void AddLogsCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var logsCmd = new Command("logs", "Display NetPad log files.")
+        var logsCmd = new Command("logs", "Manage NetPad log files.")
         {
             Aliases = { "log" }
         };
