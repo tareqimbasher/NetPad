@@ -43,7 +43,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData(DotNetFrameworkVersion.DotNet7, "net7.0")]
     [InlineData(DotNetFrameworkVersion.DotNet8, "net8.0")]
     [InlineData(DotNetFrameworkVersion.DotNet9, "net9.0")]
-    public void GetTargetFrameworkMoniker_Retruns_Correct_TFM(
+    public void GetTargetFrameworkMoniker_Returns_Correct_TFM(
         DotNetFrameworkVersion version,
         string expectedTfm)
     {
@@ -57,7 +57,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("net7.0", DotNetFrameworkVersion.DotNet7)]
     [InlineData("net8.0", DotNetFrameworkVersion.DotNet8)]
     [InlineData("net9.0", DotNetFrameworkVersion.DotNet9)]
-    public void GetFrameworkVersion_By_TFM_Retruns_Correct_FrameworkVersion(
+    public void GetFrameworkVersion_By_TFM_Returns_Correct_FrameworkVersion(
         string tfm,
         DotNetFrameworkVersion expectedVersion)
     {
@@ -84,7 +84,7 @@ public class DotNetFrameworkVersionUtilTests
     [InlineData("net9.0", DotNetFrameworkVersion.DotNet9)]
     [InlineData("net6", null)]
     [InlineData("net100.0", null)]
-    public void TryGetFrameworkVersion_By_TFM_Retruns_Correct_FrameworkVersion_Or_Null(
+    public void TryGetFrameworkVersion_By_TFM_Returns_Correct_FrameworkVersion_Or_Null(
         string tfm,
         DotNetFrameworkVersion? expectedVersion)
     {

@@ -163,7 +163,7 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackageInstallInfo_Returns_Correct_Info_For_Explictly_Installed_Packages()
+    public async Task GetPackageInstallInfo_Returns_Correct_Info_For_Explicitly_Installed_Packages()
     {
         var provider = CreatePackageProvider();
         await provider.InstallPackageAsync("Newtonsoft.Json", "13.0.1", DotNetFrameworkVersion.DotNet8);
@@ -177,7 +177,7 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackageInstallInfo_Returns_Correct_Info_For_NonExplictly_Installed_Packages()
+    public async Task GetPackageInstallInfo_Returns_Correct_Info_For_NonExplicitly_Installed_Packages()
     {
         var provider = CreatePackageProvider();
         // Will also install "Serilog v4.2.0" package as dependency
@@ -202,10 +202,10 @@ public class NuGetPackageProviderTests : TestBase, IAsyncLifetime
         var provider = CreatePackageProvider();
         await provider.InstallPackageAsync(packageId, packageVersion, DotNetFrameworkVersion.DotNet8);
 
-        var explictlyInstalledPackages = await provider.GetExplicitlyInstalledCachedPackagesAsync();
+        var explicitlyInstalledPackages = await provider.GetExplicitlyInstalledCachedPackagesAsync();
 
-        Assert.Single(explictlyInstalledPackages);
-        var package = explictlyInstalledPackages.Single();
+        Assert.Single(explicitlyInstalledPackages);
+        var package = explicitlyInstalledPackages.Single();
         Assert.Equal(packageId, package.PackageId);
         Assert.Equal(packageVersion, package.Version);
     }
