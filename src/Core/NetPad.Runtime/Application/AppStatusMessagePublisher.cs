@@ -8,18 +8,18 @@ public class AppStatusMessagePublisher(IEventBus eventBus) : IAppStatusMessagePu
     public async Task PublishAsync(
         string text,
         AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-        bool persistant = false)
+        bool persistent = false)
     {
-        await PublishAsync(new AppStatusMessage(text, priority, persistant));
+        await PublishAsync(new AppStatusMessage(text, priority, persistent));
     }
 
     public async Task PublishAsync(
         Guid scriptId,
         string text,
         AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-        bool persistant = false)
+        bool persistent = false)
     {
-        await PublishAsync(new AppStatusMessage(scriptId, text, priority, persistant));
+        await PublishAsync(new AppStatusMessage(scriptId, text, priority, persistent));
     }
 
     private async Task PublishAsync(AppStatusMessage message) =>

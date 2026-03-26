@@ -65,7 +65,7 @@ export class Statusbar {
                 PLATFORM.clearTimeout(clearMsgTask);
             }
 
-            if (this.appStatusMessage.persistant) {
+            if (this.appStatusMessage.persistent) {
                 this.lastPersistentPriorityMessage = this.appStatusMessage;
                 return;
             }
