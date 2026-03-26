@@ -82,7 +82,7 @@ public static class RunCommand
             Arity = ArgumentArity.ZeroOrOne,
         };
 
-        var sdkOption = new Option<int?>("--sdk")
+        var sdkOption = new Option<int?>("--sdk", "-s")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "The .NET SDK major version to use.",
@@ -92,14 +92,14 @@ public static class RunCommand
                 DotNetFrameworkVersionUtil.MinSupportedDotNetVersion))
         };
 
-        var connectionOption = new Option<string?>("--connection")
+        var connectionOption = new Option<string?>("--connection", "-c")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "The name of the database connection to use.",
             HelpName = "name"
         };
 
-        var optimizeOption = new Option<bool?>("--optimize")
+        var optimizeOption = new Option<bool?>("--optimize", "-O")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Enable compiler optimizations."
@@ -111,7 +111,7 @@ public static class RunCommand
             Description = "Reference ASP.NET assemblies."
         };
 
-        var formatOption = new Option<OutputFormat>("--format")
+        var formatOption = new Option<OutputFormat>("--format", "-f")
         {
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "console|text|html|htmldoc",
@@ -123,7 +123,7 @@ public static class RunCommand
                 "    htmldoc    A complete HTML document",
         };
 
-        var minimalOption = new Option<bool>("--minimal")
+        var minimalOption = new Option<bool>("--minimal", "-m")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "If possible, use more minimal output formatting.",
@@ -136,13 +136,13 @@ public static class RunCommand
                 "Skip the build cache; do not use a cached build, if one exists, and do not cache the build from this run.",
         };
 
-        var forceRebuildOption = new Option<bool>("--rebuild")
+        var forceRebuildOption = new Option<bool>("--rebuild", "-r")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
         };
 
-        var verboseOption = new Option<bool>("--verbose")
+        var verboseOption = new Option<bool>("--verbose", "-v")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Emit diagnostic and process logs to stderr.",

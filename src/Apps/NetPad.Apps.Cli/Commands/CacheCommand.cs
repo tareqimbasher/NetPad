@@ -28,7 +28,7 @@ public static class CacheCommand
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        var removeAllOption = new Option<bool>("--all")
+        var removeAllOption = new Option<bool>("--all", "-a")
         {
             Description = "Remove all cached script builds.",
             Arity = ArgumentArity.ZeroOrOne

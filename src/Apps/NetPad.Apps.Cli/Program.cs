@@ -14,7 +14,7 @@ var rootCommand = new RootCommand("The NetPad command-line tool.")
 
 rootCommand.AddRunCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
-rootCommand.AddCatCommand(serviceProvider);
+rootCommand.AddShowCommand(serviceProvider);
 rootCommand.AddInfoCommand(serviceProvider);
 rootCommand.AddCacheCommand(serviceProvider);
 rootCommand.AddLogsCommand(serviceProvider);

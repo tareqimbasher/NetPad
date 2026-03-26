@@ -4,12 +4,12 @@ using Spectre.Console;
 
 namespace NetPad.Apps.Cli.Commands;
 
-public static class CatCommand
+public static class ShowCommand
 {
-    public static void AddCatCommand(this RootCommand parent, IServiceProvider serviceProvider)
+    public static void AddShowCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var catCmd = new Command("cat", "Inspect a script’s metadata and source code.");
-        parent.Subcommands.Add(catCmd);
+        var showCmd = new Command("show", "Inspect a script's metadata and source code.");
+        parent.Subcommands.Add(showCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
@@ -20,9 +20,9 @@ public static class CatCommand
             HelpName = "PATH|NAME"
         };
 
-        catCmd.Arguments.Add(pathOrNameArg);
+        showCmd.Arguments.Add(pathOrNameArg);
 
-        catCmd.SetAction(p => ExecuteAsync(p.GetValue(pathOrNameArg), serviceProvider));
+        showCmd.SetAction(p => ExecuteAsync(p.GetValue(pathOrNameArg), serviceProvider));
     }
 
     private static async Task<int> ExecuteAsync(string? pathOrName, IServiceProvider serviceProvider)
