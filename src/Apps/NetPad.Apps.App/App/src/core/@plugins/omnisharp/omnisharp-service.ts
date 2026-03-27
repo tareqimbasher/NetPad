@@ -40,7 +40,7 @@ export class OmniSharpService extends OmniSharpApiClient implements IOmniSharpSe
         } catch (ex) {
             // Catch abort errors
             if (ex instanceof Error && ex.name?.startsWith("AbortError")) {
-                return new Response(undefined);
+                return new Response(null, { status: 204 });
             }
             throw ex;
         } finally {

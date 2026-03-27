@@ -46,9 +46,12 @@ public class AppOmniSharpServer(
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
     private readonly CodeParsingOptions _codeParsingOptions = new();
     private IOmniSharpStdioServer? _omniSharpServer;
+    private CancellationTokenSource? _backgroundTasksCts;
     private int _autoRestartCount;
     private DateTime _lastSuccessfulStart;
     private int _isRestarting;
+
+    private CancellationToken BackgroundCancellationToken => _backgroundTasksCts?.Token ?? CancellationToken.None;
 
     public Guid ScriptId => environment.Script.Id;
 
@@ -217,14 +220,19 @@ public class AppOmniSharpServer(
 
         omniSharpServer.OnProcessUnexpectedExit = HandleProcessUnexpectedExit;
         _omniSharpServer = omniSharpServer;
+        _backgroundTasksCts = new CancellationTokenSource();
         _lastSuccessfulStart = DateTime.UtcNow;
 
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
+            var ct = _backgroundTasksCts.Token;
+
             _ = Task.Run(async () =>
             {
                 for (int i = 0; i < 6; i++)
                 {
+                    ct.ThrowIfCancellationRequested();
+
                     bool shouldUpdateDataConnectionCodeBuffer =
                         environment.Script.DataConnection == null
                         || await dataConnectionResourcesCache.HasCachedResourcesAsync(
@@ -237,9 +245,9 @@ public class AppOmniSharpServer(
                     else
                         await UpdateOmniSharpCodeBufferAsync();
 
-                    await Task.Delay(1000);
+                    await Task.Delay(1000, ct);
                 }
-            });
+            }, ct);
         }
 
         await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
@@ -247,6 +255,13 @@ public class AppOmniSharpServer(
 
     private async Task StopOmniSharpServerAsync()
     {
+        if (_backgroundTasksCts != null)
+        {
+            await _backgroundTasksCts.CancelAsync();
+            _backgroundTasksCts.Dispose();
+            _backgroundTasksCts = null;
+        }
+
         if (_omniSharpServer == null)
         {
             return;
@@ -369,11 +384,13 @@ public class AppOmniSharpServer(
 
             if (ev.Script.DataConnection != null)
             {
+                var ct = BackgroundCancellationToken;
+
                 // When target framework version changes, we need to update OmniSharp's data connection assembly references
                 _ = Task.Run(async () =>
                 {
                     await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
-                });
+                }, ct);
             }
         });
 
@@ -424,8 +441,9 @@ public class AppOmniSharpServer(
             }
 
             var dataConnection = ev.DataConnection;
+            var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); }, ct);
 
             return Task.CompletedTask;
         });
@@ -435,8 +453,9 @@ public class AppOmniSharpServer(
             if (ev.Script.Id != environment.Script.Id) return Task.CompletedTask;
 
             var dataConnection = ev.DataConnection;
+            var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); }, ct);
 
             return Task.CompletedTask;
         });
@@ -446,7 +465,7 @@ public class AppOmniSharpServer(
     {
         var token = eventBus.Subscribe<TEvent>(ev =>
         {
-            if (_omniSharpServer != null)
+            if (_omniSharpServer != null && _backgroundTasksCts is { IsCancellationRequested: false })
             {
                 // We don't want to await OmniSharp event handlers
                 handler(ev);
