@@ -36,12 +36,28 @@ public class ExternalProcessDumpSink : IDumpSink
             RawConsoleWriteLine("[INPUT_REQUEST]");
             return _defaultConsoleInput.ReadLine();
         }));
-        Console.SetOut(new ActionTextWriter((value, appendNewLine) => ResultWrite(value, new DumpOptions(AppendNewLineToAllTextOutput: appendNewLine))));
+        Console.SetOut(new ActionTextWriter((value, appendNewLine) =>
+            ResultWrite(value, new DumpOptions(AppendNewLineToAllTextOutput: appendNewLine))));
 
         _isHtmlOutput = true;
         _output = new ExternalProcessOutputHtmlWriter(
             async str => await _defaultConsoleOutput.WriteLineAsync(str),
             dumpRawHtml);
+    }
+
+    public void UseJsonOutput(bool includeSql)
+    {
+        Console.SetIn(new ActionTextReader(() =>
+        {
+            RawConsoleWriteLine("[INPUT_REQUEST]");
+            return _defaultConsoleInput.ReadLine();
+        }));
+        Console.SetOut(new ActionTextWriter((value, appendNewLine) =>
+            ResultWrite(value, new DumpOptions(AppendNewLineToAllTextOutput: appendNewLine))));
+
+        _isHtmlOutput = false;
+        _output = new ExternalProcessOutputJsonWriter(
+            async str => await _defaultConsoleOutput.WriteLineAsync(str), includeSql);
     }
 
     public void UseConsoleOutput(bool plainText, bool minimal)
@@ -69,7 +85,8 @@ public class ExternalProcessDumpSink : IDumpSink
             // they are rendered in an HTML block element that automatically pushes elements after it
             // to a new line. However when rendering strings (or objects that are rendered as strings)
             // HTML renders them in-line. So here we detect that, and manually add a new line
-            bool shouldAddNewLineAfter = options.Title == null || HtmlPresenter.IsDotNetTypeWithStringRepresentation(typeof(T));
+            bool shouldAddNewLineAfter =
+                options.Title == null || HtmlPresenter.IsDotNetTypeWithStringRepresentation(typeof(T));
 
             if (shouldAddNewLineAfter)
             {

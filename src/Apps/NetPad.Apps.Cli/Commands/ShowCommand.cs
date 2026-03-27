@@ -4,29 +4,30 @@ using Spectre.Console;
 
 namespace NetPad.Apps.Cli.Commands;
 
-public static class CatCommand
+public static class ShowCommand
 {
-    public static void AddCatCommand(this RootCommand parent, IServiceProvider serviceProvider)
+    public static void AddShowCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var catCmd = new Command("cat", "Inspect a script’s metadata and source code.");
-        parent.Subcommands.Add(catCmd);
+        var showCmd = new Command("show", "Inspect a script's metadata and source code.");
+        parent.Subcommands.Add(showCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
         {
             Description =
-                "A path to a script or text file, or a name (or partial name) to search for in your script library.",
-            Arity = ArgumentArity.ExactlyOne,
+                "A path to a script or text file, or a name (or partial name) to search for in your script library.\n" +
+                "If omitted, or if name matches multiple scripts, you'll be prompted to select from a list.",
+            Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
         };
 
-        catCmd.Arguments.Add(pathOrNameArg);
+        showCmd.Arguments.Add(pathOrNameArg);
 
-        catCmd.SetAction(p => ExecuteAsync(p.GetRequiredValue(pathOrNameArg), serviceProvider));
+        showCmd.SetAction(p => ExecuteAsync(p.GetValue(pathOrNameArg), serviceProvider));
     }
 
-    private static async Task<int> ExecuteAsync(string pathOrName, IServiceProvider serviceProvider)
+    private static async Task<int> ExecuteAsync(string? pathOrName, IServiceProvider serviceProvider)
     {
-        var selectedScriptPath = Helper.SelectScript(serviceProvider, pathOrName);
+        var selectedScriptPath = Helper.SelectScript(serviceProvider, pathOrName, "show");
         if (selectedScriptPath == null) return 1;
 
         var script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, false);

@@ -7,8 +7,8 @@ from the command line, making it easy to automate tasks or integrate NetPad scri
 npad [command] [options] [[--] <additional arguments>...]]
 
 Options:
-  -?, -h, --help  Show help and usage information
-  --version       Show version information
+  -?, -h, --help    Show help and usage information
+  --version         Show version information
 
 Commands:
   run <PATH|NAME>  Run a script or a plain text file.

@@ -3,7 +3,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Application.Events;
-using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Events;
@@ -13,7 +12,6 @@ using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts;
 using NetPad.Utilities;
-using Spectre.Console;
 
 namespace NetPad.Apps.Cli.Commands;
 
@@ -22,7 +20,8 @@ enum OutputFormat
     Console = 0,
     Text,
     Html,
-    HtmlDoc
+    HtmlDoc,
+    Json
 }
 
 public static class RunCommand
@@ -46,9 +45,7 @@ public static class RunCommand
 
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
-        var runCmd = new Command(
-            "run",
-            "Run a script or a plain text file.");
+        var runCmd = new Command("run", "Run a script or a plain text file.");
         parent.Subcommands.Add(runCmd);
 
         var pathOrNameArg = new Argument<string>("PATH|NAME")
@@ -61,20 +58,27 @@ public static class RunCommand
                 "    run /path/to/myscript.cs       <= path to a text file that contains code to be executed\n" +
                 "    run myscript                   <= looks for a script in your library with a path containing the word 'myscript' \n" +
                 "Notes:\n" +
-                "    1. If omitted, or if name matches multiple scripts from your library, you’ll be prompted to select from a list.\n" +
-                "    2. If omitted and the --code (-x) option is used you will not be prompted to select a script.",
+                "    1. If omitted, or if name matches multiple scripts from your library, you'll be prompted to select from a list.\n" +
+                "    2. If omitted and the --eval (-e) option is used you will not be prompted to select a script.",
             Arity = ArgumentArity.ZeroOrOne,
             HelpName = "PATH|NAME"
         };
 
-        var codeOption = new Option<string?>("--code", "-x")
+        var codeOption = new Option<string?>("--eval", "-e")
         {
             Description =
-                "The code to execute. Will override the code in the target script, or will be executed it as-is if no script was provided.",
+                "The code to execute. Will override the code in the target script, or will be executed as-is if no script was provided.",
             Arity = ArgumentArity.ZeroOrOne,
         };
 
-        var sdkOption = new Option<int?>("--sdk")
+        var kindOption = new Option<string?>("--kind", "-k")
+        {
+            Description = "Override the script kind.",
+            Arity = ArgumentArity.ZeroOrOne,
+            HelpName = "program|sql"
+        };
+
+        var sdkOption = new Option<int?>("--sdk", "-s")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "The .NET SDK major version to use.",
@@ -84,14 +88,14 @@ public static class RunCommand
                 DotNetFrameworkVersionUtil.MinSupportedDotNetVersion))
         };
 
-        var connectionOption = new Option<string?>("--connection")
+        var connectionOption = new Option<string?>("--connection", "-c")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "The name of the database connection to use.",
             HelpName = "name"
         };
 
-        var optimizeOption = new Option<bool?>("--optimize")
+        var optimizeOption = new Option<bool?>("--optimize", "-O")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Enable compiler optimizations."
@@ -103,22 +107,23 @@ public static class RunCommand
             Description = "Reference ASP.NET assemblies."
         };
 
-        var formatOption = new Option<OutputFormat>("--format")
+        var formatOption = new Option<OutputFormat>("--format", "-f")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            HelpName = "text|html|htmldoc",
+            HelpName = "console|text|html|htmldoc|json",
             Description =
                 "The format of script output. If not specified, will emit structured console output (default).\n" +
                 "Values:\n" +
                 "    text       Plain text format; useful when piping to a file\n" +
                 "    html       HTML fragments\n" +
-                "    htmldoc    A complete HTML document",
+                "    htmldoc    A complete HTML document\n" +
+                "    json       NDJSON (newline-delimited JSON); pipe to jq for filtering",
         };
 
-        var minimalOption = new Option<bool>("--minimal")
+        var minimalOption = new Option<bool>("--minimal", "-m")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "If possible, use more minimal output formatting.",
+            Description = "Reduce padding and metadata in output.",
         };
 
         var noCacheOption = new Option<bool>("--no-cache")
@@ -128,25 +133,33 @@ public static class RunCommand
                 "Skip the build cache; do not use a cached build, if one exists, and do not cache the build from this run.",
         };
 
-        var forceRebuildOption = new Option<bool>("--rebuild")
+        var forceRebuildOption = new Option<bool>("--rebuild", "-b")
         {
             Arity = ArgumentArity.ZeroOrOne,
             Description = "Rebuild even if a cached build exists. Replaces the current cached build, if any.",
         };
 
-        var verboseOption = new Option<bool>("--verbose")
+        var verboseOption = new Option<bool>("--verbose", "-v")
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = "Be verbose.",
+            Description = "Emit diagnostic and process logs to stderr.",
+        };
+
+        var sqlOption = new Option<bool>("--sql")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Include SQL queries in output. Only applies to --format json.",
         };
 
         runCmd.Arguments.Add(pathOrNameArg);
         runCmd.Options.Add(codeOption);
+        runCmd.Options.Add(kindOption);
         runCmd.Options.Add(sdkOption);
         runCmd.Options.Add(connectionOption);
         runCmd.Options.Add(optimizeOption);
         runCmd.Options.Add(useAspNetOption);
         runCmd.Options.Add(formatOption);
+        runCmd.Options.Add(sqlOption);
         runCmd.Options.Add(minimalOption);
         runCmd.Options.Add(noCacheOption);
         runCmd.Options.Add(forceRebuildOption);
@@ -161,6 +174,22 @@ public static class RunCommand
                 connection = await Helper.GetConnectionByNameAsync(serviceProvider, connectionName);
                 if (connection == null)
                 {
+                    return 1;
+                }
+            }
+
+            // Resolve script kind
+            var kindStr = p.GetValue(kindOption);
+            ScriptKind? scriptKind = null;
+            if (kindStr != null)
+            {
+                if (kindStr.Equals("program", StringComparison.OrdinalIgnoreCase))
+                    scriptKind = ScriptKind.Program;
+                else if (kindStr.Equals("sql", StringComparison.OrdinalIgnoreCase))
+                    scriptKind = ScriptKind.SQL;
+                else
+                {
+                    Presenter.Error($"Unknown script kind '{kindStr}'. Supported values: program, sql.");
                     return 1;
                 }
             }
@@ -181,7 +210,7 @@ public static class RunCommand
             var options = new Options(
                 p.GetValue(pathOrNameArg),
                 p.GetValue(codeOption),
-                ScriptKind.Program,
+                scriptKind,
                 sdkVersion,
                 connection,
                 optimizationLevel,
@@ -211,6 +240,11 @@ public static class RunCommand
                 options.ScriptArgs.Add("-html-msg");
             }
 
+            if (options.OutputFormat == OutputFormat.Json)
+            {
+                options.ScriptArgs.Add("-json");
+            }
+
             if (p.GetValue(minimalOption))
             {
                 options.ScriptArgs.Add("-minimal");
@@ -221,6 +255,18 @@ public static class RunCommand
                 options.ScriptArgs.Add("-verbose");
             }
 
+            if (p.GetValue(sqlOption))
+            {
+                if (options.OutputFormat != OutputFormat.Json)
+                {
+                    Presenter.Warn("--sql only applies to --format json; ignoring.");
+                }
+                else
+                {
+                    options.ScriptArgs.Add("-sql");
+                }
+            }
+
             // Forward all unmatched tokens to script
             scriptArgs.AddRange(p.UnmatchedTokens);
 
@@ -228,19 +274,53 @@ public static class RunCommand
         });
     }
 
+    public static void SetDefaultRunAction(this RootCommand rootCommand)
+    {
+        rootCommand.SetAction(async p =>
+        {
+            // Re-invoke with 'run' prepended so the run subcommand handles parsing
+            // We don't want attach run symbols to rootCommand directly, otherwise it
+            // will leak into every subcommand
+            var runArgs = new[] { "run" }.Concat(p.UnmatchedTokens).ToArray();
+            return await rootCommand.Parse(runArgs).InvokeAsync();
+        });
+    }
+
     private static async Task<int> ExecuteAsync(Options options, IServiceProvider serviceProvider)
     {
         Script? script;
 
-        if (string.IsNullOrEmpty(options.Code))
+        // If a script path/name is provided, load it (even if -e is also specified,
+        // so the script's config and data connection are preserved)
+        if (!string.IsNullOrEmpty(options.PathOrName))
         {
-            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName);
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, options.PathOrName, "run");
             if (selectedScriptPath == null) return 1;
             script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
         }
-        else
+        else if (!string.IsNullOrEmpty(options.Code))
         {
             script = Helper.CreateScriptFromCode(serviceProvider, options.Code);
+        }
+        else if (Console.IsInputRedirected)
+        {
+            var stdinCode = await Console.In.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(stdinCode))
+            {
+                script = Helper.CreateScriptFromCode(serviceProvider, stdinCode);
+            }
+            else
+            {
+                Presenter.Error("No input received from stdin.");
+                return 1;
+            }
+        }
+        else
+        {
+            // No path, no code, no stdin — prompt for script selection
+            var selectedScriptPath = Helper.SelectScript(serviceProvider, null, "run");
+            if (selectedScriptPath == null) return 1;
+            script = await Helper.LoadScriptFileAsync(serviceProvider, selectedScriptPath, options.Verbose);
         }
 
         if (script == null) return 1;
@@ -275,6 +355,7 @@ public static class RunCommand
     private static async Task<int> RunScriptAsync(IServiceProvider serviceProvider, Script script, Options options)
     {
         bool htmlOutput = options.OutputFormat is OutputFormat.HtmlDoc or OutputFormat.Html;
+        bool jsonOutput = options.OutputFormat == OutputFormat.Json;
         var htmlDocumentOutput = htmlOutput ? new StringBuilder() : null;
 
         // Create a script runner
@@ -302,7 +383,17 @@ public static class RunCommand
             // case the script runner will emit those errors using this output handler.
             if (!htmlOutput && o is ScriptOutput error)
             {
-                Presenter.Error(error.Body?.ToString() ?? "An error occurred.");
+                if (jsonOutput)
+                {
+                    var errorLine = System.Text.Json.JsonSerializer.Serialize(
+                        new { type = "error", value = error.Body?.ToString() ?? "An error occurred." });
+                    Console.WriteLine(errorLine);
+                }
+                else
+                {
+                    Presenter.Error(error.Body?.ToString() ?? "An error occurred.");
+                }
+
                 return;
             }
 
@@ -310,8 +401,10 @@ public static class RunCommand
             {
                 Console.WriteLine(scriptOutput.Body);
             }
-
-            Console.WriteLine(o);
+            else
+            {
+                Console.WriteLine(o);
+            }
         }));
 
         // Configure run options
@@ -324,15 +417,17 @@ public static class RunCommand
             RedirectIo = htmlOutput
         });
 
-        // Run with status spinner on stderr (suppressed when stderr is redirected)
-        if (Console.IsErrorRedirected)
+        RunResult runResult;
+
+        // Run with status spinner on stderr (suppressed when stderr is redirected or output is JSON)
+        if (Console.IsErrorRedirected || jsonOutput)
         {
-            await scriptRunner.RunScriptAsync(runOptions);
+            runResult = await scriptRunner.RunScriptAsync(runOptions);
         }
         else
         {
             var eventBus = serviceProvider.GetRequiredService<IEventBus>();
-            Task? scriptTask = null;
+            Task<RunResult>? scriptTask = null;
 
             await Presenter.StatusAsync("Setting up...", async updateStatus =>
             {
@@ -354,8 +449,9 @@ public static class RunCommand
             });
 
             // Script may still be executing after spinner clears — wait for it
-            if (scriptTask is { IsCompleted: false })
-                await scriptTask;
+            if (scriptTask is null)
+                throw new InvalidOperationException("Script task was not initialized.");
+            runResult = await scriptTask;
         }
 
         if (htmlDocumentOutput != null)
@@ -387,6 +483,14 @@ public static class RunCommand
             Console.WriteLine(html);
         }
 
-        return 0;
+        return MapExitCode(runResult);
+    }
+
+    private static int MapExitCode(RunResult result)
+    {
+        if (result.IsScriptCompletedSuccessfully) return 0;
+        if (result.IsRunCancelled) return 130;
+        if (!result.IsRunAttemptSuccessful) return 2;
+        return 1;
     }
 }

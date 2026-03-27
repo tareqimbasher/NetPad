@@ -1,3 +1,5 @@
+set positional-arguments
+
 default:
     @just --list --unsorted
 
@@ -116,7 +118,7 @@ build-web-rel:
 # Web: run the built release version
 [group('web')]
 run-web-rel *args:
-    "{{ var_api }}/bin/publish/NetPad.Apps.App" {{ args }}
+    "{{ var_api }}/bin/publish/NetPad.Apps.App" "$@"
 
 # ─── TAURI ────────────────────────────────────────────────────────────
 
@@ -179,7 +181,7 @@ run-electron-frontend:
 # CLI: run the npad CLI
 [group('cli')]
 run-cli *args:
-    dotnet run --project "{{ var_cli }}" -- {{ args }}
+    dotnet run --project "{{ var_cli }}" -- "$@"
 
 # CLI: build npad
 [group('cli')]
@@ -194,7 +196,7 @@ build-cli-rel:
 # CLI: run the built release version of npad
 [group('cli')]
 run-cli-rel *args:
-    "{{ var_cli }}/bin/publish/npad" {{ args }}
+    "{{ var_cli }}/bin/publish/npad" "$@"
 
 # CLI: pack npad as a NuGet package
 [group('cli')]
@@ -205,6 +207,13 @@ nuget-pack-cli:
 [group('cli')]
 nuget-push-cli:
     bash scripts/nuget-push-npad.sh
+
+# ─── DOCS ────────────────────────────────────────────────────────────
+
+# Docs: serve documentation site locally with docsify
+[group('docs')]
+serve-docs port="3000":
+    npx docsify-cli serve docs --port {{ port }}
 
 # ─── DOTNET ───────────────────────────────────────────────────────────
 
@@ -220,7 +229,7 @@ dotnet-build:
 
 # .NET: build solution in Release configuration
 [group('dotnet')]
-dotnet-build-release:
+dotnet-build-rel:
     dotnet build "{{ var_sln }}" -c Release
 
 # .NET: clean solution

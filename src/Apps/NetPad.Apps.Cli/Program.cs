@@ -5,7 +5,7 @@ using NetPad.Apps.Cli.Commands;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.ExecutionModel;
 
-var serviceProvider = BuildServiceProvider();
+await using var serviceProvider = BuildServiceProvider();
 
 var rootCommand = new RootCommand("The NetPad command-line tool.")
 {
@@ -13,17 +13,21 @@ var rootCommand = new RootCommand("The NetPad command-line tool.")
 };
 
 rootCommand.AddRunCommand(serviceProvider);
+rootCommand.AddNewCommand(serviceProvider);
 rootCommand.AddListCommand(serviceProvider);
-rootCommand.AddCatCommand(serviceProvider);
+rootCommand.AddShowCommand(serviceProvider);
 rootCommand.AddInfoCommand(serviceProvider);
 rootCommand.AddCacheCommand(serviceProvider);
 rootCommand.AddLogsCommand(serviceProvider);
 rootCommand.AddSettingsCommand(serviceProvider);
 
+// Default: when no subcommand is specified, behave as 'run'
+rootCommand.SetDefaultRunAction();
+
 var parseResult = rootCommand.Parse(args);
 return await parseResult.InvokeAsync();
 
-IServiceProvider BuildServiceProvider()
+ServiceProvider BuildServiceProvider()
 {
     var services = new ServiceCollection();
 
