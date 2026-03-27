@@ -23,7 +23,9 @@ namespace OmniSharp.Stdio
         private readonly ConcurrentDictionary<string, List<Func<JsonNode, Task>>> _eventHandlers;
         private readonly object _stdioStandardInputLock;
         private ProcessIO? _processIo;
-        private bool _isStopped = true;
+        private volatile bool _isStopped = true;
+
+        public Action? OnProcessUnexpectedExit { get; set; }
 
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
@@ -42,7 +44,7 @@ namespace OmniSharp.Stdio
             _stdioStandardInputLock = new object();
         }
 
-        public bool IsProcessRunning() => _processIo is { Process: { HasExited: false } };
+        public bool IsProcessRunning() => _processIo?.Process.IsProcessRunning() == true;
 
         public override async Task StartAsync()
         {
@@ -50,15 +52,24 @@ namespace OmniSharp.Stdio
 
             _processIo.OnOutputReceivedHandlers.Add(HandleOmniSharpDataOutput);
             _processIo.OnErrorReceivedHandlers.Add(HandleOmniSharpErrorOutput);
+            _processIo.Process.Exited += OnProcessExitDetected;
 
             _isStopped = false;
         }
 
         public override async Task StopAsync()
         {
+            _isStopped = true;
+
+            if (_processIo != null)
+            {
+                _processIo.Process.Exited -= OnProcessExitDetected;
+            }
+
+            _requestResponseQueue.CancelAll();
+
             await _omniSharpServerProcessAccessor.StopProcessAsync().ConfigureAwait(false);
             _processIo?.Dispose();
-            _isStopped = true;
         }
 
         public void AddOnProcessOutputReceivedHandler(Func<string, Task> handler)
@@ -190,8 +201,32 @@ namespace OmniSharp.Stdio
 
         public override void Dispose()
         {
+            OnProcessUnexpectedExit = null;
             _eventHandlers.Clear();
             base.Dispose();
+        }
+
+        private void OnProcessExitDetected(object? sender, EventArgs e)
+        {
+            if (_isStopped)
+            {
+                // Process exited as part of an explicit StopAsync call, not a crash
+                return;
+            }
+
+            Logger.LogWarning("OmniSharp server process exited unexpectedly");
+
+            _isStopped = true;
+            _requestResponseQueue.CancelAll();
+
+            try
+            {
+                OnProcessUnexpectedExit?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error in OnProcessUnexpectedExit callback");
+            }
         }
 
         private OmniSharpEndpointAttribute GetOmniSharpEndpointAttribute(object obj)

@@ -4,22 +4,6 @@ namespace NetPad.Utilities;
 
 public static class ProcessUtil
 {
-    /// <summary>
-    /// Returns <c>true</c> if the process is currently running or was started at some point.
-    /// </summary>
-    public static bool WasProcessStarted(this Process process)
-    {
-        try
-        {
-            _ = process.HasExited;
-            return true;
-        }
-        catch (InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
     public static bool IsProcessRunning(this Process process)
     {
         try
@@ -32,11 +16,12 @@ public static class ProcessUtil
         }
     }
 
-    public static void KillIfRunning(this Process process)
+    public static void KillIfRunning(this Process process, int waitTimeout = 5000)
     {
         if (process.IsProcessRunning())
         {
             process.Kill();
+            process.WaitForExit(waitTimeout);
         }
     }
 

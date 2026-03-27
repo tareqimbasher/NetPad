@@ -38,11 +38,17 @@ public class AppOmniSharpServer(
     ILogger<AppOmniSharpServer> logger,
     ILogger<OmniSharpProject> scriptProjectLogger)
 {
+    private const int MaxAutoRestartAttempts = 3;
+    private static readonly TimeSpan _autoRestartStabilityThreshold = TimeSpan.FromSeconds(60);
+
     private readonly ILogger _logger = logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens = [];
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
     private readonly CodeParsingOptions _codeParsingOptions = new();
     private IOmniSharpStdioServer? _omniSharpServer;
+    private int _autoRestartCount;
+    private DateTime _lastSuccessfulStart;
+    private int _isRestarting;
 
     public Guid ScriptId => environment.Script.Id;
 
@@ -134,6 +140,8 @@ public class AppOmniSharpServer(
 
     public async Task<bool> RestartAsync(Action<string>? progress = null)
     {
+        _autoRestartCount = 0;
+
         progress?.Invoke("Stopping OmniSharp server...");
         await StopOmniSharpServerAsync();
 
@@ -207,7 +215,9 @@ public class AppOmniSharpServer(
 
         await omniSharpServer.StartAsync();
 
+        omniSharpServer.OnProcessUnexpectedExit = HandleProcessUnexpectedExit;
         _omniSharpServer = omniSharpServer;
+        _lastSuccessfulStart = DateTime.UtcNow;
 
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
@@ -242,11 +252,78 @@ public class AppOmniSharpServer(
             return;
         }
 
+        _omniSharpServer.OnProcessUnexpectedExit = null;
         await _omniSharpServer.StopAsync();
 
         _omniSharpServer = null;
 
         await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+    }
+
+    private void HandleProcessUnexpectedExit()
+    {
+        if (Interlocked.CompareExchange(ref _isRestarting, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "OmniSharp server process exited unexpectedly for script {ScriptId}. Attempting auto-restart...",
+            environment.Script.Id);
+
+        // Reset counter if the server was stable long enough
+        if (DateTime.UtcNow - _lastSuccessfulStart > _autoRestartStabilityThreshold)
+        {
+            _autoRestartCount = 0;
+        }
+
+        _autoRestartCount++;
+
+        if (_autoRestartCount > MaxAutoRestartAttempts)
+        {
+            _logger.LogError(
+                "OmniSharp server for script {ScriptId} has crashed {Count} times. Not restarting. Use manual restart.",
+                environment.Script.Id, _autoRestartCount);
+
+            Interlocked.Exchange(ref _isRestarting, 0);
+            _ = eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Unsubscribe from the dead server before dropping the reference
+                var deadServer = _omniSharpServer;
+                if (deadServer != null)
+                {
+                    deadServer.OnProcessUnexpectedExit = null;
+                }
+
+                _omniSharpServer = null;
+
+                await StartOmniSharpServerAsync();
+
+                _logger.LogInformation(
+                    "OmniSharp server auto-restarted successfully for script {ScriptId} (attempt {Count}/{Max})",
+                    environment.Script.Id, _autoRestartCount, MaxAutoRestartAttempts);
+
+                await eventBus.PublishAsync(new OmniSharpServerRestartedEvent(this));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to auto-restart OmniSharp server for script {ScriptId} (attempt {Count}/{Max})",
+                    environment.Script.Id, _autoRestartCount, MaxAutoRestartAttempts);
+
+                await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isRestarting, 0);
+            }
+        });
     }
 
     private bool IsValidServerExecutablePath(string? executablePath)
