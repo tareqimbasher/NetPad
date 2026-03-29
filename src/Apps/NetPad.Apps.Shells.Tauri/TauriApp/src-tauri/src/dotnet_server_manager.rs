@@ -109,18 +109,9 @@ impl DotNetServerManager {
                         .expect("Error stopping .NET server process. Failed while waiting for kill to complete");
                 }
 
-                #[cfg(windows)]
-                {
-                    log::info!("Using taskkill on .NET server process with PID: {pid}");
-                    const CREATE_NO_WINDOW: u32 = 0x08000000;
-                    Command::new("taskkill")
-                        .args(["/PID", &pid, "/F"])
-                        .creation_flags(CREATE_NO_WINDOW)
-                        .spawn()
-                        .expect("Error stopping .NET server process. Failed to spawn 'taskkill'")
-                        .wait()
-                        .expect("Error stopping .NET server process. Failed while waiting for taskkill to complete");
-                }
+                // On Windows there is no graceful signal equivalent to SIGTERM.
+                // We let the .NET backend's ParentProcessTracker detect that the
+                // Tauri process has exited and perform a graceful shutdown.
 
                 self.child = None;
                 log::info!(".NET server process terminated. PID was: {pid}");

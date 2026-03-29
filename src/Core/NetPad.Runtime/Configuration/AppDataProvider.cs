@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using NetPad.Application;
 using NetPad.IO;
@@ -102,6 +103,53 @@ public static class AppDataProvider
 
         // If we got here we couldn't determine a proper cache directory
         return TempDirectoryPath.Combine("Cache");
+    }
+
+    /// <summary>
+    /// Deletes per-process temp directories left behind by previous NetPad instances that are no longer running.
+    /// </summary>
+    public static void CleanUpStaleTempDirectories()
+    {
+        if (!TempDirectoryPath.Exists())
+        {
+            return;
+        }
+
+        foreach (var dir in Directory.GetDirectories(TempDirectoryPath.Path, "pid_*"))
+        {
+            var dirName = Path.GetFileName(dir);
+
+            if (!int.TryParse(dirName.AsSpan("pid_".Length), out int pid))
+            {
+                continue;
+            }
+
+            // Skip our own directory
+            if (pid == Environment.ProcessId)
+            {
+                continue;
+            }
+
+            try
+            {
+                Process.GetProcessById(pid);
+                // Process is still running, skip
+                continue;
+            }
+            catch (ArgumentException)
+            {
+                // Process is not running
+            }
+
+            try
+            {
+                Directory.Delete(dir, true);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
     }
 
     public static class Defaults
