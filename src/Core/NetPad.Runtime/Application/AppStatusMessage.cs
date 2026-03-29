@@ -6,14 +6,14 @@ namespace NetPad.Application;
 public class AppStatusMessage(
     string text,
     AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-    bool persistant = false)
+    bool persistent = false)
 {
     public AppStatusMessage(
         Guid scriptId,
         string text,
         AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-        bool persistant = false
-    ) : this(text, priority, persistant)
+        bool persistent = false
+    ) : this(text, priority, persistent)
     {
         ScriptId = scriptId;
     }
@@ -34,9 +34,9 @@ public class AppStatusMessage(
     public AppStatusMessagePriority Priority { get; } = priority;
 
     /// <summary>
-    /// Whether this status message should be persistant or if it should be cleared after a timeout.
+    /// Whether this status message should be persistent or if it should be cleared after a timeout.
     /// </summary>
-    public bool Persistant { get; } = persistant;
+    public bool Persistent { get; } = persistent;
 
     /// <summary>
     /// The date and time when this message was created.

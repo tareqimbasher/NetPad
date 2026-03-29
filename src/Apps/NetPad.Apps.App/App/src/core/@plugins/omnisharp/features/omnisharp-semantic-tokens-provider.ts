@@ -67,7 +67,7 @@ export class OmniSharpSemanticTokensProvider extends FeatureProvider implements 
             return null;
         }
 
-        // We don't need to retreive semantic info if there is no code in the editor
+        // We don't need to retrieve semantic info if there is no code in the editor
         if (model.getValue().trim().length == 0) {
             return null;
         }

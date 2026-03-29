@@ -7195,8 +7195,8 @@ export class AppStatusMessage implements IAppStatusMessage {
     text!: string;
     /** The priority of this message. */
     priority!: AppStatusMessagePriority;
-    /** Whether this status message should be persistant or if it should be cleared after a timeout. */
-    persistant!: boolean;
+    /** Whether this status message should be persistent or if it should be cleared after a timeout. */
+    persistent!: boolean;
     /** The date and time when this message was created. */
     createdDate!: Date;
 
@@ -7214,7 +7214,7 @@ export class AppStatusMessage implements IAppStatusMessage {
             this.scriptId = _data["scriptId"];
             this.text = _data["text"];
             this.priority = _data["priority"];
-            this.persistant = _data["persistant"];
+            this.persistent = _data["persistent"];
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>undefined;
         }
     }
@@ -7231,7 +7231,7 @@ export class AppStatusMessage implements IAppStatusMessage {
         data["scriptId"] = this.scriptId;
         data["text"] = this.text;
         data["priority"] = this.priority;
-        data["persistant"] = this.persistant;
+        data["persistent"] = this.persistent;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>undefined;
         return data;
     }
@@ -7252,8 +7252,8 @@ export interface IAppStatusMessage {
     text: string;
     /** The priority of this message. */
     priority: AppStatusMessagePriority;
-    /** Whether this status message should be persistant or if it should be cleared after a timeout. */
-    persistant: boolean;
+    /** Whether this status message should be persistent or if it should be cleared after a timeout. */
+    persistent: boolean;
     /** The date and time when this message was created. */
     createdDate: Date;
 }

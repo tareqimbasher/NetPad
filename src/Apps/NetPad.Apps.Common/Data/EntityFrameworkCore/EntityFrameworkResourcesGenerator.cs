@@ -96,7 +96,7 @@ internal class EntityFrameworkResourcesGenerator(
                   }
 
                   /// <summary>
-                  /// Overriden by NetPad. Implement "partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder)"
+                  /// Overridden by NetPad. Implement "partial void OnConfiguringPartial(DbContextOptionsBuilder optionsBuilder)"
                   /// to add code to "OnConfiguring".
                   /// </summary>
                   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

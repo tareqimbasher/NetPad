@@ -6,7 +6,7 @@ import {WindowParams} from "@application/windows/window-params";
  * A custom attribute that removes the element it's applied to from the DOM on unsupported shells.
  * Usage: <div shells="electron"></a> will only keep target element in the DOM when app is hosted in an Electron shell.
  *
- * The value of the shells attribute must be a comma seperated string.
+ * The value of the shells attribute must be a comma separated string.
  * Possible values (case-insensitive):
  *      - browser
  *      - electron

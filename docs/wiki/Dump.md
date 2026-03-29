@@ -151,7 +151,7 @@ You can dump HTML and create your own interactive views.
 TextNode.RawText("<h1>Heading 1</h1>").Dump();
 ```
 
-You need to add the following namepsaces to your script:
+You need to add the following namespaces to your script:
 
 ```csharp
 O2Html

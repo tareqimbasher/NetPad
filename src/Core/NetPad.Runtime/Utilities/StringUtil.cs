@@ -36,7 +36,7 @@ public static class StringUtil
         return Uri.TryCreate(uriString, UriKind.RelativeOrAbsolute, out var uri) ? uri : null;
     }
 
-    public static string[] SplitLastOccurence(this string str, string separator)
+    public static string[] SplitLastOccurrence(this string str, string separator)
     {
         int ix = str.LastIndexOf(separator, StringComparison.Ordinal);
 

@@ -86,7 +86,7 @@ public class SessionTests(ITestOutputHelper testOutputHelper) : TestBase(testOut
     }
 
     [Fact]
-    public async Task ActivingAScript_SetsItAsTheActiveScript()
+    public async Task ActivatingAScript_SetsItAsTheActiveScript()
     {
         var session = SessionTestHelper.CreateSession(ServiceProvider);
         var script1 = ScriptTestHelper.CreateScript();
