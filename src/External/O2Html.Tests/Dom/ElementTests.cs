@@ -133,7 +133,7 @@ public class ElementTests
         element.GetOrAddAttribute("test");
         element.GetOrAddAttribute("test");
 
-        Assert.Single(element.Attributes.Where(a => a.Name == "test"));
+        Assert.Single(element.Attributes, a => a.Name == "test");
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class ElementTests
         element.SetAttribute("test", "val");
         element.SetAttribute("test", "val");
 
-        Assert.Single(element.Attributes.Where(a => a.Name == "test"));
+        Assert.Single(element.Attributes, a => a.Name == "test");
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class ElementTests
 
         element.DeleteAttribute(attribute.Name);
 
-        Assert.Empty(element.Attributes.Where(a => a.Name == attribute.Name));
+        Assert.DoesNotContain(element.Attributes, a => a.Name == attribute.Name);
     }
 
     [Fact]

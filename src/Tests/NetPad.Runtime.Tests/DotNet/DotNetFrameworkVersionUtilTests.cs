@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using NetPad.DotNet;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.DotNet;
 

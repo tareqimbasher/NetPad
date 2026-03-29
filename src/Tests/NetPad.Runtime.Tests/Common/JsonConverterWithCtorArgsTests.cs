@@ -1,6 +1,5 @@
 ﻿using NetPad.Common;
 using NetPad.DotNet;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.Common;
 

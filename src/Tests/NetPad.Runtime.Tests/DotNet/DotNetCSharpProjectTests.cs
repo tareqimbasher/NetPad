@@ -2,8 +2,6 @@ using System.Xml.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using NetPad.Configuration;
 using NetPad.DotNet;
-using NetPad.Tests.Helpers;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.DotNet;
 

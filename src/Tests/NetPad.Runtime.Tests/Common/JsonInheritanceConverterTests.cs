@@ -2,7 +2,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NetPad.Common;
-using Xunit;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NetPad.Runtime.Tests.Common;

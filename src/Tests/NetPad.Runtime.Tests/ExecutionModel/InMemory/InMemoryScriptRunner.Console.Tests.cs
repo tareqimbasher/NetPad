@@ -9,11 +9,6 @@ using NetPad.IO;
 using NetPad.Packages;
 using NetPad.Presentation;
 using NetPad.Scripts;
-using NetPad.Tests;
-using NetPad.Tests.Helpers;
-using NetPad.Tests.Services;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NetPad.Runtime.Tests.ExecutionModel.InMemory;
 
