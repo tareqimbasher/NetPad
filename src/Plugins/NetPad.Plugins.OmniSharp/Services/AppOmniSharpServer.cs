@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Text.Json.Nodes;
 using System.Xml.Linq;
+using OmniSharp.Models.Events;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
@@ -86,6 +88,13 @@ public class AppOmniSharpServer(
                 .Select(a => new AssemblyFileReference(a)));
 
         await Project.RestoreAsync();
+
+        // Write initial code to disk so OmniSharp picks it up during project load,
+        // rather than needing a post-load buffer update round-trip.
+        if (!string.IsNullOrWhiteSpace(environment.Script.Code))
+        {
+            WriteInitialCodeToDisk();
+        }
 
         InitializeEventHandlers();
 
@@ -226,13 +235,16 @@ public class AppOmniSharpServer(
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
             var ct = _backgroundTasksCts.Token;
+            var bufferUpdated = 0;
+            var projectEventTokens = new List<IDisposable>(2);
 
-            _ = Task.Run(async () =>
+            async Task UpdateBuffersOnProjectEvent(JsonNode _)
             {
-                for (int i = 0; i < 6; i++)
-                {
-                    ct.ThrowIfCancellationRequested();
+                if (Interlocked.CompareExchange(ref bufferUpdated, 1, 0) != 0)
+                    return;
 
+                try
+                {
                     bool shouldUpdateDataConnectionCodeBuffer =
                         environment.Script.DataConnection == null
                         || await dataConnectionResourcesCache.HasCachedResourcesAsync(
@@ -245,7 +257,38 @@ public class AppOmniSharpServer(
                     else
                         await UpdateOmniSharpCodeBufferAsync();
 
-                    await Task.Delay(1000, ct);
+                    foreach (var token in projectEventTokens)
+                    {
+                        token.Dispose();
+                    }
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp buffers after project loaded");
+                    Interlocked.Exchange(ref bufferUpdated, 0);
+                }
+            }
+
+            projectEventTokens.Add(omniSharpServer.SubscribeToEvent(EventTypes.ProjectAdded,
+                UpdateBuffersOnProjectEvent));
+            projectEventTokens.Add(omniSharpServer.SubscribeToEvent(EventTypes.ProjectChanged,
+                UpdateBuffersOnProjectEvent));
+
+            // Fallback if no event fires
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(20), ct);
+                    if (Interlocked.CompareExchange(ref bufferUpdated, 0, 0) == 0)
+                    {
+                        _logger.LogWarning(
+                            "No ProjectAdded/ProjectChanged event received within 20s, updating buffers as fallback");
+                        await UpdateBuffersOnProjectEvent(null!);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
                 }
             }, ct);
         }
@@ -309,6 +352,14 @@ public class AppOmniSharpServer(
         {
             try
             {
+                // Cancel old background tasks first so they can't fire against a null server
+                if (_backgroundTasksCts != null)
+                {
+                    await _backgroundTasksCts.CancelAsync();
+                    _backgroundTasksCts.Dispose();
+                    _backgroundTasksCts = null;
+                }
+
                 // Unsubscribe from the dead server before dropping the reference
                 var deadServer = _omniSharpServer;
                 if (deadServer != null)
@@ -389,7 +440,15 @@ public class AppOmniSharpServer(
                 // When target framework version changes, we need to update OmniSharp's data connection assembly references
                 _ = Task.Run(async () =>
                 {
-                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
+                    try
+                    {
+                        await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _logger.LogError(ex,
+                            "Failed to update OmniSharp data connection buffers after target framework change");
+                    }
                 }, ct);
             }
         });
@@ -400,6 +459,7 @@ public class AppOmniSharpServer(
 
             await SetPreprocessorSymbolsAsync();
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<ScriptUseAspNetUpdatedEvent>(async ev =>
@@ -410,6 +470,7 @@ public class AppOmniSharpServer(
                 "Sdk",
                 DotNetCSharpProject.GetProjectSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
@@ -429,6 +490,7 @@ public class AppOmniSharpServer(
             await Project.RemoveReferencesAsync(ev.Removed);
 
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<DataConnectionResourcesUpdatedEvent>(ev =>
@@ -443,7 +505,17 @@ public class AppOmniSharpServer(
             var dataConnection = ev.DataConnection;
             var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); }, ct);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp data connection buffers after resource update");
+                }
+            }, ct);
 
             return Task.CompletedTask;
         });
@@ -455,7 +527,17 @@ public class AppOmniSharpServer(
             var dataConnection = ev.DataConnection;
             var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); }, ct);
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp data connection buffers after connection change");
+                }
+            }, ct);
 
             return Task.CompletedTask;
         });
@@ -467,8 +549,15 @@ public class AppOmniSharpServer(
         {
             if (_omniSharpServer != null && _backgroundTasksCts is { IsCancellationRequested: false })
             {
-                // We don't want to await OmniSharp event handlers
-                handler(ev);
+                _ = handler(ev).ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        _logger.LogError(t.Exception.InnerException ?? t.Exception,
+                            "Error in OmniSharp event handler for {EventType}",
+                            typeof(TEvent).Name);
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
 
             return Task.CompletedTask;
@@ -478,7 +567,27 @@ public class AppOmniSharpServer(
 
     #endregion
 
-    private async Task UpdateOmniSharpCodeBufferAsync()
+    /// <summary>
+    /// Writes parsed script code to the project's .cs files on disk before OmniSharp starts,
+    /// so OmniSharp picks up the correct code during its initial project load.
+    /// </summary>
+    private void WriteInitialCodeToDisk()
+    {
+        _codeParsingOptions.IncludeAspNetUsings = environment.Script.Config.UseAspNet;
+        var parsingResult = codeParser.Parse(environment.Script, options: _codeParsingOptions);
+
+        var userCode = parsingResult.UserProgram.Code.Value;
+        File.WriteAllText(Project.UserProgramFilePath,
+            !string.IsNullOrWhiteSpace(userCode) ? userCode : "//");
+
+        var usings = parsingResult.GetFullProgram().GetAllUsings()
+            .Select(u => u.ToCodeString(true))
+            .JoinToString(Environment.NewLine);
+        var bootstrapperCode = $"{usings}\n\n{parsingResult.BootstrapperProgram.Code.ToCodeString()}";
+        File.WriteAllText(Project.BootstrapperProgramFilePath, bootstrapperCode);
+    }
+
+    private async Task UpdateOmniSharpCodeBufferAsync(bool publishCompletedEvent = true)
     {
         var script = environment.Script;
         _codeParsingOptions.IncludeAspNetUsings = script.Config.UseAspNet;
@@ -486,6 +595,11 @@ public class AppOmniSharpServer(
         var parsingResult = codeParser.Parse(script, options: _codeParsingOptions);
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+
+        if (publishCompletedEvent)
+        {
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
+        }
     }
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
@@ -527,10 +641,12 @@ public class AppOmniSharpServer(
         await Project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(connectionResources?.SourceCode);
-        await UpdateOmniSharpCodeBufferAsync();
+        await UpdateOmniSharpCodeBufferAsync(publishCompletedEvent: false);
 
         // Notify project file changed again
         await NotifyOmniSharpServerProjectFileChangedAsync();
+
+        await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(DataConnectionSourceCode? sourceCode)
@@ -549,7 +665,7 @@ public class AppOmniSharpServer(
     {
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             await OmniSharpServer.SendAsync(new[]
             {
@@ -559,8 +675,6 @@ public class AppOmniSharpServer(
                     ChangeType = FileChangeType.Create
                 }
             }, cts.Token);
-
-            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         }
         catch (Exception e)
         {
@@ -577,7 +691,7 @@ public class AppOmniSharpServer(
         try
         {
             buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             await OmniSharpServer.SendAsync(new UpdateBufferRequest
             {
@@ -594,7 +708,5 @@ public class AppOmniSharpServer(
         {
             semaphore.Release();
         }
-
-        await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
     }
 }
