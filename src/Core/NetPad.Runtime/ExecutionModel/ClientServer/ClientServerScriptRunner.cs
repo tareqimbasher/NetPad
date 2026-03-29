@@ -124,6 +124,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
             _rawOutputHandler.RawOutputReceived,
             _rawOutputHandler.RawErrorReceived,
             _eventBus,
+            _dotNetInfo,
             loggerFactory
         );
 
