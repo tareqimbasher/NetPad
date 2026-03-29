@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Text.Json.Nodes;
 using System.Xml.Linq;
+using OmniSharp.Models.Events;
 using NetPad.Compilation;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.Configuration;
@@ -38,11 +40,21 @@ public class AppOmniSharpServer(
     ILogger<AppOmniSharpServer> logger,
     ILogger<OmniSharpProject> scriptProjectLogger)
 {
+    private const int MaxAutoRestartAttempts = 3;
+    private static readonly TimeSpan _autoRestartStabilityThreshold = TimeSpan.FromSeconds(60);
+
     private readonly ILogger _logger = logger;
     private readonly List<EventSubscriptionToken> _subscriptionTokens = [];
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _bufferUpdateSemaphores = new();
     private readonly CodeParsingOptions _codeParsingOptions = new();
     private IOmniSharpStdioServer? _omniSharpServer;
+    private CancellationTokenSource? _backgroundTasksCts;
+    private TaskCompletionSource? _projectLoadedTcs;
+    private int _autoRestartCount;
+    private DateTime _lastSuccessfulStart;
+    private int _isRestarting;
+
+    private CancellationToken BackgroundCancellationToken => _backgroundTasksCts?.Token ?? CancellationToken.None;
 
     public Guid ScriptId => environment.Script.Id;
 
@@ -77,6 +89,13 @@ public class AppOmniSharpServer(
                 .Select(a => new AssemblyFileReference(a)));
 
         await Project.RestoreAsync();
+
+        // Write initial code to disk so OmniSharp picks it up during project load,
+        // rather than needing a post-load buffer update round-trip.
+        if (!string.IsNullOrWhiteSpace(environment.Script.Code))
+        {
+            WriteInitialCodeToDisk();
+        }
 
         InitializeEventHandlers();
 
@@ -134,6 +153,8 @@ public class AppOmniSharpServer(
 
     public async Task<bool> RestartAsync(Action<string>? progress = null)
     {
+        _autoRestartCount = 0;
+
         progress?.Invoke("Stopping OmniSharp server...");
         await StopOmniSharpServerAsync();
 
@@ -207,13 +228,49 @@ public class AppOmniSharpServer(
 
         await omniSharpServer.StartAsync();
 
+        omniSharpServer.OnProcessUnexpectedExit = HandleProcessUnexpectedExit;
         _omniSharpServer = omniSharpServer;
+        _backgroundTasksCts = new CancellationTokenSource();
+        _projectLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _lastSuccessfulStart = DateTime.UtcNow;
+
+        // Gate all OmniSharp communication until the project is loaded
+        omniSharpServer.SubscribeToEvent(EventTypes.ProjectAdded, _ =>
+        {
+            _projectLoadedTcs?.TrySetResult();
+            return Task.CompletedTask;
+        });
+        omniSharpServer.SubscribeToEvent(EventTypes.ProjectChanged, _ =>
+        {
+            _projectLoadedTcs?.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        // Fallback: open the gate if OmniSharp doesn't fire ProjectAdded/ProjectChanged
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(20), _backgroundTasksCts.Token);
+                _projectLoadedTcs?.TrySetResult();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }, _backgroundTasksCts.Token);
 
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
-            _ = Task.Run(async () =>
+            var ct = _backgroundTasksCts.Token;
+            var bufferUpdated = 0;
+            var projectEventTokens = new List<IDisposable>(2);
+
+            async Task UpdateBuffersOnProjectEvent(JsonNode _)
             {
-                for (int i = 0; i < 6; i++)
+                if (Interlocked.CompareExchange(ref bufferUpdated, 1, 0) != 0)
+                    return;
+
+                try
                 {
                     bool shouldUpdateDataConnectionCodeBuffer =
                         environment.Script.DataConnection == null
@@ -227,9 +284,41 @@ public class AppOmniSharpServer(
                     else
                         await UpdateOmniSharpCodeBufferAsync();
 
-                    await Task.Delay(1000);
+                    foreach (var token in projectEventTokens)
+                    {
+                        token.Dispose();
+                    }
                 }
-            });
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp buffers after project loaded");
+                    Interlocked.Exchange(ref bufferUpdated, 0);
+                }
+            }
+
+            projectEventTokens.Add(omniSharpServer.SubscribeToEvent(EventTypes.ProjectAdded,
+                UpdateBuffersOnProjectEvent));
+            projectEventTokens.Add(omniSharpServer.SubscribeToEvent(EventTypes.ProjectChanged,
+                UpdateBuffersOnProjectEvent));
+
+            // Fallback if no event fires
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(20), ct);
+                    if (Interlocked.CompareExchange(ref bufferUpdated, 0, 0) == 0)
+                    {
+                        _logger.LogWarning(
+                            "No ProjectAdded/ProjectChanged event received within 20s, updating buffers as fallback");
+                        _projectLoadedTcs?.TrySetResult();
+                        await UpdateBuffersOnProjectEvent(null!);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }, ct);
         }
 
         await eventBus.PublishAsync(new OmniSharpServerStartedEvent(this));
@@ -237,16 +326,110 @@ public class AppOmniSharpServer(
 
     private async Task StopOmniSharpServerAsync()
     {
+        if (_backgroundTasksCts != null)
+        {
+            await _backgroundTasksCts.CancelAsync();
+            _backgroundTasksCts.Dispose();
+            _backgroundTasksCts = null;
+        }
+
+        if (_projectLoadedTcs != null)
+        {
+            _projectLoadedTcs.TrySetCanceled();
+            _projectLoadedTcs = null;
+        }
+
         if (_omniSharpServer == null)
         {
             return;
         }
 
+        _omniSharpServer.OnProcessUnexpectedExit = null;
         await _omniSharpServer.StopAsync();
 
         _omniSharpServer = null;
 
         await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+    }
+
+    private void HandleProcessUnexpectedExit()
+    {
+        if (Interlocked.CompareExchange(ref _isRestarting, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _logger.LogWarning(
+            "OmniSharp server process exited unexpectedly for script {ScriptId}. Attempting auto-restart...",
+            environment.Script.Id);
+
+        // Reset counter if the server was stable long enough
+        if (DateTime.UtcNow - _lastSuccessfulStart > _autoRestartStabilityThreshold)
+        {
+            _autoRestartCount = 0;
+        }
+
+        _autoRestartCount++;
+
+        if (_autoRestartCount > MaxAutoRestartAttempts)
+        {
+            _logger.LogError(
+                "OmniSharp server for script {ScriptId} has crashed {Count} times. Not restarting. Use manual restart.",
+                environment.Script.Id, _autoRestartCount);
+
+            Interlocked.Exchange(ref _isRestarting, 0);
+            _ = eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Cancel old background tasks first so they can't fire against a null server
+                if (_backgroundTasksCts != null)
+                {
+                    await _backgroundTasksCts.CancelAsync();
+                    _backgroundTasksCts.Dispose();
+                    _backgroundTasksCts = null;
+                }
+
+                if (_projectLoadedTcs != null)
+                {
+                    _projectLoadedTcs.TrySetCanceled();
+                    _projectLoadedTcs = null;
+                }
+
+                // Unsubscribe from the dead server before dropping the reference
+                var deadServer = _omniSharpServer;
+                if (deadServer != null)
+                {
+                    deadServer.OnProcessUnexpectedExit = null;
+                }
+
+                _omniSharpServer = null;
+
+                await StartOmniSharpServerAsync();
+
+                _logger.LogInformation(
+                    "OmniSharp server auto-restarted successfully for script {ScriptId} (attempt {Count}/{Max})",
+                    environment.Script.Id, _autoRestartCount, MaxAutoRestartAttempts);
+
+                await eventBus.PublishAsync(new OmniSharpServerRestartedEvent(this));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to auto-restart OmniSharp server for script {ScriptId} (attempt {Count}/{Max})",
+                    environment.Script.Id, _autoRestartCount, MaxAutoRestartAttempts);
+
+                await eventBus.PublishAsync(new OmniSharpServerStoppedEvent(this));
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isRestarting, 0);
+            }
+        });
     }
 
     private bool IsValidServerExecutablePath(string? executablePath)
@@ -292,11 +475,21 @@ public class AppOmniSharpServer(
 
             if (ev.Script.DataConnection != null)
             {
+                var ct = BackgroundCancellationToken;
+
                 // When target framework version changes, we need to update OmniSharp's data connection assembly references
                 _ = Task.Run(async () =>
                 {
-                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
-                });
+                    try
+                    {
+                        await UpdateOmniSharpCodeBufferWithDataConnectionAsync(ev.Script.DataConnection);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _logger.LogError(ex,
+                            "Failed to update OmniSharp data connection buffers after target framework change");
+                    }
+                }, ct);
             }
         });
 
@@ -306,6 +499,7 @@ public class AppOmniSharpServer(
 
             await SetPreprocessorSymbolsAsync();
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<ScriptUseAspNetUpdatedEvent>(async ev =>
@@ -316,6 +510,7 @@ public class AppOmniSharpServer(
                 "Sdk",
                 DotNetCSharpProject.GetProjectSdkName(ev.NewValue ? DotNetSdkPack.AspNetApp : DotNetSdkPack.NetApp));
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<ScriptNamespacesUpdatedEvent>(async ev =>
@@ -335,6 +530,7 @@ public class AppOmniSharpServer(
             await Project.RemoveReferencesAsync(ev.Removed);
 
             await NotifyOmniSharpServerProjectFileChangedAsync();
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         });
 
         Subscribe<DataConnectionResourcesUpdatedEvent>(ev =>
@@ -347,8 +543,19 @@ public class AppOmniSharpServer(
             }
 
             var dataConnection = ev.DataConnection;
+            var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp data connection buffers after resource update");
+                }
+            }, ct);
 
             return Task.CompletedTask;
         });
@@ -358,8 +565,19 @@ public class AppOmniSharpServer(
             if (ev.Script.Id != environment.Script.Id) return Task.CompletedTask;
 
             var dataConnection = ev.DataConnection;
+            var ct = BackgroundCancellationToken;
 
-            Task.Run(async () => { await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection); });
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await UpdateOmniSharpCodeBufferWithDataConnectionAsync(dataConnection);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex, "Failed to update OmniSharp data connection buffers after connection change");
+                }
+            }, ct);
 
             return Task.CompletedTask;
         });
@@ -369,10 +587,17 @@ public class AppOmniSharpServer(
     {
         var token = eventBus.Subscribe<TEvent>(ev =>
         {
-            if (_omniSharpServer != null)
+            if (_omniSharpServer != null && _backgroundTasksCts is { IsCancellationRequested: false })
             {
-                // We don't want to await OmniSharp event handlers
-                handler(ev);
+                _ = handler(ev).ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        _logger.LogError(t.Exception.InnerException ?? t.Exception,
+                            "Error in OmniSharp event handler for {EventType}",
+                            typeof(TEvent).Name);
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
 
             return Task.CompletedTask;
@@ -382,14 +607,61 @@ public class AppOmniSharpServer(
 
     #endregion
 
-    private async Task UpdateOmniSharpCodeBufferAsync()
+    /// <summary>
+    /// Waits until OmniSharp has loaded its project (signaled by ProjectAdded/ProjectChanged).
+    /// All buffer updates and project notifications should await this before sending requests.
+    /// </summary>
+    private async Task WaitForProjectLoadedAsync()
     {
+        if (_projectLoadedTcs is { Task.IsCompleted: false })
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await _projectLoadedTcs.Task.WaitAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Timed out waiting for OmniSharp project to load");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes parsed script code to the project's .cs files on disk before OmniSharp starts,
+    /// so OmniSharp picks up the correct code during its initial project load.
+    /// </summary>
+    private void WriteInitialCodeToDisk()
+    {
+        _codeParsingOptions.IncludeAspNetUsings = environment.Script.Config.UseAspNet;
+        var parsingResult = codeParser.Parse(environment.Script, options: _codeParsingOptions);
+
+        var userCode = parsingResult.UserProgram.Code.Value;
+        File.WriteAllText(Project.UserProgramFilePath,
+            !string.IsNullOrWhiteSpace(userCode) ? userCode : "//");
+
+        var usings = parsingResult.GetFullProgram().GetAllUsings()
+            .Select(u => u.ToCodeString(true))
+            .JoinToString(Environment.NewLine);
+        var bootstrapperCode = $"{usings}\n\n{parsingResult.BootstrapperProgram.Code.ToCodeString()}";
+        File.WriteAllText(Project.BootstrapperProgramFilePath, bootstrapperCode);
+    }
+
+    private async Task UpdateOmniSharpCodeBufferAsync(bool publishCompletedEvent = true)
+    {
+        await WaitForProjectLoadedAsync();
+
         var script = environment.Script;
         _codeParsingOptions.IncludeAspNetUsings = script.Config.UseAspNet;
 
         var parsingResult = codeParser.Parse(script, options: _codeParsingOptions);
         await UpdateOmniSharpCodeBufferWithBootstrapperProgramAsync(parsingResult);
         await UpdateOmniSharpCodeBufferWithUserProgramAsync(parsingResult);
+
+        if (publishCompletedEvent)
+        {
+            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
+        }
     }
 
     private async Task UpdateOmniSharpCodeBufferWithUserProgramAsync(CodeParsingResult parsingResult)
@@ -410,6 +682,8 @@ public class AppOmniSharpServer(
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
     {
+        await WaitForProjectLoadedAsync();
+
         var connectionResources = dataConnection == null
             ? null
             : await dataConnectionResourcesCache.GetResourcesAsync(
@@ -431,10 +705,12 @@ public class AppOmniSharpServer(
         await Project.UpdateReferencesFromDataConnectionAsync(dataConnection, references);
         await NotifyOmniSharpServerProjectFileChangedAsync();
         await UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(connectionResources?.SourceCode);
-        await UpdateOmniSharpCodeBufferAsync();
+        await UpdateOmniSharpCodeBufferAsync(publishCompletedEvent: false);
 
         // Notify project file changed again
         await NotifyOmniSharpServerProjectFileChangedAsync();
+
+        await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
     }
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionProgramAsync(DataConnectionSourceCode? sourceCode)
@@ -451,9 +727,11 @@ public class AppOmniSharpServer(
 
     private async Task NotifyOmniSharpServerProjectFileChangedAsync()
     {
+        await WaitForProjectLoadedAsync();
+
         try
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             await OmniSharpServer.SendAsync(new[]
             {
@@ -463,8 +741,6 @@ public class AppOmniSharpServer(
                     ChangeType = FileChangeType.Create
                 }
             }, cts.Token);
-
-            await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
         }
         catch (Exception e)
         {
@@ -481,7 +757,7 @@ public class AppOmniSharpServer(
         try
         {
             buffer = !string.IsNullOrWhiteSpace(buffer) ? buffer : "//";
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             await OmniSharpServer.SendAsync(new UpdateBufferRequest
             {
@@ -498,7 +774,5 @@ public class AppOmniSharpServer(
         {
             semaphore.Release();
         }
-
-        await eventBus.PublishAsync(new OmniSharpAsyncBufferUpdateCompletedEvent(environment.Script.Id));
     }
 }

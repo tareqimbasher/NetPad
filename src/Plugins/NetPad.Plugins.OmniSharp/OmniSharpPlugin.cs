@@ -41,7 +41,6 @@ public class OmniSharpPlugin : IPlugin
 
     public Task CleanupAsync()
     {
-        Consts.OmniSharpServerProcessesDirectoryPath.DeleteIfExists();
         return Task.CompletedTask;
     }
 }

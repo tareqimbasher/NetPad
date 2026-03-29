@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using NetPad.Application;
 using NetPad.IO;
@@ -25,6 +26,10 @@ public static class AppDataProvider
     /// <summary>A "NetPad" directory inside the system's default temp directory.</summary>
     public static readonly DirectoryPath TempDirectoryPath = Path.Combine(Path.GetTempPath(), AppIdentifier.AppName);
 
+    /// <summary>A per-process temp directory to avoid collisions when multiple NetPad instances run simultaneously.</summary>
+    public static readonly DirectoryPath ProcessTempDirectoryPath =
+        TempDirectoryPath.Combine($"pid_{Environment.ProcessId.ToString()}");
+
     // We need TempDirectoryPath to be defined first
     private static readonly DirectoryPath _cacheDirectoryPath = GetCacheDirectoryPath();
 
@@ -34,11 +39,11 @@ public static class AppDataProvider
 
     /// <summary>A directory where the "ClientServer" execution model deploys and runs its child script-host processes.</summary>
     public static readonly DirectoryPath ClientServerProcessesDirectoryPath =
-        TempDirectoryPath.Combine("Execution", "ClientServer", "Processes");
+        ProcessTempDirectoryPath.Combine("Execution", "ClientServer", "Processes");
 
     /// <summary>A directory where assets that are generated while scaffolding a database connection are stored temporarily.</summary>
     public static readonly DirectoryPath TypedDataContextTempDirectoryPath =
-        TempDirectoryPath.Combine("TypedDataContexts");
+        ProcessTempDirectoryPath.Combine("TypedDataContexts");
 
     /// <summary>A directory where assets generated while scaffolding a database connection are cached.</summary>
     public static readonly DirectoryPath TypedDataContextCacheDirectoryPath =
@@ -65,8 +70,9 @@ public static class AppDataProvider
     {
         // Try to get it from env variable first
         var envVar = AppEnvironmentVariables.CacheDirectory;
-        if (!string.IsNullOrWhiteSpace(envVar) && Path.IsPathRooted(envVar) &&
-            DirectoryPath.TryParse(envVar, out var dirPath))
+        if (!string.IsNullOrWhiteSpace(envVar)
+            && Path.IsPathRooted(envVar)
+            && DirectoryPath.TryParse(envVar, out var dirPath))
         {
             return dirPath;
         }
@@ -97,6 +103,53 @@ public static class AppDataProvider
 
         // If we got here we couldn't determine a proper cache directory
         return TempDirectoryPath.Combine("Cache");
+    }
+
+    /// <summary>
+    /// Deletes per-process temp directories left behind by previous NetPad instances that are no longer running.
+    /// </summary>
+    public static void CleanUpStaleTempDirectories()
+    {
+        if (!TempDirectoryPath.Exists())
+        {
+            return;
+        }
+
+        foreach (var dir in Directory.GetDirectories(TempDirectoryPath.Path, "pid_*"))
+        {
+            var dirName = Path.GetFileName(dir);
+
+            if (!int.TryParse(dirName.AsSpan("pid_".Length), out int pid))
+            {
+                continue;
+            }
+
+            // Skip our own directory
+            if (pid == Environment.ProcessId)
+            {
+                continue;
+            }
+
+            try
+            {
+                Process.GetProcessById(pid);
+                // Process is still running, skip
+                continue;
+            }
+            catch (ArgumentException)
+            {
+                // Process is not running
+            }
+
+            try
+            {
+                Directory.Delete(dir, true);
+            }
+            catch
+            {
+                // Ignore
+            }
+        }
     }
 
     public static class Defaults

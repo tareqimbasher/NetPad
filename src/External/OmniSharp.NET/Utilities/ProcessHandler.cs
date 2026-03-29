@@ -109,6 +109,7 @@ namespace OmniSharp.Utilities
                 if (_process.IsProcessRunning())
                 {
                     _process.Kill();
+                    _process.WaitForExit(5000);
                 }
 
                 _processStartTask = null;

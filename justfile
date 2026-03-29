@@ -133,11 +133,41 @@ run-tauri-backend watch="true":
 run-tauri-frontend:
     npx tauri dev
 
-# Tauri: build a release binary
+# Tauri: build a release binary for Windows x64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel:
-    npx tauri build
+build-tauri-rel-win-x64:
+    npx tauri build -c src-tauri/tauri.conf.win-x64.json5
+
+# Tauri: build a release binary for Windows ARM64
+[group('tauri')]
+[working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
+build-tauri-rel-win-arm64:
+    npx tauri build -c src-tauri/tauri.conf.win-arm64.json5
+
+# Tauri: build a release binary for Linux x64
+[group('tauri')]
+[working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
+build-tauri-rel-linux-x64:
+    npx tauri build -c src-tauri/tauri.conf.linux-x64.json5
+
+# Tauri: build a release binary for Linux ARM64
+[group('tauri')]
+[working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
+build-tauri-rel-linux-arm64:
+    npx tauri build -c src-tauri/tauri.conf.linux-arm64.json5
+
+# Tauri: build a release binary for macOS x64
+[group('tauri')]
+[working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
+build-tauri-rel-mac-x64:
+    npx tauri build --target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5
+
+# Tauri: build a release binary for macOS ARM64
+[group('tauri')]
+[working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
+build-tauri-rel-mac-arm64:
+    npx tauri build --target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5
 
 # Tauri: print Tauri environment info
 [group('tauri')]

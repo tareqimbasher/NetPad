@@ -23,6 +23,7 @@ namespace NetPad.ExecutionModel.ClientServer.ScriptHost;
 /// <param name="nonMessageOutputHandler">Handles process output that cannot be parsed into a proper message.</param>
 /// <param name="errorOutputHandler">Handles process error output.</param>
 /// <param name="eventBus"></param>
+/// <param name="dotNetInfo"></param>
 /// <param name="loggerFactory"></param>
 public class ScriptHostProcessManager(
     Script script,
@@ -31,6 +32,7 @@ public class ScriptHostProcessManager(
     Action<string> nonMessageOutputHandler,
     Action<string> errorOutputHandler,
     IEventBus eventBus,
+    IDotNetInfo dotNetInfo,
     ILoggerFactory loggerFactory)
 {
     private static readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
@@ -139,6 +141,13 @@ public class ScriptHostProcessManager(
                 .WithRedirectIO()
                 .WithNoUi();
 
+            // Ensure DOTNET_ROOT points to an installation that has the runtime for the script's target framework.
+            var dotNetRootForFramework = dotNetInfo.LocateDotNetRootDirectoryForFramework(script.Config.TargetFrameworkVersion);
+            if (dotNetRootForFramework != null)
+            {
+                startInfo.EnvironmentVariables["DOTNET_ROOT"] = dotNetRootForFramework;
+            }
+
             // On Windows, we need this environment var to force console output when using the ConsoleLoggingProvider
             // See: https://github.com/dotnet/runtime/blob/8a2e7e3e979d671d97cb408fbcbdbee5594479a4/src/libraries/Microsoft.Extensions.Logging.Console/src/ConsoleLoggerProvider.cs#L69
             if (script.Config.UseAspNet && PlatformUtil.IsOSWindows())
@@ -171,7 +180,7 @@ public class ScriptHostProcessManager(
             _scriptHostProcess.Exited += (_, _) =>
             {
                 _logger.LogDebug("script-host process exited");
-                _ipcGateway.ExecuteHandlers(new ScriptHostExitedMessage());
+                _ipcGateway?.ExecuteHandlers(new ScriptHostExitedMessage());
                 Cleanup();
             };
 

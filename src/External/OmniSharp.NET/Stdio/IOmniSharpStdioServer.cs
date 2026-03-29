@@ -16,6 +16,11 @@ namespace OmniSharp.Stdio
         bool IsProcessRunning();
 
         /// <summary>
+        /// Callback invoked when the OmniSharp server process exits unexpectedly (not via <see cref="IOmniSharpServer.StopAsync"/>).
+        /// </summary>
+        Action? OnProcessUnexpectedExit { get; set; }
+
+        /// <summary>
         /// Subscribe to an event.
         /// </summary>
         /// <param name="eventType">The event type. See <see cref="OmniSharp.Models.Events.EventTypes"/> for a list of event types.</param>

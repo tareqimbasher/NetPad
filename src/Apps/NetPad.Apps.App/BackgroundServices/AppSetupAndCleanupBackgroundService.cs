@@ -28,6 +28,9 @@ public class AppSetupAndCleanupBackgroundService(
 {
     protected override async Task StartingAsync(CancellationToken stoppingToken)
     {
+        // Clean up temp directories left behind by previous instances that exited without cleanup
+        _ = Task.Run(AppDataProvider.CleanUpStaleTempDirectories, stoppingToken);
+
         // Pre-warm framework assembly cache on a background thread to avoid blocking startup
         _ = Task.Run(() =>
         {
@@ -93,8 +96,7 @@ public class AppSetupAndCleanupBackgroundService(
             Logger.LogError(e, "Error closing environments");
         }
 
-        Try.Run(() => AppDataProvider.ClientServerProcessesDirectoryPath.DeleteIfExists());
-        Try.Run(() => AppDataProvider.TypedDataContextTempDirectoryPath.DeleteIfExists());
+        Try.Run(() => AppDataProvider.ProcessTempDirectoryPath.DeleteIfExists());
 
         foreach (var registration in pluginManager.PluginRegistrations)
         {
