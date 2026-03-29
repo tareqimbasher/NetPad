@@ -39,6 +39,17 @@ namespace OmniSharp.Stdio.IO
             Cancel(requestPacket);
         }
 
+        public void CancelAll()
+        {
+            foreach (var key in _promises.Keys)
+            {
+                if (_promises.TryRemove(key, out var promise))
+                {
+                    promise.Cancel();
+                }
+            }
+        }
+
         private void Cancel(RequestPacket requestPacket)
         {
             if (!_promises.TryRemove(requestPacket.Seq, out var promise))
