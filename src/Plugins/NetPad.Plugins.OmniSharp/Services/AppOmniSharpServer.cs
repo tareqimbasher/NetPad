@@ -49,6 +49,7 @@ public class AppOmniSharpServer(
     private readonly CodeParsingOptions _codeParsingOptions = new();
     private IOmniSharpStdioServer? _omniSharpServer;
     private CancellationTokenSource? _backgroundTasksCts;
+    private TaskCompletionSource? _projectLoadedTcs;
     private int _autoRestartCount;
     private DateTime _lastSuccessfulStart;
     private int _isRestarting;
@@ -230,7 +231,33 @@ public class AppOmniSharpServer(
         omniSharpServer.OnProcessUnexpectedExit = HandleProcessUnexpectedExit;
         _omniSharpServer = omniSharpServer;
         _backgroundTasksCts = new CancellationTokenSource();
+        _projectLoadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _lastSuccessfulStart = DateTime.UtcNow;
+
+        // Gate all OmniSharp communication until the project is loaded
+        omniSharpServer.SubscribeToEvent(EventTypes.ProjectAdded, _ =>
+        {
+            _projectLoadedTcs?.TrySetResult();
+            return Task.CompletedTask;
+        });
+        omniSharpServer.SubscribeToEvent(EventTypes.ProjectChanged, _ =>
+        {
+            _projectLoadedTcs?.TrySetResult();
+            return Task.CompletedTask;
+        });
+
+        // Fallback: open the gate if OmniSharp doesn't fire ProjectAdded/ProjectChanged
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(20), _backgroundTasksCts.Token);
+                _projectLoadedTcs?.TrySetResult();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }, _backgroundTasksCts.Token);
 
         if (!string.IsNullOrWhiteSpace(environment.Script.Code))
         {
@@ -284,6 +311,7 @@ public class AppOmniSharpServer(
                     {
                         _logger.LogWarning(
                             "No ProjectAdded/ProjectChanged event received within 20s, updating buffers as fallback");
+                        _projectLoadedTcs?.TrySetResult();
                         await UpdateBuffersOnProjectEvent(null!);
                     }
                 }
@@ -303,6 +331,12 @@ public class AppOmniSharpServer(
             await _backgroundTasksCts.CancelAsync();
             _backgroundTasksCts.Dispose();
             _backgroundTasksCts = null;
+        }
+
+        if (_projectLoadedTcs != null)
+        {
+            _projectLoadedTcs.TrySetCanceled();
+            _projectLoadedTcs = null;
         }
 
         if (_omniSharpServer == null)
@@ -358,6 +392,12 @@ public class AppOmniSharpServer(
                     await _backgroundTasksCts.CancelAsync();
                     _backgroundTasksCts.Dispose();
                     _backgroundTasksCts = null;
+                }
+
+                if (_projectLoadedTcs != null)
+                {
+                    _projectLoadedTcs.TrySetCanceled();
+                    _projectLoadedTcs = null;
                 }
 
                 // Unsubscribe from the dead server before dropping the reference
@@ -568,6 +608,26 @@ public class AppOmniSharpServer(
     #endregion
 
     /// <summary>
+    /// Waits until OmniSharp has loaded its project (signaled by ProjectAdded/ProjectChanged).
+    /// All buffer updates and project notifications should await this before sending requests.
+    /// </summary>
+    private async Task WaitForProjectLoadedAsync()
+    {
+        if (_projectLoadedTcs is { Task.IsCompleted: false })
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                await _projectLoadedTcs.Task.WaitAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Timed out waiting for OmniSharp project to load");
+            }
+        }
+    }
+
+    /// <summary>
     /// Writes parsed script code to the project's .cs files on disk before OmniSharp starts,
     /// so OmniSharp picks up the correct code during its initial project load.
     /// </summary>
@@ -589,6 +649,8 @@ public class AppOmniSharpServer(
 
     private async Task UpdateOmniSharpCodeBufferAsync(bool publishCompletedEvent = true)
     {
+        await WaitForProjectLoadedAsync();
+
         var script = environment.Script;
         _codeParsingOptions.IncludeAspNetUsings = script.Config.UseAspNet;
 
@@ -620,6 +682,8 @@ public class AppOmniSharpServer(
 
     private async Task UpdateOmniSharpCodeBufferWithDataConnectionAsync(DataConnection? dataConnection)
     {
+        await WaitForProjectLoadedAsync();
+
         var connectionResources = dataConnection == null
             ? null
             : await dataConnectionResourcesCache.GetResourcesAsync(
@@ -663,6 +727,8 @@ public class AppOmniSharpServer(
 
     private async Task NotifyOmniSharpServerProjectFileChangedAsync()
     {
+        await WaitForProjectLoadedAsync();
+
         try
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
