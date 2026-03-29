@@ -1,7 +1,4 @@
 using NetPad.ExecutionModel;
-using NetPad.Tests;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NetPad.Runtime.Tests.Runtimes;
 

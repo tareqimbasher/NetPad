@@ -3,7 +3,6 @@ using NetPad.Compilation;
 using NetPad.DotNet.CodeAnalysis;
 using NetPad.ExecutionModel.ClientServer;
 using NetPad.Scripts;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.ExecutionModel.ClientServer;
 

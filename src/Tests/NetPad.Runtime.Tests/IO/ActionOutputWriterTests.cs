@@ -1,5 +1,4 @@
 using NetPad.IO;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.IO;
 

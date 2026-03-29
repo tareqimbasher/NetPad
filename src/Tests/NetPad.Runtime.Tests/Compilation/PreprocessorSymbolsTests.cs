@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.DotNet;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.Compilation;
 

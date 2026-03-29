@@ -3,11 +3,6 @@ using Moq;
 using NetPad.Data.Metadata;
 using NetPad.ExecutionModel;
 using NetPad.Scripts;
-using NetPad.Tests;
-using NetPad.Tests.Helpers;
-using NetPad.Tests.Services;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NetPad.Runtime.Tests.Scripts;
 

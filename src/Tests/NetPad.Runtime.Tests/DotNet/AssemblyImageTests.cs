@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using NetPad.DotNet;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.DotNet;
 

@@ -1,6 +1,5 @@
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.Html;
 

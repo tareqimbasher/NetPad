@@ -1,6 +1,5 @@
 using NetPad.Common;
 using NetPad.IO.IPC.Stdio;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.IO.IPC.Stdio;
 

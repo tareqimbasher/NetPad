@@ -5,8 +5,6 @@ using NetPad.Compilation.CSharp;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NetPad.Runtime.Tests.Compilation.CSharp;
 
