@@ -1,66 +1,6 @@
+@use "sass:list";
+@use "sass:map";
 @import "./functions";
-
-/*
-  @mixin theme($property, $key, $inlineExtra:null, $postExtra:null)
-  Assigns a property a theme value for each defined theme.Example usage:
-    .mySelector {
-      padding: 6px;
-      @include theme(background-color, backgroundLight);
-      @include theme(border, borderDark, 1px solid);
-    }sass generated equivalent:
-    .mySelector {
-      padding: 6px;      :global(.light) & {
-        border: 1px solid color(woodsmoke);
-        border: 1px solid var(--theme-light-borderDark, color(woodsmoke));
-      }
-      :global(.light) & {
-        background-color: color(alabaster);
-        background-color: var(--theme-light-backgroundLight, color(alabaster));
-      }      :global(.dark) & {
-        border: 1px solid color(alabaster);
-        border: 1px solid var(--theme-dark-borderDark, color(alabaster));
-      }
-      :global(.dark) & {
-        background-color: color(woodsmoke);
-        background-color: var(--theme-dark-backgroundLight, color(woodsmoke));
-      }
-    }browser output:
-    .mySelector {
-      padding: 6px;
-    }
-    .light .mySelector {
-      border: 1px solid #141519;
-      border: 1px solid var(--theme-light-borderDark, #141519);
-    }
-    .light .mySelector {
-      background-color: #FCFCFC;
-      background-color: var(--theme-light-backgroundLight, #FCFCFC);
-    }    .dark .mySelector {
-      border: 1px solid #FCFCFC;
-      border: 1px solid var(--theme-dark-borderDark, #FCFCFC);
-    }
-    .dark .mySelector {
-      background-color: #141519;
-      background-color: var(--theme-dark-backgroundLight, #141519);
-    }
-*/
-//@mixin theme($property, $key, $inlineExtra: null, $postExtra: null) {
-//    @each $theme in $themes {
-//        @if theme-exists($key, $theme) {
-//            $value: get-theme-value($key, $theme);
-//
-//            // if using css-modules, use this instead of the @at-root line below
-//            // :global(.#{$theme}) & {
-//            @at-root .#{$theme} #{&} {
-//                // fallback for older browsers
-//                #{$property}: #{$inlineExtra} #{$value} #{$postExtra};
-//                #{$property}: #{$inlineExtra} var(--#{$key}, #{$value}) #{$postExtra};
-//            }
-//        } @else {
-//            @error "Property #{$key} doesn't exist in #{$theme}";
-//        }
-//    }
-//}
 
 /*
   @mixin generate-theme-mappings(theme-name: string, themeMap: map)
@@ -68,13 +8,13 @@
   This will add a new theme to the themes array and the theme color list.
 */
 @mixin generate-theme-mappings($theme-name, $newThemeMap) {
-    //creates/adds to list of theme names
-    $themes: append($themes, $theme-name, $separator: comma) !global;
+    // creates/adds to list of theme names
+    $themes: list.append($themes, $theme-name, $separator: comma) !global;
 
     @each $key, $value in $newThemeMap {
-        //adds new themeKey if doesn't exist
-        @if not map-has-key($theme-values, $key) {
-            $theme-values: map-merge(
+        // adds new themeKey if doesn't exist
+        @if not map.has-key($theme-values, $key) {
+            $theme-values: map.merge(
                 $theme-values,
                 (
                     $key: (
@@ -84,19 +24,19 @@
             ) !global;
         }
 
-        //adds to existing key map
+        // adds to existing key map
         @else {
-            $existing-key-map: map-get($theme-values, $key);
+            $existing-key-map: map.get($theme-values, $key);
 
-            //if theme variable doesn't exist, add it
-            @if not map-get($existing-key-map, $theme-name) {
-                $new-key-map: map-merge(
+            // if theme variable doesn't exist, add it
+            @if not map.get($existing-key-map, $theme-name) {
+                $new-key-map: map.merge(
                     $existing-key-map,
                     (
                         $theme-name: $value,
                     )
                 );
-                $theme-values: map-merge(
+                $theme-values: map.merge(
                     $theme-values,
                     (
                         $key: $new-key-map,

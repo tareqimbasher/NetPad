@@ -82,12 +82,12 @@ tab-bar {
 
         .script-running-indicator svg {
             stroke: var(--script-status-running-color);
-            stroke-width: 2
+            stroke-width: 2;
         }
 
         .script-stopping-indicator svg {
             stroke: var(--script-status-stopping-color);
-            stroke-width: 2
+            stroke-width: 2;
         }
 
         &:hover {
@@ -131,11 +131,11 @@ tab-bar {
             }
         }
 
-        &.status-Running {
+        &.status-running {
             border-top-color: var(--script-status-running-color) !important;
         }
 
-        &.status-Stopping {
+        &.status-stopping {
             border-top-color: var(--script-status-stopping-color) !important;
         }
 

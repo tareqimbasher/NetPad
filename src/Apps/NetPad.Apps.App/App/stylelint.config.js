@@ -4,6 +4,7 @@ module.exports = {
         "indentation": 4,
         "at-rule-empty-line-before": null,
         "declaration-empty-line-before": null,
+        "property-no-vendor-prefix": null,
         "value-no-vendor-prefix": null,
         "color-hex-length": null,
         "selector-type-no-unknown": null,

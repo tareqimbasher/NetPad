@@ -10,15 +10,15 @@
     overflow: hidden;
     transition: background-color 0.3s ease;
 
-    &.status-Running {
+    &.status-running {
         background-color: var(--script-status-running-background);
     }
 
-    &.status-Stopping {
+    &.status-stopping {
         background-color: var(--script-status-stopping-background);
     }
 
-    &.status-Error {
+    &.status-error {
         background-color: var(--script-status-error-background);
     }
 

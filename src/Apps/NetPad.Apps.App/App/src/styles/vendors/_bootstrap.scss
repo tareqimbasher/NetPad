@@ -33,7 +33,8 @@ $table-group-separator-color: var(--border-contrast-color);
 // Should be the last line after overrides
 @import "bootstrap/scss/bootstrap";
 
-.btn, button.btn {
+.btn,
+button.btn {
     cursor: default;
 }
 
@@ -114,13 +115,14 @@ textarea.form-control {
     &.sticky-header thead th {
         position: sticky;
         top: 0;
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgb(255 255 255 / 10%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
 
     tr {
-        td, th {
+        th,
+        td {
             background: transparent;
             color: var(--text-color);
         }
@@ -173,10 +175,9 @@ textarea.form-control {
     color: var(--text-strong-color);
 }
 
-
 .toast-container {
     .toast {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgb(255 255 255 / 10%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }

@@ -22,16 +22,16 @@ toolbar {
     }
 
     .save-icon {
-        opacity: 50%;
+        opacity: 0.5;
     }
 
     .save-icon.is-dirty {
-        opacity: 100%;
+        opacity: 1;
     }
 
     .save-icon.is-dirty::after {
         font-size: 0.55rem;
-        content: '●';
+        content: "●";
         color: #1eb2f5;
         margin-left: -0.2rem;
         position: absolute;

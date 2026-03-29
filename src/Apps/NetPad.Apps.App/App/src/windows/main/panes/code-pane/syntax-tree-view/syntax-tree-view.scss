@@ -1,7 +1,7 @@
 @import "styles/colors";
 
 syntax-tree-view {
-    tree-node{
+    tree-node {
         position: relative;
     }
 
@@ -24,10 +24,19 @@ syntax-tree-view {
 
     .tree-node-header {
         cursor: default;
+    }
 
-        &:hover {
-            background-color: var(--hover-color);
+    .tree-node-header:hover {
+        background-color: var(--hover-color);
+
+        .tree-node-header-right {
+            color: var(--text-color);
         }
+    }
+
+    .tree-node-header-right {
+        font-family: monospace;
+        margin-left: auto;
     }
 
     tree-node tree-node {
@@ -39,11 +48,6 @@ syntax-tree-view {
         margin-left: 3rem;
     }
 
-    .tree-node-header-right {
-        font-family: monospace;
-        margin-left: auto;
-    }
-
     .value-text {
         @extend %text-teal;
     }
@@ -53,12 +57,6 @@ syntax-tree-view {
         min-width: 8rem;
         display: inline-block;
         text-align: right;
-    }
-
-    .tree-node-header:hover {
-        .tree-node-header-right {
-            color: var(--text-color);
-        }
     }
 }
 

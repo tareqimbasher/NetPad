@@ -71,12 +71,11 @@ scripts-list {
                 }
             }
 
-
             &.folder-content {
                 position: relative;
 
                 &::before {
-                    content: '';
+                    content: "";
                     position: absolute;
                     left: 0.5rem;
                     top: 0;
@@ -100,12 +99,12 @@ scripts-list {
 
             .script-running-indicator svg {
                 stroke: var(--script-status-running-color);
-                stroke-width: 2
+                stroke-width: 2;
             }
 
             .script-stopping-indicator svg {
                 stroke: var(--script-status-stopping-color);
-                stroke-width: 2
+                stroke-width: 2;
             }
         }
     }

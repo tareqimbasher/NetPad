@@ -368,19 +368,11 @@ rust-test:
 rust-format:
     cargo fmt --all --manifest-path "{{ var_tauri }}/src-tauri/Cargo.toml"
 
-# Rust: check rust code formatting
+# Rust: check rust code formatting and run clippy
 [group('rust')]
-rust-format-check:
+rust-check-format:
     cargo fmt --all --check --manifest-path "{{ var_tauri }}/src-tauri/Cargo.toml"
-
-# Rust: run clippy
-[group('rust')]
-rust-clippy:
     cargo clippy --all-targets --manifest-path "{{ var_tauri }}/src-tauri/Cargo.toml"
-
-# Rust: format rust code then run clippy
-[group('rust')]
-rust-format-clippy: rust-format rust-clippy
 
 # ─── ALL ──────────────────────────────────────────────────────────────
 
@@ -399,4 +391,4 @@ test-all: dotnet-test js-test rust-test
 
 # Run all tests, lints, and checks
 [group('all')]
-check-all: dotnet-test js-test js-lint rust-test rust-format-check rust-clippy
+check-all: dotnet-test js-test js-lint rust-test rust-check-format
