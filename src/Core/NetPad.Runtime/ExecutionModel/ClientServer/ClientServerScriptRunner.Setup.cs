@@ -177,7 +177,7 @@ public partial class ClientServerScriptRunner
         );
     }
 
-    private static void DeployScriptHostExecutable(WorkingDirectory workingDirectory)
+    protected virtual void DeployScriptHostExecutable(WorkingDirectory workingDirectory)
     {
         if (!workingDirectory.ScriptHostExecutableSourceDirectory.Exists())
         {
@@ -192,7 +192,7 @@ public partial class ClientServerScriptRunner
             true);
     }
 
-    private static async Task DeploySharedDependenciesAsync(
+    protected virtual async Task DeploySharedDependenciesAsync(
         WorkingDirectory workingDirectory,
         ScriptDependencies dependencies)
     {
@@ -204,7 +204,7 @@ public partial class ClientServerScriptRunner
         await DeployAsync(workingDirectory.SharedDependenciesDirectory, sharedDeps);
     }
 
-    private async Task<(DirectoryPath, FilePath)> DeployScriptDependenciesAsync(
+    protected virtual async Task<(DirectoryPath, FilePath)> DeployScriptDependenciesAsync(
         byte[] scriptAssembly,
         ScriptDependencies dependencies)
     {
@@ -251,7 +251,7 @@ public partial class ClientServerScriptRunner
         return (scriptDeployDir, scriptAssemblyFilePath);
     }
 
-    private Task WriteScriptConfigAsync(DirectoryPath scriptDeployDir)
+    protected virtual Task WriteScriptConfigAsync(DirectoryPath scriptDeployDir)
     {
         return File.WriteAllTextAsync(
             Path.Combine(scriptDeployDir.Path, "scriptconfig.json"),
