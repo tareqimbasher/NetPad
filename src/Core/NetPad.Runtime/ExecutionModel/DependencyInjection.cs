@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NetPad.Compilation;
 using NetPad.ExecutionModel.ClientServer;
+using NetPad.ExecutionModel.ClientServer.ScriptHost;
 using NetPad.ExecutionModel.External;
 using NetPad.ExecutionModel.InMemory;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
     {
         services.AddTransient<IScriptRunnerFactory, ClientServerScriptRunnerFactory>();
         services.AddTransient<ICodeParser, ClientServerCSharpCodeParser>();
+        services.AddSingleton<IScriptHostProcessManagerFactory, ScriptHostProcessManagerFactory>();
     }
 
     /// <summary>

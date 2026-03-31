@@ -33,9 +33,9 @@ public class ScriptHostProcessManager(
     Action<string> errorOutputHandler,
     IEventBus eventBus,
     IDotNetInfo dotNetInfo,
-    ILoggerFactory loggerFactory)
+    ILoggerFactory loggerFactory) : IScriptHostProcessManager
 {
-    private static readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
+    private readonly SemaphoreSlim _scriptHostProcessStartLock = new(1, 1);
     private Process? _scriptHostProcess;
     private StdioIpcGateway? _ipcGateway;
 
