@@ -433,7 +433,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
     /// Corrects line numbers in stack trace messages of uncaught exceptions outputted by external running process,
     /// relative to the line number where user code starts.
     /// </summary>
-    private static string CorrectUncaughtExceptionStackTraceLineNumber(string output, int userProgramStartLineNumber)
+    internal static string CorrectUncaughtExceptionStackTraceLineNumber(string output, int userProgramStartLineNumber)
     {
         if (!output.Contains(" :line "))
         {
