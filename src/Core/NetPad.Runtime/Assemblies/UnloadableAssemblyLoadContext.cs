@@ -1,5 +1,6 @@
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using NetPad.IO;
 
@@ -73,6 +74,42 @@ public sealed class UnloadableAssemblyLoadContext() : AssemblyLoadContext(isColl
 
         // If still not found, attempt to load from default load context
         return base.Load(assemblyName);
+    }
+
+    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    {
+        // First try the resolver (looks next to the main assembly)
+        var libraryPath = _resolver?.ResolveUnmanagedDllToPath(unmanagedDllName);
+        if (libraryPath != null)
+        {
+            return NativeLibrary.Load(libraryPath);
+        }
+
+        // Then search probing paths for the native library
+        foreach (var probingPath in _probingPaths)
+        {
+            if (!Directory.Exists(probingPath))
+            {
+                continue;
+            }
+
+            foreach (var filePath in Directory.GetFiles(probingPath))
+            {
+                var fileName = Path.GetFileNameWithoutExtension(filePath);
+
+                if (!string.Equals(fileName, unmanagedDllName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (NativeLibrary.TryLoad(filePath, out var handle))
+                {
+                    return handle;
+                }
+            }
+        }
+
+        return base.LoadUnmanagedDll(unmanagedDllName);
     }
 
     public Assembly LoadFrom(byte[] assemblyBytes)
