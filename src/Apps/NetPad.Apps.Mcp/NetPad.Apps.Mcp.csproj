@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <!-- Roll forward to the latest installed major instead of targeting multiple frameworks -->
+        <RollForward>Major</RollForward>
+        <AssemblyName>netpad-mcp</AssemblyName>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Version>0.1.0-beta.1</Version>
+
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>netpad-mcp</ToolCommandName>
+        <PackageId>NetPad.Mcp</PackageId>
+        <Description>MCP (Model Context Protocol) server for NetPad. Enables AI assistants to interface with a running NetPad instance.</Description>
+        <Product>NetPad</Product>
+        <Authors>Tareq Imbasher</Authors>
+        <PackageIcon>logo.png</PackageIcon>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/tareqimbasher/NetPad/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/tareqimbasher/NetPad/</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageTags>mcp;netpad;ai;model-context-protocol;csharp;script</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+        <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Assets\logo.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
+</Project>
