@@ -45,6 +45,7 @@ public class TypesController : ControllerBase
         public AppStatusMessagePublishedEvent? AppStatusMessagePublished { get; set; }
         public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }
         public ScriptConfigPropertyChangedEvent? ScriptConfigPropertyChanged { get; set; }
+        public ScriptCodeUpdatedEvent? ScriptCodeUpdatedEvent { get; set; }
         public ScriptOutputEmittedEvent? ScriptOutputEmitted { get; set; }
         public EnvironmentsAddedEvent? EnvironmentsAdded { get; set; }
         public EnvironmentsRemovedEvent? EnvironmentsRemoved { get; set; }

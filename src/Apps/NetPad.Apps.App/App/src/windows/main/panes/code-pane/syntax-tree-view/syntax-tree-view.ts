@@ -8,12 +8,12 @@ import {
     ISyntaxNodeOrTokenSlim,
     LinePositionSpan,
     Pane,
+    ScriptCodeUpdatedEvent,
     SyntaxNodeOrTokenSlim,
     ViewModelBase
 } from "@application";
 import {LeakyMap, Util} from "@common";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
-import {ScriptCodeUpdatedEvent} from "@application/scripts/script-code-updated-event";
 
 interface ISyntaxNodeOrTokenViewModel extends ISyntaxNodeOrTokenSlim {
     collapsed?: boolean;
@@ -44,7 +44,12 @@ export class SyntaxTreeView extends ViewModelBase {
 
     public attached() {
         this.loadSyntaxTree();
-        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, () => this.loadSyntaxTree()));
+        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadSyntaxTree();
+        }));
+        this.addDisposable(this.eventBus.subscribeToServer(ScriptCodeUpdatedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadSyntaxTree();
+        }));
     }
 
     private onMouseLeave() {

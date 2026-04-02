@@ -149,7 +149,7 @@ export class WorkArea extends ViewModelBase {
                 ? await this.appService.openFolderContainingScript(environment.script.path)
                 : Promise.reject("Script has not been saved yet"),
             updateCode: async (newCode: string) => {
-                await this.scriptService.updateCode(viewable.script.id, newCode);
+                await this.scriptService.updateCode(viewable.script.id, newCode, false);
             },
             run: async () => {
                 const document = viewable.textDocument;

@@ -61,20 +61,12 @@ public class EventForwardToIpcBackgroundService(
                 SubscribeAndForwardToIpc<ScriptPropertyChangedEvent>(environment,
                     e => e.ScriptId == environment.Script.Id
                          // Do not forward event if the Script.Code property has changed.
-                         //
                          // Script code can potentially be large (ex. a large base64 string is used in code)
-                         // which could cause race conditions where 2 subsequent push notifications could be sent
-                         // and received on clients out of order. While we can solve this by sending message
-                         // order and verifying it on the client, that is too much work since this is the only case
-                         // currently where we need to worry about it. So we're opting to not notify when code changes
-                         // and just have the client handle notifying itself when script code changes.
-                         //
-                         // This also means that if a script's code is changed outside of that client (ex. on the
-                         // backend), the client will not know about it. This is something we'd want to change if we
-                         // want support live code changes from multiple sources (ex. multiple users working on the
-                         // same script at the same time).
+                         // Code updates are forwarded using a dedicated event: ScriptCodeUpdatedEvent
                          && e.PropertyName != nameof(Script.Code)
                 );
+                SubscribeAndForwardToIpc<ScriptCodeUpdatedEvent>(environment,
+                    e => e.ScriptId == environment.Script.Id && e.ExternallyInitiated);
                 SubscribeAndForwardToIpc<ScriptConfigPropertyChangedEvent>(environment,
                     e => e.ScriptId == environment.Script.Id);
             }

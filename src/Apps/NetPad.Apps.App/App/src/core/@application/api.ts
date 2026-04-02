@@ -1727,7 +1727,7 @@ export interface IScriptsApiClient {
 
     getCode(id: string, signal?: AbortSignal | undefined): Promise<string>;
 
-    updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
+    updateCode(id: string, code: string, externallyInitiated: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     findScripts(name: string | undefined, signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
 
@@ -1862,11 +1862,15 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<string>(null as any);
     }
 
-    updateCode(id: string, code: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/code";
+    updateCode(id: string, code: string, externallyInitiated: boolean | undefined, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/code?";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (externallyInitiated === null)
+            throw new Error("The parameter 'externallyInitiated' cannot be null.");
+        else if (externallyInitiated !== undefined)
+            url_ += "externallyInitiated=" + encodeURIComponent("" + externallyInitiated) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(code);
@@ -7050,6 +7054,7 @@ export class Types implements ITypes {
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
+    scriptCodeUpdatedEvent?: ScriptCodeUpdatedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
@@ -7107,6 +7112,7 @@ export class Types implements ITypes {
             this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublishedEvent.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
             this.scriptConfigPropertyChanged = _data["scriptConfigPropertyChanged"] ? ScriptConfigPropertyChangedEvent.fromJS(_data["scriptConfigPropertyChanged"]) : <any>undefined;
+            this.scriptCodeUpdatedEvent = _data["scriptCodeUpdatedEvent"] ? ScriptCodeUpdatedEvent.fromJS(_data["scriptCodeUpdatedEvent"]) : <any>undefined;
             this.scriptOutputEmitted = _data["scriptOutputEmitted"] ? ScriptOutputEmittedEvent.fromJS(_data["scriptOutputEmitted"]) : <any>undefined;
             this.environmentsAdded = _data["environmentsAdded"] ? EnvironmentsAddedEvent.fromJS(_data["environmentsAdded"]) : <any>undefined;
             this.environmentsRemoved = _data["environmentsRemoved"] ? EnvironmentsRemovedEvent.fromJS(_data["environmentsRemoved"]) : <any>undefined;
@@ -7164,6 +7170,7 @@ export class Types implements ITypes {
         data["appStatusMessagePublished"] = this.appStatusMessagePublished ? this.appStatusMessagePublished.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
         data["scriptConfigPropertyChanged"] = this.scriptConfigPropertyChanged ? this.scriptConfigPropertyChanged.toJSON() : <any>undefined;
+        data["scriptCodeUpdatedEvent"] = this.scriptCodeUpdatedEvent ? this.scriptCodeUpdatedEvent.toJSON() : <any>undefined;
         data["scriptOutputEmitted"] = this.scriptOutputEmitted ? this.scriptOutputEmitted.toJSON() : <any>undefined;
         data["environmentsAdded"] = this.environmentsAdded ? this.environmentsAdded.toJSON() : <any>undefined;
         data["environmentsRemoved"] = this.environmentsRemoved ? this.environmentsRemoved.toJSON() : <any>undefined;
@@ -7221,6 +7228,7 @@ export interface ITypes {
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
     scriptConfigPropertyChanged?: ScriptConfigPropertyChangedEvent | undefined;
+    scriptCodeUpdatedEvent?: ScriptCodeUpdatedEvent | undefined;
     scriptOutputEmitted?: ScriptOutputEmittedEvent | undefined;
     environmentsAdded?: EnvironmentsAddedEvent | undefined;
     environmentsRemoved?: EnvironmentsRemovedEvent | undefined;
@@ -7924,6 +7932,61 @@ export class ScriptConfigPropertyChangedEvent extends PropertyChangedEvent imple
 
 export interface IScriptConfigPropertyChangedEvent extends IPropertyChangedEvent {
     scriptId: string;
+}
+
+export class ScriptCodeUpdatedEvent implements IScriptCodeUpdatedEvent {
+    scriptId!: string;
+    newCode?: string | undefined;
+    /** Indicates whether the code change was initiated by an external source (e.g. MCP, API)
+rather than the frontend editor. Used to determine whether to forward the event to IPC clients. */
+    externallyInitiated!: boolean;
+
+    constructor(data?: IScriptCodeUpdatedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.newCode = _data["newCode"];
+            this.externallyInitiated = _data["externallyInitiated"];
+        }
+    }
+
+    static fromJS(data: any): ScriptCodeUpdatedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptCodeUpdatedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["newCode"] = this.newCode;
+        data["externallyInitiated"] = this.externallyInitiated;
+        return data;
+    }
+
+    clone(): ScriptCodeUpdatedEvent {
+        const json = this.toJSON();
+        let result = new ScriptCodeUpdatedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptCodeUpdatedEvent {
+    scriptId: string;
+    newCode?: string | undefined;
+    /** Indicates whether the code change was initiated by an external source (e.g. MCP, API)
+rather than the frontend editor. Used to determine whether to forward the event to IPC clients. */
+    externallyInitiated: boolean;
 }
 
 export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
