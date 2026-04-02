@@ -144,10 +144,10 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/code")]
-    public async Task UpdateCode(Guid id, [FromBody] string code)
+    public async Task UpdateCode(Guid id, [FromBody] string code, [FromQuery] bool externallyInitiated = false)
     {
         var environment = await GetScriptEnvironmentAsync(id);
-        await mediator.Send(new UpdateScriptCodeCommand(environment.Script, code));
+        await mediator.Send(new UpdateScriptCodeCommand(environment.Script, code, externallyInitiated));
     }
 
     [HttpPatch("{id:guid}/open-config")]

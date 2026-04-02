@@ -2,12 +2,14 @@ import {SubscriptionToken, WithDisposables} from "@common";
 import * as monaco from "monaco-editor";
 import {MonacoEditorUtil, TextLanguage} from "@application";
 
+export type TextChangeSetter = TextDocument | "server";
+
 export class TextDocument extends WithDisposables {
     public selection: monaco.Selection | null | undefined;
 
     private _language: TextLanguage;
     private _text: string;
-    private changeHandlers = new Set<(setter: unknown, newText: string) => Promise<void>>();
+    private changeHandlers = new Set<(setter: TextChangeSetter, newText: string) => Promise<void>>();
     private _textModel?: monaco.editor.ITextModel;
 
     constructor(public readonly id: string, language: TextLanguage, text: string) {
@@ -50,7 +52,7 @@ export class TextDocument extends WithDisposables {
         return this._text;
     }
 
-    public async setText(setter: unknown, newValue: string) {
+    public async setText(setter: TextChangeSetter, newValue: string) {
         if (this._text === newValue) return;
 
         this._text = newValue ?? "";
@@ -64,8 +66,8 @@ export class TextDocument extends WithDisposables {
         }
     }
 
-    public onChange(handler: (setter: unknown, newValue: string) => Promise<void>): SubscriptionToken {
-        const wrappedHandler = (setter: unknown, newValue: string) => handler(setter, newValue);
+    public onChange(handler: (setter: TextChangeSetter, newValue: string) => Promise<void>): SubscriptionToken {
+        const wrappedHandler = (setter: TextChangeSetter, newValue: string) => handler(setter, newValue);
         this.changeHandlers.add(wrappedHandler);
         return new SubscriptionToken(() => this.changeHandlers.delete(wrappedHandler));
     }

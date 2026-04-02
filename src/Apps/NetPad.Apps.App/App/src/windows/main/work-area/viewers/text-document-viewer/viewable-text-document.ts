@@ -1,5 +1,11 @@
 import {IViewableObjectCommands, ViewableObject, ViewableObjectType} from "../viewable-object";
-import {IEventBus, ScriptConfigPropertyChangedEvent, ScriptEnvironment, ScriptKind,} from "@application";
+import {
+    IEventBus,
+    ScriptCodeUpdatedEvent,
+    ScriptConfigPropertyChangedEvent,
+    ScriptEnvironment,
+    ScriptKind,
+} from "@application";
 import {TextLanguage} from "@application/editor/text-language";
 import {TextDocument} from "@application/editor/text-document";
 
@@ -66,6 +72,16 @@ export class ViewableAppScriptDocument extends ViewableTextDocument {
         );
 
         this.addDisposable(
+            eventBus.subscribeToServer(ScriptCodeUpdatedEvent, ev => {
+                if (ev.scriptId !== this.environment.script.id) {
+                    return;
+                }
+
+                this.textDocument.setText("server", ev.newCode ?? "");
+            })
+        );
+
+        this.addDisposable(
             eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, ev => {
                 if (ev.scriptId !== this.environment.script.id || ev.propertyName !== "Kind") {
                     return;
@@ -101,7 +117,10 @@ export class ViewableAppScriptDocument extends ViewableTextDocument {
 
         if (!alreadyCreated) {
             this.addDisposable(
-                textDocument.onChange(async () => await this.textChanged()));
+                textDocument.onChange(async (setter) => {
+                    if (setter === "server") return;
+                    await this.textChanged();
+                }));
         }
 
         return textDocument;

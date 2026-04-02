@@ -6,22 +6,17 @@ import {
     IEventBus,
     ISession,
     Pane,
+    ScriptCodeUpdatedEvent,
     ScriptConfigPropertyChangedEvent,
     ScriptPropertyChangedEvent,
     ViewModelBase
 } from "@application";
 import {Util} from "@common";
-import {ScriptCodeUpdatedEvent} from "@application/scripts/script-code-updated-event";
 import {ProblemDetails} from "@application/api-problem-details";
 import "highlight.js/styles/monokai.min.css";
 import hljs from "highlight.js/lib/common";
 import {observable} from "@aurelia/runtime";
 import {UiUtil} from "@common/utils/ui-util";
-
-interface ICacheItem {
-    il: string | null;
-    code: string;
-}
 
 export class IlView extends ViewModelBase {
     private current: string | null;
@@ -44,9 +39,18 @@ export class IlView extends ViewModelBase {
         this.addDisposable(token);
 
         this.loadIL();
-        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, () => this.loadIL()));
-        this.addDisposable(this.eventBus.subscribeToServer(ScriptPropertyChangedEvent, () => this.loadIL()));
-        this.addDisposable(this.eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, () => this.loadIL()));
+        this.addDisposable(this.eventBus.subscribe(ScriptCodeUpdatedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadIL();
+        }));
+        this.addDisposable(this.eventBus.subscribeToServer(ScriptCodeUpdatedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadIL();
+        }));
+        this.addDisposable(this.eventBus.subscribeToServer(ScriptPropertyChangedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadIL();
+        }));
+        this.addDisposable(this.eventBus.subscribeToServer(ScriptConfigPropertyChangedEvent, ev => {
+            if (ev.scriptId === this.session.active?.script.id) this.loadIL();
+        }));
     }
 
 
