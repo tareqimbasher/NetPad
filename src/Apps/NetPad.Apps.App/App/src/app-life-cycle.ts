@@ -42,7 +42,6 @@ export class AppLifeCycle {
     public async activating(): Promise<void> {
         this.logger.debug("App activating...");
 
-        appActions.configureFetchClient(this.container);
         await appActions.startBackgroundServices(this.container);
 
         this.eventBus.publish(new AppActivatingEvent());

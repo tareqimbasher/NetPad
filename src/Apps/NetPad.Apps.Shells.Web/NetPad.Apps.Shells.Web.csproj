@@ -6,6 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\Apps\NetPad.Apps.Common\NetPad.Apps.Common.csproj" />
     </ItemGroup>
 

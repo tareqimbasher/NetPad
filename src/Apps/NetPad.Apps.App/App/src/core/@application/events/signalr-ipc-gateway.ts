@@ -1,6 +1,7 @@
 import {ILogger, PLATFORM} from "aurelia";
 import {HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel as SignalRLogLevel} from "@microsoft/signalr";
 import {ChannelInfo, IIpcGateway, IpcMessageBatch} from "@application";
+import {WindowParams} from "@application/windows/window-params";
 import {IDisposable, SubscriptionToken} from "@common";
 
 /**
@@ -26,7 +27,9 @@ export class SignalRIpcGateway implements IIpcGateway {
         }
 
         this.connection = new HubConnectionBuilder()
-            .withUrl("/ipc-hub")
+            .withUrl("/ipc-hub", {
+                accessTokenFactory: () => WindowParams.token || ""
+            })
             .configureLogging({
                 log: (logLevel: SignalRLogLevel, message: string) => {
                     if (logLevel === SignalRLogLevel.Warning && message.startsWith("No client method with the name"))

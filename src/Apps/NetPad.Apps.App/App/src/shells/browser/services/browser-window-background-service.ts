@@ -1,5 +1,6 @@
 import {IDisposable} from "@common";
 import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
+import {WindowParams} from "@application/windows/window-params";
 
 /**
  * This is utilized for the Browser app, not the Electron app
@@ -30,7 +31,7 @@ export class BrowserWindowBackgroundService implements IBackgroundService {
             metadata += `&${key}=${command.metadata[key]}`;
         }
 
-        const url = window.location.origin + `?win=${command.windowName}${metadata}`;
+        const url = window.location.origin + `?win=${command.windowName}&token=${WindowParams.token || ""}${metadata}`;
 
         const options = command.options;
         const height = options.height > 1 ? options.height : screen.height * options.height;

@@ -4,6 +4,7 @@ import {ShellType} from "@application/windows/shell-type";
 export class WindowParams {
     public static window: WindowId;
     public static shell: ShellType;
+    public static token: string | null;
     private static queryParams: URLSearchParams;
 
     public static init(queryParams: URLSearchParams) {
@@ -17,6 +18,8 @@ export class WindowParams {
         } else {
             throw new Error(`Unrecognized 'win' query parameter: ${win}`);
         }
+
+        this.token = queryParams.get("token");
 
         const shell = queryParams.get("shell") as ShellType | undefined;
         if (!shell) {

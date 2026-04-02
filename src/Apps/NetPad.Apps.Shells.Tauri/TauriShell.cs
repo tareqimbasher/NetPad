@@ -26,9 +26,11 @@ public class TauriShell : IShell
         services.AddCors(options => options.AddPolicy(
             "AllowTauriShell",
             policy => policy.WithOrigins(
-                "tauri://localhost",        // Linux/macOS
-                "http://tauri.localhost"    // Windows
-            )));
+                    "tauri://localhost",        // Linux/macOS
+                    "http://tauri.localhost"    // Windows
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()));
     }
 
     public void ConfigureRequestPipeline(IApplicationBuilder app, IHostEnvironment env)

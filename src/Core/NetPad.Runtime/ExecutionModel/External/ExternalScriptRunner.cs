@@ -207,6 +207,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
             _logger.LogError(ex, "Error killing script process");
         }
 
+        _scriptProcess.Process.Dispose();
         _scriptProcess = null;
         return Task.CompletedTask;
     }
