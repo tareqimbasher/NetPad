@@ -19,8 +19,13 @@ public class NetPadApiClient
     };
 
     public NetPadApiClient(NetPadConnection connection)
+        : this(connection, new HttpClientHandler())
     {
-        _httpClient = new HttpClient
+    }
+
+    internal NetPadApiClient(NetPadConnection connection, HttpMessageHandler handler)
+    {
+        _httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(connection.Url),
             // No client-side timeout — rely on server-side timeouts and CancellationToken

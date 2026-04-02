@@ -25,6 +25,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="NetPad.Apps.Mcp.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
         <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
