@@ -104,7 +104,7 @@ export class AppApiClient extends ApiClientBase implements IAppApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -505,7 +505,7 @@ export class CodeApiClient extends ApiClientBase implements ICodeApiClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -521,7 +521,7 @@ export interface IDataConnectionsApiClient {
 
     openDataConnectionWindow(dataConnectionId: string | null | undefined, copy: boolean | undefined, isServer: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
-    getAll(signal?: AbortSignal | undefined): Promise<Response>;
+    getAll(signal?: AbortSignal | undefined): Promise<GetAllConnectionsResponse>;
 
     save(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -606,7 +606,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         return Promise.resolve<void>(null as any);
     }
 
-    getAll(signal?: AbortSignal): Promise<Response> {
+    getAll(signal?: AbortSignal): Promise<GetAllConnectionsResponse> {
         let url_ = this.baseUrl + "/data-connections";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -623,14 +623,14 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         });
     }
 
-    protected processGetAll(response: Response): Promise<Response> {
+    protected processGetAll(response: Response): Promise<GetAllConnectionsResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Response.fromJS(resultData200);
+            result200 = GetAllConnectionsResponse.fromJS(resultData200);
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -638,7 +638,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Response>(null as any);
+        return Promise.resolve<GetAllConnectionsResponse>(null as any);
     }
 
     save(dataConnection: DataConnection, signal?: AbortSignal): Promise<void> {
@@ -853,7 +853,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -932,7 +932,7 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1216,6 +1216,104 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
             });
         }
         return Promise.resolve<FileResponse | null>(null as any);
+    }
+}
+
+export interface IHeadlessApiClient {
+
+    runCode(request: HeadlessRunRequest, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
+
+    runScript(scriptId: string, timeoutMs: number | null | undefined, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
+}
+
+export class HeadlessApiClient extends ApiClientBase implements IHeadlessApiClient {
+    private http: IHttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, @IHttpClient http?: IHttpClient) {
+        super();
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    runCode(request: HeadlessRunRequest, signal?: AbortSignal): Promise<HeadlessRunResult> {
+        let url_ = this.baseUrl + "/api/headless/run";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRunCode(_response);
+        });
+    }
+
+    protected processRunCode(response: Response): Promise<HeadlessRunResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HeadlessRunResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<HeadlessRunResult>(null as any);
+    }
+
+    runScript(scriptId: string, timeoutMs: number | null | undefined, signal?: AbortSignal): Promise<HeadlessRunResult> {
+        let url_ = this.baseUrl + "/api/headless/run/{scriptId}?";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        if (timeoutMs !== undefined && timeoutMs !== null)
+            url_ += "timeoutMs=" + encodeURIComponent("" + timeoutMs) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRunScript(_response);
+        });
+    }
+
+    protected processRunScript(response: Response): Promise<HeadlessRunResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HeadlessRunResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<HeadlessRunResult>(null as any);
     }
 }
 
@@ -1627,7 +1725,13 @@ export interface IScriptsApiClient {
 
     getScripts(signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
 
-    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<void>;
+    getCode(id: string, signal?: AbortSignal | undefined): Promise<string>;
+
+    updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
+
+    findScripts(name: string | undefined, signal?: AbortSignal | undefined): Promise<ScriptSummary[]>;
+
+    create(dto: CreateScriptDto, signal?: AbortSignal | undefined): Promise<Script>;
 
     rename(id: string, newName: string, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1635,13 +1739,13 @@ export interface IScriptsApiClient {
 
     save(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
-    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
+    run(id: string, options: RunOptions, captureOutput: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
+
+    getRunOutput(id: string, wait: boolean | undefined, timeoutMs: number | null | undefined, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
 
     stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     stopAll(force: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
-
-    updateCode(id: string, code: string, signal?: AbortSignal | undefined): Promise<void>;
 
     openConfigWindow(id: string, tab: string | null | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -1719,15 +1823,57 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<ScriptSummary[]>(null as any);
     }
 
-    create(dto: CreateScriptDto, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/create";
+    getCode(id: string, signal?: AbortSignal): Promise<string> {
+        let url_ = this.baseUrl + "/scripts/{id}/code";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(dto);
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetCode(_response);
+        });
+    }
+
+    protected processGetCode(response: Response): Promise<string> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string>(null as any);
+    }
+
+    updateCode(id: string, code: string, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/code";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(code);
 
         let options_: RequestInit = {
             body: content_,
-            method: "PATCH",
+            method: "PUT",
             signal,
             headers: {
                 "Content-Type": "application/json",
@@ -1735,11 +1881,11 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         };
 
         return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processCreate(_response);
+            return this.processUpdateCode(_response);
         });
     }
 
-    protected processCreate(response: Response): Promise<void> {
+    protected processUpdateCode(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1752,6 +1898,91 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             });
         }
         return Promise.resolve<void>(null as any);
+    }
+
+    findScripts(name: string | undefined, signal?: AbortSignal): Promise<ScriptSummary[]> {
+        let url_ = this.baseUrl + "/scripts/find?";
+        if (name === null)
+            throw new Error("The parameter 'name' cannot be null.");
+        else if (name !== undefined)
+            url_ += "name=" + encodeURIComponent("" + name) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processFindScripts(_response);
+        });
+    }
+
+    protected processFindScripts(response: Response): Promise<ScriptSummary[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(ScriptSummary.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ScriptSummary[]>(null as any);
+    }
+
+    create(dto: CreateScriptDto, signal?: AbortSignal): Promise<Script> {
+        let url_ = this.baseUrl + "/scripts/create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(dto);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "PATCH",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processCreate(_response);
+        });
+    }
+
+    protected processCreate(response: Response): Promise<Script> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Script.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Script>(null as any);
     }
 
     rename(id: string, newName: string, signal?: AbortSignal): Promise<void> {
@@ -1854,7 +2085,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -1865,11 +2096,15 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<boolean>(null as any);
     }
 
-    run(id: string, options: RunOptions, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/run";
+    run(id: string, options: RunOptions, captureOutput: boolean | undefined, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/run?";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (captureOutput === null)
+            throw new Error("The parameter 'captureOutput' cannot be null.");
+        else if (captureOutput !== undefined)
+            url_ += "captureOutput=" + encodeURIComponent("" + captureOutput) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(options);
@@ -1901,6 +2136,50 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             });
         }
         return Promise.resolve<void>(null as any);
+    }
+
+    getRunOutput(id: string, wait: boolean | undefined, timeoutMs: number | null | undefined, signal?: AbortSignal): Promise<HeadlessRunResult> {
+        let url_ = this.baseUrl + "/scripts/{id}/run-output?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (wait === null)
+            throw new Error("The parameter 'wait' cannot be null.");
+        else if (wait !== undefined)
+            url_ += "wait=" + encodeURIComponent("" + wait) + "&";
+        if (timeoutMs !== undefined && timeoutMs !== null)
+            url_ += "timeoutMs=" + encodeURIComponent("" + timeoutMs) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetRunOutput(_response);
+        });
+    }
+
+    protected processGetRunOutput(response: Response): Promise<HeadlessRunResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HeadlessRunResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<HeadlessRunResult>(null as any);
     }
 
     stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal): Promise<void> {
@@ -1962,44 +2241,6 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
     }
 
     protected processStopAll(response: Response): Promise<void> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            return;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<void>(null as any);
-    }
-
-    updateCode(id: string, code: string, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/code";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = JSON.stringify(code);
-
-        let options_: RequestInit = {
-            body: content_,
-            method: "PUT",
-            signal,
-            headers: {
-                "Content-Type": "application/json",
-            }
-        };
-
-        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processUpdateCode(_response);
-        });
-    }
-
-    protected processUpdateCode(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2492,6 +2733,8 @@ export interface ISessionApiClient {
     close(scriptId: string, discardUnsavedChanges: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     getActive(signal?: AbortSignal | undefined): Promise<string | null>;
+
+    getEnvironmentStatus(scriptId: string, signal?: AbortSignal | undefined): Promise<ScriptStatusDto>;
 }
 
 export class SessionApiClient extends ApiClientBase implements ISessionApiClient {
@@ -2683,7 +2926,7 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -2692,6 +2935,44 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             });
         }
         return Promise.resolve<string | null>(null as any);
+    }
+
+    getEnvironmentStatus(scriptId: string, signal?: AbortSignal): Promise<ScriptStatusDto> {
+        let url_ = this.baseUrl + "/session/environments/{scriptId}/status";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetEnvironmentStatus(_response);
+        });
+    }
+
+    protected processGetEnvironmentStatus(response: Response): Promise<ScriptStatusDto> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ScriptStatusDto.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ScriptStatusDto>(null as any);
     }
 }
 
@@ -3099,7 +3380,7 @@ export class UserSecretsApiClient extends ApiClientBase implements IUserSecretsA
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
                 result200 = resultData200 !== undefined ? resultData200 : <any>null;
-    
+
             return result200;
             });
         } else if (status !== 200 && status !== 204) {
@@ -4247,11 +4528,11 @@ export interface ISyntaxTriviaSlim {
     displayValue?: string | undefined;
 }
 
-export class Response implements IResponse {
+export class GetAllConnectionsResponse implements IGetAllConnectionsResponse {
     connections!: DataConnection[];
     servers!: DatabaseServerConnection[];
 
-    constructor(data?: IResponse) {
+    constructor(data?: IGetAllConnectionsResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -4279,9 +4560,9 @@ export class Response implements IResponse {
         }
     }
 
-    static fromJS(data: any): Response {
+    static fromJS(data: any): GetAllConnectionsResponse {
         data = typeof data === 'object' ? data : {};
-        let result = new Response();
+        let result = new GetAllConnectionsResponse();
         result.init(data);
         return result;
     }
@@ -4301,15 +4582,15 @@ export class Response implements IResponse {
         return data;
     }
 
-    clone(): Response {
+    clone(): GetAllConnectionsResponse {
         const json = this.toJSON();
-        let result = new Response();
+        let result = new GetAllConnectionsResponse();
         result.init(json);
         return result;
     }
 }
 
-export interface IResponse {
+export interface IGetAllConnectionsResponse {
     connections: DataConnection[];
     servers: DatabaseServerConnection[];
 }
@@ -4977,6 +5258,206 @@ export interface IDatabaseTableNavigation {
 /** A version of the .NET framework. */
 export type DotNetFrameworkVersion = "DotNet5" | "DotNet6" | "DotNet7" | "DotNet8" | "DotNet9" | "DotNet10";
 
+export class HeadlessRunResult implements IHeadlessRunResult {
+    status!: string;
+    success!: boolean;
+    durationMs!: number;
+    output!: any[];
+    compilationErrors?: string[] | undefined;
+    error?: string | undefined;
+
+    constructor(data?: IHeadlessRunResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.output = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.status = _data["status"];
+            this.success = _data["success"];
+            this.durationMs = _data["durationMs"];
+            if (Array.isArray(_data["output"])) {
+                this.output = [] as any;
+                for (let item of _data["output"])
+                    this.output!.push(item);
+            }
+            if (Array.isArray(_data["compilationErrors"])) {
+                this.compilationErrors = [] as any;
+                for (let item of _data["compilationErrors"])
+                    this.compilationErrors!.push(item);
+            }
+            this.error = _data["error"];
+        }
+    }
+
+    static fromJS(data: any): HeadlessRunResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new HeadlessRunResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["status"] = this.status;
+        data["success"] = this.success;
+        data["durationMs"] = this.durationMs;
+        if (Array.isArray(this.output)) {
+            data["output"] = [];
+            for (let item of this.output)
+                data["output"].push(item);
+        }
+        if (Array.isArray(this.compilationErrors)) {
+            data["compilationErrors"] = [];
+            for (let item of this.compilationErrors)
+                data["compilationErrors"].push(item);
+        }
+        data["error"] = this.error;
+        return data;
+    }
+
+    clone(): HeadlessRunResult {
+        const json = this.toJSON();
+        let result = new HeadlessRunResult();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHeadlessRunResult {
+    status: string;
+    success: boolean;
+    durationMs: number;
+    output: any[];
+    compilationErrors?: string[] | undefined;
+    error?: string | undefined;
+}
+
+export class HeadlessRunRequest implements IHeadlessRunRequest {
+    code!: string;
+    kind!: string;
+    packages?: PackageReferenceDto[] | undefined;
+    targetFramework?: DotNetFrameworkVersion | undefined;
+    dataConnectionId?: string | undefined;
+    timeoutMs?: number | undefined;
+
+    constructor(data?: IHeadlessRunRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.code = _data["code"];
+            this.kind = _data["kind"];
+            if (Array.isArray(_data["packages"])) {
+                this.packages = [] as any;
+                for (let item of _data["packages"])
+                    this.packages!.push(PackageReferenceDto.fromJS(item));
+            }
+            this.targetFramework = _data["targetFramework"];
+            this.dataConnectionId = _data["dataConnectionId"];
+            this.timeoutMs = _data["timeoutMs"];
+        }
+    }
+
+    static fromJS(data: any): HeadlessRunRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new HeadlessRunRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["code"] = this.code;
+        data["kind"] = this.kind;
+        if (Array.isArray(this.packages)) {
+            data["packages"] = [];
+            for (let item of this.packages)
+                data["packages"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["targetFramework"] = this.targetFramework;
+        data["dataConnectionId"] = this.dataConnectionId;
+        data["timeoutMs"] = this.timeoutMs;
+        return data;
+    }
+
+    clone(): HeadlessRunRequest {
+        const json = this.toJSON();
+        let result = new HeadlessRunRequest();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IHeadlessRunRequest {
+    code: string;
+    kind: string;
+    packages?: PackageReferenceDto[] | undefined;
+    targetFramework?: DotNetFrameworkVersion | undefined;
+    dataConnectionId?: string | undefined;
+    timeoutMs?: number | undefined;
+}
+
+export class PackageReferenceDto implements IPackageReferenceDto {
+    id!: string;
+    version?: string | undefined;
+
+    constructor(data?: IPackageReferenceDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.version = _data["version"];
+        }
+    }
+
+    static fromJS(data: any): PackageReferenceDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PackageReferenceDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["version"] = this.version;
+        return data;
+    }
+
+    clone(): PackageReferenceDto {
+        const json = this.toJSON();
+        let result = new PackageReferenceDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPackageReferenceDto {
+    id: string;
+    version?: string | undefined;
+}
+
 /** Information about a package. */
 export class PackageMetadata implements IPackageMetadata {
     packageId!: string;
@@ -5325,177 +5806,6 @@ export interface IScriptSummary {
 
 export type ScriptKind = "Expression" | "Program" | "SQL";
 
-export class CreateScriptDto implements ICreateScriptDto {
-    code?: string | undefined;
-    dataConnectionId?: string | undefined;
-    runImmediately!: boolean;
-
-    constructor(data?: ICreateScriptDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.code = _data["code"];
-            this.dataConnectionId = _data["dataConnectionId"];
-            this.runImmediately = _data["runImmediately"];
-        }
-    }
-
-    static fromJS(data: any): CreateScriptDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new CreateScriptDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["code"] = this.code;
-        data["dataConnectionId"] = this.dataConnectionId;
-        data["runImmediately"] = this.runImmediately;
-        return data;
-    }
-
-    clone(): CreateScriptDto {
-        const json = this.toJSON();
-        let result = new CreateScriptDto();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface ICreateScriptDto {
-    code?: string | undefined;
-    dataConnectionId?: string | undefined;
-    runImmediately: boolean;
-}
-
-/** Represents a set of options that control how a script is executed. */
-export class RunOptions implements IRunOptions {
-    /** Gets or sets a snippet of code to run instead of the full script. */
-    specificCodeToRun?: string | undefined;
-
-    constructor(data?: IRunOptions) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.specificCodeToRun = _data["specificCodeToRun"];
-        }
-    }
-
-    static fromJS(data: any): RunOptions {
-        data = typeof data === 'object' ? data : {};
-        let result = new RunOptions();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["specificCodeToRun"] = this.specificCodeToRun;
-        return data;
-    }
-
-    clone(): RunOptions {
-        const json = this.toJSON();
-        let result = new RunOptions();
-        result.init(json);
-        return result;
-    }
-}
-
-/** Represents a set of options that control how a script is executed. */
-export interface IRunOptions {
-    /** Gets or sets a snippet of code to run instead of the full script. */
-    specificCodeToRun?: string | undefined;
-}
-
-/** Provides a managed execution context for a Script used to run it, track its status, receive script output and provide input when requested. Many high level operations throughout the application run against a ScriptEnvironment instead of the Script itself. */
-export class ScriptEnvironment implements IScriptEnvironment {
-    script!: Script;
-    status!: ScriptStatus;
-    runDurationMilliseconds?: number | undefined;
-    memCacheItems!: MemCacheItemInfo[];
-    isScriptHostRunning!: boolean;
-
-    constructor(data?: IScriptEnvironment) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.script = new Script();
-            this.memCacheItems = [];
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
-            this.status = _data["status"];
-            this.runDurationMilliseconds = _data["runDurationMilliseconds"];
-            if (Array.isArray(_data["memCacheItems"])) {
-                this.memCacheItems = [] as any;
-                for (let item of _data["memCacheItems"])
-                    this.memCacheItems!.push(MemCacheItemInfo.fromJS(item));
-            }
-            this.isScriptHostRunning = _data["isScriptHostRunning"];
-        }
-    }
-
-    static fromJS(data: any): ScriptEnvironment {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptEnvironment();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["script"] = this.script ? this.script.toJSON() : <any>undefined;
-        data["status"] = this.status;
-        data["runDurationMilliseconds"] = this.runDurationMilliseconds;
-        if (Array.isArray(this.memCacheItems)) {
-            data["memCacheItems"] = [];
-            for (let item of this.memCacheItems)
-                data["memCacheItems"].push(item ? item.toJSON() : <any>undefined);
-        }
-        data["isScriptHostRunning"] = this.isScriptHostRunning;
-        return data;
-    }
-
-    clone(): ScriptEnvironment {
-        const json = this.toJSON();
-        let result = new ScriptEnvironment();
-        result.init(json);
-        return result;
-    }
-}
-
-/** Provides a managed execution context for a Script used to run it, track its status, receive script output and provide input when requested. Many high level operations throughout the application run against a ScriptEnvironment instead of the Script itself. */
-export interface IScriptEnvironment {
-    script: Script;
-    status: ScriptStatus;
-    runDurationMilliseconds?: number | undefined;
-    memCacheItems: MemCacheItemInfo[];
-    isScriptHostRunning: boolean;
-}
-
 /** A user script. */
 export class Script implements IScript {
     id!: string;
@@ -5663,6 +5973,181 @@ export interface IScriptConfig {
 
 export type OptimizationLevel = "Debug" | "Release";
 
+export class CreateScriptDto implements ICreateScriptDto {
+    name?: string | undefined;
+    code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately!: boolean;
+
+    constructor(data?: ICreateScriptDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.code = _data["code"];
+            this.dataConnectionId = _data["dataConnectionId"];
+            this.runImmediately = _data["runImmediately"];
+        }
+    }
+
+    static fromJS(data: any): CreateScriptDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateScriptDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["code"] = this.code;
+        data["dataConnectionId"] = this.dataConnectionId;
+        data["runImmediately"] = this.runImmediately;
+        return data;
+    }
+
+    clone(): CreateScriptDto {
+        const json = this.toJSON();
+        let result = new CreateScriptDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateScriptDto {
+    name?: string | undefined;
+    code?: string | undefined;
+    dataConnectionId?: string | undefined;
+    runImmediately: boolean;
+}
+
+/** Represents a set of options that control how a script is executed. */
+export class RunOptions implements IRunOptions {
+    /** Gets or sets a snippet of code to run instead of the full script. */
+    specificCodeToRun?: string | undefined;
+
+    constructor(data?: IRunOptions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.specificCodeToRun = _data["specificCodeToRun"];
+        }
+    }
+
+    static fromJS(data: any): RunOptions {
+        data = typeof data === 'object' ? data : {};
+        let result = new RunOptions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["specificCodeToRun"] = this.specificCodeToRun;
+        return data;
+    }
+
+    clone(): RunOptions {
+        const json = this.toJSON();
+        let result = new RunOptions();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Represents a set of options that control how a script is executed. */
+export interface IRunOptions {
+    /** Gets or sets a snippet of code to run instead of the full script. */
+    specificCodeToRun?: string | undefined;
+}
+
+/** Provides a managed execution context for a Script used to run it, track its status, receive script output and provide input when requested. Many high level operations throughout the application run against a ScriptEnvironment instead of the Script itself. */
+export class ScriptEnvironment implements IScriptEnvironment {
+    script!: Script;
+    status!: ScriptStatus;
+    runDurationMilliseconds?: number | undefined;
+    memCacheItems!: MemCacheItemInfo[];
+    isScriptHostRunning!: boolean;
+
+    constructor(data?: IScriptEnvironment) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.script = new Script();
+            this.memCacheItems = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.script = _data["script"] ? Script.fromJS(_data["script"]) : new Script();
+            this.status = _data["status"];
+            this.runDurationMilliseconds = _data["runDurationMilliseconds"];
+            if (Array.isArray(_data["memCacheItems"])) {
+                this.memCacheItems = [] as any;
+                for (let item of _data["memCacheItems"])
+                    this.memCacheItems!.push(MemCacheItemInfo.fromJS(item));
+            }
+            this.isScriptHostRunning = _data["isScriptHostRunning"];
+        }
+    }
+
+    static fromJS(data: any): ScriptEnvironment {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptEnvironment();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["script"] = this.script ? this.script.toJSON() : <any>undefined;
+        data["status"] = this.status;
+        data["runDurationMilliseconds"] = this.runDurationMilliseconds;
+        if (Array.isArray(this.memCacheItems)) {
+            data["memCacheItems"] = [];
+            for (let item of this.memCacheItems)
+                data["memCacheItems"].push(item ? item.toJSON() : <any>undefined);
+        }
+        data["isScriptHostRunning"] = this.isScriptHostRunning;
+        return data;
+    }
+
+    clone(): ScriptEnvironment {
+        const json = this.toJSON();
+        let result = new ScriptEnvironment();
+        result.init(json);
+        return result;
+    }
+}
+
+/** Provides a managed execution context for a Script used to run it, track its status, receive script output and provide input when requested. Many high level operations throughout the application run against a ScriptEnvironment instead of the Script itself. */
+export interface IScriptEnvironment {
+    script: Script;
+    status: ScriptStatus;
+    runDurationMilliseconds?: number | undefined;
+    memCacheItems: MemCacheItemInfo[];
+    isScriptHostRunning: boolean;
+}
+
 export type ScriptStatus = "Ready" | "Running" | "Stopping" | "Error";
 
 /** Info about an item stored in MemCache. */
@@ -5732,6 +6217,61 @@ will always return true. */
     valueInitialized: boolean;
     /** Whether a factory, or an async factory, was used when adding the item to the cache. */
     isFactory: boolean;
+}
+
+export class ScriptStatusDto implements IScriptStatusDto {
+    scriptId!: string;
+    name!: string;
+    status!: string;
+    runDurationMs?: number | undefined;
+
+    constructor(data?: IScriptStatusDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.scriptId = _data["scriptId"];
+            this.name = _data["name"];
+            this.status = _data["status"];
+            this.runDurationMs = _data["runDurationMs"];
+        }
+    }
+
+    static fromJS(data: any): ScriptStatusDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptStatusDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scriptId"] = this.scriptId;
+        data["name"] = this.name;
+        data["status"] = this.status;
+        data["runDurationMs"] = this.runDurationMs;
+        return data;
+    }
+
+    clone(): ScriptStatusDto {
+        const json = this.toJSON();
+        let result = new ScriptStatusDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptStatusDto {
+    scriptId: string;
+    name: string;
+    status: string;
+    runDurationMs?: number | undefined;
 }
 
 /** Application-wide settings. */
