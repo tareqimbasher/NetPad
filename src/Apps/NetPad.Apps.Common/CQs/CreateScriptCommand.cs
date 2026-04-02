@@ -7,8 +7,10 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.CQs;
 
-public class CreateScriptCommand : Command<Script>
+public class CreateScriptCommand(string? scriptName) : Command<Script>
 {
+    public string? ScriptName { get; } = scriptName;
+
     public class Handler(
         IScriptNameGenerator scriptNameGenerator,
         IScriptRepository scriptRepository,
@@ -18,10 +20,12 @@ public class CreateScriptCommand : Command<Script>
     {
         public async Task<Script> Handle(CreateScriptCommand request, CancellationToken cancellationToken)
         {
-            var name = scriptNameGenerator.Generate();
+            var name = !string.IsNullOrWhiteSpace(request.ScriptName)
+                ? request.ScriptName
+                : scriptNameGenerator.Generate();
 
             var targetFrameworkVersion = dotNetInfo.GetLatestSupportedDotNetSdkVersion()?.GetFrameworkVersion()
-                    ?? GlobalConsts.AppDotNetFrameworkVersion;
+                                         ?? GlobalConsts.AppDotNetFrameworkVersion;
 
             var script = await scriptRepository.CreateAsync(name, targetFrameworkVersion);
 

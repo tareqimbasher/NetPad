@@ -20,6 +20,7 @@ public class ScriptEnvironmentBackgroundService(
     IEventBus eventBus,
     IIpcService ipcService,
     IAutoSaveScriptRepository autoSaveScriptRepository,
+    ScriptOutputCaptureService scriptOutputCaptureService,
     ILoggerFactory loggerFactory)
     : BackgroundService(loggerFactory)
 {
@@ -92,7 +93,8 @@ public class ScriptEnvironmentBackgroundService(
             environment,
             ipcService,
             eventBus,
-            _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>());
+            _loggerFactory.CreateLogger<ScriptEnvironmentIpcOutputWriter>(),
+            scriptOutputCaptureService);
 
         environment.SetIO(inputReader, outputWriter);
 

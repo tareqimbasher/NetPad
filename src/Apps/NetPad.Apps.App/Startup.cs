@@ -67,6 +67,11 @@ public class Startup
         // Script execution mechanism
         services.AddClientServerExecutionModel();
 
+        // Headless execution (for MCP server and API consumers)
+        services.AddTransient<HeadlessScriptRunnerFactory>();
+        services.AddTransient<HeadlessScriptExecutionService>();
+        services.AddSingleton<ScriptOutputCaptureService>();
+
         // Data connections
         services
             .AddDataConnectionFeature()

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Apps.CQs;
+using NetPad.Dtos;
 using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Services;
@@ -42,5 +43,20 @@ public class SessionController(IMediator mediator) : ControllerBase
     {
         var active = await mediator.Send(new GetActiveScriptEnvironmentQuery());
         return active?.Script.Id;
+    }
+
+    [HttpGet("environments/{scriptId:guid}/status")]
+    public async Task<ScriptStatusDto> GetEnvironmentStatus(Guid scriptId)
+    {
+        var environment = await mediator.Send(new GetOpenedScriptEnvironmentQuery(scriptId))
+                          ?? throw new EnvironmentNotFoundException(scriptId);
+
+        return new ScriptStatusDto
+        {
+            ScriptId = environment.Script.Id,
+            Name = environment.Script.Name,
+            Status = environment.Status,
+            RunDurationMs = environment.RunDurationMilliseconds
+        };
     }
 }
