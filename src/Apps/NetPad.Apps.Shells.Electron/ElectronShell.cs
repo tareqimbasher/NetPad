@@ -29,10 +29,17 @@ public class ElectronShell : IShell
         services.AddTransient<IUiDialogService, ElectronDialogService>();
 
         services.AddHostedService<NotificationBackgroundService>();
+
+        services.AddCors(options => options.AddPolicy(
+            "AllowElectronShell",
+            policy => policy.WithOrigins("http://localhost:57930")
+                .AllowAnyHeader()
+                .AllowAnyMethod()));
     }
 
     public void ConfigureRequestPipeline(IApplicationBuilder app, IHostEnvironment env)
     {
+        app.UseCors("AllowElectronShell");
     }
 
     public void Initialize(IApplicationBuilder app, IHostEnvironment env)

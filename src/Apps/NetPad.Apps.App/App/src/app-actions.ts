@@ -127,6 +127,13 @@ export const configureFetchClient = (container: IContainer) => {
         config
             .useStandardConfiguration()
             .withInterceptor({
+                request(request: Request): Request | Response | Promise<Request | Response> {
+                    const token = WindowParams.token;
+                    if (token) {
+                        request.headers.set("X-NetPad-Token", token);
+                    }
+                    return request;
+                },
                 requestError(error: unknown): Request | Response | Promise<Request | Response> {
                     if (!isAbortError(error)) logger.error("Request Error", error);
                     throw error;

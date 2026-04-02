@@ -103,9 +103,13 @@ remove that flash and improve user experience.
     </div>
 </div>
 
+<!--
+In release builds, the Rust side polls the connection file and navigates the window before this script runs.
+In dev builds, this script handles polling and redirect since the Rust navigation thread doesn't run.
+-->
 <script>
     const testUrl = "http://localhost:57950/app/identifier";
-    const forwardUrl = "http://localhost:57950?shell=tauri";
+    const forwardUrl = "http://localhost:57950?shell=tauri&token=dev";
     const maxWaitMs = 30000;
     let waitMs = 0;
     let tries = 0;
@@ -135,5 +139,6 @@ remove that flash and improve user experience.
 
     checkBackendStarted();
 </script>
+
 </body>
 </html>

@@ -2,6 +2,7 @@ import {ILogger} from "aurelia";
 import {DisposableCollection} from "@common";
 import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
 import {ShellType} from "@application/windows/shell-type";
+import {WindowParams} from "@application/windows/window-params";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
 import {invoke} from "@tauri-apps/api/core";
 
@@ -36,6 +37,7 @@ export class TauriWindowBackgroundService implements IBackgroundService {
 
         queryParams.append("win", command.windowName);
         queryParams.append("shell", ShellType.Tauri);
+        queryParams.append("token", WindowParams.token || "");
 
         for (const key of Object.keys(command.metadata)) {
             queryParams.append(key, command.metadata[key]);
