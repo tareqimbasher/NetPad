@@ -2,10 +2,13 @@ using System.Collections.Concurrent;
 using ElectronSharp.API;
 using ElectronSharp.API.Entities;
 using Microsoft.Extensions.Logging;
+using NetPad.Apps.Security;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
 
-public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo)
+#pragma warning disable CS9113
+public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo, SecurityToken securityToken)
+#pragma warning restore CS9113
 {
     private readonly ConcurrentDictionary<Guid, BrowserWindowInfo> _windows = new();
 
@@ -27,7 +30,14 @@ public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo)
             return existing.Window;
         }
 
-        var url = $"{hostInfo.HostUrl}?win={windowName}&shell=electron";
+        var token =
+#if DEBUG
+            "dev";
+#else
+            securityToken.Token;
+#endif
+
+        var url = $"{hostInfo.HostUrl}?win={windowName}&shell=electron&token={token}";
 
         if (queryParams.Any())
         {

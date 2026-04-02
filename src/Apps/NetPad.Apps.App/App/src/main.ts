@@ -97,6 +97,7 @@ const builder = Aurelia.register(
 );
 
 const logger = builder.container.get(ILogger).scopeTo(nameof(AppLifeCycle));
+appActions.configureFetchClient(builder.container);
 await appActions.loadAppSettings(builder);
 
 // Configure the proper shell

@@ -17,7 +17,8 @@ pub struct DotNetServerManager {
 }
 
 impl DotNetServerManager {
-    pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<(), String> {
+    /// Starts the .NET backend process and returns its PID.
+    pub fn start_backend(&mut self, app_handle: &tauri::AppHandle) -> Result<u32, String> {
         let exe_ext = if std::env::consts::OS == "windows" {
             ".exe"
         } else {
@@ -74,15 +75,16 @@ impl DotNetServerManager {
 
         match self.child.borrow_mut() {
             Some(c) => {
-                log::warn!("Requested to start .NET server process but it has already been created. PID: {}", c.id());
-                Ok(())
+                let pid = c.id();
+                log::warn!("Requested to start .NET server process but it has already been created. PID: {}", pid);
+                Ok(pid)
             }
             None => match cmd.spawn() {
                 Ok(c) => {
                     let pid = c.id();
                     self.child = Some(c);
                     log::info!(".NET server process started successfully with PID: {}", pid);
-                    Ok(())
+                    Ok(pid)
                 }
                 Err(e) => {
                     let msg = format!(".NET server process failed to start: {e}");
@@ -122,4 +124,21 @@ impl DotNetServerManager {
         }
         Ok(())
     }
+}
+
+#[derive(serde::Deserialize)]
+pub(crate) struct ConnectionInfo {
+    pub url: String,
+    pub token: String,
+}
+
+pub(crate) fn read_connection_file(pid: u32) -> Option<ConnectionInfo> {
+    let hosts_dir = std::env::temp_dir().join("NetPad").join("hosts");
+    let path = hosts_dir.join(format!("connection-{}.json", pid));
+    let contents = std::fs::read_to_string(path).ok()?;
+    serde_json::from_str(&contents).ok()
+}
+
+pub(crate) fn is_server_ready(port: u16) -> bool {
+    std::net::TcpStream::connect(("127.0.0.1", port)).is_ok()
 }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Apps;
 using NetPad.Apps.Plugins;
+using NetPad.Apps.Security;
 using NetPad.Compilation;
 using NetPad.Configuration;
 using NetPad.Data;
@@ -28,8 +29,12 @@ public class AppSetupAndCleanupBackgroundService(
 {
     protected override async Task StartingAsync(CancellationToken stoppingToken)
     {
-        // Clean up temp directories left behind by previous instances that exited without cleanup
-        _ = Task.Run(AppDataProvider.CleanUpStaleTempDirectories, stoppingToken);
+        // Clean up temp directories and stale connection files left behind by previous instances
+        _ = Task.Run(() =>
+        {
+            AppDataProvider.CleanUpStaleTempDirectories();
+            ConnectionFileManager.CleanupStale();
+        }, stoppingToken);
 
         // Pre-warm framework assembly cache on a background thread to avoid blocking startup
         _ = Task.Run(() =>
@@ -96,7 +101,8 @@ public class AppSetupAndCleanupBackgroundService(
             Logger.LogError(e, "Error closing environments");
         }
 
-        Try.Run(() => AppDataProvider.ProcessTempDirectoryPath.DeleteIfExists());
+        Try.Run(AppDataProvider.ProcessTempDirectoryPath.DeleteIfExists);
+        Try.Run(ConnectionFileManager.Delete);
 
         foreach (var registration in pluginManager.PluginRegistrations)
         {

@@ -132,7 +132,7 @@ public static class AppDataProvider
 
             try
             {
-                Process.GetProcessById(pid);
+                using var process = Process.GetProcessById(pid);
                 // Process is still running, skip
                 continue;
             }
