@@ -29,12 +29,41 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
         return await mediator.Send(new GetAllScriptsQuery());
     }
 
+    [HttpGet("{id:guid}/code")]
+    public async Task<string> GetCode(
+        Guid id,
+        [FromServices] ISession session,
+        [FromServices] IScriptRepository scriptRepository)
+    {
+        // Try open environment first, fall back to repository
+        var environment = session.Get(id);
+        if (environment != null)
+        {
+            return environment.Script.Code;
+        }
+
+        var script = await scriptRepository.GetAsync(id);
+        if (script == null)
+        {
+            throw new ScriptNotFoundException(id);
+        }
+
+        return script.Code;
+    }
+
+    [HttpGet("find")]
+    public async Task<IEnumerable<ScriptSummary>> FindScripts([FromQuery] string name)
+    {
+        var allScripts = await mediator.Send(new GetAllScriptsQuery());
+        return allScripts.Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+    }
+
     [HttpPatch("create")]
-    public async Task Create(
+    public async Task<Script> Create(
         [FromBody] CreateScriptDto dto,
         [FromServices] IDataConnectionRepository dataConnectionRepository)
     {
-        var script = await mediator.Send(new CreateScriptCommand());
+        var script = await mediator.Send(new CreateScriptCommand(dto.Name));
 
         bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
         if (hasSeedCode)
@@ -54,6 +83,8 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
         {
             await mediator.Send(new RunScriptCommand(script.Id, new RunOptions()));
         }
+
+        return script;
     }
 
     [HttpPatch("{id:guid}/rename")]
@@ -121,9 +152,29 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     }
 
     [HttpPatch("{id:guid}/run")]
-    public async Task Run(Guid id, [FromBody] RunOptions options)
+    public async Task Run(
+        Guid id,
+        [FromBody] RunOptions options,
+        [FromQuery] bool captureOutput,
+        [FromServices] ScriptOutputCaptureService captureService)
     {
+        if (captureOutput)
+        {
+            captureService.StartCapture(id);
+        }
+
         await mediator.Send(new RunScriptCommand(id, options));
+    }
+
+    [HttpGet("{id:guid}/run-output")]
+    public async Task<HeadlessRunResult> GetRunOutput(
+        Guid id,
+        [FromQuery] bool wait,
+        [FromQuery] int? timeoutMs,
+        [FromServices] ScriptOutputCaptureService captureService,
+        CancellationToken cancellationToken)
+    {
+        return await captureService.GetCapturedOutputAsync(id, wait, timeoutMs, cancellationToken);
     }
 
     [HttpPatch("{id:guid}/stop")]
@@ -185,7 +236,8 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     }
 
     [HttpPut("{id:guid}/target-framework-version")]
-    public async Task<IActionResult> SetTargetFrameworkVersion(Guid id,
+    public async Task<IActionResult> SetTargetFrameworkVersion(
+        Guid id,
         [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
     {
         var environment = await GetScriptEnvironmentAsync(id);

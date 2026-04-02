@@ -155,6 +155,10 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
 
             var exitCode = await _scriptProcess.WaitForExitTask;
 
+            // Flush any remaining buffered output. The debounced RawOutputHandler may
+            // still have queued items that haven't been pushed to output writers yet.
+            _rawOutputHandler.Flush();
+
             stopWatch.Stop();
             var elapsed = stopWatch.ElapsedMilliseconds;
 
