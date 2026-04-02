@@ -7,8 +7,6 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class GetAppInfoTool
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
-
     [McpServerTool(Name = "get_app_info", ReadOnly = true), Description("Get information about the running NetPad instance, including version and dependency status.")]
     public static async Task<string> GetAppInfo(NetPadApiClient api, CancellationToken cancellationToken)
     {
@@ -25,6 +23,6 @@ public class GetAppInfoTool
             depsTask.Result.IsSupportedDotNetEfToolInstalled
         };
 
-        return JsonSerializer.Serialize(result, _jsonOptions);
+        return JsonSerializer.Serialize(result, JsonDefaults.IndentedOptions);
     }
 }
