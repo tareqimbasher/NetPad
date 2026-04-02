@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -11,6 +12,7 @@ using NetPad.Exceptions;
 using NetPad.ExecutionModel;
 using NetPad.Scripts;
 using NetPad.Services;
+using NetPad.Sessions;
 
 namespace NetPad.Controllers;
 
@@ -24,10 +26,41 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         return await mediator.Send(new GetAllScriptsQuery());
     }
 
-    [HttpPatch("create")]
-    public async Task Create([FromBody] CreateScriptDto dto, [FromServices] IDataConnectionRepository dataConnectionRepository)
+    [HttpGet("{id:guid}/code")]
+    public async Task<string> GetCode(
+        Guid id,
+        [FromServices] ISession session,
+        [FromServices] IScriptRepository scriptRepository)
     {
-        var script = await mediator.Send(new CreateScriptCommand());
+        // Try open environment first, fall back to repository
+        var environment = session.Get(id);
+        if (environment != null)
+        {
+            return environment.Script.Code;
+        }
+
+        var script = await scriptRepository.GetAsync(id);
+        if (script == null)
+        {
+            throw new ScriptNotFoundException(id);
+        }
+
+        return script.Code;
+    }
+
+    [HttpGet("find")]
+    public async Task<IEnumerable<ScriptSummary>> FindScripts([FromQuery] string name)
+    {
+        var allScripts = await mediator.Send(new GetAllScriptsQuery());
+        return allScripts.Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [HttpPatch("create")]
+    public async Task<Script> Create(
+        [FromBody] CreateScriptDto dto,
+        [FromServices] IDataConnectionRepository dataConnectionRepository)
+    {
+        var script = await mediator.Send(new CreateScriptCommand(dto.Name));
 
         bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
         if (hasSeedCode)
@@ -47,6 +80,8 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         {
             await mediator.Send(new RunScriptCommand(script.Id, new RunOptions()));
         }
+
+        return script;
     }
 
     [HttpPatch("{id:guid}/rename")]
@@ -71,9 +106,29 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/run")]
-    public async Task Run(Guid id, [FromBody] RunOptions options)
+    public async Task Run(
+        Guid id,
+        [FromBody] RunOptions options,
+        [FromQuery] bool captureOutput,
+        [FromServices] ScriptOutputCaptureService captureService)
     {
+        if (captureOutput)
+        {
+            captureService.StartCapture(id);
+        }
+
         await mediator.Send(new RunScriptCommand(id, options));
+    }
+
+    [HttpGet("{id:guid}/run-output")]
+    public async Task<HeadlessRunResult> GetRunOutput(
+        Guid id,
+        [FromQuery] bool wait,
+        [FromQuery] int? timeoutMs,
+        [FromServices] ScriptOutputCaptureService captureService,
+        CancellationToken cancellationToken)
+    {
+        return await captureService.GetCapturedOutputAsync(id, wait, timeoutMs, cancellationToken);
     }
 
     [HttpPatch("{id:guid}/stop")]
@@ -96,7 +151,10 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/open-config")]
-    public async Task OpenConfigWindow([FromServices] IUiWindowService uiWindowService, Guid id, [FromQuery] string? tab = null)
+    public async Task OpenConfigWindow(
+        [FromServices] IUiWindowService uiWindowService,
+        Guid id,
+        [FromQuery] string? tab = null)
     {
         var environment = await GetScriptEnvironmentAsync(id);
         var script = environment.Script;
@@ -132,7 +190,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/target-framework-version")]
-    public async Task<IActionResult> SetTargetFrameworkVersion(Guid id, [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<IActionResult> SetTargetFrameworkVersion(
+        Guid id,
+        [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
     {
         var environment = await GetScriptEnvironmentAsync(id);
 
@@ -204,6 +264,6 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
     {
         return await mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true))
-            ?? throw new ScriptNotFoundException(id);
+               ?? throw new ScriptNotFoundException(id);
     }
 }

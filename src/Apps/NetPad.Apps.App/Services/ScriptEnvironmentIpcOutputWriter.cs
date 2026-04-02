@@ -44,15 +44,19 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
     private bool _sentOutputLimitReachedMessage;
     private readonly Lock _sendOutputLimitReachedMessageLock = new();
 
+    private readonly ScriptOutputCaptureService? _captureService;
+
     public ScriptEnvironmentIpcOutputWriter(
         ScriptEnvironment scriptEnvironment,
         IIpcService ipcService,
         IEventBus eventBus,
-        ILogger<ScriptEnvironmentIpcOutputWriter> logger)
+        ILogger<ScriptEnvironmentIpcOutputWriter> logger,
+        ScriptOutputCaptureService? captureService = null)
     {
         _scriptEnvironment = scriptEnvironment;
         _ipcService = ipcService;
         _logger = logger;
+        _captureService = captureService;
 
         _sendMessageQueueTimer = new Timer
         {
@@ -120,6 +124,11 @@ public sealed record ScriptEnvironmentIpcOutputWriter : IOutputWriter<object>, I
         if (cancellationToken.IsCancellationRequested)
         {
             return;
+        }
+
+        if (output != null && _captureService != null && _captureService.IsCapturing(_scriptEnvironment.Script.Id))
+        {
+            _captureService.BufferOutput(_scriptEnvironment.Script.Id, output);
         }
 
         // Since we want the end result to be HTML-encoded, any output that is not an HtmlScriptOutput will be

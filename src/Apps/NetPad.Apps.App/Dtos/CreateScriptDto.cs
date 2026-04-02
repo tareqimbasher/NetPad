@@ -3,6 +3,11 @@ namespace NetPad.Dtos;
 public class CreateScriptDto
 {
     /// <summary>
+    /// An optional name for the newly created script.
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>
     /// The code to include in the newly created script.
     /// </summary>
     public string? Code { get; set; }

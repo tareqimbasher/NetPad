@@ -76,7 +76,7 @@ public partial class ExternalScriptRunner
         catch
         {
             _logger.LogDebug("Script output is not JSON or could not be deserialized. Output: '{RawOutput}'", raw);
-            _rawOutputHandler.RawErrorReceived(raw);
+            _rawOutputHandler.RawOutputReceived(raw);
             return;
         }
 

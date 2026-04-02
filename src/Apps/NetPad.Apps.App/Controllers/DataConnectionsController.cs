@@ -33,7 +33,7 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<GetAllConnectionsQuery.Response> GetAll() => await mediator.Send(new GetAllConnectionsQuery());
+    public async Task<GetAllConnectionsQuery.GetAllConnectionsResponse> GetAll() => await mediator.Send(new GetAllConnectionsQuery());
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<DataConnection?>> Get(Guid id)
