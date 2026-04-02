@@ -5,10 +5,11 @@ using NetPad.Scripts.Events;
 
 namespace NetPad.Apps.CQs;
 
-public class UpdateScriptCodeCommand(Script script, string? code) : Command
+public class UpdateScriptCodeCommand(Script script, string? code, bool externallyInitiated = false) : Command
 {
     public Script Script { get; } = script;
     public string? Code { get; } = code;
+    public bool ExternallyInitiated { get; } = externallyInitiated;
 
     public class Handler(IEventBus eventBus) : IRequestHandler<UpdateScriptCodeCommand>
     {
@@ -25,7 +26,8 @@ public class UpdateScriptCodeCommand(Script script, string? code) : Command
 
             request.Script.UpdateCode(request.Code);
 
-            await eventBus.PublishAsync(new ScriptCodeUpdatedEvent(script, script.Code, oldCode));
+            await eventBus.PublishAsync(
+                new ScriptCodeUpdatedEvent(script, script.Code, oldCode, request.ExternallyInitiated));
 
             return Unit.Value;
         }

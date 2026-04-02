@@ -102,7 +102,7 @@ public class NetPadApiClient
 
     public async Task UpdateScriptCodeAsync(Guid scriptId, string code, CancellationToken cancellationToken = default)
     {
-        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code", SerializeContent(code), cancellationToken);
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code?externallyInitiated=true", SerializeContent(code), cancellationToken);
     }
 
     public async Task<bool> SaveScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
