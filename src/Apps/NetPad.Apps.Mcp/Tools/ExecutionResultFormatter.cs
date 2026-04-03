@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using NetPad.Apps.Mcp.Dtos;
 
 namespace NetPad.Apps.Mcp.Tools;
@@ -6,42 +7,43 @@ namespace NetPad.Apps.Mcp.Tools;
 /// <summary>
 /// Formats <see cref="HeadlessRunResult"/> into a structured string suitable for AI consumption.
 /// </summary>
-internal static class ExecutionResultFormatter
+internal static partial class ExecutionResultFormatter
 {
     private const int MaxOutputLength = 100_000;
 
     public static string Format(HeadlessRunResult result)
     {
-        var outputTexts = new List<string>();
+        var outputEntries = new List<object>();
         var totalLength = 0;
 
         foreach (var output in result.Output)
         {
-            var text = ExtractOutputText(output);
-            totalLength += text.Length;
+            var entry = ExtractOutputEntry(output);
+            var entryLength = entry.Body?.Length ?? 0;
+            totalLength += entryLength;
 
             if (totalLength > MaxOutputLength)
             {
-                var remaining = MaxOutputLength - (totalLength - text.Length);
-                if (remaining > 0)
+                var remaining = MaxOutputLength - (totalLength - entryLength);
+                if (remaining > 0 && entry.Body != null)
                 {
-                    outputTexts.Add(text[..remaining]);
+                    outputEntries.Add(entry with { Body = entry.Body[..remaining] });
                 }
 
-                var omitted = result.Output.Count - outputTexts.Count;
+                var omitted = result.Output.Count - outputEntries.Count;
                 if (omitted > 0)
                 {
-                    outputTexts.Add($"[Output truncated — {omitted} more entries omitted]");
+                    outputEntries.Add(new OutputEntry("result", $"[Output truncated — {omitted} more entries omitted]", "text"));
                 }
                 else
                 {
-                    outputTexts.Add("[Output truncated]");
+                    outputEntries.Add(new OutputEntry("result", "[Output truncated]", "text"));
                 }
 
                 break;
             }
 
-            outputTexts.Add(text);
+            outputEntries.Add(entry);
         }
 
         var formatted = new
@@ -49,7 +51,7 @@ internal static class ExecutionResultFormatter
             result.Status,
             result.Success,
             result.DurationMs,
-            Output = outputTexts,
+            Output = outputEntries,
             result.CompilationErrors,
             result.Error
         };
@@ -57,18 +59,46 @@ internal static class ExecutionResultFormatter
         return JsonSerializer.Serialize(formatted, JsonDefaults.IndentedOptions);
     }
 
-    private static string ExtractOutputText(JsonElement element)
+    private static OutputEntry ExtractOutputEntry(JsonElement element)
     {
-        if (element.ValueKind == JsonValueKind.String)
+        if (element.ValueKind != JsonValueKind.Object)
         {
-            return element.GetString() ?? string.Empty;
+            return new OutputEntry("result", element.ToString(), "text");
         }
 
-        if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty("body", out var body))
+        var kind = element.TryGetProperty("kind", out var kindProp)
+            ? kindProp.GetString()?.ToLowerInvariant() ?? "result"
+            : "result";
+
+        var body = element.TryGetProperty("body", out var bodyProp)
+            ? bodyProp.ToString()
+            : element.ToString();
+
+        var format = element.TryGetProperty("format", out var formatProp)
+            ? formatProp.GetString()?.ToLowerInvariant() ?? "text"
+            : "text";
+
+        if (format == "html" && body != null)
         {
-            return body.ToString();
+            body = StripHtml(body);
+            format = "text";
         }
 
-        return element.ToString();
+        return new OutputEntry(kind, body, format);
     }
+
+    private static string StripHtml(string html)
+    {
+        // Replace <br/> and block-closing tags with newlines, then strip all remaining tags
+        var text = Regex.Replace(html, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, @"</(?:div|p|tr|li|h[1-6])>", "\n", RegexOptions.IgnoreCase);
+        text = HtmlTagRegex().Replace(text, string.Empty);
+        text = System.Net.WebUtility.HtmlDecode(text);
+        return text.Trim();
+    }
+
+    [GeneratedRegex(@"<[^>]+>")]
+    private static partial Regex HtmlTagRegex();
+
+    private record OutputEntry(string Kind, string? Body, string Format);
 }

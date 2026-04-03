@@ -36,15 +36,14 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
             output = _ansiColorsRegex.Value.Replace(str, string.Empty);
         }
 
-        var jsonLine = SerializeLine("result", order, options?.Title, output);
-
         if (dumpRawJson)
         {
-            await writeToMainOut(jsonLine);
+            await writeToMainOut(SerializeLine("result", order, options?.Title, output));
         }
         else
         {
-            var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, jsonLine, ScriptOutputFormat.Json);
+            var valueJson = SerializeValue(output);
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, valueJson, ScriptOutputFormat.Json);
             await writeToMainOut(NetPad.Common.JsonSerializer.Serialize(scriptOutput));
         }
     }
@@ -57,20 +56,20 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
         }
 
         uint order = Interlocked.Increment(ref _sqlOutputCounter);
-        var jsonLine = SerializeLine("sql", order, title: null, output);
 
         if (dumpRawJson)
         {
-            await writeToMainOut(jsonLine);
+            await writeToMainOut(SerializeLine("sql", order, title: null, output));
         }
         else
         {
-            var scriptOutput = new ScriptOutput(ScriptOutputKind.Sql, order, jsonLine, ScriptOutputFormat.Json);
+            var valueJson = SerializeValue(output);
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Sql, order, valueJson, ScriptOutputFormat.Json);
             await writeToMainOut(NetPad.Common.JsonSerializer.Serialize(scriptOutput));
         }
     }
 
-    private static string SerializeLine(string type, uint order, string? title, object? value)
+    private static string SerializeValue(object? value)
     {
         // Materialize IQueryable (e.g. EF Core queries) to a concrete list before serialization.
         // IQueryable types can't be serialized directly by System.Text.Json.
@@ -82,15 +81,19 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
             value = list;
         }
 
-        string valueJson;
         try
         {
-            valueJson = JsonSerializer.Serialize(value, _valueOptions);
+            return JsonSerializer.Serialize(value, _valueOptions);
         }
         catch
         {
-            valueJson = JsonSerializer.Serialize(value?.ToString());
+            return JsonSerializer.Serialize(value?.ToString());
         }
+    }
+
+    private static string SerializeLine(string type, uint order, string? title, object? value)
+    {
+        var valueJson = SerializeValue(value);
 
         var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))

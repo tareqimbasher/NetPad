@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NetPad.Dtos;
 using NetPad.Events;
+using NetPad.Presentation;
 using NetPad.Scripts;
 using NetPad.Scripts.Events;
 
@@ -44,22 +45,19 @@ public sealed class ScriptOutputCaptureService : IDisposable
     /// <summary>
     /// Called by the output writer to buffer output during an active capture.
     /// </summary>
-    public void BufferOutput(Guid scriptId, object output)
+    public void BufferOutput(Guid scriptId, ScriptOutput output)
     {
         if (!_buffers.TryGetValue(scriptId, out var buffer)) return;
 
-        var text = HeadlessRunResult.ExtractOutputText(output);
-        if (text == null) return;
-
         lock (buffer)
         {
-            if (HeadlessRunResult.IsErrorOutput(output))
+            if (output.Kind == ScriptOutputKind.Error)
             {
-                buffer.Errors.Add(text);
+                buffer.Errors.Add(output.Body ?? string.Empty);
             }
             else
             {
-                buffer.Output.Add(text);
+                buffer.Output.Add(output);
             }
         }
     }
@@ -113,14 +111,14 @@ public sealed class ScriptOutputCaptureService : IDisposable
         // Once the buffer is retrieved it is evicted
         _buffers.TryRemove(scriptId, out _);
 
-        List<object> output;
+        List<ScriptOutput> output;
         List<string> errors;
         string finalStatus;
         double durationMs;
 
         lock (buffer)
         {
-            output = new List<object>(buffer.Output);
+            output = new List<ScriptOutput>(buffer.Output);
             errors = new List<string>(buffer.Errors);
             finalStatus = statusOverride ?? buffer.FinalStatus ?? HeadlessRunResult.StatusCompleted;
             durationMs = buffer.DurationMs;
@@ -190,7 +188,7 @@ public sealed class ScriptOutputCaptureService : IDisposable
     private class CaptureBuffer
     {
         public DateTime CreatedAt { get; } = DateTime.UtcNow;
-        public List<object> Output { get; } = [];
+        public List<ScriptOutput> Output { get; } = [];
         public List<string> Errors { get; } = [];
         public string? FinalStatus { get; set; }
         public double DurationMs { get; set; }

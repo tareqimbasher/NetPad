@@ -5266,7 +5266,7 @@ export class HeadlessRunResult implements IHeadlessRunResult {
     status!: string;
     success!: boolean;
     durationMs!: number;
-    output!: any[];
+    output!: ScriptOutput[];
     compilationErrors?: string[] | undefined;
     error?: string | undefined;
 
@@ -5290,7 +5290,7 @@ export class HeadlessRunResult implements IHeadlessRunResult {
             if (Array.isArray(_data["output"])) {
                 this.output = [] as any;
                 for (let item of _data["output"])
-                    this.output!.push(item);
+                    this.output!.push(ScriptOutput.fromJS(item));
             }
             if (Array.isArray(_data["compilationErrors"])) {
                 this.compilationErrors = [] as any;
@@ -5316,7 +5316,7 @@ export class HeadlessRunResult implements IHeadlessRunResult {
         if (Array.isArray(this.output)) {
             data["output"] = [];
             for (let item of this.output)
-                data["output"].push(item);
+                data["output"].push(item ? item.toJSON() : <any>undefined);
         }
         if (Array.isArray(this.compilationErrors)) {
             data["compilationErrors"] = [];
@@ -5339,10 +5339,69 @@ export interface IHeadlessRunResult {
     status: string;
     success: boolean;
     durationMs: number;
-    output: any[];
+    output: ScriptOutput[];
     compilationErrors?: string[] | undefined;
     error?: string | undefined;
 }
+
+export class ScriptOutput implements IScriptOutput {
+    kind!: ScriptOutputKind;
+    order!: number;
+    body?: string | undefined;
+    format!: ScriptOutputFormat;
+
+    constructor(data?: IScriptOutput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.kind = _data["kind"];
+            this.order = _data["order"];
+            this.body = _data["body"];
+            this.format = _data["format"];
+        }
+    }
+
+    static fromJS(data: any): ScriptOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new ScriptOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["kind"] = this.kind;
+        data["order"] = this.order;
+        data["body"] = this.body;
+        data["format"] = this.format;
+        return data;
+    }
+
+    clone(): ScriptOutput {
+        const json = this.toJSON();
+        let result = new ScriptOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IScriptOutput {
+    kind: ScriptOutputKind;
+    order: number;
+    body?: string | undefined;
+    format: ScriptOutputFormat;
+}
+
+export type ScriptOutputKind = "Result" | "Sql" | "Error";
+
+export type ScriptOutputFormat = "Text" | "Html" | "Json";
 
 export class HeadlessRunRequest implements IHeadlessRunRequest {
     code!: string;
@@ -7409,65 +7468,6 @@ export interface IErrorResult {
     message: string;
     details?: string | undefined;
 }
-
-export class ScriptOutput implements IScriptOutput {
-    kind!: ScriptOutputKind;
-    order!: number;
-    body?: string | undefined;
-    format!: ScriptOutputFormat;
-
-    constructor(data?: IScriptOutput) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.kind = _data["kind"];
-            this.order = _data["order"];
-            this.body = _data["body"];
-            this.format = _data["format"];
-        }
-    }
-
-    static fromJS(data: any): ScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        let result = new ScriptOutput();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["kind"] = this.kind;
-        data["order"] = this.order;
-        data["body"] = this.body;
-        data["format"] = this.format;
-        return data;
-    }
-
-    clone(): ScriptOutput {
-        const json = this.toJSON();
-        let result = new ScriptOutput();
-        result.init(json);
-        return result;
-    }
-}
-
-export interface IScriptOutput {
-    kind: ScriptOutputKind;
-    order: number;
-    body?: string | undefined;
-    format: ScriptOutputFormat;
-}
-
-export type ScriptOutputKind = "Result" | "Sql" | "Error";
-
-export type ScriptOutputFormat = "Text" | "Html" | "Json";
 
 export class SettingsUpdatedEvent implements ISettingsUpdatedEvent {
     settings!: Settings;
