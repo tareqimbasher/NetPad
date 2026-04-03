@@ -12,7 +12,7 @@ namespace NetPad.ExecutionModel.External.Interface;
 /// Converts output emitted by the script (ex. using Dump() or Console.Write)
 /// to NDJSON (newline-delimited JSON) and writes it to the main output.
 /// </summary>
-internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut, bool includeSql)
+internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut, bool dumpRawJson, bool includeSql)
     : IExternalProcessOutputWriter
 {
     private static readonly Lazy<Regex> _ansiColorsRegex = new(() => new Regex(@"\x1B\[[^@-~]*[@-~]"));
@@ -36,8 +36,17 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
             output = _ansiColorsRegex.Value.Replace(str, string.Empty);
         }
 
-        var line = SerializeLine("result", order, options?.Title, output);
-        await writeToMainOut(line);
+        var jsonLine = SerializeLine("result", order, options?.Title, output);
+
+        if (dumpRawJson)
+        {
+            await writeToMainOut(jsonLine);
+        }
+        else
+        {
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, jsonLine, ScriptOutputFormat.Json);
+            await writeToMainOut(NetPad.Common.JsonSerializer.Serialize(scriptOutput));
+        }
     }
 
     public async Task WriteSqlAsync(object? output, DumpOptions? options = null)
@@ -48,8 +57,17 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
         }
 
         uint order = Interlocked.Increment(ref _sqlOutputCounter);
-        var line = SerializeLine("sql", order, title: null, output);
-        await writeToMainOut(line);
+        var jsonLine = SerializeLine("sql", order, title: null, output);
+
+        if (dumpRawJson)
+        {
+            await writeToMainOut(jsonLine);
+        }
+        else
+        {
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Sql, order, jsonLine, ScriptOutputFormat.Json);
+            await writeToMainOut(NetPad.Common.JsonSerializer.Serialize(scriptOutput));
+        }
     }
 
     private static string SerializeLine(string type, uint order, string? title, object? value)

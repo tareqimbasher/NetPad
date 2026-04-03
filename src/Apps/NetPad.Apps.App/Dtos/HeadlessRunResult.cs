@@ -54,5 +54,5 @@ public class HeadlessRunResult
     /// <summary>
     /// Returns true if the output represents an error.
     /// </summary>
-    public static bool IsErrorOutput(object output) => output is ErrorScriptOutput or HtmlErrorScriptOutput;
+    public static bool IsErrorOutput(object output) => output is ScriptOutput { Kind: ScriptOutputKind.Error };
 }

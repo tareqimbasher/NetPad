@@ -182,7 +182,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _output.WriteAsync(new ErrorScriptOutput(ex));
+            await _output.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
             return RunResult.RunAttemptFailure();
         }
         finally

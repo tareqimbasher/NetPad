@@ -37,10 +37,9 @@ public class TypesController : ControllerBase
         public IpcMessageBatch? IpcMessageBatch { get; set; }
         public ErrorResult? ErrorResult { get; set; }
         public Script? Script { get; set; }
-        public HtmlResultsScriptOutput? HtmlResultsScriptOutput { get; set; }
-        public HtmlErrorScriptOutput? HtmlErrorScriptOutput { get; set; }
-        public HtmlRawScriptOutput? HtmlRawScriptOutput { get; set; }
-        public HtmlSqlScriptOutput? HtmlSqlScriptOutput { get; set; }
+        public ScriptOutput? ScriptOutput { get; set; }
+        public ScriptOutputKind ScriptOutputKind { get; set; }
+        public ScriptOutputFormat ScriptOutputFormat { get; set; }
         public SettingsUpdatedEvent? SettingsUpdated { get; set; }
         public AppStatusMessagePublishedEvent? AppStatusMessagePublished { get; set; }
         public ScriptPropertyChangedEvent? ScriptPropertyChanged { get; set; }

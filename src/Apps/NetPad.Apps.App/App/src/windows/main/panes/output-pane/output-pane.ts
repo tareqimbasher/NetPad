@@ -2,10 +2,6 @@
 import {watch} from "@aurelia/runtime-html";
 import {
     EnvironmentPropertyChangedEvent,
-    HtmlErrorScriptOutput,
-    HtmlRawScriptOutput,
-    HtmlResultsScriptOutput,
-    HtmlSqlScriptOutput,
     IEventBus,
     ISession,
     IShortcutManager,
@@ -114,9 +110,9 @@ export class OutputPane extends Pane {
                     return;
                 }
 
-                if ([nameof(HtmlResultsScriptOutput), nameof(HtmlErrorScriptOutput), nameof(HtmlRawScriptOutput)].indexOf(msg.outputType) >= 0) {
+                if (msg.outputType === "Result" || msg.outputType === "Error") {
                     model.resultsDumpContainer.appendOutput(msg.output);
-                } else if (msg.outputType === nameof(HtmlSqlScriptOutput)) {
+                } else if (msg.outputType === "Sql") {
                     model.sqlDumpContainer.appendOutput(msg.output);
                 } else {
                     this.logger.warn(`Got output for script ${msg.scriptId} but message type ${msg.outputType} is unhandled. Message: `, msg);

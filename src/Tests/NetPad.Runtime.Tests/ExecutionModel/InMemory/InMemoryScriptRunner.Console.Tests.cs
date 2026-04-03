@@ -41,7 +41,7 @@ public class ScriptRuntimeConsoleTests(ITestOutputHelper testOutputHelper) : Tes
 
         string? result = null;
         var runtime = GetScriptRuntime(script);
-        runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as RawScriptOutput)!.Body!.ToString()));
+        runtime.AddOutput(new ActionOutputWriter<object>((output, title) => result = (output as ScriptOutput)!.Body!));
 
         await runtime.RunScriptAsync(new RunOptions());
 

@@ -57,7 +57,7 @@ public class InMemoryScriptRunnerTests(ITestOutputHelper testOutputHelper) : Tes
         string? result = null;
         var runtime = GetScriptRuntime(script);
         runtime.AddOutput(new ActionOutputWriter<object>((output, title) =>
-            result = (output as RawScriptOutput)!.Body!.ToString()));
+            result = (output as ScriptOutput)!.Body!));
 
         var runResult = await runtime.RunScriptAsync(new RunOptions());
 
@@ -82,7 +82,7 @@ public class InMemoryScriptRunnerTests(ITestOutputHelper testOutputHelper) : Tes
             // Keep result in local variable to test that assembly unloads even if we keep reference to result
             string? result = null;
             runtime.AddOutput(new ActionOutputWriter<object>((output, title) =>
-                result = (output as RawScriptOutput)!.Body!.ToString()));
+                result = (output as ScriptOutput)!.Body!));
 
             await runtime.RunScriptAsync(new RunOptions());
 

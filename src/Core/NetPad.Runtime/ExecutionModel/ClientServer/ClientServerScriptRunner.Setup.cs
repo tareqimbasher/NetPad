@@ -115,7 +115,7 @@ public partial class ClientServerScriptRunner
                 .Select(d => DiagnosticsHelper.ReduceStacktraceLineNumbers(d, parsingResult.UserProgramStartLineNumber));
 
             await _combinedOutputWriter.WriteAsync(
-                new ErrorScriptOutput("Compilation failed:\n" + errors.JoinToString("\n")),
+                new ScriptOutput(ScriptOutputKind.Error, "Compilation failed:\n" + errors.JoinToString("\n")),
                 cancellationToken: cancellationToken);
 
             return null;

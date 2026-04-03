@@ -6226,7 +6226,7 @@ will always return true. */
 export class ScriptStatusDto implements IScriptStatusDto {
     scriptId!: string;
     name!: string;
-    status!: string;
+    status!: ScriptStatus;
     runDurationMs?: number | undefined;
 
     constructor(data?: IScriptStatusDto) {
@@ -6274,7 +6274,7 @@ export class ScriptStatusDto implements IScriptStatusDto {
 export interface IScriptStatusDto {
     scriptId: string;
     name: string;
-    status: string;
+    status: ScriptStatus;
     runDurationMs?: number | undefined;
 }
 
@@ -7046,10 +7046,9 @@ export class Types implements ITypes {
     ipcMessageBatch?: IpcMessageBatch | undefined;
     errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
-    htmlResultsScriptOutput?: HtmlResultsScriptOutput | undefined;
-    htmlErrorScriptOutput?: HtmlErrorScriptOutput | undefined;
-    htmlRawScriptOutput?: HtmlRawScriptOutput | undefined;
-    htmlSqlScriptOutput?: HtmlSqlScriptOutput | undefined;
+    scriptOutput?: ScriptOutput | undefined;
+    scriptOutputKind!: ScriptOutputKind;
+    scriptOutputFormat!: ScriptOutputFormat;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
@@ -7104,10 +7103,9 @@ export class Types implements ITypes {
             this.ipcMessageBatch = _data["ipcMessageBatch"] ? IpcMessageBatch.fromJS(_data["ipcMessageBatch"]) : <any>undefined;
             this.errorResult = _data["errorResult"] ? ErrorResult.fromJS(_data["errorResult"]) : <any>undefined;
             this.script = _data["script"] ? Script.fromJS(_data["script"]) : <any>undefined;
-            this.htmlResultsScriptOutput = _data["htmlResultsScriptOutput"] ? HtmlResultsScriptOutput.fromJS(_data["htmlResultsScriptOutput"]) : <any>undefined;
-            this.htmlErrorScriptOutput = _data["htmlErrorScriptOutput"] ? HtmlErrorScriptOutput.fromJS(_data["htmlErrorScriptOutput"]) : <any>undefined;
-            this.htmlRawScriptOutput = _data["htmlRawScriptOutput"] ? HtmlRawScriptOutput.fromJS(_data["htmlRawScriptOutput"]) : <any>undefined;
-            this.htmlSqlScriptOutput = _data["htmlSqlScriptOutput"] ? HtmlSqlScriptOutput.fromJS(_data["htmlSqlScriptOutput"]) : <any>undefined;
+            this.scriptOutput = _data["scriptOutput"] ? ScriptOutput.fromJS(_data["scriptOutput"]) : <any>undefined;
+            this.scriptOutputKind = _data["scriptOutputKind"];
+            this.scriptOutputFormat = _data["scriptOutputFormat"];
             this.settingsUpdated = _data["settingsUpdated"] ? SettingsUpdatedEvent.fromJS(_data["settingsUpdated"]) : <any>undefined;
             this.appStatusMessagePublished = _data["appStatusMessagePublished"] ? AppStatusMessagePublishedEvent.fromJS(_data["appStatusMessagePublished"]) : <any>undefined;
             this.scriptPropertyChanged = _data["scriptPropertyChanged"] ? ScriptPropertyChangedEvent.fromJS(_data["scriptPropertyChanged"]) : <any>undefined;
@@ -7162,10 +7160,9 @@ export class Types implements ITypes {
         data["ipcMessageBatch"] = this.ipcMessageBatch ? this.ipcMessageBatch.toJSON() : <any>undefined;
         data["errorResult"] = this.errorResult ? this.errorResult.toJSON() : <any>undefined;
         data["script"] = this.script ? this.script.toJSON() : <any>undefined;
-        data["htmlResultsScriptOutput"] = this.htmlResultsScriptOutput ? this.htmlResultsScriptOutput.toJSON() : <any>undefined;
-        data["htmlErrorScriptOutput"] = this.htmlErrorScriptOutput ? this.htmlErrorScriptOutput.toJSON() : <any>undefined;
-        data["htmlRawScriptOutput"] = this.htmlRawScriptOutput ? this.htmlRawScriptOutput.toJSON() : <any>undefined;
-        data["htmlSqlScriptOutput"] = this.htmlSqlScriptOutput ? this.htmlSqlScriptOutput.toJSON() : <any>undefined;
+        data["scriptOutput"] = this.scriptOutput ? this.scriptOutput.toJSON() : <any>undefined;
+        data["scriptOutputKind"] = this.scriptOutputKind;
+        data["scriptOutputFormat"] = this.scriptOutputFormat;
         data["settingsUpdated"] = this.settingsUpdated ? this.settingsUpdated.toJSON() : <any>undefined;
         data["appStatusMessagePublished"] = this.appStatusMessagePublished ? this.appStatusMessagePublished.toJSON() : <any>undefined;
         data["scriptPropertyChanged"] = this.scriptPropertyChanged ? this.scriptPropertyChanged.toJSON() : <any>undefined;
@@ -7220,10 +7217,9 @@ export interface ITypes {
     ipcMessageBatch?: IpcMessageBatch | undefined;
     errorResult?: ErrorResult | undefined;
     script?: Script | undefined;
-    htmlResultsScriptOutput?: HtmlResultsScriptOutput | undefined;
-    htmlErrorScriptOutput?: HtmlErrorScriptOutput | undefined;
-    htmlRawScriptOutput?: HtmlRawScriptOutput | undefined;
-    htmlSqlScriptOutput?: HtmlSqlScriptOutput | undefined;
+    scriptOutput?: ScriptOutput | undefined;
+    scriptOutputKind: ScriptOutputKind;
+    scriptOutputFormat: ScriptOutputFormat;
     settingsUpdated?: SettingsUpdatedEvent | undefined;
     appStatusMessagePublished?: AppStatusMessagePublishedEvent | undefined;
     scriptPropertyChanged?: ScriptPropertyChangedEvent | undefined;
@@ -7414,12 +7410,11 @@ export interface IErrorResult {
     details?: string | undefined;
 }
 
-/** A base class for all script output */
-export abstract class ScriptOutput implements IScriptOutput {
-    /** The body of the output. */
-    body?: any | undefined;
-    /** The order this output was emitted. A value of 0 indicates no order. */
+export class ScriptOutput implements IScriptOutput {
+    kind!: ScriptOutputKind;
     order!: number;
+    body?: string | undefined;
+    format!: ScriptOutputFormat;
 
     constructor(data?: IScriptOutput) {
         if (data) {
@@ -7432,216 +7427,47 @@ export abstract class ScriptOutput implements IScriptOutput {
 
     init(_data?: any) {
         if (_data) {
-            this.body = _data["body"];
+            this.kind = _data["kind"];
             this.order = _data["order"];
+            this.body = _data["body"];
+            this.format = _data["format"];
         }
     }
 
     static fromJS(data: any): ScriptOutput {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'ScriptOutput' cannot be instantiated.");
+        let result = new ScriptOutput();
+        result.init(data);
+        return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["body"] = this.body;
+        data["kind"] = this.kind;
         data["order"] = this.order;
+        data["body"] = this.body;
+        data["format"] = this.format;
         return data;
     }
 
     clone(): ScriptOutput {
-        throw new Error("The abstract class 'ScriptOutput' cannot be instantiated.");
+        const json = this.toJSON();
+        let result = new ScriptOutput();
+        result.init(json);
+        return result;
     }
 }
 
-/** A base class for all script output */
 export interface IScriptOutput {
-    /** The body of the output. */
-    body?: any | undefined;
-    /** The order this output was emitted. A value of 0 indicates no order. */
+    kind: ScriptOutputKind;
     order: number;
-}
-
-/** A base class for script output with an HTML-formatted string as the body. */
-export abstract class HtmlScriptOutput extends ScriptOutput implements IHtmlScriptOutput {
     body?: string | undefined;
-
-    constructor(data?: IHtmlScriptOutput) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.body = _data["body"];
-        }
-    }
-
-    static override fromJS(data: any): HtmlScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'HtmlScriptOutput' cannot be instantiated.");
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["body"] = this.body;
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): HtmlScriptOutput {
-        throw new Error("The abstract class 'HtmlScriptOutput' cannot be instantiated.");
-    }
+    format: ScriptOutputFormat;
 }
 
-/** A base class for script output with an HTML-formatted string as the body. */
-export interface IHtmlScriptOutput extends IScriptOutput {
-    body?: string | undefined;
-}
+export type ScriptOutputKind = "Result" | "Sql" | "Error";
 
-/** Results script output represented as HTML. */
-export class HtmlResultsScriptOutput extends HtmlScriptOutput implements IHtmlResultsScriptOutput {
-
-    constructor(data?: IHtmlResultsScriptOutput) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-    }
-
-    static override fromJS(data: any): HtmlResultsScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        let result = new HtmlResultsScriptOutput();
-        result.init(data);
-        return result;
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): HtmlResultsScriptOutput {
-        const json = this.toJSON();
-        let result = new HtmlResultsScriptOutput();
-        result.init(json);
-        return result;
-    }
-}
-
-/** Results script output represented as HTML. */
-export interface IHtmlResultsScriptOutput extends IHtmlScriptOutput {
-}
-
-/** Error script output represented as HTML. */
-export class HtmlErrorScriptOutput extends HtmlScriptOutput implements IHtmlErrorScriptOutput {
-
-    constructor(data?: IHtmlErrorScriptOutput) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-    }
-
-    static override fromJS(data: any): HtmlErrorScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        let result = new HtmlErrorScriptOutput();
-        result.init(data);
-        return result;
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): HtmlErrorScriptOutput {
-        const json = this.toJSON();
-        let result = new HtmlErrorScriptOutput();
-        result.init(json);
-        return result;
-    }
-}
-
-/** Error script output represented as HTML. */
-export interface IHtmlErrorScriptOutput extends IHtmlScriptOutput {
-}
-
-/** Raw script output represented as HTML. */
-export class HtmlRawScriptOutput extends HtmlScriptOutput implements IHtmlRawScriptOutput {
-
-    constructor(data?: IHtmlRawScriptOutput) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-    }
-
-    static override fromJS(data: any): HtmlRawScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        let result = new HtmlRawScriptOutput();
-        result.init(data);
-        return result;
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): HtmlRawScriptOutput {
-        const json = this.toJSON();
-        let result = new HtmlRawScriptOutput();
-        result.init(json);
-        return result;
-    }
-}
-
-/** Raw script output represented as HTML. */
-export interface IHtmlRawScriptOutput extends IHtmlScriptOutput {
-}
-
-/** SQL script output represented as HTML. */
-export class HtmlSqlScriptOutput extends HtmlScriptOutput implements IHtmlSqlScriptOutput {
-
-    constructor(data?: IHtmlSqlScriptOutput) {
-        super(data);
-    }
-
-    override init(_data?: any) {
-        super.init(_data);
-    }
-
-    static override fromJS(data: any): HtmlSqlScriptOutput {
-        data = typeof data === 'object' ? data : {};
-        let result = new HtmlSqlScriptOutput();
-        result.init(data);
-        return result;
-    }
-
-    override toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        super.toJSON(data);
-        return data;
-    }
-
-    clone(): HtmlSqlScriptOutput {
-        const json = this.toJSON();
-        let result = new HtmlSqlScriptOutput();
-        result.init(json);
-        return result;
-    }
-}
-
-/** SQL script output represented as HTML. */
-export interface IHtmlSqlScriptOutput extends IHtmlScriptOutput {
-}
+export type ScriptOutputFormat = "Text" | "Html" | "Json";
 
 export class SettingsUpdatedEvent implements ISettingsUpdatedEvent {
     settings!: Settings;
@@ -8001,12 +7827,15 @@ export class ScriptOutputEmittedEvent implements IScriptOutputEmittedEvent {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+        if (!data) {
+            this.output = new ScriptOutput();
+        }
     }
 
     init(_data?: any) {
         if (_data) {
             this.scriptId = _data["scriptId"];
-            this.output = _data["output"] ? ScriptOutput.fromJS(_data["output"]) : <any>undefined;
+            this.output = _data["output"] ? ScriptOutput.fromJS(_data["output"]) : new ScriptOutput();
             this.outputType = _data["outputType"];
         }
     }
