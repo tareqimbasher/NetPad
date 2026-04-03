@@ -35,8 +35,9 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, 
         }
         else
         {
-            var resultOutput = new HtmlResultsScriptOutput(order, html);
-            await WriteMessageAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, html, ScriptOutputFormat.Html);
+            var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
+            await writeToMainOut(serializedOutput);
         }
     }
 
@@ -54,15 +55,9 @@ public class ExternalProcessOutputHtmlWriter(Func<string, Task> writeToMainOut, 
         }
         else
         {
-            var sqlOutput = new HtmlSqlScriptOutput(order, html);
-            await WriteMessageAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
+            var scriptOutput = new ScriptOutput(ScriptOutputKind.Sql, order, html, ScriptOutputFormat.Html);
+            var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
+            await writeToMainOut(serializedOutput);
         }
-    }
-
-    private async Task WriteMessageAsync(ExternalProcessOutput processOutput)
-    {
-        var serializedOutput = Common.JsonSerializer.Serialize(processOutput);
-
-        await writeToMainOut(serializedOutput);
     }
 }

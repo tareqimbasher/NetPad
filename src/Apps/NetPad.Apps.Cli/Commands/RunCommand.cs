@@ -366,13 +366,19 @@ public static class RunCommand
         // Handle script & runner output
         scriptRunner.AddOutput(new ActionOutputWriter<object>((o, _) =>
         {
-            if (htmlDocumentOutput != null && o is HtmlResultsScriptOutput htmlScriptOutput)
+            if (o is not ScriptOutput so)
             {
-                htmlDocumentOutput.Append(htmlScriptOutput.Body);
+                Console.WriteLine(o);
                 return;
             }
 
-            if (o is HtmlSqlScriptOutput)
+            if (htmlDocumentOutput != null && so is { Kind: ScriptOutputKind.Result })
+            {
+                htmlDocumentOutput.Append(so.Body);
+                return;
+            }
+
+            if (so is { Kind: ScriptOutputKind.Sql })
             {
                 // Do not output
                 return;
@@ -381,30 +387,23 @@ public static class RunCommand
             // If the script process outputs to STDOUT directly it prints to the console directly.
             // But errors might occur before the script is run, ie: compilation errors. In that
             // case the script runner will emit those errors using this output handler.
-            if (!htmlOutput && o is ScriptOutput error)
+            if (!htmlOutput && so is { Kind: ScriptOutputKind.Error })
             {
                 if (jsonOutput)
                 {
                     var errorLine = System.Text.Json.JsonSerializer.Serialize(
-                        new { type = "error", value = error.Body?.ToString() ?? "An error occurred." });
+                        new { type = "error", value = so.Body ?? "An error occurred." });
                     Console.WriteLine(errorLine);
                 }
                 else
                 {
-                    Presenter.Error(error.Body?.ToString() ?? "An error occurred.");
+                    Presenter.Error(so.Body ?? "An error occurred.");
                 }
 
                 return;
             }
 
-            if (o is ScriptOutput scriptOutput)
-            {
-                Console.WriteLine(scriptOutput.Body);
-            }
-            else
-            {
-                Console.WriteLine(o);
-            }
+            Console.WriteLine(so.Body);
         }));
 
         // Configure run options

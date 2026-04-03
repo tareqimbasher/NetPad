@@ -7,6 +7,7 @@ using NetPad.Dtos;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.External;
 using NetPad.IO;
+using NetPad.Presentation;
 using NetPad.Scripts;
 using NetPad.Sessions;
 
@@ -88,7 +89,7 @@ public class HeadlessScriptExecutionService(
 
     private async Task<HeadlessRunResult> ExecuteScriptAsync(Script script, int? timeoutMs, CancellationToken cancellationToken)
     {
-        var output = new List<object>();
+        var output = new List<ScriptOutput>();
         var errors = new List<string>();
         int totalOutputSize = 0;
         bool outputTruncated = false;
@@ -97,32 +98,30 @@ public class HeadlessScriptExecutionService(
 
         runner.AddOutput(new ActionOutputWriter<object>((o, _) =>
         {
-            if (outputTruncated || o == null) return;
+            if (outputTruncated || o is not ScriptOutput so) return;
 
-            var text = HeadlessRunResult.ExtractOutputText(o);
-            if (text == null) return;
-
-            if (HeadlessRunResult.IsErrorOutput(o))
+            if (so.Kind == ScriptOutputKind.Error)
             {
-                errors.Add(text);
+                errors.Add(so.Body ?? string.Empty);
                 return;
             }
 
-            totalOutputSize += text.Length;
+            totalOutputSize += so.Body?.Length ?? 0;
             if (totalOutputSize > MaxOutputSize)
             {
                 outputTruncated = true;
-                output.Add("[Output truncated — exceeded 100KB limit]");
+                output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated — exceeded 100KB limit]"));
                 return;
             }
 
-            output.Add(text);
+            output.Add(so);
         }));
 
         var runOptions = new RunOptions();
         runOptions.SetOption(new ExternalScriptRunnerOptions
         {
-            RedirectIo = true
+            RedirectIo = true,
+            ProcessCliArgs = ["-json-msg"]
         });
 
         RunResult runResult;

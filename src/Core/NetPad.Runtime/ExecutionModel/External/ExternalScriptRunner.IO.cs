@@ -1,6 +1,4 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using NetPad.ExecutionModel.External.Interface;
 using NetPad.IO;
 using NetPad.Presentation;
 using JsonSerializer = NetPad.Common.JsonSerializer;
@@ -37,7 +35,6 @@ public partial class ExternalScriptRunner
     /// Processes raw external process output data.
     /// </summary>
     /// <param name="raw">Raw output data as written to STD OUT of external process.</param>
-    /// <exception cref="FormatException"></exception>
     private async Task OnProcessOutputReceived(string raw)
     {
         if (raw == "[INPUT_REQUEST]")
@@ -63,15 +60,10 @@ public partial class ExternalScriptRunner
             return;
         }
 
-        string type;
-        JsonElement outputProperty;
-
+        ScriptOutput? output;
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var json = doc.RootElement;
-            type = json.GetProperty(nameof(ExternalProcessOutput.Type).ToLowerInvariant()).GetString() ?? string.Empty;
-            outputProperty = json.GetProperty(nameof(ExternalProcessOutput.Output).ToLowerInvariant()).Clone();
+            output = JsonSerializer.Deserialize<ScriptOutput>(raw);
         }
         catch
         {
@@ -80,27 +72,9 @@ public partial class ExternalScriptRunner
             return;
         }
 
-        ScriptOutput output;
-
-        if (type == nameof(HtmlResultsScriptOutput))
+        if (output == null)
         {
-            output = JsonSerializer.Deserialize<HtmlResultsScriptOutput>(outputProperty.ToString())
-                     ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlResultsScriptOutput)}");
-        }
-        else if (type == nameof(HtmlSqlScriptOutput))
-        {
-            output = JsonSerializer.Deserialize<HtmlSqlScriptOutput>(outputProperty.ToString())
-                     ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlSqlScriptOutput)}");
-        }
-        else if (type == nameof(HtmlErrorScriptOutput))
-        {
-            output = JsonSerializer.Deserialize<HtmlErrorScriptOutput>(outputProperty.ToString())
-                     ?? throw new FormatException($"Could deserialize JSON to {nameof(HtmlErrorScriptOutput)}");
-        }
-        else
-        {
-            // The raw output handler will handle writing the output
-            _rawOutputHandler.RawOutputReceived(raw);
+            _rawOutputHandler.RawErrorReceived(raw);
             return;
         }
 

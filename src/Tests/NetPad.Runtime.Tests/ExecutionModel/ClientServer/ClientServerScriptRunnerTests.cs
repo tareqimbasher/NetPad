@@ -212,7 +212,7 @@ public class ClientServerScriptRunnerTests : IDisposable
 
         await runner.RunScriptAsync(new RunOptions());
 
-        Assert.Contains(_outputCapture.Writes, o => o is ErrorScriptOutput);
+        Assert.Contains(_outputCapture.Writes, o => o is ScriptOutput { Kind: ScriptOutputKind.Error });
     }
 
     #endregion

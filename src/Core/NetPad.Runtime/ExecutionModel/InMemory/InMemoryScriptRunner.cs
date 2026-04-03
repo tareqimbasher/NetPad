@@ -98,7 +98,7 @@ public sealed class InMemoryScriptRunner : IScriptRunner
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _output.WriteAsync(new RawScriptOutput(ex + "\n"));
+            await _output.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex + "\n"));
             return RunResult.RunAttemptFailure();
         }
     }
@@ -171,7 +171,7 @@ public sealed class InMemoryScriptRunner : IScriptRunner
 
         if (!compilationResult.Success)
         {
-            await _output.WriteAsync(new ErrorScriptOutput(
+            await _output.WriteAsync(new ScriptOutput(ScriptOutputKind.Error,
                 compilationResult.Diagnostics
                     .Where(d => d.Severity == DiagnosticSeverity.Error)
                     .JoinToString("\n") + "\n"));
@@ -239,7 +239,7 @@ public sealed class InMemoryScriptRunner : IScriptRunner
         }
         catch (Exception ex)
         {
-            await _output.WriteAsync(new ErrorScriptOutput((ex.InnerException ?? ex).ToString()));
+            await _output.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, (ex.InnerException ?? ex).ToString()));
             return (alcWeakRef, false, GetElapsedMilliseconds(runStart));
         }
 

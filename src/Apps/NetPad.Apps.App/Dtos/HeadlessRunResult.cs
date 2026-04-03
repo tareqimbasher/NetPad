@@ -29,7 +29,7 @@ public class HeadlessRunResult
     /// <summary>
     /// The collected output from the script.
     /// </summary>
-    public List<object> Output { get; init; } = [];
+    public List<ScriptOutput> Output { get; init; } = [];
 
     /// <summary>
     /// Compilation errors, if any.
@@ -40,19 +40,4 @@ public class HeadlessRunResult
     /// A runtime error message, if one occurred.
     /// </summary>
     public string? Error { get; init; }
-
-    /// <summary>
-    /// Extracts a text representation from a script output object.
-    /// </summary>
-    public static string? ExtractOutputText(object? output) => output switch
-    {
-        null => null,
-        ScriptOutput so => so.Body?.ToString(),
-        _ => output.ToString()
-    };
-
-    /// <summary>
-    /// Returns true if the output represents an error.
-    /// </summary>
-    public static bool IsErrorOutput(object output) => output is ErrorScriptOutput or HtmlErrorScriptOutput;
 }

@@ -41,7 +41,8 @@ internal class RawOutputHandler
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputWriter.WriteAsync(new RawScriptOutput(
+            await scriptOutputWriter.WriteAsync(new ScriptOutput(
+                ScriptOutputKind.Result,
                 Interlocked.Increment(ref _rawOutputPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
@@ -57,7 +58,8 @@ internal class RawOutputHandler
 
             string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-            await scriptOutputWriter.WriteAsync(new ErrorScriptOutput(
+            await scriptOutputWriter.WriteAsync(new ScriptOutput(
+                ScriptOutputKind.Error,
                 Interlocked.Increment(ref _rawErrorPushOrder) - 1,
                 finalOutput));
         }).DebounceAsync();
@@ -105,9 +107,10 @@ internal class RawOutputHandler
 
         string finalOutput = list.OrderBy(x => x.order).Select(x => x.output).JoinToString("\n") + "\n";
 
-        ScriptOutput scriptOutput = isError
-            ? new ErrorScriptOutput(Interlocked.Increment(ref pushOrder) - 1, finalOutput)
-            : new RawScriptOutput(Interlocked.Increment(ref pushOrder) - 1, finalOutput);
+        ScriptOutput scriptOutput = new ScriptOutput(
+            isError ? ScriptOutputKind.Error : ScriptOutputKind.Result,
+            Interlocked.Increment(ref pushOrder) - 1,
+            finalOutput);
 
         _scriptOutputWriter.WriteAsync(scriptOutput).GetAwaiter().GetResult();
     }
