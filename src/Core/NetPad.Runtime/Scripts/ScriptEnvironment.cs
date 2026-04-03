@@ -175,7 +175,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputWriter.WriteAsync(new ErrorScriptOutput(ex));
+            await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
             SetStatus(ScriptStatus.Error);
         }
         finally
@@ -209,14 +209,14 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             if (wasRunning)
             {
-                await _outputWriter.WriteAsync(new RawScriptOutput($"Script stopped at: {stopTime}"));
+                await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Result, $"Script stopped at: {stopTime}"));
                 SetStatus(ScriptStatus.Ready);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error stopping script");
-            await _outputWriter.WriteAsync(new ErrorScriptOutput(ex));
+            await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
             SetStatus(ScriptStatus.Error);
         }
         finally

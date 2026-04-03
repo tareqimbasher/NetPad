@@ -7,5 +7,4 @@ public class ScriptOutputEmittedEvent(Guid scriptId, ScriptOutput output) : IEve
 {
     public Guid ScriptId { get; } = scriptId;
     public ScriptOutput Output { get; } = output;
-    public string OutputType { get; } = output.GetType().Name;
 }

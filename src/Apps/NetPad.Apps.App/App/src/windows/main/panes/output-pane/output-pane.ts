@@ -2,10 +2,6 @@
 import {watch} from "@aurelia/runtime-html";
 import {
     EnvironmentPropertyChangedEvent,
-    HtmlErrorScriptOutput,
-    HtmlRawScriptOutput,
-    HtmlResultsScriptOutput,
-    HtmlSqlScriptOutput,
     IEventBus,
     ISession,
     IShortcutManager,
@@ -114,12 +110,12 @@ export class OutputPane extends Pane {
                     return;
                 }
 
-                if ([nameof(HtmlResultsScriptOutput), nameof(HtmlErrorScriptOutput), nameof(HtmlRawScriptOutput)].indexOf(msg.outputType) >= 0) {
+                if (msg.output.kind === "Result" || msg.output.kind === "Error") {
                     model.resultsDumpContainer.appendOutput(msg.output);
-                } else if (msg.outputType === nameof(HtmlSqlScriptOutput)) {
+                } else if (msg.output.kind === "Sql") {
                     model.sqlDumpContainer.appendOutput(msg.output);
                 } else {
-                    this.logger.warn(`Got output for script ${msg.scriptId} but message type ${msg.outputType} is unhandled. Message: `, msg);
+                    this.logger.warn(`Got output for script ${msg.scriptId} but message type ${msg.output.kind} is unhandled. Message: `, msg);
                 }
             })
         );

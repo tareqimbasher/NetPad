@@ -59,7 +59,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(1);
 
         var output = Assert.Single(writer.Writes);
-        var raw = Assert.IsType<RawScriptOutput>(output);
+        var raw = Assert.IsType<ScriptOutput>(output);
+        Assert.Equal(ScriptOutputKind.Result, raw.Kind);
         Assert.Equal("hello\n", raw.Body);
     }
 
@@ -72,7 +73,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(1);
 
         var output = Assert.Single(writer.Writes);
-        var error = Assert.IsType<ErrorScriptOutput>(output);
+        var error = Assert.IsType<ScriptOutput>(output);
+        Assert.Equal(ScriptOutputKind.Error, error.Kind);
         Assert.Equal("fail\n", error.Body);
     }
 
@@ -87,7 +89,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(1);
 
         var output = Assert.Single(writer.Writes);
-        var raw = Assert.IsType<RawScriptOutput>(output);
+        var raw = Assert.IsType<ScriptOutput>(output);
+        Assert.Equal(ScriptOutputKind.Result, raw.Kind);
         Assert.Equal("line1\nline2\nline3\n", raw.Body);
     }
 
@@ -102,7 +105,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(1);
 
         var output = Assert.Single(writer.Writes);
-        var error = Assert.IsType<ErrorScriptOutput>(output);
+        var error = Assert.IsType<ScriptOutput>(output);
+        Assert.Equal(ScriptOutputKind.Error, error.Kind);
         Assert.Equal("err1\nerr2\nerr3\n", error.Body);
     }
 
@@ -117,7 +121,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(1);
 
         var output = Assert.Single(writer.Writes);
-        var raw = Assert.IsType<RawScriptOutput>(output);
+        var raw = Assert.IsType<ScriptOutput>(output);
+        Assert.Equal(ScriptOutputKind.Result, raw.Kind);
         Assert.Equal("c\na\nb\n", raw.Body);
     }
 
@@ -131,8 +136,8 @@ public class RawOutputHandlerTests
         await writer.WaitForWritesAsync(2);
 
         Assert.Equal(2, writer.Writes.Count);
-        Assert.Single(writer.Writes.OfType<RawScriptOutput>());
-        Assert.Single(writer.Writes.OfType<ErrorScriptOutput>());
+        Assert.Single(writer.Writes.OfType<ScriptOutput>(), o => o.Kind == ScriptOutputKind.Result);
+        Assert.Single(writer.Writes.OfType<ScriptOutput>(), o => o.Kind == ScriptOutputKind.Error);
     }
 
     [Fact]
@@ -148,7 +153,7 @@ public class RawOutputHandlerTests
         handler.RawOutputReceived("second");
         await writer.WaitForWritesAsync(1);
 
-        var outputs = writer.Writes.OfType<RawScriptOutput>().ToList();
+        var outputs = writer.Writes.OfType<ScriptOutput>().Where(o => o.Kind == ScriptOutputKind.Result).ToList();
         Assert.Equal(2, outputs.Count);
 
         // Both should have Order == 0 since Reset was called between them
@@ -166,7 +171,10 @@ public class RawOutputHandlerTests
         handler.RawOutputReceived("batch2");
         await writer.WaitForWritesAsync(1);
 
-        var outputs = writer.Writes.OfType<RawScriptOutput>().OrderBy(o => o.Order).ToList();
+        var outputs = writer.Writes.OfType<ScriptOutput>()
+            .Where(o => o.Kind == ScriptOutputKind.Result)
+            .OrderBy(o => o.Order)
+            .ToList();
         Assert.Equal(2, outputs.Count);
         Assert.Equal("batch1\n", outputs[0].Body);
         Assert.Equal("batch2\n", outputs[1].Body);

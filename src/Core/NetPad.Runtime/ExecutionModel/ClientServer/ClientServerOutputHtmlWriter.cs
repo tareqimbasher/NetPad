@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using NetPad.ExecutionModel.External.Interface;
 using NetPad.Presentation;
 using NetPad.Presentation.Html;
 
@@ -29,9 +28,9 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
-        var resultOutput = new HtmlResultsScriptOutput(order, html);
-
-        await WriteAsync(new ExternalProcessOutput(nameof(HtmlResultsScriptOutput), resultOutput));
+        var scriptOutput = new ScriptOutput(ScriptOutputKind.Result, order, html, ScriptOutputFormat.Html);
+        var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
+        await writeToMainOut(serializedOutput);
     }
 
     public async Task WriteSqlAsync(object? output, DumpOptions? options = null)
@@ -42,15 +41,8 @@ public class ClientServerOutputHtmlWriter(Func<string, Task> writeToMainOut) : I
 
         var html = HtmlPresenter.Serialize(output, options: options);
 
-        var sqlOutput = new HtmlSqlScriptOutput(order, html);
-
-        await WriteAsync(new ExternalProcessOutput(nameof(HtmlSqlScriptOutput), sqlOutput));
-    }
-
-    private async Task WriteAsync(ExternalProcessOutput processOutput)
-    {
-        var serializedOutput = Common.JsonSerializer.Serialize(processOutput);
-
+        var scriptOutput = new ScriptOutput(ScriptOutputKind.Sql, order, html, ScriptOutputFormat.Html);
+        var serializedOutput = Common.JsonSerializer.Serialize(scriptOutput);
         await writeToMainOut(serializedOutput);
     }
 }

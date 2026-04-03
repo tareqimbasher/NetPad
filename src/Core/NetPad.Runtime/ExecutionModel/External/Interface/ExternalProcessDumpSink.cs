@@ -45,7 +45,7 @@ public class ExternalProcessDumpSink : IDumpSink
             dumpRawHtml);
     }
 
-    public void UseJsonOutput(bool includeSql)
+    public void UseJsonOutput(bool dumpRawJson, bool includeSql)
     {
         Console.SetIn(new ActionTextReader(() =>
         {
@@ -57,7 +57,7 @@ public class ExternalProcessDumpSink : IDumpSink
 
         _isHtmlOutput = false;
         _output = new ExternalProcessOutputJsonWriter(
-            async str => await _defaultConsoleOutput.WriteLineAsync(str), includeSql);
+            async str => await _defaultConsoleOutput.WriteLineAsync(str), dumpRawJson, includeSql);
     }
 
     public void UseConsoleOutput(bool plainText, bool minimal)
