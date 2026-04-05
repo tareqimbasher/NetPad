@@ -146,8 +146,15 @@ public record ScriptFingerprint(
         var nsHash = HashNamespaces(namespaces);
         var refHash = HashReferences(references);
 
+        // Include the NetPad.Runtime.dll last-write-time so that rebuilding the runtime
+        // during development invalidates cached script deployments that bundle this DLL.
+        // Without this, stale copies of the runtime would be served from the deployment cache
+        // even after the DLL has changed.
+        var appVersion =
+            $"{AppIdentifier.PRODUCT_VERSION}_{GetFileLastWriteTicks(typeof(INetPadRuntimeLibMarker).Assembly.Location)}";
+
         return new ScriptFingerprint(
-            AppVersion: AppIdentifier.PRODUCT_VERSION,
+            AppVersion: appVersion,
             CodeHash: codeHash,
             NamespacesHash: nsHash,
             ReferencesHash: refHash,
