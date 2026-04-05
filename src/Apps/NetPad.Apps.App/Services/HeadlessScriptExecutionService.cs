@@ -120,6 +120,7 @@ public class HeadlessScriptExecutionService(
         var runOptions = new RunOptions();
         runOptions.SetOption(new ExternalScriptRunnerOptions
         {
+            NoCache = true,
             RedirectIo = true,
             ProcessCliArgs = ["-json-msg"]
         });
