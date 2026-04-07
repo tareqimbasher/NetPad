@@ -24,4 +24,13 @@ public class HeadlessController(HeadlessScriptExecutionService executionService)
     {
         return await executionService.RunScriptAsync(scriptId, timeoutMs, cancellationToken);
     }
+
+    [HttpPost("run/{scriptId:guid}/gui")]
+    public async Task<HeadlessRunResult> RunScriptInGui(
+        Guid scriptId,
+        [FromQuery] int? timeoutMs,
+        CancellationToken cancellationToken)
+    {
+        return await executionService.RunScriptInGuiAsync(scriptId, timeoutMs, cancellationToken);
+    }
 }

@@ -4,11 +4,13 @@ using Microsoft.Extensions.Logging;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Dtos;
+using NetPad.Events;
 using NetPad.ExecutionModel;
 using NetPad.ExecutionModel.External;
 using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts;
+using NetPad.Scripts.Events;
 using NetPad.Sessions;
 
 namespace NetPad.Services;
@@ -19,6 +21,8 @@ public class HeadlessScriptExecutionService(
     IDotNetInfo dotNetInfo,
     ISession session,
     IScriptRepository scriptRepository,
+    ScriptOutputCaptureService captureService,
+    IEventBus eventBus,
     ILogger<HeadlessScriptExecutionService> logger)
 {
     private const int MaxOutputSize = 100 * 1024; // ~100KB
@@ -85,6 +89,33 @@ public class HeadlessScriptExecutionService(
         }
 
         return await ExecuteScriptAsync(script, timeoutMs, cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs a script that is currently open in the GUI, capturing its output.
+    /// The script executes through the normal GUI flow (status updates visible in the UI).
+    /// </summary>
+    public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs, CancellationToken cancellationToken)
+    {
+        var environment = session.Get(scriptId);
+
+        if (environment == null)
+        {
+            return new HeadlessRunResult
+            {
+                Status = HeadlessRunResult.StatusFailed,
+                Success = false,
+                Error = $"Script with ID '{scriptId}' is not open in the GUI."
+            };
+        }
+
+        captureService.StartCapture(scriptId, environment);
+
+        // Run through the environment (same as the GUI's RunScriptCommand)
+        await environment.RunAsync(new RunOptions());
+        await eventBus.PublishAsync(new ScriptRanEvent(environment));
+
+        return await captureService.GetCapturedOutputAsync(scriptId, wait: true, timeoutMs, cancellationToken);
     }
 
     private async Task<HeadlessRunResult> ExecuteScriptAsync(Script script, int? timeoutMs, CancellationToken cancellationToken)

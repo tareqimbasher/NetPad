@@ -37,8 +37,7 @@ public class CreateScriptTool
 
         if (runImmediately)
         {
-            await api.RunScriptInGuiAsync(script.Id, captureOutput: true, cancellationToken);
-            var runResult = await api.GetRunOutputAsync(script.Id, wait: true, cancellationToken: cancellationToken);
+            var runResult = await api.RunScriptInGuiAsync(script.Id, cancellationToken: cancellationToken);
 
             var result = new
             {

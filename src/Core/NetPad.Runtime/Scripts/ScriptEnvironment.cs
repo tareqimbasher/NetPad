@@ -27,15 +27,16 @@ namespace NetPad.Scripts;
 /// This lets UI or IPC clients subscribe and react to progress, errors, or memory-cache updates in real time.
 /// </para>
 /// <para>
-/// Call <see cref="SetIO(IInputReader{string}, IOutputWriter{object})"/> to hook up
-/// <see cref="IInputReader{T}"/> and <see cref="IOutputWriter{T}"/> implementations for user input and script output.
+/// Call <see cref="AddOutput"/> and <see cref="SetInput"/> to hook up
+/// <see cref="IOutputWriter{T}"/> and <see cref="IInputReader{T}"/> implementations for script output and user input.
 /// </para>
 /// </remarks>
 /// <example>
 /// <code language="csharp">
 /// using var scope = serviceProvider.CreateScope();
 /// var environment = new ScriptEnvironment(myScript, scope);
-/// environment.SetIO(consoleReader, consoleWriter);
+/// environment.SetInput(consoleReader);
+/// environment.AddOutput(consoleWriter);
 /// await environment.RunAsync(new RunOptions());
 /// </code>
 /// </example>
@@ -47,8 +48,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     private readonly IEventBus _eventBus;
     private readonly ILogger<ScriptEnvironment> _logger;
     private IServiceScope _serviceScope;
-    private IInputReader<string> _inputReader;
-    private IOutputWriter<object> _outputWriter;
+    private IInputReader<string>? _inputReader;
+    private readonly List<IOutputWriter<object>> _outputWriters = [];
+    private readonly AsyncActionOutputWriter<object> _outputForwarder;
     private IScriptRunner _runner;
     private readonly List<IDisposable> _disposables = new();
     private bool _isDisposed;
@@ -60,8 +62,21 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         _serviceScope = serviceScope;
         _eventBus = _serviceScope.ServiceProvider.GetRequiredService<IEventBus>();
         _logger = _serviceScope.ServiceProvider.GetRequiredService<ILogger<ScriptEnvironment>>();
-        _inputReader = ActionInputReader<string>.Null;
-        _outputWriter = ActionOutputWriter<object>.Null;
+
+        _outputForwarder = new AsyncActionOutputWriter<object>(async (output, title) =>
+        {
+            foreach (var writer in _outputWriters.ToArray())
+            {
+                try
+                {
+                    await writer.WriteAsync(output, title);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error forwarding output to writer: {Type}", writer.GetType().FullName);
+                }
+            }
+        });
 
         // Forwards the following 2 property change notifications as messages on the event bus. They will eventually be pushed to IPC clients.
         Script.OnPropertyChanged.Add(async args =>
@@ -78,6 +93,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
         var factory = _serviceScope.ServiceProvider.GetRequiredService<IScriptRunnerFactory>();
         _runner = factory.CreateRunner(Script);
+        _runner.AddOutput(_outputForwarder);
 
         _disposables.Add(_eventBus.Subscribe<ScriptMemCacheItemInfoChangedEvent>(ev =>
         {
@@ -175,7 +191,7 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error running script");
-            await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
+            await _outputForwarder.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
             SetStatus(ScriptStatus.Error);
         }
         finally
@@ -209,14 +225,14 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
 
             if (wasRunning)
             {
-                await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Result, $"Script stopped at: {stopTime}"));
+                await _outputForwarder.WriteAsync(new ScriptOutput(ScriptOutputKind.Result, $"Script stopped at: {stopTime}"));
                 SetStatus(ScriptStatus.Ready);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error stopping script");
-            await _outputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
+            await _outputForwarder.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
             SetStatus(ScriptStatus.Error);
         }
         finally
@@ -226,38 +242,50 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Configures the script environment’s input and output handlers by attaching the specified reader and writer
-    /// to the underlying <see cref="IScriptRunner"/>.
+    /// Sets the input reader that supplies user input to the script.
+    /// Only one input reader can be active at a time; setting a new one replaces the previous.
     /// </summary>
-    /// <param name="inputReader">
-    /// The <see cref="IInputReader{T}"/> implementation that supplies user input to the script.
-    /// Cannot be <c>null</c>.
-    /// </param>
-    /// <param name="outputWriter">
-    /// The <see cref="IOutputWriter{T}"/> implementation that receives script output.
-    /// Cannot be <c>null</c>.
-    /// </param>
-    /// <remarks>
-    /// Any previously registered IO handlers are removed before the new ones are added.
-    /// You should call this before invoking <see cref="RunAsync(RunOptions)"/> to ensure the script
-    /// uses the correct input and output streams.
-    /// </remarks>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="inputReader"/> or <paramref name="outputWriter"/> are <c>null</c>.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if the <see cref="ScriptEnvironment"/> has already been disposed.
-    /// </exception>
-    public void SetIO(IInputReader<string> inputReader, IOutputWriter<object> outputWriter)
+    public void SetInput(IInputReader<string> inputReader)
     {
         EnsureNotDisposed();
 
-        RemoveScriptRunnerIOHandlers();
+        if (_inputReader != null)
+        {
+            _runner.RemoveInput(_inputReader);
+        }
 
         _inputReader = inputReader ?? throw new ArgumentNullException(nameof(inputReader));
-        _outputWriter = outputWriter ?? throw new ArgumentNullException(nameof(outputWriter));
+        _runner.AddInput(_inputReader);
+    }
 
-        AddScriptRunnerIOHandlers();
+    /// <summary>
+    /// Removes the current input reader, if any.
+    /// </summary>
+    public void RemoveInput()
+    {
+        if (_inputReader != null)
+        {
+            _runner.RemoveInput(_inputReader);
+            _inputReader = null;
+        }
+    }
+
+    /// <summary>
+    /// Adds an output writer that receives script output.
+    /// Multiple output writers can be active simultaneously.
+    /// </summary>
+    public void AddOutput(IOutputWriter<object> outputWriter)
+    {
+        EnsureNotDisposed();
+        _outputWriters.Add(outputWriter ?? throw new ArgumentNullException(nameof(outputWriter)));
+    }
+
+    /// <summary>
+    /// Removes a previously added output writer.
+    /// </summary>
+    public void RemoveOutput(IOutputWriter<object> outputWriter)
+    {
+        _outputWriters.Remove(outputWriter);
     }
 
     public void DumpMemCacheItem(string key)
@@ -297,18 +325,6 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             oldValue,
             runDurationMs)
         );
-    }
-
-    private void AddScriptRunnerIOHandlers()
-    {
-        _runner.AddInput(_inputReader);
-        _runner.AddOutput(_outputWriter);
-    }
-
-    private void RemoveScriptRunnerIOHandlers()
-    {
-        _runner.RemoveInput(_inputReader);
-        _runner.RemoveOutput(_outputWriter);
     }
 
     private void EnsureNotDisposed()
@@ -357,8 +373,8 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
             Script.Config.RemoveAllPropertyChangedHandlers();
             foreach (var disposable in _disposables) disposable.Dispose();
 
-            _inputReader = ActionInputReader<string>.Null;
-            _outputWriter = ActionOutputWriter<object>.Null;
+            _outputWriters.Clear();
+            RemoveInput();
 
             try
             {
@@ -383,6 +399,9 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         Script.RemoveAllPropertyChangedHandlers();
         Script.Config.RemoveAllPropertyChangedHandlers();
         foreach (var disposable in _disposables) disposable.Dispose();
+
+        _outputWriters.Clear();
+        RemoveInput();
 
         try
         {
