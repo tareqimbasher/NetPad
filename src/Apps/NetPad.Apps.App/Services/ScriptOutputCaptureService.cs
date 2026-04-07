@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NetPad.Dtos;
 using NetPad.Events;
+using NetPad.IO;
 using NetPad.Presentation;
 using NetPad.Scripts;
 using NetPad.Scripts.Events;
@@ -14,8 +15,10 @@ namespace NetPad.Services;
 /// </summary>
 public sealed class ScriptOutputCaptureService : IDisposable
 {
+    private const int MaxOutputSize = 100 * 1024; // ~100KB, matching the headless path
+
     private static readonly TimeSpan _bufferTtl = TimeSpan.FromMinutes(10);
-    private readonly ConcurrentDictionary<Guid, CaptureBuffer> _buffers = new();
+    private readonly ConcurrentDictionary<Guid, CaptureContext> _captures = new();
     private readonly System.Timers.Timer _evictionTimer;
 
     public ScriptOutputCaptureService(IEventBus eventBus)
@@ -25,51 +28,31 @@ public sealed class ScriptOutputCaptureService : IDisposable
         // Periodically evict abandoned capture buffers to prevent memory leaks
         // (e.g., client calls StartCapture but never retrieves output)
         _evictionTimer = new System.Timers.Timer(_bufferTtl.TotalMilliseconds) { AutoReset = true };
-        _evictionTimer.Elapsed += (_, _) => EvictStaleBuffers();
+        _evictionTimer.Elapsed += (_, _) => EvictStaleCaptures();
         _evictionTimer.Start();
     }
 
     /// <summary>
-    /// Begin capturing output for a script run.
+    /// Begin capturing output for a script run. Adds a capture output writer to the environment.
     /// </summary>
-    public void StartCapture(Guid scriptId)
+    public void StartCapture(Guid scriptId, ScriptEnvironment environment)
     {
-        _buffers[scriptId] = new CaptureBuffer();
-    }
+        // Clean up any previous capture for this script
+        StopCapture(scriptId);
 
-    /// <summary>
-    /// Returns true if capture is active for the given script.
-    /// </summary>
-    public bool IsCapturing(Guid scriptId) => _buffers.ContainsKey(scriptId);
-
-    /// <summary>
-    /// Called by the output writer to buffer output during an active capture.
-    /// </summary>
-    public void BufferOutput(Guid scriptId, ScriptOutput output)
-    {
-        if (!_buffers.TryGetValue(scriptId, out var buffer)) return;
-
-        lock (buffer)
-        {
-            if (output.Kind == ScriptOutputKind.Error)
-            {
-                buffer.Errors.Add(output.Body ?? string.Empty);
-            }
-            else
-            {
-                buffer.Output.Add(output);
-            }
-        }
+        var context = new CaptureContext(environment);
+        _captures[scriptId] = context;
+        environment.AddOutput(context.Writer);
     }
 
     /// <summary>
     /// Gets captured output for a script. If <paramref name="wait"/> is true, blocks until the run completes.
-    /// Evicts the buffer after returning.
+    /// Evicts the capture after returning.
     /// </summary>
     public async Task<HeadlessRunResult> GetCapturedOutputAsync(
         Guid scriptId, bool wait, int? timeoutMs, CancellationToken cancellationToken)
     {
-        if (!_buffers.TryGetValue(scriptId, out var buffer))
+        if (!_captures.TryGetValue(scriptId, out var context))
         {
             return new HeadlessRunResult
             {
@@ -88,40 +71,39 @@ public sealed class ScriptOutputCaptureService : IDisposable
 
             try
             {
-                await buffer.CompletionSource.Task.WaitAsync(linkedCts.Token);
+                await context.CompletionSource.Task.WaitAsync(linkedCts.Token);
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                return BuildResult(scriptId, buffer, HeadlessRunResult.StatusTimeout);
+                return BuildResult(scriptId, context, HeadlessRunResult.StatusTimeout);
             }
             catch (OperationCanceledException)
             {
-                return BuildResult(scriptId, buffer, HeadlessRunResult.StatusCancelled);
+                return BuildResult(scriptId, context, HeadlessRunResult.StatusCancelled);
             }
         }
 
-        var statusOverride = buffer.CompletionSource.Task.IsCompletedSuccessfully
+        var statusOverride = context.CompletionSource.Task.IsCompletedSuccessfully
             ? null
             : HeadlessRunResult.StatusPending;
-        return BuildResult(scriptId, buffer, statusOverride);
+        return BuildResult(scriptId, context, statusOverride);
     }
 
-    private HeadlessRunResult BuildResult(Guid scriptId, CaptureBuffer buffer, string? statusOverride)
+    private HeadlessRunResult BuildResult(Guid scriptId, CaptureContext context, string? statusOverride)
     {
-        // Once the buffer is retrieved it is evicted
-        _buffers.TryRemove(scriptId, out _);
+        StopCapture(scriptId);
 
         List<ScriptOutput> output;
         List<string> errors;
         string finalStatus;
         double durationMs;
 
-        lock (buffer)
+        lock (context)
         {
-            output = new List<ScriptOutput>(buffer.Output);
-            errors = new List<string>(buffer.Errors);
-            finalStatus = statusOverride ?? buffer.FinalStatus ?? HeadlessRunResult.StatusCompleted;
-            durationMs = buffer.DurationMs;
+            output = new List<ScriptOutput>(context.Output);
+            errors = new List<string>(context.Errors);
+            finalStatus = statusOverride ?? context.FinalStatus ?? HeadlessRunResult.StatusCompleted;
+            durationMs = context.DurationMs;
         }
 
         bool success = finalStatus == HeadlessRunResult.StatusCompleted;
@@ -137,29 +119,37 @@ public sealed class ScriptOutputCaptureService : IDisposable
         };
     }
 
+    private void StopCapture(Guid scriptId)
+    {
+        if (_captures.TryRemove(scriptId, out var context))
+        {
+            context.Environment.RemoveOutput(context.Writer);
+        }
+    }
+
     private Task OnEnvironmentPropertyChanged(EnvironmentPropertyChangedEvent ev)
     {
-        if (!_buffers.TryGetValue(ev.ScriptId, out var buffer)) return Task.CompletedTask;
+        if (!_captures.TryGetValue(ev.ScriptId, out var context)) return Task.CompletedTask;
 
         if (ev.PropertyName == nameof(ScriptEnvironment.RunDurationMilliseconds) && ev.NewValue is double durationMs)
         {
-            lock (buffer)
+            lock (context)
             {
-                buffer.DurationMs = durationMs;
+                context.DurationMs = durationMs;
             }
         }
         else if (ev.PropertyName == nameof(ScriptEnvironment.Status) && ev.NewValue is ScriptStatus newStatus)
         {
             if (newStatus is ScriptStatus.Ready or ScriptStatus.Error)
             {
-                lock (buffer)
+                lock (context)
                 {
-                    buffer.FinalStatus = newStatus == ScriptStatus.Error
+                    context.FinalStatus = newStatus == ScriptStatus.Error
                         ? HeadlessRunResult.StatusFailed
                         : HeadlessRunResult.StatusCompleted;
                 }
 
-                buffer.CompletionSource.TrySetResult();
+                context.CompletionSource.TrySetResult();
             }
         }
 
@@ -170,23 +160,60 @@ public sealed class ScriptOutputCaptureService : IDisposable
     {
         _evictionTimer.Stop();
         _evictionTimer.Dispose();
-        _buffers.Clear();
+
+        foreach (var (scriptId, _) in _captures)
+        {
+            StopCapture(scriptId);
+        }
     }
 
-    private void EvictStaleBuffers()
+    private void EvictStaleCaptures()
     {
         var cutoff = DateTime.UtcNow - _bufferTtl;
-        foreach (var (scriptId, buffer) in _buffers)
+        foreach (var (scriptId, context) in _captures)
         {
-            if (buffer.CreatedAt < cutoff)
+            if (context.CreatedAt < cutoff)
             {
-                _buffers.TryRemove(scriptId, out _);
+                StopCapture(scriptId);
             }
         }
     }
 
-    private class CaptureBuffer
+    private class CaptureContext
     {
+        private int _totalOutputSize;
+        private bool _outputTruncated;
+
+        public CaptureContext(ScriptEnvironment environment)
+        {
+            Environment = environment;
+            Writer = new ActionOutputWriter<object>((output, _) =>
+            {
+                if (_outputTruncated || output is not ScriptOutput so) return;
+
+                lock (this)
+                {
+                    if (so.Kind == ScriptOutputKind.Error)
+                    {
+                        Errors.Add(so.Body ?? string.Empty);
+                        return;
+                    }
+
+                    _totalOutputSize += so.Body?.Length ?? 0;
+                    if (_totalOutputSize > MaxOutputSize)
+                    {
+                        _outputTruncated = true;
+                        Output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated — exceeded 100KB limit]"));
+                        return;
+                    }
+
+                    Output.Add(so);
+                }
+            });
+        }
+
+        public ScriptEnvironment Environment { get; }
+        public IOutputWriter<object> Writer { get; }
         public DateTime CreatedAt { get; } = DateTime.UtcNow;
         public List<ScriptOutput> Output { get; } = [];
         public List<string> Errors { get; } = [];

@@ -21,12 +21,13 @@ public class RunScriptToolTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
         handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         var result = await RunScriptTool.RunScript(client, scriptId: id.ToString());
 
-        var recorded = Assert.Single(handler.Requests);
-        Assert.Contains(id.ToString(), recorded.Url);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains(id.ToString(), handler.Requests[1].Url);
     }
 
     [Fact]
@@ -37,14 +38,15 @@ public class RunScriptToolTests
 
         handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK,
             new[] { new ScriptSummaryDto { Id = id, Name = "MyScript", Kind = "csharp" } });
+        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
         handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         var result = await RunScriptTool.RunScript(client, name: "MyScript");
 
-        // Should have made two calls: find + run
-        Assert.Equal(2, handler.Requests.Count);
+        // Should have made three calls: find + environments + run
+        Assert.Equal(3, handler.Requests.Count);
         Assert.Contains("/scripts/find", handler.Requests[0].Url);
-        Assert.Contains(id.ToString(), handler.Requests[1].Url);
+        Assert.Contains(id.ToString(), handler.Requests[2].Url);
     }
 
     [Fact]
@@ -91,11 +93,12 @@ public class RunScriptToolTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
         handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         await RunScriptTool.RunScript(client, scriptId: id.ToString(), timeoutMs: 30000);
 
-        var recorded = Assert.Single(handler.Requests);
-        Assert.Contains("timeoutMs=30000", recorded.Url);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("timeoutMs=30000", handler.Requests[1].Url);
     }
 }

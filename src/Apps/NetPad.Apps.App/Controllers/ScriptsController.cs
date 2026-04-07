@@ -152,29 +152,9 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     }
 
     [HttpPatch("{id:guid}/run")]
-    public async Task Run(
-        Guid id,
-        [FromBody] RunOptions options,
-        [FromQuery] bool captureOutput,
-        [FromServices] ScriptOutputCaptureService captureService)
+    public async Task Run(Guid id, [FromBody] RunOptions options)
     {
-        if (captureOutput)
-        {
-            captureService.StartCapture(id);
-        }
-
         await mediator.Send(new RunScriptCommand(id, options));
-    }
-
-    [HttpGet("{id:guid}/run-output")]
-    public async Task<HeadlessRunResult> GetRunOutput(
-        Guid id,
-        [FromQuery] bool wait,
-        [FromQuery] int? timeoutMs,
-        [FromServices] ScriptOutputCaptureService captureService,
-        CancellationToken cancellationToken)
-    {
-        return await captureService.GetCapturedOutputAsync(id, wait, timeoutMs, cancellationToken);
     }
 
     [HttpPatch("{id:guid}/stop")]

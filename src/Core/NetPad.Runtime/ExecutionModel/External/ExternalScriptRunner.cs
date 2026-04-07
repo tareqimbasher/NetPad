@@ -72,7 +72,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 return;
             }
 
-            foreach (var writer in _externalOutputWriters)
+            foreach (var writer in _externalOutputWriters.ToArray())
             {
                 try
                 {

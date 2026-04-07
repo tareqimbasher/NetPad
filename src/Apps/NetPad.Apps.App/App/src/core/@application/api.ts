@@ -1224,6 +1224,8 @@ export interface IHeadlessApiClient {
     runCode(request: HeadlessRunRequest, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
 
     runScript(scriptId: string, timeoutMs: number | null | undefined, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
+
+    runScriptInGui(scriptId: string, timeoutMs: number | null | undefined, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
 }
 
 export class HeadlessApiClient extends ApiClientBase implements IHeadlessApiClient {
@@ -1299,6 +1301,46 @@ export class HeadlessApiClient extends ApiClientBase implements IHeadlessApiClie
     }
 
     protected processRunScript(response: Response): Promise<HeadlessRunResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = HeadlessRunResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<HeadlessRunResult>(null as any);
+    }
+
+    runScriptInGui(scriptId: string, timeoutMs: number | null | undefined, signal?: AbortSignal): Promise<HeadlessRunResult> {
+        let url_ = this.baseUrl + "/api/headless/run/{scriptId}/gui?";
+        if (scriptId === undefined || scriptId === null)
+            throw new Error("The parameter 'scriptId' must be defined.");
+        url_ = url_.replace("{scriptId}", encodeURIComponent("" + scriptId));
+        if (timeoutMs !== undefined && timeoutMs !== null)
+            url_ += "timeoutMs=" + encodeURIComponent("" + timeoutMs) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "POST",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRunScriptInGui(_response);
+        });
+    }
+
+    protected processRunScriptInGui(response: Response): Promise<HeadlessRunResult> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1739,9 +1781,7 @@ export interface IScriptsApiClient {
 
     save(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
-    run(id: string, options: RunOptions, captureOutput: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
-
-    getRunOutput(id: string, wait: boolean | undefined, timeoutMs: number | null | undefined, signal?: AbortSignal | undefined): Promise<HeadlessRunResult>;
+    run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
 
     stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
@@ -2100,15 +2140,11 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<boolean>(null as any);
     }
 
-    run(id: string, options: RunOptions, captureOutput: boolean | undefined, signal?: AbortSignal): Promise<void> {
-        let url_ = this.baseUrl + "/scripts/{id}/run?";
+    run(id: string, options: RunOptions, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/scripts/{id}/run";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (captureOutput === null)
-            throw new Error("The parameter 'captureOutput' cannot be null.");
-        else if (captureOutput !== undefined)
-            url_ += "captureOutput=" + encodeURIComponent("" + captureOutput) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(options);
@@ -2140,50 +2176,6 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             });
         }
         return Promise.resolve<void>(null as any);
-    }
-
-    getRunOutput(id: string, wait: boolean | undefined, timeoutMs: number | null | undefined, signal?: AbortSignal): Promise<HeadlessRunResult> {
-        let url_ = this.baseUrl + "/scripts/{id}/run-output?";
-        if (id === undefined || id === null)
-            throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id));
-        if (wait === null)
-            throw new Error("The parameter 'wait' cannot be null.");
-        else if (wait !== undefined)
-            url_ += "wait=" + encodeURIComponent("" + wait) + "&";
-        if (timeoutMs !== undefined && timeoutMs !== null)
-            url_ += "timeoutMs=" + encodeURIComponent("" + timeoutMs) + "&";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: RequestInit = {
-            method: "GET",
-            signal,
-            headers: {
-                "Accept": "application/json"
-            }
-        };
-
-        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
-            return this.processGetRunOutput(_response);
-        });
-    }
-
-    protected processGetRunOutput(response: Response): Promise<HeadlessRunResult> {
-        const status = response.status;
-        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
-        if (status === 200) {
-            return response.text().then((_responseText) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = HeadlessRunResult.fromJS(resultData200);
-            return result200;
-            });
-        } else if (status !== 200 && status !== 204) {
-            return response.text().then((_responseText) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            });
-        }
-        return Promise.resolve<HeadlessRunResult>(null as any);
     }
 
     stop(id: string, stopRunner: boolean | undefined, signal?: AbortSignal): Promise<void> {

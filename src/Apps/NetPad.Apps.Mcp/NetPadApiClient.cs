@@ -126,28 +126,15 @@ public class NetPadApiClient
         await SendAsync(HttpMethod.Put, url, cancellationToken: cancellationToken);
     }
 
-    public async Task RunScriptInGuiAsync(Guid scriptId, bool captureOutput = false, CancellationToken cancellationToken = default)
+    public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
     {
-        var url = $"/scripts/{scriptId}/run";
-        if (captureOutput)
-        {
-            url += "?captureOutput=true";
-        }
-
-        // RunOptions with no specific code
-        await PatchAsync(url, SerializeContent(new { }), cancellationToken);
-    }
-
-    public async Task<HeadlessRunResult> GetRunOutputAsync(Guid scriptId, bool wait = true, int? timeoutMs = null, CancellationToken cancellationToken = default)
-    {
-        var url = $"/scripts/{scriptId}/run-output?wait={(wait ? "true" : "false")}";
+        var url = $"/api/headless/run/{scriptId}/gui";
         if (timeoutMs.HasValue)
         {
-            url += $"&timeoutMs={timeoutMs.Value}";
+            url += $"?timeoutMs={timeoutMs.Value}";
         }
 
-        return await GetAsync<HeadlessRunResult>(url, cancellationToken)
-               ?? throw new InvalidOperationException("Failed to get run output");
+        return await PostAsync<HeadlessRunResult>(url, cancellationToken: cancellationToken);
     }
 
     // --- Data Connections ---

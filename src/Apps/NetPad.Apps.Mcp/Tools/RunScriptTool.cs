@@ -53,17 +53,9 @@ public class RunScriptTool
         var environments = await api.GetEnvironmentsAsync(cancellationToken);
         var isOpen = environments.Any(e => e.Script.Id == id);
 
-        HeadlessRunResult result;
-
-        if (isOpen)
-        {
-            await api.RunScriptInGuiAsync(id, captureOutput: true, cancellationToken);
-            result = await api.GetRunOutputAsync(id, wait: true, timeoutMs: timeoutMs, cancellationToken);
-        }
-        else
-        {
-            result = await api.RunScriptAsync(id, timeoutMs, cancellationToken);
-        }
+        var result = isOpen
+            ? await api.RunScriptInGuiAsync(id, timeoutMs, cancellationToken)
+            : await api.RunScriptAsync(id, timeoutMs, cancellationToken);
 
         return ExecutionResultFormatter.Format(result);
     }
