@@ -27,7 +27,7 @@ public class ScriptsFileWatcherBackgroundService : BackgroundService
 
         _pushDirectoryChanged = new Func<Task>(async () =>
         {
-            var scripts = await scriptRepository.GetAllAsync();
+            var scripts = await scriptRepository.GetSummariesAsync();
             await ipcService.SendAsync(new ScriptDirectoryChangedEvent(scripts));
         }).DebounceAsync();
     }

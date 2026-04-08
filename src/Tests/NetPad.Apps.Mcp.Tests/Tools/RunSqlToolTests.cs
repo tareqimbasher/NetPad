@@ -16,7 +16,7 @@ public class RunSqlToolTests
     {
         var (client, handler) = CreateClient();
         var connId = Guid.NewGuid();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true, DurationMs = 10 });
 
         await RunSqlTool.RunSql(client, "SELECT 1", connId.ToString());
@@ -31,7 +31,7 @@ public class RunSqlToolTests
     {
         var (client, handler) = CreateClient();
         var connId = Guid.NewGuid();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true });
 
         await RunSqlTool.RunSql(client, "SELECT 1", connId.ToString(), timeoutMs: 15000);

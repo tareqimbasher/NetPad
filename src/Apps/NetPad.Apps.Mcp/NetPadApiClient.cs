@@ -39,12 +39,12 @@ public class NetPadApiClient
 
     public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request, CancellationToken cancellationToken = default)
     {
-        return await PostAsync<HeadlessRunResult>("/api/headless/run", request, cancellationToken);
+        return await PostAsync<HeadlessRunResult>("/headless/run", request, cancellationToken);
     }
 
     public async Task<HeadlessRunResult> RunScriptAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
     {
-        var url = $"/api/headless/run/{scriptId}";
+        var url = $"/headless/run/{scriptId}";
         if (timeoutMs.HasValue)
         {
             url += $"?timeoutMs={timeoutMs.Value}";
@@ -58,11 +58,6 @@ public class NetPadApiClient
     public async Task<Guid?> GetActiveScriptIdAsync(CancellationToken cancellationToken = default)
     {
         return await GetAsync<Guid?>("/session/active", cancellationToken);
-    }
-
-    public async Task<ScriptEnvironmentDto[]> GetEnvironmentsAsync(CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<ScriptEnvironmentDto[]>("/session/environments", cancellationToken) ?? [];
     }
 
     public async Task<ScriptEnvironmentDto> GetEnvironmentAsync(Guid scriptId, CancellationToken cancellationToken = default)
@@ -79,14 +74,15 @@ public class NetPadApiClient
 
     // --- Scripts ---
 
-    public async Task<ScriptSummaryDto[]> GetAllScriptsAsync(CancellationToken cancellationToken = default)
+    public async Task<ScriptInfoDto[]> GetScriptsInfoAsync(string? name = null, CancellationToken cancellationToken = default)
     {
-        return await GetAsync<ScriptSummaryDto[]>("/scripts", cancellationToken) ?? [];
-    }
+        var url = "/scripts/info";
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            url += $"?name={Uri.EscapeDataString(name)}";
+        }
 
-    public async Task<ScriptSummaryDto[]> FindScriptsAsync(string name, CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<ScriptSummaryDto[]>($"/scripts/find?name={Uri.EscapeDataString(name)}", cancellationToken) ?? [];
+        return await GetAsync<ScriptInfoDto[]>(url, cancellationToken) ?? [];
     }
 
     public async Task<string> GetScriptCodeAsync(Guid scriptId, CancellationToken cancellationToken = default)
@@ -128,7 +124,7 @@ public class NetPadApiClient
 
     public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
     {
-        var url = $"/api/headless/run/{scriptId}/gui";
+        var url = $"/headless/run/{scriptId}/gui";
         if (timeoutMs.HasValue)
         {
             url += $"?timeoutMs={timeoutMs.Value}";

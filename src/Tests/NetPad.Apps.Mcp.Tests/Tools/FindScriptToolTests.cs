@@ -15,7 +15,7 @@ public class FindScriptToolTests
     public async Task FindScript_NoResults_ReturnsNotFoundMessage()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK, Array.Empty<ScriptSummaryDto>());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
 
         var result = await FindScriptTool.FindScript(client, "NonExistent", CancellationToken.None);
 
@@ -28,9 +28,9 @@ public class FindScriptToolTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK, new[]
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, new[]
         {
-            new ScriptSummaryDto { Id = id, Name = "MyScript", Kind = "csharp", Path = "/scripts/MyScript.netpad" }
+            new ScriptInfoDto { Id = id, Name = "MyScript", Kind = "csharp", Path = "/scripts/MyScript.netpad", IsOpen = true, Status = "Ready" }
         });
 
         var result = await FindScriptTool.FindScript(client, "My", CancellationToken.None);
@@ -38,6 +38,6 @@ public class FindScriptToolTests
         var doc = JsonDocument.Parse(result);
         var arr = doc.RootElement;
         Assert.Equal(1, arr.GetArrayLength());
-        Assert.Equal("MyScript", arr[0].GetProperty("name").GetString());
+        Assert.Equal("MyScript", arr[0].GetProperty("Name").GetString());
     }
 }

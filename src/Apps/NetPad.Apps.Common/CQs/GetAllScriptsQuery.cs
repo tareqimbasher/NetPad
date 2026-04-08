@@ -10,7 +10,7 @@ public class GetAllScriptsQuery : Query<IEnumerable<ScriptSummary>>
     {
         public async Task<IEnumerable<ScriptSummary>> Handle(GetAllScriptsQuery request, CancellationToken cancellationToken)
         {
-            return await scriptRepository.GetAllAsync();
+            return await scriptRepository.GetSummariesAsync();
         }
     }
 }

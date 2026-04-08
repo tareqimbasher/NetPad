@@ -30,7 +30,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_BasicCode_CallsRunCodeWithCSharpKind()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult("42"));
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult("42"));
 
         await RunCSharpTool.RunCSharp(client, "Console.WriteLine(42);");
 
@@ -43,7 +43,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_WithPackages_DeserializesPackageJson()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
         var packages = """[{"id":"Newtonsoft.Json","version":"13.0.3"}]""";
         await RunCSharpTool.RunCSharp(client, "var x = 1;", packages: packages);
@@ -57,7 +57,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_WithTimeout_IncludesTimeoutInRequest()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
         await RunCSharpTool.RunCSharp(client, "Thread.Sleep(1000);", timeoutMs: 5000);
 
@@ -69,7 +69,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_WithDataConnection_ParsesGuid()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
         var connId = Guid.NewGuid();
         await RunCSharpTool.RunCSharp(client, "SELECT 1", dataConnectionId: connId.ToString());
@@ -82,7 +82,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_WithTargetFramework_IncludesInRequest()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
         await RunCSharpTool.RunCSharp(client, "var x = 1;", targetFramework: "DotNet8");
 
@@ -94,7 +94,7 @@ public class RunCSharpToolTests
     public async Task RunCSharp_ReturnsFormattedResult()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK, SuccessResult("Hello"));
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult("Hello"));
 
         var result = await RunCSharpTool.RunCSharp(client, "Console.WriteLine(\"Hello\");");
 

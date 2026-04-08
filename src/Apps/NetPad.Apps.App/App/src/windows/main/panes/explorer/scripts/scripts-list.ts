@@ -76,6 +76,10 @@ export class ScriptsList extends ViewModelBase {
             this.settings.scriptsDirectoryPath.replaceAll("\\", "/"), "/");
 
         for (const script of scripts) {
+            if (!script.path) {
+                continue;
+            }
+
             let path = script.path.replaceAll("\\", "/");
 
             if (path.startsWith(scriptsDirPath)) {

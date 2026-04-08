@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -26,6 +25,12 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         return await mediator.Send(new GetAllScriptsQuery());
     }
 
+    [HttpGet("info")]
+    public async Task<IEnumerable<ScriptInfo>> GetScriptsInfo([FromQuery] string? name = null)
+    {
+        return await mediator.Send(new GetScriptsInfoQuery(name));
+    }
+
     [HttpGet("{id:guid}/code")]
     public async Task<string> GetCode(
         Guid id,
@@ -46,13 +51,6 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         }
 
         return script.Code;
-    }
-
-    [HttpGet("find")]
-    public async Task<IEnumerable<ScriptSummary>> FindScripts([FromQuery] string name)
-    {
-        var allScripts = await mediator.Send(new GetAllScriptsQuery());
-        return allScripts.Where(s => s.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpPatch("create")]

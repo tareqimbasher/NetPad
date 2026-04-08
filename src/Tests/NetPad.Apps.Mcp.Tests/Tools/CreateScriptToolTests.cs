@@ -20,7 +20,7 @@ public class CreateScriptToolTests
 
         handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
             new ScriptDto { Id = scriptId, Name = "Test Script", Code = "var x = 1;" });
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{scriptId}/gui", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, $"/headless/run/{scriptId}/gui", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true, DurationMs = 50 });
 
         var result = await CreateScriptTool.CreateScript(
