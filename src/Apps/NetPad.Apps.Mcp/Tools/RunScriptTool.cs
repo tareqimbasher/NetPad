@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
-using NetPad.Apps.Mcp.Dtos;
 
 namespace NetPad.Apps.Mcp.Tools;
 
@@ -20,15 +19,21 @@ public class RunScriptTool
         CancellationToken cancellationToken = default)
     {
         Guid id;
+        bool isOpen;
 
         if (scriptId != null)
         {
             if (!Guid.TryParse(scriptId, out id))
+            {
                 return "Invalid scriptId format. Expected a GUID.";
+            }
+
+            var scripts = await api.GetScriptsInfoAsync(cancellationToken: cancellationToken);
+            isOpen = scripts.Any(s => s.Id == id && s.IsOpen);
         }
         else if (name != null)
         {
-            var scripts = await api.FindScriptsAsync(name, cancellationToken);
+            var scripts = await api.GetScriptsInfoAsync(name, cancellationToken);
 
             if (scripts.Length == 0)
             {
@@ -42,16 +47,12 @@ public class RunScriptTool
             }
 
             id = scripts[0].Id;
+            isOpen = scripts[0].IsOpen;
         }
         else
         {
             return "Either scriptId or name must be provided.";
         }
-
-        // If the script is open in the GUI, run through the GUI path so the
-        // ScriptEnvironment status updates are visible (statusbar, run indicators).
-        var environments = await api.GetEnvironmentsAsync(cancellationToken);
-        var isOpen = environments.Any(e => e.Script.Id == id);
 
         var result = isOpen
             ? await api.RunScriptInGuiAsync(id, timeoutMs, cancellationToken)

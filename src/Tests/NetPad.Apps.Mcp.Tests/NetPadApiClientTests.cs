@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 using NetPad.Apps.Mcp.Dtos;
 using NetPad.Apps.Mcp.Tests.Helpers;
 
@@ -29,7 +28,7 @@ public class NetPadApiClientTests
     public async Task RunCodeAsync_PostsToCorrectUrl()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true });
 
         var request = new HeadlessRunRequest { Code = "Console.WriteLine(1);" };
@@ -37,14 +36,14 @@ public class NetPadApiClientTests
 
         var recorded = Assert.Single(handler.Requests);
         Assert.Equal(HttpMethod.Post, recorded.Method);
-        Assert.Equal("/api/headless/run", recorded.Url);
+        Assert.Equal("/headless/run", recorded.Url);
     }
 
     [Fact]
     public async Task RunCodeAsync_SerializesRequestBody()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true });
 
         var request = new HeadlessRunRequest { Code = "var x = 1;", Kind = "sql", TimeoutMs = 5000 };
@@ -61,7 +60,7 @@ public class NetPadApiClientTests
     public async Task RunCodeAsync_DeserializesResponse()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Post, "/api/headless/run", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true, DurationMs = 123.4 });
 
         var result = await client.RunCodeAsync(new HeadlessRunRequest { Code = "1" });
@@ -76,13 +75,13 @@ public class NetPadApiClientTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true });
 
         await client.RunScriptAsync(id);
 
         var recorded = Assert.Single(handler.Requests);
-        Assert.Equal($"/api/headless/run/{id}", recorded.Url);
+        Assert.Equal($"/headless/run/{id}", recorded.Url);
     }
 
     [Fact]
@@ -90,7 +89,7 @@ public class NetPadApiClientTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK,
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}", HttpStatusCode.OK,
             new HeadlessRunResult { Status = "completed", Success = true });
 
         await client.RunScriptAsync(id, timeoutMs: 10000);
@@ -117,26 +116,6 @@ public class NetPadApiClientTests
     }
 
     [Fact]
-    public async Task GetEnvironmentsAsync_ReturnsArrayFromResponse()
-    {
-        var (client, handler) = CreateClient();
-        var envs = new[]
-        {
-            new ScriptEnvironmentDto
-            {
-                Script = new ScriptDto { Id = Guid.NewGuid(), Name = "Test" },
-                Status = "Ready"
-            }
-        };
-        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, envs);
-
-        var result = await client.GetEnvironmentsAsync();
-
-        Assert.Single(result);
-        Assert.Equal("Test", result[0].Script.Name);
-    }
-
-    [Fact]
     public async Task GetEnvironmentStatusAsync_GetsCorrectUrl()
     {
         var (client, handler) = CreateClient();
@@ -152,12 +131,24 @@ public class NetPadApiClientTests
     // --- Scripts ---
 
     [Fact]
-    public async Task FindScriptsAsync_EncodesNameInUrl()
+    public async Task GetScriptsInfoAsync_GetsCorrectUrlWithoutFilter()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK, Array.Empty<ScriptSummaryDto>());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
 
-        await client.FindScriptsAsync("my script & more");
+        await client.GetScriptsInfoAsync();
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Equal("/scripts/info", recorded.Url);
+    }
+
+    [Fact]
+    public async Task GetScriptsInfoAsync_EncodesNameInUrl()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
+
+        await client.GetScriptsInfoAsync("my script & more");
 
         var recorded = Assert.Single(handler.Requests);
         Assert.Contains("name=my%20script%20%26%20more", recorded.Url);
@@ -254,10 +245,10 @@ public class NetPadApiClientTests
     public async Task NotFoundStatusCode_ThrowsWithUrlInfo()
     {
         var (client, handler) = CreateClient();
-        handler.SetupRaw(HttpMethod.Get, "/scripts", HttpStatusCode.NotFound, "Not found");
+        handler.SetupRaw(HttpMethod.Get, "/scripts/info", HttpStatusCode.NotFound, "Not found");
 
         var ex = await Assert.ThrowsAsync<HttpRequestException>(
-            () => client.GetAllScriptsAsync());
+            () => client.GetScriptsInfoAsync());
 
         Assert.Contains("404", ex.Message);
     }

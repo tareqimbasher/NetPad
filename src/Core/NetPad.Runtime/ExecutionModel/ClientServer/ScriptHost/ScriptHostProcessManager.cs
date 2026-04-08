@@ -247,8 +247,8 @@ public class ScriptHostProcessManager(
             // Discard items
         }
 
-        var gateway = Interlocked.Exchange(ref _ipcGateway, null);
-        gateway?.Dispose();
+        var ipcGateway = Interlocked.Exchange(ref _ipcGateway, null);
+        ipcGateway?.Dispose();
 
         var process = Interlocked.Exchange(ref _scriptHostProcess, null);
         if (process != null)

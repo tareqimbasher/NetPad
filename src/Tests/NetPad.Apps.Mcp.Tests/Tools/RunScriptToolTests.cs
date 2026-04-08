@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 using NetPad.Apps.Mcp.Dtos;
 using NetPad.Apps.Mcp.Tests.Helpers;
 using NetPad.Apps.Mcp.Tools;
@@ -17,16 +16,17 @@ public class RunScriptToolTests
     }
 
     [Fact]
-    public async Task RunScript_ById_CallsRunScriptAsync()
+    public async Task RunScript_ById_NotOpen_RunsHeadlessly()
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
-        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         var result = await RunScriptTool.RunScript(client, scriptId: id.ToString());
 
         Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/scripts/info", handler.Requests[0].Url);
         Assert.Contains(id.ToString(), handler.Requests[1].Url);
     }
 
@@ -36,24 +36,22 @@ public class RunScriptToolTests
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
 
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK,
-            new[] { new ScriptSummaryDto { Id = id, Name = "MyScript", Kind = "csharp" } });
-        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK,
+            new[] { new ScriptInfoDto { Id = id, Name = "MyScript", Kind = "csharp", IsOpen = false } });
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         var result = await RunScriptTool.RunScript(client, name: "MyScript");
 
-        // Should have made three calls: find + environments + run
-        Assert.Equal(3, handler.Requests.Count);
-        Assert.Contains("/scripts/find", handler.Requests[0].Url);
-        Assert.Contains(id.ToString(), handler.Requests[2].Url);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/scripts/info", handler.Requests[0].Url);
+        Assert.Contains(id.ToString(), handler.Requests[1].Url);
     }
 
     [Fact]
     public async Task RunScript_ByName_NotFound_ReturnsMessage()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK, Array.Empty<ScriptSummaryDto>());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
 
         var result = await RunScriptTool.RunScript(client, name: "NonExistent");
 
@@ -65,10 +63,10 @@ public class RunScriptToolTests
     public async Task RunScript_ByName_MultipleMatches_ReturnsMessage()
     {
         var (client, handler) = CreateClient();
-        handler.Setup(HttpMethod.Get, "/scripts/find", HttpStatusCode.OK, new[]
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, new[]
         {
-            new ScriptSummaryDto { Id = Guid.NewGuid(), Name = "Script A", Kind = "csharp" },
-            new ScriptSummaryDto { Id = Guid.NewGuid(), Name = "Script AB", Kind = "csharp" }
+            new ScriptInfoDto { Id = Guid.NewGuid(), Name = "Script A", Kind = "csharp", IsOpen = false },
+            new ScriptInfoDto { Id = Guid.NewGuid(), Name = "Script AB", Kind = "csharp", IsOpen = false }
         });
 
         var result = await RunScriptTool.RunScript(client, name: "Script");
@@ -93,12 +91,27 @@ public class RunScriptToolTests
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
-        handler.Setup(HttpMethod.Get, "/session/environments", HttpStatusCode.OK, Array.Empty<ScriptEnvironmentDto>());
-        handler.Setup(HttpMethod.Post, $"/api/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK, Array.Empty<ScriptInfoDto>());
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}", HttpStatusCode.OK, SuccessResult());
 
         await RunScriptTool.RunScript(client, scriptId: id.ToString(), timeoutMs: 30000);
 
         Assert.Equal(2, handler.Requests.Count);
         Assert.Contains("timeoutMs=30000", handler.Requests[1].Url);
+    }
+
+    [Fact]
+    public async Task RunScript_ById_Open_RunsInGui()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Get, "/scripts/info", HttpStatusCode.OK,
+            new[] { new ScriptInfoDto { Id = id, Name = "OpenScript", Kind = "csharp", IsOpen = true } });
+        handler.Setup(HttpMethod.Post, $"/headless/run/{id}/gui", HttpStatusCode.OK, SuccessResult());
+
+        await RunScriptTool.RunScript(client, scriptId: id.ToString());
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/gui", handler.Requests[1].Url);
     }
 }

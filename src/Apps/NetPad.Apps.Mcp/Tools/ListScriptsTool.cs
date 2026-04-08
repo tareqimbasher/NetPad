@@ -12,28 +12,22 @@ public class ListScriptsTool
         "Open scripts include their execution status.")]
     public static async Task<string> ListScripts(NetPadApiClient api, CancellationToken cancellationToken)
     {
-        var envsTask = api.GetEnvironmentsAsync(cancellationToken);
-        var allTask = api.GetAllScriptsAsync(cancellationToken);
-        await Task.WhenAll(envsTask, allTask);
+        var scripts = await api.GetScriptsInfoAsync(cancellationToken: cancellationToken);
 
-        var environments = envsTask.Result;
-        var allScripts = allTask.Result;
-        var openScriptIds = new HashSet<Guid>(environments.Select(e => e.Script.Id));
-
-        var result = new
+        if (scripts.Length == 0)
         {
-            Open = environments.Select(e => new
-            {
-                e.Script.Id,
-                e.Script.Name,
-                e.Script.Path,
-                e.Status,
-                e.RunDurationMilliseconds
-            }),
-            Saved = allScripts
-                .Where(s => !openScriptIds.Contains(s.Id))
-                .Select(s => new { s.Id, s.Name, s.Path })
-        };
+            return "No scripts found.";
+        }
+
+        var result = scripts.Select(s => new
+        {
+            s.Id,
+            s.Name,
+            s.Path,
+            s.IsOpen,
+            s.Status,
+            s.RunDurationMilliseconds
+        });
 
         return JsonSerializer.Serialize(result);
     }
