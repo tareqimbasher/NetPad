@@ -4,7 +4,7 @@ namespace NetPad.Apps.CQs;
 
 public abstract class CommandBase
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid RequestId { get; } = Guid.NewGuid();
 }
 
 /// <summary>
@@ -20,7 +20,7 @@ public abstract class Command<TResponse> : CommandBase, IRequest<TResponse>;
 
 public abstract class QueryBase
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid RequestId { get; } = Guid.NewGuid();
 }
 
 /// <summary>

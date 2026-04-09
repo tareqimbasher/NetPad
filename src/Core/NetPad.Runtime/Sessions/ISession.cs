@@ -41,7 +41,7 @@ public interface ISession
     /// <param name="activate">
     /// If <c>true</c>, sets the newly opened script as the active script.
     /// </param>
-    Task OpenAsync(Script script, bool activate);
+    Task<ScriptEnvironment> OpenAsync(Script script, bool activate);
 
     /// <summary>
     /// Opens multiple scripts in new script environments.

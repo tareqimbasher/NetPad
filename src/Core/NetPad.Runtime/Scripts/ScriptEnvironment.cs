@@ -200,6 +200,16 @@ public class ScriptEnvironment : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Stops the script, and its runner if the script is currently running.
+    /// If <paramref name="stopRunner"/> is true and the script is not currently
+    /// running, this will also stop the idle runner.
+    /// </summary>
+    /// <param name="stopRunner">
+    /// If true, will stop the runner even if the script is not currently running.
+    /// The runner is always stopped regardless of the value of this param if the
+    /// script is currently running.
+    /// </param>
     public async Task StopAsync(bool stopRunner)
     {
         EnsureNotDisposed();

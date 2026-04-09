@@ -62,13 +62,13 @@ export class DialogBackgroundService extends WithDisposables implements IBackgro
     private async confirm(command: ConfirmWithUserCommand) {
         const ync: YesNoCancel = confirm(command.message) ? "Yes" : "No";
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, ync);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, ync);
     }
 
     private async prompt(command: PromptUserCommand) {
         const newName = prompt(command.message, command.prefillValue);
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, newName || null);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, newName || null);
     }
 
     private async alertUserAboutMissingAppDependencies(command: AlertUserAboutMissingAppDependencies) {

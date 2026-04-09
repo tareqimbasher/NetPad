@@ -129,7 +129,7 @@ export class OutputPane extends Pane {
                 }
 
                 model.inputRequest = {
-                    commandId: msg.id
+                    commandId: msg.requestId
                 };
 
                 setTimeout(() => {
