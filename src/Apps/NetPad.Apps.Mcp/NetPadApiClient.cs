@@ -48,6 +48,12 @@ public class NetPadApiClient
         return await PatchAsync<AppDependencyCheckDto>("/app/check-dependencies", cancellationToken: cancellationToken);
     }
 
+    public async Task<string> GetSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, "/settings", cancellationToken: cancellationToken);
+        return await response.Content.ReadAsStringAsync(cancellationToken);
+    }
+
     // --- Scripts ---
 
     public async Task<ScriptInfoDto[]> GetScriptsInfoAsync(
@@ -224,6 +230,14 @@ public class NetPadApiClient
     public async Task StopScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
     {
         await PatchAsync($"/scripts/{scriptId}/stop", cancellationToken: cancellationToken);
+    }
+
+    // --- Code ---
+
+    public async Task<string?> GetIntermediateLanguageAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, $"/code/{scriptId}/il", cancellationToken: cancellationToken);
+        return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
     // --- Data Connections ---
