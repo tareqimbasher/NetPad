@@ -204,6 +204,12 @@ public class NetPadApiClient
             cancellationToken: cancellationToken);
     }
 
+    public async Task<string[]> GetDatabasesAsync(Guid connectionId, CancellationToken cancellationToken = default)
+    {
+        return await PatchAsync<string[]>($"/data-connections/{connectionId}/databases",
+            cancellationToken: cancellationToken);
+    }
+
     // --- Packages ---
 
     public async Task<PackageMetadataDto[]> SearchPackagesAsync(string term, int skip = 0, int take = 30,
