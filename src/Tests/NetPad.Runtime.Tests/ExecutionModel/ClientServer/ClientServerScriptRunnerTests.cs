@@ -28,7 +28,7 @@ namespace NetPad.Runtime.Tests.ExecutionModel.ClientServer;
 
 public class ClientServerScriptRunnerTests : IDisposable
 {
-    private static readonly TimeSpan TestTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan _testTimeout = TimeSpan.FromSeconds(5);
 
     private readonly Script _script;
     private readonly Mock<IScriptDependencyResolver> _depResolver;
@@ -116,7 +116,7 @@ public class ClientServerScriptRunnerTests : IDisposable
     /// </summary>
     private async Task WaitForRunScriptCalled()
     {
-        await _runScriptCalled.Task.WaitAsync(TestTimeout);
+        await _runScriptCalled.Task.WaitAsync(_testTimeout);
         _runScriptCalled = new TaskCompletionSource();
     }
 

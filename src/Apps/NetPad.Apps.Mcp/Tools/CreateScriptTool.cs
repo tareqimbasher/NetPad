@@ -8,16 +8,51 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class CreateScriptTool
 {
+    private static readonly HashSet<string> _validKinds = new(StringComparer.OrdinalIgnoreCase) { "Program", "SQL" };
+
+    private static readonly HashSet<string> _validOptimizationLevels = new(StringComparer.OrdinalIgnoreCase)
+        { "Debug", "Release" };
+
     [McpServerTool(Name = "create_script", Destructive = false), Description(
-        "Create a new script in NetPad. The script will be opened in the editor.")]
+         "Create a new script in NetPad. The script will be opened in the editor. " +
+         "Defaults: kind=Program, targetFramework=latest installed .NET SDK, optimizationLevel=Debug, useAspNet=false. " +
+         "Default namespaces include System, System.IO, System.Linq, System.Collections.Generic, System.Threading.Tasks, and others.")]
     public static async Task<string> CreateScript(
         NetPadApiClient api,
-        [Description("Optional name for the script")] string? name = null,
-        [Description("Optional initial code for the script")] string? code = null,
-        [Description("Optional data connection ID (GUID) to attach")] string? dataConnectionId = null,
-        [Description("Whether to run the script immediately after creation and return output")] bool runImmediately = false,
+        [Description("Optional name for the script")]
+        string? name = null,
+        [Description("Optional initial code for the script")]
+        string? code = null,
+        [Description("Optional data connection ID (GUID) to attach")]
+        string? dataConnectionId = null,
+        [Description("Script kind: 'Program' (default) or 'SQL'")]
+        string? kind = null,
+        [Description(
+            "Target .NET framework version, e.g. 'DotNet8', 'DotNet9', 'DotNet10'. Defaults to latest installed.")]
+        string? targetFrameworkVersion = null,
+        [Description("Compiler optimization level: 'Debug' (default) or 'Release'")]
+        string? optimizationLevel = null,
+        [Description("Whether to reference ASP.NET assemblies. Defaults to false.")]
+        bool? useAspNet = null,
+        [Description(
+            "Namespaces to include. If provided, replaces the default namespace set entirely. Each entry should " +
+            "be a bare namespace name without 'using' prefix or semicolons (e.g. 'System.Numerics').")]
+        string[]? namespaces = null,
+        [Description("Whether to run the script immediately after creation and return output")]
+        bool runImmediately = false,
         CancellationToken cancellationToken = default)
     {
+        if (kind != null && !_validKinds.Contains(kind))
+        {
+            return $"Invalid kind '{kind}'. Valid values: {string.Join(", ", _validKinds)}.";
+        }
+
+        if (optimizationLevel != null && !_validOptimizationLevels.Contains(optimizationLevel))
+        {
+            return
+                $"Invalid optimizationLevel '{optimizationLevel}'. Valid values: {string.Join(", ", _validOptimizationLevels)}.";
+        }
+
         Guid? connId = null;
         if (dataConnectionId != null)
         {
@@ -30,7 +65,12 @@ public class CreateScriptTool
         {
             Name = name,
             Code = code,
-            DataConnectionId = connId
+            DataConnectionId = connId,
+            Kind = kind,
+            TargetFrameworkVersion = targetFrameworkVersion,
+            OptimizationLevel = optimizationLevel,
+            UseAspNet = useAspNet,
+            Namespaces = namespaces
         };
 
         var script = await api.CreateScriptAsync(dto, cancellationToken);
