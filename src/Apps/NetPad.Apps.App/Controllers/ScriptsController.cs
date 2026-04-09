@@ -31,6 +31,27 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         return await mediator.Send(new GetScriptsInfoQuery(name));
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<Script> GetScript(
+        Guid id,
+        [FromServices] ISession session,
+        [FromServices] IScriptRepository scriptRepository)
+    {
+        var environment = session.Get(id);
+        if (environment != null)
+        {
+            return environment.Script;
+        }
+
+        var script = await scriptRepository.GetAsync(id);
+        if (script == null)
+        {
+            throw new ScriptNotFoundException(id);
+        }
+
+        return script;
+    }
+
     [HttpGet("{id:guid}/code")]
     public async Task<string> GetCode(
         Guid id,
@@ -179,7 +200,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> SetScriptKind(Guid id, [FromBody] ScriptKind scriptKind)
     {
         var environment = await GetScriptEnvironmentAsync(id);
-        environment.Script.Config.SetKind(scriptKind);
+
+        await mediator.Send(new UpdateScriptKindCommand(environment.Script, scriptKind));
+
         return NoContent();
     }
 

@@ -8,11 +8,6 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class CreateScriptTool
 {
-    private static readonly HashSet<string> _validKinds = new(StringComparer.OrdinalIgnoreCase) { "Program", "SQL" };
-
-    private static readonly HashSet<string> _validOptimizationLevels = new(StringComparer.OrdinalIgnoreCase)
-        { "Debug", "Release" };
-
     [McpServerTool(Name = "create_script", Destructive = false), Description(
          "Create a new script in NetPad. The script will be opened in the editor. " +
          "Defaults: kind=Program, targetFramework=latest installed .NET SDK, optimizationLevel=Debug, useAspNet=false. " +
@@ -42,15 +37,15 @@ public class CreateScriptTool
         bool runImmediately = false,
         CancellationToken cancellationToken = default)
     {
-        if (kind != null && !_validKinds.Contains(kind))
+        if (kind != null && !ScriptValidation.ValidKinds.Contains(kind))
         {
-            return $"Invalid kind '{kind}'. Valid values: {string.Join(", ", _validKinds)}.";
+            return $"Invalid kind '{kind}'. Valid values: {string.Join(", ", ScriptValidation.ValidKinds)}.";
         }
 
-        if (optimizationLevel != null && !_validOptimizationLevels.Contains(optimizationLevel))
+        if (optimizationLevel != null && !ScriptValidation.ValidOptimizationLevels.Contains(optimizationLevel))
         {
             return
-                $"Invalid optimizationLevel '{optimizationLevel}'. Valid values: {string.Join(", ", _validOptimizationLevels)}.";
+                $"Invalid optimizationLevel '{optimizationLevel}'. Valid values: {string.Join(", ", ScriptValidation.ValidOptimizationLevels)}.";
         }
 
         Guid? connId = null;

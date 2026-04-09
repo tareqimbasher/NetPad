@@ -63,6 +63,12 @@ public class NetPadApiClient
         return await GetAsync<ScriptInfoDto[]>(url, cancellationToken) ?? [];
     }
 
+    public async Task<ScriptDto> GetScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        return await GetAsync<ScriptDto>($"/scripts/{scriptId}", cancellationToken)
+               ?? throw new InvalidOperationException($"Script not found: {scriptId}");
+    }
+
     public async Task<string> GetScriptCodeAsync(Guid scriptId, CancellationToken cancellationToken = default)
     {
         using var response = await SendAsync(HttpMethod.Get, $"/scripts/{scriptId}/code",
@@ -75,10 +81,9 @@ public class NetPadApiClient
         return await PatchAsync<ScriptDto>("/scripts/create", SerializeContent(dto), cancellationToken);
     }
 
-    public async Task UpdateScriptCodeAsync(Guid scriptId, string code, CancellationToken cancellationToken = default)
+    public async Task<ScriptDto> DuplicateScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
     {
-        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code?externallyInitiated=true", SerializeContent(code),
-            cancellationToken);
+        return await PatchAsync<ScriptDto>($"/scripts/{scriptId}/duplicate", cancellationToken: cancellationToken);
     }
 
     public async Task<bool> SaveScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
@@ -89,6 +94,45 @@ public class NetPadApiClient
     public async Task RenameScriptAsync(Guid scriptId, string newName, CancellationToken cancellationToken = default)
     {
         await PatchAsync($"/scripts/{scriptId}/rename", SerializeContent(newName), cancellationToken);
+    }
+
+    public async Task UpdateScriptCodeAsync(Guid scriptId, string code, CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code?externallyInitiated=true", SerializeContent(code),
+            cancellationToken);
+    }
+
+    public async Task SetScriptKindAsync(Guid scriptId, string kind, CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/kind", SerializeContent(kind), cancellationToken);
+    }
+
+    public async Task SetScriptTargetFrameworkAsync(Guid scriptId, string targetFrameworkVersion,
+        CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/target-framework-version",
+            SerializeContent(targetFrameworkVersion), cancellationToken);
+    }
+
+    public async Task SetScriptOptimizationLevelAsync(Guid scriptId, string optimizationLevel,
+        CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/optimization-level",
+            SerializeContent(optimizationLevel), cancellationToken);
+    }
+
+    public async Task SetScriptUseAspNetAsync(Guid scriptId, bool useAspNet,
+        CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/use-asp-net", SerializeContent(useAspNet),
+            cancellationToken);
+    }
+
+    public async Task UpdateScriptNamespacesAsync(Guid scriptId, string[] namespaces,
+        CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/namespaces", SerializeContent(namespaces),
+            cancellationToken);
     }
 
     public async Task SetScriptDataConnectionAsync(
@@ -103,11 +147,6 @@ public class NetPadApiClient
         }
 
         await SendAsync(HttpMethod.Put, url, cancellationToken: cancellationToken);
-    }
-
-    public async Task<ScriptDto> DuplicateScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
-    {
-        return await PatchAsync<ScriptDto>($"/scripts/{scriptId}/duplicate", cancellationToken: cancellationToken);
     }
 
     // --- Session ---
