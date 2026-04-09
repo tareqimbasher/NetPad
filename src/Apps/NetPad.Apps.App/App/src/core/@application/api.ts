@@ -537,9 +537,13 @@ export interface IDataConnectionsApiClient {
 
     test(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
 
+    testById(id: string, signal?: AbortSignal | undefined): Promise<DataConnectionTestResult>;
+
     protectPassword(unprotectedPassword: string, signal?: AbortSignal | undefined): Promise<string | null>;
 
     getDatabases(dataConnection: DataConnection, signal?: AbortSignal | undefined): Promise<string[]>;
+
+    getDatabasesById(id: string, signal?: AbortSignal | undefined): Promise<string[]>;
 
     getServer(id: string, signal?: AbortSignal | undefined): Promise<DatabaseServerConnection>;
 
@@ -903,6 +907,44 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
         return Promise.resolve<DataConnectionTestResult>(null as any);
     }
 
+    testById(id: string, signal?: AbortSignal): Promise<DataConnectionTestResult> {
+        let url_ = this.baseUrl + "/data-connections/{id}/test";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processTestById(_response);
+        });
+    }
+
+    protected processTestById(response: Response): Promise<DataConnectionTestResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DataConnectionTestResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<DataConnectionTestResult>(null as any);
+    }
+
     protectPassword(unprotectedPassword: string, signal?: AbortSignal): Promise<string | null> {
         let url_ = this.baseUrl + "/data-connections/protect-password";
         url_ = url_.replace(/[?&]$/, "");
@@ -965,6 +1007,51 @@ export class DataConnectionsApiClient extends ApiClientBase implements IDataConn
     }
 
     protected processGetDatabases(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(null as any);
+    }
+
+    getDatabasesById(id: string, signal?: AbortSignal): Promise<string[]> {
+        let url_ = this.baseUrl + "/data-connections/{id}/databases";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetDatabasesById(_response);
+        });
+    }
+
+    protected processGetDatabasesById(response: Response): Promise<string[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -1777,7 +1864,7 @@ export interface IScriptsApiClient {
 
     rename(id: string, newName: string, signal?: AbortSignal | undefined): Promise<void>;
 
-    duplicate(id: string, signal?: AbortSignal | undefined): Promise<void>;
+    duplicate(id: string, signal?: AbortSignal | undefined): Promise<Script>;
 
     save(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
@@ -2065,7 +2152,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         return Promise.resolve<void>(null as any);
     }
 
-    duplicate(id: string, signal?: AbortSignal): Promise<void> {
+    duplicate(id: string, signal?: AbortSignal): Promise<Script> {
         let url_ = this.baseUrl + "/scripts/{id}/duplicate";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
@@ -2076,6 +2163,7 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
             method: "PATCH",
             signal,
             headers: {
+                "Accept": "application/json"
             }
         };
 
@@ -2084,19 +2172,22 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
         });
     }
 
-    protected processDuplicate(response: Response): Promise<void> {
+    protected processDuplicate(response: Response): Promise<Script> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
-            return;
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Script.fromJS(resultData200);
+            return result200;
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<void>(null as any);
+        return Promise.resolve<Script>(null as any);
     }
 
     save(id: string, signal?: AbortSignal): Promise<boolean> {

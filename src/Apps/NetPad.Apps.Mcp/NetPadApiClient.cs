@@ -105,6 +105,11 @@ public class NetPadApiClient
         await SendAsync(HttpMethod.Put, url, cancellationToken: cancellationToken);
     }
 
+    public async Task<ScriptDto> DuplicateScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        return await PatchAsync<ScriptDto>($"/scripts/{scriptId}/duplicate", cancellationToken: cancellationToken);
+    }
+
     // --- Session ---
 
     public async Task<Guid?> GetActiveScriptIdAsync(CancellationToken cancellationToken = default)
@@ -192,6 +197,13 @@ public class NetPadApiClient
             cancellationToken: cancellationToken);
     }
 
+    public async Task<DataConnectionTestResultDto> TestDataConnectionAsync(Guid connectionId,
+        CancellationToken cancellationToken = default)
+    {
+        return await PatchAsync<DataConnectionTestResultDto>($"/data-connections/{connectionId}/test",
+            cancellationToken: cancellationToken);
+    }
+
     // --- Packages ---
 
     public async Task<PackageMetadataDto[]> SearchPackagesAsync(string term, int skip = 0, int take = 30,
@@ -199,6 +211,13 @@ public class NetPadApiClient
     {
         var url = $"/packages/search?term={Uri.EscapeDataString(term)}&skip={skip}&take={take}";
         return await GetAsync<PackageMetadataDto[]>(url, cancellationToken) ?? [];
+    }
+
+    public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease = false,
+        CancellationToken cancellationToken = default)
+    {
+        var url = $"/packages/versions?packageId={Uri.EscapeDataString(packageId)}&includePrerelease={includePrerelease.ToString().ToLowerInvariant()}";
+        return await GetAsync<string[]>(url, cancellationToken) ?? [];
     }
 
     // --- HTTP helpers ---

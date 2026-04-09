@@ -94,11 +94,12 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     }
 
     [HttpPatch("{id:guid}/duplicate")]
-    public async Task Duplicate(Guid id)
+    public async Task<Script> Duplicate(Guid id)
     {
         var script = await GetScriptAsync(id);
         var duplicate = await mediator.Send(new DuplicateScriptCommand(script));
         await mediator.Send(new OpenScriptCommand(duplicate));
+        return duplicate;
     }
 
     [HttpPatch("{id:guid}/save")]
