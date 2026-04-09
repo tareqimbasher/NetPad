@@ -97,6 +97,21 @@ public class DataConnectionsController(IMediator mediator) : ControllerBase
         [FromServices] IDataConnectionPasswordProtector passwordProtector) =>
         await dataConnection.TestConnectionAsync(passwordProtector);
 
+    [HttpPatch("{id:guid}/test")]
+    public async Task<DataConnectionTestResult> TestById(
+        Guid id,
+        [FromServices] IDataConnectionPasswordProtector passwordProtector)
+    {
+        var dataConnection = await mediator.Send(new GetDataConnectionQuery(id));
+
+        if (dataConnection == null)
+        {
+            throw new InvalidOperationException($"Data connection not found: {id}");
+        }
+
+        return await dataConnection.TestConnectionAsync(passwordProtector);
+    }
+
     [HttpPatch("protect-password")]
     public string? ProtectPassword(
         [FromBody] string unprotectedPassword,

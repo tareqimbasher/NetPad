@@ -1,5 +1,6 @@
 ﻿import {WithDisposables} from "@common";
 import {ViewerHost} from "./viewer-host";
+import {Script} from "@application";
 
 export enum ViewableObjectType {
     Text = "Text",
@@ -12,7 +13,7 @@ export interface IViewableObjectCommands
     close: (viewerHost: ViewerHost) => Promise<void>;
     activate: (viewerHost: ViewerHost) => Promise<void>;
     rename: () => Promise<void>;
-    duplicate: () => Promise<void>;
+    duplicate: () => Promise<Script>;
     save: () => Promise<boolean>;
     openContainingFolder: () => Promise<void>;
 }
@@ -50,7 +51,7 @@ export abstract class ViewableObject extends WithDisposables {
         return this.commands.rename();
     }
 
-    public duplicate(): Promise<void> {
+    public duplicate(): Promise<Script> {
         return this.commands.duplicate();
     }
 

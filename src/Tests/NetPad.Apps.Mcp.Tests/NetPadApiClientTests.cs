@@ -209,6 +209,55 @@ public class NetPadApiClientTests
         Assert.DoesNotContain("dataConnectionId", recorded.Url);
     }
 
+    [Fact]
+    public async Task DuplicateScriptAsync_PatchesToCorrectUrl()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Patch, $"/scripts/{id}/duplicate", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Script Copy" });
+
+        var result = await client.DuplicateScriptAsync(id);
+
+        Assert.Equal("Script Copy", result.Name);
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Patch, recorded.Method);
+        Assert.Contains($"/scripts/{id}/duplicate", recorded.Url);
+    }
+
+    // --- Data Connections ---
+
+    [Fact]
+    public async Task TestDataConnectionAsync_PatchesToCorrectUrl()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Patch, $"/data-connections/{id}/test", HttpStatusCode.OK,
+            new DataConnectionTestResultDto { Success = true, Message = "Connection successful" });
+
+        var result = await client.TestDataConnectionAsync(id);
+
+        Assert.True(result.Success);
+        Assert.Equal("Connection successful", result.Message);
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Patch, recorded.Method);
+        Assert.Contains($"/data-connections/{id}/test", recorded.Url);
+    }
+
+    [Fact]
+    public async Task TestDataConnectionAsync_DeserializesFailureResult()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Patch, $"/data-connections/{id}/test", HttpStatusCode.OK,
+            new DataConnectionTestResultDto { Success = false, Message = "Connection refused" });
+
+        var result = await client.TestDataConnectionAsync(id);
+
+        Assert.False(result.Success);
+        Assert.Equal("Connection refused", result.Message);
+    }
+
     // --- Packages ---
 
     [Fact]
@@ -223,6 +272,47 @@ public class NetPadApiClientTests
         Assert.Contains("term=json", recorded.Url);
         Assert.Contains("skip=10", recorded.Url);
         Assert.Contains("take=5", recorded.Url);
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_GetsCorrectUrlWithDefaults()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
+            new[] { "1.0.0", "2.0.0" });
+
+        var result = await client.GetPackageVersionsAsync("Newtonsoft.Json");
+
+        Assert.Equal(2, result.Length);
+        Assert.Equal("1.0.0", result[0]);
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("packageId=Newtonsoft.Json", recorded.Url);
+        Assert.Contains("includePrerelease=false", recorded.Url);
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_IncludesPrerelease()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
+            new[] { "1.0.0-beta", "1.0.0" });
+
+        await client.GetPackageVersionsAsync("MyPkg", includePrerelease: true);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("includePrerelease=true", recorded.Url);
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_EncodesPackageId()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK, Array.Empty<string>());
+
+        await client.GetPackageVersionsAsync("My Package");
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("packageId=My%20Package", recorded.Url);
     }
 
     // --- Error Handling ---

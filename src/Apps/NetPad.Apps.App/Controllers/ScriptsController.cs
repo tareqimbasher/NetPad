@@ -90,11 +90,12 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/duplicate")]
-    public async Task Duplicate(Guid id)
+    public async Task<Script> Duplicate(Guid id)
     {
         var environment = await GetScriptEnvironmentAsync(id);
         var script = await mediator.Send(new DuplicateScriptCommand(environment.Script));
         await mediator.Send(new OpenScriptCommand(script));
+        return script;
     }
 
     [HttpPatch("{id:guid}/save")]
