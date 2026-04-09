@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetPad.Common;
 using NetPad.Dtos;
+using NetPad.Exceptions;
 
 namespace NetPad.Host.Middlewares;
 
@@ -23,9 +24,13 @@ public class ExceptionHandlerMiddleware(
         {
             logger.LogError(ex, "An error occurred in request pipeline");
 
+            var statusCode = ex is ScriptNotFoundException or EnvironmentNotFoundException
+                ? HttpStatusCode.NotFound
+                : HttpStatusCode.InternalServerError;
+
             var result = new ErrorResult(ex.Message, webHostEnvironment.IsProduction() ? null : ex.ToString());
 
-            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            httpContext.Response.StatusCode = (int)statusCode;
             httpContext.Response.ContentType = "application/json";
             await httpContext.Response.WriteAsync(JsonSerializer.Serialize(result));
         }
