@@ -258,6 +258,23 @@ public class NetPadApiClientTests
         Assert.Equal("Connection refused", result.Message);
     }
 
+    [Fact]
+    public async Task GetDatabasesAsync_PatchesToCorrectUrl()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Patch, $"/data-connections/{id}/databases", HttpStatusCode.OK,
+            new[] { "db1", "db2", "db3" });
+
+        var result = await client.GetDatabasesAsync(id);
+
+        Assert.Equal(3, result.Length);
+        Assert.Equal("db1", result[0]);
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Patch, recorded.Method);
+        Assert.Contains($"/data-connections/{id}/databases", recorded.Url);
+    }
+
     // --- Packages ---
 
     [Fact]
