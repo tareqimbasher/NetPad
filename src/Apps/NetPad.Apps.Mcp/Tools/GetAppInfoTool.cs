@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class GetAppInfoTool
 {
-    [McpServerTool(Name = "get_app_info", ReadOnly = true), Description("Get information about the running NetPad instance, including version and dependency status.")]
+    [McpServerTool(Name = "get_app_info", ReadOnly = true, Destructive = false, Idempotent = true), Description("Get information about the running NetPad instance, including version and dependency status.")]
     public static async Task<string> GetAppInfo(NetPadApiClient api, CancellationToken cancellationToken)
     {
         var identifierTask = api.GetAppIdentifierAsync(cancellationToken);

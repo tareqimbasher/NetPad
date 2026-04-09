@@ -27,6 +27,16 @@ public class RunSqlToolTests
     }
 
     [Fact]
+    public async Task RunSql_InvalidDataConnectionId_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await RunSqlTool.RunSql(client, "SELECT 1", "not-a-guid");
+
+        Assert.Equal("Invalid dataConnectionId format. Expected a GUID.", result);
+    }
+
+    [Fact]
     public async Task RunSql_WithTimeout_IncludesTimeout()
     {
         var (client, handler) = CreateClient();

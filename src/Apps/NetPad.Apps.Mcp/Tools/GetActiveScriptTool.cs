@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class GetActiveScriptTool
 {
-    [McpServerTool(Name = "get_active_script", ReadOnly = true), Description(
+    [McpServerTool(Name = "get_active_script", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Get the currently active (focused) script in NetPad, including its code, configuration, and execution status.")]
     public static async Task<string> GetActiveScript(NetPadApiClient api, CancellationToken cancellationToken)
     {

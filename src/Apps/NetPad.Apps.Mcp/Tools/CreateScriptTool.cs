@@ -8,7 +8,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class CreateScriptTool
 {
-    [McpServerTool(Name = "create_script"), Description(
+    [McpServerTool(Name = "create_script", Destructive = false), Description(
         "Create a new script in NetPad. The script will be opened in the editor.")]
     public static async Task<string> CreateScript(
         NetPadApiClient api,

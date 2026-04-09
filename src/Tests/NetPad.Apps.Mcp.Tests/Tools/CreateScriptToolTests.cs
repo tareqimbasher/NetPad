@@ -42,6 +42,16 @@ public class CreateScriptToolTests
     }
 
     [Fact]
+    public async Task CreateScript_InvalidDataConnectionId_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await CreateScriptTool.CreateScript(client, dataConnectionId: "not-a-guid");
+
+        Assert.Equal("Invalid dataConnectionId format. Expected a GUID.", result);
+    }
+
+    [Fact]
     public async Task CreateScript_NoParams_SendsMinimalDto()
     {
         var (client, handler) = CreateClient();

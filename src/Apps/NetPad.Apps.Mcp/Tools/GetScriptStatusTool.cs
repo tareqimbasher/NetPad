@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class GetScriptStatusTool
 {
-    [McpServerTool(Name = "get_script_status", ReadOnly = true), Description(
+    [McpServerTool(Name = "get_script_status", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Get the execution status of an open script. Status is one of: Ready, Running, Stopping, Error.")]
     public static async Task<string> GetScriptStatus(
         NetPadApiClient api,

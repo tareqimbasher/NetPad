@@ -5,14 +5,15 @@ namespace NetPad.Apps.Mcp.Tests;
 
 public class NetPadConnectionDiscoveryTests : IDisposable
 {
-    private static readonly string HostsDirectory = Path.Combine(Path.GetTempPath(), "NetPad", "hosts");
-
+    private readonly string _hostsDirectory;
     private readonly string? _savedUrl;
     private readonly string? _savedToken;
-    private readonly List<string> _createdFiles = [];
 
     public NetPadConnectionDiscoveryTests()
     {
+        _hostsDirectory = Path.Combine(Path.GetTempPath(), "netpad-mcp-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_hostsDirectory);
+
         _savedUrl = Environment.GetEnvironmentVariable("NETPAD_URL");
         _savedToken = Environment.GetEnvironmentVariable("NETPAD_TOKEN");
         ClearEnvVars();
@@ -23,10 +24,13 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         Environment.SetEnvironmentVariable("NETPAD_URL", _savedUrl);
         Environment.SetEnvironmentVariable("NETPAD_TOKEN", _savedToken);
 
-        foreach (var file in _createdFiles)
+        try
         {
-            try { File.Delete(file); }
-            catch { /* best effort cleanup */ }
+            Directory.Delete(_hostsDirectory, recursive: true);
+        }
+        catch
+        {
+            // Best effort cleanup
         }
     }
 
@@ -36,7 +40,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         Environment.SetEnvironmentVariable("NETPAD_URL", "http://localhost:5000");
         Environment.SetEnvironmentVariable("NETPAD_TOKEN", "my-token");
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:5000", connection.Url);
         Assert.Equal("my-token", connection.Token);
@@ -48,7 +52,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         Environment.SetEnvironmentVariable("NETPAD_URL", "http://localhost:5000/");
         Environment.SetEnvironmentVariable("NETPAD_TOKEN", "my-token");
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:5000", connection.Url);
     }
@@ -70,7 +74,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         var currentPid = Environment.ProcessId;
         WriteConnectionFile("test-partial-env", "http://localhost:9999", "file-token", currentPid);
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("file-token", connection.Token);
         Assert.Equal("http://localhost:9999", connection.Url);
@@ -82,7 +86,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         var currentPid = Environment.ProcessId;
         WriteConnectionFile("test-running", "http://localhost:7777", "running-token", currentPid);
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:7777", connection.Url);
         Assert.Equal("running-token", connection.Token);
@@ -97,7 +101,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         WriteConnectionFile("test-new", "http://localhost:2222", "new-token", currentPid,
             startedAt: DateTime.UtcNow.AddHours(200));
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:2222", connection.Url);
         Assert.Equal("new-token", connection.Token);
@@ -116,7 +120,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         WriteConnectionFile("test-live", "http://localhost:2222", "live-token", currentPid,
             startedAt: DateTime.UtcNow.AddHours(100));
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:2222", connection.Url);
         Assert.Equal("live-token", connection.Token);
@@ -131,7 +135,7 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         // Clear env vars to ensure file path is used
         ClearEnvVars();
 
-        var ex = Assert.Throws<InvalidOperationException>(() => NetPadConnectionDiscovery.Discover());
+        var ex = Assert.Throws<InvalidOperationException>(() => NetPadConnectionDiscovery.Discover(_hostsDirectory));
         Assert.Contains("No running NetPad instance found", ex.Message);
     }
 
@@ -141,15 +145,13 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         var currentPid = Environment.ProcessId;
         WriteConnectionFile("test-slash", "http://localhost:3333/", "slash-token", currentPid);
 
-        var connection = NetPadConnectionDiscovery.Discover();
+        var connection = NetPadConnectionDiscovery.Discover(_hostsDirectory);
 
         Assert.Equal("http://localhost:3333", connection.Url);
     }
 
     private void WriteConnectionFile(string suffix, string url, string token, int pid, DateTime? startedAt = null)
     {
-        Directory.CreateDirectory(HostsDirectory);
-
         var info = new
         {
             url,
@@ -160,9 +162,8 @@ public class NetPadConnectionDiscoveryTests : IDisposable
         };
 
         var fileName = $"connection-{suffix}-{Guid.NewGuid():N}.json";
-        var filePath = Path.Combine(HostsDirectory, fileName);
+        var filePath = Path.Combine(_hostsDirectory, fileName);
         File.WriteAllText(filePath, JsonSerializer.Serialize(info));
-        _createdFiles.Add(filePath);
     }
 
     private static void ClearEnvVars()

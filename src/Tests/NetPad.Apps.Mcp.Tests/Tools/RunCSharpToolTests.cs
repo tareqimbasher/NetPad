@@ -91,6 +91,16 @@ public class RunCSharpToolTests
     }
 
     [Fact]
+    public async Task RunCSharp_InvalidDataConnectionId_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await RunCSharpTool.RunCSharp(client, "var x = 1;", dataConnectionId: "not-a-guid");
+
+        Assert.Equal("Invalid dataConnectionId format. Expected a GUID.", result);
+    }
+
+    [Fact]
     public async Task RunCSharp_ReturnsFormattedResult()
     {
         var (client, handler) = CreateClient();
@@ -100,6 +110,6 @@ public class RunCSharpToolTests
 
         var doc = JsonDocument.Parse(result);
         Assert.True(doc.RootElement.GetProperty("Success").GetBoolean());
-        Assert.Equal("Hello", doc.RootElement.GetProperty("Output")[0].GetString());
+        Assert.Equal("Hello", doc.RootElement.GetProperty("Output")[0].GetProperty("Body").GetString());
     }
 }

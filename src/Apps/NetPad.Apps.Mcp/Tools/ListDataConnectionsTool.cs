@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class ListDataConnectionsTool
 {
-    [McpServerTool(Name = "list_data_connections", ReadOnly = true), Description(
+    [McpServerTool(Name = "list_data_connections", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "List all configured database connections in NetPad.")]
     public static async Task<string> ListDataConnections(NetPadApiClient api, CancellationToken cancellationToken)
     {
