@@ -23,7 +23,8 @@ public class GetDatabaseStructureToolTests
                 Schemas = [new DatabaseSchemaDto { Name = "dbo", Tables = [] }]
             });
 
-        var result = await GetDatabaseStructureTool.GetDatabaseStructure(client, connId.ToString(), CancellationToken.None);
+        var result = await GetDatabaseStructureTool.GetDatabaseStructure(client, connId.ToString(),
+            cancellationToken: CancellationToken.None);
 
         var doc = JsonDocument.Parse(result);
         Assert.Equal("TestDB", doc.RootElement.GetProperty("databaseName").GetString());
@@ -34,7 +35,9 @@ public class GetDatabaseStructureToolTests
     {
         var (client, _) = CreateClient();
 
-        var result = await GetDatabaseStructureTool.GetDatabaseStructure(client, "not-a-guid", CancellationToken.None);
+        var result =
+            await GetDatabaseStructureTool.GetDatabaseStructure(client, "not-a-guid",
+                cancellationToken: CancellationToken.None);
 
         Assert.Equal("Invalid connectionId format. Expected a GUID.", result);
     }

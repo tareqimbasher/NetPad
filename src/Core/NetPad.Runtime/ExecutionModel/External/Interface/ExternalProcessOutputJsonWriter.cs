@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Data;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -19,7 +20,7 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
     private uint _resultOutputCounter;
     private uint _sqlOutputCounter;
 
-    private static readonly JsonSerializerOptions _valueOptions = new()
+    private static readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter() },
@@ -71,19 +72,38 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
 
     private static string SerializeValue(object? value)
     {
-        // Materialize IQueryable (e.g. EF Core queries) to a concrete list before serialization.
+        // Materialize IQueryable to a concrete list before serialization.
         // IQueryable types can't be serialized directly by System.Text.Json.
         if (value is IQueryable)
         {
             var list = new List<object?>();
             foreach (var item in (IEnumerable)value)
+            {
                 list.Add(item);
+            }
+
             value = list;
+        }
+
+        // DataTable/DataSet can't be serialized by System.Text.Json, convert to list of dictionaries.
+        if (value is DataSet dataSet)
+        {
+            var tables = new Dictionary<string, object>(dataSet.Tables.Count);
+            foreach (DataTable t in dataSet.Tables)
+            {
+                tables[t.TableName] = ConvertDataTable(t);
+            }
+
+            value = tables;
+        }
+        else if (value is DataTable dataTable)
+        {
+            value = ConvertDataTable(dataTable);
         }
 
         try
         {
-            return JsonSerializer.Serialize(value, _valueOptions);
+            return JsonSerializer.Serialize(value, _serializerOptions);
         }
         catch
         {
@@ -101,13 +121,36 @@ internal class ExternalProcessOutputJsonWriter(Func<string, Task> writeToMainOut
             writer.WriteStartObject();
             writer.WriteString("type", type);
             writer.WriteNumber("order", order);
+
             if (title != null)
+            {
                 writer.WriteString("title", title);
+            }
+
             writer.WritePropertyName("value");
             writer.WriteRawValue(valueJson);
             writer.WriteEndObject();
         }
 
         return Encoding.UTF8.GetString(buffer.ToArray());
+    }
+
+    private static List<Dictionary<string, object?>> ConvertDataTable(DataTable dataTable)
+    {
+        var columns = dataTable.Columns.Cast<DataColumn>().ToArray();
+        var rows = new List<Dictionary<string, object?>>(dataTable.Rows.Count);
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            var dict = new Dictionary<string, object?>(columns.Length);
+            foreach (var col in columns)
+            {
+                dict[col.ColumnName] = row[col] is DBNull ? null : row[col];
+            }
+
+            rows.Add(dict);
+        }
+
+        return rows;
     }
 }
