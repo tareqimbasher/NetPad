@@ -6,10 +6,6 @@ using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Packages;
 using NetPad.Packages.NuGet;
-using NetPad.Tests;
-using NetPad.Tests.Helpers;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NetPad.Runtime.Tests.Packages.NuGet;
 

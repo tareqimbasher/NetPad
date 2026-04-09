@@ -41,7 +41,7 @@ namespace NetPad.ExecutionModel.ClientServer;
 ///     c. script-host sends output back to Client (this) by emitting messages
 /// </para>
 /// </summary>
-public sealed partial class ClientServerScriptRunner : IScriptRunner
+public partial class ClientServerScriptRunner : IScriptRunner
 {
     private readonly Script _script;
     private readonly IScriptDependencyResolver _scriptDependencyResolver;
@@ -58,7 +58,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     private readonly WorkingDirectory _workingDirectory;
     private readonly List<IDisposable> _subscriptions = [];
 
-    private readonly ScriptHostProcessManager _scriptHostProcessManager;
+    private readonly IScriptHostProcessManager _scriptHostProcessManager;
     private readonly object _runLock = new();
     private ScriptRun? _currentRun;
     private bool _userRequestedStop;
@@ -78,7 +78,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         IEventBus eventBus,
         Settings settings,
         ILogger<ClientServerScriptRunner> logger,
-        ILoggerFactory loggerFactory)
+        IScriptHostProcessManagerFactory scriptHostProcessManagerFactory)
     {
         _script = script;
         _scriptDependencyResolver = scriptDependencyResolver;
@@ -117,15 +117,12 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
         });
         _rawOutputHandler = new RawOutputHandler(_combinedOutputWriter);
 
-        _scriptHostProcessManager = new ScriptHostProcessManager(
+        _scriptHostProcessManager = scriptHostProcessManagerFactory.Create(
             _script,
             _workingDirectory,
             AddScriptHostOnMessageReceivedHandlers,
             _rawOutputHandler.RawOutputReceived,
-            _rawOutputHandler.RawErrorReceived,
-            _eventBus,
-            _dotNetInfo,
-            loggerFactory
+            _rawOutputHandler.RawErrorReceived
         );
 
         _subscriptions.Add(eventBus.Subscribe<DataConnectionResourcesUpdatingEvent>(ev =>
@@ -436,7 +433,7 @@ public sealed partial class ClientServerScriptRunner : IScriptRunner
     /// Corrects line numbers in stack trace messages of uncaught exceptions outputted by external running process,
     /// relative to the line number where user code starts.
     /// </summary>
-    private static string CorrectUncaughtExceptionStackTraceLineNumber(string output, int userProgramStartLineNumber)
+    internal static string CorrectUncaughtExceptionStackTraceLineNumber(string output, int userProgramStartLineNumber)
     {
         if (!output.Contains(" :line "))
         {

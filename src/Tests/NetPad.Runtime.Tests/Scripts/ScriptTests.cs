@@ -2,8 +2,6 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using NetPad.DotNet;
 using NetPad.Scripts;
-using NetPad.Tests.Helpers;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.Scripts;
 

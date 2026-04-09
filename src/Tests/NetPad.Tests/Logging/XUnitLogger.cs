@@ -7,7 +7,10 @@ namespace NetPad.Tests.Logging;
 internal sealed class XUnitLogger<T>(ITestOutputHelper testOutputHelper, LoggerExternalScopeProvider scopeProvider)
     : XUnitLogger(testOutputHelper, scopeProvider, typeof(T).FullName ?? "Unknown_Type_Name"), ILogger<T>;
 
-internal class XUnitLogger(ITestOutputHelper testOutputHelper, LoggerExternalScopeProvider scopeProvider, string categoryName)
+internal class XUnitLogger(
+    ITestOutputHelper testOutputHelper,
+    LoggerExternalScopeProvider scopeProvider,
+    string categoryName)
     : ILogger
 {
     public static ILogger CreateLogger(ITestOutputHelper testOutputHelper) =>
@@ -18,7 +21,10 @@ internal class XUnitLogger(ITestOutputHelper testOutputHelper, LoggerExternalSco
 
     public bool IsEnabled(LogLevel logLevel) => logLevel != LogLevel.None;
 
-    public IDisposable BeginScope<TState>(TState state) => scopeProvider.Push(state);
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+    {
+        return scopeProvider.Push(state);
+    }
 
     public void Log<TState>(
         LogLevel logLevel,
@@ -52,12 +58,12 @@ internal class XUnitLogger(ITestOutputHelper testOutputHelper, LoggerExternalSco
     {
         return logLevel switch
         {
-            LogLevel.Trace =>       "trce",
-            LogLevel.Debug =>       "dbug",
+            LogLevel.Trace => "trce",
+            LogLevel.Debug => "dbug",
             LogLevel.Information => "info",
-            LogLevel.Warning =>     "warn",
-            LogLevel.Error =>       "fail",
-            LogLevel.Critical =>    "crit",
+            LogLevel.Warning => "warn",
+            LogLevel.Error => "fail",
+            LogLevel.Critical => "crit",
             _ => throw new ArgumentOutOfRangeException(nameof(logLevel))
         };
     }

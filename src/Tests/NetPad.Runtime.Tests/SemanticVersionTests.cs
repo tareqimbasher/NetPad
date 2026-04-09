@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace NetPad.Runtime.Tests;
 
 public class SemanticVersionTests

@@ -2,7 +2,6 @@ using Microsoft.CodeAnalysis;
 using NetPad.DotNet;
 using NetPad.DotNet.References;
 using NetPad.Scripts;
-using Xunit;
 
 namespace NetPad.Runtime.Tests.Scripts;
 
