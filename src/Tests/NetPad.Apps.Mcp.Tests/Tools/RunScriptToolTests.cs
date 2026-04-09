@@ -101,6 +101,16 @@ public class RunScriptToolTests
     }
 
     [Fact]
+    public async Task RunScript_InvalidScriptId_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await RunScriptTool.RunScript(client, scriptId: "not-a-guid");
+
+        Assert.Equal("Invalid scriptId format. Expected a GUID.", result);
+    }
+
+    [Fact]
     public async Task RunScript_ById_Open_RunsInGui()
     {
         var (client, handler) = CreateClient();

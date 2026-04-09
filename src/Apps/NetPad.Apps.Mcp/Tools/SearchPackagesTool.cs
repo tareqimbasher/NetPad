@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class SearchPackagesTool
 {
-    [McpServerTool(Name = "search_packages", ReadOnly = true), Description(
+    [McpServerTool(Name = "search_packages", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Search for NuGet packages by name or keyword.")]
     public static async Task<string> SearchPackages(
         NetPadApiClient api,

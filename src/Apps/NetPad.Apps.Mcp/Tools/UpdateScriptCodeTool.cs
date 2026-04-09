@@ -6,7 +6,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class UpdateScriptCodeTool
 {
-    [McpServerTool(Name = "update_script_code"), Description(
+    [McpServerTool(Name = "update_script_code", Destructive = false, Idempotent = true), Description(
         "Update the code content of an open script in NetPad.")]
     public static async Task<string> UpdateScriptCode(
         NetPadApiClient api,

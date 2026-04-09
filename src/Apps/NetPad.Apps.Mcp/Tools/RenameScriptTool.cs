@@ -6,7 +6,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class RenameScriptTool
 {
-    [McpServerTool(Name = "rename_script"), Description(
+    [McpServerTool(Name = "rename_script", Destructive = false, Idempotent = true), Description(
         "Rename an open script in NetPad.")]
     public static async Task<string> RenameScript(
         NetPadApiClient api,

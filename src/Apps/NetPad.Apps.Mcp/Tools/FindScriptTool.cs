@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class FindScriptTool
 {
-    [McpServerTool(Name = "find_script", ReadOnly = true), Description(
+    [McpServerTool(Name = "find_script", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Find scripts by name using case-insensitive partial matching. " +
         "Searches both open and saved scripts. " +
         "Returns matching scripts with their ID, name, path, and status.")]

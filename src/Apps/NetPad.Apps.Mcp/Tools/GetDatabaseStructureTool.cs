@@ -7,7 +7,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class GetDatabaseStructureTool
 {
-    [McpServerTool(Name = "get_database_structure", ReadOnly = true), Description(
+    [McpServerTool(Name = "get_database_structure", ReadOnly = true, Destructive = false, Idempotent = true), Description(
         "Get the schema and table structure of a database connection, " +
         "including tables, columns, and their types. " +
         "Use list_data_connections to find available connection IDs.")]

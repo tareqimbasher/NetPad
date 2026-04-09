@@ -6,7 +6,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class SetScriptConnectionTool
 {
-    [McpServerTool(Name = "set_script_connection"), Description(
+    [McpServerTool(Name = "set_script_connection", Destructive = false, Idempotent = true), Description(
         "Set or remove the data connection for a script. " +
         "Setting a connection allows the script to access that database. " +
         "Use list_data_connections to find available connection IDs.")]

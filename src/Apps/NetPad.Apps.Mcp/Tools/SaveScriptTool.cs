@@ -6,7 +6,7 @@ namespace NetPad.Apps.Mcp.Tools;
 [McpServerToolType]
 public class SaveScriptTool
 {
-    [McpServerTool(Name = "save_script"), Description(
+    [McpServerTool(Name = "save_script", Destructive = false, Idempotent = true), Description(
         "Save a script to disk. If the script is new and has never been saved, " +
         "a save dialog may appear in the NetPad GUI.")]
     public static async Task<string> SaveScript(

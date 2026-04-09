@@ -24,7 +24,11 @@ public class ExecutionResultFormatterTests
         Assert.Equal("completed", root.GetProperty("Status").GetString());
         Assert.True(root.GetProperty("Success").GetBoolean());
         Assert.Equal(42.5, root.GetProperty("DurationMs").GetDouble());
-        Assert.Equal("Hello, World!", root.GetProperty("Output")[0].GetString());
+
+        var entry = root.GetProperty("Output")[0];
+        Assert.Equal("result", entry.GetProperty("Kind").GetString());
+        Assert.Equal("Hello, World!", entry.GetProperty("Body").GetString());
+        Assert.Equal("text", entry.GetProperty("Format").GetString());
     }
 
     [Fact]
@@ -66,13 +70,14 @@ public class ExecutionResultFormatterTests
         var output = doc.RootElement.GetProperty("Output");
 
         Assert.Equal(2, output.GetArrayLength());
-        Assert.Equal("line 1", output[0].GetString());
-        Assert.Equal("line 2", output[1].GetString());
+        Assert.Equal("line 1", output[0].GetProperty("Body").GetString());
+        Assert.Equal("line 2", output[1].GetProperty("Body").GetString());
     }
 
     [Fact]
-    public void Format_ObjectOutputWithBody_ExtractsBody()
+    public void Format_ObjectOutputWithBody_NoFormat_PreservesBodyAsText()
     {
+        // When no "format" property is present, format defaults to "text" and body is kept as-is
         var obj = new { body = "<table><tr><td>Data</td></tr></table>", title = "Results" };
         var result = new HeadlessRunResult
         {
@@ -86,8 +91,32 @@ public class ExecutionResultFormatterTests
         var output = doc.RootElement.GetProperty("Output");
 
         Assert.Single(output.EnumerateArray());
-        var text = output[0].GetString()!;
-        Assert.Contains("<table>", text);
+        var entry = output[0];
+        Assert.Equal("result", entry.GetProperty("Kind").GetString());
+        Assert.Equal("text", entry.GetProperty("Format").GetString());
+        Assert.Contains("<table>", entry.GetProperty("Body").GetString());
+    }
+
+    [Fact]
+    public void Format_HtmlFormatOutput_StripsHtmlTags()
+    {
+        // When format is "html", the formatter strips HTML tags and converts to plain text
+        var obj = new { body = "<table><tr><td>Data</td></tr></table>", format = "html" };
+        var result = new HeadlessRunResult
+        {
+            Status = "completed",
+            Success = true,
+            Output = [JsonElement(obj)]
+        };
+
+        var formatted = ExecutionResultFormatter.Format(result);
+        var doc = JsonDocument.Parse(formatted);
+        var output = doc.RootElement.GetProperty("Output");
+
+        var entry = output[0];
+        Assert.Equal("text", entry.GetProperty("Format").GetString());
+        Assert.Contains("Data", entry.GetProperty("Body").GetString());
+        Assert.DoesNotContain("<table>", entry.GetProperty("Body").GetString()!);
     }
 
     [Fact]
@@ -106,9 +135,10 @@ public class ExecutionResultFormatterTests
         var doc = JsonDocument.Parse(formatted);
         var output = doc.RootElement.GetProperty("Output");
 
-        // Should have truncated — look for the truncation marker
-        var lastItem = output[output.GetArrayLength() - 1].GetString()!;
-        Assert.Contains("truncated", lastItem, StringComparison.OrdinalIgnoreCase);
+        // Should have truncated — look for the truncation marker in the last entry's Body
+        var lastEntry = output[output.GetArrayLength() - 1];
+        var body = lastEntry.GetProperty("Body").GetString()!;
+        Assert.Contains("truncated", body, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -142,7 +172,10 @@ public class ExecutionResultFormatterTests
         var doc = JsonDocument.Parse(formatted);
         var output = doc.RootElement.GetProperty("Output");
 
-        Assert.Equal("42", output[0].GetString());
+        var entry = output[0];
+        Assert.Equal("result", entry.GetProperty("Kind").GetString());
+        Assert.Equal("42", entry.GetProperty("Body").GetString());
+        Assert.Equal("text", entry.GetProperty("Format").GetString());
     }
 
     private static JsonElement JsonElement(object value)

@@ -28,48 +28,24 @@ public class NetPadApiClient
         _httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(connection.Url),
-            // No client-side timeout — rely on server-side timeouts and CancellationToken
+            // No client-side timeout, rely on server-side timeouts and CancellationToken
             // to avoid premature cancellation of long-running operations like script execution
-            Timeout = System.Threading.Timeout.InfiniteTimeSpan
+            Timeout = Timeout.InfiniteTimeSpan
         };
         _httpClient.DefaultRequestHeaders.Add("X-NetPad-Token", connection.Token);
     }
 
-    // --- Execution ---
+    // --- App ---
 
-    public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request, CancellationToken cancellationToken = default)
+    public async Task<AppIdentifierDto> GetAppIdentifierAsync(CancellationToken cancellationToken = default)
     {
-        return await PostAsync<HeadlessRunResult>("/headless/run", request, cancellationToken);
+        return await GetAsync<AppIdentifierDto>("/app/identifier", cancellationToken)
+               ?? throw new InvalidOperationException("Failed to get app identifier");
     }
 
-    public async Task<HeadlessRunResult> RunScriptAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
+    public async Task<AppDependencyCheckDto> CheckDependenciesAsync(CancellationToken cancellationToken = default)
     {
-        var url = $"/headless/run/{scriptId}";
-        if (timeoutMs.HasValue)
-        {
-            url += $"?timeoutMs={timeoutMs.Value}";
-        }
-
-        return await PostAsync<HeadlessRunResult>(url, cancellationToken: cancellationToken);
-    }
-
-    // --- Session ---
-
-    public async Task<Guid?> GetActiveScriptIdAsync(CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<Guid?>("/session/active", cancellationToken);
-    }
-
-    public async Task<ScriptEnvironmentDto> GetEnvironmentAsync(Guid scriptId, CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<ScriptEnvironmentDto>($"/session/environments/{scriptId}", cancellationToken)
-               ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
-    }
-
-    public async Task<ScriptStatusDto> GetEnvironmentStatusAsync(Guid scriptId, CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<ScriptStatusDto>($"/session/environments/{scriptId}/status", cancellationToken)
-               ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
+        return await PatchAsync<AppDependencyCheckDto>("/app/check-dependencies", cancellationToken: cancellationToken);
     }
 
     // --- Scripts ---
@@ -122,6 +98,43 @@ public class NetPadApiClient
         await SendAsync(HttpMethod.Put, url, cancellationToken: cancellationToken);
     }
 
+    // --- Session ---
+
+    public async Task<Guid?> GetActiveScriptIdAsync(CancellationToken cancellationToken = default)
+    {
+        return await GetAsync<Guid?>("/session/active", cancellationToken);
+    }
+
+    public async Task<ScriptEnvironmentDto> GetEnvironmentAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        return await GetAsync<ScriptEnvironmentDto>($"/session/environments/{scriptId}", cancellationToken)
+               ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
+    }
+
+    public async Task<ScriptStatusDto> GetEnvironmentStatusAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        return await GetAsync<ScriptStatusDto>($"/session/environments/{scriptId}/status", cancellationToken)
+               ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
+    }
+
+    // --- Execution ---
+
+    public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request, CancellationToken cancellationToken = default)
+    {
+        return await PostAsync<HeadlessRunResult>("/headless/run", request, cancellationToken);
+    }
+
+    public async Task<HeadlessRunResult> RunScriptAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
+    {
+        var url = $"/headless/run/{scriptId}";
+        if (timeoutMs.HasValue)
+        {
+            url += $"?timeoutMs={timeoutMs.Value}";
+        }
+
+        return await PostAsync<HeadlessRunResult>(url, cancellationToken: cancellationToken);
+    }
+
     public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
     {
         var url = $"/headless/run/{scriptId}/gui";
@@ -152,19 +165,6 @@ public class NetPadApiClient
     {
         var url = $"/packages/search?term={Uri.EscapeDataString(term)}&skip={skip}&take={take}";
         return await GetAsync<PackageMetadataDto[]>(url, cancellationToken) ?? [];
-    }
-
-    // --- App ---
-
-    public async Task<AppIdentifierDto> GetAppIdentifierAsync(CancellationToken cancellationToken = default)
-    {
-        return await GetAsync<AppIdentifierDto>("/app/identifier", cancellationToken)
-               ?? throw new InvalidOperationException("Failed to get app identifier");
-    }
-
-    public async Task<AppDependencyCheckDto> CheckDependenciesAsync(CancellationToken cancellationToken = default)
-    {
-        return await PatchAsync<AppDependencyCheckDto>("/app/check-dependencies", cancellationToken: cancellationToken);
     }
 
     // --- HTTP helpers ---

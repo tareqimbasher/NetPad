@@ -155,12 +155,12 @@ public class NetPadApiClientTests
     }
 
     [Fact]
-    public async Task GetScriptCodeAsync_DeserializesJsonString()
+    public async Task GetScriptCodeAsync_ReturnsRawContent()
     {
         var (client, handler) = CreateClient();
         var id = Guid.NewGuid();
         handler.SetupRaw(HttpMethod.Get, $"/scripts/{id}/code", HttpStatusCode.OK,
-            "\"Console.WriteLine(42);\"");
+            "Console.WriteLine(42);");
 
         var code = await client.GetScriptCodeAsync(id);
 

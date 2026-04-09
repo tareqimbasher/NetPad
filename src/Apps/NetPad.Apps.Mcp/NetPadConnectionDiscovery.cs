@@ -9,15 +9,18 @@ namespace NetPad.Apps.Mcp;
 /// </summary>
 public static class NetPadConnectionDiscovery
 {
-    private static readonly string _hostsDirectory = Path.Combine(Path.GetTempPath(), "NetPad", "hosts");
+    private static readonly string _defaultHostsDirectory = Path.Combine(Path.GetTempPath(), "NetPad", "hosts");
 
     /// <summary>
     /// Discovers a running NetPad instance.
     /// Priority:
     /// 1. NETPAD_URL + NETPAD_TOKEN environment variables
-    /// 2. Connection files in the temp directory, filtered to running PIDs
+    /// 2. Connection files in <paramref name="hostsDirectory"/> (or the default temp path), filtered to running PIDs
     /// </summary>
-    public static NetPadConnection Discover()
+    /// <param name="hostsDirectory">
+    /// Overrides the default directory containing connection files that will be used for discovery.
+    /// </param>
+    public static NetPadConnection Discover(string? hostsDirectory = null)
     {
         var envUrl = Environment.GetEnvironmentVariable("NETPAD_URL");
         var envToken = Environment.GetEnvironmentVariable("NETPAD_TOKEN");
@@ -27,19 +30,19 @@ public static class NetPadConnectionDiscovery
             return new NetPadConnection(envUrl.TrimEnd('/'), envToken);
         }
 
-        return DiscoverFromConnectionFiles();
+        return DiscoverFromConnectionFiles(hostsDirectory ?? _defaultHostsDirectory);
     }
 
-    private static NetPadConnection DiscoverFromConnectionFiles()
+    private static NetPadConnection DiscoverFromConnectionFiles(string hostsDirectory)
     {
-        if (!Directory.Exists(_hostsDirectory))
+        if (!Directory.Exists(hostsDirectory))
         {
             throw new InvalidOperationException(
-                $"No running NetPad instance found. The hosts directory does not exist: {_hostsDirectory}. " +
+                $"No running NetPad instance found. The hosts directory does not exist: {hostsDirectory}. " +
                 "Please start NetPad first, or set the NETPAD_URL and NETPAD_TOKEN environment variables.");
         }
 
-        var connectionFiles = Directory.GetFiles(_hostsDirectory, "connection-*.json");
+        var connectionFiles = Directory.GetFiles(hostsDirectory, "connection-*.json");
         if (connectionFiles.Length == 0)
         {
             throw new InvalidOperationException(
@@ -106,19 +109,14 @@ public static class NetPadConnectionDiscovery
     /// </summary>
     private class ConnectionInfo
     {
-        [JsonPropertyName("url")]
-        public string Url { get; set; } = default!;
+        [JsonPropertyName("url")] public string Url { get; set; } = default!;
 
-        [JsonPropertyName("token")]
-        public string Token { get; set; } = default!;
+        [JsonPropertyName("token")] public string Token { get; set; } = default!;
 
-        [JsonPropertyName("pid")]
-        public int Pid { get; set; }
+        [JsonPropertyName("pid")] public int Pid { get; set; }
 
-        [JsonPropertyName("shell")]
-        public string? Shell { get; set; }
+        [JsonPropertyName("shell")] public string? Shell { get; set; }
 
-        [JsonPropertyName("startedAt")]
-        public DateTime StartedAt { get; set; }
+        [JsonPropertyName("startedAt")] public DateTime StartedAt { get; set; }
     }
 }
