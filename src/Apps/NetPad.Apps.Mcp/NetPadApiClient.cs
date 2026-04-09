@@ -184,6 +184,11 @@ public class NetPadApiClient
                ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
     }
 
+    public async Task CloseScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        await PatchAsync($"/session/{scriptId}/close?discardUnsavedChanges=true", cancellationToken: cancellationToken);
+    }
+
     // --- Execution ---
 
     public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request,

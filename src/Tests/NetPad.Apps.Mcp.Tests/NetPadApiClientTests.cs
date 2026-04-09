@@ -116,6 +116,21 @@ public class NetPadApiClientTests
     }
 
     [Fact]
+    public async Task CloseScriptAsync_PatchesToCorrectUrlWithDiscardFlag()
+    {
+        var (client, handler) = CreateClient();
+        var id = Guid.NewGuid();
+        handler.Setup(HttpMethod.Patch, $"/session/{id}/close", HttpStatusCode.OK);
+
+        await client.CloseScriptAsync(id);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Patch, recorded.Method);
+        Assert.Contains($"/session/{id}/close", recorded.Url);
+        Assert.Contains("discardUnsavedChanges=true", recorded.Url);
+    }
+
+    [Fact]
     public async Task GetEnvironmentStatusAsync_GetsCorrectUrl()
     {
         var (client, handler) = CreateClient();
