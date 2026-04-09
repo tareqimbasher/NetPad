@@ -6229,6 +6229,11 @@ export class CreateScriptDto implements ICreateScriptDto {
     name?: string | undefined;
     code?: string | undefined;
     dataConnectionId?: string | undefined;
+    kind?: ScriptKind | undefined;
+    targetFrameworkVersion?: DotNetFrameworkVersion | undefined;
+    optimizationLevel?: OptimizationLevel | undefined;
+    useAspNet?: boolean | undefined;
+    namespaces?: string[] | undefined;
     runImmediately!: boolean;
 
     constructor(data?: ICreateScriptDto) {
@@ -6245,6 +6250,15 @@ export class CreateScriptDto implements ICreateScriptDto {
             this.name = _data["name"];
             this.code = _data["code"];
             this.dataConnectionId = _data["dataConnectionId"];
+            this.kind = _data["kind"];
+            this.targetFrameworkVersion = _data["targetFrameworkVersion"];
+            this.optimizationLevel = _data["optimizationLevel"];
+            this.useAspNet = _data["useAspNet"];
+            if (Array.isArray(_data["namespaces"])) {
+                this.namespaces = [] as any;
+                for (let item of _data["namespaces"])
+                    this.namespaces!.push(item);
+            }
             this.runImmediately = _data["runImmediately"];
         }
     }
@@ -6261,6 +6275,15 @@ export class CreateScriptDto implements ICreateScriptDto {
         data["name"] = this.name;
         data["code"] = this.code;
         data["dataConnectionId"] = this.dataConnectionId;
+        data["kind"] = this.kind;
+        data["targetFrameworkVersion"] = this.targetFrameworkVersion;
+        data["optimizationLevel"] = this.optimizationLevel;
+        data["useAspNet"] = this.useAspNet;
+        if (Array.isArray(this.namespaces)) {
+            data["namespaces"] = [];
+            for (let item of this.namespaces)
+                data["namespaces"].push(item);
+        }
         data["runImmediately"] = this.runImmediately;
         return data;
     }
@@ -6277,6 +6300,11 @@ export interface ICreateScriptDto {
     name?: string | undefined;
     code?: string | undefined;
     dataConnectionId?: string | undefined;
+    kind?: ScriptKind | undefined;
+    targetFrameworkVersion?: DotNetFrameworkVersion | undefined;
+    optimizationLevel?: OptimizationLevel | undefined;
+    useAspNet?: boolean | undefined;
+    namespaces?: string[] | undefined;
     runImmediately: boolean;
 }
 

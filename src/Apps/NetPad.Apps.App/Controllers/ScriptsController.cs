@@ -64,6 +64,21 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
     {
         var script = await mediator.Send(new CreateScriptCommand(dto.Name));
 
+        if (dto.Kind != null)
+            script.Config.SetKind(dto.Kind.Value);
+
+        if (dto.TargetFrameworkVersion != null)
+            script.Config.SetTargetFrameworkVersion(dto.TargetFrameworkVersion.Value);
+
+        if (dto.OptimizationLevel != null)
+            script.Config.SetOptimizationLevel(dto.OptimizationLevel.Value);
+
+        if (dto.UseAspNet != null)
+            script.Config.SetUseAspNet(dto.UseAspNet.Value);
+
+        if (dto.Namespaces != null)
+            script.Config.SetNamespaces(dto.Namespaces);
+
         bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
         if (hasSeedCode)
         {

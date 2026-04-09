@@ -63,4 +63,71 @@ public class CreateScriptToolTests
         var recorded = Assert.Single(handler.Requests);
         Assert.Contains("\"runImmediately\":false", recorded.Body);
     }
+
+    [Fact]
+    public async Task CreateScript_WithConfigParams_SendsCorrectDto()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
+
+        await CreateScriptTool.CreateScript(
+            client,
+            name: "Test",
+            kind: "SQL",
+            targetFrameworkVersion: "DotNet9",
+            optimizationLevel: "Release",
+            useAspNet: true,
+            namespaces: new[] { "System.Numerics", "System.Net" });
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("\"kind\":\"SQL\"", recorded.Body);
+        Assert.Contains("\"targetFrameworkVersion\":\"DotNet9\"", recorded.Body);
+        Assert.Contains("\"optimizationLevel\":\"Release\"", recorded.Body);
+        Assert.Contains("\"useAspNet\":true", recorded.Body);
+        Assert.Contains("\"namespaces\":", recorded.Body);
+        Assert.Contains("System.Numerics", recorded.Body);
+        Assert.Contains("System.Net", recorded.Body);
+    }
+
+    [Fact]
+    public async Task CreateScript_InvalidKind_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await CreateScriptTool.CreateScript(client, kind: "Invalid");
+
+        Assert.Contains("Invalid kind", result);
+        Assert.Contains("Program", result);
+        Assert.Contains("SQL", result);
+    }
+
+    [Fact]
+    public async Task CreateScript_InvalidOptimizationLevel_ReturnsErrorMessage()
+    {
+        var (client, _) = CreateClient();
+
+        var result = await CreateScriptTool.CreateScript(client, optimizationLevel: "Fast");
+
+        Assert.Contains("Invalid optimizationLevel", result);
+        Assert.Contains("Debug", result);
+        Assert.Contains("Release", result);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithOnlyKind_SendsDtoWithKindOnly()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Script 1" });
+
+        await CreateScriptTool.CreateScript(client, kind: "Program");
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("\"kind\":\"Program\"", recorded.Body);
+        Assert.Contains("\"targetFrameworkVersion\":null", recorded.Body);
+        Assert.Contains("\"optimizationLevel\":null", recorded.Body);
+        Assert.Contains("\"useAspNet\":null", recorded.Body);
+        Assert.Contains("\"namespaces\":null", recorded.Body);
+    }
 }

@@ -15,4 +15,19 @@ public class CreateScriptDto
 
     [JsonPropertyName("runImmediately")]
     public bool RunImmediately { get; set; }
+
+    [JsonPropertyName("kind")]
+    public string? Kind { get; set; }
+
+    [JsonPropertyName("targetFrameworkVersion")]
+    public string? TargetFrameworkVersion { get; set; }
+
+    [JsonPropertyName("optimizationLevel")]
+    public string? OptimizationLevel { get; set; }
+
+    [JsonPropertyName("useAspNet")]
+    public bool? UseAspNet { get; set; }
+
+    [JsonPropertyName("namespaces")]
+    public string[]? Namespaces { get; set; }
 }

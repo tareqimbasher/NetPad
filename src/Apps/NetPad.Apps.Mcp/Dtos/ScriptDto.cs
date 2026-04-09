@@ -37,6 +37,9 @@ public class ScriptConfigDto
     [JsonPropertyName("targetFrameworkVersion")]
     public string TargetFrameworkVersion { get; set; } = default!;
 
+    [JsonPropertyName("optimizationLevel")]
+    public string OptimizationLevel { get; set; } = default!;
+
     [JsonPropertyName("useAspNet")]
     public bool UseAspNet { get; set; }
 
