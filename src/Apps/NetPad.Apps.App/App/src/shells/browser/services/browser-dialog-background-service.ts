@@ -63,12 +63,12 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
         const answer = response.value;
         const ync: YesNoCancel = answer === "Yes" ? "Yes" : answer === "No" ? "No" : "Cancel";
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, ync);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, ync);
     }
 
     private async requestScriptSavePath(command: RequestScriptSavePathCommand) {
         const newName = prompt("Script name:", command.scriptName);
 
-        await this.ipcGateway.send(new ChannelInfo("Respond"), command.id, newName || null);
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, newName || null);
     }
 }

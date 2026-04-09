@@ -47,9 +47,9 @@ public class Session : ISession
         return _environments.TryGetValue(scriptId, out var environment) ? environment : null;
     }
 
-    public async Task OpenAsync(Script script, bool activate)
+    public async Task<ScriptEnvironment> OpenAsync(Script script, bool activate)
     {
-        await OpenInternalAsync(script);
+        var environment = await OpenInternalAsync(script);
 
         if (activate)
         {
@@ -57,6 +57,8 @@ public class Session : ISession
         }
 
         _saveSessionInfoDebounced();
+
+        return environment;
     }
 
     public async Task OpenAsync(IList<Script> scripts, bool activateBestCandidate)
@@ -81,7 +83,7 @@ public class Session : ISession
         _saveSessionInfoDebounced();
     }
 
-    private async Task OpenInternalAsync(Script script)
+    private async Task<ScriptEnvironment> OpenInternalAsync(Script script)
     {
         var environment = Get(script.Id);
 
@@ -97,6 +99,8 @@ public class Session : ISession
 
             await _eventBus.PublishAsync(new EnvironmentsAddedEvent(environment));
         }
+
+        return environment;
     }
 
     public async Task CloseAsync(Guid scriptId)

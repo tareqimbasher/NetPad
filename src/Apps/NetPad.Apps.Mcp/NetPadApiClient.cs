@@ -50,7 +50,9 @@ public class NetPadApiClient
 
     // --- Scripts ---
 
-    public async Task<ScriptInfoDto[]> GetScriptsInfoAsync(string? name = null, CancellationToken cancellationToken = default)
+    public async Task<ScriptInfoDto[]> GetScriptsInfoAsync(
+        string? name = null,
+        CancellationToken cancellationToken = default)
     {
         var url = "/scripts/info";
         if (!string.IsNullOrWhiteSpace(name))
@@ -63,7 +65,8 @@ public class NetPadApiClient
 
     public async Task<string> GetScriptCodeAsync(Guid scriptId, CancellationToken cancellationToken = default)
     {
-        using var response = await SendAsync(HttpMethod.Get, $"/scripts/{scriptId}/code", cancellationToken: cancellationToken);
+        using var response = await SendAsync(HttpMethod.Get, $"/scripts/{scriptId}/code",
+            cancellationToken: cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
@@ -74,7 +77,8 @@ public class NetPadApiClient
 
     public async Task UpdateScriptCodeAsync(Guid scriptId, string code, CancellationToken cancellationToken = default)
     {
-        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code?externallyInitiated=true", SerializeContent(code), cancellationToken);
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/code?externallyInitiated=true", SerializeContent(code),
+            cancellationToken);
     }
 
     public async Task<bool> SaveScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
@@ -87,7 +91,10 @@ public class NetPadApiClient
         await PatchAsync($"/scripts/{scriptId}/rename", SerializeContent(newName), cancellationToken);
     }
 
-    public async Task SetScriptDataConnectionAsync(Guid scriptId, Guid? dataConnectionId, CancellationToken cancellationToken = default)
+    public async Task SetScriptDataConnectionAsync(
+        Guid scriptId,
+        Guid? dataConnectionId,
+        CancellationToken cancellationToken = default)
     {
         var url = $"/scripts/{scriptId}/data-connection";
         if (dataConnectionId.HasValue)
@@ -105,13 +112,29 @@ public class NetPadApiClient
         return await GetAsync<Guid?>("/session/active", cancellationToken);
     }
 
-    public async Task<ScriptEnvironmentDto> GetEnvironmentAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    public async Task<ScriptEnvironmentDto> OpenScriptByIdAsync(Guid scriptId,
+        CancellationToken cancellationToken = default)
+    {
+        return await PatchAsync<ScriptEnvironmentDto>($"/session/open/{scriptId}",
+            cancellationToken: cancellationToken);
+    }
+
+    public async Task<ScriptEnvironmentDto> OpenScriptByPathAsync(string scriptPath,
+        CancellationToken cancellationToken = default)
+    {
+        return await PatchAsync<ScriptEnvironmentDto>("/session/open/path", SerializeContent(scriptPath),
+            cancellationToken);
+    }
+
+    public async Task<ScriptEnvironmentDto> GetEnvironmentAsync(Guid scriptId,
+        CancellationToken cancellationToken = default)
     {
         return await GetAsync<ScriptEnvironmentDto>($"/session/environments/{scriptId}", cancellationToken)
                ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
     }
 
-    public async Task<ScriptStatusDto> GetEnvironmentStatusAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    public async Task<ScriptStatusDto> GetEnvironmentStatusAsync(Guid scriptId,
+        CancellationToken cancellationToken = default)
     {
         return await GetAsync<ScriptStatusDto>($"/session/environments/{scriptId}/status", cancellationToken)
                ?? throw new InvalidOperationException($"Script environment not found: {scriptId}");
@@ -119,12 +142,14 @@ public class NetPadApiClient
 
     // --- Execution ---
 
-    public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request, CancellationToken cancellationToken = default)
+    public async Task<HeadlessRunResult> RunCodeAsync(HeadlessRunRequest request,
+        CancellationToken cancellationToken = default)
     {
         return await PostAsync<HeadlessRunResult>("/headless/run", request, cancellationToken);
     }
 
-    public async Task<HeadlessRunResult> RunScriptAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
+    public async Task<HeadlessRunResult> RunScriptAsync(Guid scriptId, int? timeoutMs = null,
+        CancellationToken cancellationToken = default)
     {
         var url = $"/headless/run/{scriptId}";
         if (timeoutMs.HasValue)
@@ -135,7 +160,8 @@ public class NetPadApiClient
         return await PostAsync<HeadlessRunResult>(url, cancellationToken: cancellationToken);
     }
 
-    public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs = null, CancellationToken cancellationToken = default)
+    public async Task<HeadlessRunResult> RunScriptInGuiAsync(Guid scriptId, int? timeoutMs = null,
+        CancellationToken cancellationToken = default)
     {
         var url = $"/headless/run/{scriptId}/gui";
         if (timeoutMs.HasValue)
@@ -146,6 +172,11 @@ public class NetPadApiClient
         return await PostAsync<HeadlessRunResult>(url, cancellationToken: cancellationToken);
     }
 
+    public async Task StopScriptAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    {
+        await PatchAsync($"/scripts/{scriptId}/stop", cancellationToken: cancellationToken);
+    }
+
     // --- Data Connections ---
 
     public async Task<GetAllConnectionsResponse> GetAllConnectionsAsync(CancellationToken cancellationToken = default)
@@ -154,14 +185,17 @@ public class NetPadApiClient
                ?? new GetAllConnectionsResponse();
     }
 
-    public async Task<DatabaseStructureDto> GetDatabaseStructureAsync(Guid connectionId, CancellationToken cancellationToken = default)
+    public async Task<DatabaseStructureDto> GetDatabaseStructureAsync(Guid connectionId,
+        CancellationToken cancellationToken = default)
     {
-        return await PatchAsync<DatabaseStructureDto>($"/data-connections/{connectionId}/database-structure", cancellationToken: cancellationToken);
+        return await PatchAsync<DatabaseStructureDto>($"/data-connections/{connectionId}/database-structure",
+            cancellationToken: cancellationToken);
     }
 
     // --- Packages ---
 
-    public async Task<PackageMetadataDto[]> SearchPackagesAsync(string term, int skip = 0, int take = 30, CancellationToken cancellationToken = default)
+    public async Task<PackageMetadataDto[]> SearchPackagesAsync(string term, int skip = 0, int take = 30,
+        CancellationToken cancellationToken = default)
     {
         var url = $"/packages/search?term={Uri.EscapeDataString(term)}&skip={skip}&take={take}";
         return await GetAsync<PackageMetadataDto[]>(url, cancellationToken) ?? [];
@@ -183,19 +217,22 @@ public class NetPadApiClient
                ?? throw new InvalidOperationException($"Unexpected null response from POST {url}");
     }
 
-    private async Task<T> PatchAsync<T>(string url, HttpContent? content = null, CancellationToken cancellationToken = default)
+    private async Task<T> PatchAsync<T>(string url, HttpContent? content = null,
+        CancellationToken cancellationToken = default)
     {
         using var response = await SendAsync(HttpMethod.Patch, url, content, cancellationToken);
         return await response.Content.ReadFromJsonAsync<T>(_jsonOptions, cancellationToken)
                ?? throw new InvalidOperationException($"Unexpected null response from PATCH {url}");
     }
 
-    private async Task PatchAsync(string url, HttpContent? content = null, CancellationToken cancellationToken = default)
+    private async Task PatchAsync(string url, HttpContent? content = null,
+        CancellationToken cancellationToken = default)
     {
         using var response = await SendAsync(HttpMethod.Patch, url, content, cancellationToken);
     }
 
-    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, HttpContent? content = null, CancellationToken cancellationToken = default)
+    private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, HttpContent? content = null,
+        CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, url);
 

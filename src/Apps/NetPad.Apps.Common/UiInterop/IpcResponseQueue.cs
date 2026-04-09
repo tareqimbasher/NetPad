@@ -21,7 +21,7 @@ internal static class IpcResponseQueue
         CancellationToken cancellationToken = default)
     {
         var promise = new IpcResponsePromise<TResponse>();
-        _promises.Add(message.Id, promise);
+        _promises.Add(message.RequestId, promise);
         return promise;
     }
 

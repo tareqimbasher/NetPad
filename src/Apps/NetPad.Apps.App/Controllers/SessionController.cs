@@ -26,10 +26,16 @@ public class SessionController(IMediator mediator) : ControllerBase
         return await mediator.Send(new GetOpenedScriptEnvironmentsQuery());
     }
 
-    [HttpPatch("open/path")]
-    public async Task OpenByPath([FromBody] string scriptPath)
+    [HttpPatch("open/{scriptId:guid}")]
+    public async Task<ScriptEnvironment> OpenById(Guid scriptId)
     {
-        await mediator.Send(new OpenScriptCommand(scriptPath));
+        return await mediator.Send(new OpenScriptCommand(scriptId));
+    }
+
+    [HttpPatch("open/path")]
+    public async Task<ScriptEnvironment> OpenByPath([FromBody] string scriptPath)
+    {
+        return await mediator.Send(new OpenScriptCommand(scriptPath));
     }
 
     [HttpPatch("{scriptId:guid}/close")]

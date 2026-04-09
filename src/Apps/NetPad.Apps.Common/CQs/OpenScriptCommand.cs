@@ -1,31 +1,37 @@
 using MediatR;
 using NetPad.Events;
+using NetPad.Exceptions;
 using NetPad.Scripts;
 using NetPad.Scripts.Events;
 using NetPad.Sessions;
 
 namespace NetPad.Apps.CQs;
 
-public class OpenScriptCommand : Command
+public class OpenScriptCommand : Command<ScriptEnvironment>
 {
-    public OpenScriptCommand(string path)
-    {
-        Path = path;
-    }
-
     public OpenScriptCommand(Script script)
     {
         Script = script;
     }
 
-    public string? Path { get; }
-    public Script? Script { get; }
+    public OpenScriptCommand(Guid id)
+    {
+        Id = id;
+    }
 
+    public OpenScriptCommand(string path)
+    {
+        Path = path;
+    }
+
+    public Script? Script { get; }
+    public Guid? Id { get; }
+    public string? Path { get; }
 
     public class Handler(IScriptRepository scriptRepository, ISession session, IEventBus eventBus)
-        : IRequestHandler<OpenScriptCommand>
+        : IRequestHandler<OpenScriptCommand, ScriptEnvironment>
     {
-        public async Task<Unit> Handle(OpenScriptCommand request, CancellationToken cancellationToken)
+        public async Task<ScriptEnvironment> Handle(OpenScriptCommand request, CancellationToken cancellationToken)
         {
             Script script;
 
@@ -33,7 +39,12 @@ public class OpenScriptCommand : Command
             {
                 script = request.Script;
             }
-            else if (request.Path != null)
+            else if (request.Id != null)
+            {
+                script = await scriptRepository.GetAsync(request.Id.Value)
+                         ?? throw new ScriptNotFoundException(request.Id.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(request.Path))
             {
                 script = await scriptRepository.GetAsync(request.Path);
             }
@@ -42,11 +53,11 @@ public class OpenScriptCommand : Command
                 throw new ArgumentException("Not enough information to open a script.");
             }
 
-            await session.OpenAsync(script, true);
+            var environment = await session.OpenAsync(script, true);
 
             await eventBus.PublishAsync(new ScriptOpenedEvent(script));
 
-            return Unit.Value;
+            return environment;
         }
     }
 }
