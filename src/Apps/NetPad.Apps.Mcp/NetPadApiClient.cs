@@ -284,6 +284,23 @@ public class NetPadApiClient
         return await GetAsync<string[]>(url, cancellationToken) ?? [];
     }
 
+    // --- Assemblies ---
+
+    public async Task<string[]> GetAssemblyNamespacesFromPackageAsync(string packageId, string version,
+        CancellationToken cancellationToken = default)
+    {
+        var body = new { discriminator = "PackageReference", title = packageId, packageId, version };
+        return await PatchAsync<string[]>("/assemblies/namespaces", SerializeContent(body), cancellationToken);
+    }
+
+    public async Task<string[]> GetAssemblyNamespacesFromFileAsync(string assemblyPath,
+        CancellationToken cancellationToken = default)
+    {
+        var title = System.IO.Path.GetFileName(assemblyPath);
+        var body = new { discriminator = "AssemblyFileReference", title, assemblyPath };
+        return await PatchAsync<string[]>("/assemblies/namespaces", SerializeContent(body), cancellationToken);
+    }
+
     // --- HTTP helpers ---
 
     private async Task<T?> GetAsync<T>(string url, CancellationToken cancellationToken)
