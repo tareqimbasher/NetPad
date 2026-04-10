@@ -234,9 +234,11 @@ public class NetPadApiClient
 
     // --- Code ---
 
-    public async Task<string?> GetIntermediateLanguageAsync(Guid scriptId, CancellationToken cancellationToken = default)
+    public async Task<string?> GetIntermediateLanguageAsync(Guid scriptId,
+        CancellationToken cancellationToken = default)
     {
-        using var response = await SendAsync(HttpMethod.Get, $"/code/{scriptId}/il", cancellationToken: cancellationToken);
+        using var response =
+            await SendAsync(HttpMethod.Get, $"/code/{scriptId}/il", cancellationToken: cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 
@@ -246,6 +248,27 @@ public class NetPadApiClient
     {
         return await GetAsync<GetAllConnectionsResponse>("/data-connections", cancellationToken)
                ?? new GetAllConnectionsResponse();
+    }
+
+    public async Task<string?> GetDataConnectionAsync(Guid connectionId, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, $"/data-connections/{connectionId}",
+            cancellationToken: cancellationToken);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        return string.IsNullOrWhiteSpace(json) ? null : json;
+    }
+
+    public async Task<string?> GetDatabaseServerAsync(Guid serverId, CancellationToken cancellationToken = default)
+    {
+        using var response = await SendAsync(HttpMethod.Get, $"/data-connections/servers/{serverId}",
+            cancellationToken: cancellationToken);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        return string.IsNullOrWhiteSpace(json) ? null : json;
+    }
+
+    public async Task RefreshDataConnectionAsync(Guid connectionId, CancellationToken cancellationToken = default)
+    {
+        await PatchAsync($"/data-connections/{connectionId}/refresh", cancellationToken: cancellationToken);
     }
 
     public async Task<DatabaseStructureDto> GetDatabaseStructureAsync(Guid connectionId,
@@ -280,7 +303,8 @@ public class NetPadApiClient
     public async Task<string[]> GetPackageVersionsAsync(string packageId, bool includePrerelease = false,
         CancellationToken cancellationToken = default)
     {
-        var url = $"/packages/versions?packageId={Uri.EscapeDataString(packageId)}&includePrerelease={includePrerelease.ToString().ToLowerInvariant()}";
+        var url =
+            $"/packages/versions?packageId={Uri.EscapeDataString(packageId)}&includePrerelease={includePrerelease.ToString().ToLowerInvariant()}";
         return await GetAsync<string[]>(url, cancellationToken) ?? [];
     }
 
