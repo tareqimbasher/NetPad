@@ -28,6 +28,18 @@ public class AssembliesController(IPackageProvider packageProvider) : Controller
 
         if (reference is PackageReference packageReference)
         {
+            var installInfo = await packageProvider.GetPackageInstallInfoAsync(
+                packageReference.PackageId,
+                packageReference.Version);
+
+            if (installInfo == null)
+            {
+                await packageProvider.InstallPackageAsync(
+                    packageReference.PackageId,
+                    packageReference.Version,
+                    GlobalConsts.AppDotNetFrameworkVersion);
+            }
+
             var assets = await packageProvider.GetCachedPackageAssetsAsync(
                 packageReference.PackageId,
                 packageReference.Version,
