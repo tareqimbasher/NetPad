@@ -13,8 +13,8 @@ public class HeadlessRunRequest
     [JsonPropertyName("kind")]
     public string Kind { get; set; } = KindCSharp;
 
-    [JsonPropertyName("packages")]
-    public PackageReferenceDto[]? Packages { get; set; }
+    [JsonPropertyName("references")]
+    public ReferenceDto[]? References { get; set; }
 
     [JsonPropertyName("targetFramework")]
     public string? TargetFramework { get; set; }
@@ -24,13 +24,4 @@ public class HeadlessRunRequest
 
     [JsonPropertyName("timeoutMs")]
     public int? TimeoutMs { get; set; }
-}
-
-public class PackageReferenceDto
-{
-    [JsonPropertyName("id")]
-    public required string Id { get; set; }
-
-    [JsonPropertyName("version")]
-    public string? Version { get; set; }
 }

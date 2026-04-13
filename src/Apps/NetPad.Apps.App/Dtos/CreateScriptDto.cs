@@ -49,6 +49,11 @@ public class CreateScriptDto
     public IList<string>? Namespaces { get; set; }
 
     /// <summary>
+    /// References (NuGet packages, assembly files) to include in the script.
+    /// </summary>
+    public Reference[]? References { get; set; }
+
+    /// <summary>
     /// If true, will run the script after its created. Only respected if <see cref="Code"/> is set.
     /// </summary>
     public bool RunImmediately { get; set; }

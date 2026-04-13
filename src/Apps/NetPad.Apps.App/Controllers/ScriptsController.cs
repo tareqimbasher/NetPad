@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
@@ -95,6 +96,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
 
         if (dto.Namespaces != null)
             script.Config.SetNamespaces(dto.Namespaces);
+
+        if (dto.References is { Length: > 0 })
+            script.Config.SetReferences(dto.References.ToList());
 
         bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
         if (hasSeedCode)

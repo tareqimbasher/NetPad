@@ -45,10 +45,11 @@ public class RunCSharpToolTests
         var (client, handler) = CreateClient();
         handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
 
-        var packages = """[{"id":"Newtonsoft.Json","version":"13.0.3"}]""";
+        var packages = new[] { new PackageInput { Id = "Newtonsoft.Json", Version = "13.0.3" } };
         await RunCSharpTool.RunCSharp(client, "var x = 1;", packages: packages);
 
         var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("\"references\"", recorded.Body);
         Assert.Contains("Newtonsoft.Json", recorded.Body);
         Assert.Contains("13.0.3", recorded.Body);
     }
@@ -111,5 +112,76 @@ public class RunCSharpToolTests
         var doc = JsonDocument.Parse(result);
         Assert.True(doc.RootElement.GetProperty("Success").GetBoolean());
         Assert.Equal("Hello", doc.RootElement.GetProperty("Output")[0].GetProperty("Body").GetString());
+    }
+
+    [Fact]
+    public async Task RunCSharp_WithAssemblyPaths_IncludesAssemblyReferences()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
+
+        await RunCSharpTool.RunCSharp(client, "var x = 1;",
+            assemblyPaths: ["/path/to/MyLib.dll"]);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("AssemblyFileReference", recorded.Body);
+        Assert.Contains("/path/to/MyLib.dll", recorded.Body);
+    }
+
+    [Fact]
+    public async Task RunCSharp_WithPackagesNoVersion_ResolvesLatestVersion()
+    {
+        var (client, handler) = CreateClient();
+        handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
+            "[\"12.0.0\",\"13.0.3\"]");
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
+
+        var packages = new[] { new PackageInput { Id = "Newtonsoft.Json" } };
+        await RunCSharpTool.RunCSharp(client, "var x = 1;", packages: packages);
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/packages/versions", handler.Requests[0].Url);
+        Assert.Contains("13.0.3", handler.Requests[1].Body);
+    }
+
+    [Fact]
+    public async Task RunCSharp_WithEmptyPackageId_ReturnsValidationError()
+    {
+        var (client, _) = CreateClient();
+
+        var packages = new[] { new PackageInput { Id = " " } };
+        var result = await RunCSharpTool.RunCSharp(client, "var x = 1;", packages: packages);
+
+        Assert.Contains("'id' field", result);
+    }
+
+    [Fact]
+    public async Task RunCSharp_WithUnknownPackage_ReturnsResolutionError()
+    {
+        var (client, handler) = CreateClient();
+        handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK, "[]");
+
+        var packages = new[] { new PackageInput { Id = "NonExistent.Package" } };
+        var result = await RunCSharpTool.RunCSharp(client, "var x = 1;", packages: packages);
+
+        Assert.Contains("Could not resolve versions", result);
+        Assert.Contains("NonExistent.Package", result);
+    }
+
+    [Fact]
+    public async Task RunCSharp_WithPackagesAndAssemblyPaths_BuildsCombinedReferences()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Post, "/headless/run", HttpStatusCode.OK, SuccessResult());
+
+        var packages = new[] { new PackageInput { Id = "Dapper", Version = "2.1.0" } };
+        await RunCSharpTool.RunCSharp(client, "var x = 1;",
+            packages: packages, assemblyPaths: ["/libs/Custom.dll"]);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("Dapper", recorded.Body);
+        Assert.Contains("PackageReference", recorded.Body);
+        Assert.Contains("AssemblyFileReference", recorded.Body);
+        Assert.Contains("/libs/Custom.dll", recorded.Body);
     }
 }

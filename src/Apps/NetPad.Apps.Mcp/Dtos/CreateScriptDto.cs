@@ -30,4 +30,7 @@ public class CreateScriptDto
 
     [JsonPropertyName("namespaces")]
     public string[]? Namespaces { get; set; }
+
+    [JsonPropertyName("references")]
+    public ReferenceDto[]? References { get; set; }
 }

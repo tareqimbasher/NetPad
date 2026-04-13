@@ -15,9 +15,9 @@ public class HeadlessRunRequest
     public string Kind { get; set; } = "csharp";
 
     /// <summary>
-    /// NuGet package references to include.
+    /// References (NuGet packages, assembly files) to include.
     /// </summary>
-    public PackageReferenceDto[]? Packages { get; set; }
+    public Reference[]? References { get; set; }
 
     /// <summary>
     /// The target .NET framework version. If not specified, the latest installed SDK version is used.

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NetPad.Data;
@@ -67,7 +68,10 @@ public class HeadlessScriptExecutionService(
             }
         }
 
-        // TODO: Add NuGet package references when PackageReference support is available for headless scripts
+        if (request.References is { Length: > 0 })
+        {
+            script.Config.SetReferences(request.References.ToArray());
+        }
 
         return await ExecuteScriptAsync(script, request.TimeoutMs, cancellationToken);
     }

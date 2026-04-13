@@ -114,7 +114,7 @@ public class NuGetPackageProvider(
                 continue;
             }
 
-            if (versions.Any())
+            if (versions.Length > 0)
             {
                 return versions
                     .Where(v => includePrerelease || !v.IsPrerelease)
@@ -729,7 +729,7 @@ public class NuGetPackageProvider(
     private async Task HydrateMetadataAsync(IEnumerable<PackageMetadata> packages, TimeSpan? timeout = null)
     {
         var needsProcessing = packages.Where(p => p.HasMissingMetadata()).ToList();
-        if (!needsProcessing.Any())
+        if (needsProcessing.Count == 0)
             return;
 
         using var sourceCacheContext = new SourceCacheContext();
@@ -739,7 +739,7 @@ public class NuGetPackageProvider(
 
         foreach (var sourceRepository in sourceRepositories)
         {
-            if (!needsProcessing.Any() || cancellationTokenSource.IsCancellationRequested)
+            if (needsProcessing.Count == 0 || cancellationTokenSource.IsCancellationRequested)
             {
                 break;
             }
@@ -831,7 +831,7 @@ public class NuGetPackageProvider(
                     .ToList();
 
                 var fwReducer = new FrameworkReducer();
-                while (compatibleFrameworkDirs.Any())
+                while (compatibleFrameworkDirs.Count > 0)
                 {
                     var nearest = fwReducer.GetNearest(framework, compatibleFrameworkDirs.Select(x => x.Framework));
 
