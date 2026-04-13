@@ -1,6 +1,9 @@
 import {WithDisposables} from "@common";
+import {observable} from "@aurelia/runtime";
 import {ViewerHost} from "./viewer-host";
 import {Script} from "@application";
+
+export type ViewableStatusIndicator = "running" | "stopping" | "success" | "error";
 
 export interface IViewableObjectCommands
 {
@@ -14,6 +17,20 @@ export interface IViewableObjectCommands
 }
 
 export abstract class ViewableObject extends WithDisposables {
+    // Generic display surface consumed by the tab bar and any other chrome that
+    // needs to render a viewable without knowing its concrete type. All dynamic
+    // values must be updated via assignments (not computed in getters) so Aurelia
+    // bindings react to changes — getter call graphs are NOT tracked by the
+    // binding observer system.
+    @observable public iconImageSrc?: string;
+    @observable public iconClass?: string;
+    @observable public subtitle?: string;
+    @observable public subtitleIconClass?: string;
+    @observable public subtitleHighlightClass?: string;
+    @observable public tooltip?: string;
+    @observable public statusIndicator?: ViewableStatusIndicator;
+    @observable public path?: string;
+
     protected constructor(
         public readonly id: string,
         protected readonly commands: IViewableObjectCommands
