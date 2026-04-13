@@ -13,9 +13,9 @@ import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
 import {
-    IViewableAppScriptDocumentCommands,
-    ViewableAppScriptDocument
-} from "./viewers/text-document-viewer/viewable-text-document";
+    IViewableScriptDocumentCommands,
+    ViewableScriptDocument
+} from "./viewers/script-viewer/viewable-script-document";
 import {Workbench} from "../workbench";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {RunScriptCommand} from "@application/scripts/run-script-command";
@@ -41,7 +41,7 @@ export class WorkArea extends ViewModelBase {
     protected override async attaching() {
         super.attaching();
 
-        const scriptDocuments = this.session.environments.map(env => this.createViewableAppScriptDocument(env));
+        const scriptDocuments = this.session.environments.map(env => this.createViewableScriptDocument(env));
 
         if (!this.workbench.workAreaService.viewerHosts.active) {
             await this.workbench.workAreaService.viewerHosts.activate(this.workbench.workAreaService.viewerHosts.items[0]);
@@ -65,7 +65,7 @@ export class WorkArea extends ViewModelBase {
                 if (!scriptId) return;
 
                 const result = this.workbench.workAreaService.viewerHosts.findViewable(scriptId);
-                if (result?.viewable instanceof ViewableAppScriptDocument)
+                if (result?.viewable instanceof ViewableScriptDocument)
                     await result.viewable.run();
             })
         );
@@ -80,7 +80,7 @@ export class WorkArea extends ViewModelBase {
             if (this.workbench.workAreaService.viewerHosts.items.some(vh => vh.find(environment.script.id)))
                 continue;
 
-            this.workbench.workAreaService.viewerHosts.items[0].addViewables(this.createViewableAppScriptDocument(environment));
+            this.workbench.workAreaService.viewerHosts.items[0].addViewables(this.createViewableScriptDocument(environment));
         }
 
         // Removals
@@ -88,7 +88,7 @@ export class WorkArea extends ViewModelBase {
             const removed: ViewableObject[] = [];
 
             for (const viewable of viewerHost.viewables) {
-                if (!(viewable instanceof ViewableAppScriptDocument))
+                if (!(viewable instanceof ViewableScriptDocument))
                     continue;
 
                 if (!environments.some(e => e.script.id === viewable.id))
@@ -122,12 +122,12 @@ export class WorkArea extends ViewModelBase {
         }
     }
 
-    private createViewableAppScriptDocument(environment: ScriptEnvironment): ViewableAppScriptDocument {
+    private createViewableScriptDocument(environment: ScriptEnvironment): ViewableScriptDocument {
         // TypeScript compiler incorrectly flags this that it should be 'const'
         // eslint-disable-next-line prefer-const
-        let viewable: ViewableAppScriptDocument;
+        let viewable: ViewableScriptDocument;
 
-        const commands: IViewableAppScriptDocumentCommands = {
+        const commands: IViewableScriptDocumentCommands = {
             open: async (viewerHost) => {
                 viewerHost.addViewables(viewable)
             },
@@ -165,7 +165,7 @@ export class WorkArea extends ViewModelBase {
             openProperties: async () => await this.scriptService.openConfigWindow(environment.script.id, null)
         };
 
-        viewable = new ViewableAppScriptDocument(
+        viewable = new ViewableScriptDocument(
             environment,
             commands,
             this.eventBus

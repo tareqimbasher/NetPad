@@ -15,7 +15,7 @@ import {
 } from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
 import {ViewerHost} from "../viewers/viewer-host";
-import {ViewableAppScriptDocument} from "../viewers/text-document-viewer/viewable-text-document";
+import {ViewableScriptDocument} from "../viewers/script-viewer/viewable-script-document";
 
 export class TabBar extends ViewModelBase {
     @bindable viewables: ReadonlySet<ViewableObject>;
@@ -57,21 +57,21 @@ export class TabBar extends ViewModelBase {
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
                 show: (clickTarget) => {
                     const viewable = this.getViewable(clickTarget);
-                    return viewable instanceof ViewableAppScriptDocument
+                    return viewable instanceof ViewableScriptDocument
                         && viewable.environment.status !== "Running"
                         && viewable.environment.status !== "Stopping";
                 },
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).run()
+                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).run()
             },
             {
                 icon: "stop-icon text-red",
                 text: "Stop",
                 show: (clickTarget) => {
                     const viewable = this.getViewable(clickTarget);
-                    return viewable instanceof ViewableAppScriptDocument
+                    return viewable instanceof ViewableScriptDocument
                         && viewable.environment.status === "Running";
                 },
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).stop()
+                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).stop()
             },
             {
                 icon: "rename-icon",
@@ -93,8 +93,8 @@ export class TabBar extends ViewModelBase {
                 icon: "properties-icon",
                 text: "Properties",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
-                show: (clickTarget) => this.getViewable(clickTarget) instanceof ViewableAppScriptDocument,
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableAppScriptDocument).openProperties()
+                show: (clickTarget) => this.getViewable(clickTarget) instanceof ViewableScriptDocument,
+                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).openProperties()
             },
             {
                 isDivider: true

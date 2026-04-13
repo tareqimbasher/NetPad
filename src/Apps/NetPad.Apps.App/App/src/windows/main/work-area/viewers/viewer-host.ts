@@ -100,9 +100,9 @@ export class ViewerHost {
             if (viewable.type === ViewableObjectType.Text) {
                 // Using import here, with its async nature, makes this function async which is counter intuitive
                 // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const TextDocumentViewer = require("./text-document-viewer/text-document-viewer").TextDocumentViewer;
+                const ScriptViewer = require("./script-viewer/script-viewer").ScriptViewer;
 
-                viewer = new TextDocumentViewer(
+                viewer = new ScriptViewer(
                     this,
                     this.container.get(Workbench),
                     this.container.get(IScriptService),

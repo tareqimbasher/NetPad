@@ -1,4 +1,4 @@
-toolbar {
+script-toolbar {
     background: var(--script-toolbar-background);
     padding: 0.3rem 0.5rem;
     flex-shrink: 0;
@@ -97,7 +97,7 @@ toolbar {
     }
 }
 
-.comfy toolbar {
+.comfy script-toolbar {
     padding: 0.45rem 0.5rem;
 
     button {

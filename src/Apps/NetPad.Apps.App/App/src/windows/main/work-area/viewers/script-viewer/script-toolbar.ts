@@ -13,10 +13,10 @@ import {
     ScriptKind,
     ViewModelBase
 } from "@application";
-import {ViewableAppScriptDocument, ViewableTextDocument} from "./viewable-text-document";
+import {ViewableScriptDocument} from "./viewable-script-document";
 
-export class Toolbar extends ViewModelBase {
-    @bindable viewable: ViewableTextDocument;
+export class ScriptToolbar extends ViewModelBase {
+    @bindable viewable: ViewableScriptDocument;
     public availableFrameworkVersions: DotNetFrameworkVersion[] = [];
     private readonly baseLogger: ILogger;
 
@@ -31,9 +31,7 @@ export class Toolbar extends ViewModelBase {
     }
 
     public get environment(): ScriptEnvironment | null | undefined {
-        return this.viewable instanceof ViewableAppScriptDocument
-            ? this.viewable.environment
-            : null;
+        return this.viewable?.environment;
     }
 
     public get isBusy(): boolean {
@@ -118,19 +116,15 @@ export class Toolbar extends ViewModelBase {
     }
 
     public async run() {
-        if (this.viewable instanceof ViewableAppScriptDocument) {
-            await this.viewable.run();
-        }
+        await this.viewable?.run();
     }
 
     public async stop() {
-        if (this.viewable instanceof ViewableAppScriptDocument) {
-            await this.viewable.stop();
-        }
+        await this.viewable?.stop();
     }
 
     public async save() {
-        await this.viewable.save();
+        await this.viewable?.save();
     }
 
     public getShortcutKeyCombo(shortcutName: string) {
@@ -138,12 +132,10 @@ export class Toolbar extends ViewModelBase {
     }
 
     public async openProperties() {
-        if (this.viewable instanceof ViewableAppScriptDocument) {
-            await this.viewable.openProperties();
-        }
+        await this.viewable?.openProperties();
     }
 
-    private viewableChanged(newViewable: ViewableTextDocument) {
+    private viewableChanged(newViewable: ViewableScriptDocument) {
         this.logger = !this.script
             ? this.baseLogger
             : this.baseLogger.scopeTo(`[${this.script?.id}] ${this.environment?.script.name}`);

@@ -1,8 +1,8 @@
-﻿<template drop.trigger="itemDropped($event)">
-    <import from="./toolbar"></import>
+<template drop.trigger="itemDropped($event)">
+    <import from="./script-toolbar"></import>
     <import from="core/@application/editor/text-editor"></import>
 
-    <toolbar viewable.bind="viewable" if.bind="viewable.environment"></toolbar>
+    <script-toolbar viewable.bind="viewable"></script-toolbar>
 
     <div class="text-editor-container flex-grow-height-restricted d-flex">
         <div class="production-marker"
