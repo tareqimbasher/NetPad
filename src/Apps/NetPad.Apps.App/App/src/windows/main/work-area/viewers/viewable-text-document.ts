@@ -1,4 +1,4 @@
-import {IViewableObjectCommands, ViewableObject, ViewableObjectType} from "./viewable-object";
+import {IViewableObjectCommands, ViewableObject} from "./viewable-object";
 import {TextLanguage} from "@application/editor/text-language";
 import {TextDocument} from "@application/editor/text-document";
 
@@ -15,11 +15,7 @@ export class ViewableTextDocument extends ViewableObject {
         initialText: string,
         commands: IViewableObjectCommands,
     ) {
-        super(
-            id,
-            ViewableObjectType.Text,
-            commands
-        );
+        super(id, commands);
         this._name = name;
         this._language = language;
         this._initialText = initialText;

@@ -1,11 +1,6 @@
-﻿import {WithDisposables} from "@common";
+import {WithDisposables} from "@common";
 import {ViewerHost} from "./viewer-host";
 import {Script} from "@application";
-
-export enum ViewableObjectType {
-    Text = "Text",
-    Media = "Media"
-}
 
 export interface IViewableObjectCommands
 {
@@ -21,7 +16,6 @@ export interface IViewableObjectCommands
 export abstract class ViewableObject extends WithDisposables {
     protected constructor(
         public readonly id: string,
-        public readonly type: ViewableObjectType,
         protected readonly commands: IViewableObjectCommands
     ) {
         super();
@@ -32,7 +26,7 @@ export abstract class ViewableObject extends WithDisposables {
     abstract get isDirty(): boolean;
 
     public override toString() {
-        return `${this.type} [${this.id}] ${this.name}`;
+        return `${(this as Record<string, unknown>).constructor.name} [${this.id}] ${this.name}`;
     }
 
     public open(viewerHost: ViewerHost): Promise<void> {

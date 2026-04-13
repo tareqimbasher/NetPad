@@ -54,8 +54,8 @@
             </div>
         </div>
 
-        <au-compose repeat.for="viewer of host.viewers"
-                    component.bind="viewer"
+        <au-compose if.bind="host.activeViewer"
+                    component.bind="host.activeViewer"
                     containerless></au-compose>
     </div>
 </template>

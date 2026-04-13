@@ -4,7 +4,6 @@ import {ViewableObject} from "../viewable-object";
 import {IEventBus, IScriptService} from "@application";
 import {ITextEditor} from "@application/editor/text-editor";
 import {ViewableScriptDocument} from "./viewable-script-document";
-import {ViewerHost} from "../viewer-host";
 import {Workbench} from "../../../workbench";
 import {DndType} from "@application/dnd/dnd-type";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
@@ -16,13 +15,12 @@ export class ScriptViewer extends Viewer {
     public editor: ITextEditor;
 
     constructor(
-        host: ViewerHost,
         private readonly workbench: Workbench,
         @IScriptService private readonly scriptService: IScriptService,
         @IEventBus private readonly eventBus: IEventBus,
-        logger: ILogger
+        @ILogger logger: ILogger
     ) {
-        super(host, logger);
+        super(logger);
     }
 
     public attached() {

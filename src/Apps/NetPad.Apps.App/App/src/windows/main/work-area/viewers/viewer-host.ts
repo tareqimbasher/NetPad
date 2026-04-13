@@ -1,9 +1,8 @@
-﻿import {IContainer, ILogger} from "aurelia";
-import {ViewableObject, ViewableObjectType} from "./viewable-object";
+import {Constructable, IContainer, ILogger} from "aurelia";
+import {ViewableObject} from "./viewable-object";
 import {Viewer} from "./viewer";
-import {IEventBus, IScriptService} from "@application";
+import {IViewerRegistry} from "./viewer-registry";
 import {Util} from "@common";
-import {Workbench} from "../../workbench";
 
 export class ViewerHost {
     public readonly id: string;
@@ -12,12 +11,12 @@ export class ViewerHost {
     private readonly logger: ILogger;
     private _viewables = new Set<ViewableObject>();
     private _activeViewable?: ViewableObject;
-    private _viewers = new Map<ViewableObjectType, Viewer>();
+    private _viewers = new Map<Constructable<Viewer>, Viewer>();
     private _activeViewer: Viewer;
 
     constructor(
         @IContainer private readonly container: IContainer,
-        @IEventBus private readonly eventBus: IEventBus,
+        @IViewerRegistry private readonly viewerRegistry: IViewerRegistry,
         @ILogger logger: ILogger
     ) {
         this.id = Util.newGuid();
@@ -62,7 +61,7 @@ export class ViewerHost {
             this.logger.debug(`Removing viewable ${viewable.toString()}`)
 
             this.logger.debug(`Looking for viewer ${viewable.toString()}`)
-            const viewer = this._viewers.get(viewable.type);
+            const viewer = this.findViewerFor(viewable);
             if (viewer) {
                 this.logger.debug(`Viewer found ${viewable.toString()}, closing with viewer`);
                 viewer.close(viewable);
@@ -83,7 +82,7 @@ export class ViewerHost {
         const viewer = this.getViewer(viewable);
 
         if (!viewer) {
-            this.logger.error(`Not implemented: Viewer not implemented for view objects of type: ${viewable.type}`)
+            this.logger.error(`Viewer not registered for viewable: ${viewable.toString()}`);
             return;
         }
 
@@ -93,48 +92,53 @@ export class ViewerHost {
         this._activeViewer = viewer;
     }
 
-    private getViewer(viewable: ViewableObject) {
-        let viewer = this._viewers.get(viewable.type);
-
-        if (!viewer) {
-            if (viewable.type === ViewableObjectType.Text) {
-                // Using import here, with its async nature, makes this function async which is counter intuitive
-                // eslint-disable-next-line @typescript-eslint/no-var-requires
-                const ScriptViewer = require("./script-viewer/script-viewer").ScriptViewer;
-
-                viewer = new ScriptViewer(
-                    this,
-                    this.container.get(Workbench),
-                    this.container.get(IScriptService),
-                    this.eventBus,
-                    this.logger);
-
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this._viewers.set(ViewableObjectType.Text, viewer!);
-            } else {
-                // Implement more viewers for different object types
-                // Maybe also implement a generic "error cannot open this type of file" kind of viewer
-            }
+    private getViewer(viewable: ViewableObject): Viewer | undefined {
+        const viewerClass = this.viewerRegistry.resolve(viewable);
+        if (!viewerClass) {
+            return undefined;
         }
+
+        let viewer = this._viewers.get(viewerClass);
+        if (viewer) {
+            return viewer;
+        }
+
+        // Create a new viewer instance scoped to this host. Each ViewerHost has its own
+        // viewer instances so that split panes can display different viewables simultaneously.
+        const factory = this.container.getFactory(viewerClass);
+        viewer = factory.construct(this.container);
+        viewer.setHost(this);
+        this._viewers.set(viewerClass, viewer);
 
         return viewer;
     }
 
+    private findViewerFor(viewable: ViewableObject): Viewer | undefined {
+        for (const viewer of this._viewers.values()) {
+            if (viewer.canOpen(viewable)) {
+                return viewer;
+            }
+        }
+        return undefined;
+    }
+
     private removeUnneededViewers() {
         const viewables = Array.from(this.viewables);
-        const viewerTypesToDispose: ViewableObjectType[] = [];
+        const viewerClassesToDispose: Constructable<Viewer>[] = [];
 
-        for (const [type, viewer] of this._viewers) {
+        for (const [viewerClass, viewer] of this._viewers) {
             if (viewables.some(v => viewer.canOpen(v))) {
                 continue;
             }
 
-            viewerTypesToDispose.push(type);
+            viewerClassesToDispose.push(viewerClass);
         }
 
-        for (const viewableObjectType of viewerTypesToDispose) {
-            this.logger.debug(`Removing unneeded viewer for type: ${viewableObjectType}`);
-            this._viewers.delete(viewableObjectType);
+        for (const viewerClass of viewerClassesToDispose) {
+            const viewer = this._viewers.get(viewerClass);
+            this.logger.debug(`Removing unneeded viewer: ${viewerClass.name}`);
+            viewer?.dispose();
+            this._viewers.delete(viewerClass);
         }
     }
 }
