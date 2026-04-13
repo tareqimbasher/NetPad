@@ -141,6 +141,13 @@ public class NetPadApiClient
             cancellationToken);
     }
 
+    public async Task UpdateScriptReferencesAsync(Guid scriptId, ReferenceDto[] references,
+        CancellationToken cancellationToken = default)
+    {
+        await SendAsync(HttpMethod.Put, $"/scripts/{scriptId}/references", SerializeContent(references),
+            cancellationToken);
+    }
+
     public async Task SetScriptDataConnectionAsync(
         Guid scriptId,
         Guid? dataConnectionId,

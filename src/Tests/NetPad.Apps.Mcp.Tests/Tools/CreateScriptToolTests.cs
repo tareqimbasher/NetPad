@@ -130,4 +130,93 @@ public class CreateScriptToolTests
         Assert.Contains("\"useAspNet\":null", recorded.Body);
         Assert.Contains("\"namespaces\":null", recorded.Body);
     }
+
+    [Fact]
+    public async Task CreateScript_WithPackages_IncludesReferences()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
+
+        var packages = new[] { new PackageInput { Id = "Dapper", Version = "2.1.0" } };
+        await CreateScriptTool.CreateScript(client, packages: packages);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("\"references\"", recorded.Body);
+        Assert.Contains("Dapper", recorded.Body);
+        Assert.Contains("2.1.0", recorded.Body);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithAssemblyPaths_IncludesAssemblyReferences()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
+
+        await CreateScriptTool.CreateScript(client, assemblyPaths: ["/path/to/MyLib.dll"]);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("AssemblyFileReference", recorded.Body);
+        Assert.Contains("/path/to/MyLib.dll", recorded.Body);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithPackagesNoVersion_ResolvesLatestVersion()
+    {
+        var (client, handler) = CreateClient();
+        handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK,
+            "[\"1.0.0\",\"2.0.0\"]");
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
+
+        var packages = new[] { new PackageInput { Id = "SomePackage" } };
+        await CreateScriptTool.CreateScript(client, packages: packages);
+
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Contains("/packages/versions", handler.Requests[0].Url);
+        Assert.Contains("2.0.0", handler.Requests[1].Body);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithEmptyPackageId_ReturnsValidationError()
+    {
+        var (client, _) = CreateClient();
+
+        var packages = new[] { new PackageInput { Id = "" } };
+        var result = await CreateScriptTool.CreateScript(client, packages: packages);
+
+        Assert.Contains("'id' field", result);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithUnknownPackage_ReturnsResolutionError()
+    {
+        var (client, handler) = CreateClient();
+        handler.SetupRaw(HttpMethod.Get, "/packages/versions", HttpStatusCode.OK, "[]");
+
+        var packages = new[] { new PackageInput { Id = "NonExistent.Package" } };
+        var result = await CreateScriptTool.CreateScript(client, packages: packages);
+
+        Assert.Contains("Could not resolve versions", result);
+        Assert.Contains("NonExistent.Package", result);
+    }
+
+    [Fact]
+    public async Task CreateScript_WithPackagesAndAssemblyPaths_BuildsCombinedReferences()
+    {
+        var (client, handler) = CreateClient();
+        handler.Setup(HttpMethod.Patch, "/scripts/create", HttpStatusCode.OK,
+            new ScriptDto { Id = Guid.NewGuid(), Name = "Test" });
+
+        var packages = new[] { new PackageInput { Id = "Dapper", Version = "2.1.0" } };
+        await CreateScriptTool.CreateScript(client, packages: packages,
+            assemblyPaths: ["/libs/Custom.dll"]);
+
+        var recorded = Assert.Single(handler.Requests);
+        Assert.Contains("PackageReference", recorded.Body);
+        Assert.Contains("AssemblyFileReference", recorded.Body);
+        Assert.Contains("Dapper", recorded.Body);
+        Assert.Contains("/libs/Custom.dll", recorded.Body);
+    }
 }

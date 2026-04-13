@@ -11,19 +11,22 @@ public class CreateScriptTool
     [McpServerTool(Name = "create_script", Destructive = false), Description(
          "Create a new script in NetPad. The script will be opened in the editor. " +
          "Defaults: kind=Program, targetFramework=latest installed .NET SDK, optimizationLevel=Debug, useAspNet=false. " +
-         "Default namespaces include System, System.IO, System.Linq, System.Collections.Generic, System.Threading.Tasks, and others.")]
+         "Default namespaces include System, System.IO, System.Linq, System.Collections.Generic, System.Threading.Tasks, and others. " +
+         "Supports NuGet package references (versions auto-resolve if omitted) and assembly file references.")]
     public static async Task<string> CreateScript(
         NetPadApiClient api,
         [Description("Optional name for the script")]
         string? name = null,
-        [Description("Optional initial code for the script")]
+        [Description(
+            "Optional initial code for the script. Uses C# top-level statements: executable statements " +
+            "must come before any type/method declarations.")]
         string? code = null,
         [Description("Optional data connection ID (GUID) to attach")]
         string? dataConnectionId = null,
         [Description("Script kind: 'Program' (default) or 'SQL'")]
         string? kind = null,
         [Description(
-            "Target .NET framework version, e.g. 'DotNet8', 'DotNet9', 'DotNet10'. Defaults to latest installed.")]
+            "Target .NET framework version, e.g. 'DotNet8', 'DotNet10'. Defaults to latest installed.")]
         string? targetFrameworkVersion = null,
         [Description("Compiler optimization level: 'Debug' (default) or 'Release'")]
         string? optimizationLevel = null,
@@ -33,6 +36,10 @@ public class CreateScriptTool
             "Namespaces to include. If provided, replaces the default namespace set entirely. Each entry should " +
             "be a bare namespace name without 'using' prefix or semicolons (e.g. 'System.Numerics').")]
         string[]? namespaces = null,
+        [Description("Optional NuGet packages to include. Version is optional — latest stable is used if omitted.")]
+        PackageInput[]? packages = null,
+        [Description("Optional assembly file paths to reference (e.g. ['/path/to/MyLib.dll'])")]
+        string[]? assemblyPaths = null,
         [Description("Whether to run the script immediately after creation and return output")]
         bool runImmediately = false,
         CancellationToken cancellationToken = default)
@@ -56,6 +63,23 @@ public class CreateScriptTool
             connId = parsed;
         }
 
+        if (packages is { Length: > 0 })
+        {
+            var (resolved, error) = await PackageReferenceHelper.ResolveVersionsAsync(api, packages, cancellationToken);
+            if (error != null)
+            {
+                return error;
+            }
+
+            packages = resolved;
+        }
+
+        ReferenceDto[]? references = null;
+        if (packages is { Length: > 0 } || assemblyPaths is { Length: > 0 })
+        {
+            references = PackageReferenceHelper.BuildReferenceDtos(packages, assemblyPaths).ToArray();
+        }
+
         var dto = new CreateScriptDto
         {
             Name = name,
@@ -65,7 +89,8 @@ public class CreateScriptTool
             TargetFrameworkVersion = targetFrameworkVersion,
             OptimizationLevel = optimizationLevel,
             UseAspNet = useAspNet,
-            Namespaces = namespaces
+            Namespaces = namespaces,
+            References = references
         };
 
         var script = await api.CreateScriptAsync(dto, cancellationToken);

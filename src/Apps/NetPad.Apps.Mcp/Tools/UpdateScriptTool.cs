@@ -11,7 +11,9 @@ public class UpdateScriptTool
     public static async Task<string> UpdateScript(
         NetPadApiClient api,
         [Description("Script ID (GUID)")] string scriptId,
-        [Description("New code content for the script. Changes are in-memory until the script is saved.")]
+        [Description(
+            "New code content for the script. Changes are in-memory until the script is saved. " +
+            "Uses C# top-level statements: executable statements must come before any type/method declarations.")]
         string? code = null,
         [Description("Script kind: 'Program' or 'SQL'")]
         string? kind = null,

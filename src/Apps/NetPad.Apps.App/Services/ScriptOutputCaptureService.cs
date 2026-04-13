@@ -203,7 +203,7 @@ public sealed class ScriptOutputCaptureService : IDisposable
                     if (_totalOutputSize > MaxOutputSize)
                     {
                         _outputTruncated = true;
-                        Output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated — exceeded 100KB limit]"));
+                        Output.Add(new ScriptOutput(ScriptOutputKind.Result, "[Output truncated: exceeded 100KB limit]"));
                         return;
                     }
 

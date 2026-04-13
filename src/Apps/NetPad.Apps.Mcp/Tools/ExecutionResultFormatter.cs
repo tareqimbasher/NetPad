@@ -33,7 +33,7 @@ internal static partial class ExecutionResultFormatter
                 var omitted = result.Output.Count - outputEntries.Count;
                 if (omitted > 0)
                 {
-                    outputEntries.Add(new OutputEntry("result", $"[Output truncated — {omitted} more entries omitted]", "text"));
+                    outputEntries.Add(new OutputEntry("result", $"[Output truncated: {omitted} more entries omitted]", "text"));
                 }
                 else
                 {

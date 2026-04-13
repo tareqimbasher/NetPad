@@ -100,6 +100,9 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
         if (dto.Namespaces != null)
             script.Config.SetNamespaces(dto.Namespaces);
 
+        if (dto.References is { Length: > 0 })
+            script.Config.SetReferences(dto.References.ToList());
+
         bool hasSeedCode = !string.IsNullOrWhiteSpace(dto.Code);
         if (hasSeedCode)
         {
