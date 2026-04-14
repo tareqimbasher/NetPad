@@ -1,84 +1,67 @@
-import {IContainer, ILogger} from "aurelia";
+import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
-import {
-    IAppService,
-    IEventBus,
-    IScriptService,
-    ISession,
-    ScriptEnvironment
-} from "@application";
+import {ISession, ScriptEnvironment} from "@application";
 import {ViewModelBase} from "@application/view-model-base";
-import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
 import {ViewableScriptDocument} from "./viewers/script-viewer/viewable-script-document";
 import {Workbench} from "../workbench";
-import {RunScriptCommand} from "@application/scripts/run-script-command";
 
 export class WorkArea extends ViewModelBase {
     constructor(
         private readonly workbench: Workbench,
         @ISession private readonly session: ISession,
-        @IAppService private readonly appService: IAppService,
-        @IScriptService private readonly scriptService: IScriptService,
-        @IEventBus private readonly eventBus: IEventBus,
-        @IContainer container: IContainer,
         @ILogger logger: ILogger,
     ) {
         super(logger);
-
-        const viewHostFactory = container.getFactory(ViewerHost);
-        this.workbench.workAreaService.viewerHosts.add(viewHostFactory.construct(container));
     }
 
     protected override async attaching() {
         super.attaching();
 
-        const scriptDocuments = this.session.environments.map(env => this.createViewableScriptDocument(env));
+        const service = this.workbench.workAreaService;
 
-        if (!this.workbench.workAreaService.viewerHosts.active) {
-            await this.workbench.workAreaService.viewerHosts.activate(this.workbench.workAreaService.viewerHosts.items[0]);
+        // Create and open a viewable for each existing script environment.
+        for (const env of this.session.environments) {
+            const viewable = service.createScriptViewable(env);
+            await service.open(viewable);
         }
 
-        this.workbench.workAreaService.viewerHosts.items[0].addViewables(...scriptDocuments);
+        // Activate the first viewer host if none is active.
+        if (!service.viewerHosts.active) {
+            const firstHost = service.viewerHosts.items[0];
+            if (firstHost) {
+                await service.viewerHosts.activate(firstHost);
+            }
+        }
 
+        // Activate the session's active environment (if any).
         if (this.session.active) {
             this.activeEnvironmentChanged(this.session.active);
         }
 
-        for (const viewerHost of this.workbench.workAreaService.viewerHosts.items.filter(x => !x.activeViewable && x.viewables.size > 0)) {
+        // Fallback: activate the first viewable in each host that has no active viewable yet.
+        for (const viewerHost of service.viewerHosts.items.filter(x => !x.activeViewable && x.viewables.size > 0)) {
             const [viewable] = viewerHost.viewables;
             viewerHost.activate(viewable);
         }
-
-        // Handle the "run active viewable" case (no scriptId in the command).
-        // Specific scriptId cases are handled per-viewable in ViewableScriptDocument.
-        // This active-case handler will move to WorkAreaService.initialize() in phase 5.
-        this.addDisposable(
-            this.eventBus.subscribe(RunScriptCommand, async msg => {
-                if (msg.scriptId !== undefined) return;
-
-                const activeViewable = this.workbench.workAreaService.viewerHosts.active?.activeViewable;
-                if (activeViewable?.canRun()) {
-                    await activeViewable.run();
-                }
-            })
-        );
     }
 
     @watch<WorkArea>(vm => vm.session.environments.length)
-    private environmentsChanged() {
+    private async environmentsChanged() {
         const environments = this.session.environments;
+        const service = this.workbench.workAreaService;
 
-        // Additions
+        // Additions — create a viewable for each new environment and open it.
         for (const environment of environments) {
-            if (this.workbench.workAreaService.viewerHosts.items.some(vh => vh.find(environment.script.id)))
+            if (service.viewerHosts.items.some(vh => vh.find(environment.script.id)))
                 continue;
 
-            this.workbench.workAreaService.viewerHosts.items[0].addViewables(this.createViewableScriptDocument(environment));
+            const viewable = service.createScriptViewable(environment);
+            await service.open(viewable);
         }
 
-        // Removals
-        for (const viewerHost of this.workbench.workAreaService.viewerHosts.items) {
+        // Removals — remove viewables whose environment is gone.
+        for (const viewerHost of service.viewerHosts.items) {
             const removed: ViewableObject[] = [];
 
             for (const viewable of viewerHost.viewables) {
@@ -106,24 +89,13 @@ export class WorkArea extends ViewModelBase {
                 return;
             }
 
-            const result = this.workbench.workAreaService.viewerHosts.findViewable(newActive.script.id);
+            const result = this.workbench.workAreaService.findViewable(newActive.script.id);
             if (result) {
-                this.workbench.workAreaService.viewerHosts.activateViewable(result.viewable);
+                result.host.activate(result.viewable);
                 documentTitle = result.viewable.name;
             }
         } finally {
             document.title = documentTitle ? `${documentTitle} - NetPad` : "NetPad";
         }
-    }
-
-    private createViewableScriptDocument(environment: ScriptEnvironment): ViewableScriptDocument {
-        return new ViewableScriptDocument(
-            environment,
-            this.scriptService,
-            this.session,
-            this.appService,
-            this.workbench.workAreaService,
-            this.eventBus
-        );
     }
 }

@@ -50,6 +50,10 @@ export class Window extends WindowBase {
         await this.dataConnectionStore.initialize();
         this.workbench = this.container.get(Workbench);
 
+        // Create the initial viewer host and wire the workbench-level RunScriptCommand
+        // handler. Must run before the WorkArea component attaches.
+        this.workbench.workAreaService.initialize();
+
         await this.createNewScriptIfNoScriptsOpen();
     }
 
