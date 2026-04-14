@@ -77,6 +77,15 @@ export class ViewerHost {
             this._viewables.delete(viewable);
         }
 
+        if (this._activeViewable && !this._viewables.has(this._activeViewable)) {
+            const [next] = this._viewables;
+            if (next) {
+                this.activate(next);
+            } else {
+                this._activeViewable = undefined;
+            }
+        }
+
         this.removeUnneededViewers();
     }
 

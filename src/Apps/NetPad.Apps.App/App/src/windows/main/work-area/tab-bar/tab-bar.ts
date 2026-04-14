@@ -38,9 +38,14 @@ export class TabBar extends ViewModelBase {
         const sorted = [...this.viewables]
             .sort((a, b) => {
                 const ixA = this.viewablesOrder.indexOf(a.id);
-                if (ixA < 0) return this.viewablesOrder.length;
+                const ixB = this.viewablesOrder.indexOf(b.id);
 
-                return ixA - this.viewablesOrder.indexOf(b.id);
+                // Viewables not in the saved order (ex: newly created tabs) go to the end.
+                if (ixA < 0 && ixB < 0) return 0;
+                if (ixA < 0) return 1;
+                if (ixB < 0) return -1;
+
+                return ixA - ixB;
             });
         return new Set(sorted);
     }

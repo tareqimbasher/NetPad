@@ -157,7 +157,6 @@ export class ViewableScriptDocument extends ViewableTextDocument {
 
         if (openInOtherViewerHosts) {
             viewerHost.removeViewables(this);
-            // TODO What tab should be activated?
         } else if (this.environment.status !== "Running" && this.environment.status !== "Stopping") {
             await this.session.close(this.environment.script.id, false);
         }
