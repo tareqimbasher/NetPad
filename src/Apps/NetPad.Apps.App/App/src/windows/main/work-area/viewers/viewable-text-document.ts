@@ -1,21 +1,20 @@
-import {IViewableObjectCommands, ViewableObject} from "./viewable-object";
+import {ViewableObject} from "./viewable-object";
 import {TextLanguage} from "@application/editor/text-language";
 import {TextDocument} from "@application/editor/text-document";
 
-export class ViewableTextDocument extends ViewableObject {
+export abstract class ViewableTextDocument extends ViewableObject {
     private readonly _name: string;
     private readonly _language: TextLanguage;
     private readonly _initialText: string;
     protected _textDocument?: TextDocument;
 
-    constructor(
+    protected constructor(
         id: string,
         name: string,
         language: TextLanguage,
         initialText: string,
-        commands: IViewableObjectCommands,
     ) {
-        super(id, commands);
+        super(id);
         this._name = name;
         this._language = language;
         this._initialText = initialText;

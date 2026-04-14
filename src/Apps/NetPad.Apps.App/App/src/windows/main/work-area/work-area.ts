@@ -1,23 +1,17 @@
 import {IContainer, ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {
-    ApiException,
     IAppService,
     IEventBus,
     IScriptService,
     ISession,
-    RunOptions,
     ScriptEnvironment
 } from "@application";
 import {ViewModelBase} from "@application/view-model-base";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
-import {
-    IViewableScriptDocumentCommands,
-    ViewableScriptDocument
-} from "./viewers/script-viewer/viewable-script-document";
+import {ViewableScriptDocument} from "./viewers/script-viewer/viewable-script-document";
 import {Workbench} from "../workbench";
-import {DialogUtil} from "@application/dialogs/dialog-util";
 import {RunScriptCommand} from "@application/scripts/run-script-command";
 
 export class WorkArea extends ViewModelBase {
@@ -26,7 +20,6 @@ export class WorkArea extends ViewModelBase {
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IScriptService private readonly scriptService: IScriptService,
-        private readonly dialogUtil: DialogUtil,
         @IEventBus private readonly eventBus: IEventBus,
         @IContainer container: IContainer,
         @ILogger logger: ILogger,
@@ -35,7 +28,6 @@ export class WorkArea extends ViewModelBase {
 
         const viewHostFactory = container.getFactory(ViewerHost);
         this.workbench.workAreaService.viewerHosts.add(viewHostFactory.construct(container));
-        //this.workAreaService.viewerHosts.push(viewHostFactory.construct(container));
     }
 
     protected override async attaching() {
@@ -58,15 +50,17 @@ export class WorkArea extends ViewModelBase {
             viewerHost.activate(viewable);
         }
 
+        // Handle the "run active viewable" case (no scriptId in the command).
+        // Specific scriptId cases are handled per-viewable in ViewableScriptDocument.
+        // This active-case handler will move to WorkAreaService.initialize() in phase 5.
         this.addDisposable(
             this.eventBus.subscribe(RunScriptCommand, async msg => {
-                const scriptId = msg.scriptId ?? this.workbench.workAreaService.viewerHosts.active?.activeViewable?.id;
+                if (msg.scriptId !== undefined) return;
 
-                if (!scriptId) return;
-
-                const result = this.workbench.workAreaService.viewerHosts.findViewable(scriptId);
-                if (result?.viewable instanceof ViewableScriptDocument)
-                    await result.viewable.run();
+                const activeViewable = this.workbench.workAreaService.viewerHosts.active?.activeViewable;
+                if (activeViewable?.canRun()) {
+                    await activeViewable.run();
+                }
             })
         );
     }
@@ -123,55 +117,13 @@ export class WorkArea extends ViewModelBase {
     }
 
     private createViewableScriptDocument(environment: ScriptEnvironment): ViewableScriptDocument {
-        // TypeScript compiler incorrectly flags this that it should be 'const'
-        // eslint-disable-next-line prefer-const
-        let viewable: ViewableScriptDocument;
-
-        const commands: IViewableScriptDocumentCommands = {
-            open: async (viewerHost) => {
-                viewerHost.addViewables(viewable)
-            },
-            close: async (viewerHost) => {
-                const openInOtherViewerHosts = this.workbench.workAreaService.viewerHosts.items.find(x => x !== viewerHost && x.viewables.has(viewable));
-
-                if (openInOtherViewerHosts) {
-                    viewerHost.removeViewables(viewable);
-                    // TODO What tab should be activated?
-                } else if (environment.status !== "Running" && environment.status !== "Stopping") {
-                    await this.session.close(environment.script.id, false);
-                }
-            },
-            activate: async (viewerHost) => await this.session.activate(environment.script.id),
-            save: async () => await this.scriptService.save(environment.script.id),
-            rename: async () => await this.scriptService.openRenamePrompt(environment.script),
-            duplicate: async () => await this.scriptService.duplicate(environment.script.id),
-            openContainingFolder: async () => environment.script.path
-                ? await this.appService.openFolderContainingScript(environment.script.path)
-                : Promise.reject("Script has not been saved yet"),
-            updateCode: async (newCode: string) => {
-                await this.scriptService.updateCode(viewable.script.id, newCode, false);
-            },
-            run: async () => {
-                const document = viewable.textDocument;
-                const runOptions = new RunOptions();
-
-                if (document.selection && !document.selection.isEmpty()) {
-                    runOptions.specificCodeToRun = document.textModel.getValueInRange(document.selection);
-                }
-
-                await this.scriptService.run(environment.script.id, runOptions);
-            },
-            stop: async () => await this.scriptService.stop(environment.script.id, true),
-            openProperties: async () => await this.scriptService.openConfigWindow(environment.script.id, null)
-        };
-
-        viewable = new ViewableScriptDocument(
+        return new ViewableScriptDocument(
             environment,
-            commands,
+            this.scriptService,
+            this.session,
+            this.appService,
+            this.workbench.workAreaService,
             this.eventBus
         );
-
-        return viewable;
     }
 }
-

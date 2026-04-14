@@ -1,20 +1,9 @@
 import {WithDisposables} from "@common";
 import {observable} from "@aurelia/runtime";
 import {ViewerHost} from "./viewer-host";
-import {Script} from "@application";
+import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 
 export type ViewableStatusIndicator = "running" | "stopping" | "success" | "error";
-
-export interface IViewableObjectCommands
-{
-    open: (viewerHost: ViewerHost) => Promise<void>;
-    close: (viewerHost: ViewerHost) => Promise<void>;
-    activate: (viewerHost: ViewerHost) => Promise<void>;
-    rename: () => Promise<void>;
-    duplicate: () => Promise<Script>;
-    save: () => Promise<boolean>;
-    openContainingFolder: () => Promise<void>;
-}
 
 export abstract class ViewableObject extends WithDisposables {
     // Generic display surface consumed by the tab bar and any other chrome that
@@ -31,10 +20,7 @@ export abstract class ViewableObject extends WithDisposables {
     @observable public statusIndicator?: ViewableStatusIndicator;
     @observable public path?: string;
 
-    protected constructor(
-        public readonly id: string,
-        protected readonly commands: IViewableObjectCommands
-    ) {
+    protected constructor(public readonly id: string) {
         super();
     }
 
@@ -46,31 +32,76 @@ export abstract class ViewableObject extends WithDisposables {
         return `${(this as Record<string, unknown>).constructor.name} [${this.id}] ${this.name}`;
     }
 
-    public open(viewerHost: ViewerHost): Promise<void> {
-        return this.commands.open(viewerHost);
-    }
+    // Universal navigation operations — every viewable must implement these.
+    public abstract open(viewerHost: ViewerHost): Promise<void>;
+    public abstract close(viewerHost: ViewerHost): Promise<void>;
+    public abstract activate(viewerHost: ViewerHost): Promise<void>;
 
-    public close(viewerHost: ViewerHost): Promise<void> {
-        return this.commands.close(viewerHost);
-    }
+    // Capability + action method pairs. Subclasses override only what they support.
+    // The tab bar and context menu use these to conditionally show menu items and
+    // dispatch commands without knowing the concrete viewable type.
 
-    public activate(viewerHost: ViewerHost): Promise<void> {
-        return this.commands.activate(viewerHost);
-    }
-
-    public rename(): Promise<void> {
-        return this.commands.rename();
-    }
-
-    public duplicate(): Promise<Script> {
-        return this.commands.duplicate();
+    public canSave(): boolean {
+        return false;
     }
 
     public save(): Promise<boolean> {
-        return this.commands.save();
+        return Promise.resolve(false);
+    }
+
+    public canRename(): boolean {
+        return false;
+    }
+
+    public rename(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    public canDuplicate(): boolean {
+        return false;
+    }
+
+    public duplicate(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    public canOpenContainingFolder(): boolean {
+        return false;
     }
 
     public openContainingFolder(): Promise<void> {
-        return this.commands.openContainingFolder();
+        return Promise.resolve();
+    }
+
+    public canRun(): boolean {
+        return false;
+    }
+
+    public run(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    public canStop(): boolean {
+        return false;
+    }
+
+    public stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    public canOpenProperties(): boolean {
+        return false;
+    }
+
+    public openProperties(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    public canHandleDrop(_dnd: DragAndDropBase | null | undefined): boolean {
+        return false;
+    }
+
+    public handleDrop(_dnd: DragAndDropBase): Promise<void> {
+        return Promise.resolve();
     }
 }

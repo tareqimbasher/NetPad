@@ -1,13 +1,10 @@
 import {ILogger} from "aurelia";
 import {Viewer} from "../viewer";
 import {ViewableObject} from "../viewable-object";
-import {IEventBus, IScriptService} from "@application";
 import {ITextEditor} from "@application/editor/text-editor";
 import {ViewableScriptDocument} from "./viewable-script-document";
 import {Workbench} from "../../../workbench";
-import {DndType} from "@application/dnd/dnd-type";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
-import {DataConnectionDnd} from "@application/dnd/data-connection-dnd";
 import {VimStatusbarItem} from "@application/editor/vim/vim-statusbar-item";
 import {TextEditorCursorPositionStatusbarItem} from "@application/editor/text-editor-cursor-position-statusbar-item";
 
@@ -16,8 +13,6 @@ export class ScriptViewer extends Viewer {
 
     constructor(
         private readonly workbench: Workbench,
-        @IScriptService private readonly scriptService: IScriptService,
-        @IEventBus private readonly eventBus: IEventBus,
         @ILogger logger: ILogger
     ) {
         super(logger);
@@ -68,8 +63,8 @@ export class ScriptViewer extends Viewer {
     public itemDropped(event: DragEvent) {
         const dnd = DragAndDropBase.getFromEventData(event);
 
-        if (dnd?.type == DndType.DataConnection && this.viewable instanceof ViewableScriptDocument) {
-            this.scriptService.setDataConnection(this.viewable.environment.script.id, (dnd as DataConnectionDnd).dataConnectionId);
+        if (this.viewable?.canHandleDrop(dnd)) {
+            this.viewable.handleDrop(dnd as DragAndDropBase);
         }
     }
 }
