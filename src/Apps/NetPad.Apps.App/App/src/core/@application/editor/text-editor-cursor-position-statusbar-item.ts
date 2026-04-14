@@ -10,7 +10,19 @@ export class TextEditorCursorPositionStatusbarItem {
             return "";
         }
 
-        return `Ln ${editor.position?.lineNumber}, Col ${editor.position?.column}`;
+        let text = `Ln ${editor.position?.lineNumber}, Col ${editor.position?.column}`;
+
+        const selection = editor.active?.selection;
+        if (selection && !selection.isEmpty()) {
+            const lineCount = selection.endLineNumber - selection.startLineNumber + 1;
+            if (lineCount > 1) {
+                text += ` &nbsp;(${lineCount} lines selected)`;
+            } else {
+                text += ` &nbsp;(${selection.endColumn - selection.startColumn} selected)`;
+            }
+        }
+
+        return text;
     }
 
     public goToLine() {
