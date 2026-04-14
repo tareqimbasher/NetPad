@@ -1,37 +1,38 @@
 <div class="drag-drop-container" ref="tabContainer">
-    <div class="view-tab ${viewable.id === active.id ? 'active' : ''} ${'status-' + viewable.environment.status.toLowerCase()}"
+    <div class="view-tab ${viewable.id === active.id ? 'active' : ''} ${viewable.statusIndicator ? 'status-' + viewable.statusIndicator : ''}"
          repeat.for="viewable of orderedViewables"
          data-id.bind="viewable.id"
          data-name.bind="viewable.name"
-         title.bind="viewable.environment.script.path || (viewable.isDirty ? 'Unsaved' : '')">
+         title.bind="viewable.tooltip">
         <div class="view-tab-content"
              click.trigger="activate(viewable)"
              auxclick.trigger="close(viewable, $event)">
 
             <div class="script-name">
-                <img src.bind="viewable.environment.script.config.kind | langLogo"
+                <img if.bind="viewable.iconImageSrc"
+                     src.bind="viewable.iconImageSrc"
                      alt=""
                      style="max-height: 1rem" class="me-3"/>
+                <i if.bind="viewable.iconClass" class="${viewable.iconClass} me-3"></i>
                 ${viewable.name}
-                <small
-                    class="database-icon ms-3 ${viewable.environment.script.dataConnection.containsProductionData ? 'is-production' : ''}"
-                    show.bind="viewable.environment.script.dataConnection"
-                    title="${viewable.environment.script.dataConnection.name} ${viewable.environment.script.dataConnection.containsProductionData ? '(Production)' : ''}"></small>
+                <small if.bind="viewable.subtitle"
+                       class="${viewable.subtitleIconClass || ''} ms-3 ${viewable.subtitleHighlightClass || ''}"
+                       title="${viewable.subtitle}"></small>
             </div>
 
             <div class="script-status"
                  if.bind="settings.appearance.showScriptRunStatusIndicatorInTab"
-                 switch.bind="viewable.environment.status">
-                <spinner case="Running"
+                 switch.bind="viewable.statusIndicator">
+                <spinner case="running"
                          class="script-running-indicator"
                          title="Running..."></spinner>
-                <spinner case="Stopping"
+                <spinner case="stopping"
                          class="script-stopping-indicator"
                          title="Stopping..."></spinner>
-                <i case="Ready" if.bind="viewable.environment.runDurationMilliseconds != null"
+                <i case="success"
                    class="script-status-success-icon icon-xs"
                    title="Script ran successfully"></i>
-                <i case="Error"
+                <i case="error"
                    class="script-status-error-icon icon-xs"
                    title="Error occurred"></i>
             </div>

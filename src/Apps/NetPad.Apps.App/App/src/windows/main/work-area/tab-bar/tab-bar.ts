@@ -6,16 +6,13 @@ import {
     ContextMenuOptions,
     CreateScriptDto,
     IScriptService,
-    ISession,
     IShortcutManager,
-    Script,
     Settings,
     ShortcutIds,
     ViewModelBase
 } from "@application";
 import {ViewableObject} from "../viewers/viewable-object";
 import {ViewerHost} from "../viewers/viewer-host";
-import {ViewableScriptDocument} from "../viewers/script-viewer/viewable-script-document";
 
 export class TabBar extends ViewModelBase {
     @bindable viewables: ReadonlySet<ViewableObject>;
@@ -27,7 +24,6 @@ export class TabBar extends ViewModelBase {
 
     constructor(
         private readonly element: Element,
-        @ISession private readonly session: ISession,
         @IScriptService private readonly scriptService: IScriptService,
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @ILogger logger: ILogger,
@@ -55,46 +51,40 @@ export class TabBar extends ViewModelBase {
                 icon: "run-icon",
                 text: "Run",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openCommandPalette),
-                show: (clickTarget) => {
-                    const viewable = this.getViewable(clickTarget);
-                    return viewable instanceof ViewableScriptDocument
-                        && viewable.environment.status !== "Running"
-                        && viewable.environment.status !== "Stopping";
-                },
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).run()
+                show: (clickTarget) => this.getViewable(clickTarget).canRun(),
+                onSelected: async (clickTarget) => await this.getViewable(clickTarget).run()
             },
             {
                 icon: "stop-icon text-red",
                 text: "Stop",
-                show: (clickTarget) => {
-                    const viewable = this.getViewable(clickTarget);
-                    return viewable instanceof ViewableScriptDocument
-                        && viewable.environment.status === "Running";
-                },
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).stop()
+                show: (clickTarget) => this.getViewable(clickTarget).canStop(),
+                onSelected: async (clickTarget) => await this.getViewable(clickTarget).stop()
             },
             {
                 icon: "rename-icon",
                 text: "Rename",
+                show: (clickTarget) => this.getViewable(clickTarget).canRename(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).rename()
             },
             {
                 icon: "duplicate-icon",
                 text: "Duplicate",
+                show: (clickTarget) => this.getViewable(clickTarget).canDuplicate(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).duplicate()
             },
             {
                 icon: "save-icon",
                 text: "Save",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
+                show: (clickTarget) => this.getViewable(clickTarget).canSave(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).save()
             },
             {
                 icon: "properties-icon",
                 text: "Properties",
                 shortcut: this.shortcutManager.getShortcut(ShortcutIds.openDocumentProperties),
-                show: (clickTarget) => this.getViewable(clickTarget) instanceof ViewableScriptDocument,
-                onSelected: async (clickTarget) => await (this.getViewable(clickTarget) as ViewableScriptDocument).openProperties()
+                show: (clickTarget) => this.getViewable(clickTarget).canOpenProperties(),
+                onSelected: async (clickTarget) => await this.getViewable(clickTarget).openProperties()
             },
             {
                 isDivider: true
@@ -102,7 +92,7 @@ export class TabBar extends ViewModelBase {
             {
                 icon: "open-folder-icon",
                 text: "Open Containing Folder",
-                show: (clickTarget) => !!this.getScript(clickTarget)?.path,
+                show: (clickTarget) => this.getViewable(clickTarget).canOpenContainingFolder(),
                 onSelected: async (clickTarget) => await this.getViewable(clickTarget).openContainingFolder(),
             },
             {
@@ -181,7 +171,7 @@ export class TabBar extends ViewModelBase {
         return id;
     }
 
-    private getViewable(tab: Element) {
+    private getViewable(tab: Element): ViewableObject {
         const viewableId = this.getViewableId(tab);
         const viewable = Array.from(this.viewables).find(v => v.id == viewableId);
 
@@ -189,12 +179,6 @@ export class TabBar extends ViewModelBase {
             throw new Error(`Could not find viewable with ID ${viewableId}`);
 
         return viewable;
-    }
-
-    private getScript(tab: Element): Script | undefined {
-        const scriptId = this.getViewableId(tab);
-
-        return this.session.environments.find(e => e.script.id === scriptId)?.script;
     }
 
     private initializeTabDragAndDrop() {
@@ -234,10 +218,13 @@ export class TabBar extends ViewModelBase {
         this.addDisposable(() => dndContainer.removeEventListener("wheel", horizontalScroll));
     }
 
+    private get viewablesOrderKey(): string {
+        return `tab-bar.${this.viewerHost.name}.viewables-order`;
+    }
+
     private loadViewablesOrder(): void {
         try {
-            const key = `tab-bar.${this.viewerHost.order}.viewables-order`;
-            const json = localStorage.getItem(key);
+            const json = localStorage.getItem(this.viewablesOrderKey);
             if (!json) return;
 
             this.viewablesOrder = JSON.parse(json) as string[];
@@ -253,8 +240,7 @@ export class TabBar extends ViewModelBase {
             .map(e => e.getAttribute("data-id"))
             .filter(id => id !== null) as string[];
 
-        const key = `tab-bar.${this.viewerHost.order}.viewables-order`;
-        localStorage.setItem(key, JSON.stringify(this.viewablesOrder ?? []));
+        localStorage.setItem(this.viewablesOrderKey, JSON.stringify(this.viewablesOrder ?? []));
     }, 300, false);
 
     @watch<TabBar>(vm => vm.viewables.size)

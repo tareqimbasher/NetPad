@@ -18,7 +18,9 @@ export class ViewerHostCollection {
             throw new Error(`A ${nameof(ViewerHost)} with ID '${viewerHost.id}' already exists`);
         }
 
-        viewerHost.order = this._items.length;
+        const position = this._items.length;
+        viewerHost.order = position;
+        viewerHost.name = position === 0 ? "main" : `split-${position}`;
         this._items.push(viewerHost);
     }
 
