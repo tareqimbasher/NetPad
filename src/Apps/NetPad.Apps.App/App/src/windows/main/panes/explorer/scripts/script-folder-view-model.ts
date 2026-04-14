@@ -14,12 +14,11 @@ export class ScriptFolderViewModel {
             this.expanded = true;
         }
 
-        this.containingScriptCount = this.calculateScriptCounts();
-
-        this.recurseFolders(folder => {
-            this.containingScriptCount += folder.scripts.length;
+        for (const folder of this.folders) {
             folder.updateStats(expandedFolders);
-        });
+        }
+
+        this.containingScriptCount = this.calculateScriptCounts();
     }
 
     public calculateScriptCounts(): number {

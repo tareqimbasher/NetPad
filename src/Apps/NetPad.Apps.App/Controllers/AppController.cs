@@ -28,11 +28,13 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
 
     [HttpGet("latest-version")]
     public async Task<string?> GetLatestVersion(
-        [FromServices] HttpClient httpClient,
+        [FromServices] IHttpClientFactory httpClientFactory,
         [FromServices] AppIdentifier appIdentifier)
     {
         try
         {
+            var httpClient = httpClientFactory.CreateClient();
+
             var includePreRelease = SemanticVersion.TryParse(appIdentifier.ProductVersion, out var currentVersion)
                                     && currentVersion.IsPrerelease;
 

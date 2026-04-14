@@ -247,25 +247,22 @@ public class ScriptHostProcessManager(
             // Discard items
         }
 
-        if (_ipcGateway != null)
-        {
-            _ipcGateway.Dispose();
-            _ipcGateway = null;
-        }
+        var gateway = Interlocked.Exchange(ref _ipcGateway, null);
+        gateway?.Dispose();
 
-        if (_scriptHostProcess != null)
+        var process = Interlocked.Exchange(ref _scriptHostProcess, null);
+        if (process != null)
         {
             try
             {
-                _scriptHostProcess.KillIfRunning();
+                process.KillIfRunning();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error killing script-host process");
             }
 
-            _scriptHostProcess.Dispose();
-            _scriptHostProcess = null;
+            process.Dispose();
 
             try
             {

@@ -40,14 +40,8 @@ internal static class SwaggerSetup
                 config.SchemaSettings.SchemaProcessors.Add(new TupleSchemaProcessor());
 
                 string pluginDirName = pluginRegistration.Plugin.Name.Replace(" ", "-");
-
-                foreach (var invalidChar in Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).Distinct())
-                {
-                    if (pluginDirName.Contains(invalidChar))
-                        pluginDirName = pluginDirName.Replace(invalidChar, '-');
-                }
-
-                pluginDirName = pluginDirName.ToLowerInvariant();
+                pluginDirName = StringUtil.RemoveInvalidFileNameCharacters(pluginDirName, "-")
+                    .ToLowerInvariant();
 
                 var path = Path.Combine(
                     webHostEnvironment.ContentRootPath, "App", "src", "core", "@plugins", pluginDirName, "api.ts");

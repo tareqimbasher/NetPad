@@ -9,14 +9,10 @@ public static class TypeUtil
         if (type.GenericTypeArguments.Length > 0)
         {
             name = name.Split('`')[0];
-            name += "<";
-
-            foreach (var tArg in type.GenericTypeArguments)
-            {
-                name += GetReadableName(tArg, withNamespace, forHtml) + ", ";
-            }
-
-            name = name.TrimEnd(' ', ',') + ">";
+            name += "<"
+                    + string.Join(", ",
+                        type.GenericTypeArguments.Select(t => GetReadableName(t, withNamespace, forHtml)))
+                    + ">";
         }
 
         if (!withNamespace)

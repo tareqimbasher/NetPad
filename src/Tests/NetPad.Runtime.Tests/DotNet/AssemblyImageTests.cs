@@ -15,7 +15,7 @@ public class AssemblyImageTests
     [InlineData("Foo.Bar.Baz", "Foo.Bar.Baz.dll")]
     [InlineData("Foo.Bar.Baz, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "Foo.Bar.Baz.dll")]
     [InlineData("Foo.Bar.Baz.dll", "Foo.Bar.Baz.dll")]
-    [InlineData("Foo.Bar/Baz", "Foo.BarBaz.dll")]
+    [InlineData("Foo.Bar/Baz", "Foo.Bar_Baz.dll")]
     public void ConstructAssemblyFileNameTests(string assemblyName, string expectedName)
     {
         var assemblyImage = new AssemblyImage(new AssemblyName(assemblyName), [0]);

@@ -157,7 +157,6 @@ public class JsonKeyValueStore<TStore, TItem>(FilePath storeFilePath, IDataProte
         if (!storeFilePath.Exists())
         {
             storeFilePath.GetInfo().Directory?.Create();
-            File.WriteAllText(storeFilePath.Path, "{}");
             var fileData = new TStore();
             WriteStoreFile(fileData);
             return fileData;

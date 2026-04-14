@@ -7,9 +7,17 @@ public static class StringUtil
 {
     private static readonly string _bomString = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
-    public static bool EqualsIgnoreCase(this string source, string value) => source.Equals(value, StringComparison.OrdinalIgnoreCase);
-    public static bool ContainsIgnoreCase(this string source, string value) => source.Contains(value, StringComparison.OrdinalIgnoreCase);
-    public static bool EndsWithIgnoreCase(this string source, string value) => source.EndsWith(value, StringComparison.OrdinalIgnoreCase);
+    private static readonly char[] _invalidFileNameChars =
+        Path.GetInvalidFileNameChars().Concat(Path.GetInvalidPathChars()).Distinct().ToArray();
+
+    public static bool EqualsIgnoreCase(this string source, string value) =>
+        source.Equals(value, StringComparison.OrdinalIgnoreCase);
+
+    public static bool ContainsIgnoreCase(this string source, string value) =>
+        source.Contains(value, StringComparison.OrdinalIgnoreCase);
+
+    public static bool EndsWithIgnoreCase(this string source, string value) =>
+        source.EndsWith(value, StringComparison.OrdinalIgnoreCase);
 
     public static string JoinToString<T>(this IEnumerable<T> collection, string? separator) =>
         string.Join(separator, collection);
@@ -52,7 +60,11 @@ public static class StringUtil
         ];
     }
 
-    public static string SubstringBetween(this string str, string startDelimiter, string endDelimiter, bool useLastEndDelimiterOccurrence = false)
+    public static string SubstringBetween(
+        this string str,
+        string startDelimiter,
+        string endDelimiter,
+        bool useLastEndDelimiterOccurrence = false)
     {
         int from = str.IndexOf(startDelimiter, StringComparison.Ordinal) + startDelimiter.Length;
         int to = !useLastEndDelimiterOccurrence
@@ -69,10 +81,8 @@ public static class StringUtil
         return str.Substring(from, to - from);
     }
 
-    public static string RemoveInvalidFileNameCharacters(string str, string? replaceWith = null)
+    public static string RemoveInvalidFileNameCharacters(string str, string replaceWith = "")
     {
-        var invalid = Path.GetInvalidFileNameChars();
-
-        return string.Join(replaceWith ?? string.Empty, str.Split(invalid, StringSplitOptions.None));
+        return string.Join(replaceWith, str.Split(_invalidFileNameChars));
     }
 }

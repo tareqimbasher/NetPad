@@ -25,7 +25,7 @@ internal class DownloadProgress(IAppStatusMessagePublisher appStatusMessagePubli
 }
 
 public class OmniSharpServerDownloader(
-    HttpClient httpClient,
+    IHttpClientFactory httpClientFactory,
     IAppStatusMessagePublisher appStatusMessagePublisher,
     IConfiguration configuration,
     ILogger<OmniSharpServerDownloader> logger)
@@ -50,6 +50,7 @@ public class OmniSharpServerDownloader(
 
             var start = DateTime.Now;
 
+            using var httpClient = httpClientFactory.CreateClient();
             using var archiveStream = new MemoryStream();
             await httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(appStatusMessagePublisher));
 

@@ -339,11 +339,7 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
 
         lock (_subscriptionsPadlock)
         {
-            var currentlySubscribed = (from sub in _subscriptions
-                where ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken)
-                select sub).ToList();
-
-            currentlySubscribed.ForEach(sub => _subscriptions.Remove(sub));
+            _subscriptions.RemoveAll(sub => ReferenceEquals(sub.Subscription.SubscriptionToken, subscriptionToken));
         }
     }
 

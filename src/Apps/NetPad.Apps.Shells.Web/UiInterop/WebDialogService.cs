@@ -15,16 +15,36 @@ public class WebDialogService(IIpcService ipcService, Settings settings) : IUiDi
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
-        var path = await ipcService.SendAndReceiveAsync(new RequestScriptSavePathCommand(script.Name));
+        var scriptName = script.Name;
 
-        var name = Path.GetFileNameWithoutExtension(path);
-
-        if (string.IsNullOrWhiteSpace(name))
+        while (true)
         {
-            return null;
-        }
+            var response = await ipcService.SendAndReceiveAsync(new RequestScriptSavePathCommand(scriptName));
 
-        return Path.Combine(settings.ScriptsDirectoryPath, name + Script.STANDARD_EXTENSION);
+            var name = Path.GetFileNameWithoutExtension(response);
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            var fullPath = Path.Combine(settings.ScriptsDirectoryPath, name + Script.STANDARD_EXTENSION);
+
+            if (!File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+
+            var retry = await ipcService.SendAndReceiveAsync(
+                new ConfirmWithUserCommand($"A script named '{name}' already exists. Choose a different name."));
+
+            if (retry != YesNoCancel.Yes)
+            {
+                return null;
+            }
+
+            scriptName = name;
+        }
     }
 
     public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)

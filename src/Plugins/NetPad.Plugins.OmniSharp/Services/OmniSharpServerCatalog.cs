@@ -10,11 +10,10 @@ namespace NetPad.Plugins.OmniSharp.Services;
 /// Manages and keeps a collection of created OmniSharp servers.
 /// </summary>
 public class OmniSharpServerCatalog(
-    IServiceProvider serviceProvider,
+    IServiceScopeFactory serviceScopeFactory,
     IAppStatusMessagePublisher appStatusMessagePublisher,
     ILogger<OmniSharpServerCatalog> logger)
 {
-    private readonly IServiceScope _serviceScope = serviceProvider.CreateScope();
     private readonly ConcurrentDictionary<Guid, CatalogItem> _items = new();
 
     public bool HasOmniSharpServer(Guid scriptId)
@@ -50,8 +49,8 @@ public class OmniSharpServerCatalog(
 
         var catalogItem = _items.GetOrAdd(
             environment.Script.Id,
-            static (id, ctx) => CreateCatalogItem(ctx.Item1, ctx.Item2, ctx.Item3),
-            (_serviceScope.ServiceProvider.CreateScope(), environment, logger)
+            static (id, ctx) => CreateCatalogItem(ctx.serviceScopeFactory.CreateScope(), ctx.environment, ctx.logger),
+            (serviceScopeFactory, environment, logger)
         );
 
         logger.LogDebug("Added OmniSharp server for script {Script}", environment.Script);

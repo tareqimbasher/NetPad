@@ -35,16 +35,12 @@ public class AssemblyImage
 
         var fileName = assemblyName.Name ?? assemblyName.FullName.Split(',')[0];
 
-        foreach (var invalidFileNameChar in Path.GetInvalidFileNameChars())
-        {
-            if (fileName.Contains(invalidFileNameChar))
-                fileName = fileName.Replace(invalidFileNameChar.ToString(), "");
-        }
-
-        fileName = fileName.Trim();
+        fileName = StringUtil.RemoveInvalidFileNameCharacters(fileName, "_").Trim();
 
         if (!fileName.EndsWithIgnoreCase(".dll"))
+        {
             fileName += ".dll";
+        }
 
         return fileName;
     }

@@ -56,7 +56,7 @@ internal static class EntityFrameworkDatabaseUtil
             foreach (var property in entityType.GetProperties())
             {
                 var columnType = property.GetColumnType();
-                var precision = property.GetScale();
+                var precision = property.GetPrecision();
                 var scale = property.GetScale();
 
                 if (precision != null || scale != null)
