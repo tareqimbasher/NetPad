@@ -105,11 +105,7 @@ public class FileSystemScriptRepository : IScriptRepository
 
         var data = await File.ReadAllTextAsync(path).ConfigureAwait(false);
 
-        var name = Script.GetNameFromPath(path);
-        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
-        script.SetPath(path);
-
-        return script;
+        return await DeserializeScriptAsync(path, data);
     }
 
     public async Task<Script?> GetAsync(Guid scriptId)
@@ -129,7 +125,8 @@ public class FileSystemScriptRepository : IScriptRepository
                 continue;
             }
 
-            return await GetAsync(scriptFile.FullName);
+            var data = await File.ReadAllTextAsync(scriptFile.FullName).ConfigureAwait(false);
+            return await DeserializeScriptAsync(scriptFile.FullName, data);
         }
 
         return null;
@@ -138,6 +135,7 @@ public class FileSystemScriptRepository : IScriptRepository
     public async Task<List<Script>> GetAsync(HashSet<Guid> scriptIds)
     {
         var scripts = new List<Script>();
+        var remaining = new HashSet<Guid>(scriptIds);
 
         var scriptFiles = new DirectoryInfo(GetRepositoryDirPath())
             .EnumerateFiles($"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
@@ -146,17 +144,23 @@ public class FileSystemScriptRepository : IScriptRepository
 
         foreach (var scriptFile in scriptFiles)
         {
+            if (remaining.Count == 0)
+            {
+                break;
+            }
+
             var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
             if (firstLine == null
                 || !Guid.TryParse(firstLine, out var scriptIdFromFile)
-                || !scriptIds.Contains(scriptIdFromFile))
+                || !remaining.Remove(scriptIdFromFile))
             {
                 continue;
             }
 
             try
             {
-                var script = await GetAsync(scriptFile.FullName);
+                var data = await File.ReadAllTextAsync(scriptFile.FullName).ConfigureAwait(false);
+                var script = await DeserializeScriptAsync(scriptFile.FullName, data);
                 scripts.Add(script);
             }
             catch (Exception e)
@@ -229,6 +233,14 @@ public class FileSystemScriptRepository : IScriptRepository
 
         File.Delete(script.Path);
         return Task.CompletedTask;
+    }
+
+    private async Task<Script> DeserializeScriptAsync(string path, string data)
+    {
+        var name = Script.GetNameFromPath(path);
+        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
+        script.SetPath(path);
+        return script;
     }
 
     private string GetRepositoryDirPath()

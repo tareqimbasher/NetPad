@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
+using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Dtos;
@@ -11,12 +14,14 @@ using NetPad.Exceptions;
 using NetPad.ExecutionModel;
 using NetPad.Scripts;
 using NetPad.Services;
+using NetPad.Sessions;
 
 namespace NetPad.Controllers;
 
 [ApiController]
 [Route("scripts")]
-public class ScriptsController(IMediator mediator) : ControllerBase
+public class ScriptsController(IMediator mediator, IScriptRepository scriptRepository, ISession session)
+    : ControllerBase
 {
     [HttpGet]
     public async Task<IEnumerable<ScriptSummary>> GetScripts()
@@ -25,7 +30,9 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("create")]
-    public async Task Create([FromBody] CreateScriptDto dto, [FromServices] IDataConnectionRepository dataConnectionRepository)
+    public async Task Create(
+        [FromBody] CreateScriptDto dto,
+        [FromServices] IDataConnectionRepository dataConnectionRepository)
     {
         var script = await mediator.Send(new CreateScriptCommand());
 
@@ -52,22 +59,65 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     [HttpPatch("{id:guid}/rename")]
     public async Task Rename(Guid id, [FromBody] string newName)
     {
-        var environment = await GetScriptEnvironmentAsync(id);
-        await mediator.Send(new RenameScriptCommand(environment.Script, newName));
+        var script = await GetScriptAsync(id);
+        await mediator.Send(new RenameScriptCommand(script, newName));
     }
 
     [HttpPatch("{id:guid}/duplicate")]
     public async Task Duplicate(Guid id)
     {
-        var environment = await GetScriptEnvironmentAsync(id);
-        var script = await mediator.Send(new DuplicateScriptCommand(environment.Script));
-        await mediator.Send(new OpenScriptCommand(script));
+        var script = await GetScriptAsync(id);
+        var duplicate = await mediator.Send(new DuplicateScriptCommand(script));
+        await mediator.Send(new OpenScriptCommand(duplicate));
     }
 
     [HttpPatch("{id:guid}/save")]
     public async Task<bool> Save(Guid id, [FromServices] ScriptService scriptService)
     {
         return await scriptService.SaveScriptAsync(id);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task Delete(Guid id)
+    {
+        var script = await GetScriptAsync(id);
+        await mediator.Send(new DeleteScriptCommand(script));
+    }
+
+    [HttpDelete("folder")]
+    public async Task DeleteFolder(
+        [FromQuery] string path,
+        [FromServices] Settings settings,
+        [FromServices] ScriptService scriptService,
+        [FromServices] IAutoSaveScriptRepository autoSaveScriptRepository)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new Exception("A folder path must be provided.");
+        }
+
+        var fullPath = Path.GetFullPath(Path.Combine(settings.ScriptsDirectoryPath, path.Trim('.', '/', '\\')));
+
+        if (!fullPath.StartsWith(settings.ScriptsDirectoryPath, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(fullPath, settings.ScriptsDirectoryPath, StringComparison.OrdinalIgnoreCase)
+            || !Directory.Exists(fullPath))
+        {
+            throw new Exception($"Invalid or non-existent directory: {path}");
+        }
+
+        var openEnvironments = session.GetOpened()
+            .Where(e => e.Script.Path?.StartsWith(fullPath, StringComparison.OrdinalIgnoreCase) == true)
+            .ToArray();
+
+        if (openEnvironments.Length > 0)
+        {
+            foreach (var environment in openEnvironments)
+            {
+                await scriptService.CloseScriptAsync(environment.Script.Id, true);
+            }
+        }
+
+        Directory.Delete(fullPath, recursive: true);
     }
 
     [HttpPatch("{id:guid}/run")]
@@ -96,7 +146,10 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id:guid}/open-config")]
-    public async Task OpenConfigWindow([FromServices] IUiWindowService uiWindowService, Guid id, [FromQuery] string? tab = null)
+    public async Task OpenConfigWindow(
+        [FromServices] IUiWindowService uiWindowService,
+        Guid id,
+        [FromQuery] string? tab = null)
     {
         var environment = await GetScriptEnvironmentAsync(id);
         var script = environment.Script;
@@ -132,7 +185,8 @@ public class ScriptsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}/target-framework-version")]
-    public async Task<IActionResult> SetTargetFrameworkVersion(Guid id, [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
+    public async Task<IActionResult> SetTargetFrameworkVersion(Guid id,
+        [FromBody] DotNetFrameworkVersion targetFrameworkVersion)
     {
         var environment = await GetScriptEnvironmentAsync(id);
 
@@ -201,9 +255,21 @@ public class ScriptsController(IMediator mediator) : ControllerBase
         environment.ClearMemCacheItems();
     }
 
+    private async Task<Script> GetScriptAsync(Guid id)
+    {
+        var script = session.Get(id)?.Script;
+
+        if (script == null)
+        {
+            script = await scriptRepository.GetAsync(id);
+        }
+
+        return script ?? throw new ScriptNotFoundException(id);
+    }
+
     private async Task<ScriptEnvironment> GetScriptEnvironmentAsync(Guid id)
     {
         return await mediator.Send(new GetOpenedScriptEnvironmentQuery(id, true))
-            ?? throw new ScriptNotFoundException(id);
+               ?? throw new ScriptNotFoundException(id);
     }
 }

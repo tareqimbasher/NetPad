@@ -44,8 +44,6 @@ export class DialogUtil {
      * Opens a dialog (a class that extends Dialog<>).
      * @param dialogComponent The dialog type to open.
      * @param input Input object to be passed to dialog when activated.
-     * @param allowMultiple By default only one instance of a particular dialog type is opened, if this is true,
-     * multiple dialogs of this dialog type will be allowed to be opened simultaneously.
      */
     public async open<TDialog extends typeof Dialog<TInput> | Constructable, TInput>(
         dialogComponent: TDialog,

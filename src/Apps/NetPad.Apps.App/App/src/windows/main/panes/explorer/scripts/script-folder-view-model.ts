@@ -40,6 +40,32 @@ export class ScriptFolderViewModel {
         }
     }
 
+    public findFolders(predicate: (folder: ScriptFolderViewModel) => boolean): ScriptFolderViewModel[] {
+        const folders: ScriptFolderViewModel[] = [];
+
+        this.recurseFolders(folder => {
+            if (predicate(folder)) {
+                folders.push(folder);
+            }
+        });
+
+        return folders;
+    }
+
+    public findFolder(predicate: (f: ScriptFolderViewModel) => boolean): ScriptFolderViewModel | undefined {
+        for (const subFolder of this.folders) {
+            if (predicate(subFolder)) {
+                return subFolder;
+            }
+
+            const found = subFolder.findFolder(predicate);
+            if (found) {
+                return found;
+            }
+        }
+        return undefined;
+    }
+
     public clone(deep = false): ScriptFolderViewModel {
         const clone = new ScriptFolderViewModel(this.name, this.path, this.parent);
 

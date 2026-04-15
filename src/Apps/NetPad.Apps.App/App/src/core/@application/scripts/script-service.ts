@@ -23,7 +23,7 @@ export class ScriptService extends ScriptsApiClient implements IScriptService {
         }
     }
 
-    public async openRenamePrompt(script: Script): Promise<void> {
+    public async openRenamePrompt(script: { id: string; name: string }): Promise<void> {
         const prompt = await this.dialogUtil.prompt({
             message: "New name:",
             defaultValue: script.name,
