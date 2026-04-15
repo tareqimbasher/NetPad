@@ -172,6 +172,16 @@ output-pane {
 
             thead th {
                 white-space: nowrap;
+
+                &.bar-graph-active {
+                    color: var(--active-color);
+                }
+            }
+
+            .bar-graph-toggle {
+                margin-left: 0.35rem;
+                padding: 0.15rem 0.25rem;
+                font-size: 0.8rem;
             }
 
             .table-info-header > th {
@@ -195,6 +205,40 @@ output-pane {
 
             tbody td {
                 overflow-wrap: break-word;
+            }
+
+            .bar-graph-cell {
+                position: relative;
+                overflow: hidden;
+                min-width: 5rem;
+
+                .bar-graph-track {
+                    position: absolute;
+                    left: 0.2rem;
+                    right: 0.2rem;
+                    top: 50%;
+                    height: 0.9rem;
+                    transform: translateY(-50%);
+                    border-radius: 999px;
+                    background: rgb(61 163 218 / 12%);
+                    pointer-events: none;
+                }
+
+                .bar-graph-fill {
+                    display: block;
+                    height: 100%;
+                    border-radius: inherit;
+                    background: linear-gradient(90deg, rgb(61 163 218 / 40%), rgb(61 163 218 / 85%));
+                }
+
+                .bar-graph-value {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                &.bar-graph-negative .bar-graph-fill {
+                    background: linear-gradient(90deg, rgb(255 159 64 / 35%), rgb(255 159 64 / 80%));
+                }
             }
 
             tbody {
