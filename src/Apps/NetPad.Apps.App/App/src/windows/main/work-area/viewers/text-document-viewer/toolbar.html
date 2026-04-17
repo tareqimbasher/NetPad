@@ -1,31 +1,32 @@
 <template class="d-flex align-items-center overflow-x-auto">
-    <div class="group">
-        <button class="run-button btn btn-sm btn-themed me-2"
+    <div class="group gap-2">
+        <button class="run-button btn btn-sm btn-themed"
                 show.bind="!isBusy"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
             <i class="run-icon"></i>
         </button>
-        <button class="btn btn-danger me-2"
+        <button class="stop-button btn btn-sm btn-themed"
                 show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
                 title="Stop"
                 click.trigger="stop()"
                 disabled.bind="environment.status === 'Stopping'">
             <i class="stop-icon"></i>
         </button>
-        <button class="btn btn-sm btn-themed me-2"
+        <button class="toolbar-icon-button btn btn-sm"
                 title="${getShortcutKeyCombo('Save')}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
                 disabled.bind="isBusy || !environment.script.isDirty">
             <i class="save-icon ${environment.script.isDirty ? 'is-dirty' : ''}"></i>
         </button>
-        <button class="btn btn-sm btn-themed"
+        <button class="toolbar-icon-button btn btn-sm"
                 title="${getShortcutKeyCombo('Script Properties')}"
                 click.trigger="openProperties()"
                 disabled.bind="isBusy">
             <i class="properties-icon"></i>
         </button>
     </div>
+    <span class="toolbar-divider ms-2"></span>
     <div class="group" title="The .NET SDK to use for this script.">
         <span class="group-label">SDK:</span>
         <select class="form-select form-select-sm dotnet-runtime-selector ms-3"

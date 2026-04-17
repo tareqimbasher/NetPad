@@ -26,6 +26,7 @@ tab-bar {
         font-size: 0.925rem;
         cursor: default;
         background: var(--tab-background);
+        border-radius: 3px 3px 0 0;
 
         &:not(.new-tab) {
             border-top: 1px solid transparent;

@@ -21,6 +21,49 @@ toolbar {
         line-height: 1rem !important;
     }
 
+    .toolbar-icon-button {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--action-icon-color);
+        transition: background 0.15s ease-in-out;
+
+        &:hover:not(:disabled) {
+            background: var(--hover-color);
+            color: var(--action-icon-hover-color);
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            border-color: transparent;
+        }
+    }
+
+    .run-button {
+        background: rgba(2, 193, 61, 0.15);
+        border-color: rgba(2, 193, 61, 0.3);
+        transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
+        &:hover {
+            background: rgba(2, 193, 61, 0.3);
+            border-color: rgba(2, 193, 61, 0.5);
+        }
+    }
+
+    .stop-button {
+        background: rgba(220, 53, 69, 0.2);
+        border-color: rgba(220, 53, 69, 0.35);
+        transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
+        &:hover:not(:disabled) {
+            background: rgba(220, 53, 69, 0.35);
+            border-color: rgba(220, 53, 69, 0.55);
+        }
+
+        .stop-icon {
+            color: #dc3545;
+        }
+    }
+
     .save-icon {
         opacity: 0.5;
     }

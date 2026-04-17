@@ -98,6 +98,14 @@ kbd {
     }
 }
 
+.toolbar-divider {
+    width: 1px;
+    height: 1.25rem;
+    background: var(--border-contrast-color);
+    align-self: center;
+    flex-shrink: 0;
+}
+
 .active-context-menu-target {
     background: var(--hover-color);
 }

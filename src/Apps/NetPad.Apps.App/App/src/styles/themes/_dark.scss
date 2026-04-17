@@ -13,7 +13,7 @@ $dark: (
     background-lighter-color: #333333,
     list-background: #282828,
     list-item-clicked-background: #444444,
-    form-control-background-color: #333333,
+    form-control-background-color: #292929,
     form-control-disabled-background-color: #1c1c1c,
     kbd-background-color: #59646e,
     // BORDERS
@@ -34,11 +34,11 @@ $dark: (
     // STATUSBAR
     statusbar-background: #1b1c1d,
     // SCRIPT STATUS
-    script-status-running-color: orange,
+    script-status-running-color: #3794e6,
     script-status-stopping-color: salmon,
     script-status-error-color: red,
     script-status-success-color: #02c13d,
-    script-status-running-background: #c48a12,
+    script-status-running-background: #1177bb,
     script-status-stopping-background: #a85050,
     script-status-error-background: #b52a2a,
     // SCRIPT VIEW
@@ -47,7 +47,7 @@ $dark: (
     // PANES
     pane-ribbon-background: #252525,
     pane-background: $color-background,
-    pane-toolbar-background: $color-background,
+    pane-toolbar-background: #202020,
     // CONTEXT MENU
     context-menu-background: #323232,
     context-menu-item-hover-background: #15539e,

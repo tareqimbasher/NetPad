@@ -22,6 +22,14 @@
         background-color: var(--script-status-error-background);
     }
 
+    &.status-running,
+    &.status-stopping,
+    &.status-error {
+        .active-app-status-message i {
+            color: var(--text-color) !important;
+        }
+    }
+
     .left-column,
     .middle-column,
     .right-column {

@@ -34,11 +34,11 @@ $light: (
     // STATUSBAR
     statusbar-background: #e3e3e3,
     // SCRIPT STATUS
-    script-status-running-color: orange,
+    script-status-running-color: #2d7fd3,
     script-status-stopping-color: salmon,
     script-status-error-color: red,
     script-status-success-color: #02c13d,
-    script-status-running-background: #e8b44a,
+    script-status-running-background: #2d7fd3,
     script-status-stopping-background: #e8a090,
     script-status-error-background: #d44040,
     // SCRIPT VIEW
@@ -47,6 +47,7 @@ $light: (
     // PANES
     pane-ribbon-background: #ececec,
     pane-background: $color-background,
+    pane-toolbar-background: $color-background,
     // CONTEXT MENU
     context-menu-background: $color-background,
     context-menu-item-hover-background: rgb(30 144 255 / 50%),

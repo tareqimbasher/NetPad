@@ -26,6 +26,8 @@
         </ul>
     </div>
 
+    <span class="toolbar-divider"></span>
+
     <i class="icon-button navigate-top-icon"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
        title="Top"></i>
@@ -42,6 +44,8 @@
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
        title="Bottom"></i>
 
+    <span class="toolbar-divider"></span>
+
     <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
        title="Scroll on Output"></i>
@@ -53,6 +57,8 @@
     <i class="icon-button theme-icon ${dumpContainer.colorize ? 'text-orange' : ''}"
        click.trigger="dumpContainer.colorize = !dumpContainer.colorize"
        title="Color output - turn off for better 'Find Text' (CTRL + F) accuracy"></i>
+
+    <span class="toolbar-divider"></span>
 
     <i class="icon-button clear-output-icon"
        click.trigger="dumpContainer.clearOutput()"

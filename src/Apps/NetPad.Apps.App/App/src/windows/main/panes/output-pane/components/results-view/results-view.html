@@ -70,6 +70,8 @@
         </ul>
     </div>
 
+    <span class="toolbar-divider"></span>
+
     <i class="icon-button navigate-top-icon"
        click.trigger="dumpContainer.navigationControls.navigateTop()"
        title="Top"></i>
@@ -86,6 +88,8 @@
        click.trigger="dumpContainer.navigationControls.navigateBottom()"
        title="Bottom"></i>
 
+    <span class="toolbar-divider"></span>
+
     <i class="icon-button scroll-on-output-icon ${dumpContainer.scrollOnOutput ? 'active' : ''}"
        click.trigger="dumpContainer.scrollOnOutput = !dumpContainer.scrollOnOutput"
        title="Scroll on Output"></i>
@@ -93,6 +97,8 @@
     <i class="icon-button text-wrap-icon ${dumpContainer.textWrap ? 'active' : ''}"
        click.trigger="dumpContainer.textWrap = !dumpContainer.textWrap"
        title="Text Wrap"></i>
+
+    <span class="toolbar-divider"></span>
 
     <i class="icon-button tree-expand-all-icon"
        click.trigger="dumpContainer.resultControls.expandAll()"

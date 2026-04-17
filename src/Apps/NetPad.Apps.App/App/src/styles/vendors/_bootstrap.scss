@@ -13,12 +13,9 @@ $input-padding-y-lg: 0.375rem;
 $input-padding-x-lg: 0.75rem;
 $input-btn-padding-y: 0.16rem;
 $input-btn-padding-y-sm: 0.1rem;
-$border-radius: 0.15rem;
-$border-radius-sm: 0.1rem;
-$border-radius-lg: 0.2rem;
-$input-border-radius: 0;
-$input-border-radius-sm: 0;
-$input-border-radius-lg: 0;
+$border-radius: 0.25rem;
+$border-radius-sm: 0.2rem;
+$border-radius-lg: 0.3rem;
 $spacer: 0.5rem;
 $nav-link-padding-y: 0.25rem;
 $input-btn-focus-width: 0.2rem;
@@ -72,6 +69,17 @@ textarea.form-control {
     background-color: var(--form-control-background-color);
     color: var(--text-color);
     border-color: var(--border-color);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+    &:hover:not(:disabled) {
+        border-color: var(--border-contrast-color);
+    }
+
+    &:focus {
+        background-color: var(--form-control-background-color);
+        color: var(--text-color);
+        border-color: var(--active-color);
+    }
 
     &[disabled],
     &[disabled="true"] {
