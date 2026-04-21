@@ -38,10 +38,7 @@ public static class RunCommand
         bool ForceRebuild,
         bool Verbose,
         List<string> ScriptArgs,
-        OutputFormat OutputFormat)
-    {
-        public bool NoCache { get; set; } = NoCache;
-    }
+        OutputFormat OutputFormat);
 
     public static void AddRunCommand(this RootCommand parent, IServiceProvider serviceProvider)
     {
@@ -178,20 +175,10 @@ public static class RunCommand
                 }
             }
 
-            // Resolve script kind
             var kindStr = p.GetValue(kindOption);
-            ScriptKind? scriptKind = null;
-            if (kindStr != null)
+            if (!Helper.TryParseScriptKind(kindStr, out var scriptKind))
             {
-                if (kindStr.Equals("program", StringComparison.OrdinalIgnoreCase))
-                    scriptKind = ScriptKind.Program;
-                else if (kindStr.Equals("sql", StringComparison.OrdinalIgnoreCase))
-                    scriptKind = ScriptKind.SQL;
-                else
-                {
-                    Presenter.Error($"Unknown script kind '{kindStr}'. Supported values: program, sql.");
-                    return 1;
-                }
+                return 1;
             }
 
             var sdkMajor = p.GetValue(sdkOption);
@@ -278,6 +265,12 @@ public static class RunCommand
     {
         rootCommand.SetAction(async p =>
         {
+            // With no args and no piped input, show help instead of invoking 'run'
+            if (p.UnmatchedTokens.Count == 0 && !Console.IsInputRedirected)
+            {
+                return await rootCommand.Parse("--help").InvokeAsync();
+            }
+
             // Re-invoke with 'run' prepended so the run subcommand handles parsing
             // We don't want attach run symbols to rootCommand directly, otherwise it
             // will leak into every subcommand

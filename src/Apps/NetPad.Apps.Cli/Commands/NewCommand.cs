@@ -93,26 +93,28 @@ public static class NewCommand
             var kindStr = p.GetValue(kindOption);
             var force = p.GetValue(forceOption);
 
-            // Resolve script kind
-            ScriptKind kind = ScriptKind.Program;
-            if (kindStr != null)
+            if (!Helper.TryParseScriptKind(kindStr, out var parsedKind))
             {
-                if (kindStr.Equals("program", StringComparison.OrdinalIgnoreCase))
-                    kind = ScriptKind.Program;
-                else if (kindStr.Equals("sql", StringComparison.OrdinalIgnoreCase))
-                    kind = ScriptKind.SQL;
-                else
-                {
-                    Presenter.Error($"Unknown script kind '{kindStr}'. Supported values: program, sql.");
-                    return 1;
-                }
+                return 1;
             }
 
-            // Determine if this is a plain .cs file
-            bool isPlainCsFile = name.EndsWith(".cs", StringComparison.OrdinalIgnoreCase);
+            var kind = parsedKind ?? ScriptKind.Program;
+
+            // Determine if this is a plain code file (extensions NetPad recognizes as script sources)
+            bool isPlainCodeFile =
+                name.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
+                name.EndsWith(".csx", StringComparison.OrdinalIgnoreCase);
+
+            if (isPlainCodeFile && kind == ScriptKind.SQL)
+            {
+                Presenter.Error(
+                    "Cannot create a SQL script with a .cs or .csx extension. " +
+                    "Drop the extension to create a .netpad file.");
+                return 1;
+            }
 
             // Resolve the output file path
-            var filePath = ResolvePath(serviceProvider, name, library, isPlainCsFile);
+            var filePath = ResolvePath(serviceProvider, name, library, isPlainCodeFile);
             if (filePath == null) return 1;
 
             // Handle file collision
@@ -123,9 +125,9 @@ public static class NewCommand
                 filePath = resolvedPath;
             }
 
-            if (isPlainCsFile)
+            if (isPlainCodeFile)
             {
-                return CreatePlainCsFile(filePath, kind);
+                return CreatePlainCodeFile(filePath);
             }
 
             return await CreateNetpadScript(serviceProvider, filePath, kind, p, sdkOption, connectionOption,
@@ -133,7 +135,11 @@ public static class NewCommand
         });
     }
 
-    private static string? ResolvePath(IServiceProvider serviceProvider, string name, bool library, bool isPlainCsFile)
+    private static string? ResolvePath(
+        IServiceProvider serviceProvider,
+        string name,
+        bool library,
+        bool isPlainCodeFile)
     {
         string basePath;
 
@@ -159,7 +165,7 @@ public static class NewCommand
         }
 
         // Ensure correct extension
-        if (!isPlainCsFile && !filePath.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
+        if (!isPlainCodeFile && !filePath.EndsWith(Script.STANDARD_EXTENSION, StringComparison.OrdinalIgnoreCase))
         {
             filePath += Script.STANDARD_EXTENSION;
         }
@@ -168,7 +174,7 @@ public static class NewCommand
 
         // Ensure parent directory exists
         var dir = Path.GetDirectoryName(filePath);
-        if (dir != null && !Directory.Exists(dir))
+        if (dir != null)
         {
             Directory.CreateDirectory(dir);
         }
@@ -211,10 +217,9 @@ public static class NewCommand
         return candidate;
     }
 
-    private static int CreatePlainCsFile(string filePath, ScriptKind kind)
+    private static int CreatePlainCodeFile(string filePath)
     {
-        var code = kind == ScriptKind.SQL ? string.Empty : "Console.WriteLine(\"Hello World\");\n";
-        File.WriteAllText(filePath, code);
+        File.WriteAllText(filePath, "Console.WriteLine(\"Hello World\");\n");
         AnsiConsole.MarkupLineInterpolated($"[green]success:[/] {filePath}");
         return 0;
     }

@@ -58,41 +58,13 @@ public static class LogsCommand
 
         var removeNumberArg = new Argument<int>("number")
         {
-            Description = "The log file number (from 'list' output).",
-            Arity = ArgumentArity.ZeroOrOne
+            Description = "The log file number (from 'list' output)."
         };
 
-        var removeAllOption = new Option<bool>("--all", "-a")
-        {
-            Description = "Remove all log files.",
-            Arity = ArgumentArity.ZeroOrOne
-        };
-
-        var removeCmd = new Command("rm", "Remove a log file.");
+        var removeCmd = new Command("rm", "Remove a log file. Use 'clear' to remove all.");
         logsCmd.Subcommands.Add(removeCmd);
         removeCmd.Arguments.Add(removeNumberArg);
-        removeCmd.Options.Add(removeAllOption);
-        removeCmd.SetAction(p =>
-        {
-            var numberProvided = p.GetResult(removeNumberArg) != null;
-            var number = p.GetValue(removeNumberArg);
-            var all = p.GetValue(removeAllOption);
-
-            if (numberProvided && all)
-            {
-                Presenter.Error("Cannot specify --all when specifying a log file to remove.");
-                return 1;
-            }
-
-            if (!numberProvided && !all)
-            {
-                Presenter.Error(
-                    "Specify a log file number to remove (use 'list' to see log files), or --all to remove all.");
-                return 1;
-            }
-
-            return all ? RemoveAllLogFiles() : RemoveLogFileByNumber(number);
-        });
+        removeCmd.SetAction(p => RemoveLogFileByNumber(p.GetValue(removeNumberArg)));
 
         var clearCmd = new Command("clear", "Remove all log files.");
         logsCmd.Subcommands.Add(clearCmd);
@@ -159,12 +131,35 @@ public static class LogsCommand
         return files[number - 1];
     }
 
+    private static FileStream? TryOpenLogStream(FileInfo file)
+    {
+        try
+        {
+            return new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        }
+        catch (FileNotFoundException)
+        {
+            Presenter.Error($"Log file '{file.Name}' no longer exists.");
+        }
+        catch (IOException ex)
+        {
+            Presenter.Error($"Could not open '{file.Name}': {ex.Message}");
+        }
+
+        return null;
+    }
+
     private static int ShowLogFile(int number)
     {
         var file = GetLogFileByNumber(number);
         if (file == null) return 1;
 
-        using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var stream = TryOpenLogStream(file);
+        if (stream == null)
+        {
+            return 1;
+        }
+
         using var reader = new StreamReader(stream);
         Console.Write(reader.ReadToEnd());
         return 0;
@@ -173,9 +168,16 @@ public static class LogsCommand
     private static async Task<int> TailLogFile(int number, int initialLines, CancellationToken cancellationToken)
     {
         var file = GetLogFileByNumber(number);
-        if (file == null) return 1;
+        if (file == null)
+        {
+            return 1;
+        }
 
-        using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var stream = TryOpenLogStream(file);
+        if (stream == null)
+        {
+            return 1;
+        }
 
         // Print the last N lines first
         if (initialLines > 0 && stream.Length > 0)
@@ -229,7 +231,14 @@ public static class LogsCommand
             int toRead = (int)Math.Min(bufferSize, position);
             position -= toRead;
             stream.Seek(position, SeekOrigin.Begin);
-            int bytesRead = stream.Read(buffer, 0, toRead);
+
+            int bytesRead = 0;
+            while (bytesRead < toRead)
+            {
+                int n = stream.Read(buffer, bytesRead, toRead - bytesRead);
+                if (n == 0) break;
+                bytesRead += n;
+            }
 
             var chunk = new byte[bytesRead];
             Array.Copy(buffer, chunk, bytesRead);
@@ -278,13 +287,34 @@ public static class LogsCommand
             return 0;
         }
 
+        var failures = new List<(string Name, string Error)>();
         foreach (var file in files)
         {
-            Try.Run(() => file.Delete());
+            try
+            {
+                file.Delete();
+            }
+            catch (Exception ex)
+            {
+                failures.Add((file.Name, ex.Message));
+            }
         }
 
-        AnsiConsole.MarkupLine("[green]success:[/] all log files were removed");
-        return 0;
+        if (failures.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[green]success:[/] all log files were removed");
+            return 0;
+        }
+
+        int removed = files.Count - failures.Count;
+        AnsiConsole.MarkupLineInterpolated(
+            $"[yellow]partial:[/] removed {removed} of {files.Count} log files");
+        foreach (var (name, error) in failures)
+        {
+            Presenter.Error($"could not remove '{name}': {error}");
+        }
+
+        return 1;
     }
 
     private static int RemoveLogFileByNumber(int number)
@@ -292,7 +322,16 @@ public static class LogsCommand
         var file = GetLogFileByNumber(number);
         if (file == null) return 1;
 
-        Try.Run(() => file.Delete());
+        try
+        {
+            file.Delete();
+        }
+        catch (Exception ex)
+        {
+            Presenter.Error($"could not remove '{file.Name}': {ex.Message}");
+            return 1;
+        }
+
         AnsiConsole.MarkupLineInterpolated($"[green]success:[/] log file '{file.Name}' was removed");
         return 0;
     }

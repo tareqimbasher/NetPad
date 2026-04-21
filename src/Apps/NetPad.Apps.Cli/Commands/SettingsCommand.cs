@@ -51,8 +51,21 @@ public static class SettingsCommand
             }
             else
             {
-                using var doc = JsonDocument.Parse(json);
-                doc.Dump();
+                JsonDocument doc;
+                try
+                {
+                    doc = JsonDocument.Parse(json);
+                }
+                catch (JsonException ex)
+                {
+                    Presenter.Error($"Settings file is not valid JSON: {ex.Message}");
+                    return 1;
+                }
+
+                using (doc)
+                {
+                    doc.Dump();
+                }
             }
         }
         else
