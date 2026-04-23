@@ -150,7 +150,13 @@ public class Startup
         app.UseStaticFiles();
 
 #if !DEBUG
-        app.UseSpaStaticFiles();
+        app.UseSpaStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+            }
+        });
 #endif
 
 #if DEBUG
@@ -180,6 +186,15 @@ public class Startup
         app.UseSpa(spa =>
         {
             spa.Options.SourcePath = "App";
+            spa.Options.DefaultPageStaticFileOptions = new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                    ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                    ctx.Context.Response.Headers["Expires"] = "0";
+                }
+            };
 #if DEBUG
             spa.UseProxyToSpaDevelopmentServer("http://localhost:9000/");
 #endif
