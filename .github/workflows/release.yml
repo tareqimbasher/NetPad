@@ -112,7 +112,7 @@ jobs:
           script: |
             const fs = require('fs');
             const changelog = fs.readFileSync('/tmp/changelog.md', 'utf8').trim();
-            const body = `## What's Changed\n\n${changelog}\n\n---\n*Take a look at the assets to download and install this app.*`;
+            const body = `## What's Changed\n\n${changelog}\n\n`;
 
             const { data } = await github.rest.repos.createRelease({
               owner: context.repo.owner,

@@ -8,7 +8,7 @@ SDK to NetPad.
 
 1. Add new version to `DotNetFrameworkVersion.cs` enum.
 2. Update `DotNetFrameworkVersionUtil.cs` and add proper entries for new .NET SDK version.
-    - If needed, update `Microsoft.CodeAnalysis.CSharp` package in `NetPad.Domain.csproj` to get the latest
+    - If needed, update `Microsoft.CodeAnalysis.CSharp` package in `NetPad.Runtime.csproj` to get the latest
       `LanguageVersion` when updating the `_frameworkVersionToLangVersion` field.
 3. Update `EntityFrameworkPackageUtils.cs` method for new .NET version.
 4. Add unit tests:

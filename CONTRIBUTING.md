@@ -27,8 +27,7 @@ Thank you for considering contributing to **NetPad**! We're excited to have you 
 - Report bugs or request features through
   the [issue tracker](https://github.com/tareqimbasher/NetPad/issues).
 - [Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)
-  the repository, [create a branch](https://git-scm.com/docs/git-checkout), make
-  your [changes](https://stackoverflow.com/questions/76776374/how-do-i-add-commit-and-push-code-to-git-using-git-bash-command-at-once#answer-76776375),
+  the repository, [create a branch](https://git-scm.com/docs/git-checkout), make your changes,
   and submit
   a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
   to the `main` branch.
@@ -82,7 +81,11 @@ the [technical documentation](docs/technical-docs/).
 
 - [Node](https://nodejs.org/en/download) v22+
 - [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) 9.x
-- [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)
+- [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet): install with
+  `dotnet tool install --global dotnet-ef`
+- (If contributing to the Tauri shell) [Rust toolchain](https://www.rust-lang.org/tools/install)
+  — see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) for platform-specific
+  system dependencies
 - (Recommended) [just](https://github.com/casey/just) command runner — a `justfile` is provided with
   recipes for building, running, testing, and linting. Run `just` to see all available tasks. If you
   prefer not to use `just`, you can find the equivalent raw commands in
@@ -104,11 +107,9 @@ just npm-install-all
 <summary>Without <code>just</code></summary>
 
 ```bash
-cd src/Apps/NetPad.Apps.App/App && npm install
-cd ../../../..
-cd src/Apps/NetPad.Apps.App/ElectronHostHook && npm install
-cd ../../../..
-cd src/Apps/NetPad.Apps.Shells.Tauri/TauriApp && npm install
+npm install --prefix src/Apps/NetPad.Apps.App/App
+npm install --prefix src/Apps/NetPad.Apps.App/ElectronHostHook
+npm install --prefix src/Apps/NetPad.Apps.Shells.Tauri/TauriApp
 ```
 
 </details>
@@ -118,13 +119,13 @@ cd src/Apps/NetPad.Apps.Shells.Tauri/TauriApp && npm install
 1. Run the frontend
 
 ```bash
-just run-web-frontend
+just web-run-frontend
 ```
 
 2. Run the .NET backend
 
 ```bash
-just run-web-backend
+just web-run-backend
 ```
 
 Navigate to the app from your web browser at [http://localhost:57940](http://localhost:57940).
@@ -152,18 +153,18 @@ dotnet watch run --environment Development
 1. Run the frontend
 
 ```bash
-just run-electron-frontend
+just electron-run-frontend
 ```
 
 2. Run the Electron backend
 
 ```bash
-just run-electron-backend
+just electron-run-backend
 
 # For ARM:
-just run-electron-backend-osx-arm
-just run-electron-backend-linux-arm
-just run-electron-backend-win-arm
+just electron-run-backend-mac-arm64
+just electron-run-backend-linux-arm64
+just electron-run-backend-win-arm64
 ```
 
 > [!TIP]
@@ -208,13 +209,13 @@ platform-specific system dependencies.
 1. Run the .NET backend
 
 ```bash
-just run-tauri-backend
+just tauri-run-backend
 ```
 
 2. Run the Tauri frontend (in another terminal)
 
 ```bash
-just run-tauri-frontend
+just tauri-run-frontend
 ```
 
 <details>
@@ -243,16 +244,29 @@ how to build packages locally.
 
 ### Web
 
-The web shell can be published as a self-contained .NET app with the SPA frontend bundled in.
-From the repository root:
+Build a self-contained .NET app with the SPA frontend bundled in, targeting your current host
+OS/architecture:
+
+```bash
+just web-build-release
+```
+
+The output is a standalone ASP.NET Core app in `src/Apps/NetPad.Apps.App/bin/publish`, suitable for
+distribution or deployment to any server or container.
+
+<details>
+<summary>Without <code>just</code></summary>
+
+For a framework-dependent build (smaller, but requires .NET installed on the target server):
 
 ```bash
 dotnet publish src/Apps/NetPad.Apps.App -c Release /p:WebBuild=true
 ```
 
 The `/p:WebBuild=true` flag tells the build to use the `web` webpack target instead of
-`electron-renderer`. The published output is a standalone ASP.NET Core app that can be deployed to
-any server or container.
+`electron-renderer`.
+
+</details>
 
 ### Electron
 
@@ -260,7 +274,29 @@ The Electron app is built and packaged using
 [electron-builder](https://www.electron.build/). Configuration is in the
 [`electron.manifest.js`](src/Apps/NetPad.Apps.App/electron.manifest.js) file.
 
-Build the app for the desired platform from the root directory of the `NetPad.Apps.App` project:
+Build for your target platform:
+
+```bash
+# For x64:
+just electron-build-release-win-x64
+just electron-build-release-mac-x64
+just electron-build-release-linux-x64
+
+# For ARM64:
+just electron-build-release-win-arm64
+just electron-build-release-mac-arm64
+just electron-build-release-linux-arm64
+```
+
+Packaged files can be found in the `bin/Desktop` folder.
+
+> [!NOTE]
+> To build `flatpak` files the `flatpak` and `flatpak-builder` packages need to be installed.
+
+<details>
+<summary>Without <code>just</code></summary>
+
+From the root directory of the `NetPad.Apps.App` project:
 
 ```bash
 # For x64:
@@ -274,10 +310,7 @@ electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /ma
 electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 ```
 
-Packaged files can be found in the `bin/Desktop` folder.
-
-> [!NOTE]
-> To build `flatpak` files the `flatpak` and `flatpak-builder` packages need to be installed.
+</details>
 
 See the [ElectronSharp docs](https://github.com/theolivenbaum/electron-sharp) for additional CLI
 options when packaging the app, and [electron-builder](https://www.electron.build/) for additional
@@ -288,6 +321,27 @@ configuration options.
 Tauri packaging uses platform-specific config files located in
 [`src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/`](src/Apps/NetPad.Apps.Shells.Tauri/TauriApp/src-tauri/).
 Each config handles the `dotnet publish` step automatically as a `beforeBuildCommand`.
+
+Build for your target platform:
+
+```bash
+# For x64:
+just tauri-build-release-win-x64
+just tauri-build-release-linux-x64
+just tauri-build-release-mac-x64
+
+# For ARM64:
+just tauri-build-release-win-arm64
+just tauri-build-release-linux-arm64
+just tauri-build-release-mac-arm64
+```
+
+> [!NOTE]
+> On Linux, you'll need additional system dependencies:
+> `sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf`
+
+<details>
+<summary>Without <code>just</code></summary>
 
 From the `src/Apps/NetPad.Apps.Shells.Tauri/TauriApp` directory:
 
@@ -303,9 +357,7 @@ npx tauri build -c src-tauri/tauri.conf.linux-arm64.json5
 npx tauri build --target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5
 ```
 
-> [!NOTE]
-> On Linux, you'll need additional system dependencies:
-> `sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf`
+</details>
 
 ## Testing :test_tube:
 
@@ -338,6 +390,14 @@ dotnet test src/Tests/NetPad.Runtime.Tests
 just js-test
 ```
 
+### Rust Tests
+
+Only relevant when contributing to the Tauri shell's Rust code.
+
+```bash
+just rust-test
+```
+
 ### Run Everything
 
 To run all tests, lints, and checks in one go:
@@ -367,7 +427,8 @@ npm run lint --prefix src/Apps/NetPad.Apps.App/App
 - **C#**: `TreatWarningsAsErrors` is enabled globally — your code must compile without warnings.
   Run `just dotnet-format` to auto-format before submitting.
 - **JavaScript/TypeScript**: Run `just js-lint` to check for linting issues.
-- **Rust** (Tauri shell): Run `just rust-format-clippy` to format and lint Rust code.
+- **Rust** (Tauri shell): Run `just rust-lint` to check formatting and lint Rust code, or
+  `just rust-format` to auto-format.
 - Before opening a PR, run `just check-all` to validate tests and linting together.
 
 ## Issue Reporting

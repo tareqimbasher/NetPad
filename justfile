@@ -16,7 +16,7 @@ var_rid := var_rid_os + "-" + var_rid_arch
 
 # Prints all important paths
 [group('general')]
-print-paths:
+paths:
     @echo "API:                 {{ var_api }}"
     @echo "SPA:                 {{ var_spa }}"
     @echo "CLI:                 {{ var_cli }}"
@@ -27,7 +27,7 @@ print-paths:
 
 # Print the current app version
 [group('general')]
-print-version:
+version:
     @grep -oP '(?<=<InformationalVersion>).*(?=</InformationalVersion>)' "{{ var_api }}/NetPad.Apps.App.csproj"
 
 # Bump version across all config files (usage: just bump-version 0.13.0)
@@ -101,72 +101,72 @@ npm-install-all:
 
 # Web: run the Web backend
 [group('web')]
-run-web-backend watch="true":
+web-run-backend watch="true":
     {{ if watch == "true" { "dotnet watch run" } else { "dotnet run" } }} --project "{{ var_api }}"
 
 # Web: run the Web frontend
 [group('web')]
-run-web-frontend:
+web-run-frontend:
     npm run start-web --prefix "{{ var_spa }}"
 
 # Web: build a local release version (self-contained, runtime: {{var_rid}})
 [group('web')]
-build-web-rel:
+web-build-release:
     npm run build-web --prefix "{{ var_spa }}"
     dotnet publish "{{ var_api }}" -c Release -r "{{ var_rid }}" --self-contained -o "{{ var_api }}/bin/publish"
 
 # Web: run the built release version
 [group('web')]
-run-web-rel *args:
+web-run-release *args:
     "{{ var_api }}/bin/publish/NetPad.Apps.App" "$@"
 
 # ─── TAURI ────────────────────────────────────────────────────────────
 
 # Tauri: run the Tauri backend
 [group('tauri')]
-run-tauri-backend watch="true":
+tauri-run-backend watch="true":
     {{ if watch == "true" { "dotnet watch run" } else { "dotnet run" } }} --project "{{ var_api }}" -- --tauri
 
 # Tauri: run the Tauri frontend
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-run-tauri-frontend:
+tauri-run-frontend:
     npx tauri dev
 
 # Tauri: build a release binary for Windows x64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-win-x64:
+tauri-build-release-win-x64:
     npx tauri build -c src-tauri/tauri.conf.win-x64.json5
 
 # Tauri: build a release binary for Windows ARM64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-win-arm64:
+tauri-build-release-win-arm64:
     npx tauri build -c src-tauri/tauri.conf.win-arm64.json5
 
 # Tauri: build a release binary for Linux x64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-linux-x64:
+tauri-build-release-linux-x64:
     npx tauri build -c src-tauri/tauri.conf.linux-x64.json5
 
 # Tauri: build a release binary for Linux ARM64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-linux-arm64:
+tauri-build-release-linux-arm64:
     npx tauri build -c src-tauri/tauri.conf.linux-arm64.json5
 
 # Tauri: build a release binary for macOS x64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-mac-x64:
+tauri-build-release-mac-x64:
     npx tauri build --target x86_64-apple-darwin -c src-tauri/tauri.conf.mac-x64.json5
 
 # Tauri: build a release binary for macOS ARM64
 [group('tauri')]
 [working-directory('src/Apps/NetPad.Apps.Shells.Tauri/TauriApp')]
-build-tauri-rel-mac-arm64:
+tauri-build-release-mac-arm64:
     npx tauri build --target aarch64-apple-darwin -c src-tauri/tauri.conf.mac-arm64.json5
 
 # Tauri: print Tauri environment info
@@ -180,69 +180,105 @@ tauri-info:
 # Electron: run the Electron backend
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
-run-electron-backend watch="true":
-    electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js
+electron-run-backend watch="true":
+    MSYS_NO_PATHCONV=1 electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js
 
-# Electron: run the Electron backend (macOS ARM)
+# Electron: run the Electron backend (macOS ARM64)
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
-run-electron-backend-osx-arm watch="true":
-    electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "osx-arm64;mac" /electron-arch arm64
+electron-run-backend-mac-arm64 watch="true":
+    MSYS_NO_PATHCONV=1 electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "osx-arm64;mac" /electron-arch arm64
 
-# Electron: run the Electron backend (Linux ARM)
+# Electron: run the Electron backend (Linux ARM64)
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
-run-electron-backend-linux-arm watch="true":
-    electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "linux-arm64;linux" /electron-arch arm64
+electron-run-backend-linux-arm64 watch="true":
+    MSYS_NO_PATHCONV=1 electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "linux-arm64;linux" /electron-arch arm64
 
-# Electron: run the Electron backend (Windows ARM)
+# Electron: run the Electron backend (Windows ARM64)
 [group('electron')]
 [working-directory('src/Apps/NetPad.Apps.App')]
-run-electron-backend-win-arm watch="true":
-    electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "win-arm64;win" /electron-arch arm64
+electron-run-backend-win-arm64 watch="true":
+    MSYS_NO_PATHCONV=1 electron-sharp start {{ if watch == "true" { "/watch" } else { "" } }} /manifest electron.manifest.js /target custom "win-arm64;win" /electron-arch arm64
 
 # Electron: run the Electron frontend
 [group('electron')]
-run-electron-frontend:
+electron-run-frontend:
     npm run start --prefix "{{ var_spa }}"
+
+# Electron: build a release binary for Windows x64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-win-x64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target win /manifest electron.manifest.js /PublishSingleFile false
+
+# Electron: build a release binary for Windows ARM64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-win-arm64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "win-arm64;win" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+
+# Electron: build a release binary for Linux x64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-linux-x64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target linux /manifest electron.manifest.js /PublishSingleFile false
+
+# Electron: build a release binary for Linux ARM64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-linux-arm64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "linux-arm64;linux" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
+
+# Electron: build a release binary for macOS x64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-mac-x64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target osx /manifest electron.manifest.js /PublishSingleFile false
+
+# Electron: build a release binary for macOS ARM64
+[group('electron')]
+[working-directory('src/Apps/NetPad.Apps.App')]
+electron-build-release-mac-arm64:
+    MSYS_NO_PATHCONV=1 electron-sharp build /target custom "osx-arm64;mac" /electron-arch arm64 /manifest electron.manifest.js /PublishSingleFile false
 
 # ─── CLI ──────────────────────────────────────────────────────────────
 
 # CLI: run the npad CLI
 [group('cli')]
-run-cli *args:
+cli-run *args:
     dotnet run --project "{{ var_cli }}" -- "$@"
 
 # CLI: build npad
 [group('cli')]
-build-cli:
+cli-build:
     dotnet build "{{ var_cli }}"
 
 # CLI: build a local release version of npad (self-contained, runtime: {{var_rid}})
 [group('cli')]
-build-cli-rel:
+cli-build-release:
     dotnet publish "{{ var_cli }}" -c Release -r "{{ var_rid }}" --self-contained -o "{{ var_cli }}/bin/publish"
 
 # CLI: run the built release version of npad
 [group('cli')]
-run-cli-rel *args:
+cli-run-release *args:
     "{{ var_cli }}/bin/publish/npad" "$@"
 
 # CLI: pack npad as a NuGet package
 [group('cli')]
-nuget-pack-cli:
+cli-nuget-pack:
     bash scripts/nuget-pack-npad.sh
 
 # CLI: push npad NuGet package (requires NUGET_API_KEY)
 [group('cli')]
-nuget-push-cli:
+cli-nuget-push:
     bash scripts/nuget-push-npad.sh
 
 # ─── DOCS ────────────────────────────────────────────────────────────
 
 # Docs: serve documentation site locally with docsify
 [group('docs')]
-serve-docs port="3000":
+docs-serve port="3000":
     npx docsify-cli serve docs --port {{ port }}
 
 # ─── DOTNET ───────────────────────────────────────────────────────────
@@ -259,7 +295,7 @@ dotnet-build:
 
 # .NET: build solution in Release configuration
 [group('dotnet')]
-dotnet-build-rel:
+dotnet-build-release:
     dotnet build "{{ var_sln }}" -c Release
 
 # .NET: clean solution
@@ -308,7 +344,7 @@ dotnet-outdated:
 
 # JavaScript: build SPA (Electron target)
 [group('javascript')]
-js-build:
+js-build-electron:
     npm run build --prefix "{{ var_spa }}"
 
 # JavaScript: build SPA (Web target)
@@ -370,7 +406,7 @@ rust-format:
 
 # Rust: check rust code formatting and run clippy
 [group('rust')]
-rust-check-format:
+rust-lint:
     cargo fmt --all --check --manifest-path "{{ var_tauri }}/src-tauri/Cargo.toml"
     cargo clippy --all-targets --manifest-path "{{ var_tauri }}/src-tauri/Cargo.toml"
 
@@ -391,4 +427,4 @@ test-all: dotnet-test js-test rust-test
 
 # Run all tests, lints, and checks
 [group('all')]
-check-all: dotnet-test js-test js-lint rust-test rust-check-format
+check-all: dotnet-test js-test js-lint rust-test rust-lint

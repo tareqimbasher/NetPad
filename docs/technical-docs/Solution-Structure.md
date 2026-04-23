@@ -11,6 +11,7 @@ The NetPad solution is composed of the following projects:
 ```
 └── Apps/                           # Executable applications, UI shells, and infrastructure
   ├── NetPad.Apps.App               # Main executable: .NET backend + JavaScript SPA
+  ├── NetPad.Apps.Cli               # CLI tool (npad)
   ├── NetPad.Apps.Common            # Orchestration + infrastructure
   ├── NetPad.Apps.ScriptHost        # Long running executable responsible for running script
   ├── NetPad.Apps.Shells.Electron   # Electron UI shell
@@ -31,9 +32,11 @@ The NetPad solution is composed of the following projects:
 └── Solution Items/                 # General solution files (e.g., .editorconfig, README.md, global.json, etc.)
 
 └── Tests/                          # Solution-wide test projects
-  ├── NetPad.Apps.Common.Tests      # Test project for NetPad.Apps.Common
-  ├── NetPad.Runtime.Tests          # Test project for NetPad.Runtime
-  └── NetPad.Tests                  # Shared test code for use in other test projects
+  ├── NetPad.Apps.App.Tests                        # Test project for NetPad.Apps.App
+  ├── NetPad.Apps.Common.Data.IntegrationTests     # Integration tests for data connections (Testcontainers)
+  ├── NetPad.Apps.Common.Tests                     # Test project for NetPad.Apps.Common
+  ├── NetPad.Runtime.Tests                         # Test project for NetPad.Runtime
+  └── NetPad.Tests                                 # Shared test code for use in other test projects
 ```
 
 ## Projects
@@ -99,7 +102,7 @@ opens a window that contains a WebView which in turn loads a web page, in this c
 🟢 `Executable`
 
 This executable is a long-running process that is started and managed by the .NET app as part of its
-`ClientServerExecutionModel`. It is not meant to be started manually by users. This process is used to:
+client-server execution model (see `ExecutionModel/ClientServer/`). It is not meant to be started manually by users. This process is used to:
 
 1. Run compiled user code.
 2. Stay alive so that consecutive script executions are fast.
@@ -107,7 +110,14 @@ This executable is a long-running process that is started and managed by the .NE
 
 A separate `script-host` process is started for each individual script.
 
-### Apps/`NetPad.Apps.Shells.Common`
+### Apps/`NetPad.Apps.Cli`
+
+🟢 `Executable`
+
+A CLI tool (packaged as `npad`) that brings the power of NetPad to the terminal. It allows users to run scripts and
+perform NetPad operations from the command line.
+
+### Apps/`NetPad.Apps.Common`
 
 This library contains:
 

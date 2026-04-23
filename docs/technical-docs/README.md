@@ -3,8 +3,6 @@
 This section of the wiki contains technical documentation about how NetPad is built, architectural diagrams and
 tutorials to get you started reading and contributing to the NetPad code base.
 
-> This section of the wiki is new and more content is being added continuously. 
-
 ## :books: Tech Stack <!-- {docsify-ignore} -->
 
 * .NET

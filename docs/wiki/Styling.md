@@ -33,6 +33,8 @@ CSS variables and their values for both themes:
 
 ```css
 .theme-netpad-dark {
+    --color-full: black;
+    --color-contrast-full: white;
     /* TEXT */
     --text-color: #dcdcdc;
     --text-strong-color: #ffffff;
@@ -41,7 +43,8 @@ CSS variables and their values for both themes:
     --background-color: #222222;
     --background-lighter-color: #333333;
     --list-background: #282828;
-    --form-control-background-color: #333333;
+    --list-item-clicked-background: #444444;
+    --form-control-background-color: #292929;
     --form-control-disabled-background-color: #1c1c1c;
     --kbd-background-color: #59646e;
     /* BORDERS */
@@ -49,40 +52,54 @@ CSS variables and their values for both themes:
     --border-contrast-color: #555555;
     /* ACTIONS */
     --hover-color: rgba(255 255 255 / 7.5%);
+    --hover-color-contrast: rgba(255 255 255 / 17.5%);
     --active-color: #0d6efd;
     --action-icon-color: silver;
     --action-icon-hover-color: white;
     /* SHADOWS */
     --box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 36%);
+    --box-shadow-bottom-sm: 0 6px 8px -8px rgb(0 0 0 / 36%);
     --box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 36%);
     /* TITLEBAR */
     --titlebar-background: #1b1c1d;
     /* STATUSBAR */
     --statusbar-background: #1b1c1d;
+    /* SCRIPT STATUS */
+    --script-status-running-color: #3794e6;
+    --script-status-stopping-color: salmon;
+    --script-status-error-color: red;
+    --script-status-success-color: #02c13d;
+    --script-status-running-background: #1177bb;
+    --script-status-stopping-background: #a85050;
+    --script-status-error-background: #b52a2a;
     /* SCRIPT VIEW */
     --script-toolbar-background: #1e1e1e;
     --find-text-box-background: #1c1c1c;
     /* PANES */
     --pane-ribbon-background: #252525;
     --pane-background: #222222;
-    --pane-toolbar-background: #222222;
+    --pane-toolbar-background: #202020;
     /* CONTEXT MENU */
     --context-menu-background: #323232;
     --context-menu-item-hover-background: #15539e;
     /* DIALOG */
     --dialog-background: #222222;
     /* TABS */
-    --tab-background: #2d2d2d;
+    --tab-background: #151515;
     --tab-active-background: #1e1e1e;
     --tab-active-text-color: #ffffff;
     --tab-inactive-text-color: rgb(255 255 255 / 65%);
+    --tab-border-color: #282828;
     /* SCROLLBARS & SPLITTER */
     --scrollbar-track-color: #343434;
     --scrollbar-thumb-color: #777777;
     --splitter-color: #282828;
+    --splitter-hover-color: #353535;
 }
 
 .theme-netpad-light {
+    --color-full: white;
+    --color-contrast-full: black;
     /* TEXT */
     --text-color: #34314b;
     --text-strong-color: #000000;
@@ -91,6 +108,7 @@ CSS variables and their values for both themes:
     --background-color: #f3f3f3;
     --background-lighter-color: #f6f6f6;
     --list-background: #f1f1f1;
+    --list-item-clicked-background: #cfcfcf;
     --form-control-background-color: #fafafa;
     --form-control-disabled-background-color: #ececec;
     --kbd-background-color: #212529;
@@ -98,23 +116,34 @@ CSS variables and their values for both themes:
     --border-color: #cccccc;
     --border-contrast-color: #bfbfbf;
     /* ACTIONS */
-    --hover-color: rgb(0 0 0 / 0.75%);
+    --hover-color: rgb(0 0 0 / 8%);
+    --hover-color-contrast: rgba(0 0 0 / 10%);
     --active-color: #0d6efd;
     --action-icon-color: #595959;
     --action-icon-hover-color: black;
     /* SHADOWS */
     --box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 16%);
+    --box-shadow-bottom-sm: 0 5px 8px -8px rgb(0 0 0 / 16%);
     --box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 16%);
     /* TITLEBAR */
-    --titlebar-background: #dfdfdf;
+    --titlebar-background: #e1e1e1;
     /* STATUSBAR */
     --statusbar-background: #e3e3e3;
+    /* SCRIPT STATUS */
+    --script-status-running-color: #2d7fd3;
+    --script-status-stopping-color: salmon;
+    --script-status-error-color: red;
+    --script-status-success-color: #02c13d;
+    --script-status-running-background: #2d7fd3;
+    --script-status-stopping-background: #e8a090;
+    --script-status-error-background: #d44040;
     /* SCRIPT VIEW */
     --script-toolbar-background: #ffffff;
     --find-text-box-background: #ededed;
     /* PANES */
-    --pane-ribbon-background: #efefef;
+    --pane-ribbon-background: #ececec;
     --pane-background: #f3f3f3;
+    --pane-toolbar-background: #f3f3f3;
     /* CONTEXT MENU */
     --context-menu-background: #f3f3f3;
     --context-menu-item-hover-background: rgb(30 144 255 / 50%);
@@ -125,10 +154,12 @@ CSS variables and their values for both themes:
     --tab-active-background: #ffffff;
     --tab-active-text-color: #000000;
     --tab-inactive-text-color: rgb(0 0 0 / 65%);
+    --tab-border-color: #d2d2d2;
     /* SCROLLBARS & SPLITTER */
     --scrollbar-track-color: #cecece;
     --scrollbar-thumb-color: #7e8182;
     --splitter-color: #dcdcdc;
+    --splitter-hover-color: #cacaca;
 }
 ```
 
@@ -247,4 +278,5 @@ some:
 ```
 
 Token names for use in the `rules` property are also not clearly defined. However, you can find the ones NetPad uses
-[here](https://github.com/tareqimbasher/NetPad/blob/5d0e78714383f41254253fd47190964510475b76/src/Apps/NetPad.Apps.App/App/src/core/%40application/editor/monaco/monaco-theme-manager.ts#L319).
+in [monaco-theme-manager.ts](https://github.com/tareqimbasher/NetPad/blob/main/src/Apps/NetPad.Apps.App/App/src/core/%40application/editor/monaco/monaco-theme-manager.ts)
+(see `lightThemeTokenThemeRules` and `darkThemeTokenThemeRules`).

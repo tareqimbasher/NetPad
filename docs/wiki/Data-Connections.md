@@ -4,6 +4,9 @@ Data connections let scripts tap into data sources and easily query, add and upd
 support a wide variety of data sources like databases, Excel files, flat files...etc. NetPad currently **only supports**
 database connections; the plan is to expand support in the near future.
 
+You can also add a [database server](#database-server-connections) and select the databases you want to scaffold and
+use.
+
 To access database connections, NetPad uses EntityFramework Core, and supports the following providers:
 
 * Microsoft SQL Server
@@ -13,12 +16,38 @@ To access database connections, NetPad uses EntityFramework Core, and supports t
 * MariaDB
 * Oracle DB
 
-:computer_mouse: To add a new connection, click the `+` icon in the <kbd>Connections</kbd> explorer pane. When you're
-finished, click <kbd>Save</kbd> to store your settings and auto-generate the scaffolding, making the connection
-instantly available in your scripts.
+:computer_mouse: To add a new connection, click the <kbd>Add Database</kbd> or <kbd>Add Server</kbd> button in the
+<kbd>Connections</kbd> explorer pane. When you're finished, click <kbd>Save</kbd> to store your settings and
+auto-generate the scaffolding, making the connection instantly available in your scripts.
 
 :computer_mouse: To use a connection, drag it and drop it onto a script, or use the <kbd>Connections</kbd> dropdown in
 the toolbar to select the connection. You can also right-click a connection and select <kbd>Use in Current script</kbd>.
+
+## Database Server Connections
+
+Instead of configuring each database connection separately, you can add a database server and select which databases
+on that server you want to scaffold and use. All databases under a server share the same connection and scaffolding settings,
+so you only need to configure these once.
+
+Server connections are supported for server-based database providers:
+
+* Microsoft SQL Server
+* PostgreSQL
+* MySQL
+* MariaDB
+
+:computer_mouse: To add a server, click the <kbd>Add Server</kbd> button in the <kbd>Connections</kbd> explorer pane.
+Enter the server's connection details, then click <kbd>Load Databases</kbd> to fetch the list of available databases.
+Select the databases you want to use and click <kbd>Save</kbd>.
+
+Databases added through a server appear grouped under the server in the <kbd>Connections</kbd> explorer pane. You can
+right-click a server to:
+- <kbd>Refresh All</kbd> — re-scaffold all databases on the server
+- <kbd>Properties</kbd> — edit server connection details
+- <kbd>Delete Server</kbd> — remove the server and all its database connections
+
+When you update a server's connection details (host, port, or credentials), all of its databases are automatically
+refreshed.
 
 ## Requirements
 
