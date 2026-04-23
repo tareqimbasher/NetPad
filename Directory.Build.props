@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <DefaultTargetFramework>net9.0</DefaultTargetFramework>
+        <DefaultTargetFramework>net10.0</DefaultTargetFramework>
         <EarliestSupportedTargetFramework>net6.0</EarliestSupportedTargetFramework>
         <LangVersion>latest</LangVersion>
         <Deterministic>True</Deterministic>

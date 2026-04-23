@@ -81,7 +81,7 @@ the [technical documentation](docs/technical-docs/).
 ### Prerequisites
 
 - [Node](https://nodejs.org/en/download) v22+
-- [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) 9.x
+- [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) 10.x
 - [EF Core tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet)
 - (Recommended) [just](https://github.com/casey/just) command runner — a `justfile` is provided with
   recipes for building, running, testing, and linting. Run `just` to see all available tasks. If you
