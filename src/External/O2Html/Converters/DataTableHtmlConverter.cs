@@ -21,7 +21,11 @@ public class DataTableHtmlConverter : HtmlConverter
         var table = new Table();
         foreach (DataColumn column in dataTable.Columns)
         {
-            table.Head.AddHeading(column.ColumnName, column.DataType.GetReadableName(true));
+            var heading = table.Head.AddAndGetHeading(column.ColumnName, column.DataType.GetReadableName(true));
+            if (HtmlSerializer.IsNumericType(column.DataType))
+            {
+                heading.SetAttribute("data-bar-graph", "true");
+            }
         }
 
         var enumerationResult = Enumerate.Max<DataRow>(dataTable.Rows, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (row, _) =>
@@ -35,6 +39,11 @@ public class DataTableHtmlConverter : HtmlConverter
                 var td = tr.AddAndGetElement("td");
 
                 var itemType = item?.GetType() ?? dataTable.Columns[ixItem].DataType;
+
+                if (HtmlSerializer.TryGetNumericValueString(item is DBNull ? null : item, itemType, out var numericValue))
+                {
+                    td.SetAttribute("data-bar-graph-value", numericValue!);
+                }
 
                 if (item == null || itemType == typeof(DBNull))
                 {

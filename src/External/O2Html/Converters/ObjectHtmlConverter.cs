@@ -41,9 +41,15 @@ public class ObjectHtmlConverter : HtmlConverter
                 .AddText(name);
 
             // Add property value
-            tr.AddAndGetElement("td")
-                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
-                .AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
+            var td = tr.AddAndGetElement("td")
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
+
+            if (HtmlSerializer.TryGetNumericValueString(value, propertyType, out var numericValue))
+            {
+                td.SetAttribute("data-bar-graph-value", numericValue!);
+            }
+
+            td.AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
         }
 
         return table;
@@ -58,9 +64,15 @@ public class ObjectHtmlConverter : HtmlConverter
             object? value = GetPropertyValue(property, ref obj!);
             var propertyType = value?.GetType() ?? property.PropertyType;
 
-            tr.AddAndGetElement("td")
-                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
-                .AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
+            var td = tr.AddAndGetElement("td")
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
+
+            if (HtmlSerializer.TryGetNumericValueString(value, propertyType, out var numericValue))
+            {
+                td.SetAttribute("data-bar-graph-value", numericValue!);
+            }
+
+            td.AddChild(htmlSerializer.Serialize(value, propertyType, serializationScope));
         }
     }
 
