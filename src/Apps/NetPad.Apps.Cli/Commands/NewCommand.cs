@@ -298,7 +298,8 @@ public static class NewCommand
         }
 
         // Save
-        await File.WriteAllTextAsync(filePath, ScriptSerializer.Serialize(script));
+        var serializerFactory = serviceProvider.GetRequiredService<IScriptSerializerFactory>();
+        await File.WriteAllTextAsync(filePath, serializerFactory.GetForPath(filePath).Serialize(script));
         AnsiConsole.MarkupLineInterpolated($"[green]success:[/] {filePath}");
         return 0;
     }
