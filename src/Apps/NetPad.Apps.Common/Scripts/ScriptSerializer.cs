@@ -10,9 +10,12 @@ namespace NetPad.Apps.Scripts;
 /// <summary>
 /// Serializes and deserializes the standard NetPad script file format.
 /// </summary>
-public static class ScriptSerializer
+public class ScriptSerializer : IScriptSerializer
 {
-    public static string Serialize(Script script)
+    public ScriptFileFormat Format => ScriptFileFormat.Standard;
+    public string FileExtension => Script.STANDARD_EXTENSION;
+
+    public string Serialize(Script script)
     {
         SerializedDataConnection? serializedDataConnection = null;
 
@@ -49,7 +52,7 @@ public static class ScriptSerializer
                $"{script.Code}";
     }
 
-    public static async Task<Script> DeserializeAsync(string name, string data, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
+    public async Task<Script> DeserializeAsync(string name, string data, IDataConnectionRepository dataConnectionRepository, IDotNetInfo dotNetInfo)
     {
         var lines = data.Split("\n").ToList();
 
@@ -103,6 +106,35 @@ public static class ScriptSerializer
         }
 
         return scriptData;
+    }
+
+    public bool TryReadSummary(string path, out Guid? id, out ScriptKind? kind)
+    {
+        id = null;
+        kind = null;
+
+        using var sr = File.OpenText(path);
+        int lineNumber = 0;
+        while (sr.ReadLine() is { } line)
+        {
+            ++lineNumber;
+
+            if (lineNumber == 1)
+            {
+                if (Guid.TryParse(line, out var parsedId))
+                    id = parsedId;
+                else
+                    return false;
+            }
+            else if (lineNumber == 2)
+            {
+                var scriptData = DeserializeScriptData(line);
+                kind = scriptData?.Config.Kind;
+                return true;
+            }
+        }
+
+        return id.HasValue;
     }
 
 

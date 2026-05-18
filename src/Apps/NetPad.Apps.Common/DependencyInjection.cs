@@ -45,6 +45,9 @@ public static class DependencyInjection
         services.AddSingleton<Settings>(sp => sp.GetRequiredService<ISettingsRepository>().GetSettingsAsync().Result);
         services.AddTransient<IScriptRepository, FileSystemScriptRepository>();
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
+        services.AddSingleton<IScriptSerializer, ScriptSerializer>();
+        services.AddSingleton<IScriptSerializer, MarkdownScriptSerializer>();
+        services.AddSingleton<IScriptSerializerFactory, ScriptSerializerFactory>();
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
         services.AddDataProtection(options => options.ApplicationDiscriminator = AppIdentifier.AppId);

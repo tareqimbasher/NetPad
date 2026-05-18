@@ -8,7 +8,7 @@ public static class ScriptFinder
 {
     public static readonly ImmutableArray<string> AutoFindFileExtensions =
     [
-        Script.STANDARD_EXTENSION,
+        ..Script.KnownExtensions,
         ".cs",
         ".csx",
     ];

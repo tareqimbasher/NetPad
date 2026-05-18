@@ -13,17 +13,20 @@ namespace NetPad.Apps.Scripts;
 public class FileSystemScriptRepository : IScriptRepository
 {
     private readonly Settings _settings;
+    private readonly IScriptSerializerFactory _serializerFactory;
     private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly IDotNetInfo _dotNetInfo;
     private readonly ILogger<FileSystemScriptRepository> _logger;
 
     public FileSystemScriptRepository(
         Settings settings,
+        IScriptSerializerFactory serializerFactory,
         IDataConnectionRepository dataConnectionRepository,
         IDotNetInfo dotNetInfo,
         ILogger<FileSystemScriptRepository> logger)
     {
         _settings = settings;
+        _serializerFactory = serializerFactory;
         _dataConnectionRepository = dataConnectionRepository;
         _dotNetInfo = dotNetInfo;
         _logger = logger;
@@ -34,43 +37,16 @@ public class FileSystemScriptRepository : IScriptRepository
     {
         var summaries = new List<ScriptSummary>();
 
-        var scriptFiles = Directory.GetFiles(
-            GetRepositoryDirPath(),
-            $"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories);
+        var scriptFiles = EnumerateScriptFiles();
 
         foreach (var scriptFile in scriptFiles)
         {
-            var scriptName = Path.GetFileNameWithoutExtension(scriptFile);
-            Guid? scriptIdFromFile = null;
-            ScriptKind? scriptKind = null;
+            var scriptName = Script.GetNameFromPath(scriptFile);
+            var hasSummary = _serializerFactory.GetForPath(scriptFile)
+                .TryReadSummary(scriptFile, out var scriptIdFromFile, out var scriptKind);
 
-            using (StreamReader sr = File.OpenText(scriptFile))
-            {
-                int lineNumber = 0;
-                while (sr.ReadLine() is { } line)
-                {
-                    ++lineNumber;
-
-                    if (lineNumber == 1)
-                    {
-                        if (Guid.TryParse(line, out var id))
-                            scriptIdFromFile = id;
-                        else
-                            break;
-                    }
-                    else if (lineNumber == 2)
-                    {
-                        var scriptData = ScriptSerializer.DeserializeScriptData(line);
-                        scriptKind = scriptData?.Config.Kind;
-                        break;
-                    }
-                }
-            }
-
-            if (scriptIdFromFile == null)
-            {
+            if (!hasSummary || scriptIdFromFile == null)
                 continue;
-            }
 
             summaries.Add(new ScriptSummary(
                 scriptIdFromFile.Value,
@@ -94,9 +70,9 @@ public class FileSystemScriptRepository : IScriptRepository
 
     public async Task<Script> GetAsync(string path)
     {
-        // Basic protection against malicious calls
-        if (!path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
-            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
+        if (!_serializerFactory.IsKnownScriptPath(path))
+            throw new InvalidOperationException(
+                $"Script file must end with one of: {string.Join(", ", _serializerFactory.GetAllFileExtensions())}");
 
         var fileInfo = new FileInfo(path);
 
@@ -110,23 +86,14 @@ public class FileSystemScriptRepository : IScriptRepository
 
     public async Task<Script?> GetAsync(Guid scriptId)
     {
-        var scriptFiles = new DirectoryInfo(GetRepositoryDirPath())
-            .EnumerateFiles($"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
-            // Basic protection against malicious calls
-            .Where(f => f.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION));
-
-        foreach (var scriptFile in scriptFiles)
+        foreach (var scriptFile in EnumerateScriptFiles())
         {
-            var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
-            if (firstLine == null
-                || !Guid.TryParse(firstLine, out var scriptIdFromFile)
-                || scriptId != scriptIdFromFile)
-            {
-                continue;
-            }
+            Guid? scriptIdFromFile = TryReadScriptId(scriptFile);
 
-            var data = await File.ReadAllTextAsync(scriptFile.FullName).ConfigureAwait(false);
-            return await DeserializeScriptAsync(scriptFile.FullName, data);
+            if (scriptIdFromFile == null || scriptId != scriptIdFromFile)
+                continue;
+
+            return await GetAsync(scriptFile);
         }
 
         return null;
@@ -135,37 +102,22 @@ public class FileSystemScriptRepository : IScriptRepository
     public async Task<List<Script>> GetAsync(HashSet<Guid> scriptIds)
     {
         var scripts = new List<Script>();
-        var remaining = new HashSet<Guid>(scriptIds);
 
-        var scriptFiles = new DirectoryInfo(GetRepositoryDirPath())
-            .EnumerateFiles($"*.{Script.STANDARD_EXTENSION_WO_DOT}", SearchOption.AllDirectories)
-            // Basic protection against malicious calls
-            .Where(f => f.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION));
-
-        foreach (var scriptFile in scriptFiles)
+        foreach (var scriptFile in EnumerateScriptFiles())
         {
-            if (remaining.Count == 0)
-            {
-                break;
-            }
+            Guid? scriptIdFromFile = TryReadScriptId(scriptFile);
 
-            var firstLine = File.ReadLines(scriptFile.FullName).FirstOrDefault();
-            if (firstLine == null
-                || !Guid.TryParse(firstLine, out var scriptIdFromFile)
-                || !remaining.Remove(scriptIdFromFile))
-            {
+            if (scriptIdFromFile == null || !scriptIds.Contains(scriptIdFromFile.Value))
                 continue;
-            }
 
             try
             {
-                var data = await File.ReadAllTextAsync(scriptFile.FullName).ConfigureAwait(false);
-                var script = await DeserializeScriptAsync(scriptFile.FullName, data);
+                var script = await GetAsync(scriptFile);
                 scripts.Add(script);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to load script: {FilePath}", scriptFile.FullName);
+                _logger.LogError(e, "Failed to load script: {FilePath}", scriptFile);
             }
         }
 
@@ -177,11 +129,12 @@ public class FileSystemScriptRepository : IScriptRepository
         if (script.Path == null)
             throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot save script.");
 
-        // Basic protection against malicious calls
-        if (!script.Path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
-            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
+        if (!_serializerFactory.IsKnownScriptPath(script.Path))
+            throw new InvalidOperationException(
+                $"Script file must end with one of: {string.Join(", ", _serializerFactory.GetAllFileExtensions())}");
 
-        await File.WriteAllTextAsync(script.Path, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
+        var content = _serializerFactory.GetForPath(script.Path).Serialize(script);
+        await File.WriteAllTextAsync(script.Path, content).ConfigureAwait(false);
 
         script.IsDirty = false;
         return script;
@@ -192,7 +145,6 @@ public class FileSystemScriptRepository : IScriptRepository
         if (string.IsNullOrWhiteSpace(newName))
             throw new ArgumentException("Name cannot be empty", nameof(newName));
 
-        // Basic protection against malicious calls
         if (newName.Contains('/') || newName.Contains('\\'))
             throw new InvalidOperationException($"Script name must not contain a path separator");
 
@@ -224,9 +176,9 @@ public class FileSystemScriptRepository : IScriptRepository
         if (script.Path == null)
             throw new InvalidOperationException($"{nameof(script.Path)} is not set. Cannot delete script.");
 
-        // Basic protection against malicious calls
-        if (!script.Path.EndsWithIgnoreCase(Script.STANDARD_EXTENSION))
-            throw new InvalidOperationException($"Script file must end with {Script.STANDARD_EXTENSION}");
+        if (!_serializerFactory.IsKnownScriptPath(script.Path))
+            throw new InvalidOperationException(
+                $"Script file must end with one of: {string.Join(", ", _serializerFactory.GetAllFileExtensions())}");
 
         if (!File.Exists(script.Path))
             throw new InvalidOperationException($"{nameof(script.Path)} does not exist. Cannot delete script.");
@@ -238,13 +190,25 @@ public class FileSystemScriptRepository : IScriptRepository
     private async Task<Script> DeserializeScriptAsync(string path, string data)
     {
         var name = Script.GetNameFromPath(path);
-        var script = await ScriptSerializer.DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
+        var script = await _serializerFactory.GetForPath(path)
+            .DeserializeAsync(name, data, _dataConnectionRepository, _dotNetInfo);
         script.SetPath(path);
         return script;
     }
 
-    private string GetRepositoryDirPath()
+    private string GetRepositoryDirPath() => _settings.ScriptsDirectoryPath;
+
+    private IEnumerable<string> EnumerateScriptFiles()
     {
-        return _settings.ScriptsDirectoryPath;
+        var dir = GetRepositoryDirPath();
+        return _serializerFactory.GetAllFileExtensions()
+            .SelectMany(ext => Directory.EnumerateFiles(dir, $"*{ext}", SearchOption.AllDirectories))
+            .Where(_serializerFactory.IsKnownScriptPath);
+    }
+
+    private Guid? TryReadScriptId(string path)
+    {
+        _serializerFactory.GetForPath(path).TryReadSummary(path, out var id, out _);
+        return id;
     }
 }

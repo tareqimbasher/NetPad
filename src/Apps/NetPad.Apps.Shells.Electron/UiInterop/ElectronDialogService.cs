@@ -2,13 +2,14 @@ using ElectronSharp.API;
 using ElectronSharp.API.Entities;
 using NetPad.Application;
 using NetPad.Apps.CQs;
+using NetPad.Apps.Scripts;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.Scripts;
 
 namespace NetPad.Apps.Shells.Electron.UiInterop;
 
-public class ElectronDialogService(IIpcService ipcService, Settings settings) : IUiDialogService
+public class ElectronDialogService(IIpcService ipcService, Settings settings, IScriptSerializerFactory serializerFactory) : IUiDialogService
 {
     public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
     {
@@ -27,11 +28,15 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
+        var defaultSerializer = serializerFactory.GetDefault();
+        var defaultExt = defaultSerializer.FileExtension;
+        var defaultExtWoDot = defaultExt.TrimStart('.');
+
         var options = new SaveDialogOptions
         {
             Title = "Save Script",
-            Filters = [new FileFilter { Name = "NetPad Script", Extensions = [Script.STANDARD_EXTENSION_WO_DOT] }],
-            DefaultPath = Path.Combine(settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)
+            Filters = [new FileFilter { Name = "NetPad Script", Extensions = [defaultExtWoDot] }],
+            DefaultPath = Path.Combine(settings.ScriptsDirectoryPath, script.Name + defaultExt)
         };
 
         if (OperatingSystem.IsMacOS())
@@ -49,9 +54,9 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
 
         path = path.TrimEnd(Path.PathSeparator);
 
-        if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+        if (!serializerFactory.IsKnownScriptPath(path))
         {
-            path += Script.STANDARD_EXTENSION;
+            path += defaultExt;
         }
 
         return path;

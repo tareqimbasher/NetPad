@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="MediatR" Version="10.0.1"/>
+        <PackageReference Include="YamlDotNet" Version="16.3.0"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.33"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.33"/>

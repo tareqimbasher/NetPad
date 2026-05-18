@@ -10,7 +10,21 @@ namespace NetPad.Scripts;
 public class Script : INotifyOnPropertyChanged
 {
     public const string STANDARD_EXTENSION_WO_DOT = "netpad";
-    public const string STANDARD_EXTENSION = ".netpad";
+    public const string STANDARD_EXTENSION = "." + STANDARD_EXTENSION_WO_DOT;
+
+    public const string MARKDOWN_EXTENSION_WO_DOT = "netpad.md";
+    public const string MARKDOWN_EXTENSION = "." + MARKDOWN_EXTENSION_WO_DOT;
+
+    /// <summary>
+    /// All known script file extensions, ordered longest-first so that prefix matching
+    /// (e.g. ".netpad.md" before ".netpad") works correctly.
+    /// When a new format is added, register its extension here.
+    /// </summary>
+    public static readonly IReadOnlyList<string> KnownExtensions =
+    [
+        MARKDOWN_EXTENSION,
+        STANDARD_EXTENSION,
+    ];
     private string _name;
     private string _code;
     private string? _path;
@@ -98,7 +112,8 @@ public class Script : INotifyOnPropertyChanged
 
         if (Path != null)
         {
-            SetPath(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path)!, newName + STANDARD_EXTENSION));
+            var ext = KnownExtensions.FirstOrDefault(e => Path.EndsWithIgnoreCase(e)) ?? STANDARD_EXTENSION;
+            SetPath(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Path)!, newName + ext));
         }
         else
         {
@@ -114,7 +129,8 @@ public class Script : INotifyOnPropertyChanged
         if (path == null)
             throw new ArgumentNullException(nameof(path));
 
-        if (!path.EndsWith(STANDARD_EXTENSION)) path += STANDARD_EXTENSION;
+        if (!KnownExtensions.Any(e => path.EndsWithIgnoreCase(e)))
+            path += STANDARD_EXTENSION;
 
         Path = path.Replace('\\', '/');
         Name = GetNameFromPath(path);
@@ -155,5 +171,10 @@ public class Script : INotifyOnPropertyChanged
         return Task.CompletedTask;
     }
 
-    public static string GetNameFromPath(string path) => System.IO.Path.GetFileNameWithoutExtension(path);
+    public static string GetNameFromPath(string path)
+    {
+        var fileName = System.IO.Path.GetFileName(path);
+        var ext = KnownExtensions.FirstOrDefault(e => fileName.EndsWithIgnoreCase(e));
+        return ext != null ? fileName[..^ext.Length] : System.IO.Path.GetFileNameWithoutExtension(path);
+    }
 }

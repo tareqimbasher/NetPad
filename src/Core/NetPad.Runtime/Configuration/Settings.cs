@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using NJsonSchema;
 using NJsonSchema.Annotations;
+using NetPad.Scripts;
 
 namespace NetPad.Configuration;
 
@@ -41,6 +42,7 @@ public class Settings : ISettingsOptions
     [JsonInclude] public StyleOptions Styles { get; private set; } = null!;
     [JsonInclude] public KeyboardShortcutOptions KeyboardShortcuts { get; private set; } = null!;
     [JsonInclude] public OmniSharpOptions OmniSharp { get; set; } = null!;
+    [JsonInclude] public ScriptFileFormat DefaultScriptFileFormat { get; private set; }
 
     public Settings SetAutoCheckUpdates(bool autoCheckUpdates)
     {
@@ -149,6 +151,12 @@ public class Settings : ISettingsOptions
             .SetDiagnosticsOptions(options.Diagnostics)
             .SetInlayHintsOptions(options.InlayHints);
 
+        return this;
+    }
+
+    public Settings SetDefaultScriptFileFormat(ScriptFileFormat format)
+    {
+        DefaultScriptFileFormat = format;
         return this;
     }
 

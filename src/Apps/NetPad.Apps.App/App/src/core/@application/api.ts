@@ -5396,6 +5396,8 @@ export interface IScriptSummary {
     kind: ScriptKind;
 }
 
+export type ScriptFileFormat = "Standard" | "Markdown";
+
 export type ScriptKind = "Expression" | "Program" | "SQL";
 
 export class CreateScriptDto implements ICreateScriptDto {
@@ -5822,6 +5824,7 @@ export class Settings implements ISettings {
     styles!: StyleOptions;
     keyboardShortcuts!: KeyboardShortcutOptions;
     omniSharp!: OmniSharpOptions;
+    defaultScriptFileFormat!: ScriptFileFormat;
 
     constructor(data?: ISettings) {
         if (data) {
@@ -5854,6 +5857,7 @@ export class Settings implements ISettings {
             this.styles = _data["styles"] ? StyleOptions.fromJS(_data["styles"]) : new StyleOptions();
             this.keyboardShortcuts = _data["keyboardShortcuts"] ? KeyboardShortcutOptions.fromJS(_data["keyboardShortcuts"]) : new KeyboardShortcutOptions();
             this.omniSharp = _data["omniSharp"] ? OmniSharpOptions.fromJS(_data["omniSharp"]) : new OmniSharpOptions();
+            this.defaultScriptFileFormat = _data["defaultScriptFileFormat"];
         }
     }
 
@@ -5878,6 +5882,7 @@ export class Settings implements ISettings {
         data["styles"] = this.styles ? this.styles.toJSON() : <any>undefined;
         data["keyboardShortcuts"] = this.keyboardShortcuts ? this.keyboardShortcuts.toJSON() : <any>undefined;
         data["omniSharp"] = this.omniSharp ? this.omniSharp.toJSON() : <any>undefined;
+        data["defaultScriptFileFormat"] = this.defaultScriptFileFormat;
         return data;
     }
 
@@ -5904,6 +5909,7 @@ export interface ISettings {
     styles: StyleOptions;
     keyboardShortcuts: KeyboardShortcutOptions;
     omniSharp: OmniSharpOptions;
+    defaultScriptFileFormat: ScriptFileFormat;
 }
 
 export class AppearanceOptions implements IAppearanceOptions {

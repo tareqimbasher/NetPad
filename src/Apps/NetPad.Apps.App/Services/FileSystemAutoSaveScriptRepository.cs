@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using NetPad.Apps.Scripts;
 using NetPad.Common;
@@ -18,6 +19,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 {
     private readonly Settings _settings;
     private readonly IScriptRepository _scriptRepository;
+    private readonly IScriptSerializerFactory _serializerFactory;
     private readonly IScriptNameGenerator _scriptNameGenerator;
     private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly IDotNetInfo _dotNetInfo;
@@ -28,6 +30,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     public FileSystemAutoSaveScriptRepository(
         Settings settings,
         IScriptRepository scriptRepository,
+        IScriptSerializerFactory serializerFactory,
         IScriptNameGenerator scriptNameGenerator,
         IDataConnectionRepository dataConnectionRepository,
         IDotNetInfo dotNetInfo,
@@ -35,6 +38,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     {
         _settings = settings;
         _scriptRepository = scriptRepository;
+        _serializerFactory = serializerFactory;
         _scriptNameGenerator = scriptNameGenerator;
         _dataConnectionRepository = dataConnectionRepository;
         _dotNetInfo = dotNetInfo;
@@ -45,12 +49,11 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
     public async Task<Script?> GetScriptAsync(Guid scriptId)
     {
-        var autoSavedScriptPath = GetAutoSavedScriptPath(scriptId);
+        var autoSavedScriptPath = FindAutoSavedScriptPath(scriptId);
 
-        if (!File.Exists(autoSavedScriptPath))
+        if (autoSavedScriptPath == null)
             return null;
 
-        // If this is a script saved in repo, use its latest name in case it has changed
         var repoScript = await _scriptRepository.GetAsync(scriptId);
         var scriptName = repoScript?.Name;
 
@@ -61,7 +64,9 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         var data = await File.ReadAllTextAsync(autoSavedScriptPath).ConfigureAwait(false);
 
-        var script = await ScriptSerializer.DeserializeAsync(scriptName, data, _dataConnectionRepository, _dotNetInfo);
+        var script = await _serializerFactory.GetForPath(autoSavedScriptPath)
+            .DeserializeAsync(scriptName, data, _dataConnectionRepository, _dotNetInfo);
+
         if (repoScript?.Path != null)
             script.SetPath(repoScript.Path);
 
@@ -84,16 +89,17 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             try
             {
-                if (!Guid.TryParse(Path.GetFileNameWithoutExtension(filePath), out var scriptId))
-                {
+                if (!_serializerFactory.IsKnownScriptPath(filePath))
                     continue;
-                }
+
+                var fileNameWoExt = StripScriptExtension(filePath);
+
+                if (!Guid.TryParse(fileNameWoExt, out var scriptId))
+                    continue;
 
                 var script = await GetScriptAsync(scriptId);
                 if (script == null)
-                {
                     continue;
-                }
 
                 scripts.Add(script);
             }
@@ -109,8 +115,8 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     public async Task<Script> SaveAsync(Script script)
     {
         var scriptFilePath = GetAutoSavedScriptPath(script.Id);
-
-        await File.WriteAllTextAsync(scriptFilePath, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
+        var content = _serializerFactory.GetDefault().Serialize(script);
+        await File.WriteAllTextAsync(scriptFilePath, content).ConfigureAwait(false);
 
         SaveToIndex(script.Id, script.Name);
 
@@ -121,25 +127,46 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
     public Task DeleteAsync(Script script)
     {
-        var autoSavedScriptPath = GetAutoSavedScriptPath(script.Id);
+        var autoSavedScriptPath = FindAutoSavedScriptPath(script.Id);
 
-        if (!File.Exists(autoSavedScriptPath)) return Task.CompletedTask;
+        if (autoSavedScriptPath == null) return Task.CompletedTask;
 
         File.Delete(autoSavedScriptPath);
-
         DeleteFromIndex(script.Id);
 
         return Task.CompletedTask;
     }
 
-    private string GetRepositoryDirPath()
-    {
-        return _settings.AutoSaveScriptsDirectoryPath;
-    }
+    private string GetRepositoryDirPath() => _settings.AutoSaveScriptsDirectoryPath;
 
     private string GetAutoSavedScriptPath(Guid scriptId)
     {
-        return Path.Combine(GetRepositoryDirPath(), $"{scriptId}.{Script.STANDARD_EXTENSION_WO_DOT}");
+        var ext = _serializerFactory.GetDefault().FileExtension;
+        return Path.Combine(GetRepositoryDirPath(), $"{scriptId}{ext}");
+    }
+
+    private string? FindAutoSavedScriptPath(Guid scriptId)
+    {
+        foreach (var ext in _serializerFactory.GetAllFileExtensions())
+        {
+            var path = Path.Combine(GetRepositoryDirPath(), $"{scriptId}{ext}");
+            if (File.Exists(path))
+                return path;
+        }
+
+        return null;
+    }
+
+    private string StripScriptExtension(string filePath)
+    {
+        var fileName = Path.GetFileName(filePath);
+        foreach (var ext in _serializerFactory.GetAllFileExtensions().OrderByDescending(e => e.Length))
+        {
+            if (fileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                return fileName[..^ext.Length];
+        }
+
+        return Path.GetFileNameWithoutExtension(filePath);
     }
 
     private void SaveToIndex(Guid scriptId, string scriptName)
@@ -158,9 +185,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         {
             var map = GetIndex();
             if (!map.Remove(scriptId))
-            {
                 return;
-            }
 
             File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(map, true));
         }

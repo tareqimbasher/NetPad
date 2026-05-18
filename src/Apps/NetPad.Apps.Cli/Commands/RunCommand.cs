@@ -50,10 +50,12 @@ public static class RunCommand
             Description =
                 "A path to a script or text file, or a name (or partial name) to search for in your script library.\n" +
                 "Examples:\n" +
-                "    run /path/to/myscript.netpad   <= absolute path to a .netpad script\n" +
-                "    run ./myscript.netpad          <= relative path to a .netpad script\n" +
-                "    run /path/to/myscript.cs       <= path to a text file that contains code to be executed\n" +
-                "    run myscript                   <= looks for a script in your library with a path containing the word 'myscript' \n" +
+                "    run /path/to/myscript.netpad      <= absolute path to a .netpad script\n" +
+                "    run ./myscript.netpad             <= relative path to a .netpad script\n" +
+                "    run /path/to/myscript.netpad.md   <= absolute path to a .netpad.md (markdown) script\n" +
+                "    run ./myscript.netpad.md          <= relative path to a .netpad.md (markdown) script\n" +
+                "    run /path/to/myscript.cs          <= path to a text file that contains code to be executed\n" +
+                "    run myscript                      <= looks for a script in your library with a path containing the word 'myscript' \n" +
                 "Notes:\n" +
                 "    1. If omitted, or if name matches multiple scripts from your library, you'll be prompted to select from a list.\n" +
                 "    2. If omitted and the --eval (-e) option is used you will not be prompted to select a script.",
