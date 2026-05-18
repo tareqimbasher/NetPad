@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 using NetPad.Application;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
+using NetPad.Apps.Scripts;
 using NetPad.Configuration;
 using NetPad.DotNet;
 using NetPad.Host.Filters;
-using NetPad.Scripts;
 
 namespace NetPad.Controllers;
 
@@ -143,7 +143,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
         await mediator.Send(new CheckAppDependenciesQuery());
 
     [HttpPatch("open-folder-containing-script")]
-    public void OpenFolderContainingScript([FromQuery] string scriptPath, [FromServices] Settings settings)
+    public void OpenFolderContainingScript([FromQuery] string scriptPath, [FromServices] Settings settings, [FromServices] IScriptSerializerFactory serializerFactory)
     {
         if (string.IsNullOrWhiteSpace(scriptPath))
         {
@@ -156,7 +156,7 @@ public class AppController(ILogger<AppController> logger) : ControllerBase
             !file.Exists
             || file.Directory?.Exists != true
             || !file.Directory.FullName.StartsWith(settings.ScriptsDirectoryPath)
-            || !file.Name.EndsWithIgnoreCase(Script.STANDARD_EXTENSION)
+            || !serializerFactory.IsKnownScriptPath(file.Name)
         )
         {
             throw new Exception("Not allowed");

@@ -1,12 +1,13 @@
 using NetPad.Application;
 using NetPad.Apps.CQs;
+using NetPad.Apps.Scripts;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.Scripts;
 
 namespace NetPad.Apps.Shells.Web.UiInterop;
 
-public class WebDialogService(IIpcService ipcService, Settings settings) : IUiDialogService
+public class WebDialogService(IIpcService ipcService, Settings settings, IScriptSerializerFactory serializerFactory) : IUiDialogService
 {
     public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
     {
@@ -28,7 +29,7 @@ public class WebDialogService(IIpcService ipcService, Settings settings) : IUiDi
                 return null;
             }
 
-            var fullPath = Path.Combine(settings.ScriptsDirectoryPath, name + Script.STANDARD_EXTENSION);
+            var fullPath = Path.Combine(settings.ScriptsDirectoryPath, name + serializerFactory.GetDefault().FileExtension);
 
             if (!File.Exists(fullPath))
             {

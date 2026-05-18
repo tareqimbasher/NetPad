@@ -1,12 +1,13 @@
 using NetPad.Application;
 using NetPad.Apps.CQs;
+using NetPad.Apps.Scripts;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration;
 using NetPad.Scripts;
 
 namespace NetPad.Apps.Shells.Tauri.UiInterop;
 
-public class TauriDialogService(IIpcService ipcService, Settings settings) : IUiDialogService
+public class TauriDialogService(IIpcService ipcService, Settings settings, IScriptSerializerFactory serializerFactory) : IUiDialogService
 {
     public async Task<YesNoCancel> AskUserIfTheyWantToSave(Script script)
     {
@@ -15,9 +16,11 @@ public class TauriDialogService(IIpcService ipcService, Settings settings) : IUi
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
+        var defaultExt = serializerFactory.GetDefault().FileExtension;
+
         var path = await ipcService.SendAndReceiveAsync(new RequestScriptSavePathCommand(
             script.Name,
-            Path.Combine(settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)));
+            Path.Combine(settings.ScriptsDirectoryPath, script.Name + defaultExt)));
 
         if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
         {
@@ -26,9 +29,9 @@ public class TauriDialogService(IIpcService ipcService, Settings settings) : IUi
 
         path = path.TrimEnd(Path.PathSeparator);
 
-        if (!path.EndsWith(Script.STANDARD_EXTENSION, StringComparison.InvariantCultureIgnoreCase))
+        if (!serializerFactory.IsKnownScriptPath(path))
         {
-            path += Script.STANDARD_EXTENSION;
+            path += defaultExt;
         }
 
         return path;
