@@ -10,6 +10,9 @@ export class DialogUtil {
     constructor(@IDialogService private readonly dialogService: IDialogService) {
     }
 
+    /**
+     * Shows a popup with a message and a button for the user to close the alert.
+     */
     public async alert(options: IAlertDialogModel): Promise<DialogCloseResult> {
         const openResult = await this.open(AlertDialog, options);
 
@@ -20,6 +23,9 @@ export class DialogUtil {
         return openResult;
     }
 
+    /**
+     * Shows a popup asking the user a question. Multiple buttons are available for the user to select an option.
+     */
     public async ask(options: IAskDialogModel): Promise<DialogCloseResult> {
         const openResult = await this.open(AskDialog, options);
 
@@ -30,6 +36,10 @@ export class DialogUtil {
         return openResult;
     }
 
+    /**
+     * Shows a popup asking the user to input text.
+     * @param options
+     */
     public async prompt(options: IPromptDialogModel): Promise<DialogCloseResult> {
         const openResult = await this.open(PromptDialog, options);
 

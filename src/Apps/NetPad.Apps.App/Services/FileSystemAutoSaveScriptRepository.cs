@@ -1,12 +1,15 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using NetPad.Application;
 using NetPad.Apps.Scripts;
 using NetPad.Common;
 using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Scripts;
+using NetPad.Services.AutoSaveFiles;
+using JsonSerializer = NetPad.Common.JsonSerializer;
 
 namespace NetPad.Services;
 
@@ -21,8 +24,13 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     private readonly IScriptNameGenerator _scriptNameGenerator;
     private readonly IDataConnectionRepository _dataConnectionRepository;
     private readonly IDotNetInfo _dotNetInfo;
+    private readonly IAppStatusMessagePublisher _appStatusMessagePublisher;
     private readonly ILogger<FileSystemAutoSaveScriptRepository> _logger;
     private readonly string _indexFilePath;
+
+    private readonly JsonMigrationPipeline _indexFileMigrationPipeline =
+        new([new AutoSaveIndexFileV0ToV1MigrationStep()]);
+
     private static readonly Lock _indexLock = new();
 
     public FileSystemAutoSaveScriptRepository(
@@ -31,6 +39,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         IScriptNameGenerator scriptNameGenerator,
         IDataConnectionRepository dataConnectionRepository,
         IDotNetInfo dotNetInfo,
+        IAppStatusMessagePublisher appStatusMessagePublisher,
         ILogger<FileSystemAutoSaveScriptRepository> logger)
     {
         _settings = settings;
@@ -38,6 +47,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         _scriptNameGenerator = scriptNameGenerator;
         _dataConnectionRepository = dataConnectionRepository;
         _dotNetInfo = dotNetInfo;
+        _appStatusMessagePublisher = appStatusMessagePublisher;
         _logger = logger;
         _indexFilePath = Path.Combine(GetRepositoryDirPath(), "index.json");
         Directory.CreateDirectory(_settings.AutoSaveScriptsDirectoryPath);
@@ -54,7 +64,18 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         var repoScript = await _scriptRepository.GetAsync(scriptId);
         var scriptName = repoScript?.Name;
 
-        if (scriptName == null && !GetIndex().TryGetValue(scriptId, out scriptName))
+        AutoSaveIndexEntry? indexEntry = null;
+        if (scriptName == null)
+        {
+            var index = GetIndex();
+            if (index.Entries.TryGetValue(scriptId, out var entry))
+            {
+                indexEntry = entry;
+                scriptName = entry.Name;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(scriptName))
         {
             scriptName = _scriptNameGenerator.Generate();
         }
@@ -62,8 +83,25 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         var data = await File.ReadAllTextAsync(autoSavedScriptPath).ConfigureAwait(false);
 
         var script = await ScriptSerializer.DeserializeAsync(scriptName, data, _dataConnectionRepository, _dotNetInfo);
+
         if (repoScript?.Path != null)
+        {
             script.SetPath(repoScript.Path);
+        }
+        else if (indexEntry?.OriginalPath != null)
+        {
+            if (File.Exists(indexEntry.OriginalPath))
+            {
+                script.SetPath(indexEntry.OriginalPath);
+            }
+            else
+            {
+                _ = _appStatusMessagePublisher.PublishAsync(
+                    script.Id,
+                    $"Recovered unsaved changes from {indexEntry.OriginalPath} — original file is missing. Save to keep these changes.",
+                    AppStatusMessagePriority.High);
+            }
+        }
 
         if (script.Id != scriptId)
         {
@@ -112,7 +150,7 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
 
         await File.WriteAllTextAsync(scriptFilePath, ScriptSerializer.Serialize(script)).ConfigureAwait(false);
 
-        SaveToIndex(script.Id, script.Name);
+        SaveToIndex(script.Id, script.Name, script.Path);
 
         _logger.LogDebug("Auto-saved script: {Script}", script.ToString());
 
@@ -142,13 +180,13 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
         return Path.Combine(GetRepositoryDirPath(), $"{scriptId}.{Script.STANDARD_EXTENSION_WO_DOT}");
     }
 
-    private void SaveToIndex(Guid scriptId, string scriptName)
+    private void SaveToIndex(Guid scriptId, string scriptName, string? originalPath)
     {
         lock (_indexLock)
         {
-            var map = GetIndex();
-            map[scriptId] = scriptName;
-            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(map, true));
+            var index = GetIndex();
+            index.Entries[scriptId] = new AutoSaveIndexEntry(scriptName, originalPath);
+            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(index, true));
         }
     }
 
@@ -156,22 +194,34 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
     {
         lock (_indexLock)
         {
-            var map = GetIndex();
-            if (!map.Remove(scriptId))
+            var index = GetIndex();
+            if (!index.Entries.Remove(scriptId))
             {
                 return;
             }
 
-            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(map, true));
+            File.WriteAllText(_indexFilePath, JsonSerializer.Serialize(index, true));
         }
     }
 
-    private Dictionary<Guid, string> GetIndex()
+    private AutoSaveIndexFileV1 GetIndex()
     {
-        var map = File.Exists(_indexFilePath)
-            ? JsonSerializer.Deserialize<Dictionary<Guid, string>>(File.ReadAllText(_indexFilePath))
-            : new Dictionary<Guid, string>();
+        lock (_indexLock)
+        {
+            if (!File.Exists(_indexFilePath))
+            {
+                return new AutoSaveIndexFileV1();
+            }
 
-        return map ?? throw new Exception("Could not deserialize index file.");
+            var json = File.ReadAllText(_indexFilePath);
+
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new AutoSaveIndexFileV1();
+            }
+
+            return _indexFileMigrationPipeline.MigrateToLatest<AutoSaveIndexFileV1>(json,
+                JsonSerializer.DefaultOptions);
+        }
     }
 }

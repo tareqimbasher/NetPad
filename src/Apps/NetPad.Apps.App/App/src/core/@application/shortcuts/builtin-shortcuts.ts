@@ -1,13 +1,17 @@
 import {KeyCode} from "@common";
-import {CreateScriptDto, IScriptService, ISettingsService, IWindowService, Settings} from "@application";
+import {CreateScriptDto, ISession, IScriptService, ISettingsService, IWindowService, Settings} from "@application";
 import {Shortcut} from "./shortcut";
 import {ITextEditorService} from "../editor/itext-editor-service";
+import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {WindowParams} from "@application/windows/window-params";
+import {ShellType} from "@application/windows/shell-type";
 
 export enum ShortcutIds {
     openCommandPalette = "shortcut.commandpalette.open",
     quickOpenDocument = "shortcut.documents.quickopen",
     openLastActiveDocument = "shortcut.documents.switchtolastactive",
     newDocument = "shortcut.documents.new",
+    openFile = "shortcut.documents.open",
     closeDocument = "shortcut.documents.close",
     saveDocument = "shortcut.documents.save",
     saveAllDocuments = "shortcut.documents.saveall",
@@ -69,6 +73,34 @@ export const BuiltinShortcuts = [
         .captureDefaultKeyCombo()
         .configurable()
         .enabled(),
+
+    ...(WindowParams.shell === ShellType.Browser ? [] : [
+        new Shortcut(ShortcutIds.openFile, "Open File")
+            .withCtrlKey()
+            .withKey(KeyCode.KeyO)
+            .hasAction(async (ctx) => {
+                const dialogService = ctx.container.get(INativeDialogService);
+                const paths = await dialogService.showFileSelectorDialog({
+                    title: "Open Script",
+                    filters: [{name: "NetPad Script", extensions: ["netpad"]}],
+                    multiple: true,
+                });
+
+                if (!paths || paths.length === 0) return;
+
+                const session = ctx.container.get(ISession);
+                for (const path of paths) {
+                    try {
+                        await session.openByPath(path);
+                    } catch (err) {
+                        console.error("Failed to open file:", path, err);
+                    }
+                }
+            })
+            .captureDefaultKeyCombo()
+            .configurable()
+            .enabled(),
+    ]),
 
     new Shortcut(ShortcutIds.closeDocument, "Close")
         .withCtrlKey()

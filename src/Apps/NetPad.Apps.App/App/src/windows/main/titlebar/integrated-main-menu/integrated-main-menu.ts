@@ -1,5 +1,6 @@
 import {PLATFORM} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
+import {Dropdown} from "bootstrap";
 import {Settings} from "@application";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
@@ -82,6 +83,16 @@ export class IntegratedMainMenu {
     }
 
     private async clickMenuItem(item: IMenuItem) {
+        // Submenu parents call $event.stopPropagation() in the template, which blocks Bootstrap's
+        // auto-close when a leaf is clicked inside a submenu. Close the open top-level menu here
+        // so submenu leaf clicks behave like top-level leaf clicks.
+        this.closeOpenTopLevelMenu();
         await this.mainMenuService.clickMenuItem(item);
+    }
+
+    private closeOpenTopLevelMenu() {
+        const open = this.topLevelMenuItems?.find(x => x.isOpen);
+        if (!open) return;
+        Dropdown.getInstance(open.label)?.hide();
     }
 }

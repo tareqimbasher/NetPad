@@ -15,8 +15,8 @@ import {BrowserDialogBackgroundService} from "./services/browser-dialog-backgrou
 export class BrowserShell implements IShell {
     public configure(appBuilder: IAurelia) {
         appBuilder.register(
-            Registration.transient(IBackgroundService, BrowserDialogBackgroundService),
-            Registration.transient(IBackgroundService, BrowserWindowBackgroundService),
+            Registration.singleton(IBackgroundService, BrowserDialogBackgroundService),
+            Registration.singleton(IBackgroundService, BrowserWindowBackgroundService),
             Registration.transient(IWindowService, BrowserWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
             Registration.singleton(INativeDialogService, BrowserNativeDialogService),

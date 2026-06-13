@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using NetPad.Application.Events;
 using NetPad.Apps;
+using NetPad.Apps.Services;
 using NetPad.Apps.UiInterop;
 using NetPad.Configuration.Events;
 using NetPad.Data.Events;
@@ -48,6 +49,7 @@ public class EventForwardToIpcBackgroundService(
         SubscribeAndForwardToIpc<DataConnectionResourcesUpdateFailedEvent>();
         SubscribeAndForwardToIpc<DataConnectionSchemaValidationStartedEvent>();
         SubscribeAndForwardToIpc<DataConnectionSchemaValidationCompletedEvent>();
+        SubscribeAndForwardToIpc<RecentScriptsChangedEvent>();
     }
 
     private void ForwardEnvironmentLevelEvents()

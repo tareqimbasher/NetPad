@@ -4,6 +4,8 @@ namespace NetPad.Utilities;
 
 public static class FileSystemUtil
 {
+    public static string NormalizePath(string path) => path.Replace('\\', '/');
+
     /// <summary>
     /// Returns a human-readable string representation of the specified file size.
     /// </summary>

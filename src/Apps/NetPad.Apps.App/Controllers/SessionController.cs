@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Apps.CQs;
+using NetPad.Apps.Services;
 using NetPad.Dtos;
 using NetPad.Exceptions;
 using NetPad.Scripts;
@@ -64,5 +66,23 @@ public class SessionController(IMediator mediator) : ControllerBase
             Status = environment.Status,
             RunDurationMs = environment.RunDurationMilliseconds
         };
+    }
+
+    [HttpGet("recent")]
+    public IEnumerable<string> GetRecent([FromServices] IRecentScriptsService recentScriptsService)
+    {
+        return recentScriptsService.Get();
+    }
+
+    [HttpDelete("recent/entry")]
+    public void RemoveRecent([FromBody] string scriptPath, [FromServices] IRecentScriptsService recentScriptsService)
+    {
+        recentScriptsService.Remove(scriptPath);
+    }
+
+    [HttpDelete("recent")]
+    public void ClearRecent([FromServices] IRecentScriptsService recentScriptsService)
+    {
+        recentScriptsService.Clear();
     }
 }

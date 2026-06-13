@@ -72,7 +72,7 @@ export class IlView extends ViewModelBase {
         this.loadIL();
     }
 
-    private loadIL = Util.debounce(this, async () => {
+    private loadIL = Util.debounceAsync(this, async () => {
             if (!this.pane.isOpen || !this.isActive) {
                 return;
             }

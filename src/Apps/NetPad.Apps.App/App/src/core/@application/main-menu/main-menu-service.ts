@@ -1,6 +1,7 @@
-import {System} from "@common";
+import {IDisposable, System} from "@common";
 import {IMenuItem} from "./imenu-item";
 import {
+    ApiException,
     EnvironmentPropertyChangedEvent,
     IEventBus,
     IPaneManager,
@@ -9,6 +10,7 @@ import {
     ISettingsService,
     IShortcutManager,
     IWindowService,
+    RecentScriptsChangedEvent,
     ShortcutIds
 } from "@application";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
@@ -21,6 +23,9 @@ import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-chec
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
+    private _serverPushedRecents = false;
+    private readonly _onChangedCallbacks = new Set<() => void>();
+    public readonly initialized: Promise<void>;
 
     constructor(
         @IScriptService private readonly scriptService: IScriptService,
@@ -43,6 +48,18 @@ export class MainMenuService implements IMainMenuService {
                         icon: "add-script-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.newDocument),
                     },
+                    ...(WindowParams.shell === ShellType.Browser ? [] : [
+                        {
+                            id: "file.open",
+                            text: "Open File...",
+                            shortcut: this.shortcutManager.getShortcut(ShortcutIds.openFile),
+                        },
+                        {
+                            id: "file.openRecent",
+                            text: "Open Recent",
+                            menuItems: []
+                        },
+                    ] as IMenuItem[]),
                     {
                         id: "file.goToScript",
                         text: "Go to Script",
@@ -57,6 +74,15 @@ export class MainMenuService implements IMainMenuService {
                         icon: "save-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.saveDocument),
                     },
+                    ...(WindowParams.shell === ShellType.Browser ? [] : [{
+                        id: "file.saveAs",
+                        text: "Save As...",
+                        icon: "save-icon",
+                        click: async () => {
+                            const activeId = this.session.active?.script.id;
+                            if (activeId) await this.scriptService.saveAs(activeId);
+                        }
+                    }] as IMenuItem[]),
                     {
                         id: "file.saveAll",
                         text: "Save All",
@@ -84,12 +110,12 @@ export class MainMenuService implements IMainMenuService {
                         icon: "settings-icon",
                         shortcut: this.shortcutManager.getShortcut(ShortcutIds.openSettings),
                     },
-                    WindowParams.shell === ShellType.Browser ? undefined! : {
+                    ...(WindowParams.shell === ShellType.Browser ? [] : [{
                         id: "file.exit",
                         text: "Exit",
                         click: async () => this.windowService.close()
-                    }
-                ].filter(x => x)
+                    }] as IMenuItem[])
+                ]
             },
             {
                 text: "Edit",
@@ -340,19 +366,120 @@ export class MainMenuService implements IMainMenuService {
         this.updateMenuItems();
 
         eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
+
+        if (WindowParams.shell === ShellType.Browser) {
+            this.initialized = Promise.resolve();
+        } else {
+            // Subscribe before kicking off the initial fetch. A server push is authoritative and
+            // always the newest list, so once one lands we never let a (possibly slower) getRecent()
+            // fetch overwrite it — see _serverPushedRecents.
+            eventBus.subscribeToServer(RecentScriptsChangedEvent, msg => {
+                this._serverPushedRecents = true;
+                this.applyRecentMenu(msg.recentScripts ?? []);
+            });
+            this.initialized = this.rebuildRecentMenu();
+        }
+    }
+
+    private async rebuildRecentMenu(): Promise<void> {
+        try {
+            const paths = await this.session.getRecent();
+            // A server push landed while this fetch was in flight; it's authoritative, so don't
+            // overwrite it with our now-stale snapshot.
+            if (this._serverPushedRecents) return;
+            this.applyRecentMenu(paths);
+        } catch (err) {
+            console.error("Failed to fetch recent scripts:", err);
+            if (this._serverPushedRecents) return;
+            this.applyRecentMenu([]);
+            // Transient startup failure: retry in the background so Open Recent isn't empty for
+            // the whole session. Not awaited, so `initialized` resolves after this first attempt
+            // and shells that gate native-menu construction on it aren't delayed.
+            void this.retryRecentMenu();
+        }
+    }
+
+    private async retryRecentMenu(): Promise<void> {
+        const delaysMs = [1000, 2000, 5000];
+
+        for (const delayMs of delaysMs) {
+            await new Promise<void>(resolve => setTimeout(resolve, delayMs));
+
+            // A server push already delivered the authoritative list, stop retrying
+            if (this._serverPushedRecents) return;
+
+            try {
+                const paths = await this.session.getRecent();
+                if (this._serverPushedRecents) return;
+                this.applyRecentMenu(paths);
+                return;
+            } catch (err) {
+                console.error("Retry to fetch recent scripts failed:", err);
+            }
+        }
+    }
+
+    private applyRecentMenu(paths: readonly string[]) {
+        const submenu = this.find(this._items, item => item.id === "file.openRecent");
+        if (!submenu) return;
+
+        const newItems: IMenuItem[] = paths.map((path, ix) => ({
+            id: `file.openRecent.${ix}`,
+            text: path,
+            hoverText: path,
+            click: async () => {
+                try {
+                    await this.session.openByPath(path);
+                } catch (err) {
+                    if (err instanceof ApiException && err.status === 404) {
+                        try {
+                            await this.session.removeRecent(path);
+                        } catch (removeErr) {
+                            console.error("Failed to remove recent entry:", path, removeErr);
+                        }
+                    }
+                }
+            },
+        }));
+
+        if (newItems.length > 0) {
+            newItems.push({isDivider: true});
+            newItems.push({
+                id: "file.openRecent.clear",
+                text: "Clear Recent",
+                click: async () => {
+                    try {
+                        await this.session.clearRecent();
+                    } catch (err) {
+                        console.error("Failed to clear recent scripts:", err);
+                    }
+                }
+            });
+        }
+
+        submenu.menuItems = newItems;
+        submenu.disabled = paths.length === 0;
+
+        this.fireChanged();
     }
 
     public get items(): ReadonlyArray<IMenuItem> {
         return this._items;
     }
 
-    public addItem(item: IMenuItem) {
-        this._items.push(item);
+    public onChanged(callback: () => void): IDisposable {
+        this._onChangedCallbacks.add(callback);
+        return {dispose: () => this._onChangedCallbacks.delete(callback)};
     }
 
-    public removeItem(item: IMenuItem) {
-        const ix = this._items.indexOf(item);
-        if (ix >= 0) this._items.splice(ix, 1);
+    private fireChanged() {
+        for (const callback of this._onChangedCallbacks) {
+            try {
+                callback();
+            } catch (err) {
+                console.error("A main menu onChanged callback threw:", err);
+            }
+        }
     }
 
     public async clickMenuItem(itemOrId: IMenuItem | string) {
@@ -427,14 +554,22 @@ export class MainMenuService implements IMainMenuService {
             }
         }
 
+        let changed = false;
+
         let item = this.find(this._items, x => x.id === "tools.stopRunningScripts");
-        if (item) {
+        if (item && item.disabled !== !anyScriptRunning) {
             item.disabled = !anyScriptRunning;
+            changed = true;
         }
 
         item = this.find(this._items, x => x.id === "tools.stopScriptHosts");
-        if (item) {
+        if (item && item.disabled !== !anyScriptHostRunning) {
             item.disabled = !anyScriptHostRunning;
+            changed = true;
+        }
+
+        if (changed) {
+            this.fireChanged();
         }
     }
 }

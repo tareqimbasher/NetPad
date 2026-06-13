@@ -15,9 +15,11 @@ public class TauriDialogService(IIpcService ipcService, Settings settings) : IUi
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
+        var defaultPath = script.GetDefaultSavePath(settings.ScriptsDirectoryPath);
+
         var path = await ipcService.SendAndReceiveAsync(new RequestScriptSavePathCommand(
             script.Name,
-            Path.Combine(settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)));
+            defaultPath));
 
         if (path == null || string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(path)))
         {
@@ -32,6 +34,11 @@ public class TauriDialogService(IIpcService ipcService, Settings settings) : IUi
         }
 
         return path;
+    }
+
+    public async Task<bool> AskUserToOpenAsDuplicate(string newPath, string existingPath)
+    {
+        return await ipcService.SendAndReceiveAsync(new ConfirmOpenAsDuplicateCommand(newPath, existingPath));
     }
 
     public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)

@@ -277,12 +277,23 @@ export class Util {
     }
 
     /**
-     * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed since the last time the
-     * debounced function was invoked.
-     * @param thisArg The value to use as this when calling func.
+     * Creates a debounced wrapper around `func` that coalesces rapid calls: each call (re)starts a
+     * `waitMs` timer, and `func` runs `waitMs` after the most recent call.
+     *
+     * Edge behavior:
+     * - Default (`immediate` falsy): trailing only — `func` runs once, `waitMs` after the last
+     *   call, with that last call's args.
+     * - `immediate` true: leading + trailing — `func` runs on the leading edge of a burst (with the
+     *   first call's args) and, if more calls arrive during the wait, again on the trailing edge
+     *   (with the latest args). A lone call runs only once (leading). This matches lodash
+     *   `{leading: true, trailing: true}`, NOT the leading-edge-only "immediate" of underscore.
+     *
+     * The handler is expected to do its own try/catch and logging; a rejected handler is swallowed. The wrapper
+     * cannot be cancelled; guard inside the handler if it may run after its owner is disposed.
+     * @param thisArg The value to use as `this` when calling func.
      * @param func The function to debounce.
      * @param waitMs The number of milliseconds to debounce.
-     * @param immediate If true, will execute func immediately and then waits for the interval before func can be executed again.
+     * @param immediate If true, also run on the leading edge (see above).
      */
     public static debounce(thisArg: unknown, func: (...args: unknown[]) => void, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
         let timeout: NodeJS.Timeout | undefined;
@@ -304,6 +315,52 @@ export class Util {
 
             if (callNow) func.call(thisArg, ...args);
         };
+    }
+
+    /**
+     * Like {@link debounce} but for async handlers, and it additionally serializes execution: the handler
+     * never runs concurrently with itself. If the debounce fires again while a previous run is
+     * still in flight, the request is coalesced into a single follow-up run (with the latest args)
+     * that starts once the current run completes. This makes the last-requested run the one whose
+     * result lands last.
+     *
+     * The handler is expected to do its own try/catch and logging; a rejected handler is swallowed. The wrapper
+     * cannot be cancelled; guard inside the handler if it may run after its owner is disposed.
+     * @param thisArg The value to use as `this` when calling func.
+     * @param func The async function to debounce.
+     * @param waitMs The number of milliseconds to debounce.
+     * @param immediate If true, also run on the leading edge (see {@link debounce}).
+     */
+    public static debounceAsync(thisArg: unknown, func: (...args: unknown[]) => Promise<void>, waitMs: number, immediate?: boolean): (...args: unknown[]) => void {
+        let inFlight = false;
+        let runPending = false;
+        let latestArgs: unknown[] = [];
+
+        const runLoop = async () => {
+            inFlight = true;
+            try {
+                do {
+                    runPending = false;
+                    try {
+                        await func.call(thisArg, ...latestArgs);
+                    } catch {
+                        // Intentionally swallowed: handlers log their own errors. This guard only
+                        // keeps the serialization loop alive and prevents an unhandled rejection.
+                    }
+                } while (runPending);
+            } finally {
+                inFlight = false;
+            }
+        };
+
+        return Util.debounce(thisArg, (...args: unknown[]) => {
+            latestArgs = args;
+            if (inFlight) {
+                runPending = true;
+                return;
+            }
+            void runLoop();
+        }, waitMs, immediate);
     }
 
     /**

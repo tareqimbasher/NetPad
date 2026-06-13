@@ -11,18 +11,21 @@ import {TauriWindowService} from "./services/tauri-window-service";
 import {TauriNativeDialogService} from "./services/tauri-native-dialog-service";
 import {TauriWindowBackgroundService} from "./services/tauri-window-background-service";
 import {TauriDialogBackgroundService} from "./services/tauri-dialog-background-service";
+import {TauriDragDropBackgroundService} from "./services/tauri-drag-drop-background-service";
 
 export class TauriShell implements IShell {
     public configure(appBuilder: IAurelia): void {
         appBuilder.register(
-            Registration.transient(IBackgroundService, TauriDialogBackgroundService),
-            Registration.transient(IBackgroundService, TauriWindowBackgroundService),
+            Registration.singleton(IBackgroundService, TauriDialogBackgroundService),
+            Registration.singleton(IBackgroundService, TauriWindowBackgroundService),
             Registration.transient(IWindowService, TauriWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
             Registration.singleton(INativeDialogService, TauriNativeDialogService),
         );
 
         if (WindowParams.window === WindowId.Main) {
+            appBuilder.register(Registration.singleton(IBackgroundService, TauriDragDropBackgroundService));
+
             const settings = appBuilder.container.get(Settings);
 
             if (settings.appearance.titlebar.type === "Native") {

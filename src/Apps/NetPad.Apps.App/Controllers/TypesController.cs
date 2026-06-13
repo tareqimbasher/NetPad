@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NetPad.Application.Events;
 using NetPad.Apps.CQs;
+using NetPad.Apps.Services;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MariaDb;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MySql;
@@ -51,6 +52,7 @@ public class TypesController : ControllerBase
         public EnvironmentPropertyChangedEvent? EnvironmentPropertyChanged { get; set; }
         public ActiveEnvironmentChangedEvent? ActiveEnvironmentChanged { get; set; }
         public ScriptDirectoryChangedEvent? ScriptDirectoryChanged { get; set; }
+        public RecentScriptsChangedEvent? RecentScriptsChangedEvent { get; set; }
         public DataConnectionSavedEvent? DataConnectionSavedEvent { get; set; }
         public DataConnectionDeletedEvent? DataConnectionDeletedEvent { get; set; }
         public DataConnectionResourcesUpdatingEvent? DataConnectionResourcesUpdatingEvent { get; set; }
@@ -62,6 +64,7 @@ public class TypesController : ControllerBase
         public DatabaseServerDeletedEvent? DatabaseServerDeletedEvent { get; set; }
         public OpenWindowCommand? OpenWindowCommand { get; set; }
         public ConfirmSaveCommand? ConfirmSaveCommand { get; set; }
+        public ConfirmOpenAsDuplicateCommand? ConfirmOpenAsDuplicateCommand { get; set; }
         public RequestScriptSavePathCommand? RequestScriptSavePath { get; set; }
         public AlertUserCommand? AlertUserCommand { get; set; }
         public ConfirmWithUserCommand? ConfirmWithUserCommand { get; set; }

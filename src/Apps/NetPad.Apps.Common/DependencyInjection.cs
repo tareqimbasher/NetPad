@@ -5,6 +5,7 @@ using NetPad.Application;
 using NetPad.Apps.Configuration;
 using NetPad.Apps.Data;
 using NetPad.Apps.Scripts;
+using NetPad.Apps.Services;
 using NetPad.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.Compilation.CSharp;
@@ -47,6 +48,7 @@ public static class DependencyInjection
         services.AddSingleton<IScriptNameGenerator, DefaultScriptNameGenerator>();
         services.AddTransient<IPackageProvider, NuGetPackageProvider>();
         services.AddSingleton<ITrivialDataStore, FileSystemTrivialDataStore>();
+        services.AddSingleton<IRecentScriptsService, RecentScriptsService>();
         services.AddDataProtection(options => options.ApplicationDiscriminator = AppIdentifier.AppId);
 
         return services;

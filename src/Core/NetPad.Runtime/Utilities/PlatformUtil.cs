@@ -48,6 +48,15 @@ public static class PlatformUtil
     public static char PathSeparator => IsOSWindows() ? ';' : ':';
 
     /// <summary>
+    /// The string comparison to use when comparing file system paths. Case-sensitive on Linux/FreeBSD
+    /// (and other Unixes that aren't macOS), case-insensitive on Windows and macOS (which default to
+    /// case-insensitive filesystems — APFS volumes can be case-sensitive, but case-insensitive is the
+    /// pragmatic default that matches most apps and most users' expectations).
+    /// </summary>
+    public static StringComparison PathComparison =>
+        IsOSLinuxOrFreeBsd() ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+    /// <summary>
     /// Appends a directory to an existing PATH value using the platform-specific separator.
     /// </summary>
     public static string AppendToPathVariable(string? existingPath, string directory)

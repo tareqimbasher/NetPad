@@ -27,11 +27,13 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
 
     public async Task<string?> AskUserForSaveLocation(Script script)
     {
+        var defaultPath = script.GetDefaultSavePath(settings.ScriptsDirectoryPath);
+
         var options = new SaveDialogOptions
         {
             Title = "Save Script",
             Filters = [new FileFilter { Name = "NetPad Script", Extensions = [Script.STANDARD_EXTENSION_WO_DOT] }],
-            DefaultPath = Path.Combine(settings.ScriptsDirectoryPath, script.Name + Script.STANDARD_EXTENSION)
+            DefaultPath = defaultPath
         };
 
         if (OperatingSystem.IsMacOS())
@@ -55,6 +57,24 @@ public class ElectronDialogService(IIpcService ipcService, Settings settings) : 
         }
 
         return path;
+    }
+
+    public async Task<bool> AskUserToOpenAsDuplicate(string newPath, string existingPath)
+    {
+        var result = await ElectronSharp.API.Electron.Dialog.ShowMessageBoxAsync(ElectronUtil.MainWindow,
+            new MessageBoxOptions(
+                $"A script with the same ID is already open from:\n{existingPath}\n\n" +
+                $"The file you're opening:\n{newPath}\n\n" +
+                "will be assigned a new ID on its first save. Continue?")
+            {
+                Title = "Duplicate Script ID",
+                Buttons = ["Open as separate", "Go to existing tab"],
+                Type = MessageBoxType.question,
+                DefaultId = 1,
+                CancelId = 1
+            });
+
+        return result.Response == 0;
     }
 
     public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)

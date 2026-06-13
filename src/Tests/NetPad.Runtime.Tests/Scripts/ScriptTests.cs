@@ -188,4 +188,64 @@ public class ScriptTests
         Assert.Equal(OptimizationLevel.Release, script.Config.OptimizationLevel);
         Assert.True(script.Config.UseAspNet);
     }
+
+    [Fact]
+    public void CloneWithNewId_Assigns_Fresh_Id()
+    {
+        var original = ScriptTestHelper.CreateScript();
+        original.UpdateCode("Console.WriteLine();");
+
+        var clone = original.CloneWithNewId();
+
+        Assert.NotEqual(original.Id, clone.Id);
+        Assert.NotEqual(Guid.Empty, clone.Id);
+    }
+
+    [Fact]
+    public void CloneWithNewId_Copies_Code_Name_And_Config_Values()
+    {
+        var original = ScriptTestHelper.CreateScript(name: "Original");
+        original.UpdateCode("var x = 1;");
+        original.Config
+            .SetKind(ScriptKind.SQL)
+            .SetOptimizationLevel(OptimizationLevel.Release)
+            .SetUseAspNet(true)
+            .SetNamespaces(["System.Linq", "System.IO"]);
+
+        var clone = original.CloneWithNewId();
+
+        Assert.Equal(original.Name, clone.Name);
+        Assert.Equal(original.Code, clone.Code);
+        Assert.Equal(ScriptKind.SQL, clone.Config.Kind);
+        Assert.Equal(OptimizationLevel.Release, clone.Config.OptimizationLevel);
+        Assert.True(clone.Config.UseAspNet);
+        Assert.Equal(new[] { "System.Linq", "System.IO" }, clone.Config.Namespaces);
+    }
+
+    [Fact]
+    public void CloneWithNewId_Has_Null_Path()
+    {
+        var original = ScriptTestHelper.CreateScript();
+        original.SetPath("/tmp/original.netpad");
+
+        var clone = original.CloneWithNewId();
+
+        Assert.Null(clone.Path);
+    }
+
+    [Fact]
+    public void CloneWithNewId_Owns_Independent_Config_Instance()
+    {
+        var original = ScriptTestHelper.CreateScript();
+        original.Config.SetKind(ScriptKind.Program);
+
+        var clone = original.CloneWithNewId();
+
+        Assert.NotSame(original.Config, clone.Config);
+
+        // Mutating the clone's config must NOT affect the original
+        clone.Config.SetKind(ScriptKind.SQL);
+        Assert.Equal(ScriptKind.Program, original.Config.Kind);
+        Assert.Equal(ScriptKind.SQL, clone.Config.Kind);
+    }
 }

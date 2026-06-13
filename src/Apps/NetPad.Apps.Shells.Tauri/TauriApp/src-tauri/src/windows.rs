@@ -38,7 +38,7 @@ pub fn create_main_window(app_handle: &AppHandle) -> Result<WebviewWindow> {
             position: None,
             center: false,
             decorations: false,
-            disable_drag_drop: true,
+            disable_drag_drop: false,
         },
     )
 }

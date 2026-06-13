@@ -98,9 +98,12 @@ export class MainMenuManager {
                 label: 'File',
                 submenu: [
                     this.fromAppMenuItem("file.new"),
+                    this.fromAppMenuItem("file.open"),
+                    this.fromAppMenuItem("file.openRecent"),
                     this.fromAppMenuItem("file.goToScript"),
                     {type: "separator"},
                     this.fromAppMenuItem("file.save"),
+                    this.fromAppMenuItem("file.saveAs"),
                     this.fromAppMenuItem("file.saveAll"),
                     this.fromAppMenuItem("file.properties"),
                     this.fromAppMenuItem("file.close"),
@@ -210,6 +213,15 @@ export class MainMenuManager {
             return {type: "separator"};
         }
 
+        if (appMenuItem.menuItems) {
+            return <MenuItemConstructorOptions>{
+                id: id,
+                label: appMenuItem.text,
+                enabled: !appMenuItem.disabled,
+                submenu: this.buildSubmenu(appMenuItem.menuItems)
+            };
+        }
+
         return <MenuItemConstructorOptions>{
             id: id,
             label: appMenuItem.text,
@@ -220,6 +232,33 @@ export class MainMenuManager {
                 }
             },
         };
+    }
+
+    private static buildSubmenu(items: IAppMenuItem[]): MenuItemConstructorOptions[] {
+        return items.map(item => {
+            if (item.isDivider) {
+                return {type: "separator"};
+            }
+
+            if (item.menuItems) {
+                return <MenuItemConstructorOptions>{
+                    id: item.id,
+                    label: item.text,
+                    submenu: this.buildSubmenu(item.menuItems)
+                };
+            }
+
+            return <MenuItemConstructorOptions>{
+                id: item.id,
+                label: item.text,
+                accelerator: this.getAccelerator(item),
+                click: async (menuItem, browserWindow) => {
+                    if (browserWindow instanceof BrowserWindow) {
+                        await this.sendMenuItemToRenderer(menuItem.id, browserWindow);
+                    }
+                }
+            };
+        });
     }
 
     private static async sendMenuItemToRenderer(menuItemId: string, browserWindow: Electron.BrowserWindow) {

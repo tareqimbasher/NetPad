@@ -42,8 +42,11 @@ export class BuiltinActionProvider implements IActionProvider {
                         const opened = [...session.environments];
 
                         const open = (script: Script) => {
-                            if (script.path) session.openByPath(script.path);
-                            else session.activate(script.id);
+                            if (script.path) {
+                                session.openByPath(script.path).catch(() => undefined);
+                            } else {
+                                session.activate(script.id);
+                            }
                         };
 
                         const picks: Partial<{

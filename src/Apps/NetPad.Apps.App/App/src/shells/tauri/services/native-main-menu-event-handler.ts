@@ -1,9 +1,9 @@
 import {ILogger} from "aurelia";
-import {WithDisposables} from "@common";
+import {Util, WithDisposables} from "@common";
 import {IBackgroundService, IShortcutManager} from "@application";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {IMenuItem} from "@application/main-menu/imenu-item";
-import {Menu, MenuItemOptions, PredefinedMenuItemOptions, Submenu} from "@tauri-apps/api/menu"
+import {Menu, MenuItemOptions, PredefinedMenuItemOptions, Submenu, SubmenuOptions} from "@tauri-apps/api/menu"
 import {Window} from "@tauri-apps/api/window"
 import {MenuItem} from "@tauri-apps/api/menu/menuItem";
 import {PredefinedMenuItem} from "@tauri-apps/api/menu/predefinedMenuItem";
@@ -14,6 +14,15 @@ import {invoke} from "@tauri-apps/api/core";
  */
 export class NativeMainMenuEventHandler extends WithDisposables implements IBackgroundService {
     private readonly logger: ILogger;
+    private isMac?: boolean;
+
+    private readonly rebuildMenu = Util.debounceAsync(this, async () => {
+        try {
+            await this.buildAndSetMenu();
+        } catch (err) {
+            this.logger.error("Failed to build and set native menu:", err);
+        }
+    }, 150, true);
 
     constructor(
         @IMainMenuService private readonly mainMenuService: IMainMenuService,
@@ -28,17 +37,34 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
             return Promise.resolve();
         }
 
-        const appMenuItems = new Map<string, IMenuItem>(
-            this.mainMenuService.items
-                .flatMap(x => x.menuItems && x.menuItems.length > 0 ? x.menuItems : [x])
-                .map(x => [x.id!, x])
-        );
+        this.addDisposable(this.mainMenuService.onChanged(() => this.rebuildMenu()));
 
-        const isMac = await invoke("get_os_type") === "macos";
+        try {
+            await this.mainMenuService.initialized;
+        } catch (err) {
+            this.logger.error("Main menu initial hydration failed; building native menu anyway:", err);
+        }
+
+        this.rebuildMenu();
+    }
+
+    private async buildAndSetMenu(): Promise<void> {
+        const appMenuItems = new Map<string, IMenuItem>();
+        for (const top of this.mainMenuService!.items) {
+            if (top.menuItems && top.menuItems.length > 0) {
+                for (const child of top.menuItems) {
+                    if (child.id) appMenuItems.set(child.id, child);
+                }
+            } else if (top.id) {
+                appMenuItems.set(top.id, top);
+            }
+        }
+
+        this.isMac ??= await invoke("get_os_type") === "macos";
 
         const menu = await Menu.new({
             items: [
-                isMac ? await Submenu.new({
+                this.isMac ? await Submenu.new({
                     text: "NetPad",
                     items: [
                         await PredefinedMenuItem.new({
@@ -64,15 +90,18 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                     text: "File",
                     items: [
                         await this.fromAppMenuItem(appMenuItems, "file.new"),
+                        await this.fromAppMenuItem(appMenuItems, "file.open"),
+                        await this.fromAppMenuItem(appMenuItems, "file.openRecent"),
                         await this.fromAppMenuItem(appMenuItems, "file.goToScript"),
                         await PredefinedMenuItem.new({item: "Separator"}),
                         await this.fromAppMenuItem(appMenuItems, "file.save"),
+                        await this.fromAppMenuItem(appMenuItems, "file.saveAs"),
                         await this.fromAppMenuItem(appMenuItems, "file.saveAll"),
                         await this.fromAppMenuItem(appMenuItems, "file.properties"),
                         await this.fromAppMenuItem(appMenuItems, "file.close"),
                         await PredefinedMenuItem.new({item: "Separator"}),
                         await this.fromAppMenuItem(appMenuItems, "file.settings"),
-                        isMac ? undefined : await PredefinedMenuItem.new({item: "Quit", text: "Exit"})
+                        this.isMac ? undefined : await PredefinedMenuItem.new({item: "Quit", text: "Exit"})
                     ].filter(x => x).map(x => x!)
                 }),
                 await Submenu.new({
@@ -82,7 +111,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                         await this.fromAppMenuItem(appMenuItems, "edit.undo"),
                         await this.fromAppMenuItem(appMenuItems, "edit.redo"),
                         await PredefinedMenuItem.new({item: "Separator"}),
-                        ...!isMac ? [] : [
+                        ...!this.isMac ? [] : [
                             await PredefinedMenuItem.new({item: "Cut"}),
                             await PredefinedMenuItem.new({item: "Copy"}),
                             await PredefinedMenuItem.new({item: "Paste"}),
@@ -147,7 +176,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
             ].filter(x => x)
         });
 
-        if (isMac) {
+        if (this.isMac) {
             await menu.setAsAppMenu();
         } else {
             await menu.setAsWindowMenu(Window.getCurrent());
@@ -171,8 +200,7 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                 item: "Separator"
             });
         } else if (menuItem.menuItems) {
-            this.logger.error("Mapping submenus is not implemented. Attempted to map: ", menuItem);
-            return undefined;
+            return await this.buildSubmenu(menuItem);
         } else {
             return await MenuItem.new(<MenuItemOptions>{
                 id: menuItem.id,
@@ -187,6 +215,38 @@ export class NativeMainMenuEventHandler extends WithDisposables implements IBack
                 }
             });
         }
+    }
+
+    private async buildSubmenu(parent: IMenuItem): Promise<Submenu> {
+        const items: (Submenu | MenuItem | PredefinedMenuItem)[] = [];
+
+        for (const child of parent.menuItems ?? []) {
+            if (child.isDivider) {
+                items.push(await PredefinedMenuItem.new({item: "Separator"}));
+            } else if (child.menuItems) {
+                items.push(await this.buildSubmenu(child));
+            } else {
+                items.push(await MenuItem.new(<MenuItemOptions>{
+                    id: child.id,
+                    text: child.text ?? "",
+                    accelerator: this.getAccelerator(child),
+                    action: () => {
+                        if (child.click) {
+                            child.click();
+                        } else if (child.shortcut) {
+                            this.shortcutManager.executeShortcut(child.shortcut);
+                        }
+                    }
+                }));
+            }
+        }
+
+        return await Submenu.new(<SubmenuOptions>{
+            id: parent.id,
+            text: parent.text ?? "",
+            enabled: !parent.disabled,
+            items
+        });
     }
 
     private getAccelerator(menuItem: IMenuItem): string | undefined {

@@ -2,6 +2,7 @@ import {ILogger} from "aurelia";
 import {IHttpClient} from "@aurelia/fetch-client";
 import {
     ActiveEnvironmentChangedEvent,
+    ApiException,
     ChannelInfo,
     EnvironmentPropertyChangedEvent,
     EnvironmentsAddedEvent,
@@ -14,6 +15,7 @@ import {
     ScriptPropertyChangedEvent,
     SessionApiClient
 } from "@application";
+import {DialogUtil} from "@application/dialogs/dialog-util";
 
 export class Session extends SessionApiClient implements ISession {
     public readonly environments: ScriptEnvironment[] = [];
@@ -26,6 +28,7 @@ export class Session extends SessionApiClient implements ISession {
         @IHttpClient http: IHttpClient,
         @IIpcGateway private readonly ipcGateway: IIpcGateway,
         @IEventBus readonly eventBus: IEventBus,
+        private readonly dialogUtil: DialogUtil,
         @ILogger logger: ILogger) {
         super(baseUrl, http);
         this.logger = logger.scopeTo(nameof(Session));
@@ -63,6 +66,31 @@ export class Session extends SessionApiClient implements ISession {
 
     public override async getEnvironments(): Promise<ScriptEnvironment[]> {
         return this.environments;
+    }
+
+    /**
+     * Opens a script by path. On failure, shows a user-facing dialog (a "file not found" message
+     * for 404, otherwise the underlying server error message) and re-throws.
+     */
+    public override async openByPath(scriptPath: string, signal?: AbortSignal): Promise<ScriptEnvironment> {
+        try {
+            return await super.openByPath(scriptPath, signal);
+        } catch (err) {
+            this.logger.error("Failed to open script by path:", scriptPath, err);
+            if (err instanceof ApiException && err.status === 404) {
+                await this.dialogUtil.alert({
+                    title: "File Not Found",
+                    message: `'${scriptPath}' no longer exists on disk.`
+                });
+            } else {
+                const message = err instanceof ApiException ? err.message : String(err);
+                await this.dialogUtil.alert({
+                    title: "Could Not Open Script",
+                    message: `Could not open '${scriptPath}': ${message}`
+                });
+            }
+            throw err;
+        }
     }
 
     public activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void> {

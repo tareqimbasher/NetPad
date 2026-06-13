@@ -47,6 +47,11 @@ public class WebDialogService(IIpcService ipcService, Settings settings) : IUiDi
         }
     }
 
+    public async Task<bool> AskUserToOpenAsDuplicate(string newPath, string existingPath)
+    {
+        return await ipcService.SendAndReceiveAsync(new ConfirmOpenAsDuplicateCommand(newPath, existingPath));
+    }
+
     public async Task AlertUserAboutMissingDependencies(AppDependencyCheckResult dependencyCheckResult)
     {
         await ipcService.SendAsync(new AlertUserAboutMissingAppDependencies(dependencyCheckResult));

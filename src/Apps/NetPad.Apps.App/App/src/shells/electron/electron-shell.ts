@@ -9,6 +9,7 @@ import {ElectronWindowService} from "./services/electron-window-service";
 import {ElectronNativeDialogService} from "./services/electron-native-dialog-service";
 import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
 import {ElectronEventSync} from "./services/electron-event-sync";
+import {ElectronDragDropBackgroundService} from "./services/electron-drag-drop-background-service";
 
 /**
  * Configurations for when the app is running in Electron.
@@ -24,8 +25,12 @@ export class ElectronShell implements IShell {
 
         const settings = appBuilder.container.get(Settings);
 
-        if (settings.appearance.titlebar.type === "Native" && WindowParams.window === WindowId.Main) {
-            appBuilder.register(Registration.singleton(IBackgroundService, NativeMainMenuEventHandler));
+        if (WindowParams.window === WindowId.Main) {
+            appBuilder.register(Registration.singleton(IBackgroundService, ElectronDragDropBackgroundService));
+
+            if (settings.appearance.titlebar.type === "Native") {
+                appBuilder.register(Registration.singleton(IBackgroundService, NativeMainMenuEventHandler));
+            }
         }
     }
 }

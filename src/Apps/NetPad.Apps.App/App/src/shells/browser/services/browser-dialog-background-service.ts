@@ -1,6 +1,7 @@
 import {WithDisposables} from "@common";
 import {
     ChannelInfo,
+    ConfirmOpenAsDuplicateCommand,
     ConfirmSaveCommand,
     IBackgroundService,
     IEventBus,
@@ -32,6 +33,12 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
         this.addDisposable(
             this.eventBus.subscribeToServer(RequestScriptSavePathCommand, async msg => {
                 await this.requestScriptSavePath(msg);
+            })
+        );
+
+        this.addDisposable(
+            this.eventBus.subscribeToServer(ConfirmOpenAsDuplicateCommand, async msg => {
+                await this.confirmOpenAsDuplicate(msg);
             })
         );
 
@@ -70,5 +77,19 @@ export class BrowserDialogBackgroundService extends WithDisposables implements I
         const newName = prompt("Script name:", command.scriptName);
 
         await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, newName || null);
+    }
+
+    private async confirmOpenAsDuplicate(command: ConfirmOpenAsDuplicateCommand) {
+        const response = await this.dialogUtil.ask({
+            title: "Duplicate Script ID",
+            message: command.message ?? "",
+            buttons: [
+                {text: "Go to existing tab", isPrimary: true},
+                {text: "Open as separate"}
+            ]
+        });
+
+        const openAsDuplicate = response.value === "Open as separate";
+        await this.ipcGateway.send(new ChannelInfo("Respond"), command.requestId, openAsDuplicate);
     }
 }

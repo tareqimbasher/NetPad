@@ -149,7 +149,7 @@ export class SyntaxTreeView extends ViewModelBase {
         this.loadSyntaxTree();
     }
 
-    private loadSyntaxTree = Util.debounce(this, async () => {
+    private loadSyntaxTree = Util.debounceAsync(this, async () => {
             if (!this.pane.isOpen || !this.isActive) {
                 return;
             }

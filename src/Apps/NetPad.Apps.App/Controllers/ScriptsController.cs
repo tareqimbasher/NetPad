@@ -147,6 +147,12 @@ public class ScriptsController(IMediator mediator, IScriptRepository scriptRepos
         return await scriptService.SaveScriptAsync(id);
     }
 
+    [HttpPatch("{id:guid}/save-as")]
+    public async Task<bool> SaveAs(Guid id, [FromServices] ScriptService scriptService)
+    {
+        return await scriptService.SaveScriptAsAsync(id);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task Delete(Guid id)
     {

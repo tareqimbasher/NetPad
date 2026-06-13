@@ -1872,6 +1872,8 @@ export interface IScriptsApiClient {
 
     save(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
 
+    saveAs(id: string, signal?: AbortSignal | undefined): Promise<boolean>;
+
     deleteFolder(path: string | undefined, signal?: AbortSignal | undefined): Promise<void>;
 
     run(id: string, options: RunOptions, signal?: AbortSignal | undefined): Promise<void>;
@@ -2289,6 +2291,45 @@ export class ScriptsApiClient extends ApiClientBase implements IScriptsApiClient
     }
 
     protected processSave(response: Response): Promise<boolean> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<boolean>(null as any);
+    }
+
+    saveAs(id: string, signal?: AbortSignal): Promise<boolean> {
+        let url_ = this.baseUrl + "/scripts/{id}/save-as";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "PATCH",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processSaveAs(_response);
+        });
+    }
+
+    protected processSaveAs(response: Response): Promise<boolean> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2935,6 +2976,12 @@ export interface ISessionApiClient {
     getActive(signal?: AbortSignal | undefined): Promise<string | null>;
 
     getEnvironmentStatus(scriptId: string, signal?: AbortSignal | undefined): Promise<ScriptStatusDto>;
+
+    getRecent(signal?: AbortSignal | undefined): Promise<string[]>;
+
+    clearRecent(signal?: AbortSignal | undefined): Promise<void>;
+
+    removeRecent(scriptPath: string, signal?: AbortSignal | undefined): Promise<void>;
 }
 
 export class SessionApiClient extends ApiClientBase implements ISessionApiClient {
@@ -3215,6 +3262,114 @@ export class SessionApiClient extends ApiClientBase implements ISessionApiClient
             });
         }
         return Promise.resolve<ScriptStatusDto>(null as any);
+    }
+
+    getRecent(signal?: AbortSignal): Promise<string[]> {
+        let url_ = this.baseUrl + "/session/recent";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processGetRecent(_response);
+        });
+    }
+
+    protected processGetRecent(response: Response): Promise<string[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<string[]>(null as any);
+    }
+
+    clearRecent(signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/session/recent";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "DELETE",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processClearRecent(_response);
+        });
+    }
+
+    protected processClearRecent(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    removeRecent(scriptPath: string, signal?: AbortSignal): Promise<void> {
+        let url_ = this.baseUrl + "/session/recent/entry";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(scriptPath);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "DELETE",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.makeFetchCall(url_, options_, () => this.http.fetch(url_, options_)).then((_response: Response) => {
+            return this.processRemoveRecent(_response);
+        });
+    }
+
+    protected processRemoveRecent(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
     }
 }
 
@@ -7412,6 +7567,7 @@ export class Types implements ITypes {
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    recentScriptsChangedEvent?: RecentScriptsChangedEvent | undefined;
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
@@ -7423,6 +7579,7 @@ export class Types implements ITypes {
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
+    confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
@@ -7469,6 +7626,7 @@ export class Types implements ITypes {
             this.environmentPropertyChanged = _data["environmentPropertyChanged"] ? EnvironmentPropertyChangedEvent.fromJS(_data["environmentPropertyChanged"]) : <any>undefined;
             this.activeEnvironmentChanged = _data["activeEnvironmentChanged"] ? ActiveEnvironmentChangedEvent.fromJS(_data["activeEnvironmentChanged"]) : <any>undefined;
             this.scriptDirectoryChanged = _data["scriptDirectoryChanged"] ? ScriptDirectoryChangedEvent.fromJS(_data["scriptDirectoryChanged"]) : <any>undefined;
+            this.recentScriptsChangedEvent = _data["recentScriptsChangedEvent"] ? RecentScriptsChangedEvent.fromJS(_data["recentScriptsChangedEvent"]) : <any>undefined;
             this.dataConnectionSavedEvent = _data["dataConnectionSavedEvent"] ? DataConnectionSavedEvent.fromJS(_data["dataConnectionSavedEvent"]) : <any>undefined;
             this.dataConnectionDeletedEvent = _data["dataConnectionDeletedEvent"] ? DataConnectionDeletedEvent.fromJS(_data["dataConnectionDeletedEvent"]) : <any>undefined;
             this.dataConnectionResourcesUpdatingEvent = _data["dataConnectionResourcesUpdatingEvent"] ? DataConnectionResourcesUpdatingEvent.fromJS(_data["dataConnectionResourcesUpdatingEvent"]) : <any>undefined;
@@ -7480,6 +7638,7 @@ export class Types implements ITypes {
             this.databaseServerDeletedEvent = _data["databaseServerDeletedEvent"] ? DatabaseServerDeletedEvent.fromJS(_data["databaseServerDeletedEvent"]) : <any>undefined;
             this.openWindowCommand = _data["openWindowCommand"] ? OpenWindowCommand.fromJS(_data["openWindowCommand"]) : <any>undefined;
             this.confirmSaveCommand = _data["confirmSaveCommand"] ? ConfirmSaveCommand.fromJS(_data["confirmSaveCommand"]) : <any>undefined;
+            this.confirmOpenAsDuplicateCommand = _data["confirmOpenAsDuplicateCommand"] ? ConfirmOpenAsDuplicateCommand.fromJS(_data["confirmOpenAsDuplicateCommand"]) : <any>undefined;
             this.requestScriptSavePath = _data["requestScriptSavePath"] ? RequestScriptSavePathCommand.fromJS(_data["requestScriptSavePath"]) : <any>undefined;
             this.alertUserCommand = _data["alertUserCommand"] ? AlertUserCommand.fromJS(_data["alertUserCommand"]) : <any>undefined;
             this.confirmWithUserCommand = _data["confirmWithUserCommand"] ? ConfirmWithUserCommand.fromJS(_data["confirmWithUserCommand"]) : <any>undefined;
@@ -7526,6 +7685,7 @@ export class Types implements ITypes {
         data["environmentPropertyChanged"] = this.environmentPropertyChanged ? this.environmentPropertyChanged.toJSON() : <any>undefined;
         data["activeEnvironmentChanged"] = this.activeEnvironmentChanged ? this.activeEnvironmentChanged.toJSON() : <any>undefined;
         data["scriptDirectoryChanged"] = this.scriptDirectoryChanged ? this.scriptDirectoryChanged.toJSON() : <any>undefined;
+        data["recentScriptsChangedEvent"] = this.recentScriptsChangedEvent ? this.recentScriptsChangedEvent.toJSON() : <any>undefined;
         data["dataConnectionSavedEvent"] = this.dataConnectionSavedEvent ? this.dataConnectionSavedEvent.toJSON() : <any>undefined;
         data["dataConnectionDeletedEvent"] = this.dataConnectionDeletedEvent ? this.dataConnectionDeletedEvent.toJSON() : <any>undefined;
         data["dataConnectionResourcesUpdatingEvent"] = this.dataConnectionResourcesUpdatingEvent ? this.dataConnectionResourcesUpdatingEvent.toJSON() : <any>undefined;
@@ -7537,6 +7697,7 @@ export class Types implements ITypes {
         data["databaseServerDeletedEvent"] = this.databaseServerDeletedEvent ? this.databaseServerDeletedEvent.toJSON() : <any>undefined;
         data["openWindowCommand"] = this.openWindowCommand ? this.openWindowCommand.toJSON() : <any>undefined;
         data["confirmSaveCommand"] = this.confirmSaveCommand ? this.confirmSaveCommand.toJSON() : <any>undefined;
+        data["confirmOpenAsDuplicateCommand"] = this.confirmOpenAsDuplicateCommand ? this.confirmOpenAsDuplicateCommand.toJSON() : <any>undefined;
         data["requestScriptSavePath"] = this.requestScriptSavePath ? this.requestScriptSavePath.toJSON() : <any>undefined;
         data["alertUserCommand"] = this.alertUserCommand ? this.alertUserCommand.toJSON() : <any>undefined;
         data["confirmWithUserCommand"] = this.confirmWithUserCommand ? this.confirmWithUserCommand.toJSON() : <any>undefined;
@@ -7583,6 +7744,7 @@ export interface ITypes {
     environmentPropertyChanged?: EnvironmentPropertyChangedEvent | undefined;
     activeEnvironmentChanged?: ActiveEnvironmentChangedEvent | undefined;
     scriptDirectoryChanged?: ScriptDirectoryChangedEvent | undefined;
+    recentScriptsChangedEvent?: RecentScriptsChangedEvent | undefined;
     dataConnectionSavedEvent?: DataConnectionSavedEvent | undefined;
     dataConnectionDeletedEvent?: DataConnectionDeletedEvent | undefined;
     dataConnectionResourcesUpdatingEvent?: DataConnectionResourcesUpdatingEvent | undefined;
@@ -7594,6 +7756,7 @@ export interface ITypes {
     databaseServerDeletedEvent?: DatabaseServerDeletedEvent | undefined;
     openWindowCommand?: OpenWindowCommand | undefined;
     confirmSaveCommand?: ConfirmSaveCommand | undefined;
+    confirmOpenAsDuplicateCommand?: ConfirmOpenAsDuplicateCommand | undefined;
     requestScriptSavePath?: RequestScriptSavePathCommand | undefined;
     alertUserCommand?: AlertUserCommand | undefined;
     confirmWithUserCommand?: ConfirmWithUserCommand | undefined;
@@ -8403,6 +8566,60 @@ export interface IScriptDirectoryChangedEvent {
     scripts: ScriptSummary[];
 }
 
+export class RecentScriptsChangedEvent implements IRecentScriptsChangedEvent {
+    recentScripts!: string[];
+
+    constructor(data?: IRecentScriptsChangedEvent) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.recentScripts = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["recentScripts"])) {
+                this.recentScripts = [] as any;
+                for (let item of _data["recentScripts"])
+                    this.recentScripts!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): RecentScriptsChangedEvent {
+        data = typeof data === 'object' ? data : {};
+        let result = new RecentScriptsChangedEvent();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.recentScripts)) {
+            data["recentScripts"] = [];
+            for (let item of this.recentScripts)
+                data["recentScripts"].push(item);
+        }
+        return data;
+    }
+
+    clone(): RecentScriptsChangedEvent {
+        const json = this.toJSON();
+        let result = new RecentScriptsChangedEvent();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IRecentScriptsChangedEvent {
+    recentScripts: string[];
+}
+
 export class DataConnectionSavedEvent implements IDataConnectionSavedEvent {
     dataConnection!: DataConnection;
 
@@ -9050,6 +9267,83 @@ export class ConfirmSaveCommand extends CommandOfYesNoCancel implements IConfirm
 }
 
 export interface IConfirmSaveCommand extends ICommandOfYesNoCancel {
+    message: string;
+}
+
+export abstract class CommandOfBoolean extends CommandBase implements ICommandOfBoolean {
+
+    constructor(data?: ICommandOfBoolean) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+    }
+
+    static override fromJS(data: any): CommandOfBoolean {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'CommandOfBoolean' cannot be instantiated.");
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): CommandOfBoolean {
+        throw new Error("The abstract class 'CommandOfBoolean' cannot be instantiated.");
+    }
+}
+
+export interface ICommandOfBoolean extends ICommandBase {
+}
+
+export class ConfirmOpenAsDuplicateCommand extends CommandOfBoolean implements IConfirmOpenAsDuplicateCommand {
+    newPath!: string;
+    existingPath!: string;
+    message!: string;
+
+    constructor(data?: IConfirmOpenAsDuplicateCommand) {
+        super(data);
+    }
+
+    override init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.newPath = _data["newPath"];
+            this.existingPath = _data["existingPath"];
+            this.message = _data["message"];
+        }
+    }
+
+    static override fromJS(data: any): ConfirmOpenAsDuplicateCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new ConfirmOpenAsDuplicateCommand();
+        result.init(data);
+        return result;
+    }
+
+    override toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["newPath"] = this.newPath;
+        data["existingPath"] = this.existingPath;
+        data["message"] = this.message;
+        super.toJSON(data);
+        return data;
+    }
+
+    clone(): ConfirmOpenAsDuplicateCommand {
+        const json = this.toJSON();
+        let result = new ConfirmOpenAsDuplicateCommand();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IConfirmOpenAsDuplicateCommand extends ICommandOfBoolean {
+    newPath: string;
+    existingPath: string;
     message: string;
 }
 

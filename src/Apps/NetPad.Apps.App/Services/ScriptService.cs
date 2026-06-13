@@ -72,4 +72,43 @@ public class ScriptService(ISession session, IUiDialogService uiDialogService, I
 
         return true;
     }
+
+    public async Task<bool> SaveScriptAsAsync(Guid scriptId)
+    {
+        var scriptEnvironment = session.Get(scriptId) ?? throw new ScriptNotFoundException(scriptId);
+        var script = scriptEnvironment.Script;
+
+        var path = await uiDialogService.AskUserForSaveLocation(script);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        // A new script has no on-disk original to fork from; Save As is just Save.
+        if (script.IsNew)
+        {
+            script.SetPath(path);
+            await mediator.Send(new SaveScriptCommand(script));
+            return true;
+        }
+
+        // If the user picked the script's current path, treat as a regular Save.
+        if (script.IsPathEquivalent(path))
+        {
+            await mediator.Send(new SaveScriptCommand(script));
+            return true;
+        }
+
+        // Real Save As: clone with a fresh Id, save the clone to the new path,
+        // close the original tab (discarding its unsaved edits; they're preserved
+        // in the clone), then open the clone as the new active tab.
+        var clone = script.CloneWithNewId();
+        clone.SetPath(path);
+
+        await mediator.Send(new SaveScriptCommand(clone));
+        await CloseScriptAsync(scriptId, discardUnsavedChanges: true);
+        await mediator.Send(new OpenScriptCommand(clone));
+
+        return true;
+    }
 }

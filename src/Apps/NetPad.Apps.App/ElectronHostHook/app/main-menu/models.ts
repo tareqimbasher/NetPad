@@ -8,6 +8,7 @@ export interface IAppMenuItem {
     helpText?: string,
     shortcut?: IAppShortcut,
     isDivider?: boolean;
+    disabled?: boolean;
     menuItems?: IAppMenuItem[],
 }
 
