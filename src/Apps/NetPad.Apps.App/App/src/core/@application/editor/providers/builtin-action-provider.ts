@@ -1,9 +1,21 @@
-import {IContainer} from "aurelia";
 import * as monaco from "monaco-editor";
-import {IActionProvider, IScriptService, ISession, MonacoEditorUtil, Script, ScriptKind} from "@application";
+import {
+    ApiException,
+    IActionProvider,
+    ISession,
+    MonacoEditorUtil,
+    RecentScriptsStore,
+    ScriptEnvironment,
+    ScriptKind,
+    ScriptsStore,
+    ScriptSummary
+} from "@application";
 
 export class BuiltinActionProvider implements IActionProvider {
-    constructor(@IContainer private readonly container: IContainer) {
+    constructor(
+        @ISession private readonly session: ISession,
+        private readonly scriptsStore: ScriptsStore,
+        private readonly recentScriptsStore: RecentScriptsStore) {
     }
 
     public provideActions(): monaco.editor.IActionDescriptor[] {
@@ -33,99 +45,161 @@ export class BuiltinActionProvider implements IActionProvider {
                 id: "netpad.action.goToScript",
                 label: "Go to Script",
                 keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyT],
-                run: async () => {
-                    const quickInput = MonacoEditorUtil.getQuickInputService();
-                    const scope = this.container.createChild({inheritParentResources: true});
+                run: () => {
+                    const picks = this.buildPicks(
+                        [...this.session.environments],
+                        this.scriptsStore.scripts,
+                        this.recentScriptsStore.recentScripts,
+                        this.session.active?.script.id
+                    );
 
-                    try {
-                        const session = scope.get(ISession);
-                        const opened = [...session.environments];
-
-                        const open = (script: Script) => {
-                            if (script.path) {
-                                session.openByPath(script.path).catch(() => undefined);
-                            } else {
-                                session.activate(script.id);
+                    // matchOnDescription lets typing filter by path/folder, not just the script name.
+                    MonacoEditorUtil.getQuickInputService()
+                        .pick(picks, {placeholder: "Go to script", matchOnDescription: true})
+                        .then((selected: ScriptPick | undefined) => {
+                            if (selected) {
+                                this.open(selected.script);
                             }
-                        };
-
-                        const picks: Partial<{
-                            type: string,
-                            id: string,
-                            label: string,
-                            meta: string,
-                            description: string,
-                            detail: string
-                        }>[] =
-                            opened
-                                .map(env => this.toPick(env.script))
-                                .sort((a) => a.id === session.active?.script.id ? -1 : 1);
-
-                        quickInput.pick(picks, {placeholder: "Go to script"}).then((selected: IScriptPick) => {
-                            if (!selected) {
-                                // Cancelled
-                                return;
-                            }
-
-                            open(selected.script);
                         });
-
-                        const service = scope.get(IScriptService);
-                        const scripts = await service.getScripts();
-
-                        if (scripts.length) {
-                            picks.push({
-                                type: "separator"
-                            });
-
-                            picks.push(...scripts
-                                .filter(s => picks.every(p => p.id !== s.id))
-                                .map(script => this.toPick(script))
-                                .sort((a, b) => a.label > b.label ? 1 : -1)
-                            );
-
-                            quickInput.pick(picks, {placeholder: "Go to script"}).then((selected: IScriptPick) => {
-                                if (!selected) {
-                                    // Cancelled
-                                    return;
-                                }
-
-                                open(selected.script);
-                            });
-                        }
-                    } finally {
-                        scope.dispose();
-                    }
                 }
             }
         ];
     }
 
-    private toPick(script: Partial<IScriptPick>) {
-        const icon = script.kind === "SQL"
-            ? "$(sql)"
-            : "$(csharp)";
+    /**
+     * Builds the grouped quick-pick list: open scripts (active first), then recents (excluding open
+     * ones), then the full library (excluding open ones). A recent that is also a saved script is
+     * rendered with that script's name/kind and still appears under "Library"; a recent that is
+     * neither open nor in the library is shown by file name and opened by path.
+     */
+    private buildPicks(
+        opened: readonly ScriptEnvironment[],
+        libraryScripts: readonly ScriptSummary[],
+        recentScripts: readonly string[],
+        activeScriptId: string | undefined
+    ): GoToScriptPick[] {
+        const picks: GoToScriptPick[] = [];
+
+        const openEnvIds = new Set(opened.map(e => e.script.id));
+        const openEnvPaths = new Set(
+            opened.map(e => e.script.path).filter(p => !!p)
+        );
+
+        // Open scripts (active first)
+        if (opened.length) {
+            picks.push({type: "separator", label: "Open"});
+            picks.push(...opened
+                .map(env => this.toPick({
+                    id: env.script.id,
+                    name: env.script.name,
+                    kind: env.script.config.kind,
+                    path: env.script.path,
+                    isDirty: env.script.isDirty
+                }))
+                .sort((a, b) => Number(b.id === activeScriptId) - Number(a.id === activeScriptId))
+            );
+        }
+
+        // Index library scripts by path so a recent that is also a saved script renders with its real
+        // name/kind (it still appears under "Library" too)
+        const libScriptsByPath = new Map<string, ScriptSummary>();
+        for (const s of libraryScripts) {
+            if (s.path) libScriptsByPath.set(s.path, s);
+        }
+
+        // Recents (most-recent-first), excluding any that are already open
+        const recents = recentScripts.filter(path => !openEnvPaths.has(path));
+        if (recents.length) {
+            picks.push({type: "separator", label: "Recent"});
+            picks.push(...recents.map(path => {
+                const inLib = libScriptsByPath.get(path);
+                return inLib ? this.toPick(inLib) : this.toRecentPick(path);
+            }));
+        }
+
+        // All library scripts, excluding those already open
+        const libraryPicks = libraryScripts
+            .filter(s => !openEnvIds.has(s.id))
+            .map(script => this.toPick(script))
+            .sort((a, b) => a.label > b.label ? 1 : -1);
+        if (libraryPicks.length) {
+            picks.push({type: "separator", label: "Library"});
+            picks.push(...libraryPicks);
+        }
+
+        return picks;
+    }
+
+    private open(script: ScriptRef) {
+        if (script.path) {
+            const path = script.path;
+            this.session.openByPath(path).catch(err => {
+                // A recents-only entry (no saved-script id) that no longer exists on disk: prune it so
+                // it stops surfacing. Other failures are transient and left in place.
+                if (!script.id && err instanceof ApiException && err.status === 404) {
+                    this.recentScriptsStore.remove(path).catch(() => undefined);
+                }
+            });
+        } else if (script.id) {
+            this.session.activate(script.id);
+        }
+    }
+
+    private toPick(script: {
+        id: string;
+        name: string;
+        kind: ScriptKind;
+        path?: string;
+        isDirty?: boolean
+    }): ScriptPick {
+        const icon = script.kind === "SQL" ? "$(sql)" : "$(csharp)";
 
         return {
-            type: 'item',
+            type: "item",
             id: script.id,
             label: `${icon} ${script.name}`,
-            description: !script.path ? "(New)" : ((script.isDirty ? "(Modified) " : "") + script.path),
-            // detail: "test detail",
-            // meta: "test meta",
-            script: script
+            description: !script.path ? "(New)" : ((script.isDirty ? "(Unsaved) " : "") + script.path),
+            script
         };
+    }
+
+    /**
+     * Builds a pick for a recent script known only by its file path.
+     * Kind is unknown, so a neutral file icon is used. Selecting it opens by path.
+     */
+    private toRecentPick(path: string): ScriptPick {
+        const fileName = this.fileName(path).replace(/\.netpad$/i, "");
+        return {
+            type: "item",
+            id: `recent:${path}`,
+            label: `$(file) ${fileName}`,
+            description: path,
+            script: {path}
+        };
+    }
+
+    private fileName(path: string): string {
+        const normalized = path.replace(/\\/g, "/");
+        return normalized.substring(normalized.lastIndexOf("/") + 1) || path;
     }
 }
 
-interface IScriptPick {
-    type: string;
+interface ScriptRef {
+    id?: string;
+    path?: string;
+}
+
+interface ScriptPick {
+    type: "item";
     id: string;
     label: string;
     description: string;
-    script: Script;
-    kind: ScriptKind;
-    isDirty: boolean;
-    path: string;
-    name: string;
+    script: ScriptRef;
 }
+
+interface ScriptSeparator {
+    type: "separator";
+    label: string;
+}
+
+type GoToScriptPick = ScriptPick | ScriptSeparator;

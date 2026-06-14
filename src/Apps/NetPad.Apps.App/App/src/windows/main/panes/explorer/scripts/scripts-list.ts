@@ -3,12 +3,11 @@ import {
     ContextMenuOptions,
     IAppService,
     IDataConnectionService,
-    IEventBus,
     IScriptService,
     ISession,
     RunOptions,
-    ScriptDirectoryChangedEvent,
     ScriptEnvironment,
+    ScriptsStore,
     ScriptSummary,
     Settings,
     ViewModelBase
@@ -31,7 +30,7 @@ export class ScriptsList extends ViewModelBase {
                 @IAppService private readonly appService: IAppService,
                 @IDataConnectionService private readonly dataConnectionService: IDataConnectionService,
                 private readonly dialogUtil: DialogUtil,
-                @IEventBus private readonly eventBus: IEventBus,
+                private readonly scriptsStore: ScriptsStore,
                 private readonly settings: Settings,
                 @ILogger logger: ILogger) {
 
@@ -163,16 +162,9 @@ export class ScriptsList extends ViewModelBase {
         ]);
     }
 
-    public async attached() {
-        try {
-            this.loadScripts(await this.scriptService.getScripts());
-        } catch (ex) {
-            this.logger.error("Error loading scripts", ex);
-        }
-
-        this.eventBus.subscribeToServer(ScriptDirectoryChangedEvent, msg => {
-            this.loadScripts(msg.scripts);
-        });
+    public attached() {
+        this.loadScripts(this.scriptsStore.scripts);
+        this.addDisposable(this.scriptsStore.onChanged(() => this.loadScripts(this.scriptsStore.scripts)));
     }
 
     public async openScriptsFolder(folder: ScriptFolderViewModel) {

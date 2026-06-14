@@ -6,7 +6,9 @@ import {
     IShortcutManager,
     MonacoEnvironmentManager,
     PaneHost,
-    PaneHostOrientation
+    PaneHostOrientation,
+    RecentScriptsStore,
+    ScriptsStore
 } from "@application";
 import {
     ClipboardPane,
@@ -32,7 +34,9 @@ export class Window extends WindowBase {
         @IShortcutManager private readonly shortcutManager: IShortcutManager,
         @IPaneManager private readonly paneManager: IPaneManager,
         @IContainer private readonly container: IContainer,
-        private readonly dataConnectionStore: DataConnectionStore) {
+        private readonly dataConnectionStore: DataConnectionStore,
+        private readonly recentScriptsStore: RecentScriptsStore,
+        private readonly scriptsStore: ScriptsStore) {
         super();
     }
 
@@ -44,6 +48,8 @@ export class Window extends WindowBase {
         await MonacoEnvironmentManager.setupMonacoEnvironment(this.container);
         await this.session.initialize();
         await this.dataConnectionStore.initialize();
+        await this.recentScriptsStore.initialize();
+        await this.scriptsStore.initialize();
         this.workbench = this.container.get(Workbench);
 
         // Creates the initial viewer host, wires workbench-level command handlers.

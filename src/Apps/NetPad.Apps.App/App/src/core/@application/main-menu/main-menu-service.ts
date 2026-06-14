@@ -10,7 +10,7 @@ import {
     ISettingsService,
     IShortcutManager,
     IWindowService,
-    RecentScriptsChangedEvent,
+    RecentScriptsStore,
     ShortcutIds
 } from "@application";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
@@ -23,7 +23,6 @@ import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-chec
 
 export class MainMenuService implements IMainMenuService {
     private readonly _items: IMenuItem[] = [];
-    private _serverPushedRecents = false;
     private readonly _onChangedCallbacks = new Set<() => void>();
     public readonly initialized: Promise<void>;
 
@@ -36,7 +35,8 @@ export class MainMenuService implements IMainMenuService {
         @IPaneManager private readonly paneManager: IPaneManager,
         @ISession private readonly session: ISession,
         @IEventBus eventBus: IEventBus,
-        private readonly dialogUtil: DialogUtil
+        private readonly dialogUtil: DialogUtil,
+        private readonly recentScriptsStore: RecentScriptsStore
     ) {
         this._items = [
             {
@@ -367,61 +367,16 @@ export class MainMenuService implements IMainMenuService {
 
         eventBus.subscribeToServer(EnvironmentPropertyChangedEvent, _ => this.updateMenuItems());
 
-        if (WindowParams.shell === ShellType.Browser) {
-            this.initialized = Promise.resolve();
-        } else {
-            // Subscribe before kicking off the initial fetch. A server push is authoritative and
-            // always the newest list, so once one lands we never let a (possibly slower) getRecent()
-            // fetch overwrite it — see _serverPushedRecents.
-            eventBus.subscribeToServer(RecentScriptsChangedEvent, msg => {
-                this._serverPushedRecents = true;
-                this.applyRecentMenu(msg.recentScripts ?? []);
-            });
-            this.initialized = this.rebuildRecentMenu();
-        }
+        this.initialized = this.recentScriptsStore.initialize();
+        this.recentScriptsStore.onChanged(() => this.applyRecentMenu());
+        this.applyRecentMenu();
     }
 
-    private async rebuildRecentMenu(): Promise<void> {
-        try {
-            const paths = await this.session.getRecent();
-            // A server push landed while this fetch was in flight; it's authoritative, so don't
-            // overwrite it with our now-stale snapshot.
-            if (this._serverPushedRecents) return;
-            this.applyRecentMenu(paths);
-        } catch (err) {
-            console.error("Failed to fetch recent scripts:", err);
-            if (this._serverPushedRecents) return;
-            this.applyRecentMenu([]);
-            // Transient startup failure: retry in the background so Open Recent isn't empty for
-            // the whole session. Not awaited, so `initialized` resolves after this first attempt
-            // and shells that gate native-menu construction on it aren't delayed.
-            void this.retryRecentMenu();
-        }
-    }
-
-    private async retryRecentMenu(): Promise<void> {
-        const delaysMs = [1000, 2000, 5000];
-
-        for (const delayMs of delaysMs) {
-            await new Promise<void>(resolve => setTimeout(resolve, delayMs));
-
-            // A server push already delivered the authoritative list, stop retrying
-            if (this._serverPushedRecents) return;
-
-            try {
-                const paths = await this.session.getRecent();
-                if (this._serverPushedRecents) return;
-                this.applyRecentMenu(paths);
-                return;
-            } catch (err) {
-                console.error("Retry to fetch recent scripts failed:", err);
-            }
-        }
-    }
-
-    private applyRecentMenu(paths: readonly string[]) {
+    private applyRecentMenu() {
         const submenu = this.find(this._items, item => item.id === "file.openRecent");
         if (!submenu) return;
+
+        const paths = this.recentScriptsStore.recentScripts;
 
         const newItems: IMenuItem[] = paths.map((path, ix) => ({
             id: `file.openRecent.${ix}`,
@@ -433,7 +388,7 @@ export class MainMenuService implements IMainMenuService {
                 } catch (err) {
                     if (err instanceof ApiException && err.status === 404) {
                         try {
-                            await this.session.removeRecent(path);
+                            await this.recentScriptsStore.remove(path);
                         } catch (removeErr) {
                             console.error("Failed to remove recent entry:", path, removeErr);
                         }
@@ -449,7 +404,7 @@ export class MainMenuService implements IMainMenuService {
                 text: "Clear Recent",
                 click: async () => {
                     try {
-                        await this.session.clearRecent();
+                        await this.recentScriptsStore.clear();
                     } catch (err) {
                         console.error("Failed to clear recent scripts:", err);
                     }
