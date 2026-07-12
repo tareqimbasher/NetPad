@@ -96,10 +96,10 @@ public class FileSystemAutoSaveScriptRepository : IAutoSaveScriptRepository
             }
             else
             {
-                _ = _appStatusMessagePublisher.PublishAsync(
+                _ = _appStatusMessagePublisher.PublishAlertAsync(
                     script.Id,
                     $"Recovered unsaved changes from {indexEntry.OriginalPath} — original file is missing. Save to keep these changes.",
-                    AppStatusMessagePriority.High);
+                    AppStatusMessageSeverity.Warning);
             }
         }
 

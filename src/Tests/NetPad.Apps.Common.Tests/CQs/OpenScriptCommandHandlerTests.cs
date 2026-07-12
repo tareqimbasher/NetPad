@@ -186,8 +186,9 @@ public class OpenScriptCommandHandlerTests
         // Recovered content differs from the file on disk, so a non-blocking warning is published —
         // the substitution is surfaced rather than silent.
         _appStatusMessagePublisher.Verify(
-            p => p.PublishAsync(existingScript.Id, It.IsAny<string>(), AppStatusMessagePriority.High, It.IsAny<bool>()),
+            p => p.PublishAlertAsync(existingScript.Id, It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()),
             Times.Once);
+        _appStatusMessagePublisher.VerifyNoOtherCalls();
         // No duplicate prompt — the rebind path takes precedence.
         _uiDialogService.Verify(
             d => d.AskUserToOpenAsDuplicate(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -218,10 +219,8 @@ public class OpenScriptCommandHandlerTests
         Assert.Single(_session.GetOpened());
         _recentScriptsService.Verify(r => r.Add(newPath), Times.Once);
         Assert.Empty(_scriptOpenedEvents);
-        // Content matches disk, so there's nothing to warn about — no status message published.
-        _appStatusMessagePublisher.Verify(
-            p => p.PublishAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessagePriority>(), It.IsAny<bool>()),
-            Times.Never);
+        // Content matches disk, so there's nothing to warn about — no alert published.
+        _appStatusMessagePublisher.VerifyNoOtherCalls();
     }
 
     [Fact]

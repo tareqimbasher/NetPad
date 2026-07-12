@@ -6,19 +6,35 @@ namespace NetPad.Application;
 public interface IAppStatusMessagePublisher
 {
     /// <summary>
-    /// Publishes a <see cref="AppStatusMessage"/>.
+    /// Publishes a message relevant only in the moment (e.g. "Compiling..."); if the user misses it, nothing is lost.
     /// </summary>
-    /// <param name="text">The text of the message.</param>
-    /// <param name="priority">The priority of this status message.</param>
-    /// <param name="persistent">Whether the message should persist or clear out after a timeout.</param>
-    Task PublishAsync(string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistent = false);
+    Task PublishTransientAsync(string text, AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
+
+    /// <inheritdoc cref="PublishTransientAsync(string,AppStatusMessageSeverity)"/>
+    Task PublishTransientAsync(
+        Guid scriptId,
+        string text,
+        AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
 
     /// <summary>
-    /// Publishes a <see cref="AppStatusMessage"/>.
+    /// Publishes a noteworthy occurrence kept on record for the user to review later (e.g. "Script finished with an error").
     /// </summary>
-    /// <param name="scriptId">The ID of the script this message relates to.</param>
-    /// <param name="text">The text of the message.</param>
-    /// <param name="priority">The priority of this status message.</param>
-    /// <param name="persistent">Whether the message should persist or clear out after a timeout.</param>
-    Task PublishAsync(Guid scriptId, string text, AppStatusMessagePriority priority = AppStatusMessagePriority.Normal, bool persistent = false);
+    Task PublishNoticeAsync(string text, AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
+
+    /// <inheritdoc cref="PublishNoticeAsync(string,AppStatusMessageSeverity)"/>
+    Task PublishNoticeAsync(
+        Guid scriptId,
+        string text,
+        AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
+
+    /// <summary>
+    /// Publishes a message the user must become aware of (e.g. a data-loss warning).
+    /// </summary>
+    Task PublishAlertAsync(string text, AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
+
+    /// <inheritdoc cref="PublishAlertAsync(string,AppStatusMessageSeverity)"/>
+    Task PublishAlertAsync(
+        Guid scriptId,
+        string text,
+        AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info);
 }

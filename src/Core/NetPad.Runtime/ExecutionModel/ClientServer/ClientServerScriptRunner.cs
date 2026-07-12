@@ -158,7 +158,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 _scriptHostProcessManager.StopScriptHost();
                 _currentRun.SetResult(RunResult.RunCancelled());
                 _eventBus.PublishAsync(new ScriptMemCacheItemInfoChangedEvent(_script.Id, []));
-                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopped");
+                _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Stopped");
             });
         }
 
@@ -203,14 +203,14 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 if (setup == null)
                 {
                     _logger.LogError("Run environment setup failed");
-                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Could not run script");
+                    _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Could not run script", AppStatusMessageSeverity.Error);
                     _currentRun.SetResult(RunResult.RunAttemptFailure());
                     return;
                 }
 
                 _currentRun.UserProgramStartLineNumber = setup.UserProgramStartLineNumber;
 
-                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Running...");
+                _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Running...");
                 _scriptHostProcessManager.RunScript(
                     _currentRun.RunId,
                     _workingDirectory.SharedDependenciesDirectory,
@@ -223,7 +223,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
 
                 if (!result.IsRunCancelled)
                 {
-                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Finished");
+                    _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Finished");
                 }
             }
             catch (Exception ex)
@@ -231,7 +231,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
                 _logger.LogError(ex, "Error running script");
                 await _combinedOutputWriter.WriteAsync(new ScriptOutput(ScriptOutputKind.Error, ex.ToString()));
                 _currentRun.SetResult(RunResult.RunAttemptFailure());
-                _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Script finished with an error");
+                _ = _appStatusMessagePublisher.PublishNoticeAsync(_script.Id, "Script finished with an error", AppStatusMessageSeverity.Error);
             }
         });
 
@@ -247,7 +247,7 @@ public partial class ClientServerScriptRunner : IScriptRunner
             {
                 if (!_currentRun.IsComplete)
                 {
-                    _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Stopping...");
+                    _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Stopping...");
                 }
 
                 _currentRun.Cancel();

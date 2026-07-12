@@ -90,11 +90,11 @@ public class OpenScriptCommand : Command<ScriptEnvironment>
                         // file's contents.
                         if (existing.Script.GetFingerprint() != script.GetFingerprint())
                         {
-                            _ = appStatusMessagePublisher.PublishAsync(
+                            _ = appStatusMessagePublisher.PublishAlertAsync(
                                 existing.Script.Id,
                                 $"Showing recovered unsaved changes for '{request.Path}', which differ from the file on disk. " +
                                 "Saving will overwrite the file; close the tab without saving to load the file's contents instead.",
-                                AppStatusMessagePriority.High);
+                                AppStatusMessageSeverity.Warning);
                         }
 
                         return existing;

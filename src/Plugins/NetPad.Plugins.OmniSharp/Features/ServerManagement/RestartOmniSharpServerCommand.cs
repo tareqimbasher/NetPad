@@ -21,7 +21,7 @@ public class RestartOmniSharpServerCommand(Guid scriptId) : OmniSharpScriptComma
 
             try
             {
-                success = await server.RestartAsync(progress => { appStatusMessagePublisher.PublishAsync(scriptId, progress); });
+                success = await server.RestartAsync(progress => { appStatusMessagePublisher.PublishTransientAsync(scriptId, progress); });
             }
             catch (Exception ex)
             {
@@ -29,7 +29,10 @@ public class RestartOmniSharpServerCommand(Guid scriptId) : OmniSharpScriptComma
                 success = false;
             }
 
-            await appStatusMessagePublisher.PublishAsync(scriptId, $"{(success ? "Restarted" : "Failed to restart")} OmniSharp Server");
+            await appStatusMessagePublisher.PublishNoticeAsync(
+                scriptId,
+                $"{(success ? "Restarted" : "Failed to restart")} OmniSharp Server",
+                success ? AppStatusMessageSeverity.Success : AppStatusMessageSeverity.Error);
 
             return success;
         }

@@ -8,6 +8,8 @@ export interface ISession extends ISessionApiClient {
 
     initialize(): Promise<void>;
 
+    isScriptOpen(scriptId: string): boolean;
+
     getScriptName(scriptId: string): string | undefined;
 
     activate(scriptId: string, signal?: AbortSignal | undefined): Promise<void>;

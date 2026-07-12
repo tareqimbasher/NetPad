@@ -16,6 +16,7 @@ import {
     Explorer,
     MemCachePane,
     NamespacesPane,
+    NotificationsPane,
     OutputPane,
     SplitViewController
 } from "./panes";
@@ -76,7 +77,7 @@ export class Window extends WindowBase {
         this.paneManager.addPaneToHost(NamespacesPane, this.rightPaneHost);
         this.paneManager.addPaneToHost(MemCachePane, this.rightPaneHost);
         this.paneManager.addPaneToHost(ClipboardPane, this.rightPaneHost);
-
+        this.paneManager.addPaneToHost(NotificationsPane, this.rightPaneHost);
 
         const topBottomController = new SplitViewController(
             () => [workAreaElement, this.bottomPaneHost],

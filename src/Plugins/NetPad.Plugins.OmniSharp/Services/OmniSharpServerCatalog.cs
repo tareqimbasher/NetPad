@@ -45,7 +45,7 @@ public class OmniSharpServerCatalog(
             nameof(AppOmniSharpServer),
             environment.Script);
 
-        _ = appStatusMessagePublisher.PublishAsync(environment.Script.Id, "Starting OmniSharp server...");
+        _ = appStatusMessagePublisher.PublishTransientAsync(environment.Script.Id, "Starting OmniSharp server...");
 
         var catalogItem = _items.GetOrAdd(
             environment.Script.Id,
@@ -63,14 +63,17 @@ public class OmniSharpServerCatalog(
             {
                 _items.TryRemove(environment.Script.Id, out _);
 
-                await appStatusMessagePublisher.PublishAsync(
+                await appStatusMessagePublisher.PublishAlertAsync(
                     environment.Script.Id,
                     "OmniSharp server failed to start. Check log file for details.",
-                    AppStatusMessagePriority.High);
+                    AppStatusMessageSeverity.Error);
             }
             else if (t.IsCompletedSuccessfully)
             {
-                await appStatusMessagePublisher.PublishAsync(environment.Script.Id, "OmniSharp server started");
+                await appStatusMessagePublisher.PublishTransientAsync(
+                    environment.Script.Id,
+                    "OmniSharp server started",
+                    AppStatusMessageSeverity.Success);
             }
         }, TaskContinuationOptions.ExecuteSynchronously);
 

@@ -13,12 +13,13 @@
         </div>
     </div>
     <div class="middle-column">
+        <let message.bind="notificationService.statusBarMessage"></let>
         <div class="active-app-status-message text-truncate-1-line"
-             show.bind="appStatusMessage"
-             contextmenu.trigger="dismissCurrentAppStatusMessage($event)"
+             show.bind="message"
+             contextmenu.trigger="dismissStatusBarMessage($event)"
              title="Right click to dismiss">
-            <i class="${appStatusMessage.priority === 'High' ? 'attention-icon text-red' : 'info-icon text-blue'} pe-2"></i>
-            ${appStatusMessage.scriptName ? '[' + appStatusMessage.scriptName + ']:' : ''} ${appStatusMessage.text}
+            <i class="${iconClass(message.severity)} ${textClass(message.severity)} pe-2"></i>
+            ${message.scriptName ? '[' + message.scriptName + ']:' : ''} ${message.text}
         </div>
     </div>
     <div class="right-column">

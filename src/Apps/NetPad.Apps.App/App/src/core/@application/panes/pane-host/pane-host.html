@@ -9,6 +9,7 @@
              click.trigger="toggle(pane)"
              tooltip="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
             <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <span class="pane-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
         </div>
     </div>
     <div class="pane-content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">

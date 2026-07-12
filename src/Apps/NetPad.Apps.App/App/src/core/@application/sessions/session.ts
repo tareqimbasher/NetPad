@@ -49,6 +49,10 @@ export class Session extends SessionApiClient implements ISession {
         }
     }
 
+    public isScriptOpen(scriptId: string): boolean {
+        return this.environments.some(x => x.script.id === scriptId);
+    }
+
     public getScriptName(scriptId: string): string | undefined {
         return this.environments.find(e => e.script.id === scriptId)?.script.name;
     }

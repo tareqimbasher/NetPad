@@ -179,14 +179,12 @@ public class Session : ISession
 
     public Task ActivateAsync(Guid? scriptId)
     {
-        ScriptEnvironment? newActive;
-        _lastActiveScriptId = Active?.Script.Id;
-
         if (scriptId == Active?.Script.Id)
         {
             return Task.CompletedTask;
         }
 
+        ScriptEnvironment? newActive;
         if (scriptId == null)
         {
             newActive = null;
@@ -197,6 +195,7 @@ public class Session : ISession
             newActive = environment ?? throw new EnvironmentNotFoundException(scriptId.Value);
         }
 
+        _lastActiveScriptId = Active?.Script.Id;
         Active = newActive;
         _eventBus.PublishAsync(new ActiveEnvironmentChangedEvent(newActive?.Script.Id));
 

@@ -1,0 +1,13 @@
+<div class="notification-toasts">
+    <div repeat.for="toast of notificationService.toasts"
+         class="notification-toast severity-${toast.severity.toLowerCase()}">
+        <i class="notification-toast-icon ${iconClass(toast.severity)} ${textClass(toast.severity)}"></i>
+        <div class="notification-toast-body min-w-0">
+            <span class="notification-toast-script" if.bind="toast.scriptName">${toast.scriptName}</span>
+            <span class="notification-toast-text">${toast.text}</span>
+        </div>
+        <i class="notification-toast-close close-icon icon-button"
+           click.trigger="dismiss(toast)"
+           title="Dismiss"></i>
+    </div>
+</div>

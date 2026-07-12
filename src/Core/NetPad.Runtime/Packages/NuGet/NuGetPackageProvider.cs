@@ -567,8 +567,8 @@ public class NuGetPackageProvider(
         INugetLogger nugetLogger,
         CancellationToken cancellationToken)
     {
-        await appStatusMessagePublisher.PublishAsync(
-            $"Installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})...");
+        await appStatusMessagePublisher.PublishTransientAsync(
+            $"Installing {explicitPackageToInstallIdentity.Id} (v{explicitPackageToInstallIdentity.Version.ToString()})...");
 
         foreach (var packageToInstall in packagesToInstall)
         {
@@ -645,16 +645,18 @@ public class NuGetPackageProvider(
                     SaveInstallInfo(installPath, installInfo);
                 }
             }
-            catch
+            catch (Exception e)
             {
-                await appStatusMessagePublisher.PublishAsync(
-                    $"Error installing package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})");
+                await appStatusMessagePublisher.PublishAlertAsync(
+                    $"Error installing {explicitPackageToInstallIdentity.Id} (v{explicitPackageToInstallIdentity.Version.ToString()}): {e.Message}",
+                    AppStatusMessageSeverity.Error);
                 throw;
             }
         }
 
-        await appStatusMessagePublisher.PublishAsync(
-            $"Installed package {explicitPackageToInstallIdentity.Id} (v.{explicitPackageToInstallIdentity.Version.ToString()})");
+        await appStatusMessagePublisher.PublishNoticeAsync(
+            $"Installed {explicitPackageToInstallIdentity.Id} (v{explicitPackageToInstallIdentity.Version.ToString()})",
+            AppStatusMessageSeverity.Success);
     }
 
     public async Task<Dictionary<PackageIdentity, PackageMetadata?>> GetExtendedMetadataAsync(
