@@ -10,6 +10,8 @@ using NetPad.Apps;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.Apps.Plugins;
 using NetPad.Common;
+using NetPad.Compilation;
+using NetPad.ExecutionModel;
 using NetPad.Plugins.OmniSharp;
 
 namespace NetPad.Host.Swagger;
@@ -32,6 +34,9 @@ public class SwaggerCodeGenerationStartup(IConfiguration configuration, IWebHost
             .AddEntityFrameworkCoreDataConnectionDriver();
 
         services.AddSingleton<HostInfo>();
+
+        // Only needed to pass DI validation for some controllers
+        services.AddClientServerExecutionModel();
 
         // Plugins
         var pluginInitialization = new PluginInitialization(Configuration, WebHostEnvironment);

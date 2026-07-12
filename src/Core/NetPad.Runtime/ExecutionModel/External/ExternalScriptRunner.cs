@@ -151,7 +151,7 @@ public sealed partial class ExternalScriptRunner : IScriptRunner
                 return RunResult.RunAttemptFailure();
             }
 
-            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Running...");
+            _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Running...");
 
             var exitCode = await _scriptProcess.WaitForExitTask;
 

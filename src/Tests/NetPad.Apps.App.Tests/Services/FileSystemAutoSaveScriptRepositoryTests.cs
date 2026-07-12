@@ -81,7 +81,7 @@ public sealed class FileSystemAutoSaveScriptRepositoryTests : IDisposable
     public async Task GetScriptAsync_Restores_Path_When_Original_File_Exists()
     {
         var originalPath = Path.Combine(_testRoot, "external.netpad");
-        File.WriteAllText(originalPath, "placeholder");
+        await File.WriteAllTextAsync(originalPath, "placeholder");
 
         var repo = CreateRepository();
         var script = CreateScript();
@@ -95,9 +95,7 @@ public sealed class FileSystemAutoSaveScriptRepositoryTests : IDisposable
 
         Assert.NotNull(restored);
         Assert.Equal(originalPath.Replace('\\', '/'), restored!.Path);
-        _appStatusMessagePublisher.Verify(
-            p => p.PublishAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessagePriority>(), It.IsAny<bool>()),
-            Times.Never);
+        _appStatusMessagePublisher.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -120,7 +118,7 @@ public sealed class FileSystemAutoSaveScriptRepositoryTests : IDisposable
         Assert.NotNull(restored);
         Assert.Null(restored!.Path);
         _appStatusMessagePublisher.Verify(
-            p => p.PublishAsync(restored.Id, It.Is<string>(s => s.Contains("missing", StringComparison.OrdinalIgnoreCase)), It.IsAny<AppStatusMessagePriority>(), It.IsAny<bool>()),
+            p => p.PublishAlertAsync(restored.Id, It.Is<string>(s => s.Contains("missing", StringComparison.OrdinalIgnoreCase)), It.IsAny<AppStatusMessageSeverity>()),
             Times.Once);
     }
 
@@ -131,10 +129,10 @@ public sealed class FileSystemAutoSaveScriptRepositoryTests : IDisposable
 
         // Write a script file directly + a legacy index (Dictionary<Guid, string>)
         var scriptFilePath = Path.Combine(_autoSaveDir, $"{script.Id}.netpad");
-        File.WriteAllText(scriptFilePath, ScriptSerializer.Serialize(script));
+        await File.WriteAllTextAsync(scriptFilePath, ScriptSerializer.Serialize(script));
 
         var legacyIndex = new Dictionary<Guid, string> { { script.Id, "LegacyName" } };
-        File.WriteAllText(_indexPath, JsonSerializer.Serialize(legacyIndex, true));
+        await File.WriteAllTextAsync(_indexPath, JsonSerializer.Serialize(legacyIndex, true));
 
         _scriptRepository.Setup(r => r.GetAsync(script.Id)).ReturnsAsync((Script?)null);
 

@@ -87,7 +87,7 @@ public class AppSetupAndCleanupBackgroundService(
 
     protected override async Task StoppingAsync(CancellationToken cancellationToken)
     {
-        _ = appStatusMessagePublisher.PublishAsync("Closing...", AppStatusMessagePriority.Normal, true);
+        _ = appStatusMessagePublisher.PublishTransientAsync("Closing...");
 
         var environments = session.GetOpened();
 

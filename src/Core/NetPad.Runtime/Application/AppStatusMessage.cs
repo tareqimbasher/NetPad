@@ -5,15 +5,15 @@ namespace NetPad.Application;
 /// </summary>
 public class AppStatusMessage(
     string text,
-    AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-    bool persistent = false)
+    AppStatusMessageKind kind = AppStatusMessageKind.Notice,
+    AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info)
 {
     public AppStatusMessage(
         Guid scriptId,
         string text,
-        AppStatusMessagePriority priority = AppStatusMessagePriority.Normal,
-        bool persistent = false
-    ) : this(text, priority, persistent)
+        AppStatusMessageKind kind = AppStatusMessageKind.Notice,
+        AppStatusMessageSeverity severity = AppStatusMessageSeverity.Info
+    ) : this(text, kind, severity)
     {
         ScriptId = scriptId;
     }
@@ -29,14 +29,14 @@ public class AppStatusMessage(
     public string Text { get; } = text;
 
     /// <summary>
-    /// The priority of this message.
+    /// The semantic kind of this message. See <see cref="AppStatusMessageKind"/>.
     /// </summary>
-    public AppStatusMessagePriority Priority { get; } = priority;
+    public AppStatusMessageKind Kind { get; } = kind;
 
     /// <summary>
-    /// Whether this status message should be persistent or if it should be cleared after a timeout.
+    /// The severity of this message. See <see cref="AppStatusMessageSeverity"/>.
     /// </summary>
-    public bool Persistent { get; } = persistent;
+    public AppStatusMessageSeverity Severity { get; } = severity;
 
     /// <summary>
     /// The date and time when this message was created.

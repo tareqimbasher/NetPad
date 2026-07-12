@@ -1,0 +1,30 @@
+<pane-toolbar>
+    <span class="text-semibold">Notifications</span>
+    <div au-slot="right-end">
+        <i class="icon-button clear-output-icon"
+           show.bind="notificationService.history.length"
+           click.trigger="clearAll()"
+           title="Clear all"></i>
+    </div>
+</pane-toolbar>
+
+<div class="notifications-list flex-fill overflow-y-auto" if.bind="notificationService.history.length">
+    <div repeat.for="item of notificationService.history"
+         class="notification-item severity-${item.severity.toLowerCase()} ${item.scriptId ? 'clickable' : ''}"
+         click.trigger="navigateTo(item)">
+        <i class="notification-item-icon ${iconClass(item.severity)} ${textClass(item.severity)}"></i>
+        <div class="notification-item-body min-w-0">
+            <div class="notification-item-header d-flex align-items-baseline justify-content-between">
+                <span class="notification-item-title text-truncate">${item.scriptName || 'NetPad'}</span>
+                <span class="notification-item-time text-muted ms-2">${item.createdDate | time}</span>
+            </div>
+            <div class="notification-item-text">${item.text}</div>
+        </div>
+        <i class="notification-item-close close-icon icon-button"
+           click.trigger="dismiss(item, $event)"
+           title="Dismiss"></i>
+    </div>
+</div>
+<div class="flex-fill d-flex align-items-center justify-content-center" else>
+    <p class="text-muted user-select-none">No notifications</p>
+</div>

@@ -28,6 +28,13 @@ export * from "./windows/window-state";
 export * from "./windows/iwindow-service";
 export * from "./user-secrets/iuser-secret-service";
 
+// Notifications
+export * from "./notifications/inotification";
+export * from "./notifications/inotification-service";
+export * from "./notifications/notification-service";
+export * from "./notifications/notification-appearance";
+export * from "./notifications/notification-toasts";
+
 // Logging
 export * from "./logging/console-log-sink";
 export * from "./logging/remote-log-sink";
@@ -45,6 +52,7 @@ export * from "./value-converters/sanitize-html-value-converter";
 export * from "./value-converters/sort-value-converter";
 export * from "./value-converters/take-value-converter";
 export * from "./value-converters/text-to-html-value-converter";
+export * from "./value-converters/time-value-converter";
 export * from "./value-converters/truncate-value-converter";
 export * from "./value-converters/yes-no-value-converter";
 

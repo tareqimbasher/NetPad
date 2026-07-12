@@ -11,6 +11,9 @@ import {
     IShortcutManager,
     IUserSecretService,
     IWindowBootstrapper,
+    INotificationService,
+    NotificationService,
+    NotificationToasts,
     PaneHost,
     PaneManager,
     Settings,
@@ -62,6 +65,7 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IViewerRegistry, ViewerRegistry),
             Registration.singleton(IMainMenuService, MainMenuService),
             Registration.singleton(IStatusbarService, StatusbarService),
+            Registration.singleton(INotificationService, NotificationService),
             Registration.singleton(IWorkAreaAppearance, WorkAreaAppearance),
             Registration.singleton(Workbench, Workbench),
             Registration.transient(ITextEditor, TextEditor),
@@ -73,9 +77,13 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             PaneHost,
             PaneToolbar,
             DataConnectionName,
+            NotificationToasts,
 
             // App startup task
             AppTask.activated(IContainer, async container => {
+                // Eagerly create the notification service so it subscribes to status messages early.
+                container.get(INotificationService);
+
                 const appService = container.get(IAppService);
                 await appService.notifyClientAppIsReady();
                 await QuickTipsDialog.showIfFirstVisit(container.get(DialogUtil));

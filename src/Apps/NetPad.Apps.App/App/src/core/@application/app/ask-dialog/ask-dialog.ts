@@ -12,15 +12,14 @@ export interface IAskDialogButton {
      */
     text: string;
 
-    /**
-     * The value of the result if the button is selected.
-     */
+    /** The value of the result if the button is selected. */
     value?: string | null;
 
-    /**
-     * Whether the button is a primary button.
-     */
+    /** Whether the button is a primary button. */
     isPrimary?: boolean;
+
+    /** Additional CSS classes to add to the button. */
+    cssClasses?: string;
 }
 
 export class AskDialog extends Dialog<IAskDialogModel> {

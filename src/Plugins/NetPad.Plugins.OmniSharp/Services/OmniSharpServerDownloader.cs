@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -20,7 +21,7 @@ internal class DownloadProgress(IAppStatusMessagePublisher appStatusMessagePubli
         }
 
         _lastValueReported = valueToReport;
-        appStatusMessagePublisher.PublishAsync($"Downloading OmniSharp... [{valueToReport}%]");
+        appStatusMessagePublisher.PublishTransientAsync($"Downloading OmniSharp... [{valueToReport}%]");
     }
 }
 
@@ -48,13 +49,13 @@ public class OmniSharpServerDownloader(
 
             var downloadDir = GetDownloadDirectory();
 
-            var start = DateTime.Now;
+            var start = Stopwatch.StartNew();
 
             using var httpClient = httpClientFactory.CreateClient();
             using var archiveStream = new MemoryStream();
             await httpClient.DownloadAsync(downloadUrl, archiveStream, new DownloadProgress(appStatusMessagePublisher));
 
-            await appStatusMessagePublisher.PublishAsync("Extracting OmniSharp...");
+            await appStatusMessagePublisher.PublishTransientAsync("Extracting OmniSharp...");
             var zipArchive = new ZipArchive(archiveStream);
             zipArchive.ExtractToDirectory(downloadDir.FullName);
 
@@ -76,18 +77,19 @@ public class OmniSharpServerDownloader(
                 }
             }
 
-            await appStatusMessagePublisher.PublishAsync(
-                $"OmniSharp download complete (took: {Math.Round((DateTime.Now - start).TotalSeconds, 2)}s)");
+            var tookSecs = Math.Round(start.Elapsed.TotalSeconds, 2);
+            await appStatusMessagePublisher.PublishNoticeAsync(
+                $"OmniSharp v{GetRequiredVersion()} download complete (took: {tookSecs}s)",
+                AppStatusMessageSeverity.Success);
 
             return downloadedLocation;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error downloading OmniSharp");
-            await appStatusMessagePublisher.PublishAsync(
+            await appStatusMessagePublisher.PublishAlertAsync(
                 "OmniSharp download failed",
-                AppStatusMessagePriority.High,
-                true);
+                AppStatusMessageSeverity.Error);
             throw;
         }
     }
@@ -120,7 +122,7 @@ public class OmniSharpServerDownloader(
 
     private string GetRequiredVersion()
     {
-        string settingPath = "OmniSharp:Version";
+        const string settingPath = "OmniSharp:Version";
 
         return configuration.GetValue<string>(settingPath)
                ?? throw new Exception($"No configuration value for OmniSharp version at setting path: '{settingPath}'");

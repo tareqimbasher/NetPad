@@ -415,6 +415,11 @@ button > .icon-base {
     @extend .fa-memory;
 }
 
+.notifications-icon {
+    @extend %icon-base;
+    @extend .fa-bell;
+}
+
 .theme-icon {
     @extend %icon-base;
     @extend .fa-circle-half-stroke;

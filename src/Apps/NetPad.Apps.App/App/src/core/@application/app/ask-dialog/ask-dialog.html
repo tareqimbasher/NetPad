@@ -4,7 +4,7 @@
 
     <div class="buttons">
         <button repeat.for="btn of input.buttons"
-                class="btn ${btn.isPrimary ? 'btn-primary' : 'btn-secondary'}"
+                class="btn ${btn.isPrimary ? 'btn-primary' : 'btn-secondary'} ${btn.cssClasses}"
                 click.trigger="ok(btn.value === undefined ? btn.text : btn.value)"
                 tabindex="0"
                 data-is-primary="${btn.isPrimary}">

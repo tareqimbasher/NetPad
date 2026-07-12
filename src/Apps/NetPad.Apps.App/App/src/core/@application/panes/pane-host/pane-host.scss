@@ -15,6 +15,7 @@ pane-host {
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
 
             .pane-icon {
                 font-size: 1.1rem;
@@ -28,6 +29,23 @@ pane-host {
 
             &.active .pane-icon {
                 background: var(--color-full);
+            }
+
+            .pane-badge {
+                position: absolute;
+                top: -3px;
+                right: -1px;
+                min-width: 14px;
+                height: 14px;
+                padding: 0 3px;
+                border-radius: 7px;
+                background: var(--bs-danger);
+                color: #fff;
+                font-size: 0.6rem;
+                line-height: 14px;
+                font-weight: 600;
+                text-align: center;
+                pointer-events: none;
             }
         }
     }

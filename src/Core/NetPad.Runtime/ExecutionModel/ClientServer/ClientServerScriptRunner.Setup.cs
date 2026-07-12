@@ -79,7 +79,7 @@ public partial class ClientServerScriptRunner
         else
         {
             // Cache miss, resolve dependencies and compile
-            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Gathering dependencies...");
+            _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Gathering dependencies...");
             dependencies = await _scriptDependencyResolver.GetDependenciesAsync(_script, cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)
@@ -87,7 +87,7 @@ public partial class ClientServerScriptRunner
                 return null;
             }
 
-            _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Compiling...");
+            _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Compiling...");
             var result = await _scriptCompiler.ParseAndCompileAsync(effectiveCode, _script, cancellationToken);
 
             if (result == null || cancellationToken.IsCancellationRequested)
@@ -122,7 +122,7 @@ public partial class ClientServerScriptRunner
         }
 
         // 4. Deploy compiled script, the script-host, and their dependencies
-        _ = _appStatusMessagePublisher.PublishAsync(_script.Id, "Preparing...");
+        _ = _appStatusMessagePublisher.PublishTransientAsync(_script.Id, "Preparing...");
 
         if (!_workingDirectory.ScriptHostExecutableFile.Exists())
         {

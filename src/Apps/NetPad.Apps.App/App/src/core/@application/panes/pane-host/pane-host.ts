@@ -124,5 +124,8 @@ export class PaneHost {
 
     public removePane(pane: Pane) {
         this.panes.delete(pane);
+        if (this._active === pane) {
+            this._active = undefined;
+        }
     }
 }

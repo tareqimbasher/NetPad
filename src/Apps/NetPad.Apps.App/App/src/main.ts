@@ -25,6 +25,7 @@ import {
     SortValueConverter,
     TakeValueConverter,
     TextToHtmlValueConverter,
+    TimeValueConverter,
     TooltipCustomAttribute,
     TruncateValueConverter,
     YesNoValueConverter,
@@ -74,6 +75,7 @@ const builder = Aurelia.register(
     SanitizeHtmlValueConverter,
     TakeValueConverter,
     TextToHtmlValueConverter,
+    TimeValueConverter,
     TruncateValueConverter,
     YesNoValueConverter,
 

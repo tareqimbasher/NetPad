@@ -58,11 +58,10 @@ public class ClientServerScriptRunnerTests : IDisposable
 
         _statusPublisher = new Mock<IAppStatusMessagePublisher>();
         _statusPublisher
-            .Setup(p => p.PublishAsync(
-                It.IsAny<Guid>(),
-                It.IsAny<string>(),
-                It.IsAny<AppStatusMessagePriority>(),
-                It.IsAny<bool>()))
+            .Setup(p => p.PublishTransientAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()))
+            .Returns(Task.CompletedTask);
+        _statusPublisher
+            .Setup(p => p.PublishNoticeAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<AppStatusMessageSeverity>()))
             .Returns(Task.CompletedTask);
 
         _dotNetInfo = new Mock<IDotNetInfo>();

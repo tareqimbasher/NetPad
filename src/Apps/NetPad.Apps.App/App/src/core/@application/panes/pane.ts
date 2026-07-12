@@ -49,6 +49,18 @@ export abstract class Pane {
         this.host?.collapse(this);
     }
 
+    /**
+     * An optional count shown as a badge on this pane's ribbon icon. 0 shows no badge.
+     */
+    public get badgeCount(): number {
+        return 0;
+    }
+
+    /** The text shown in the ribbon badge. If {@link badgeCount} is larger than 99, shows "99+". */
+    public get badgeText(): string {
+        return this.badgeCount > 99 ? "99+" : this.badgeCount.toString();
+    }
+
     public hasShortcut(shortcut?: Shortcut) {
         this._shortcut = shortcut;
     }

@@ -8023,10 +8023,10 @@ export class AppStatusMessage implements IAppStatusMessage {
     scriptId?: string | undefined;
     /** The text of this message. */
     text!: string;
-    /** The priority of this message. */
-    priority!: AppStatusMessagePriority;
-    /** Whether this status message should be persistent or if it should be cleared after a timeout. */
-    persistent!: boolean;
+    /** The semantic kind of this message. See AppStatusMessageKind. */
+    kind!: AppStatusMessageKind;
+    /** The severity of this message. See AppStatusMessageSeverity. */
+    severity!: AppStatusMessageSeverity;
     /** The date and time when this message was created. */
     createdDate!: Date;
 
@@ -8043,8 +8043,8 @@ export class AppStatusMessage implements IAppStatusMessage {
         if (_data) {
             this.scriptId = _data["scriptId"];
             this.text = _data["text"];
-            this.priority = _data["priority"];
-            this.persistent = _data["persistent"];
+            this.kind = _data["kind"];
+            this.severity = _data["severity"];
             this.createdDate = _data["createdDate"] ? new Date(_data["createdDate"].toString()) : <any>undefined;
         }
     }
@@ -8060,8 +8060,8 @@ export class AppStatusMessage implements IAppStatusMessage {
         data = typeof data === 'object' ? data : {};
         data["scriptId"] = this.scriptId;
         data["text"] = this.text;
-        data["priority"] = this.priority;
-        data["persistent"] = this.persistent;
+        data["kind"] = this.kind;
+        data["severity"] = this.severity;
         data["createdDate"] = this.createdDate ? this.createdDate.toISOString() : <any>undefined;
         return data;
     }
@@ -8080,15 +8080,19 @@ export interface IAppStatusMessage {
     scriptId?: string | undefined;
     /** The text of this message. */
     text: string;
-    /** The priority of this message. */
-    priority: AppStatusMessagePriority;
-    /** Whether this status message should be persistent or if it should be cleared after a timeout. */
-    persistent: boolean;
+    /** The semantic kind of this message. See AppStatusMessageKind. */
+    kind: AppStatusMessageKind;
+    /** The severity of this message. See AppStatusMessageSeverity. */
+    severity: AppStatusMessageSeverity;
     /** The date and time when this message was created. */
     createdDate: Date;
 }
 
-export type AppStatusMessagePriority = "Normal" | "High";
+/** The semantic kind of an AppStatusMessage: how long the message stays relevant and how much attention it demands. The UI derives how a message is surfaced from its kind. */
+export type AppStatusMessageKind = "Transient" | "Notice" | "Alert";
+
+/** The severity of an AppStatusMessage. */
+export type AppStatusMessageSeverity = "Info" | "Success" | "Warning" | "Error";
 
 export abstract class PropertyChangedEvent implements IPropertyChangedEvent {
     propertyName!: string;
