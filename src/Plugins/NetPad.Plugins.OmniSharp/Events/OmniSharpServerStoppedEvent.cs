@@ -1,4 +1,4 @@
-﻿using NetPad.Events;
+using NetPad.Events;
 
 namespace NetPad.Plugins.OmniSharp.Events;
 

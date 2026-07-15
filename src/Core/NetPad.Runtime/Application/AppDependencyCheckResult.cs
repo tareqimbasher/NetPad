@@ -1,4 +1,4 @@
-﻿using NetPad.DotNet;
+using NetPad.DotNet;
 
 namespace NetPad.Application;
 

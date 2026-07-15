@@ -1,4 +1,4 @@
-﻿using NetPad.Assemblies;
+using NetPad.Assemblies;
 
 namespace NetPad.Runtime.Tests.Assemblies;
 

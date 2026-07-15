@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NetPad.Apps.UiInterop;
 
 namespace NetPad.Controllers;

@@ -1,4 +1,4 @@
-﻿using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.SQLite;
 using NetPad.Data;
 

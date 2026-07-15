@@ -1,4 +1,4 @@
-﻿namespace NetPad.Presentation;
+namespace NetPad.Presentation;
 
 /// <summary>
 /// A dump sink that does nothing.

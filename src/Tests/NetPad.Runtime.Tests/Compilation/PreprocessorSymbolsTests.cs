@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using NetPad.Compilation;
 using NetPad.DotNet;
 

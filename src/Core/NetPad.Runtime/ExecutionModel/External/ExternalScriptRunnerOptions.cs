@@ -1,4 +1,4 @@
-﻿namespace NetPad.ExecutionModel.External;
+namespace NetPad.ExecutionModel.External;
 
 public class ExternalScriptRunnerOptions
 {

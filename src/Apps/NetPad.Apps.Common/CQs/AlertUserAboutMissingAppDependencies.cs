@@ -1,4 +1,4 @@
-﻿using NetPad.Application;
+using NetPad.Application;
 
 namespace NetPad.Apps.CQs;
 

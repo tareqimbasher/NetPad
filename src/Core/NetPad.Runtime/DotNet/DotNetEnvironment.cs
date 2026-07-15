@@ -1,4 +1,4 @@
-﻿namespace NetPad.DotNet;
+namespace NetPad.DotNet;
 
 public class DotNetEnvironment
 {

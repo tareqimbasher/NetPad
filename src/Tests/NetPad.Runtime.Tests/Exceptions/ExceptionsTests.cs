@@ -1,4 +1,4 @@
-﻿using NetPad.DotNet.References;
+using NetPad.DotNet.References;
 using NetPad.Exceptions;
 
 namespace NetPad.Runtime.Tests.Exceptions;

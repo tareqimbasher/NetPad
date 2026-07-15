@@ -1,4 +1,4 @@
-﻿using NetPad.Common;
+using NetPad.Common;
 using NetPad.DotNet;
 
 namespace NetPad.Runtime.Tests.Common;

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using NetPad.Compilation.Scripts.Dependencies;
 using NetPad.DotNet;
 using NetPad.DotNet.CodeAnalysis;

@@ -1,4 +1,4 @@
-﻿using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using Testcontainers.PostgreSql;
 
 namespace NetPad.Apps.Common.Data.IntegrationTests.PostgreSql;

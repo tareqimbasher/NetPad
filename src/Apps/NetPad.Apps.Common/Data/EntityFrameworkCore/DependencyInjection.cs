@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MariaDb;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;

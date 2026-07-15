@@ -1,4 +1,4 @@
-﻿namespace NetPad.Packages;
+namespace NetPad.Packages;
 
 /// <summary>
 /// Represents the collection of package dependencies that are required when installing a parent package

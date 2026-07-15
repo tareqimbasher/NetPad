@@ -1,4 +1,4 @@
-﻿using NetPad.Data.Security;
+using NetPad.Data.Security;
 
 namespace NetPad.Apps.Common.Data.IntegrationTests;
 

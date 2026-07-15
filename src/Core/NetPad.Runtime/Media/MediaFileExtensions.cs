@@ -1,4 +1,4 @@
-﻿namespace NetPad.Media;
+namespace NetPad.Media;
 
 public static class MediaFileExtensions
 {

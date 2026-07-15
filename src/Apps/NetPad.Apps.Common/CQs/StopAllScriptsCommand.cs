@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using NetPad.Scripts;
 using NetPad.Sessions;

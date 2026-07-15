@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using NetPad.Configuration;
 using NetPad.Configuration.Events;
 using NetPad.Events;

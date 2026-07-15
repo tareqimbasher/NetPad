@@ -1,4 +1,4 @@
-﻿namespace NetPad.Events;
+namespace NetPad.Events;
 
 /// <summary>
 /// Event bus responsible for taking subscriptions/publications and delivering of Events.

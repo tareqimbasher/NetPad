@@ -1,4 +1,4 @@
-﻿using NetPad.Configuration;
+using NetPad.Configuration;
 using NetPad.Data;
 using NetPad.DotNet;
 using NetPad.Scripts;

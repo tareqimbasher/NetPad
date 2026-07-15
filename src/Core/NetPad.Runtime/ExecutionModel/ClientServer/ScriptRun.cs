@@ -1,4 +1,4 @@
-﻿using NetPad.DotNet;
+using NetPad.DotNet;
 using NetPad.Scripts;
 
 namespace NetPad.ExecutionModel.ClientServer;

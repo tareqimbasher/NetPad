@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using NetPad.Apps.UiInterop;
 using NetPad.Events;
 using NetPad.Plugins.OmniSharp.Events;

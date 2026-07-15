@@ -1,4 +1,4 @@
-﻿using NetPad.Scripts;
+using NetPad.Scripts;
 
 namespace NetPad.Runtime.Tests.Scripts;
 
