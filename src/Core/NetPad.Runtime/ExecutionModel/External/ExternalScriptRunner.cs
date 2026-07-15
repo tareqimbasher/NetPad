@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using NetPad.Application;

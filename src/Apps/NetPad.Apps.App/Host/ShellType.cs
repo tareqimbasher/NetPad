@@ -1,4 +1,4 @@
-﻿namespace NetPad.Host;
+namespace NetPad.Host;
 
 public enum ShellType
 {

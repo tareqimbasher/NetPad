@@ -1,4 +1,4 @@
-﻿namespace NetPad.Apps.CQs;
+namespace NetPad.Apps.CQs;
 
 public class AlertUserCommand(string message) : Command
 {

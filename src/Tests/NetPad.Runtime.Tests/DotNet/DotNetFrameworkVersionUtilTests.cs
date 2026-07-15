@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using NetPad.DotNet;
 
 namespace NetPad.Runtime.Tests.DotNet;

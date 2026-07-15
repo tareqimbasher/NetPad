@@ -1,4 +1,4 @@
-﻿using NetPad.DotNet;
+using NetPad.DotNet;
 using NetPad.Events;
 
 namespace NetPad.Scripts.Events;

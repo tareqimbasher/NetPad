@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.Disassembler;
 using Microsoft.CodeAnalysis;

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using NetPad.Apps.CQs;
 using NetPad.Apps.UiInterop;
 

@@ -1,4 +1,4 @@
-﻿using NetPad.Apps.UiInterop;
+using NetPad.Apps.UiInterop;
 
 namespace NetPad.Apps.CQs;
 

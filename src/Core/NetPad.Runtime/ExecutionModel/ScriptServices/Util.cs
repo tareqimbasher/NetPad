@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection;

@@ -1,4 +1,4 @@
-﻿using NetPad.IO;
+using NetPad.IO;
 
 namespace NetPad.ExecutionModel.External;
 

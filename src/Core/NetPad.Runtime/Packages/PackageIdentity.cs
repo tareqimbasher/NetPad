@@ -1,4 +1,4 @@
-﻿namespace NetPad.Packages;
+namespace NetPad.Packages;
 
 /// <summary>
 /// A unique package identity.

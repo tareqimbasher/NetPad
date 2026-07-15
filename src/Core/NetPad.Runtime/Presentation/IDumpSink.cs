@@ -1,4 +1,4 @@
-﻿namespace NetPad.Presentation;
+namespace NetPad.Presentation;
 
 public interface IDumpSink
 {

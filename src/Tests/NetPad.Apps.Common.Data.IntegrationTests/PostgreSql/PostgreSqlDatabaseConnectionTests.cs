@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.PostgreSql;
 using NetPad.Apps.Data.EntityFrameworkCore.Scaffolding;

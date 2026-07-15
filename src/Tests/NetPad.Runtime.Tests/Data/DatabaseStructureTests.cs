@@ -1,4 +1,4 @@
-﻿using NetPad.Data.Metadata;
+using NetPad.Data.Metadata;
 
 namespace NetPad.Runtime.Tests.Data;
 

@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using NetPad.DotNet;
 
 namespace NetPad.Runtime.Tests.DotNet;

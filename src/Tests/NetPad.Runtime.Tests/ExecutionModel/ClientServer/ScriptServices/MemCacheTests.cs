@@ -1,4 +1,4 @@
-﻿using NetPad.ExecutionModel.ScriptServices;
+using NetPad.ExecutionModel.ScriptServices;
 
 namespace NetPad.Runtime.Tests.ExecutionModel.ClientServer.ScriptServices;
 

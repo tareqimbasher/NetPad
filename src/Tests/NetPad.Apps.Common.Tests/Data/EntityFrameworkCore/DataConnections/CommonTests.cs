@@ -1,4 +1,4 @@
-﻿using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Data;
 
 namespace NetPad.Apps.Common.Tests.Data.EntityFrameworkCore.DataConnections;

@@ -1,4 +1,4 @@
-﻿using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
+using NetPad.Apps.Data.EntityFrameworkCore.DataConnections;
 using NetPad.Apps.Data.EntityFrameworkCore.DataConnections.MsSqlServer;
 using NetPad.Data;
 

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using NetPad.DotNet;
 using NetPad.Events;
 using NetPad.Scripts;
