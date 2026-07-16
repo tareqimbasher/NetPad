@@ -38,5 +38,5 @@ public class ConnectionStringBuilder() : Dictionary<string, string?>(StringCompa
         return string.Join(";", this.Select(x => $"{x.Key}={x.Value}")) + ";";
     }
 
-    public static ConnectionStringBuilder Parse(string connectionString) => new (connectionString);
+    public static ConnectionStringBuilder Parse(string connectionString) => new(connectionString);
 }

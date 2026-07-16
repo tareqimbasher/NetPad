@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace NetPad.Apps;
 
-public abstract class BackgroundService :  IHostedService
+public abstract class BackgroundService : IHostedService
 {
     protected readonly ILogger Logger;
 

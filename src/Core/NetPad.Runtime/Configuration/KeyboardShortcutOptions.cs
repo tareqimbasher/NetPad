@@ -47,7 +47,8 @@ public class KeyboardShortcutConfiguration(string id)
     public KeyCode? Key { get; set; }
 }
 
-public enum KeyCode {
+public enum KeyCode
+{
     Unknown = 0,
     Backspace = 1,
     Tab,

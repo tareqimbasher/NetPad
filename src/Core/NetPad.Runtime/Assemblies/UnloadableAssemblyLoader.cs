@@ -34,7 +34,7 @@ public sealed class UnloadableAssemblyLoader(ILogger<UnloadableAssemblyLoader> l
         // Try to find it by name if it can't be found by full name. Assemblies generated in memory typically have FullName
         // strings that are missing things like Version, Culture and PublicKeyToken
         else if (assemblyName.Name != null && _referenceAssemblyImages.TryGetValue(assemblyName.Name, out referenceAssemblyImage))
-            assembly =  LoadFrom(referenceAssemblyImage.Image);
+            assembly = LoadFrom(referenceAssemblyImage.Image);
 
         else if (_referenceAssemblyFiles.TryGetValue(assemblyName.FullName, out var referenceAssemblyFile))
             assembly = LoadFrom(referenceAssemblyFile.Bytes);

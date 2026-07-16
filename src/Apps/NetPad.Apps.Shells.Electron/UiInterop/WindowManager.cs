@@ -65,7 +65,7 @@ public class WindowManager(ILogger<WindowManager> logger, HostInfo hostInfo, Sec
 
         logger.LogDebug("Created window with name: {WindowName} and ID: {ID} and URL: {Url}", windowName, window.Id, url);
 
-        window.OnClosed += () =>_windows.TryRemove(windowId, out _);
+        window.OnClosed += () => _windows.TryRemove(windowId, out _);
 
         await window.WebContents.Session.ClearCacheAsync();
 

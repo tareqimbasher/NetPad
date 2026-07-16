@@ -14,7 +14,7 @@ public class HtmlDocument : Element
     public HtmlDocument() : base("html")
     {
         Head = this.AddAndGetElement("head");
-        Head.AddAndGetElement("meta").SetAttribute("charset","UTF-8");
+        Head.AddAndGetElement("meta").SetAttribute("charset", "UTF-8");
         Body = this.AddAndGetElement("body");
     }
 

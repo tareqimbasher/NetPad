@@ -10,13 +10,13 @@ public class SerializationScope
     public SerializationScope(int depth)
     {
         Depth = depth;
-        _serializedObjects  = new HashSet<object>(Common.ReferenceEqualityComparer.Instance);
+        _serializedObjects = new HashSet<object>(Common.ReferenceEqualityComparer.Instance);
     }
 
     public SerializationScope(int depth, SerializationScope parentScope)
     {
         Depth = depth;
-        _serializedObjects  = new HashSet<object>(
+        _serializedObjects = new HashSet<object>(
             parentScope.SerializedObjects ?? throw new ArgumentNullException(nameof(parentScope)),
             Common.ReferenceEqualityComparer.Instance
         );
