@@ -160,7 +160,7 @@ public class TestData
 
     public static IEnumerable<object?[]> JsonDocumentValues()
     {
-        return new []
+        return new[]
         {
             new object[] { JsonDocument.Parse(@"[{""Name"": ""John Smith"", ""Age"": 33}]") },
         };

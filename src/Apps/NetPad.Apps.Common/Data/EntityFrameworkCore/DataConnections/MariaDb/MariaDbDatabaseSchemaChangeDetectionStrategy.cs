@@ -64,7 +64,7 @@ internal class MariaDbDatabaseSchemaChangeDetectionStrategy(
 
     private async Task<string?> GetSchemaHashAsync(MariaDbDatabaseConnection connection)
     {
-        string[] interestingColumns = [ "table_schema", "table_name", "column_name", "is_nullable", "data_type" ];
+        string[] interestingColumns = ["table_schema", "table_name", "column_name", "is_nullable", "data_type"];
 
         var sql = $"""
                     SELECT {string.Join(",", interestingColumns)}

@@ -43,7 +43,7 @@ public class EditorOptions : ISettingsOptions
             },
             themeCustomizations = new
             {
-                colors = new {},
+                colors = new { },
                 rules = Array.Empty<string>()
             }
         };

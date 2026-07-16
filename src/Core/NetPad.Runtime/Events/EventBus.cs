@@ -352,8 +352,8 @@ public sealed class EventBus(ISubscriberErrorHandler subscriberErrorHandler) : I
         lock (_subscriptionsPadlock)
         {
             currentlySubscribed = (from sub in _subscriptions
-                where sub.Subscription.ShouldAttemptDelivery(Event)
-                select sub).ToList();
+                                   where sub.Subscription.ShouldAttemptDelivery(Event)
+                                   select sub).ToList();
         }
 
         foreach (var sub in currentlySubscribed)

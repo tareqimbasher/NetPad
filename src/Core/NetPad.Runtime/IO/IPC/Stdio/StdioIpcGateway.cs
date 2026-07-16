@@ -182,7 +182,7 @@ public class StdioIpcGateway(
                 return;
             }
 
-            handlers = [..messageHandlers];
+            handlers = [.. messageHandlers];
         }
 
         _logger?.LogDebug("Dispatching message to {HandlerCount} handlers for processing: {Type}",

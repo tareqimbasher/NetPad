@@ -15,7 +15,7 @@ public static class PresentationSettings
     /// </summary>
     public static (uint? maxDepth, uint? maxCollectionSerializeLength) GetConfigFileValues()
     {
-        var scriptConfigFilePath  = Path.Combine(
+        var scriptConfigFilePath = Path.Combine(
             Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location ?? string.Empty) ?? string.Empty,
             "scriptconfig.json"
         );
