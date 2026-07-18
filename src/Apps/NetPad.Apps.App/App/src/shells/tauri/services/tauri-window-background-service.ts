@@ -1,8 +1,8 @@
 import {ILogger} from "aurelia";
 import {DisposableCollection} from "@common";
 import {AppActivatedEvent, IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
-import {ShellType} from "@application/windows/shell-type";
-import {WindowParams} from "@application/windows/window-params";
+import {ShellType} from "@application/windowing/shell-type";
+import {WindowParams} from "@application/windowing/window-params";
 import {Window as TauriWindow} from "@tauri-apps/api/window"
 import {invoke} from "@tauri-apps/api/core";
 

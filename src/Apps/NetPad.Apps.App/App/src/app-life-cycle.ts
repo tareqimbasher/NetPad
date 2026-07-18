@@ -10,8 +10,8 @@ import {
     IEventBus,
     IIpcGateway
 } from "@application";
-import {IAppWindowEvent} from "@application/windows/app-windows";
-import {WindowParams} from "@application/windows/window-params";
+import {IAppWindowEvent} from "@application/windowing/app-windows";
+import {WindowParams} from "@application/windowing/window-params";
 
 /**
  * Actions that run at specific points in the app's lifecycle

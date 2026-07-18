@@ -1,7 +1,7 @@
 import Split from "split.js";
 import {Lazy} from "@common";
 import {IPaneHostViewStateController, PaneHost} from "@application";
-import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-sate";
+import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-state";
 
 /**
  * A pane host view state controller that splits the view horizontally or vertically with other content.

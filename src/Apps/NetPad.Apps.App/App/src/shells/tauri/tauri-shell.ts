@@ -4,11 +4,13 @@ import {IBackgroundService, IIpcGateway, IWindowService, Settings} from "@applic
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
 import {NativeMainMenuEventHandler} from "./services/native-main-menu-event-handler";
 import {Window} from "@tauri-apps/api/window"
-import {WindowId} from "@application/windows/window-id";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowId} from "@application/windowing/window-id";
+import {WindowParams} from "@application/windowing/window-params";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {ISystemService} from "@application/system/isystem-service";
 import {TauriWindowService} from "./services/tauri-window-service";
 import {TauriNativeDialogService} from "./services/tauri-native-dialog-service";
+import {TauriSystemService} from "./services/tauri-system-service";
 import {TauriWindowBackgroundService} from "./services/tauri-window-background-service";
 import {TauriDialogBackgroundService} from "./services/tauri-dialog-background-service";
 import {TauriDragDropBackgroundService} from "./services/tauri-drag-drop-background-service";
@@ -21,6 +23,7 @@ export class TauriShell implements IShell {
             Registration.transient(IWindowService, TauriWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
             Registration.singleton(INativeDialogService, TauriNativeDialogService),
+            Registration.singleton(ISystemService, TauriSystemService),
         );
 
         if (WindowParams.window === WindowId.Main) {

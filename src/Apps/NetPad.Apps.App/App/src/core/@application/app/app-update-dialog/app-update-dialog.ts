@@ -1,7 +1,7 @@
 import {Version} from "@common/data/version";
 import {Dialog} from "@application/dialogs/dialog";
 import {IAppService} from "@application";
-import {System} from "@common";
+import {ISystemService} from "@application/system/isystem-service";
 
 export interface IAppUpdateDialogModel {
     current: Version,
@@ -15,7 +15,9 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
         return this.input && this.input.latest.greaterThan(this.input.current);
     }
 
-    constructor(@IAppService private readonly appService: IAppService) {
+    constructor(
+        @IAppService private readonly appService: IAppService,
+        @ISystemService private readonly systemService: ISystemService) {
         super();
     }
 
@@ -47,7 +49,7 @@ export class AppUpdateDialog extends Dialog<IAppUpdateDialogModel> {
         const url = version
             ? `https://github.com/tareqimbasher/NetPad/releases/tag/v${version}`
             : "https://github.com/tareqimbasher/NetPad/releases/latest";
-        await System.openUrlInBrowser(url);
+        this.systemService.openUrlInBrowser(url);
         await this.ok();
     }
 }

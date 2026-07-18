@@ -1,10 +1,10 @@
 import {watch} from "@aurelia/runtime-html";
-import {IWindowService, Pane} from "@application";
-import {AppWindows} from "@application/windows/app-windows";
+import {IWindowService, Pane, PaneIds} from "@application";
+import {AppWindows} from "@application/windowing/app-windows";
 
 export class CodePane extends Pane {
     constructor(@IWindowService private readonly windowService: IWindowService, private readonly appWindows: AppWindows) {
-        super("Code", "code-icon");
+        super(PaneIds.code, "Code", "code-icon");
     }
 
     private async openExternalCodeWindow() {

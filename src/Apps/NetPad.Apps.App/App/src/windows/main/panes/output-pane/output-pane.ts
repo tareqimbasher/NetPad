@@ -8,6 +8,7 @@ import {
     IWindowService,
     KeyCombo,
     Pane,
+    PaneIds,
     PromptUserForInputCommand,
     ScriptEnvironment,
     ScriptOutputEmittedEvent,
@@ -15,7 +16,7 @@ import {
     Settings,
     ShortcutIds
 } from "@application";
-import {AppWindows} from "@application/windows/app-windows";
+import {AppWindows} from "@application/windowing/app-windows";
 import {OutputModel} from "./output-model";
 import {DisposableCollection, KeyCode} from "@common";
 import {FindTextBox} from "@application/find-text-box/find-text-box";
@@ -46,7 +47,7 @@ export class OutputPane extends Pane {
         private readonly appWindows: AppWindows,
         private readonly settings: Settings
     ) {
-        super("Output", "output-icon", false);
+        super(PaneIds.output, "Output", "output-icon", false);
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openOutput));
     }
 

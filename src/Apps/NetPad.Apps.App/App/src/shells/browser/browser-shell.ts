@@ -4,8 +4,10 @@ import {IShell} from "../ishell";
 import {IBackgroundService} from "@application";
 import {SignalRIpcGateway} from "@application/events/signalr-ipc-gateway";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
+import {ISystemService} from "@application/system/isystem-service";
 import {BrowserWindowService} from "./services/browser-window-service";
 import {BrowserNativeDialogService} from "./services/browser-native-dialog-service";
+import {BrowserSystemService} from "./services/browser-system-service";
 import {BrowserWindowBackgroundService} from "./services/browser-window-background-service";
 import {BrowserDialogBackgroundService} from "./services/browser-dialog-background-service";
 
@@ -20,6 +22,7 @@ export class BrowserShell implements IShell {
             Registration.transient(IWindowService, BrowserWindowService),
             Registration.singleton(IIpcGateway, SignalRIpcGateway),
             Registration.singleton(INativeDialogService, BrowserNativeDialogService),
+            Registration.singleton(ISystemService, BrowserSystemService),
         );
 
         // Disable default right-click action

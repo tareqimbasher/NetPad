@@ -16,9 +16,11 @@ import {
 import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {AppUpdateDialog} from "@application/app/app-update-dialog/app-update-dialog";
 import {DialogUtil} from "@application/dialogs/dialog-util";
+import {PaneIds} from "@application/panes/pane-ids";
+import {ISystemService} from "@application/system/isystem-service";
 import {IMainMenuService} from "./imain-menu-service";
-import {WindowParams} from "@application/windows/window-params";
-import {ShellType} from "@application/windows/shell-type";
+import {WindowParams} from "@application/windowing/window-params";
+import {ShellType} from "@application/windowing/shell-type";
 import {AppDependenciesCheckDialog} from "@application/app/app-dependencies-check-dialog/app-dependencies-check-dialog";
 
 export class MainMenuService implements IMainMenuService {
@@ -34,6 +36,7 @@ export class MainMenuService implements IMainMenuService {
         @IWindowService private readonly windowService: IWindowService,
         @IPaneManager private readonly paneManager: IPaneManager,
         @ISession private readonly session: ISession,
+        @ISystemService private readonly systemService: ISystemService,
         @IEventBus eventBus: IEventBus,
         private readonly dialogUtil: DialogUtil,
         private readonly recentScriptsStore: RecentScriptsStore
@@ -242,10 +245,7 @@ export class MainMenuService implements IMainMenuService {
                         id: "view.code",
                         text: "Code",
                         icon: "code-icon",
-                        click: async () => {
-                            const CodePane = (await import("../../../windows/main/panes")).CodePane;
-                            this.paneManager.toggle(CodePane);
-                        }
+                        click: async () => this.paneManager.toggle(PaneIds.code)
                     },
                     {
                         id: "view.namespaces",
@@ -332,19 +332,19 @@ export class MainMenuService implements IMainMenuService {
                         id: "help.wiki",
                         text: "Wiki",
                         icon: "wiki-icon",
-                        click: async () => System.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
+                        click: async () => this.systemService.openUrlInBrowser("https://tareqimbasher.github.io/NetPad")
                     },
                     {
                         id: "help.github",
                         text: "GitHub",
                         icon: "github-icon",
-                        click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad")
+                        click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad")
                     },
                     {
                         id: "help.searchIssues",
                         text: "Search Issues",
                         icon: "github-icon",
-                        click: async () => System.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
+                        click: async () => this.systemService.openUrlInBrowser("https://github.com/tareqimbasher/NetPad/issues")
                     },
                     {isDivider: true},
                     {

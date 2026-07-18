@@ -1,7 +1,7 @@
 import {ILogger, PLATFORM} from "aurelia";
 import {HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel as SignalRLogLevel} from "@microsoft/signalr";
 import {ChannelInfo, IIpcGateway, IpcMessageBatch} from "@application";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowParams} from "@application/windowing/window-params";
 import {IDisposable, SubscriptionToken} from "@common";
 
 /**

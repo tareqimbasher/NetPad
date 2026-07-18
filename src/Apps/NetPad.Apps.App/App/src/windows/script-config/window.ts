@@ -1,7 +1,7 @@
 import {IScriptService, ISession, IWindowService, Reference, Script} from "@application";
 import {ConfigStore} from "./config-store";
-import {WindowBase} from "@application/windows/window-base";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowBase} from "@application/windowing/window-base";
+import {WindowParams} from "@application/windowing/window-params";
 
 export class Window extends WindowBase {
     public script: Script;

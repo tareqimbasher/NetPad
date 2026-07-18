@@ -1,4 +1,4 @@
-import {Pane} from "@application";
+import {Pane, PaneIds} from "@application";
 
 export class ClipboardPane extends Pane {
     public history: Set<string>;
@@ -8,7 +8,7 @@ export class ClipboardPane extends Pane {
     private readonly maxHistorySize = 100;
 
     constructor() {
-        super("Clipboard", "clipboard-icon");
+        super(PaneIds.clipboard, "Clipboard", "clipboard-icon");
         this.history = new Set<string>();
     }
 
