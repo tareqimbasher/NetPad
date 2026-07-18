@@ -2,7 +2,7 @@ export * from "./env";
 export * from "./view-model-base";
 export * from "./app/app-lifecycle-events";
 export * from "./background-services/ibackground-service";
-export * from "./windows/iwindow-bootstrapper";
+export * from "./windowing/iwindow-bootstrapper";
 
 // HTTP API interface
 export * from "./api";
@@ -24,8 +24,8 @@ export * from "./scripts/iscript-service";
 export * from "./scripts/scripts-store";
 export * from "./sessions/isession";
 export * from "./sessions/recent-scripts-store";
-export * from "./windows/window-state";
-export * from "./windows/iwindow-service";
+export * from "./windowing/window-state";
+export * from "./windowing/iwindow-service";
 export * from "./user-secrets/iuser-secret-service";
 
 // Notifications
@@ -71,6 +71,7 @@ export * from "./editor/monaco/monaco-editor-util";
 export * from "./editor/providers/interfaces";
 
 // Panes
+export * from "./panes/pane-ids";
 export * from "./panes/ipane-manager";
 export * from "./panes/pane-manager";
 export * from "./panes/pane-host/pane-host";

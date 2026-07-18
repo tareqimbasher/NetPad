@@ -2,7 +2,7 @@
 import {IAppService, LogLevel, RemoteLogMessage} from "@application";
 import {BufferedQueue} from "@common";
 import {LogConfig} from "./log-config";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowParams} from "@application/windowing/window-params";
 
 /**
  * Sends log events to the backend application.

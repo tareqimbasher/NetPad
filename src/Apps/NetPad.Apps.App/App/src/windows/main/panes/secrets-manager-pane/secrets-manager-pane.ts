@@ -1,4 +1,4 @@
-import {INotificationService, IUserSecretService, Pane, UserSecretListingDto} from "@application";
+import {INotificationService, IUserSecretService, Pane, PaneIds, UserSecretListingDto} from "@application";
 import {resolve} from "aurelia";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 
@@ -23,7 +23,7 @@ export class SecretsManagerPane extends Pane {
     private readonly notificationService: INotificationService = resolve(INotificationService);
 
     constructor() {
-        super("Secrets", "secrets-manager-icon");
+        super(PaneIds.secretsManager, "Secrets", "secrets-manager-icon");
     }
 
     public attached() {

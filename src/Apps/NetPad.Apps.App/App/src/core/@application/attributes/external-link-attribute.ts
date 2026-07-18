@@ -1,5 +1,5 @@
-import {System} from "@common";
 import {ViewModelBase} from "@application";
+import {ISystemService} from "@application/system/isystem-service";
 import {ILogger} from "aurelia";
 
 /**
@@ -8,7 +8,10 @@ import {ILogger} from "aurelia";
  */
 export class ExternalLinkCustomAttribute extends ViewModelBase {
 
-    constructor(private readonly element: Element, @ILogger logger: ILogger) {
+    constructor(
+        private readonly element: Element,
+        @ISystemService private readonly systemService: ISystemService,
+        @ILogger logger: ILogger) {
         super(logger);
     }
 
@@ -33,6 +36,6 @@ export class ExternalLinkCustomAttribute extends ViewModelBase {
             return;
         }
 
-        System.openUrlInBrowser(href);
+        this.systemService.openUrlInBrowser(href);
     }
 }

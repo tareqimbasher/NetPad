@@ -21,7 +21,7 @@ import {
     SplitViewController
 } from "./panes";
 import {Workbench} from "./workbench";
-import {WindowBase} from "@application/windows/window-base";
+import {WindowBase} from "@application/windowing/window-base";
 import {SecretsManagerPane} from "./panes/secrets-manager-pane/secrets-manager-pane";
 
 export class Window extends WindowBase {

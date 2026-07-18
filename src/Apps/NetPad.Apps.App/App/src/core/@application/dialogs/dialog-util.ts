@@ -2,9 +2,9 @@ import {Constructable} from "aurelia";
 import {DialogCloseResult, IDialogService} from "@aurelia/dialog";
 import {Dialog} from "./dialog";
 import {OpenDialogs} from "./open-dialogs";
-import {IPromptDialogModel, PromptDialog} from "../app/prompt-dialog/prompt-dialog";
-import {AskDialog, IAskDialogModel} from "../app/ask-dialog/ask-dialog";
-import {AlertDialog, IAlertDialogModel} from "../app/alert-dialog/alert-dialog";
+import {IPromptDialogModel, PromptDialog} from "./prompt-dialog/prompt-dialog";
+import {AskDialog, IAskDialogModel} from "./ask-dialog/ask-dialog";
+import {AlertDialog, IAlertDialogModel} from "./alert-dialog/alert-dialog";
 
 export class DialogUtil {
     constructor(@IDialogService private readonly dialogService: IDialogService) {

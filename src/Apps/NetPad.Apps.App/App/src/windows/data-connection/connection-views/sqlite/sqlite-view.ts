@@ -3,8 +3,8 @@ import {DataConnection, MsSqlServerDatabaseConnection, SQLiteDatabaseConnection}
 import {AuthComponent} from "../components/auth-component";
 import {ConnectionDatabaseComponent} from "../components/connection-database-component";
 import {DataConnectionView} from "../data-connection-view";
-import {WindowParams} from "@application/windows/window-params";
-import {ShellType} from "@application/windows/shell-type";
+import {WindowParams} from "@application/windowing/window-params";
+import {ShellType} from "@application/windowing/shell-type";
 import {CommonServices} from "../common-services";
 
 export class SqliteView extends DataConnectionView<SQLiteDatabaseConnection> {

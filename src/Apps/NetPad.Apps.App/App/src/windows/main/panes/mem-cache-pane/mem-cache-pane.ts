@@ -1,6 +1,5 @@
-﻿import {IPaneManager, IScriptService, ISession, MemCacheItemInfo, Pane,} from "@application";
+﻿import {IPaneManager, IScriptService, ISession, MemCacheItemInfo, Pane, PaneIds,} from "@application";
 import {DisposableCollection} from "@common";
-import {OutputPane} from "../output-pane/output-pane";
 
 export class MemCachePane extends Pane {
     public selected?: string;
@@ -11,7 +10,7 @@ export class MemCachePane extends Pane {
     constructor(@IScriptService private readonly scriptService: IScriptService,
                 @ISession private readonly session: ISession,
                 @IPaneManager private readonly paneManager: IPaneManager) {
-        super("MemCache", "mem-cache-icon");
+        super(PaneIds.memCache, "MemCache", "mem-cache-icon");
     }
 
     public get items(): Array<MemCacheItemInfo> {
@@ -37,7 +36,7 @@ export class MemCachePane extends Pane {
         const scriptId = this.session.active?.script.id;
         if (scriptId) {
             await this.scriptService.dumpMemCacheItem(scriptId, item.key);
-            this.paneManager.expand(OutputPane);
+            this.paneManager.expand(PaneIds.output);
         }
     }
 

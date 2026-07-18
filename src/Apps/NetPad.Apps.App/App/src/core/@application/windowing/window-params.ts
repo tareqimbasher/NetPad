@@ -1,5 +1,5 @@
-import {WindowId} from "@application/windows/window-id";
-import {ShellType} from "@application/windows/shell-type";
+import {WindowId} from "@application/windowing/window-id";
+import {ShellType} from "@application/windowing/shell-type";
 
 export class WindowParams {
     public static window: WindowId;

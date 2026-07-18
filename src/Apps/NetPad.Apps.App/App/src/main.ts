@@ -32,7 +32,7 @@ import {
 } from "@application";
 import * as appActions from "./app-actions";
 import {AppLifeCycle} from "./app-life-cycle";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowParams} from "@application/windowing/window-params";
 import {SettingsBackgroundService} from "@application/background-services/settings-background-service";
 import {AppService} from "@application/app/app-service";
 import {SettingsService} from "@application/configuration/settings-service";

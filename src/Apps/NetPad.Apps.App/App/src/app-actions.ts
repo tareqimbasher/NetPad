@@ -8,8 +8,8 @@ import {
     IWindowBootstrapperConstructor,
     Settings
 } from "@application";
-import {WindowParams} from "@application/windows/window-params";
-import {WindowId} from "@application/windows/window-id";
+import {WindowParams} from "@application/windowing/window-params";
+import {WindowId} from "@application/windowing/window-id";
 import {IShell} from "./shells/ishell";
 
 /**

@@ -1,6 +1,6 @@
 import {IDisposable} from "@common";
 import {IBackgroundService, IEventBus, OpenWindowCommand} from "@application";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowParams} from "@application/windowing/window-params";
 
 /**
  * This is utilized for the Browser app, not the Electron app

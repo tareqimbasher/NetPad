@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {IShortcutManager, Pane, ShortcutIds} from "@application";
+import {IShortcutManager, Pane, PaneIds, ShortcutIds} from "@application";
 import {LocalStorageValue} from "@common";
 
 interface IExplorerSettings {
@@ -13,7 +13,7 @@ export class Explorer extends Pane {
     constructor(
         private readonly element: HTMLElement,
         @IShortcutManager shortcutManager: IShortcutManager) {
-        super("Explorer", "explorer-icon");
+        super(PaneIds.explorer, "Explorer", "explorer-icon");
         this.hasShortcut(shortcutManager.getShortcut(ShortcutIds.openExplorer));
     }
 

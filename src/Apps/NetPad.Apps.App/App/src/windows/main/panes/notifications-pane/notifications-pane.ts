@@ -1,4 +1,4 @@
-import {INotification, INotificationService, ISession, Pane, severityIconClass, severityTextClass} from "@application";
+import {INotification, INotificationService, ISession, Pane, PaneIds, severityIconClass, severityTextClass} from "@application";
 import {resolve} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 
@@ -10,7 +10,7 @@ export class NotificationsPane extends Pane {
     public readonly textClass = severityTextClass;
 
     constructor() {
-        super("Notifications", "notifications-icon");
+        super(PaneIds.notifications, "Notifications", "notifications-icon");
     }
 
     public override get badgeCount(): number {

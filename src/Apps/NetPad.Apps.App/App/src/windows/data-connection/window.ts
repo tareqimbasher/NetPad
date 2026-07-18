@@ -12,8 +12,8 @@ import {
     MySqlDatabaseServerConnection,
     PostgreSqlDatabaseServerConnection,
 } from "@application";
-import {WindowBase} from "@application/windows/window-base";
-import {WindowParams} from "@application/windows/window-params";
+import {WindowBase} from "@application/windowing/window-base";
+import {WindowParams} from "@application/windowing/window-params";
 import {Util} from "@common";
 import {IDataConnectionView} from "./connection-views/idata-connection-view";
 import {MssqlView} from "./connection-views/mssql/mssql-view";

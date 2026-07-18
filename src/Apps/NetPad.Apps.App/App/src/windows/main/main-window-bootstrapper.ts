@@ -31,7 +31,7 @@ import {ITextEditor, TextEditor} from "@application/editor/text-editor";
 import {ITextEditorService} from "@application/editor/itext-editor-service";
 import {IMainMenuService} from "@application/main-menu/imain-menu-service";
 import {TextEditorService} from "@application/editor/text-editor-service";
-import {AppWindows} from "@application/windows/app-windows";
+import {AppWindows} from "@application/windowing/app-windows";
 import {DialogUtil} from "@application/dialogs/dialog-util";
 import {DialogBackgroundService} from "@application/background-services/dialog-background-service";
 import {QuickTipsDialog} from "@application/app/quick-tips-dialog/quick-tips-dialog";

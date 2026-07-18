@@ -117,6 +117,14 @@ export class PaneHost {
         return null;
     }
 
+    public getPaneById(paneId: string): Pane | null {
+        for (const pane of this.panes) {
+            if (pane.id === paneId)
+                return pane;
+        }
+        return null;
+    }
+
     public addPane(pane: Pane) {
         this.panes.add(pane);
         pane.setHost(this);

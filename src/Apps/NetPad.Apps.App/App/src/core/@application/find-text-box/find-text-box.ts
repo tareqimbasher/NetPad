@@ -2,7 +2,7 @@ import {ILogger} from "aurelia";
 import {watch} from "@aurelia/runtime-html";
 import {KeyCombo, ViewModelBase} from "@application";
 import {KeyCode} from "@common";
-import {SearchImplementation1} from "@application/find-text-box/search-implementations/search-implementation-1";
+import {HtmlTextSearcher} from "@application/find-text-box/html-text-searcher";
 
 interface ITextSearchResult {
     searchText: string;
@@ -25,7 +25,7 @@ export class FindTextBox extends ViewModelBase {
     private searchText = "";
     private show: boolean;
     private txtSearch: HTMLInputElement;
-    private searchImplementation = new SearchImplementation1();
+    private searcher = new HtmlTextSearcher();
 
     private searchableElements = new Map<HTMLElement, ITextSearchableArea>();
     private current?: ITextSearchableArea;
@@ -131,7 +131,7 @@ export class FindTextBox extends ViewModelBase {
         }
 
         try {
-            const results = this.searchImplementation.search(element, searchText, area.searchableChildrenQuerySelector);
+            const results = this.searcher.search(element, searchText, area.searchableChildrenQuerySelector);
 
             area.searchResults = {
                 elements: results,
