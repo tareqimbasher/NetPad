@@ -1,23 +1,27 @@
+@import "./variables";
+
 body,
 html {
     height: 100%;
-    font-size: 13px;
+    font-size: $text-base;
 }
 
 body {
-    background: var(--background-color);
+    background: var(--bg0);
+    color: var(--text);
+    font-family: var(--font-sans);
 }
 
 .window {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--background-color);
-    color: var(--text-color);
+    background: var(--bg0);
+    color: var(--text);
 
     .bottom-buttons-bar {
         @extend .p-3;
-        border-top: var(--border-color) 1px solid;
+        border-top: var(--line-soft) 1px solid;
         display: flex;
         align-items: center;
 
@@ -31,28 +35,28 @@ body {
     user-select: none;
 
     .nav-item {
-        color: var(--tab-inactive-text-color);
-        background: var(--tab-background);
+        color: var(--text-2);
+        background: var(--bg1);
         border-bottom: 2px solid transparent;
         margin-right: 1px;
 
         &.active {
-            color: var(--tab-active-text-color);
+            color: var(--text);
             font-weight: 600;
-            background: var(--tab-active-background);
-            border-bottom: var(activeColor) 2px solid;
+            background: var(--bg2);
+            border-bottom: var(--accent) 2px solid;
 
             .nav-link {
-                color: var(--tab-active-text-color);
+                color: var(--text);
             }
         }
 
         &:hover {
-            background: var(--tab-active-background);
+            background: var(--bg2);
         }
 
         .nav-link {
-            color: var(--tab-inactive-text-color);
+            color: var(--text-2);
             border: none;
             padding-top: $tab-vertical-padding;
             padding-bottom: $tab-vertical-padding;
@@ -79,8 +83,11 @@ body {
 }
 
 .dialog {
-    background: var(--dialog-background);
-    color: var(--text-color);
+    background: var(--bg1);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow);
 
     min-width: 100px;
     min-height: 50px;
@@ -98,17 +105,5 @@ body {
 }
 
 .dialog-overlay {
-    background-color: rgb(0 0 0 / 50%);
-}
-
-.theme-netpad-dark {
-    .btn-themed {
-        @extend .btn-dark;
-    }
-}
-
-.theme-netpad-light {
-    .btn-themed {
-        @extend .btn-light;
-    }
+    background-color: var(--backdrop);
 }

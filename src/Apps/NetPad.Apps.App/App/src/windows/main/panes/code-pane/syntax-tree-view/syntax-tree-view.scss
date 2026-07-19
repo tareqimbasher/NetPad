@@ -1,5 +1,3 @@
-@import "styles/colors";
-
 syntax-tree-view {
     tree-node {
         position: relative;
@@ -11,7 +9,7 @@ syntax-tree-view {
         top: 20px;
         bottom: 0;
         width: 1px;
-        background: var(--border-color);
+        background: var(--line-soft);
     }
 
     .node-expander {
@@ -27,15 +25,15 @@ syntax-tree-view {
     }
 
     .tree-node-header:hover {
-        background-color: var(--hover-color);
+        background-color: var(--hover);
 
         .tree-node-header-right {
-            color: var(--text-color);
+            color: var(--text);
         }
     }
 
     .tree-node-header-right {
-        font-family: monospace;
+        font-family: var(--font-mono);
         margin-left: auto;
     }
 
@@ -49,17 +47,13 @@ syntax-tree-view {
     }
 
     .value-text {
-        @extend %text-teal;
+        color: var(--syntax-type);
     }
 
     .char-span {
-        color: grey;
+        color: var(--text-3);
         min-width: 8rem;
         display: inline-block;
         text-align: right;
     }
-}
-
-.theme-netpad-light syntax-tree-view .value-text {
-    color: #000000 !important;
 }

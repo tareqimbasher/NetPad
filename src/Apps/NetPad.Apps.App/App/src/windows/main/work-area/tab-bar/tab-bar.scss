@@ -1,5 +1,4 @@
 @import "styles/common";
-@import "styles/colors";
 
 tab-bar {
     display: flex;
@@ -25,12 +24,12 @@ tab-bar {
         white-space: nowrap;
         font-size: 0.925rem;
         cursor: default;
-        background: var(--tab-background);
+        background: var(--bg1);
         border-radius: 3px 3px 0 0;
 
         &:not(.new-tab) {
             border-top: 1px solid transparent;
-            border-right: 1px solid var(--tab-border-color);
+            border-right: 1px solid var(--line-soft);
         }
 
         .view-tab-content {
@@ -49,7 +48,7 @@ tab-bar {
         }
 
         .database-icon.is-production {
-            @extend %text-orange;
+            color: var(--warn);
         }
 
         .view-tab-addon {
@@ -82,25 +81,25 @@ tab-bar {
         }
 
         .script-running-indicator svg {
-            stroke: var(--script-status-running-color);
+            stroke: var(--run);
             stroke-width: 2;
         }
 
         .script-stopping-indicator svg {
-            stroke: var(--script-status-stopping-color);
+            stroke: var(--warn);
             stroke-width: 2;
         }
 
         &:hover {
-            background: var(--tab-active-background);
+            background: var(--editor);
         }
 
         &.active {
-            background: var(--tab-active-background);
+            background: var(--editor);
             font-weight: bold;
 
             .script-name {
-                color: dodgerblue;
+                color: var(--accent);
             }
         }
 
@@ -115,29 +114,29 @@ tab-bar {
 
 .minimal {
     .view-tab {
-        background: var(--tab-background);
+        background: var(--bg1);
         font-weight: normal !important;
 
         .script-name {
-            color: var(--tab-inactive-text-color);
+            color: var(--text-2);
             display: flex;
             align-items: center;
         }
 
         &.active {
-            background: var(--tab-active-background);
+            background: var(--editor);
 
             .script-name {
-                color: var(--tab-active-text-color);
+                color: var(--text);
             }
         }
 
         &.status-running {
-            border-top-color: var(--script-status-running-color) !important;
+            border-top-color: var(--run) !important;
         }
 
         &.status-stopping {
-            border-top-color: var(--script-status-stopping-color) !important;
+            border-top-color: var(--warn) !important;
         }
 
         &.new-tab {
@@ -147,7 +146,7 @@ tab-bar {
 
     .viewer-host.active {
         .view-tab.active {
-            border-top-color: var(--active-color);
+            border-top-color: var(--accent);
         }
     }
 }

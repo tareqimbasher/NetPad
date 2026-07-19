@@ -1,9 +1,8 @@
-@import "styles/colors";
-
 data-connection-name {
     .production-marker {
-        @extend %text-white;
-        @extend %bg-orange;
         margin-left: 1rem;
+        color: var(--warn);
+        background: rgba(var(--warn-rgb), 0.12);
+        border: 1px solid rgba(var(--warn-rgb), 0.35);
     }
 }

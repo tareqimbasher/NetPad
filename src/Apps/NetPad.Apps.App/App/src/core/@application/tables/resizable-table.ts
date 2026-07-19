@@ -65,7 +65,7 @@ export class ResizableTable extends WithDisposables {
         };
 
         const mouseOverHandler = (e: MouseEvent) => {
-            (e.target as HTMLElement).style.borderLeft = '2px solid dodgerblue';
+            (e.target as HTMLElement).style.borderLeft = '2px solid var(--accent)';
             // We set the height of the resizer here because table height might change
             setResizerHeight();
         };

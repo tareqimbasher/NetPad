@@ -14,7 +14,7 @@ data-connections-list {
             top: 0;
             bottom: 0;
             width: 1px;
-            background-color: var(--border-color);
+            background-color: var(--line-soft);
             opacity: 0.4;
             pointer-events: none;
         }
@@ -75,7 +75,7 @@ data-connections-list {
             top: 0;
             bottom: 0;
             width: 1px;
-            background-color: var(--border-color);
+            background-color: var(--line-soft);
             opacity: 0.4;
             pointer-events: none;
         }
@@ -91,7 +91,7 @@ data-connections-list {
             top: 0;
             bottom: 0;
             width: 1px;
-            background-color: var(--border-color);
+            background-color: var(--line-soft);
             opacity: 0.4;
             pointer-events: none;
         }
@@ -100,7 +100,7 @@ data-connections-list {
     .database-server:hover,
     .data-connection:hover,
     .display-text:hover {
-        background: var(--hover-color);
+        background: var(--hover);
     }
 
     i[class*="-node-icon"] {

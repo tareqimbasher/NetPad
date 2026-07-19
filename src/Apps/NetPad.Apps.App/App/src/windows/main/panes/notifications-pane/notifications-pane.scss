@@ -4,13 +4,13 @@
         align-items: flex-start;
         gap: 0.5rem;
         padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid var(--hover-color-contrast);
+        border-bottom: 1px solid var(--line-soft);
 
         &.clickable {
             cursor: pointer;
 
             &:hover {
-                background: var(--hover-color);
+                background: var(--hover);
             }
         }
     }

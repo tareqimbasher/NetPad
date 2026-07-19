@@ -1,8 +1,20 @@
+@use "sass:color";
+
 // Gets a color value from color map, defined in colorDefinitions
 
 /* @function color($colorName) {
     @return map-get($colors, $colorName);
 } */
+
+// The RGB channels of a color, for use in `rgba(var(--token-rgb), <alpha>)`. Tinted fills (chips,
+// washes) need the channels without an alpha baked in, and a CSS custom property holding a color
+// can't be decomposed at runtime. Comma-separated to match what Bootstrap's `--bs-*-rgb` variables
+// are substituted into.
+@function to-rgb($color) {
+    @return #{color.channel($color, "red", $space: rgb)},
+        #{color.channel($color, "green", $space: rgb)},
+        #{color.channel($color, "blue", $space: rgb)};
+}
 
 // Helper function for checking if theme exists in theme colors
 @function theme-exists($key, $theme) {

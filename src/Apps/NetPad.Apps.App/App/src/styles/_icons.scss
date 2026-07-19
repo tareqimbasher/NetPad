@@ -459,19 +459,19 @@ button > .icon-base {
 .script-status-success-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    color: var(--script-status-success-color);
+    color: var(--ok);
 }
 
 .script-status-error-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    color: var(--script-status-error-color);
+    color: var(--err);
 }
 
 .script-status-dirty-icon {
     @extend %icon-base;
     @extend .fa-circle;
-    color: #838e98;
+    color: var(--text-3);
 }
 
 .clear-output-icon {

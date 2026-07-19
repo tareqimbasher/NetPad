@@ -1,7 +1,7 @@
 @import "styles/variables";
 
 .statusbar-container {
-    background: var(--statusbar-background);
+    background: var(--bg1);
     height: $statusbar-height;
     max-height: $statusbar-height;
     padding: 0 0.5rem;
@@ -11,22 +11,22 @@
     transition: background-color 0.3s ease;
 
     &.status-running {
-        background-color: var(--script-status-running-background);
+        background-color: rgba(var(--run-rgb), 0.18);
     }
 
     &.status-stopping {
-        background-color: var(--script-status-stopping-background);
+        background-color: rgba(var(--warn-rgb), 0.18);
     }
 
     &.status-error {
-        background-color: var(--script-status-error-background);
+        background-color: rgba(var(--err-rgb), 0.18);
     }
 
     &.status-running,
     &.status-stopping,
     &.status-error {
         .active-app-status-message i {
-            color: var(--text-color) !important;
+            color: var(--text) !important;
         }
     }
 
@@ -79,7 +79,7 @@
         user-select: none;
 
         &:hover {
-            background: var(--hover-color);
+            background: var(--hover);
         }
     }
 }

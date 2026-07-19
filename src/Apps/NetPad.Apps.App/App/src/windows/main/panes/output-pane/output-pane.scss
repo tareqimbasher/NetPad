@@ -1,7 +1,3 @@
-$table-border-color: #3da3da; // #2e79a2
-$table-info-header-bg-color: #2e79a2;
-$table-data-header-bg-color: #525252;
-
 output-pane {
     outline: none;
 
@@ -31,30 +27,30 @@ output-pane {
         * CSS for generated HTML
         */
         hr {
-            color: dodgerblue;
+            color: var(--line-soft);
             margin: 0 0 10px;
         }
 
         %null,
         .null {
-            color: #797e81;
+            color: var(--text-3);
         }
 
         .cyclic-reference {
             font-style: italic;
             font-size: $font-size - 1;
-            color: red;
+            color: var(--err);
         }
 
         .max-depth-reached {
             font-style: italic;
             font-size: $font-size - 1;
-            color: orange;
+            color: var(--warn);
         }
 
         .empty-collection {
-            color: white;
-            background-color: $table-info-header-bg-color;
+            color: var(--text-3);
+            background-color: var(--bg2);
             padding: 0.25rem 0.2rem;
             display: inline-block;
         }
@@ -69,26 +65,26 @@ output-pane {
 
             &.raw {
                 padding: 1rem 0.75rem;
-                background: rgb(128 128 128 / 10%);
-                border-left: #949494 2px dashed;
+                background: var(--hover);
+                border-left: var(--line) 2px dashed;
 
                 &:hover {
-                    background: rgb(128 128 128 / 20%);
+                    background: var(--hover-strong);
                 }
             }
 
             &.error {
                 padding: 1.25rem 0.75rem;
-                background: rgba(250 128 114 / 6%);
-                border-left: var(--script-status-error-color) 2px solid;
+                background: rgba(var(--err-rgb), 0.08);
+                border-left: var(--err) 2px solid;
 
                 .error-title {
-                    color: salmon;
+                    color: var(--err);
                     font-weight: 600;
                 }
 
                 &:hover {
-                    background: rgba(250 128 114 / 10%);
+                    background: rgba(var(--err-rgb), 0.14);
                 }
             }
 
@@ -109,7 +105,7 @@ output-pane {
                 padding: 0.5rem;
 
                 &:hover {
-                    background: rgb(128 128 128 / 10%);
+                    background: var(--hover);
                 }
             }
 
@@ -120,13 +116,13 @@ output-pane {
             }
 
             &.titled {
-                border-left: 2px orange solid;
+                border-left: 2px var(--accent-dim) solid;
                 margin-top: 0.5rem;
                 margin-bottom: 1rem;
 
                 &.collapsed {
                     .title {
-                        border-bottom: 2px greenyellow dotted;
+                        border-bottom: 2px var(--text-3) dotted;
                     }
 
                     :not(.title) {
@@ -140,13 +136,13 @@ output-pane {
             width: fit-content;
             padding-right: 8px;
             padding-bottom: 1px;
-            border-bottom: 2px dodgerblue dotted;
+            border-bottom: 2px var(--accent-dim) dotted;
         }
 
         table {
             width: initial;
             margin: 5px 0;
-            border-color: $table-border-color;
+            border-color: var(--line-soft);
             color: inherit;
 
             &.collapsed > tbody,
@@ -162,11 +158,11 @@ output-pane {
                 font-weight: 600;
                 line-height: 1;
                 padding: 3px 5px;
-                color: white;
-                background-color: $table-data-header-bg-color;
+                color: var(--text-2);
+                background-color: var(--bg2);
 
                 a {
-                    color: white;
+                    color: var(--accent);
                 }
             }
 
@@ -175,8 +171,9 @@ output-pane {
             }
 
             .table-info-header > th {
-                background-color: $table-info-header-bg-color;
-                border-color: $table-info-header-bg-color;
+                color: var(--text);
+                background-color: var(--bg2);
+                border-color: var(--line-soft);
                 border-top-width: 1px;
             }
 
@@ -213,16 +210,5 @@ output-pane {
 
     .dump-container {
         min-height: 100%;
-    }
-}
-
-.theme-netpad-light {
-    .group table.table tr:not(.table-info-header) th {
-        color: black;
-        background-color: #dcdcdc;
-    }
-
-    .group.error .error-title {
-        color: var(--script-status-error-color);
     }
 }

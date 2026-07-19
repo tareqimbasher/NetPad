@@ -1,67 +1,82 @@
-$color-full: black;
-$color-contrast-full: white;
-$color-background: #222222;
+// "inkwell" — violet-tinted graphite. Values are carried from the approved design mockup.
+//
+// These keys become CSS custom properties on `.theme-netpad-dark` and are the app's entire color
+// vocabulary — nothing outside this file (and its vellum twin) should name a color. User custom CSS
+// can redefine any of them to retheme the app; `docs/wiki/Styling.md` documents the set.
+
+$ink-bg0: #121116;
+$ink-bg1: #19181f;
+$ink-bg2: #201f28;
+$ink-bg3: #2a2933;
+$ink-editor: #141319;
+$ink-line: #353342;
+$ink-line-soft: #262430;
+$ink-text: #e9e7f0;
+$ink-text-2: #a8a5b6;
+$ink-text-3: #716e80;
+$ink-accent: #a89df0;
+$ink-accent-bright: #c4bbf8;
+$ink-accent-dim: #37325a;
+$ink-accent-text: #15121f;
+$ink-run: #7cc98a;
+$ink-run-text: #0d1a12;
+$ink-ok: #7cc98a;
+$ink-warn: #d9a24e;
+$ink-err: #e0796d;
+
 $dark: (
-    color-full: $color-full,
-    color-contrast-full: $color-contrast-full,
+    // ============================================================ DESIGN TOKENS
+    // SURFACES
+    bg0: $ink-bg0, // ground (window body)
+    bg1: $ink-bg1, // panel (sidebars, bars, cards)
+    bg2: $ink-bg2, // control (inputs, buttons, chips)
+    bg3: $ink-bg3, // raised / hover / active cell
+    editor: $ink-editor, // editor & results surface
+    // LINES
+    line: $ink-line, // border (controls)
+    line-soft: $ink-line-soft, // hairline (panel seams, rows)
     // TEXT
-    text-color: #dcdcdc,
-    text-strong-color: $color-contrast-full,
-    text-hover-color: $color-contrast-full,
-    // BACKGROUND
-    background-color: $color-background,
-    background-lighter-color: #333333,
-    list-background: #282828,
-    list-item-clicked-background: #444444,
-    form-control-background-color: #292929,
-    form-control-disabled-background-color: #1c1c1c,
-    kbd-background-color: #59646e,
-    // BORDERS
-    border-color: #3f3f3f,
-    border-contrast-color: #555555,
-    // ACTIONS
-    hover-color: rgba(255 255 255 / 7.5%),
-    hover-color-contrast: rgba(255 255 255 / 17.5%),
-    active-color: #0d6efd,
-    action-icon-color: silver,
-    action-icon-hover-color: white,
+    text: $ink-text,
+    text-2: $ink-text-2,
+    text-3: $ink-text-3, // labels, disabled
+    // ACCENT (iris) — selection, focus, active and links only. Never "go".
+    accent: $ink-accent,
+    accent-bright: $ink-accent-bright, // emphasis on dark fills
+    accent-dim: $ink-accent-dim, // accent fill (selection bg on transient surfaces)
+    accent-text: $ink-accent-text, // text on an accent fill
+    accent-wash: rgba($ink-accent, 0.1), // selection wash on persistent lists
+    accent-rgb: to-rgb($ink-accent),
+    // Check/radio glyphs are data URIs, so their fill can't be a variable — it is accent-text inlined.
+    check-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%2315121f' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e"),
+    radio-mark-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%2315121f'/%3e%3c/svg%3e"),
+    // Likewise the select caret, drawn in text-3.
+    select-caret-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23716e80' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e"),
+    // SEMANTICS — green runs, amber warns/production, red errors.
+    run: $ink-run,
+    run-text: $ink-run-text,
+    run-rgb: to-rgb($ink-run),
+    ok: $ink-ok,
+    ok-rgb: to-rgb($ink-ok),
+    warn: $ink-warn,
+    warn-rgb: to-rgb($ink-warn),
+    err: $ink-err,
+    err-rgb: to-rgb($ink-err),
+    // OVERLAYS
+    hover: rgba(255 255 255 / 6%),
+    hover-strong: rgba(255 255 255 / 12%),
+    backdrop: rgb(0 0 0 / 55%),
+    // SYNTAX ACCENTS — used outside Monaco (SQL log, code-ish chrome).
+    syntax-keyword: #9d8ff0,
+    syntax-type: #66c9b3,
+    syntax-string: #cfa675,
+    syntax-number: #d78ab0,
+    syntax-method: #84aff2,
+    syntax-comment: #5b5870,
+    syntax-value: #e4e2ec,
+    syntax-punctuation: #8b8899,
     // SHADOWS
-    box-shadow-bottom: 0 7px 8px -8px rgb(0 0 0 / 36%),
-    box-shadow-bottom-sm: 0 6px 8px -8px rgb(0 0 0 / 36%),
-    box-shadow-bottom-and-sides: 0 0 8px 2px rgb(0 0 0 / 36%),
-    // TITLEBAR
-    titlebar-background: #1b1c1d,
-    // STATUSBAR
-    statusbar-background: #1b1c1d,
-    // SCRIPT STATUS
-    script-status-running-color: #3794e6,
-    script-status-stopping-color: salmon,
-    script-status-error-color: red,
-    script-status-success-color: #02c13d,
-    script-status-running-background: #1177bb,
-    script-status-stopping-background: #a85050,
-    script-status-error-background: #b52a2a,
-    // SCRIPT VIEW
-    script-toolbar-background: #1e1e1e,
-    find-text-box-background: #1c1c1c,
-    // PANES
-    pane-ribbon-background: #252525,
-    pane-background: $color-background,
-    pane-toolbar-background: #202020,
-    // CONTEXT MENU
-    context-menu-background: #323232,
-    context-menu-item-hover-background: #15539e,
-    // DIALOG
-    dialog-background: $color-background,
-    // TABS
-    tab-background: #151515,
-    tab-active-background: #1e1e1e,
-    tab-active-text-color: $color-contrast-full,
-    tab-inactive-text-color: rgb(255 255 255 / 65%),
-    tab-border-color: #282828,
-    // SCROLLBARS & SPLITTER
-    scrollbar-track-color: #343434,
-    scrollbar-thumb-color: #777777,
-    splitter-color: #282828,
-    splitter-hover-color: #353535,
+    shadow: (0 24px 70px rgb(0 0 0 / 55%), 0 4px 18px rgb(0 0 0 / 40%)), // dialogs, menus
+    shadow-sm: 0 10px 30px rgb(0 0 0 / 45%), // small floating surfaces
+    shadow-edge: 0 6px 8px -8px rgb(0 0 0 / 55%), // downward edge under a bar
+    shadow-ambient: 0 0 8px 2px rgb(0 0 0 / 45%), // tight all-around, pinned overlays
 );

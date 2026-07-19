@@ -7,7 +7,7 @@ integrated-main-menu {
         padding: 5px 8px;
 
         &:hover {
-            background: var(--hover-color);
+            background: var(--hover);
         }
     }
 
@@ -21,10 +21,10 @@ integrated-main-menu {
             display: flex;
 
             &:hover {
-                background: var(--context-menu-item-hover-background);
+                background: var(--bg2);
 
                 .menu-item-shortcut {
-                    color: var(--text-color) !important;
+                    color: var(--text) !important;
                 }
             }
         }
@@ -82,7 +82,7 @@ integrated-main-menu {
         }
 
         &:hover {
-            background: var(--hover-color);
+            background: var(--hover);
         }
     }
 }

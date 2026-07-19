@@ -1,4 +1,27 @@
+// Layout
 $titlebar-height: 30px;
 $statusbar-height: 25px;
 $tab-vertical-padding: 5px;
 $tab-sm-vertical-padding: 3px;
+
+// Font stacks. Native system type as the default, and everything that is
+// a *value* (versions, counts, timings, paths, shortcuts, connection strings) is mono.
+$font-sans: system-ui, -apple-system, "Segoe UI", "Roboto", sans-serif;
+$font-mono: ui-monospace, "JetBrains Mono", "Cascadia Mono", "SF Mono", "Menlo", monospace;
+
+// Type scale
+$text-base: 13px;
+$text-control: 12.5px;
+$text-description: 12px;
+$text-title: 13.5px; // dialog & pane titles, weight 650
+$text-value: 11.5px; // mono values
+$text-label: 10px; // uppercase mono section labels
+
+// Radii
+$radius-sm: 4px; // chips, kbd caps
+$radius: 6px; // controls
+$radius-lg: 10px; // cards, menus, windows
+
+// Density
+$control-height: 27px;
+$row-height: 24px; // tree and rail rows

@@ -19,28 +19,28 @@
         align-items: flex-start;
         gap: 0.5rem;
         padding: 0.6rem 0.75rem;
-        background: var(--pane-background);
-        color: var(--text-color);
-        border: 1px solid var(--hover-color-contrast);
-        border-left: 3px solid var(--bs-secondary);
-        border-radius: 6px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        background: var(--bg3);
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--text-3);
+        border-radius: 9px;
+        box-shadow: var(--shadow-sm);
         animation: notification-toast-in 0.15s ease-out;
 
         &.severity-info {
-            border-left-color: var(--bs-info);
+            border-left-color: var(--accent);
         }
 
         &.severity-success {
-            border-left-color: var(--bs-success);
+            border-left-color: var(--ok);
         }
 
         &.severity-warning {
-            border-left-color: var(--bs-warning);
+            border-left-color: var(--warn);
         }
 
         &.severity-error {
-            border-left-color: var(--bs-danger);
+            border-left-color: var(--err);
         }
     }
 

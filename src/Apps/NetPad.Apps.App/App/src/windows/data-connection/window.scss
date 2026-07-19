@@ -2,7 +2,7 @@
     padding: 1rem;
 
     .tabs-control-container {
-        border: var(--border-color) 1px solid;
+        border: var(--line-soft) 1px solid;
     }
 
     .tab-content-container {
@@ -29,7 +29,7 @@
 
     .required::after {
         content: "*";
-        color: red;
+        color: var(--err);
     }
 
     .input-row {
@@ -44,7 +44,7 @@
     }
 
     .col-form-label {
-        color: var(--text-strong-color);
+        color: var(--text);
         user-select: none;
     }
 
