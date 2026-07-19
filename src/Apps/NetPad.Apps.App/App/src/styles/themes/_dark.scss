@@ -23,6 +23,7 @@ $ink-run-text: #0d1a12;
 $ink-ok: #7cc98a;
 $ink-warn: #d9a24e;
 $ink-err: #e0796d;
+$ink-err-text: #ffffff;
 
 $dark: (
     // ============================================================ DESIGN TOKENS
@@ -54,12 +55,14 @@ $dark: (
     // SEMANTICS — green runs, amber warns/production, red errors.
     run: $ink-run,
     run-text: $ink-run-text,
+    run-text-rgb: to-rgb($ink-run-text), // kbd cap border inside the run fill
     run-rgb: to-rgb($ink-run),
     ok: $ink-ok,
     ok-rgb: to-rgb($ink-ok),
     warn: $ink-warn,
     warn-rgb: to-rgb($ink-warn),
     err: $ink-err,
+    err-text: $ink-err-text, // text/glyphs on an err fill (Stop, close-button hover)
     err-rgb: to-rgb($ink-err),
     // OVERLAYS
     hover: rgba(255 255 255 / 6%),

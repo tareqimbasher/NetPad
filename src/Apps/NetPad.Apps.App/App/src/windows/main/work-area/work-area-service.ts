@@ -10,13 +10,11 @@ import {ViewerHostCollection} from "./viewers/viewer-host-collection";
 import {ViewerHost} from "./viewers/viewer-host";
 import {ViewableObject} from "./viewers/viewable-object";
 import {ViewableScriptDocument} from "./viewers/script-viewer/viewable-script-document";
-import {IWorkAreaAppearance} from "./work-area-appearance";
 
 export const IWorkAreaService = DI.createInterface<IWorkAreaService>();
 
 export interface IWorkAreaService {
     readonly viewerHosts: ViewerHostCollection;
-    readonly appearance: IWorkAreaAppearance;
     readonly activeViewable: ViewableObject | undefined;
 
     /**
@@ -46,15 +44,12 @@ export class WorkAreaService extends WithDisposables implements IWorkAreaService
 
     constructor(
         @IContainer private readonly container: IContainer,
-        @IWorkAreaAppearance public readonly appearance: IWorkAreaAppearance,
         @IScriptService private readonly scriptService: IScriptService,
         @ISession private readonly session: ISession,
         @IAppService private readonly appService: IAppService,
         @IEventBus private readonly eventBus: IEventBus,
     ) {
         super();
-        this.appearance.load();
-        this.addDisposable(this.appearance);
     }
 
     public get activeViewable(): ViewableObject | undefined {

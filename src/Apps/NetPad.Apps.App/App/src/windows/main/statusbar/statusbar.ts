@@ -31,6 +31,40 @@ export class Statusbar {
         return this.session.active;
     }
 
+    /** The state-dot class for the active script. */
+    public get activeStateDot(): string {
+        switch (this.session.active?.status) {
+            case "Running":
+                return "running";
+            case "Stopping":
+                return "stopping";
+            case "Error":
+                return "error";
+            case "Ready":
+                return this.session.active?.runDurationMilliseconds != null ? "success" : "";
+            default:
+                return "";
+        }
+    }
+
+    /** Scripts running somewhere other than the active tab, so their state stays visible. */
+    public get backgroundRunning(): ReadonlyArray<ScriptEnvironment> {
+        return this.session.environments.filter(
+            env => env.status === "Running" && env.script.id !== this.session.active?.script.id);
+    }
+
+    public get backgroundRunningLabel(): string {
+        const running = this.backgroundRunning;
+        return running.length === 1 ? running[0].script.name : `${running.length} scripts`;
+    }
+
+    public get backgroundRunningTooltip(): string {
+        const running = this.backgroundRunning;
+        return running.length === 1
+            ? `${running[0].script.name} is running in the background`
+            : `Running in the background:\n- ${running.map(env => env.script.name).join("\n- ")}`;
+    }
+
     public get runDuration(): string | null {
         const env = this.session.active;
         if (!env || env.runDurationMilliseconds === undefined || env.runDurationMilliseconds === null) {

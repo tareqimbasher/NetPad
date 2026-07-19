@@ -32,6 +32,21 @@ export class TabBar extends ViewModelBase {
         super(logger);
     }
 
+    public statusTitle(viewable: ViewableObject): string {
+        switch (viewable.statusIndicator) {
+            case "running":
+                return "Running...";
+            case "stopping":
+                return "Stopping...";
+            case "success":
+                return "Script ran successfully";
+            case "error":
+                return "Error occurred";
+            default:
+                return "Idle";
+        }
+    }
+
     public get orderedViewables() {
         if (!this.viewablesOrder || !this.viewablesOrder.length) return this.viewables;
 

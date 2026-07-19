@@ -19,6 +19,7 @@ $vellum-run-text: #ffffff;
 $vellum-ok: #2f9550;
 $vellum-warn: #b07514;
 $vellum-err: #c44f42;
+$vellum-err-text: #ffffff;
 
 // Light-theme shadows are tinted with the family's violet rather than neutral black.
 $vellum-shade: #352d5a;
@@ -53,12 +54,14 @@ $light: (
     // SEMANTICS — green runs, amber warns/production, red errors.
     run: $vellum-run,
     run-text: $vellum-run-text,
+    run-text-rgb: to-rgb($vellum-run-text), // kbd cap border inside the run fill
     run-rgb: to-rgb($vellum-run),
     ok: $vellum-ok,
     ok-rgb: to-rgb($vellum-ok),
     warn: $vellum-warn,
     warn-rgb: to-rgb($vellum-warn),
     err: $vellum-err,
+    err-text: $vellum-err-text, // text/glyphs on an err fill (Stop, close-button hover)
     err-rgb: to-rgb($vellum-err),
     // OVERLAYS
     hover: rgba($vellum-shade, 0.07),

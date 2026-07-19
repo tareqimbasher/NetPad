@@ -1,21 +1,19 @@
 <import from="./integrated-main-menu/integrated-main-menu"></import>
 
-<div class="logo titlebar-icon">
-    <img src="logo/circle/32x32.png" alt="logo"/>
-</div>
+<div class="np-mark" title="NetPad">NP</div>
 
 <integrated-main-menu></integrated-main-menu>
 
 <div class="title" data-tauri-drag-region>
-    ${title}
+    <span class="title-text">${title}</span>
 </div>
 
 <div class="actions">
-    <i class="app-update-icon action-icon text-blue"
+    <i class="app-update-icon action-icon"
        click.trigger="openAppUpdateDialog()"
        title="Update available"
        if.bind="appService.appHasUpdate"></i>
-    <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'text-blue' : ''}"
+    <i class="window-always-on-top-icon action-icon ${windowState.isAlwaysOnTop ? 'active' : ''}"
        shells="!browser"
        click.trigger="toggleWindowAlwaysOnTop()"
        title="${windowState.isAlwaysOnTop ? 'Disable' : 'Enable'} Always on Top"></i>
@@ -31,7 +29,7 @@
     <i class="${windowState.isMaximized ? 'window-restore-icon' : 'window-maximize-icon'} action-icon"
        click.trigger="maximize()"
        title="${windowState.isMaximized ? 'Restore' : 'Maximize'}"></i>
-    <i class="window-close-icon action-icon hover-bg-red ${leftWinCtrls ? 'order-first' : ''}"
+    <i class="window-close-icon action-icon close-button ${leftWinCtrls ? 'order-first' : ''}"
        click.trigger="close()"
        title="Close"></i>
 </div>
