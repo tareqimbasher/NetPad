@@ -3,15 +3,13 @@ context-menu {
     z-index: 100001;
     opacity: 0;
     visibility: hidden;
-    background: var(--context-menu-background);
-    border-radius: 2px;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 9px;
     min-width: 285px;
     max-width: 600px;
-    padding: 10px 0;
-    box-shadow:
-        0 8px 10px 1px rgb(0 0 0 / 14%),
-        0 3px 14px 2px rgb(0 0 0 / 12%),
-        0 5px 5px -3px rgb(0 0 0 / 20%);
+    padding: 5px 0;
+    box-shadow: var(--shadow-sm);
     transition: visibility 0.2s, opacity 0.2s linear;
 
     &.visible {
@@ -26,7 +24,7 @@ context-menu {
             padding: 2px 5px;
 
             &:hover {
-                background: var(--context-menu-item-hover-background);
+                background: var(--bg2);
             }
 
             .item-container {
@@ -55,7 +53,7 @@ context-menu {
 
         hr {
             margin: 3px 0;
-            background-color: white;
+            background-color: var(--line-soft);
         }
     }
 }

@@ -6,7 +6,7 @@ pane-host {
 
     .ribbon {
         display: flex;
-        background: var(--pane-ribbon-background);
+        background: var(--bg1);
         user-select: none;
         cursor: default;
         flex-shrink: 0;
@@ -23,12 +23,13 @@ pane-host {
                 border-radius: 5px;
 
                 &:hover {
-                    background: var(--hover-color-contrast);
+                    background: var(--hover-strong);
                 }
             }
 
             &.active .pane-icon {
-                background: var(--color-full);
+                background: var(--accent-dim);
+                color: var(--accent);
             }
 
             .pane-badge {
@@ -39,8 +40,8 @@ pane-host {
                 height: 14px;
                 padding: 0 3px;
                 border-radius: 7px;
-                background: var(--bs-danger);
-                color: #fff;
+                background: var(--err);
+                color: var(--accent-text);
                 font-size: 0.6rem;
                 line-height: 14px;
                 font-weight: 600;
@@ -51,7 +52,7 @@ pane-host {
     }
 
     .pane-content {
-        background: var(--pane-background);
+        background: var(--bg1);
     }
 }
 

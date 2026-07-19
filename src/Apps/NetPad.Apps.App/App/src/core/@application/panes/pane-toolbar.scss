@@ -2,9 +2,9 @@ pane-toolbar {
     display: flex;
     align-items: center;
     z-index: 1;
-    box-shadow: var(--box-shadow-bottom-sm);
+    box-shadow: var(--shadow-edge);
     user-select: none;
-    background: var(--pane-toolbar-background);
+    background: var(--bg1);
     flex-grow: 0;
     width: 100%;
     padding: 0.25rem 0.35rem;
@@ -23,7 +23,7 @@ pane-toolbar {
         line-height: 1rem;
 
         &:hover {
-            background: var(--hover-color);
+            background: var(--hover);
             border-radius: 5px;
         }
     }
@@ -43,21 +43,13 @@ pane-toolbar {
             }
 
             &:hover {
-                background: var(--hover-color);
+                background: var(--hover);
             }
 
             &.active {
-                background: var(--hover-color);
-                color: var(--active-color);
+                background: var(--hover);
+                color: var(--accent);
             }
-
-            // background: var(--tab-background);
-            // color: var(--tab-inactive-text-color);
-
-            // &.active {
-            //     background: var(--tab-active-background);
-            //     color: var(--tab-active-text-color);
-            // }
         }
     }
 }

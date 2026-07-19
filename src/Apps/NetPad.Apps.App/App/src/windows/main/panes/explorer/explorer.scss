@@ -1,5 +1,3 @@
-@import "styles/colors";
-
 explorer {
     display: flex;
     flex-direction: column;
@@ -17,6 +15,6 @@ explorer {
 
     .tree-expand-node-icon,
     .tree-collapse-node-icon {
-        @extend %text-orange;
+        color: var(--warn);
     }
 }

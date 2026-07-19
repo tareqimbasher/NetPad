@@ -24,7 +24,7 @@ export class ExcelExportDialog extends Dialog<void> {
         selected: undefined,
         options: [
             {text: "None", color: undefined},
-            {isSelector: true, color: "#3da3da"},
+            {isSelector: true, color: "#6a5bd6"},
         ]
     }
 

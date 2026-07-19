@@ -1,5 +1,6 @@
 import {ILogger, IObserverLocator, resolve} from "aurelia";
 import {Settings, ViewModelBase} from "@application";
+import {ThemeBootCache} from "@application/themes/theme-boot-cache";
 
 export abstract class WindowBase extends ViewModelBase {
     protected readonly settings: Readonly<Settings> = resolve(Settings);
@@ -18,21 +19,47 @@ export abstract class WindowBase extends ViewModelBase {
     public override attaching() {
         super.attaching();
 
-        const observers = [
-            this.observerLocator.getObserver(this, x => x.settings.styles.enabled),
-            this.observerLocator.getObserver(this, x => x.settings.styles.customCss),
-        ];
+        this.observe([
+            x => x.settings.styles.enabled,
+            x => x.settings.styles.customCss,
+        ], () => this.applyCustomCss());
 
-        const handler = {
-            handleChange: () => this.applyCustomCss()
-        };
-
-        for (const observer of observers) {
-            observer.subscribe(handler)
-            this.addDisposable(() => observer.unsubscribe(handler));
-        }
+        this.observe([
+            x => x.settings.appearance.theme,
+            x => x.settings.appearance.iconTheme,
+        ], () => this.applyTheme());
 
         this.applyCustomCss();
+        this.applyTheme();
+    }
+
+    private observe(properties: ((self: this) => unknown)[], onChange: () => void) {
+        const handler = {handleChange: onChange};
+
+        for (const property of properties) {
+            const observer = this.observerLocator.getObserver(this, property);
+            observer.subscribe(handler);
+            this.addDisposable(() => observer.unsubscribe(handler));
+        }
+    }
+
+    /**
+     * Puts the theme classes on the document element, not just on the window element. Surfaces
+     * that render outside the window (the document background, dialog overlays) need the theme's
+     * CSS variables too, and `color-scheme` only styles native UI when it is set on the root.
+     */
+    private applyTheme() {
+        const root = document.documentElement;
+        const classes = this.classes.split(" ").filter(c => c.length > 0);
+
+        root.classList.remove(...[...root.classList].filter(c => c.startsWith("theme-netpad-") || c.startsWith("icon-theme-")));
+        root.classList.add(...classes);
+
+        // The pre-boot paint from index.html has served its purpose. Hand the background back to
+        // the stylesheet so it keeps up with theme changes.
+        root.style.removeProperty("background-color");
+
+        ThemeBootCache.write(this.classes, getComputedStyle(root).getPropertyValue("--bg0").trim());
     }
 
     private applyCustomCss() {

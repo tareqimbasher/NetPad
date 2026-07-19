@@ -7,10 +7,10 @@ sql-view {
 
     .dump-container-wrapper {
         .group:hover {
-            background-color: var(--hover-color);
+            background-color: var(--hover);
 
             .logger-name {
-                color: var(--text-color);
+                color: var(--text);
             }
         }
 
@@ -21,22 +21,22 @@ sql-view {
         }
 
         .query-params {
-            color: green;
+            color: var(--syntax-string);
             font-weight: bold;
         }
 
         .query-time {
-            color: goldenrod;
+            color: var(--syntax-number);
             font-weight: bold;
         }
 
         .logger-name {
-            color: grey;
+            color: var(--text-3);
             float: right;
         }
 
         .sql-keyword {
-            color: #0080fd;
+            color: var(--syntax-keyword);
             font-weight: bold;
         }
 
@@ -44,11 +44,11 @@ sql-view {
         // }
 
         .sql-update {
-            color: orange;
+            color: var(--warn);
         }
 
         .sql-delete {
-            color: red;
+            color: var(--err);
         }
 
         div[class*="log-by-"] {

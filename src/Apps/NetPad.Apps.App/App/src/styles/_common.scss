@@ -1,4 +1,10 @@
+@import "./variables";
 @import "./themes";
+
+html {
+    --font-sans: #{$font-sans};
+    --font-mono: #{$font-mono};
+}
 
 .flex-grow-height-restricted,
 %flex-grow-height-restricted {
@@ -35,15 +41,23 @@
 }
 
 hr {
-    color: var(--border-color);
+    color: var(--line-soft);
 }
 
-div:focus-visible {
-    outline: none;
+::selection {
+    background: var(--accent-dim);
+    color: var(--text);
 }
 
 kbd {
-    background: var(--kbd-background-color);
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: $text-label;
+    color: var(--text-2);
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: $radius-sm;
 }
 
 .clickable,
@@ -60,20 +74,20 @@ kbd {
     @extend %clickable;
 
     &:hover {
-        color: var(--text-hover-color);
+        color: var(--text);
     }
 }
 
 .action-icon {
     @extend %clickable;
-    color: var(--action-icon-color);
+    color: var(--text-2);
 
     &:hover {
-        color: var(--action-icon-hover-color);
+        color: var(--text);
     }
 
     &.active {
-        color: var(--active-color);
+        color: var(--accent);
     }
 }
 
@@ -84,30 +98,30 @@ kbd {
     line-height: 1rem;
 
     &:hover {
-        background: var(--hover-color);
-        border-radius: 5px;
+        background: var(--hover);
+        border-radius: $radius;
     }
 
     &:active {
-        background: var(--hover-color-contrast);
-        border-radius: 5px;
+        background: var(--hover-strong);
+        border-radius: $radius;
     }
 
     &.active {
-        color: var(--active-color) !important;
+        color: var(--accent) !important;
     }
 }
 
 .toolbar-divider {
     width: 1px;
     height: 1.25rem;
-    background: var(--border-contrast-color);
+    background: var(--line);
     align-self: center;
     flex-shrink: 0;
 }
 
 .active-context-menu-target {
-    background: var(--hover-color);
+    background: var(--hover);
 }
 
 .text-truncate-1-line {
@@ -152,16 +166,19 @@ kbd {
     height: 8px;
 }
 
-::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color);
+// Track and corner are left unpainted so the scrollbar reads as part of whatever surface it sits on.
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb-color);
-}
+    background: var(--line);
+    border-radius: $radius-sm;
 
-::-webkit-scrollbar-corner {
-    background: var(--scrollbar-track-color);
+    &:hover {
+        background: var(--text-3);
+    }
 }
 
 .fade-in {

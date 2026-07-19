@@ -1,9 +1,11 @@
-// Bootstrap variable overrides
-$info: #6f42c1;
-$body-bg: #eee;
-$body-secondary-color: #808080;
+@import "../variables";
+
+// Bootstrap variable overrides.
+// Only sizing/typography can be set here — Bootstrap's SCSS variables are baked at compile time and
+// we need two themes, so every color is retinted after the import via Bootstrap's own CSS variables.
+$font-family-sans-serif: $font-sans;
+$font-family-monospace: $font-mono;
 $font-size-base: 1rem;
-$font-family-monospace: monospace;
 $input-line-height: 1;
 $input-padding-y: 0.275rem;
 $input-padding-x: 0.375rem;
@@ -13,50 +15,213 @@ $input-padding-y-lg: 0.375rem;
 $input-padding-x-lg: 0.75rem;
 $input-btn-padding-y: 0.16rem;
 $input-btn-padding-y-sm: 0.1rem;
-$border-radius: 0.25rem;
-$border-radius-sm: 0.2rem;
-$border-radius-lg: 0.3rem;
+$border-radius: $radius;
+$border-radius-sm: $radius-sm;
+$border-radius-lg: $radius-lg;
 $spacer: 0.5rem;
 $nav-link-padding-y: 0.25rem;
 $input-btn-focus-width: 0.2rem;
-$form-select-indicator-color: silver;
 $dropdown-padding-y: 0.3rem;
 $tooltip-font-size: $font-size-base;
 $tooltip-padding-y: $spacer * 0.5;
 $tooltip-padding-x: $spacer * 1;
-$table-border-color: var(--border-color);
-$table-group-separator-color: var(--border-contrast-color);
+$table-border-color: var(--line-soft);
+$table-group-separator-color: var(--line);
 
 // Should be the last line after overrides
 @import "bootstrap/scss/bootstrap";
 
-.btn,
-button.btn {
+// ============================================================================================
+// Retint: map Bootstrap's palette onto the design tokens. Bootstrap declares these on `:root`;
+// the theme classes match with the same specificity, so declaration order decides and this block
+// wins. Anything Bootstrap sets on a component (`--bs-btn-*`) has to be overridden per component.
+// ============================================================================================
+.theme-netpad-dark,
+.theme-netpad-light {
+    --bs-body-bg: var(--bg0);
+    --bs-body-color: var(--text);
+    --bs-emphasis-color: var(--text);
+    --bs-secondary-color: var(--text-2);
+    --bs-tertiary-color: var(--text-3);
+    --bs-secondary-bg: var(--bg2);
+    --bs-tertiary-bg: var(--bg1);
+    --bs-border-color: var(--line);
+    --bs-border-color-translucent: var(--line-soft);
+    --bs-border-radius: #{$radius};
+    --bs-link-color: var(--accent);
+    --bs-link-color-rgb: var(--accent-rgb);
+    --bs-link-hover-color: var(--accent-bright);
+    --bs-link-hover-color-rgb: var(--accent-rgb);
+    --bs-primary: var(--accent);
+    --bs-primary-rgb: var(--accent-rgb);
+    --bs-secondary: var(--text-2);
+    --bs-success: var(--ok);
+    --bs-success-rgb: var(--ok-rgb);
+    --bs-info: var(--accent);
+    --bs-info-rgb: var(--accent-rgb);
+    --bs-warning: var(--warn);
+    --bs-warning-rgb: var(--warn-rgb);
+    --bs-danger: var(--err);
+    --bs-danger-rgb: var(--err-rgb);
+    --bs-focus-ring-color: rgba(var(--accent-rgb), 0.3);
+    --bs-highlight-bg: var(--accent-dim);
+    --bs-heading-color: var(--text);
+    --bs-code-color: var(--syntax-string);
+}
+
+// ============================================================================================
+// Buttons. One filled button per surface: primary (iris), success (ok) and the Run/Stop pair own
+// the fills; everything else is the quiet bg2 control, and destructive is an outline.
+// ============================================================================================
+.btn {
+    --bs-btn-padding-y: 0.25rem;
+    --bs-btn-padding-x: 0.6rem;
+    --bs-btn-font-size: #{$text-control};
+    --bs-btn-border-radius: #{$radius};
+    --bs-btn-color: var(--text);
+    --bs-btn-bg: var(--bg2);
+    --bs-btn-border-color: var(--line);
+    --bs-btn-hover-color: var(--text);
+    --bs-btn-hover-bg: var(--bg3);
+    --bs-btn-hover-border-color: var(--line);
+    --bs-btn-active-color: var(--text);
+    --bs-btn-active-bg: var(--bg3);
+    --bs-btn-active-border-color: var(--line);
+    --bs-btn-disabled-color: var(--text-3);
+    --bs-btn-disabled-bg: var(--bg1);
+    --bs-btn-disabled-border-color: var(--line-soft);
+    --bs-btn-focus-shadow-rgb: var(--accent-rgb);
+    min-height: $control-height;
     cursor: default;
+}
+
+.btn-primary {
+    --bs-btn-color: var(--accent-text);
+    --bs-btn-bg: var(--accent);
+    --bs-btn-border-color: var(--accent);
+    --bs-btn-hover-color: var(--accent-text);
+    --bs-btn-hover-bg: var(--accent-bright);
+    --bs-btn-hover-border-color: var(--accent-bright);
+    --bs-btn-active-color: var(--accent-text);
+    --bs-btn-active-bg: var(--accent-bright);
+    --bs-btn-active-border-color: var(--accent-bright);
+    --bs-btn-disabled-color: var(--accent-text);
+    --bs-btn-disabled-bg: var(--accent-dim);
+    --bs-btn-disabled-border-color: var(--accent-dim);
+    font-weight: 650;
+}
+
+.btn-success {
+    --bs-btn-color: var(--run-text);
+    --bs-btn-bg: var(--run);
+    --bs-btn-border-color: var(--run);
+    --bs-btn-hover-color: var(--run-text);
+    --bs-btn-hover-bg: var(--run);
+    --bs-btn-hover-border-color: var(--run);
+    --bs-btn-active-color: var(--run-text);
+    --bs-btn-active-bg: var(--run);
+    --bs-btn-active-border-color: var(--run);
+}
+
+// Destructive actions are outlined — a filled red button is only ever Stop.
+.btn-danger,
+.btn-outline-danger {
+    --bs-btn-color: var(--err);
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: rgba(var(--err-rgb), 0.45);
+    --bs-btn-hover-color: var(--err);
+    --bs-btn-hover-bg: rgba(var(--err-rgb), 0.12);
+    --bs-btn-hover-border-color: var(--err);
+    --bs-btn-active-color: var(--err);
+    --bs-btn-active-bg: rgba(var(--err-rgb), 0.2);
+    --bs-btn-active-border-color: var(--err);
+    --bs-btn-focus-shadow-rgb: var(--err-rgb);
+}
+
+.btn-info,
+.btn-outline-primary {
+    --bs-btn-color: var(--accent);
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: rgba(var(--accent-rgb), 0.45);
+    --bs-btn-hover-color: var(--accent);
+    --bs-btn-hover-bg: rgba(var(--accent-rgb), 0.12);
+    --bs-btn-hover-border-color: var(--accent);
+    --bs-btn-active-color: var(--accent);
+    --bs-btn-active-bg: rgba(var(--accent-rgb), 0.2);
+    --bs-btn-active-border-color: var(--accent);
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--text-2);
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: var(--line);
+    --bs-btn-hover-color: var(--text);
+    --bs-btn-hover-bg: var(--bg2);
+    --bs-btn-hover-border-color: var(--line);
+    --bs-btn-active-color: var(--text);
+    --bs-btn-active-bg: var(--bg3);
+    --bs-btn-active-border-color: var(--line);
+}
+
+// Quiet: borderless, text-2 until hovered.
+.btn-link {
+    --bs-btn-color: var(--text-2);
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: var(--text);
+    --bs-btn-hover-bg: transparent;
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-color: var(--text);
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: transparent;
+    text-decoration: none;
 }
 
 a.btn-link:hover {
     cursor: pointer;
 }
 
-.text-muted { // This is deprecated in v5.3, but we still want to use this class
-    color: $body-secondary-color;
+// ============================================================================================
+// Focus: one treatment everywhere, and only for keyboard focus.
+// ============================================================================================
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
 }
 
+.btn:focus-visible,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 $input-btn-focus-width rgba(var(--accent-rgb), 0.3);
+}
+
+.btn:focus-visible {
+    outline: none;
+}
+
+// ============================================================================================
+// Forms
+// ============================================================================================
 .form-control {
-    color: var(--text-color);
-    background-color: var(--form-control-background-color);
-    border-color: var(--border-color);
+    color: var(--text);
+    background-color: var(--bg2);
+    border-color: var(--line);
 
     &:focus {
-        color: var(--text-color);
-        background-color: var(--form-control-background-color);
-        border-color: var(--active-color);
+        color: var(--text);
+        background-color: var(--bg2);
+    }
+
+    &::placeholder {
+        color: var(--text-3);
     }
 
     &[disabled],
     &[disabled="true"] {
-        background-color: var(--form-control-disabled-background-color);
+        color: var(--text-3);
+        background-color: var(--bg1);
     }
 }
 
@@ -66,127 +231,221 @@ textarea.form-control {
 }
 
 .form-select {
-    background-color: var(--form-control-background-color);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    --bs-form-select-bg-img: var(--select-caret-image);
+    background-color: var(--bg2);
+    color: var(--text);
+    border-color: var(--line);
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:hover:not(:disabled) {
-        border-color: var(--border-contrast-color);
+        border-color: var(--accent);
     }
 
     &:focus {
-        background-color: var(--form-control-background-color);
-        color: var(--text-color);
-        border-color: var(--active-color);
+        background-color: var(--bg2);
+        color: var(--text);
     }
 
     &[disabled],
     &[disabled="true"] {
-        background-color: var(--form-control-disabled-background-color);
+        color: var(--text-3);
+        background-color: var(--bg1);
     }
 }
 
+.form-check-input {
+    --bs-form-check-bg: var(--bg2);
+    border-color: var(--line);
+    border-radius: $radius-sm;
+
+    &:checked {
+        background-color: var(--accent);
+        border-color: var(--accent);
+
+        &[type="checkbox"] {
+            --bs-form-check-bg-image: var(--check-mark-image);
+        }
+
+        &[type="radio"] {
+            --bs-form-check-bg-image: var(--radio-mark-image);
+        }
+    }
+
+    &[type="radio"] {
+        border-radius: 50%;
+    }
+
+    &:disabled {
+        --bs-form-check-bg: var(--bg1);
+        border-color: var(--line-soft);
+    }
+}
+
+.form-text {
+    color: var(--text-2);
+}
+
+.text-muted { // This is deprecated in v5.3, but we still want to use this class
+    color: var(--text-2);
+}
+
+.invalid-feedback,
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+    border-color: var(--err);
+    color: var(--err);
+}
+
+.valid-feedback {
+    color: var(--ok);
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+    border-color: var(--ok);
+}
+
+// ============================================================================================
+// Lists, menus, tables
+// ============================================================================================
 .list-group-item {
-    background: var(--list-background);
-    color: var(--text-color);
+    background: var(--bg1);
+    color: var(--text);
     border-color: transparent;
 
     &.list-group-item-action:not(.active):hover {
-        background: var(--hover-color);
-        color: var(--text-color);
+        background: var(--hover);
+        color: var(--text);
     }
 
     &.active {
-        background: var(--active-color);
-        color: var(--text-strong-color);
+        background: var(--accent-dim);
+        color: var(--text);
+        border-color: transparent;
     }
 
     &.active:hover {
-        background: var(--active-color);
+        background: var(--accent-dim);
     }
 
     &.list-group-item-clickable:hover:active {
-        background: var(--list-item-clicked-background);
+        background: var(--bg3);
     }
 }
 
 .nav-tabs {
-    border-bottom-color: var(--border-color);
+    border-bottom-color: var(--line-soft);
 }
 
 .table {
     thead tr th {
-        background: var(--hover-color);
+        background: var(--bg2);
     }
 
     &.sticky-header thead th {
         position: sticky;
         top: 0;
-        background-color: rgb(255 255 255 / 10%);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background-color: var(--bg2);
     }
 
     tr {
         th,
         td {
             background: transparent;
-            color: var(--text-color);
+            color: var(--text);
         }
 
         td {
-            border-bottom-color: var(--border-color);
+            border-bottom-color: var(--line-soft);
         }
 
         &.active > td {
-            background: var(--active-color);
+            background: var(--accent-dim);
 
             * {
-                color: var(--text-color);
+                color: var(--text);
             }
         }
 
         &:hover > td {
-            --bs-table-hover-bg: var(--hover-color);
-            color: var(--text-color);
+            --bs-table-hover-bg: var(--hover);
+            color: var(--text);
         }
     }
 }
 
 .dropdown {
     > .btn {
-        color: var(--text-color);
+        color: var(--text);
     }
 }
 
 .dropdown-menu {
-    background: var(--list-background);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    --bs-dropdown-border-radius: 9px;
+    background: var(--bg1);
+    color: var(--text);
+    border-color: var(--line);
+    box-shadow: var(--shadow-sm);
 
     .dropdown-item {
-        color: var(--text-color);
+        color: var(--text);
+        border-radius: $radius;
     }
 
     .dropdown-item:hover,
     .dropdown-item:focus {
-        background: var(--hover-color);
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    .dropdown-item.active,
+    .dropdown-item:active {
+        background: var(--accent-dim);
+        color: var(--text);
+    }
+
+    .dropdown-header {
+        color: var(--text-3);
     }
 
     .dropdown-divider {
-        border-color: var(--border-color);
+        border-color: var(--line-soft);
     }
 }
 
 .badge {
-    color: var(--text-strong-color);
+    color: var(--text);
+}
+
+.text-bg-success {
+    background-color: var(--ok) !important;
+    color: var(--run-text) !important;
+}
+
+.text-bg-danger {
+    background-color: var(--err) !important;
+    color: var(--accent-text) !important;
 }
 
 .toast-container {
     .toast {
-        background-color: rgb(255 255 255 / 10%);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background-color: var(--bg3);
+        border-color: var(--line);
+        box-shadow: var(--shadow-sm);
     }
+}
+
+.progress {
+    background-color: var(--bg2);
+}
+
+.progress-bar {
+    background-color: var(--accent);
+    color: var(--accent-text);
+}
+
+.alert-info {
+    background-color: rgba(var(--accent-rgb), 0.12);
+    border-color: rgba(var(--accent-rgb), 0.35);
+    color: var(--text);
 }

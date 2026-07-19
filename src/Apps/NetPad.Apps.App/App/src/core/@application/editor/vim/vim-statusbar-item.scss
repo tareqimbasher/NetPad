@@ -12,7 +12,7 @@ vim-statusbar-item {
         display: flex;
         align-items: center;
         height: calc($statusbar-height - 6px);
-        color: var(--active-color);
+        color: var(--accent);
 
         > span {
             display: flex;
@@ -21,19 +21,19 @@ vim-statusbar-item {
 
         input {
             height: calc($statusbar-height - 6px);
-            color: var(--text-color);
-            background-color: var(--form-control-background-color);
+            color: var(--text);
+            background-color: var(--bg2);
             border: 1px solid transparent;
             border-radius: 2px;
 
             &:focus {
-                border-color: var(--active-color);
+                border-color: var(--accent);
                 outline: none;
             }
 
             &[disabled],
             &[disabled="true"] {
-                background-color: var(--form-control-disabled-background-color);
+                background-color: var(--bg1);
             }
         }
     }

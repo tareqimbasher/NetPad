@@ -2,7 +2,7 @@
     padding: 0 15px 15px 10px;
 
     &:not(:last-child) {
-        border-bottom: var(--border-color) 1px solid;
+        border-bottom: var(--line-soft) 1px solid;
         margin-bottom: 10px;
     }
 

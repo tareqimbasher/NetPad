@@ -1,7 +1,7 @@
 @import "styles/variables";
 
 titlebar {
-    background: var(--titlebar-background);
+    background: var(--bg1);
     height: $titlebar-height;
     max-height: $titlebar-height;
     position: relative;
@@ -59,7 +59,7 @@ titlebar {
             cursor: default;
 
             &:hover {
-                background: var(--hover-color);
+                background: var(--hover);
             }
         }
     }
@@ -84,7 +84,7 @@ titlebar {
             }
 
             &:hover {
-                background: var(--hover-color);
+                background: var(--hover);
             }
         }
     }

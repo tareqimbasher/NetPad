@@ -1,5 +1,5 @@
 .gutter {
-    background: var(--splitter-color);
+    background: var(--line-soft);
     background-repeat: no-repeat;
     background-position: 50%;
 
@@ -12,6 +12,6 @@
     }
 
     &:hover {
-        background-color: var(--splitter-hover-color);
+        background-color: var(--accent);
     }
 }

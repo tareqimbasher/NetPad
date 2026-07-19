@@ -1,17 +1,18 @@
 .monaco-editor {
     .code-text-error {
-        text-decoration: wavy underline red;
+        text-decoration: wavy underline var(--err);
     }
 
     .monaco-inputbox input:active,
     .monaco-inputbox input:focus {
-        outline: #0d6efd solid 2px;
+        outline: var(--accent) solid 2px;
     }
 
     // Inlay hint styling
     span[class*=" dyn-rule"],
     span[class^="dyn-rule"] {
-        color: gray;
+        color: var(--text-3);
+        background-color: var(--bg2);
         font-size: 80%;
         margin-right: 2px;
         padding: 0 3px;
@@ -29,7 +30,7 @@
         }
 
         .mtk1 {
-            color: #4ec9b0;
+            color: var(--syntax-type);
         }
     }
 
@@ -64,20 +65,10 @@
     }
 
     input.rename-input {
-        color: var(--text-color);
+        color: var(--text);
     }
 
     .focused-text {
-        background: var(--border-contrast-color);
-    }
-}
-
-.theme-netpad-dark {
-    .monaco-editor {
-        // Inlay hint styling
-        span[class*=" dyn-rule"],
-        span[class^="dyn-rule"] {
-            background-color: #2d2d2d;
-        }
+        background: var(--accent-dim);
     }
 }

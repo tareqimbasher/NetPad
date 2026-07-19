@@ -1,6 +1,6 @@
 find-text-box {
-    background: var(--find-text-box-background);
-    box-shadow: var(--box-shadow-bottom-and-sides);
+    background: var(--bg1);
+    box-shadow: var(--shadow-ambient);
     position: absolute;
     top: 0;
     right: 20px;
@@ -18,17 +18,18 @@ find-text-box {
         font-size: 0.85rem;
 
         &.none-found {
-            color: salmon;
+            color: var(--err);
         }
     }
 }
 
 .text-search-result {
-    background-color: yellow;
-    color: black;
+    background-color: rgba(var(--warn-rgb), 0.35);
+    color: var(--text);
 
     &.text-search-active {
-        color: red;
+        background-color: var(--warn);
+        color: var(--accent-text);
     }
 }
 
