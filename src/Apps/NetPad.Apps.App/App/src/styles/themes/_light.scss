@@ -64,7 +64,7 @@ $light: (
     hover: rgba($vellum-shade, 0.07),
     hover-strong: rgba($vellum-shade, 0.14),
     backdrop: rgba($vellum-shade, 0.35),
-    // SYNTAX ACCENTS — used outside Monaco (SQL log, code-ish chrome).
+    // SYNTAX ACCENTS
     syntax-keyword: #6a58d8,
     syntax-type: #177f6b,
     syntax-string: #a4692a,
@@ -73,6 +73,7 @@ $light: (
     syntax-comment: #9c99a8,
     syntax-value: #2c2935,
     syntax-punctuation: #716e80,
+    syntax-regex: #a3832a,
     // SHADOWS
     shadow: (0 24px 70px rgba($vellum-shade, 0.18), 0 4px 18px rgba($vellum-shade, 0.12)), // dialogs, menus
     shadow-sm: 0 10px 30px rgba($vellum-shade, 0.14), // small floating surfaces

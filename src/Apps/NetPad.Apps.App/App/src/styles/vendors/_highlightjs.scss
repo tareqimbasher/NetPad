@@ -1,0 +1,24 @@
+// highlight.js colors the code blocks in dump output and in the IL view. Each app theme scopes a
+// shipped highlight.js theme under its own class, so switching the app theme switches code
+// highlighting with it.
+
+@use "sass:meta";
+
+@mixin hljs-surface {
+    // The vendor theme paints a surface of its own; a code block belongs to whatever card it sits
+    // in, and takes its base text color from there too. Only token colors come from the vendor.
+    .hljs {
+        background: transparent;
+        color: inherit;
+    }
+}
+
+.theme-netpad-dark {
+    @include meta.load-css("highlight.js/styles/tokyo-night-dark.min");
+    @include hljs-surface;
+}
+
+.theme-netpad-light {
+    @include meta.load-css("highlight.js/styles/tokyo-night-light.min");
+    @include hljs-surface;
+}

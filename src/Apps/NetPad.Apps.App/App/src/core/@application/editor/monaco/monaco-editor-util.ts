@@ -32,7 +32,7 @@ export class MonacoEditorUtil {
     }
 
     public static async updateOptions(editor: monaco.editor.IStandaloneCodeEditor, settings: Settings) {
-        const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions));
+        const monacoOptions = JSON.parse(JSON.stringify(settings.editor.monacoOptions)) as monaco.editor.IStandaloneEditorConstructionOptions & Record<string, unknown>;
         let theme = monacoOptions.theme;
 
         if (!theme) {
@@ -40,9 +40,19 @@ export class MonacoEditorUtil {
             monacoOptions.theme = theme;
         }
 
+        // Default options (overridable by user customizations)
+        monacoOptions.cursorBlinking ??= "smooth";
+        monacoOptions.lineNumbers ??= "on";
+        monacoOptions.wordWrap ??= "off";
+        monacoOptions.mouseWheelZoom ??= true;
+        monacoOptions.renderLineHighlight ??= "all";
+        monacoOptions.minimap ??= {
+            enabled: true,
+        }
+
         editor.updateOptions(monacoOptions);
 
-        await MonacoThemeManager.setTheme(editor, monacoOptions.theme, monacoOptions["themeCustomizations"]);
+        await MonacoThemeManager.setTheme(editor, monacoOptions.theme ?? "", monacoOptions["themeCustomizations"]!);
     }
 
     /**

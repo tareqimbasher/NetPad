@@ -1,3 +1,7 @@
+text-editor {
+    background-color: var(--editor);
+}
+
 .monaco-editor {
     .code-text-error {
         text-decoration: wavy underline var(--err);
@@ -5,18 +9,31 @@
 
     .monaco-inputbox input:active,
     .monaco-inputbox input:focus {
-        outline: var(--accent) solid 2px;
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
     }
 
-    // Inlay hint styling
+    // The current line's accent edge. On the gutter overlay so it can never overlap a column-1
+    // glyph; a background stripe because the 3px standoff must not come from padding anything
+    // Monaco lays out, which would desync hit-testing and cursor x from what is drawn. The doubled
+    // class beats Monaco's own background rule, injected after this stylesheet.
+    .margin-view-overlays .current-line-margin.current-line-margin {
+        background-color: transparent;
+        background-image: linear-gradient(to left,
+            transparent 3px,
+            rgba(var(--accent-rgb), 0.5) 3px 5px,
+            transparent 5px);
+    }
+
+    // Inlay hints. Their colors come from the theme, the chip shape does not.
     span[class*=" dyn-rule"],
     span[class^="dyn-rule"] {
-        color: var(--text-3);
-        background-color: var(--bg2);
         font-size: 80%;
-        margin-right: 2px;
-        padding: 0 3px;
+        font-weight: 500;
+        margin-right: 4px;
+        padding: 1.5px 4px;
         border-radius: 4px;
+        vertical-align: 1px;
     }
 
     // Code action popup needs some more width so it doesn't truncate words
@@ -71,4 +88,22 @@
     .focused-text {
         background: var(--accent-dim);
     }
+}
+
+// Monaco's floating surfaces (suggestions, hovers, quick input, find) take colors come from
+// the theme; these are the shapes it cannot express.
+.monaco-editor .suggest-widget,
+.monaco-editor .suggest-details,
+.monaco-editor .monaco-hover,
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .find-widget,
+.quick-input-widget {
+    border-radius: 9px;
+    box-shadow: var(--shadow);
+}
+
+// Monaco marks up suggestion labels as anchors, which Bootstrap underlines.
+.monaco-editor a,
+.quick-input-widget a {
+    text-decoration: none;
 }

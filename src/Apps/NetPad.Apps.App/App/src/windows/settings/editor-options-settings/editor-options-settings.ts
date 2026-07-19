@@ -45,7 +45,6 @@ export class EditorOptionsSettings {
         this.editor = monaco.editor.create(el, {
             value: JSON.stringify(monacoOptions, null, 4),
             language: 'json',
-            mouseWheelZoom: true,
             automaticLayout: true
         });
 
