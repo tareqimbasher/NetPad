@@ -1,4 +1,4 @@
-<template class="${workbench.workAreaService.appearance.size} ${workbench.workAreaService.appearance.style}">
+<template>
     <import from="./tab-bar/tab-bar"></import>
 
     <div repeat.for="host of workbench.workAreaService.viewerHosts.items"
@@ -11,47 +11,6 @@
             <tab-bar viewer-host.bind="host"
                      viewables.bind="host.viewables"
                      active.bind="host.activeViewable"></tab-bar>
-
-            <div class="appearance-picker me-3">
-                <i class="actions-dropdown-icon icon-button"
-                   title="Actions"
-                   data-bs-toggle="dropdown"></i>
-                <ul class="dropdown-menu">
-                    <li><h6 class="dropdown-header">Style</h6></li>
-                    <li>
-                        <button class="dropdown-item"
-                                click.trigger="workbench.workAreaService.appearance.style = 'minimal'">
-                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.style === 'minimal' ? '' : 'invisible'}"></i>
-                            Minimal
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item"
-                                click.trigger="workbench.workAreaService.appearance.style = 'bold'">
-                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.style === 'bold' ? '' : 'invisible'}"></i>
-                            Bold
-                        </button>
-                    </li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><h6 class="dropdown-header">Density</h6></li>
-                    <li>
-                        <button class="dropdown-item"
-                                click.trigger="workbench.workAreaService.appearance.size = 'comfy'">
-                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.size === 'comfy' ? '' : 'invisible'}"></i>
-                            Comfy
-                        </button>
-                    </li>
-                    <li>
-                        <button class="dropdown-item"
-                                click.trigger="workbench.workAreaService.appearance.size = 'compact'">
-                            <i class="fa fa-sm fa-check me-3 ${workbench.workAreaService.appearance.size === 'compact' ? '' : 'invisible'}"></i>
-                            Compact
-                        </button>
-                    </li>
-                </ul>
-            </div>
         </div>
 
         <au-compose if.bind="host.activeViewer"

@@ -1,68 +1,56 @@
 @import "styles/variables";
 
 .statusbar-container {
-    background: var(--bg1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
     height: $statusbar-height;
     max-height: $statusbar-height;
-    padding: 0 0.5rem;
-    display: flex;
-    line-height: $statusbar-height;
+    padding: 0 12px;
+    background: var(--bg1);
+    border-top: 1px solid var(--line-soft);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-3);
     overflow: hidden;
-    transition: background-color 0.3s ease;
-
-    &.status-running {
-        background-color: rgba(var(--run-rgb), 0.18);
-    }
-
-    &.status-stopping {
-        background-color: rgba(var(--warn-rgb), 0.18);
-    }
-
-    &.status-error {
-        background-color: rgba(var(--err-rgb), 0.18);
-    }
-
-    &.status-running,
-    &.status-stopping,
-    &.status-error {
-        .active-app-status-message i {
-            color: var(--text) !important;
-        }
-    }
 
     .left-column,
     .middle-column,
     .right-column {
-        flex-basis: 0;
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 0.5em;
+        gap: 16px;
     }
 
-    .left-column {
-        font-size: 0.9rem;
+    .left-column,
+    .right-column {
+        flex: none;
         white-space: nowrap;
-    }
-
-    .middle-column {
-        justify-content: center;
-        font-size: 0.9rem;
-        overflow: hidden;
-        flex-grow: 1;
     }
 
     .right-column {
         justify-content: flex-end;
+    }
 
-        > * {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-        }
+    .middle-column {
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: center;
+        overflow: hidden;
+        font-family: var(--font-sans);
+        font-size: $text-description;
+    }
+
+    .grp {
+        display: flex;
+        align-items: center;
+        gap: 7px;
     }
 
     .script-status {
-        font-weight: 600;
+        color: var(--text-2);
     }
 
     .active-app-status-message {
@@ -73,13 +61,32 @@
         white-space: nowrap;
     }
 
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: -4px;
+    }
+
     .clickable,
     .action-icon {
-        cursor: pointer;
+        cursor: default;
         user-select: none;
+        border-radius: $radius-sm;
+        color: var(--text-3);
 
         &:hover {
-            background: var(--hover);
+            background: var(--bg2);
+            color: var(--text);
         }
+    }
+
+    // Icons get a square target; text items (cursor position, vim mode) keep their own width.
+    .action-icon {
+        width: 22px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }

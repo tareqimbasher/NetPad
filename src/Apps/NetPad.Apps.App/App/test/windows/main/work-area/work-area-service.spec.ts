@@ -13,9 +13,6 @@ import {
     ViewerRegistry,
 } from "../../../../src/windows/main/work-area/viewers/viewer-registry";
 import {WorkAreaService} from "../../../../src/windows/main/work-area/work-area-service";
-import {
-    IWorkAreaAppearance,
-} from "../../../../src/windows/main/work-area/work-area-appearance";
 
 class TestViewable extends ViewableObject {
     constructor(id: string) { super(id); }
@@ -72,11 +69,6 @@ class FakeScriptService {
     }
 }
 
-class FakeAppearance {
-    public load(): void { /* noop */ }
-    public dispose(): void { /* noop */ }
-}
-
 function setup(opts: {initialEnvironments?: ScriptEnvironment[]} = {}): {
     container: IContainer,
     service: WorkAreaService,
@@ -92,7 +84,6 @@ function setup(opts: {initialEnvironments?: ScriptEnvironment[]} = {}): {
 
     container.register(
         Registration.singleton(IViewerRegistry, ViewerRegistry),
-        Registration.instance(IWorkAreaAppearance, new FakeAppearance() as unknown as IWorkAreaAppearance),
         Registration.instance(IScriptService, scriptService as unknown as IScriptService),
         Registration.instance(ISession, session as unknown as ISession),
         Registration.instance(IAppService, {} as IAppService),

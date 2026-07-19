@@ -53,11 +53,109 @@ kbd {
     padding: 1px 5px;
     font-family: var(--font-mono);
     font-size: $text-label;
+
+    line-height: 1;
     color: var(--text-2);
     background: var(--bg1);
     border: 1px solid var(--line);
     border-bottom-width: 2px;
     border-radius: $radius-sm;
+}
+
+// One state vocabulary everywhere state is shown: a glowing green dot runs, amber stops,
+// red failed, a filled gray dot is unsaved, and a hollow ring is idle.
+.state-dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    display: inline-block;
+    border: 1.5px solid var(--text-3);
+    border-radius: 50%;
+
+    &.running,
+    &.stopping,
+    &.success,
+    &.error,
+    &.dirty {
+        border-color: transparent;
+    }
+
+    &.running {
+        background: var(--run);
+        box-shadow: 0 0 6px rgb(var(--run-rgb) / 60%);
+        animation: state-dot-pulse 1.6s ease-in-out infinite;
+    }
+
+    &.stopping {
+        background: var(--warn);
+        box-shadow: 0 0 6px rgb(var(--warn-rgb) / 60%);
+        animation: state-dot-pulse 1.6s ease-in-out infinite;
+    }
+
+    &.success {
+        background: var(--ok);
+    }
+
+    &.error {
+        background: var(--err);
+    }
+
+    &.dirty {
+        background: var(--text-3);
+    }
+}
+
+@keyframes state-dot-pulse {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .state-dot {
+        animation: none !important;
+    }
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+
+    &.chip-accent {
+        background: rgb(var(--accent-rgb) / 12%);
+        border-color: rgb(var(--accent-rgb) / 30%);
+        color: var(--accent);
+    }
+
+    &.chip-ok {
+        background: rgb(var(--ok-rgb) / 10%);
+        border-color: rgb(var(--ok-rgb) / 30%);
+        color: var(--ok);
+    }
+
+    &.chip-warn {
+        background: rgb(var(--warn-rgb) / 10%);
+        border-color: rgb(var(--warn-rgb) / 35%);
+        color: var(--warn);
+    }
+
+    &.chip-err {
+        background: rgb(var(--err-rgb) / 10%);
+        border-color: rgb(var(--err-rgb) / 35%);
+        color: var(--err);
+    }
 }
 
 .clickable,

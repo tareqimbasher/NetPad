@@ -74,8 +74,8 @@ $table-group-separator-color: var(--line);
 // the fills; everything else is the quiet bg2 control, and destructive is an outline.
 // ============================================================================================
 .btn {
-    --bs-btn-padding-y: 0.25rem;
-    --bs-btn-padding-x: 0.6rem;
+    --bs-btn-padding-y: 0;
+    --bs-btn-padding-x: 12px;
     --bs-btn-font-size: #{$text-control};
     --bs-btn-border-radius: #{$radius};
     --bs-btn-color: var(--text);
@@ -92,6 +92,7 @@ $table-group-separator-color: var(--line);
     --bs-btn-disabled-border-color: var(--line-soft);
     --bs-btn-focus-shadow-rgb: var(--accent-rgb);
     min-height: $control-height;
+    line-height: calc(#{$control-height} - 2px);
     cursor: default;
 }
 

@@ -1,7 +1,5 @@
-@import "styles/variables";
-
 #window-main-content {
-    height: calc(100vh - #{$titlebar-height} - #{$statusbar-height});
+    min-height: 0;
 }
 
 #window-middle-content {

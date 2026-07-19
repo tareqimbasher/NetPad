@@ -22,7 +22,6 @@ import {
 import {Workbench} from "./workbench";
 import {Window} from "./window";
 import {IStatusbarService, StatusbarService} from "./statusbar/statusbar-service";
-import {IWorkAreaAppearance, WorkAreaAppearance} from "./work-area/work-area-appearance";
 import {IWorkAreaService, WorkAreaService} from "./work-area/work-area-service";
 import {IViewerRegistry, ViewerRegistry} from "./work-area/viewers/viewer-registry";
 import {ScriptViewer} from "./work-area/viewers/script-viewer/script-viewer";
@@ -66,7 +65,6 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(IMainMenuService, MainMenuService),
             Registration.singleton(IStatusbarService, StatusbarService),
             Registration.singleton(INotificationService, NotificationService),
-            Registration.singleton(IWorkAreaAppearance, WorkAreaAppearance),
             Registration.singleton(Workbench, Workbench),
             Registration.transient(ITextEditor, TextEditor),
             Registration.singleton(IPaneManager, PaneManager),

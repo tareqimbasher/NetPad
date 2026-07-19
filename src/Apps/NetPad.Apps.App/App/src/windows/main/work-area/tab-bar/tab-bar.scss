@@ -2,62 +2,71 @@
 
 tab-bar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     flex-wrap: nowrap;
     flex-grow: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
+    height: $tabstrip-height;
+    padding: 0 6px;
+    background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
+    overflow: hidden;
 
+    // Shrinks and scrolls internally so the "+" stays pinned at the end of the strip.
     .drag-drop-container {
         @extend %hide-scrollbar;
+        flex: 0 1 auto;
+        min-width: 0;
         flex-wrap: nowrap;
         display: flex;
-        align-items: center;
-        overflow-x: hidden;
-        overflow-y: hidden;
+        align-items: stretch;
+        overflow: hidden;
     }
 
     .view-tab {
-        height: 2rem;
         display: flex;
         align-items: center;
         white-space: nowrap;
-        font-size: 0.925rem;
+        font-size: $text-control;
+        color: var(--text-2);
         cursor: default;
-        background: var(--bg1);
-        border-radius: 3px 3px 0 0;
 
-        &:not(.new-tab) {
-            border-top: 1px solid transparent;
-            border-right: 1px solid var(--line-soft);
+        &:hover {
+            color: var(--text);
         }
 
         .view-tab-content {
             display: flex;
             align-items: center;
+            gap: 8px;
             height: 100%;
-            padding-left: 0.7rem;
-            padding-right: 0.4rem;
+            padding: 0 4px 0 13px;
             user-select: none;
         }
 
-        .script-status {
-            margin-left: 0.45rem;
+        .script-name {
             display: flex;
             align-items: center;
+            gap: 8px;
         }
 
-        .database-icon.is-production {
-            color: var(--warn);
+        .kind-glyph {
+            max-height: 13px;
+        }
+
+        .connection-glyph {
+            color: var(--text-3);
+
+            &.is-production {
+                color: var(--warn);
+            }
         }
 
         .view-tab-addon {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 18px;
-            width: 15px;
-            margin-right: 3px;
+            width: 18px;
+            margin-right: 7px;
 
             .dirty-flag {
                 display: none;
@@ -74,100 +83,47 @@ tab-bar {
             }
         }
 
-        .script-running-indicator,
-        .script-stopping-indicator {
-            height: 1.5rem;
-            width: 1.5rem;
-        }
+        .view-tab-close-button {
+            @extend %clickable;
+            font-size: 11px;
+            color: var(--text-3);
+            visibility: hidden;
 
-        .script-running-indicator svg {
-            stroke: var(--run);
-            stroke-width: 2;
-        }
-
-        .script-stopping-indicator svg {
-            stroke: var(--warn);
-            stroke-width: 2;
-        }
-
-        &:hover {
-            background: var(--editor);
-        }
-
-        &.active {
-            background: var(--editor);
-            font-weight: bold;
-
-            .script-name {
-                color: var(--accent);
-            }
-        }
-
-        &.new-tab {
-            margin-left: 1px;
-            padding-left: 0.45rem;
-            padding-right: 0.25rem;
-            background-color: transparent;
-        }
-    }
-}
-
-.minimal {
-    .view-tab {
-        background: var(--bg1);
-        font-weight: normal !important;
-
-        .script-name {
-            color: var(--text-2);
-            display: flex;
-            align-items: center;
-        }
-
-        &.active {
-            background: var(--editor);
-
-            .script-name {
+            &:hover {
                 color: var(--text);
             }
         }
 
-        &.status-running {
-            border-top-color: var(--run) !important;
+        &:hover .view-tab-close-button,
+        &.active .view-tab-close-button {
+            visibility: visible;
         }
 
-        &.status-stopping {
-            border-top-color: var(--warn) !important;
+        // The active tab merges into the editor surface below it and carries a colored top edge.
+        &.active {
+            color: var(--text);
+            background: var(--editor);
+            border-radius: 8px 8px 0 0;
+            margin-top: 5px;
+            padding-top: 1px;
+            box-shadow:
+                inset 0 2px 0 var(--accent),
+                inset 1px 0 0 var(--line-soft),
+                inset -1px 0 0 var(--line-soft);
+
+            .connection-glyph:not(.is-production) {
+                color: var(--syntax-type);
+            }
         }
 
         &.new-tab {
-            background-color: transparent;
-        }
-    }
+            align-items: center;
+            padding: 0 10px;
+            color: var(--text-3);
 
-    .viewer-host.active {
-        .view-tab.active {
-            border-top-color: var(--accent);
-        }
-    }
-}
-
-.comfy {
-    tabs-bar {
-        .actions {
-            font-size: 1.2rem;
-        }
-    }
-
-    .view-tab {
-        height: 2.5rem !important;
-        font-size: 1rem !important;
-
-        .view-tab-content {
-            padding-left: 0.95rem !important;
-        }
-
-        .view-tab-addon {
-            margin-right: 8px !important;
+            &:hover {
+                color: var(--text);
+            }
         }
     }
 }

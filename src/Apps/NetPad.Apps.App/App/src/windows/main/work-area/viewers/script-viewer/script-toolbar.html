@@ -1,35 +1,34 @@
-<template class="d-flex align-items-center overflow-x-auto">
-    <div class="group gap-2">
-        <button class="run-button btn btn-sm btn-themed"
+<template>
+    <div class="tb-actions">
+        <button class="run-button btn"
                 show.bind="!isBusy"
                 title="${getShortcutKeyCombo('Run')}"
                 click.trigger="run()">
             <i class="run-icon"></i>
+            Run
+            <kbd>${getShortcutKeys('Run')}</kbd>
         </button>
-        <button class="stop-button btn btn-sm btn-themed"
+        <button class="stop-button btn"
                 show.bind="environment.status === 'Running' || environment.status === 'Stopping'"
                 title="Stop"
                 click.trigger="stop()"
                 disabled.bind="environment.status === 'Stopping'">
             <i class="stop-icon"></i>
+            Stop
         </button>
-        <button class="toolbar-icon-button btn btn-sm"
+        <button class="toolbar-icon-button btn"
                 title="${getShortcutKeyCombo('Save')}${environment.script.isDirty ? ': there are unsaved changes' : ''}"
                 click.trigger="save()"
                 disabled.bind="isBusy || !environment.script.isDirty">
             <i class="save-icon ${environment.script.isDirty ? 'is-dirty' : ''}"></i>
         </button>
-        <button class="toolbar-icon-button btn btn-sm"
-                title="${getShortcutKeyCombo('Script Properties')}"
-                click.trigger="openProperties()"
-                disabled.bind="isBusy">
-            <i class="properties-icon"></i>
-        </button>
     </div>
-    <span class="toolbar-divider ms-2"></span>
-    <div class="group" title="The .NET SDK to use for this script.">
-        <span class="group-label">SDK:</span>
-        <select class="form-select form-select-sm dotnet-runtime-selector ms-3"
+
+    <span class="toolbar-divider"></span>
+
+    <label class="pv" title="The .NET SDK to use for this script.">
+        <span class="pv-label">SDK</span>
+        <select class="pv-value dotnet-runtime-selector"
                 value.bind="targetFrameworkVersion"
                 disabled.bind="isBusy">
             <option value="" disabled></option>
@@ -41,29 +40,31 @@
                 .NET ${framework.replace('DotNet', '')}
             </option>
         </select>
-    </div>
-    <div class="group">
-        <span class="group-label">Kind:</span>
-        <select class="form-select form-select-sm script-kind-selector ms-3"
+    </label>
+
+    <label class="pv">
+        <span class="pv-label">Kind</span>
+        <select class="pv-value script-kind-selector"
                 value.bind="kind"
                 disabled.bind="isBusy">
             <option value="Program">C# Program</option>
             <option value="SQL">SQL</option>
         </select>
-    </div>
-    <div class="group"
-         title="Compiler optimizations (Optimize -/+)">
-        <span class="group-label">Optimize:</span>
-        <select class="form-select form-select-sm optimization-level-selector ms-3"
+    </label>
+
+    <label class="pv" title="Compiler optimizations (Optimize -/+)">
+        <span class="pv-label">Optimize</span>
+        <select class="pv-value optimization-level-selector"
                 value.bind="optimizationLevel"
                 disabled.bind="isBusy">
-            <option value="Debug" title="Optimize-: Optimizations disabled.">- Debug</option>
-            <option value="Release" title="Optimize+: Optimizations enabled.">+ Release</option>
+            <option value="Debug" title="Optimize-: Optimizations disabled.">Debug</option>
+            <option value="Release" title="Optimize+: Optimizations enabled.">Release</option>
         </select>
-    </div>
-    <div class="group">
-        <span class="group-label">Connection:</span>
-        <select class="form-select form-select-sm data-connection-selector ms-3"
+    </label>
+
+    <label class="pv ${script.dataConnection ? 'has-value' : ''}">
+        <span class="pv-label">Connection</span>
+        <select class="pv-value data-connection-selector"
                 value.bind="dataConnection"
                 disabled.bind="isBusy">
             <option model.bind="null">None</option>
@@ -72,11 +73,19 @@
                 ${connection.name} (${connection.type})
             </option>
         </select>
-    </div>
-    <div class="ms-auto me-3 text-truncate" title="Click to go to References">
-        <a class="btn btn-sm ${script.config.references.length ? 'btn-secondary' : 'btn-outline-secondary'}"
+    </label>
+
+    <div class="tb-end">
+        <a class="chip refs-chip"
+           title="Click to go to References"
            click.trigger="openProperties()">
-            ${script.config.references.length} Reference${script.config.references.length == 1 ? '' : 's'}
+            ${script.config.references.length} ref${script.config.references.length == 1 ? '' : 's'}
         </a>
+        <button class="toolbar-icon-button btn"
+                title="${getShortcutKeyCombo('Script Properties')}"
+                click.trigger="openProperties()"
+                disabled.bind="isBusy">
+            <i class="properties-icon"></i>
+        </button>
     </div>
 </template>

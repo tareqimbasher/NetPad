@@ -131,6 +131,11 @@ export class ScriptToolbar extends ViewModelBase {
         return this.shortcutManager.getShortcutByName(shortcutName)?.toString()
     }
 
+    /** The bare key combo (no shortcut name), for rendering inside a kbd cap. */
+    public getShortcutKeys(shortcutName: string) {
+        return this.shortcutManager.getShortcutByName(shortcutName)?.keyCombo.asString;
+    }
+
     public async openProperties() {
         await this.viewable?.openProperties();
     }

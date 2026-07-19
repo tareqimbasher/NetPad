@@ -1,34 +1,85 @@
+@import "styles/variables";
+
 script-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 12px;
     background: var(--bg0);
-    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--line-soft);
     flex-shrink: 0;
+    overflow-x: auto;
     user-select: none;
 
-    .group {
+    .tb-actions {
         display: flex;
         align-items: center;
+        gap: 8px;
+        flex: none;
+    }
 
-        &:not(:first-of-type) {
-            margin-left: 1rem;
+    .tb-end {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+        padding-left: 8px;
+        flex: none;
+    }
+
+    .toolbar-divider {
+        margin: 0 -2px;
+    }
+
+    .run-button,
+    .stop-button {
+        gap: 7px;
+        display: inline-flex;
+        align-items: center;
+        border-color: transparent;
+        font-weight: 650;
+
+        &:hover:not(:disabled) {
+            filter: brightness(1.08);
+        }
+
+        .run-icon.run-icon,
+        .stop-icon.stop-icon {
+            color: inherit;
         }
     }
 
-    .group-label {
-        font-size: 0.85em;
+    .run-button {
+        background: var(--run);
+        color: var(--run-text);
+
+        kbd {
+            background: transparent;
+            border-color: rgba(var(--run-text-rgb), 0.25);
+            color: inherit;
+            opacity: 0.75;
+            margin-right: -3px;
+        }
     }
 
-    select {
-        line-height: 1rem !important;
+    .stop-button {
+        background: var(--err);
+        color: var(--err-text);
     }
 
     .toolbar-icon-button {
+        width: $control-height;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         background: transparent;
-        border: 1px solid transparent;
+        border-color: transparent;
         color: var(--text-2);
-        transition: background 0.15s ease-in-out;
 
         &:hover:not(:disabled) {
-            background: var(--hover);
+            background: var(--bg2);
             color: var(--text);
         }
 
@@ -38,70 +89,87 @@ script-toolbar {
         }
     }
 
-    .run-button {
-        background: var(--run);
-        border-color: var(--run);
-        color: var(--run-text);
+    .save-icon.is-dirty::after {
+        content: "●";
+        position: absolute;
+        margin-left: -0.2rem;
+        font-size: 0.55rem;
+        color: var(--text-3);
+    }
+
+    // Labeled value: quiet borderless text that gains a control surface on hover.
+    .pv {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 26px;
+        padding: 0 8px;
+        border-radius: $radius;
+        flex: none;
+        margin-bottom: 0;
 
         &:hover {
-            background: var(--run);
-            border-color: var(--run);
-            filter: brightness(1.1);
+            background: var(--bg2);
         }
     }
 
-    .stop-button {
-        background: var(--err);
-        border-color: var(--err);
-        color: var(--accent-text);
-
-        &:hover:not(:disabled) {
-            filter: brightness(1.1);
-        }
-
-        .stop-icon {
-            color: inherit;
-        }
-    }
-
-    .save-icon {
-        opacity: 0.5;
-    }
-
-    .save-icon.is-dirty {
-        opacity: 1;
-    }
-
-    .save-icon.is-dirty::after {
-        font-size: 0.55rem;
-        content: "●";
+    .pv-label {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
         color: var(--text-3);
-        margin-left: -0.2rem;
-        position: absolute;
     }
 
-    .dotnet-runtime-selector {
-        min-width: 70px;
-    }
+    .pv-value {
+        appearance: none;
+        // Without this a native select is as wide as its widest option, which strands the caret
+        // far to the right of the selected value.
+        field-sizing: content;
+        height: 100%;
+        padding: 0 15px 0 0;
+        background: transparent no-repeat right center/9px 9px;
+        background-image: var(--select-caret-image);
+        border: 0;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        font-weight: 500;
+        cursor: default;
 
-    .script-kind-selector {
-        min-width: 100px;
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 1px;
+            border-radius: $radius-sm;
+        }
+
+        &:disabled {
+            color: var(--text-3);
+        }
+
+        // Native option lists are OS-rendered, give them the panel colors where that is honored.
+        option {
+            background: var(--bg1);
+            color: var(--text);
+        }
     }
 
     .data-connection-selector {
-        min-width: 250px;
+        max-width: 250px;
     }
 
-    .optimization-level-selector {
-        width: 80px;
-    }
-}
+    .refs-chip {
+        cursor: default;
+        text-decoration: none;
 
-.comfy script-toolbar {
-    padding: 0.45rem 0.5rem;
-
-    button {
-        padding: 0.1rem 0.675rem;
-        font-size: 1rem;
+        &:hover {
+            background: var(--bg3);
+            color: var(--text);
+        }
     }
 }
