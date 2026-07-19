@@ -5,6 +5,7 @@ import {
     IPackageService,
     PackageMetadata,
     PackageReference,
+    splitterGutterSize,
     ViewModelBase
 } from "@application";
 import {ConfigStore} from "../config-store";
@@ -43,7 +44,7 @@ export class PackageManagement extends ViewModelBase {
 
     public attached() {
         Split(["#cached-packages", "#package-search", "#package-info"], {
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             sizes: [35, 40, 25],
             minSize: [50, 50, 50],
         });

@@ -1,22 +1,24 @@
+@import "styles/variables";
+
 .notifications-list {
     .notification-item {
         display: flex;
         align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.6rem 0.75rem;
+        gap: 9px;
+        padding: 10px 12px;
         border-bottom: 1px solid var(--line-soft);
 
         &.clickable {
             cursor: pointer;
 
             &:hover {
-                background: var(--hover);
+                background: var(--bg2);
             }
         }
     }
 
     .notification-item-icon {
-        margin-top: 0.15rem;
+        margin-top: 2px;
         flex-shrink: 0;
     }
 
@@ -26,32 +28,38 @@
 
     .notification-item-title {
         font-weight: 600;
-        font-size: 0.85rem;
-        opacity: 0.85;
+        font-size: $text-control;
+        color: var(--text);
     }
 
     .notification-item-time {
-        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: var(--text-3);
         white-space: nowrap;
         flex-shrink: 0;
     }
 
     .notification-item-text {
-        font-size: 0.9rem;
+        margin-top: 2px;
+        font-size: $text-description;
+        color: var(--text-2);
         word-break: break-word;
     }
 
     .notification-item-close {
         flex-shrink: 0;
         align-self: center;
+        color: var(--text-3);
         opacity: 0;
 
         &:hover {
+            color: var(--text);
             opacity: 1 !important;
         }
     }
 
     .notification-item:hover .notification-item-close {
-        opacity: 0.6;
+        opacity: 1;
     }
 }

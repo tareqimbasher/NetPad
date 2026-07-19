@@ -1,3 +1,5 @@
+@import "styles/variables";
+
 context-menu {
     position: fixed;
     z-index: 100001;
@@ -8,9 +10,11 @@ context-menu {
     border-radius: 9px;
     min-width: 285px;
     max-width: 600px;
-    padding: 5px 0;
+    padding: 5px;
     box-shadow: var(--shadow-sm);
     transition: visibility 0.2s, opacity 0.2s linear;
+    font-size: $text-control;
+    color: var(--text-2);
 
     &.visible {
         opacity: 1;
@@ -21,18 +25,20 @@ context-menu {
     .menu {
         .item {
             cursor: default;
-            padding: 2px 5px;
+            border-radius: $radius;
 
             &:hover {
                 background: var(--bg2);
+                color: var(--text);
             }
 
             .item-container {
-                padding: 0 7px;
+                padding: 7.5px 9px;
             }
 
             .icon {
                 width: 25px;
+                color: var(--text-3);
             }
 
             .text {
@@ -41,19 +47,31 @@ context-menu {
             }
 
             .shortcut {
+                display: flex;
+                align-items: center;
+                margin-left: 12px;
+                font-family: var(--font-mono);
+                font-size: 10.5px;
+                color: var(--text-3);
                 text-align: right;
+                white-space: nowrap;
             }
 
             &.divider {
                 &:hover {
                     background-color: unset;
                 }
+
+                .item-container {
+                    padding: 0 9px;
+                }
             }
         }
 
         hr {
-            margin: 3px 0;
+            margin: 4px 0;
             background-color: var(--line-soft);
+            opacity: 1;
         }
     }
 }

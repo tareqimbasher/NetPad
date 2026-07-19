@@ -1,14 +1,26 @@
+@import "styles/variables";
+
 pane-toolbar {
     display: flex;
     align-items: center;
+    gap: 2px;
     z-index: 1;
-    box-shadow: var(--shadow-edge);
     user-select: none;
     background: var(--bg1);
+    border-bottom: 1px solid var(--line-soft);
     flex-grow: 0;
+    flex-shrink: 0;
     width: 100%;
-    padding: 0.25rem 0.35rem;
+    height: 36px;
+    padding: 0 8px;
     cursor: default;
+    color: var(--text-2);
+
+    .pane-title {
+        font-size: $text-title;
+        font-weight: 650;
+        color: var(--text);
+    }
 
     .pane-toolbar-right {
         display: flex;
@@ -23,8 +35,8 @@ pane-toolbar {
         line-height: 1rem;
 
         &:hover {
-            background: var(--hover);
-            border-radius: 5px;
+            background: var(--bg2);
+            border-radius: $radius;
         }
     }
 
@@ -32,23 +44,28 @@ pane-toolbar {
         display: flex;
         flex-direction: row;
         align-items: center;
+        gap: 2px;
         height: 100%;
 
         .tab-button {
-            padding: 0.25rem 0.6rem;
-            font-weight: 600;
-
-            &:not(:last-child) {
-                margin-right: 0.35rem;
-            }
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: $radius;
+            font-size: $text-description;
+            font-weight: 500;
+            color: var(--text-2);
 
             &:hover {
-                background: var(--hover);
+                background: var(--bg2);
+                color: var(--text);
             }
 
             &.active {
-                background: var(--hover);
-                color: var(--accent);
+                background: var(--bg2);
+                color: var(--text);
+                box-shadow: inset 0 0 0 1px var(--line);
             }
         }
     }

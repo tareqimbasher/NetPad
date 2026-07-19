@@ -1,17 +1,63 @@
+// Split surfaces meet at a single hairline, with no gutter showing between them: the gutter is
+// the seam, one pixel wide. Its grab target is widened by a pseudo-element instead. Pointer
+// events on a pseudo-element resolve to its owner, so Split.js's mousedown binding still works.
+// The seam width is set in TS (`splitterGutterSize`); the inset below assumes it.
+
+$grab-target: 6px;
+$grab-overhang: ($grab-target - 1px) * 0.5;
+
+// Color the seam with the accent while its being grabbed.
+@mixin seam-active($direction) {
+    background-image:
+        linear-gradient(
+            to $direction,
+            transparent calc(50% - 1px),
+            var(--accent) calc(50% - 1px),
+            var(--accent) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+}
+
 .gutter {
-    background: var(--line-soft);
-    background-repeat: no-repeat;
-    background-position: 50%;
+    position: relative;
 
-    &.gutter-horizontal:hover {
+    // Both the widened grab target and the active seam extend past the gutter's own box, so it
+    // has to outrank the surfaces it separates, including their chrome, which sits at 1. It also
+    // must not be clipped: Split.js injects the gutter as a sibling of the split panes, so a
+    // container styling its children with `> *` has to exclude it.
+    z-index: 2;
+    flex: none;
+    background-color: var(--line-soft);
+
+    &::before {
+        content: "";
+        position: absolute;
+        background-repeat: no-repeat;
+    }
+
+    &.gutter-horizontal {
         cursor: col-resize;
+
+        &::before {
+            inset: 0 (-$grab-overhang);
+        }
+
+        &:hover::before,
+        &:active::before {
+            @include seam-active(right);
+        }
     }
 
-    &.gutter-vertical:hover {
+    &.gutter-vertical {
         cursor: row-resize;
-    }
 
-    &:hover {
-        background-color: var(--accent);
+        &::before {
+            inset: (-$grab-overhang) 0;
+        }
+
+        &:hover::before,
+        &:active::before {
+            @include seam-active(bottom);
+        }
     }
 }

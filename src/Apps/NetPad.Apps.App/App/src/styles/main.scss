@@ -7,8 +7,12 @@
 @import "./vendors/splitjs";
 @import "./vendors/dragula";
 @import "./variables";
-@import "./common";
 @import "./colors";
+
+// Icons come before the component vocabulary so that a surface which tints its own glyphs wins
+// the tie against the legacy per-icon color hardcodes in `_icons.scss`. Those hardcodes, and
+// this ordering constraint, go away with the Icon Theme setting in Phase 6.
 @import "./icons";
+@import "./common";
 @import "./themes";
 @import "./structural";

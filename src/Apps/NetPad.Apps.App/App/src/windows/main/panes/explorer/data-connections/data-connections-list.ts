@@ -43,7 +43,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     public binding() {
-        this.dataConnectionContextOptions = new ContextMenuOptions("data-connection-name:not(.server-name)", [
+        this.dataConnectionContextOptions = new ContextMenuOptions(".tree-row.data-connection", [
             {
                 icon: "use-data-connection-current-script-icon",
                 text: "Use in Current Script",
@@ -100,7 +100,7 @@ export class DataConnectionsList extends ViewModelBase {
             }
         ]);
 
-        this.serverContextOptions = new ContextMenuOptions("data-connection-name.server-name", [
+        this.serverContextOptions = new ContextMenuOptions(".tree-row.database-server", [
             {
                 icon: "refresh-icon",
                 text: "Refresh All",
@@ -124,7 +124,7 @@ export class DataConnectionsList extends ViewModelBase {
             }
         ]);
 
-        this.tableContextOptions = new ContextMenuOptions(".list-group-item.db-table > .display-text", [
+        this.tableContextOptions = new ContextMenuOptions(".tree-row.db-table", [
             {
                 icon: "data-connection-query-action",
                 text: (target) => this.buildActionItemText(target, (displayText) => `${displayText}.Take(100)`),
@@ -336,13 +336,12 @@ export class DataConnectionsList extends ViewModelBase {
         this.standaloneConnectionViewModels = standalone;
     }
 
-    public async copyErrorToClipboard(vm: DataConnectionViewModel) {
-        if (!vm.error) {
-            return;
-        }
+    public async copyErrorToClipboard(vm: DataConnectionViewModel, event?: Event) {
+        event?.stopPropagation(); // Don't toggle connection row expansion
 
-        await navigator.clipboard.writeText(vm.error);
-        vm.error = null;
+        if (vm.error) {
+            await navigator.clipboard.writeText(vm.error);
+        }
     }
 
     private getElementOrParentServerConnectionId(element: Element) {
@@ -391,7 +390,7 @@ export class DataConnectionsList extends ViewModelBase {
     }
 
     private getDisplayTextAndAbbr(clickTarget: Element): { displayText: string | undefined, abbr: string | undefined } {
-        const displayText = clickTarget?.querySelector("b")?.innerText;
+        const displayText = clickTarget?.querySelector<HTMLElement>(".tree-name")?.innerText;
         let abbr: string | undefined = undefined;
 
         if (displayText) {

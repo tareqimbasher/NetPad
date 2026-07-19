@@ -1,109 +1,16 @@
 scripts-list {
-    padding-top: 0.25rem;
     display: flex;
     flex-direction: column;
-    cursor: default;
+    min-height: 0;
 
-    > script-folder {
-        overflow: auto;
+    .tree-row.script {
+        &.is-active .tree-name {
+            color: var(--text);
+            font-weight: 600;
+        }
 
-        .list-group-item {
-            &.script-folder,
-            &.script {
-                padding: 1px 8px;
-
-                &:hover {
-                    background: var(--hover);
-                }
-            }
-
-            &.script-folder {
-                &:hover {
-                    .script-folder-open-icon {
-                        visibility: visible;
-                    }
-                }
-            }
-
-            &.script {
-                display: flex;
-                flex-direction: row;
-
-                .script-content {
-                    flex-grow: 1;
-                }
-
-                .script-metadata {
-                    display: flex;
-                    align-items: center;
-                    text-align: right;
-                    white-space: nowrap;
-                    padding-left: 0.25rem;
-                }
-
-                .script-status {
-                    display: flex;
-                    align-items: center;
-                    margin-right: 0.2rem;
-                    overflow: hidden;
-                }
-
-                &.is-active {
-                    .script-name {
-                        font-weight: bold;
-                    }
-                }
-
-                &.is-open {
-                    .script-icon {
-                        color: var(--accent);
-                    }
-                }
-
-                &.is-dirty .script-dirty-flag {
-                    color: var(--text-3);
-                }
-
-                &:hover {
-                    background: var(--hover);
-                }
-            }
-
-            &.folder-content {
-                position: relative;
-
-                &::before {
-                    content: "";
-                    position: absolute;
-                    left: 0.5rem;
-                    top: 0;
-                    bottom: 0;
-                    width: 1px;
-                    background-color: var(--line-soft);
-                    opacity: 0.4;
-                    pointer-events: none;
-                }
-            }
-
-            .script-folder-open-icon {
-                visibility: hidden;
-            }
-
-            .script-running-indicator,
-            .script-stopping-indicator {
-                height: 1.35rem;
-                width: 1.35rem;
-            }
-
-            .script-running-indicator svg {
-                stroke: var(--run);
-                stroke-width: 2;
-            }
-
-            .script-stopping-indicator svg {
-                stroke: var(--warn);
-                stroke-width: 2;
-            }
+        &.is-open .tree-name {
+            color: var(--text);
         }
     }
 }

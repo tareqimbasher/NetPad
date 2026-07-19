@@ -1,8 +1,9 @@
 <pane-toolbar>
-    <span class="text-semibold">Namespaces</span>
+    <span class="pane-title">Namespaces</span>
 </pane-toolbar>
-<div class="p-2 flex-fill d-flex flex-column">
-     <textarea class="form-control flex-fill bg-transparent"
+<div class="namespaces-editor flex-fill d-flex flex-column">
+     <textarea class="form-control flex-fill"
+               placeholder="System.Text.Json"
                value.bind="namespaces & debounce"
                spellcheck="false"></textarea>
 </div>

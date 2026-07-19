@@ -6,7 +6,7 @@
     <div class="window">
         <titlebar if.bind="settings.appearance.titlebar.type === 'Integrated' & oneTime"></titlebar>
 
-        <div id="window-main-content" class="flex-grow-1 d-flex flex-row fade-in">
+        <div id="window-main-content" class="d-flex flex-row fade-in">
             <au-compose component.bind="leftPaneHost" containerless></au-compose>
             <div id="window-middle-content" class="flex-grow-height-restricted d-flex flex-column">
                 <work-area class="flex-grow-height-restricted"></work-area>

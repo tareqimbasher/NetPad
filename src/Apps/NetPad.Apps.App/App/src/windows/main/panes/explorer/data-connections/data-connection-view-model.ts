@@ -17,16 +17,36 @@ export class DataConnectionViewModel {
     constructor(public connection: DataConnection, private readonly dataConnectionService: IDataConnectionService) {
     }
 
-    public get loadingMessage(): string | null {
+    /** A lone schema should not add a tree level of its own, its tables hang off the connection itself. */
+    public get hasMultipleSchemas(): boolean {
+        return (this.structure?.schemas.length ?? 0) > 1;
+    }
+
+    /**
+     * A single word reflecting the current load status. {@link loadingDescription} carries the full phrase.
+     */
+    public get loadingLabel(): string | null {
         if (this.loadingResources) {
             return "Scaffolding";
         }
 
         if (this.schemaValidationRunning) {
-            return "Validating schema";
+            return "Validating";
         }
 
         return this.loadingStructure ? "Loading" : null;
+    }
+
+    public get loadingDescription(): string | null {
+        if (this.loadingResources) {
+            return "Scaffolding database resources...";
+        }
+
+        if (this.schemaValidationRunning) {
+            return "Validating schema...";
+        }
+
+        return this.loadingStructure ? "Loading database structure..." : null;
     }
 
     public toggleExpand() {

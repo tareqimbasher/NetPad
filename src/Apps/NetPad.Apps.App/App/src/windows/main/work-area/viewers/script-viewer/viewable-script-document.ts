@@ -10,6 +10,7 @@ import {
 import {IAppService} from "@application/app/iapp-service";
 import {IEventBus} from "@application/events/ievent-bus";
 import {IScriptService} from "@application/scripts/iscript-service";
+import {resolveScriptStatusIndicator} from "@application/scripts/script-status-indicator";
 import {ISession} from "@application/sessions/isession";
 import {LangLogoValueConverter} from "@application/value-converters/lang-logo-value-converter";
 import {ViewableTextDocument} from "../viewable-text-document";
@@ -262,25 +263,7 @@ export class ViewableScriptDocument extends ViewableTextDocument {
     }
 
     private updateStatusIndicator(): void {
-        const env = this.environment;
-
-        switch (env.status) {
-            case "Running":
-                this.statusIndicator = "running";
-                break;
-            case "Stopping":
-                this.statusIndicator = "stopping";
-                break;
-            case "Error":
-                this.statusIndicator = "error";
-                break;
-            case "Ready":
-                this.statusIndicator = env.runDurationMilliseconds != null ? "success" : undefined;
-                break;
-            default:
-                this.statusIndicator = undefined;
-                break;
-        }
+        this.statusIndicator = resolveScriptStatusIndicator(this.environment);
     }
 
     private async textChanged() {
