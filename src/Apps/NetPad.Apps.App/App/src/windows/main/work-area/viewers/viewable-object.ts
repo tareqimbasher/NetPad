@@ -1,8 +1,9 @@
 import {WithDisposables} from "@common";
+import {ScriptStatusIndicator} from "@application";
 import {ViewerHost} from "./viewer-host";
 import {DragAndDropBase} from "@application/dnd/drag-and-drop-base";
 
-export type ViewableStatusIndicator = "running" | "stopping" | "success" | "error";
+export type ViewableStatusIndicator = ScriptStatusIndicator;
 
 export abstract class ViewableObject extends WithDisposables {
     // Generic display surface consumed by the tab bar and any other chrome that

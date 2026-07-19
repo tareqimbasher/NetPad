@@ -1,5 +1,5 @@
 <pane-toolbar>
-    <span class="text-semibold">Notifications</span>
+    <span class="pane-title">Notifications</span>
     <div au-slot="right-end">
         <i class="icon-button clear-output-icon"
            show.bind="notificationService.history.length"
@@ -26,5 +26,5 @@
     </div>
 </div>
 <div class="flex-fill d-flex align-items-center justify-content-center" else>
-    <p class="text-muted user-select-none">No notifications</p>
+    <p class="empty-state">No notifications</p>
 </div>

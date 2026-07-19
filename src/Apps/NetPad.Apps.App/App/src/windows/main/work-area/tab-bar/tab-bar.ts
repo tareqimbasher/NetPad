@@ -7,6 +7,7 @@ import {
     CreateScriptDto,
     IScriptService,
     IShortcutManager,
+    scriptStatusIndicatorTitle,
     Settings,
     ShortcutIds,
     ViewModelBase
@@ -33,18 +34,7 @@ export class TabBar extends ViewModelBase {
     }
 
     public statusTitle(viewable: ViewableObject): string {
-        switch (viewable.statusIndicator) {
-            case "running":
-                return "Running...";
-            case "stopping":
-                return "Stopping...";
-            case "success":
-                return "Script ran successfully";
-            case "error":
-                return "Error occurred";
-            default:
-                return "Idle";
-        }
+        return scriptStatusIndicatorTitle(viewable.statusIndicator);
     }
 
     public get orderedViewables() {

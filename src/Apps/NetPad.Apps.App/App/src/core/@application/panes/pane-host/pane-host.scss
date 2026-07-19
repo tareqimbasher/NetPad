@@ -1,4 +1,7 @@
-$ribbon-width: 30px;
+@import "styles/variables";
+
+$ribbon-width: 38px;
+$ribbon-cell: 26px;
 
 pane-host {
     display: flex;
@@ -6,6 +9,8 @@ pane-host {
 
     .ribbon {
         display: flex;
+        align-items: center;
+        gap: 4px;
         background: var(--bg1);
         user-select: none;
         cursor: default;
@@ -15,36 +20,43 @@ pane-host {
             display: flex;
             align-items: center;
             justify-content: center;
+            width: $ribbon-cell;
+            height: $ribbon-cell;
+            border-radius: $radius;
+            color: var(--text-3);
             position: relative;
 
-            .pane-icon {
-                font-size: 1.1rem;
-                padding: 0.1rem 0.3rem;
-                border-radius: 5px;
-
-                &:hover {
-                    background: var(--hover-strong);
-                }
+            // Doubled class to outrank the legacy `icon-theme-colorful` per-icon hardcodes,
+            // which Phase 6 deletes along with the setting.
+            .pane-icon.pane-icon {
+                font-size: 14px;
+                color: inherit;
             }
 
-            &.active .pane-icon {
+            &:hover {
+                background: var(--bg2);
+                color: var(--text);
+            }
+
+            &.active {
                 background: var(--accent-dim);
-                color: var(--accent);
+                color: var(--accent-bright);
             }
 
             .pane-badge {
                 position: absolute;
-                top: -3px;
-                right: -1px;
-                min-width: 14px;
-                height: 14px;
+                top: -2px;
+                right: -2px;
+                min-width: 13px;
+                height: 13px;
                 padding: 0 3px;
                 border-radius: 7px;
                 background: var(--err);
-                color: var(--accent-text);
-                font-size: 0.6rem;
-                line-height: 14px;
-                font-weight: 600;
+                color: var(--err-text);
+                font-family: var(--font-mono);
+                font-size: 8.5px;
+                line-height: 13px;
+                font-weight: 700;
                 text-align: center;
                 pointer-events: none;
             }
@@ -68,15 +80,20 @@ pane-host.orientation-right {
     .ribbon {
         flex-direction: column;
         width: $ribbon-width;
-    }
-
-    .pane-tag {
-        margin: 0.35rem 0;
+        padding: 10px 0;
     }
 
     .pane-content {
         min-width: 0;
     }
+}
+
+pane-host.orientation-left .ribbon {
+    border-right: 1px solid var(--line-soft);
+}
+
+pane-host.orientation-right .ribbon {
+    border-left: 1px solid var(--line-soft);
 }
 
 pane-host.orientation-bottom,
@@ -87,10 +104,8 @@ pane-host.orientation-floatingwindow {
     .ribbon {
         flex-direction: row;
         height: $ribbon-width;
-    }
-
-    .pane-tag {
-        margin: 0 0.35rem;
+        padding: 0 10px;
+        border-top: 1px solid var(--line-soft);
     }
 
     .pane-content {

@@ -82,13 +82,13 @@ kbd {
 
     &.running {
         background: var(--run);
-        box-shadow: 0 0 6px rgb(var(--run-rgb) / 60%);
+        box-shadow: 0 0 6px rgba(var(--run-rgb), 0.6);
         animation: state-dot-pulse 1.6s ease-in-out infinite;
     }
 
     &.stopping {
         background: var(--warn);
-        box-shadow: 0 0 6px rgb(var(--warn-rgb) / 60%);
+        box-shadow: 0 0 6px rgba(var(--warn-rgb), 0.6);
         animation: state-dot-pulse 1.6s ease-in-out infinite;
     }
 
@@ -133,28 +133,315 @@ kbd {
     line-height: 1;
     white-space: nowrap;
 
+    // A truncating child clips at its own line box, and `line-height: 1` makes that box
+    // shorter than the glyphs it holds.
+    .text-truncate {
+        line-height: 1.6;
+    }
+
     &.chip-accent {
-        background: rgb(var(--accent-rgb) / 12%);
-        border-color: rgb(var(--accent-rgb) / 30%);
+        background: rgba(var(--accent-rgb), 0.12);
+        border-color: rgba(var(--accent-rgb), 0.3);
         color: var(--accent);
     }
 
     &.chip-ok {
-        background: rgb(var(--ok-rgb) / 10%);
-        border-color: rgb(var(--ok-rgb) / 30%);
+        background: rgba(var(--ok-rgb), 0.1);
+        border-color: rgba(var(--ok-rgb), 0.3);
         color: var(--ok);
     }
 
     &.chip-warn {
-        background: rgb(var(--warn-rgb) / 10%);
-        border-color: rgb(var(--warn-rgb) / 35%);
+        background: rgba(var(--warn-rgb), 0.1);
+        border-color: rgba(var(--warn-rgb), 0.35);
         color: var(--warn);
     }
 
     &.chip-err {
-        background: rgb(var(--err-rgb) / 10%);
-        border-color: rgb(var(--err-rgb) / 35%);
+        background: rgba(var(--err-rgb), 0.1);
+        border-color: rgba(var(--err-rgb), 0.35);
         color: var(--err);
+    }
+}
+
+// The amber PROD marker, wherever a connection carrying production data is named.
+.prod-pill {
+    flex: none;
+    padding: 2.5px 4px;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    color: var(--warn);
+    background: rgba(var(--warn-rgb), 0.08);
+    border: 1px solid rgba(var(--warn-rgb), 0.45);
+    border-radius: $radius-sm;
+}
+
+// The filter row that sits above a long list.
+.search-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding: 10px 10px 8px;
+
+    .action-icon.action-icon {
+        color: var(--text-3);
+
+        &:hover {
+            color: var(--text);
+        }
+
+        &.active {
+            color: var(--accent);
+        }
+    }
+}
+
+// Header row introducing a section of content.
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 28px;
+    flex: none;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: default;
+    user-select: none;
+
+    .section-title {
+        font-family: var(--font-mono);
+        font-size: $text-label;
+        font-weight: 600;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--text-3);
+    }
+
+    .section-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        font-size: 12px;
+
+        // Doubled class so the header's own tint outranks the legacy `icon-theme-colorful`
+        // per-icon hardcodes in _icons.scss, which Phase 6 deletes with the setting.
+        .action-icon.action-icon,
+        .action-icon.action-icon i {
+            color: var(--text-3);
+        }
+
+        .action-icon.action-icon:hover,
+        .action-icon.action-icon:hover i {
+            color: var(--text);
+        }
+    }
+}
+
+// Shown in place of a list when there is nothing to list.
+.empty-state {
+    margin: 0;
+    color: var(--text-3);
+    font-size: $text-description;
+    user-select: none;
+}
+
+// An unnested list of entries. Selection follows the same grammar as the trees.
+.flat-list {
+    padding: 0 6px 8px;
+}
+
+.flat-list-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    color: var(--text-2);
+    cursor: default;
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        background: rgba(var(--accent-rgb), 0.1);
+        color: var(--text);
+        border-radius: 0 5px 5px 0;
+        box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    .row-ordinal {
+        flex: none;
+        min-width: 18px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: var(--text-3);
+        text-align: right;
+        user-select: none;
+    }
+
+    .row-value {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-family: var(--font-mono);
+        font-size: $text-value;
+        user-select: none;
+    }
+
+    .row-type {
+        flex: none;
+        max-width: 40%;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: var(--text-3);
+        user-select: none;
+    }
+
+    .row-selected-marker {
+        flex: none;
+        color: var(--ok);
+    }
+}
+
+// A per-row action that only surfaces while its row is hovered.
+.row-action {
+    flex: none;
+    visibility: hidden;
+    cursor: default;
+}
+
+// The container class joins the selector so the tint outranks the legacy `icon-theme-colorful`
+// per-icon hardcodes in _icons.scss, which Phase 6 deletes along with the setting.
+.tree .tree-row .row-action.row-action,
+.flat-list .flat-list-row .row-action.row-action {
+    color: var(--text-3);
+
+    &:hover {
+        color: var(--text);
+    }
+}
+
+.tree-row:hover .row-action,
+.flat-list-row:hover .row-action {
+    visibility: visible;
+}
+
+// Row vocabulary for nested, persistent lists. Selection in a persistent list is drawn as a
+// spine — a left edge plus a wash; transient surfaces such as menus and dropdowns mark
+// selection with a fill instead.
+.tree {
+    padding: 4px 6px 8px;
+    font-size: $text-control;
+}
+
+// Depth is carried as a custom property rather than a class per level, because the trees
+// this serves nest to an unbounded depth.
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: $row-height;
+    padding: 0 8px 0 calc(8px + var(--tree-depth, 0) * 16px);
+    border-radius: 5px;
+    color: var(--text-2);
+    white-space: nowrap;
+    cursor: default;
+    user-select: none;
+
+    &:hover {
+        background: var(--bg2);
+        color: var(--text);
+    }
+
+    &.selected {
+        background: rgba(var(--accent-rgb), 0.1);
+        color: var(--text);
+        border-radius: 0 5px 5px 0;
+        box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    .tree-caret {
+        flex: none;
+        width: 10px;
+        font-size: 9px;
+        text-align: center;
+        color: var(--text-3);
+    }
+
+    // The lopsided shrink factor takes space from the name long before the fact that
+    // qualifies it, while still letting the meta give ground once the name hits its floor —
+    // pinning the meta with `flex: none` instead would push it out of the row.
+    .tree-name {
+        flex: 0 999 auto;
+        min-width: 3ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // Right-aligned mono facts: counts, types, state dots. Deliberately not clipped: the line
+    // box is tighter than the glyphs (line-height 1), so `overflow: hidden` here would shave
+    // the descenders off a value like "String". Anything that can outgrow the row truncates
+    // itself instead — see the chip rule below.
+    .tree-meta {
+        display: flex;
+        align-items: center;
+        flex: 0 1 auto;
+        gap: 6px;
+        min-width: 0;
+        max-width: 70%;
+        margin-left: auto;
+        padding-left: 8px;
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        line-height: 1;
+        color: var(--text-3);
+    }
+
+    // Doubled class so category tinting outranks the legacy `icon-theme-colorful`
+    // hardcodes in _icons.scss, which Phase 6 deletes along with the setting.
+    .tree-glyph.tree-glyph {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: 14px;
+        font-size: 12px;
+        color: var(--text-3);
+
+        &.glyph-db {
+            color: var(--syntax-type);
+        }
+
+        &.glyph-script {
+            color: var(--accent);
+        }
+
+        &.glyph-folder {
+            color: var(--warn);
+        }
+
+        &.glyph-key {
+            color: var(--warn);
+        }
+    }
+
+    // A chip's own rhythm is taller than a tree row, so it is sized down to fit rather than
+    // stretching the row. It is also the only row content that can outgrow the row, so it
+    // truncates itself — the meta slot above deliberately does no clipping.
+    .chip {
+        height: 18px;
+        min-width: 0;
+        max-width: 100%;
+        padding: 0 7px;
+        font-size: 10px;
     }
 }
 

@@ -1,88 +1,64 @@
 <template as-custom-element="script-folder">
     <bindable name="folder"></bindable>
     <bindable name="vm"></bindable>
+    <bindable name="depth"></bindable>
 
-    <div class="list-group">
-        <div class="list-group-item script-folder text-truncate d-flex justify-content-between"
-             data-folder-path="${folder.path}">
-            <span click.trigger="folder.expanded = !folder.expanded">
-                <i class="${folder.expanded ? 'tree-collapse-node-icon' : 'tree-expand-node-icon'} action-icon icon-sm me-1"></i>
-                <i class="${folder.expanded ? 'folder-open-icon' : 'folder-icon'} me-1 icon-fw"></i> ${folder.name}
-            </span>
-            <div class="d-flex align-items-center gap-2">
-                <i class="action-icon script-folder-open-icon"
-                   title="Open in File Manager"
-                   click.trigger="vm.openScriptsFolder(folder)"></i>
-                <span class="badge text-muted" title="${folder.containingScriptCount} scripts">
-                    ${folder.containingScriptCount}
-                </span>
-            </div>
-        </div>
-
-        <div class="list-group-item folder-content" show.bind="folder.expanded">
-            <div class="list-group">
-                <div class="list-group-item" repeat.for="childFolder of folder.folders | sort:'name':'ordinalIgnoreCase'">
-                    <script-folder folder.bind="childFolder" vm.bind="vm"></script-folder>
-                </div>
-
-                <div class="list-group-item">
-                    <div class="list-group">
-                        <div class="list-group-item script ${script.cssClasses}"
-                             repeat.for="script of folder.scripts | sort:'name':'ordinalIgnoreCase'"
-                             data-script-id="${script.id}"
-                             click.trigger="vm.session.openByPath(script.path)">
-                            <div class="script-content text-truncate"
-                                 title.bind="script.path">
-                                <i class="tree-expand-node-icon" style="visibility: hidden"></i>
-                                <img src.bind="script.kind | langLogo" alt="" style="max-height: 1rem"/>
-                                <span class="script-name">${script.name}</span>
-                            </div>
-                            <div class="script-metadata">
-                                <div class="script-dirty-flag me-2"
-                                      if.bind="script.environment.script.isDirty"
-                                      title="Modified (unsaved changes)">M</div>
-                                <div class="script-status" switch.bind="script.environment.status">
-                                    <spinner case="Running"
-                                             class="script-running-indicator"
-                                             if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
-                                             title="Running..."></spinner>
-                                    <spinner case="Stopping"
-                                             class="script-stopping-indicator"
-                                             if.bind="vm.settings.appearance.showScriptRunningIndicatorInScriptsList"
-                                             title="Stopping..."></spinner>
-                                    <i case="Ready"
-                                       class="script-status-success-icon icon-xs"
-                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInScriptsList && script.environment.runDurationMilliseconds != null"
-                                       title="Script ran successfully"></i>
-                                    <i case="Error"
-                                       class="script-status-error-icon icon-xs"
-                                       if.bind="vm.settings.appearance.showScriptRunStatusIndicatorInTab"
-                                       title="Error occurred"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="tree-row script-folder"
+         style="--tree-depth: ${depth}"
+         data-folder-path="${folder.path}"
+         click.trigger="folder.expanded = !folder.expanded">
+        <span class="tree-caret">${folder.expanded ? '▾' : '▸'}</span>
+        <span class="tree-glyph glyph-folder ${folder.expanded ? 'folder-open-icon' : 'folder-icon'}"></span>
+        <span class="tree-name">${folder.name}</span>
+        <span class="tree-meta">
+            <i class="row-action script-folder-open-icon"
+               title="Open in File Manager"
+               click.trigger="vm.openScriptsFolder(folder, $event)"></i>
+            <span title="${folder.containingScriptCount} scripts">${folder.containingScriptCount}</span>
+        </span>
     </div>
+
+    <template if.bind="folder.expanded">
+        <script-folder repeat.for="childFolder of folder.folders | sort:'name':'ordinalIgnoreCase'"
+                       folder.bind="childFolder"
+                       vm.bind="vm"
+                       depth.bind="depth + 1"></script-folder>
+
+        <div class="tree-row script ${script.cssClasses}"
+             repeat.for="script of folder.scripts | sort:'name':'ordinalIgnoreCase'"
+             style="--tree-depth: ${depth + 1}"
+             data-script-id="${script.id}"
+             title.bind="script.path"
+             click.trigger="vm.session.openByPath(script.path)">
+            <span class="tree-glyph glyph-script script-icon"></span>
+            <span class="tree-name">${script.name}</span>
+            <span class="tree-meta">
+                <span class="state-dot dirty"
+                      if.bind="script.isDirty"
+                      title="Modified (unsaved changes)"></span>
+                <span class="state-dot ${script.statusIndicator}"
+                      if.bind="script.showStatusDot"
+                      title.bind="script.statusTitle"></span>
+            </span>
+        </div>
+    </template>
 </template>
 
-<div class="d-flex align-items-center justify-content-between">
-    <span class="ps-3 user-select-none text-semibold">Scripts</span>
-
-    <div class="d-flex align-items-center gap-2 pe-3">
-        <i class="icon-button tree-expand-all-icon"
+<div class="section-header">
+    <span class="section-title">Scripts</span>
+    <span class="section-actions">
+        <i class="action-icon tree-expand-all-icon"
            title="Expand All"
            click.trigger="expandAllFolders(rootScriptFolder)"></i>
-        <i class="icon-button tree-collapse-all-icon"
+        <i class="action-icon tree-collapse-all-icon"
            title="Collapse All"
            click.trigger="collapseAllFolders(rootScriptFolder)"></i>
-    </div>
+    </span>
 </div>
-<hr class="m-0 mt-2" style="height: 2px"/>
 
-<script-folder folder.bind="rootScriptFolder" vm.bind="$this"></script-folder>
+<div class="tree flex-grow-height-restricted overflow-y-auto">
+    <script-folder folder.bind="rootScriptFolder" vm.bind="$this" depth.bind="0"></script-folder>
+</div>
 
 <context-menu options.bind="scriptContextMenuOptions"></context-menu>
 <context-menu options.bind="folderContextMenuOptions"></context-menu>

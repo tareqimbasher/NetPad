@@ -1,17 +1,39 @@
+// The grab area is wider than the seam it draws: a hairline centred in a few pixels of
+// pointer target, washed with the accent while hovered.
 .gutter {
-    background: var(--line-soft);
+    background-color: transparent;
     background-repeat: no-repeat;
     background-position: 50%;
 
-    &.gutter-horizontal:hover {
-        cursor: col-resize;
+    &.gutter-horizontal {
+        background-image: linear-gradient(
+            to right,
+            transparent calc(50% - 0.5px),
+            var(--line-soft) calc(50% - 0.5px),
+            var(--line-soft) calc(50% + 0.5px),
+            transparent calc(50% + 0.5px)
+        );
+
+        &:hover {
+            cursor: col-resize;
+        }
     }
 
-    &.gutter-vertical:hover {
-        cursor: row-resize;
+    &.gutter-vertical {
+        background-image: linear-gradient(
+            to bottom,
+            transparent calc(50% - 0.5px),
+            var(--line-soft) calc(50% - 0.5px),
+            var(--line-soft) calc(50% + 0.5px),
+            transparent calc(50% + 0.5px)
+        );
+
+        &:hover {
+            cursor: row-resize;
+        }
     }
 
     &:hover {
-        background-color: var(--accent);
+        background-color: rgba(var(--accent-rgb), 0.25);
     }
 }

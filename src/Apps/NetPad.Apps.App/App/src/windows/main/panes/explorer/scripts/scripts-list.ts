@@ -41,7 +41,7 @@ export class ScriptsList extends ViewModelBase {
     }
 
     public binding() {
-        this.scriptContextMenuOptions = new ContextMenuOptions(".list-group-item.script", [
+        this.scriptContextMenuOptions = new ContextMenuOptions(".tree-row.script", [
             {
                 text: "Open",
                 onSelected: async (target) => {
@@ -125,7 +125,7 @@ export class ScriptsList extends ViewModelBase {
             }
         ]);
 
-        this.folderContextMenuOptions = new ContextMenuOptions(".list-group-item.script-folder", [
+        this.folderContextMenuOptions = new ContextMenuOptions(".tree-row.script-folder", [
             {
                 icon: "script-folder-open-icon",
                 text: "Open in File Manager",
@@ -167,7 +167,8 @@ export class ScriptsList extends ViewModelBase {
         this.addDisposable(this.scriptsStore.onChanged(() => this.loadScripts(this.scriptsStore.scripts)));
     }
 
-    public async openScriptsFolder(folder: ScriptFolderViewModel) {
+    public async openScriptsFolder(folder: ScriptFolderViewModel, event?: Event) {
+        event?.stopPropagation(); // Don't toggle row expansion
         await this.appService.openScriptsFolder(folder.path);
     }
 
@@ -182,7 +183,7 @@ export class ScriptsList extends ViewModelBase {
     }
 
     private loadScripts(summaries: ScriptSummary[]) {
-        const scripts = summaries.map(s => new ScriptViewModel(s));
+        const scripts = summaries.map(s => new ScriptViewModel(s, this.settings));
 
         const expandedFolders = this.rootScriptFolder.findFolders(f => f.expanded);
 

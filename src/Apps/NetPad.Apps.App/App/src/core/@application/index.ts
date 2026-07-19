@@ -21,6 +21,7 @@ export * from "./data-connections/idata-connection-service";
 export * from "./data-connections/data-connection-store";
 export * from "./packages/ipackage-service";
 export * from "./scripts/iscript-service";
+export * from "./scripts/script-status-indicator";
 export * from "./scripts/scripts-store";
 export * from "./sessions/isession";
 export * from "./sessions/recent-scripts-store";

@@ -556,6 +556,21 @@ button > .icon-base {
     @extend .fa-folder-open;
 }
 
+.db-schema-icon {
+    @extend %icon-base;
+    @extend .fa-layer-group;
+}
+
+.db-table-icon {
+    @extend %icon-base;
+    @extend .fa-table;
+}
+
+.db-column-icon {
+    @extend %icon-base;
+    @extend .fa-table-columns;
+}
+
 .db-primary-key-icon {
     @extend %icon-base;
     @extend .fa-key;
