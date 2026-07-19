@@ -13,7 +13,6 @@ import {
 } from "@application";
 import {Util} from "@common";
 import {ProblemDetails} from "@application/api-problem-details";
-import "highlight.js/styles/monokai.min.css";
 import hljs from "highlight.js/lib/common";
 import {observable} from "@aurelia/runtime";
 import {UiUtil} from "@common/utils/ui-util";

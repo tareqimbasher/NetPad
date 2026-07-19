@@ -65,7 +65,7 @@ $dark: (
     hover: rgba(255 255 255 / 6%),
     hover-strong: rgba(255 255 255 / 12%),
     backdrop: rgb(0 0 0 / 55%),
-    // SYNTAX ACCENTS — used outside Monaco (SQL log, code-ish chrome).
+    // SYNTAX ACCENTS
     syntax-keyword: #9d8ff0,
     syntax-type: #66c9b3,
     syntax-string: #cfa675,
@@ -74,6 +74,7 @@ $dark: (
     syntax-comment: #5b5870,
     syntax-value: #e4e2ec,
     syntax-punctuation: #8b8899,
+    syntax-regex: #d9bd85,
     // SHADOWS
     shadow: (0 24px 70px rgb(0 0 0 / 55%), 0 4px 18px rgb(0 0 0 / 40%)), // dialogs, menus
     shadow-sm: 0 10px 30px rgb(0 0 0 / 45%), // small floating surfaces

@@ -1,6 +1,9 @@
 find-text-box {
     background: var(--bg1);
-    box-shadow: var(--shadow-ambient);
+    border: 1px solid var(--line);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: var(--shadow-sm);
     position: absolute;
     top: 0;
     right: 20px;
@@ -15,7 +18,10 @@ find-text-box {
 
     .found-count {
         margin-left: 0.5rem;
-        font-size: 0.85rem;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-3);
+        font-variant-numeric: tabular-nums;
 
         &.none-found {
             color: var(--err);

@@ -28,7 +28,6 @@ export class StyleOptionsSettings {
                 "\tfont-size: 1rem;\n" +
                 "}",
             language: 'css',
-            mouseWheelZoom: true,
             automaticLayout: true,
         });
 
