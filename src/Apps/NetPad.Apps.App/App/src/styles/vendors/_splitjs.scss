@@ -1,39 +1,63 @@
-// The grab area is wider than the seam it draws: a hairline centred in a few pixels of
-// pointer target, washed with the accent while hovered.
+// Split surfaces meet at a single hairline, with no gutter showing between them: the gutter is
+// the seam, one pixel wide. Its grab target is widened by a pseudo-element instead. Pointer
+// events on a pseudo-element resolve to its owner, so Split.js's mousedown binding still works.
+// The seam width is set in TS (`splitterGutterSize`); the inset below assumes it.
+
+$grab-target: 6px;
+$grab-overhang: ($grab-target - 1px) * 0.5;
+
+// Color the seam with the accent while its being grabbed.
+@mixin seam-active($direction) {
+    background-image:
+        linear-gradient(
+            to $direction,
+            transparent calc(50% - 1px),
+            var(--accent) calc(50% - 1px),
+            var(--accent) calc(50% + 1px),
+            transparent calc(50% + 1px)
+        );
+}
+
 .gutter {
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: 50%;
+    position: relative;
+
+    // Both the widened grab target and the active seam extend past the gutter's own box, so it
+    // has to outrank the surfaces it separates, including their chrome, which sits at 1. It also
+    // must not be clipped: Split.js injects the gutter as a sibling of the split panes, so a
+    // container styling its children with `> *` has to exclude it.
+    z-index: 2;
+    flex: none;
+    background-color: var(--line-soft);
+
+    &::before {
+        content: "";
+        position: absolute;
+        background-repeat: no-repeat;
+    }
 
     &.gutter-horizontal {
-        background-image: linear-gradient(
-            to right,
-            transparent calc(50% - 0.5px),
-            var(--line-soft) calc(50% - 0.5px),
-            var(--line-soft) calc(50% + 0.5px),
-            transparent calc(50% + 0.5px)
-        );
+        cursor: col-resize;
 
-        &:hover {
-            cursor: col-resize;
+        &::before {
+            inset: 0 (-$grab-overhang);
+        }
+
+        &:hover::before,
+        &:active::before {
+            @include seam-active(right);
         }
     }
 
     &.gutter-vertical {
-        background-image: linear-gradient(
-            to bottom,
-            transparent calc(50% - 0.5px),
-            var(--line-soft) calc(50% - 0.5px),
-            var(--line-soft) calc(50% + 0.5px),
-            transparent calc(50% + 0.5px)
-        );
+        cursor: row-resize;
 
-        &:hover {
-            cursor: row-resize;
+        &::before {
+            inset: (-$grab-overhang) 0;
         }
-    }
 
-    &:hover {
-        background-color: rgba(var(--accent-rgb), 0.25);
+        &:hover::before,
+        &:active::before {
+            @include seam-active(bottom);
+        }
     }
 }

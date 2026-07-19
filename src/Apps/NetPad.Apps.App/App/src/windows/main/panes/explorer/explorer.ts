@@ -1,5 +1,5 @@
 import Split from "split.js";
-import {IShortcutManager, Pane, PaneIds, ShortcutIds} from "@application";
+import {IShortcutManager, Pane, PaneIds, ShortcutIds, splitterGutterSize} from "@application";
 import {LocalStorageValue} from "@common";
 
 interface IExplorerSettings {
@@ -32,7 +32,7 @@ export class Explorer extends Pane {
     private initSplit() {
         const elements = this.element.getElementsByClassName("explorer-content")[0].children;
         this.split = Split(Array.from(elements) as HTMLElement[], {
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             direction: "vertical",
             sizes: [50, 50],
             minSize: [100, 100],

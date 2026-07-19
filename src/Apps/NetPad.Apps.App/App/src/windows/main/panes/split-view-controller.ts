@@ -1,6 +1,6 @@
 import Split from "split.js";
 import {Lazy} from "@common";
-import {IPaneHostViewStateController, PaneHost} from "@application";
+import {IPaneHostViewStateController, PaneHost, splitterGutterSize} from "@application";
 import {IPaneHostsState, IPaneHostState, PaneHostViewState} from "./pane-host-view-state";
 
 /**
@@ -87,7 +87,7 @@ export class SplitViewController implements IPaneHostViewStateController {
 
         this.split = Split(elements, {
             direction: this.direction,
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             sizes: sizes,
             snapOffset: 0,
             onDragEnd: (sizes: number[]) => {

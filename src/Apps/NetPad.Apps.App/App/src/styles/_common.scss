@@ -319,7 +319,7 @@ kbd {
 
 // The container class joins the selector so the tint outranks the legacy `icon-theme-colorful`
 // per-icon hardcodes in _icons.scss, which Phase 6 deletes along with the setting.
-.tree .tree-row .row-action.row-action,
+.tree-list .tree-row .row-action.row-action,
 .flat-list .flat-list-row .row-action.row-action {
     color: var(--text-3);
 
@@ -334,9 +334,10 @@ kbd {
 }
 
 // Row vocabulary for nested, persistent lists. Selection in a persistent list is drawn as a
-// spine — a left edge plus a wash; transient surfaces such as menus and dropdowns mark
-// selection with a fill instead.
-.tree {
+// spine (a left edge plus a wash). Transient surfaces such as menus and dropdowns mark
+// selection with a fill instead. Named `tree-list`, not `tree`: Monaco's suggest widget renders
+// inside the app DOM and styles a child of its own as `.tree`, which a global rule would leak into.
+.tree-list {
     padding: 4px 6px 8px;
     font-size: $text-control;
 }

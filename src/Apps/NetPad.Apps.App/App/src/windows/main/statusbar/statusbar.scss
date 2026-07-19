@@ -1,11 +1,14 @@
 @import "styles/variables";
 
+statusbar {
+    flex: none;
+}
+
 .statusbar-container {
     display: flex;
     align-items: center;
     gap: 16px;
     height: $statusbar-height;
-    max-height: $statusbar-height;
     padding: 0 12px;
     background: var(--bg1);
     border-top: 1px solid var(--line-soft);

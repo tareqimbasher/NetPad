@@ -2,7 +2,7 @@ import {observable} from "@aurelia/runtime";
 import {watch} from "@aurelia/runtime-html";
 import * as path from "path";
 import Split from "split.js";
-import {AssemblyFileReference, IAssemblyService, Reference} from "@application";
+import {AssemblyFileReference, IAssemblyService, Reference, splitterGutterSize} from "@application";
 import {ConfigStore} from "../config-store";
 import {INativeDialogService} from "@application/dialogs/inative-dialog-service";
 
@@ -19,7 +19,7 @@ export class ReferenceManagement {
 
     public attached() {
         Split(["#references-list", "#namespace-selection"], {
-            gutterSize: 6,
+            gutterSize: splitterGutterSize,
             sizes: [65, 35],
             minSize: [20, 20]
         });

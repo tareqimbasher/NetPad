@@ -1,4 +1,5 @@
 export * from "./env";
+export * from "./splitter";
 export * from "./view-model-base";
 export * from "./app/app-lifecycle-events";
 export * from "./background-services/ibackground-service";

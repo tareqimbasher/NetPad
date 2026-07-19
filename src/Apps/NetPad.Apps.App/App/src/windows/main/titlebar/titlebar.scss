@@ -3,8 +3,9 @@
 titlebar {
     background: var(--bg1);
     border-bottom: 1px solid var(--line-soft);
+
+    flex: none;
     height: $titlebar-height;
-    max-height: $titlebar-height;
     position: relative;
     display: flex;
     flex-wrap: nowrap;
