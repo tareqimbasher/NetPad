@@ -20,7 +20,7 @@ export class PaneHost {
     protected _viewMode: PaneHostViewMode = PaneHostViewMode.Collapsed;
     protected _active: Pane | undefined;
 
-    private readonly panes: Set<Pane>;
+    private readonly _panes: Pane[] = [];
     private hideKeyBinding = new KeyCombo().withShiftKey().withKey(KeyCode.Escape);
     private disposables = new DisposableCollection();
 
@@ -31,7 +31,14 @@ export class PaneHost {
     ) {
         this.id = Util.newGuid();
         this.orientation = orientation;
-        this.panes = new Set<Pane>();
+    }
+
+    /**
+     * The panes in this host, in the order they were added. Rails render their toggles in this
+     * order.
+     */
+    public get panes(): ReadonlyArray<Pane> {
+        return this._panes;
     }
 
     /**
@@ -74,11 +81,11 @@ export class PaneHost {
 
     public expand(pane?: Pane) {
         if (!pane) {
-            if (this.panes.size > 0) {
-                pane = [...this.panes][0];
-            } else {
+            if (this._panes.length === 0) {
                 throw new Error("No panes are added to this host.");
             }
+
+            pane = this._panes[0];
         }
 
         this._active = pane;
@@ -106,11 +113,11 @@ export class PaneHost {
     }
 
     public hasPane(pane: Pane): boolean {
-        return this.panes.has(pane);
+        return this._panes.includes(pane);
     }
 
     public getPane<TPane extends Pane>(paneType: Constructable<TPane>): TPane | null {
-        for (const pane of this.panes) {
+        for (const pane of this._panes) {
             if (pane instanceof paneType)
                 return pane as TPane;
         }
@@ -118,7 +125,7 @@ export class PaneHost {
     }
 
     public getPaneById(paneId: string): Pane | null {
-        for (const pane of this.panes) {
+        for (const pane of this._panes) {
             if (pane.id === paneId)
                 return pane;
         }
@@ -126,12 +133,19 @@ export class PaneHost {
     }
 
     public addPane(pane: Pane) {
-        this.panes.add(pane);
+        if (!this.hasPane(pane)) {
+            this._panes.push(pane);
+        }
+
         pane.setHost(this);
     }
 
     public removePane(pane: Pane) {
-        this.panes.delete(pane);
+        const ix = this._panes.indexOf(pane);
+        if (ix >= 0) {
+            this._panes.splice(ix, 1);
+        }
+
         if (this._active === pane) {
             this._active = undefined;
         }

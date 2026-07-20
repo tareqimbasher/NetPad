@@ -1,0 +1,21 @@
+<template class="rail-${side}">
+    <div class="rail-group" if.bind="host">
+        <div repeat.for="pane of host.panes"
+             class="rail-item ${pane === host.active ? 'active' : ''}"
+             click.trigger="toggle(host, pane)"
+             tooltip.bind="tooltip(pane)">
+            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
+        </div>
+    </div>
+
+    <div class="rail-group rail-group-end" if.bind="endHost">
+        <div repeat.for="pane of endHost.panes"
+             class="rail-item ${pane === endHost.active ? 'active' : ''}"
+             click.trigger="toggle(endHost, pane)"
+             tooltip.bind="tooltip(pane)">
+            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
+            <span class="rail-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
+        </div>
+    </div>
+</template>

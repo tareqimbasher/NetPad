@@ -7,12 +7,18 @@
         <titlebar if.bind="settings.appearance.titlebar.type === 'Integrated' & oneTime"></titlebar>
 
         <div id="window-main-content" class="d-flex flex-row fade-in">
-            <au-compose component.bind="leftPaneHost" containerless></au-compose>
-            <div id="window-middle-content" class="flex-grow-height-restricted d-flex flex-column">
-                <work-area class="flex-grow-height-restricted"></work-area>
-                <au-compose component.bind="bottomPaneHost" containerless></au-compose>
+            <pane-rail side="left" host.bind="leftPaneHost" end-host.bind="bottomPaneHost"></pane-rail>
+
+            <div id="window-split-content" class="d-flex flex-row">
+                <au-compose component.bind="leftPaneHost" containerless></au-compose>
+                <div id="window-middle-content" class="flex-grow-height-restricted d-flex flex-column">
+                    <work-area class="flex-grow-height-restricted"></work-area>
+                    <au-compose component.bind="bottomPaneHost" containerless></au-compose>
+                </div>
+                <au-compose component.bind="rightPaneHost" containerless></au-compose>
             </div>
-            <au-compose component.bind="rightPaneHost" containerless></au-compose>
+
+            <pane-rail side="right" host.bind="rightPaneHost"></pane-rail>
         </div>
 
         <statusbar></statusbar>
