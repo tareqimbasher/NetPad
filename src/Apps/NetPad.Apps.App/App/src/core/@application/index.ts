@@ -77,6 +77,7 @@ export * from "./panes/pane-ids";
 export * from "./panes/ipane-manager";
 export * from "./panes/pane-manager";
 export * from "./panes/pane-host/pane-host";
+export * from "./panes/pane-rail/pane-rail";
 export * from "./panes/pane-host-orientation";
 export * from "./panes/pane-host-view-mode";
 export * from "./panes/ipane-host-view-state-controller";

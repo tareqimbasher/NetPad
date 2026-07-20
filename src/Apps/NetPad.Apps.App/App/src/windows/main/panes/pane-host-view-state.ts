@@ -12,13 +12,11 @@ export interface IPaneHostState {
 }
 
 export class PaneHostViewState {
-    public readonly selector: string;
     public shouldBeExpanded = false;
     public size = 0;
     public lastExpandedSize: number | undefined;
 
     constructor(public readonly paneHost: PaneHost, private readonly defaultPaneHostSizePercent: number) {
-        this.selector = `pane-host[data-id='${paneHost.id}']`;
     }
 
     public get isCurrentlyExpanded(): boolean {

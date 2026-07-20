@@ -1,114 +1,33 @@
-@import "styles/variables";
-
-$ribbon-width: 38px;
-$ribbon-cell: 26px;
-
 pane-host {
     display: flex;
-    outline: none;
+    flex-direction: column;
+    background: var(--bg1);
+    min-width: 0;
+    min-height: 0;
 
-    .ribbon {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: var(--bg1);
-        user-select: none;
-        cursor: default;
-        flex-shrink: 0;
-
-        .pane-tag {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: $ribbon-cell;
-            height: $ribbon-cell;
-            border-radius: $radius;
-            color: var(--text-3);
-            position: relative;
-
-            // Doubled class to outrank the legacy `icon-theme-colorful` per-icon hardcodes,
-            // which Phase 6 deletes along with the setting.
-            .pane-icon.pane-icon {
-                font-size: 14px;
-                color: inherit;
-            }
-
-            &:hover {
-                background: var(--bg2);
-                color: var(--text);
-            }
-
-            &.active {
-                background: var(--accent-dim);
-                color: var(--accent-bright);
-            }
-
-            .pane-badge {
-                position: absolute;
-                top: -2px;
-                right: -2px;
-                min-width: 13px;
-                height: 13px;
-                padding: 0 3px;
-                border-radius: 7px;
-                background: var(--err);
-                color: var(--err-text);
-                font-family: var(--font-mono);
-                font-size: 8.5px;
-                line-height: 13px;
-                font-weight: 700;
-                text-align: center;
-                pointer-events: none;
-            }
-        }
-    }
-
-    .pane-content {
-        background: var(--bg1);
-    }
-}
-
-pane-host.orientation-floatingwindow {
-    height: 100%;
-}
-
-pane-host.orientation-left,
-pane-host.orientation-right {
-    flex-direction: row;
-    width: $ribbon-width;
-
-    .ribbon {
-        flex-direction: column;
-        width: $ribbon-width;
-        padding: 10px 0;
+    &,
+    &:focus-visible {
+        outline: none;
     }
 
     .pane-content {
         min-width: 0;
-    }
-}
-
-pane-host.orientation-left .ribbon {
-    border-right: 1px solid var(--line-soft);
-}
-
-pane-host.orientation-right .ribbon {
-    border-left: 1px solid var(--line-soft);
-}
-
-pane-host.orientation-bottom,
-pane-host.orientation-floatingwindow {
-    flex-direction: column-reverse;
-    height: $ribbon-width;
-
-    .ribbon {
-        flex-direction: row;
-        height: $ribbon-width;
-        padding: 0 10px;
-        border-top: 1px solid var(--line-soft);
-    }
-
-    .pane-content {
         min-height: 0;
     }
+}
+
+// A host is sized by the splitter, which writes an inline width/height while the host is
+// expanded and clears it on collapse. The rules below are therefore the collapsed size.
+pane-host.orientation-left,
+pane-host.orientation-right {
+    width: 0;
+}
+
+pane-host.orientation-bottom {
+    height: 0;
+}
+
+// A popped-out pane owns its whole window, no splitter ever sizes it.
+pane-host.orientation-floatingwindow {
+    height: 100%;
 }

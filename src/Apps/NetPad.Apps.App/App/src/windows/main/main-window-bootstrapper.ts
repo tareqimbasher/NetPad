@@ -16,6 +16,7 @@ import {
     NotificationToasts,
     PaneHost,
     PaneManager,
+    PaneRail,
     Settings,
     ShortcutManager,
 } from "@application";
@@ -73,6 +74,7 @@ export class MainWindowBootstrapper implements IWindowBootstrapper {
             Registration.singleton(ICompletionItemProvider, BuiltinCSharpCompletionProvider),
             Registration.singleton(ICompletionItemProvider, BuiltinSqlCompletionProvider),
             PaneHost,
+            PaneRail,
             PaneToolbar,
             DataConnectionName,
             NotificationToasts,

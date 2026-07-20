@@ -1,17 +1,6 @@
 <template class="orientation-${orientation.toLowerCase()} overflow-hidden"
-          show.bind="panes.size"
           data-id.bind="id"
           tabindex="0">
-    <div class="ribbon ${orientation === 'Right' ? 'order-1' : 'order-0'}"
-         if.bind="orientation !== 'FloatingWindow'">
-        <div repeat.for="pane of panes"
-             class="pane-tag ${pane === active ? 'active' : ''}"
-             click.trigger="toggle(pane)"
-             tooltip="${pane.name} ${pane.shortcut ? ('(' + pane.shortcut.keyCombo.asString + ')') : ''}">
-            <i class="pane-icon ${pane.icon}" show.bind="pane.icon"></i>
-            <span class="pane-badge" if.bind="pane.badgeCount">${pane.badgeText}</span>
-        </div>
-    </div>
     <div class="pane-content flex-fill d-flex flex-column" show.bind="viewMode === 'Expanded'">
         <au-compose repeat.for="pane of panes"
                     component.bind="pane"

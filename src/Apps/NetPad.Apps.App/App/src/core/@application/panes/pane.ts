@@ -53,13 +53,13 @@ export abstract class Pane {
     }
 
     /**
-     * An optional count shown as a badge on this pane's ribbon icon. 0 shows no badge.
+     * An optional count shown as a badge on this pane's rail toggle. 0 shows no badge.
      */
     public get badgeCount(): number {
         return 0;
     }
 
-    /** The text shown in the ribbon badge. If {@link badgeCount} is larger than 99, shows "99+". */
+    /** The text shown in the rail badge. If {@link badgeCount} is larger than 99, shows "99+". */
     public get badgeText(): string {
         return this.badgeCount > 99 ? "99+" : this.badgeCount.toString();
     }

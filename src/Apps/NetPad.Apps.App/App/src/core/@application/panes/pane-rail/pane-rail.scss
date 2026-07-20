@@ -1,0 +1,82 @@
+@import "styles/variables";
+
+$rail-width: 38px;
+$rail-cell: 26px;
+
+pane-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+    width: $rail-width;
+    padding: 10px 0;
+    background: var(--bg1);
+    user-select: none;
+    cursor: default;
+
+    &.rail-left {
+        border-right: 1px solid var(--line-soft);
+    }
+
+    &.rail-right {
+        border-left: 1px solid var(--line-soft);
+    }
+
+    .rail-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .rail-group-end {
+        margin-top: auto;
+    }
+
+    .rail-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: $rail-cell;
+        height: $rail-cell;
+        border-radius: $radius;
+        color: var(--text-3);
+        position: relative;
+
+        // Doubled class to outrank the legacy `icon-theme-colorful` per-icon hardcodes,
+        // which Phase 6 deletes along with the setting.
+        .pane-icon.pane-icon {
+            font-size: 14px;
+            color: inherit;
+        }
+
+        &:hover {
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        &.active {
+            background: var(--accent-dim);
+            color: var(--accent-bright);
+        }
+
+        .rail-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 13px;
+            height: 13px;
+            padding: 0 3px;
+            border-radius: 7px;
+            background: var(--err);
+            color: var(--err-text);
+            font-family: var(--font-mono);
+            font-size: 8.5px;
+            line-height: 13px;
+            font-weight: 700;
+            text-align: center;
+            pointer-events: none;
+        }
+    }
+}
