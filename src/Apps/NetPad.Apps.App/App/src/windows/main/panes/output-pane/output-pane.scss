@@ -1,3 +1,13 @@
+@import "styles/variables";
+
+// Everything a dump needs to render must live inside this file's `output-pane` block: the HTML
+// exporter picks up stylesheets by looking for that name.
+
+$card-radius: 8px;
+$card-inner-radius: $card-radius - 1px;
+$cell-padding-x: 12px;
+$wrapper-padding-y: 10px;
+
 output-pane {
     outline: none;
 
@@ -8,12 +18,12 @@ output-pane {
     }
 
     .dump-container-wrapper {
-        $font-size: 13px;
-
-        padding: 0.25rem;
-        line-height: 1;
+        padding: $wrapper-padding-y 12px;
         overflow-x: auto;
         flex-grow: 1;
+        font-size: $text-description;
+        line-height: 1.45;
+        color: var(--text);
 
         &:focus {
             outline: none;
@@ -23,50 +33,60 @@ output-pane {
             overflow-wrap: break-word;
         }
 
-        /*
-        * CSS for generated HTML
-        */
         hr {
             color: var(--line-soft);
             margin: 0 0 10px;
         }
 
-        %null,
         .null {
+            display: inline-block;
+            padding: 1.5px 5px;
+            font-family: var(--font-mono);
+            font-size: $text-label;
+            line-height: 1.4;
             color: var(--text-3);
+            border: 1px dashed var(--line);
+            border-radius: $radius-sm;
+        }
+
+        .cyclic-reference,
+        .max-depth-reached {
+            font-style: italic;
+            font-size: 11px;
         }
 
         .cyclic-reference {
-            font-style: italic;
-            font-size: $font-size - 1;
             color: var(--err);
         }
 
         .max-depth-reached {
-            font-style: italic;
-            font-size: $font-size - 1;
             color: var(--warn);
         }
 
         .empty-collection {
-            color: var(--text-3);
-            background-color: var(--bg2);
-            padding: 0.25rem 0.2rem;
             display: inline-block;
+            padding: 1.5px 6px;
+            font-family: var(--font-mono);
+            font-size: $text-label;
+            line-height: 1.4;
+            color: var(--text-3);
+            background: var(--bg2);
+            border-radius: $radius-sm;
         }
 
         .group {
-            padding: 0.25rem;
-            border-left: 2px transparent solid;
+            padding: 1px 2px;
 
-            &.text:not(.raw,.error,.code) {
+            &.text:not(.raw, .error, .code) {
                 padding-top: 0;
             }
 
             &.raw {
-                padding: 1rem 0.75rem;
+                padding: 8px 12px;
+                margin: 8px 0;
                 background: var(--hover);
-                border-left: var(--line) 2px dashed;
+                border-left: 2px dashed var(--line);
+                border-radius: 0 $radius-sm $radius-sm 0;
 
                 &:hover {
                     background: var(--hover-strong);
@@ -74,137 +94,315 @@ output-pane {
             }
 
             &.error {
-                padding: 1.25rem 0.75rem;
-                background: rgba(var(--err-rgb), 0.08);
-                border-left: var(--err) 2px solid;
+                padding: 10px 12px;
+                margin: 8px 0;
+                width: fit-content;
+                font-family: var(--font-mono);
+                font-size: 11.5px;
+                line-height: 1.65;
+                color: var(--text-2);
+                background: rgba(var(--err-rgb), 0.07);
+                border: 1px solid rgba(var(--err-rgb), 0.25);
+                border-left: 2px solid var(--err);
+                border-radius: $card-radius;
 
                 .error-title {
                     color: var(--err);
-                    font-weight: 600;
-                }
-
-                &:hover {
-                    background: rgba(var(--err-rgb), 0.14);
+                    font-weight: 650;
                 }
             }
 
             &.code {
+                width: fit-content;
+                margin: 8px 0;
+                padding: 0;
+                background: var(--editor);
+                border: 1px solid var(--line-soft);
+                border-left: 2px solid var(--accent-dim);
+                border-radius: $card-radius;
+
                 pre {
                     margin: 0;
-                    font-size: inherit;
-                    padding-top: 1rem;
-                    padding-bottom: 1rem;
+                    padding: 10px 12px;
+                    font-family: var(--font-mono);
+                    font-size: 11.5px;
+                    line-height: 1.65;
                 }
             }
 
             &.image,
             &.video,
             &.audio {
-                margin-top: 1rem;
-                margin-bottom: 1rem;
-                padding: 0.5rem;
+                margin: 8px 0;
+                padding: 6px;
+                width: fit-content;
+                border-radius: $radius-sm;
 
                 &:hover {
                     background: var(--hover);
                 }
             }
 
-            &.audio {
-                audio {
-                    width: 35%;
-                }
-            }
-
-            &.titled {
-                border-left: 2px var(--accent-dim) solid;
-                margin-top: 0.5rem;
-                margin-bottom: 1rem;
-
-                &.collapsed {
-                    .title {
-                        border-bottom: 2px var(--text-3) dotted;
-                    }
-
-                    :not(.title) {
-                        display: none;
-                    }
-                }
+            &.audio audio {
+                width: 35%;
             }
         }
 
-        .title {
+        // A dump that rendered as a table is drawn as a card: an enclosed surface hung on an
+        // accent spine, its header bar on the control surface and its grid on the editor surface.
+        .group.has-table {
             width: fit-content;
-            padding-right: 8px;
-            padding-bottom: 1px;
-            border-bottom: 2px var(--accent-dim) dotted;
+            margin: 10px 0;
+            padding: 0;
+            background: var(--editor);
+            border: 1px solid var(--line-soft);
+            border-left: 2px solid var(--accent-dim);
+            border-radius: $card-radius;
+        }
+
+        .title {
+            margin: 0;
+            font-size: $text-description;
+            font-weight: 650;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        // A titled group that is not a card has no header bar to put the caret in, so the title
+        // carries the disclosure itself.
+        .group.titled:not(.has-table) {
+            margin: 8px 0;
+
+            > .title {
+                margin: 0 0 3px;
+                width: fit-content;
+
+                &::before {
+                    content: "▾";
+                    display: inline-block;
+                    width: 11px;
+                    font-size: 9px;
+                    color: var(--text-3);
+                }
+            }
+
+            &.collapsed > .title::before {
+                content: "▸";
+            }
+        }
+
+        // In a card the title is the first line of the header bar and the table's info header the
+        // second, the two read as one band.
+        .group.titled.has-table > .title {
+            padding: 7px $cell-padding-x 1px;
+            background: var(--bg2);
+            border-radius: $card-inner-radius $card-inner-radius 0 0;
+
+            &:hover {
+                color: var(--accent);
+            }
+        }
+
+        .group.titled.has-table.collapsed > .title {
+            border-radius: $card-inner-radius;
+        }
+
+        .group.titled.collapsed > :not(.title) {
+            display: none;
         }
 
         table {
             width: initial;
-            margin: 5px 0;
-            border-color: var(--line-soft);
+            margin: 0;
+            border: 0;
+            border-collapse: separate;
+            border-spacing: 0;
             color: inherit;
+            font-size: $text-description;
 
             &.collapsed > tbody,
             &.collapsed > thead > .table-data-header {
                 display: none;
             }
 
-            table {
-                margin: 0;
+            th,
+            td {
+                border: 0;
+                border-bottom: 1px solid var(--line-soft);
+                background: transparent;
+                vertical-align: top;
             }
 
-            th {
-                font-weight: 600;
-                line-height: 1;
-                padding: 3px 5px;
-                color: var(--text-2);
-                background-color: var(--bg2);
+            .table-info-header > th {
+                padding: 4px $cell-padding-x 6px;
+                font-family: var(--font-mono);
+                font-size: 11px;
+                font-weight: 500;
+                text-align: left;
+                white-space: nowrap;
+                color: var(--text-3);
+                background: var(--bg2);
+
+                .caret-up-icon,
+                .caret-down-icon {
+                    margin-right: 6px;
+                    font-size: 9px;
+                    color: var(--text-3);
+                }
 
                 a {
                     color: var(--accent);
                 }
             }
 
-            thead th {
-                white-space: nowrap;
+            .item-count {
+                display: inline-block;
+                margin-left: 9px;
+                padding: 1px 7px;
+                font-family: var(--font-mono);
+                font-size: $text-label;
+                line-height: 1.5;
+                color: var(--text-3);
+                background: var(--bg1);
+                border: 1px solid var(--line);
+                border-radius: 999px;
             }
 
-            .table-info-header > th {
-                color: var(--text);
-                background-color: var(--bg2);
-                border-color: var(--line-soft);
-                border-top-width: 1px;
-            }
-
-            .table-data-header {
-                position: sticky !important;
-                top: -3px;
-            }
-
-            .table-info-header + .table-data-header {
-                top: -4px; // An extra -1 to account for border of info header
-            }
-
-            td > table {
-                margin: 3px !important;
-            }
-
-            tbody td {
-                overflow-wrap: break-word;
-            }
-
-            tbody {
-                border-top-width: 0;
-            }
-
-            .property-name {
+            // Column headers of a collection, and property names of a single object, are both
+            // labels for the values beside them and share the label treatment.
+            .table-data-header > th,
+            tbody > tr > th.property-name {
+                padding: 7px $cell-padding-x;
+                font-family: var(--font-mono);
+                font-size: $text-label;
                 font-weight: 600;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                text-align: left;
+                white-space: nowrap;
+                color: var(--text-3);
+            }
+
+            // Sticky sits on the cells, not the row: a sticky row is not positioned at all while
+            // the table separates its borders. The override beats the inline `position: relative`
+            // that column resizing puts on every heading, and still anchors the resize handle.
+            .table-data-header > th {
+                position: sticky !important;
+                // Pinned flush with the scrollport so rows never show through the gutter above it.
+                top: -$wrapper-padding-y;
+                z-index: 1;
+                background: var(--editor);
+                // A cell that detaches from the table loses its bottom border; an inset shadow is
+                // painted by the cell itself and survives.
+                border-bottom: 0;
+                box-shadow: inset 0 -1px 0 var(--line-soft);
+            }
+
+            tbody > tr > td {
+                padding: 6.5px $cell-padding-x;
+                overflow-wrap: break-word;
+                color: var(--text);
+            }
+
+            // Banding is a step from the card surface toward the panel color, which moves in the
+            // right direction on a dark and a light palette alike — the control surface does not,
+            // being pure white on a light one.
+            tbody > tr:nth-child(odd) > td,
+            tbody > tr:nth-child(odd) > th.property-name {
+                background: color-mix(in srgb, var(--bg1) 75%, transparent);
+            }
+
+            tbody > tr:last-child > th,
+            tbody > tr:last-child > td {
+                border-bottom: 0;
+            }
+
+            td.numeric {
+                font-family: var(--font-mono);
+                font-size: $text-value;
+                font-variant-numeric: tabular-nums;
+                color: var(--text-2);
+            }
+
+            &.columnar {
+                td.numeric,
+                th.numeric {
+                    text-align: right;
+                }
+            }
+
+            td.boolean-true,
+            td.boolean-false {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                // The serializer writes .NET's "True"/"False"; the C# literals are what a reader
+                // of this output expects to see.
+                text-transform: lowercase;
+            }
+
+            td.boolean-true {
+                color: var(--ok);
+            }
+
+            td.boolean-false {
+                color: var(--err);
             }
 
             .collapse-actionable {
                 cursor: pointer;
             }
+        }
+
+        // A collection or object nested in a cell is its own small card, indented behind its
+        // own spine rather than merging into the grid around it.
+        td.has-table {
+            padding: 0 8px;
+        }
+
+        td > table {
+            margin: 6px 0;
+            background: var(--editor);
+            border: 1px solid var(--line-soft);
+            border-left: 2px solid var(--accent-dim);
+            border-radius: $radius-sm;
+
+            > thead > .table-info-header > th {
+                padding: 3px 10px 4px;
+            }
+
+            > thead > .table-data-header > th,
+            > tbody > tr > th.property-name,
+            > tbody > tr > td {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+
+        // The card clips its own corners: `overflow: hidden` would make it the scroll container
+        // and strand the sticky column headers inside it.
+        .group.has-table > table {
+            > thead > .table-info-header > th {
+                border-radius: $card-inner-radius $card-inner-radius 0 0;
+            }
+
+            > tbody > tr:last-child > :first-child {
+                border-bottom-left-radius: $card-inner-radius;
+            }
+
+            > tbody > tr:last-child > :last-child {
+                border-bottom-right-radius: $card-inner-radius;
+            }
+        }
+
+        .group.titled.has-table > table > thead > .table-info-header > th {
+            padding-top: 0;
+            border-radius: 0;
+        }
+
+        .group.has-table > table.collapsed > thead > .table-info-header > th {
+            border-bottom: 0;
+            border-bottom-left-radius: $card-inner-radius;
+            border-bottom-right-radius: $card-inner-radius;
         }
     }
 

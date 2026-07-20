@@ -6,6 +6,8 @@ import {DialogUtil} from "@application/dialogs/dialog-util";
 import {OutputViewBase} from "../output-view-base";
 
 export class ResultsView extends OutputViewBase {
+    private static readonly themeClassPrefix = "theme-netpad-";
+
     private txtUserInput: HTMLInputElement;
 
     constructor(@IIpcGateway private readonly ipcGateway: IIpcGateway,
@@ -117,14 +119,27 @@ export class ResultsView extends OutputViewBase {
                 .filter(x => x.indexOf("output-pane") >= 0)
         )].join("\n");
 
+        const themeClass = Array.from(document.documentElement.classList)
+            .find(c => c.startsWith(ResultsView.themeClassPrefix)) ?? "";
+
         const bodyContents = document.createRange().createContextualFragment(this.dumpContainerWrapper.outerHTML);
         bodyContents.querySelectorAll("i[class*=icon]").forEach(x => x.remove());
 
         const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="${themeClass}">
 <head>
 <title>${name}</title>
 ${metas}
+<style>
+${ResultsView.collectThemeCss(themeClass)}
+body {
+    margin: 0;
+    background: var(--bg0);
+    color: var(--text);
+    font-family: ${getComputedStyle(document.documentElement).getPropertyValue("--font-sans")};
+}
+output-pane { display: block; }
+</style>
 ${styles}
 </head>
 <body>
@@ -132,5 +147,37 @@ ${styles}
 </body></html>`;
 
         System.downloadTextAsFile(`${name}.html`, "text/html", html);
+    }
+
+    /**
+     * Collects the CSS styles from the active theme.
+     */
+    private static collectThemeCss(themeClass: string): string {
+        if (!themeClass) return "";
+
+        const selector = `.${themeClass}`;
+        const rules: string[] = [];
+
+        for (const sheet of Array.from(document.styleSheets)) {
+            let sheetRules: CSSRuleList;
+            try {
+                sheetRules = sheet.cssRules;
+            } catch {
+                continue;
+            }
+
+            for (const rule of Array.from(sheetRules)) {
+                if (!(rule instanceof CSSStyleRule)) continue;
+
+                const applies = rule.selectorText
+                    .split(",")
+                    .map(s => s.trim())
+                    .some(s => s === selector || s.startsWith(`${selector} `));
+
+                if (applies) rules.push(rule.cssText);
+            }
+        }
+
+        return rules.join("\n");
     }
 }
