@@ -1,6 +1,7 @@
 using NetPad.Media;
 using O2Html;
 using O2Html.Dom;
+using O2Html.Dom.Elements;
 
 namespace NetPad.Presentation.Html;
 
@@ -37,8 +38,8 @@ public class VideoHtmlConverter : HtmlConverter
         return element;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td").AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
+        htmlSerializer.AddAndGetValueCell(tr, obj).AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

@@ -32,13 +32,13 @@ public class CollectionHtmlConverter : HtmlConverter
     }
 
     public override void WriteHtmlWithinTableRow<T>(
-        Element tr,
+        TableRow tr,
         T obj,
         Type type,
         SerializationScope serializationScope,
         HtmlSerializer htmlSerializer)
     {
-        var td = tr.AddAndGetElement("td").AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue);
+        var td = htmlSerializer.AddAndGetValueCell(tr, obj);
 
         var result = Convert(obj, type, serializationScope, htmlSerializer);
 
@@ -61,18 +61,14 @@ public class CollectionHtmlConverter : HtmlConverter
 
         var enumerationResult = Enumerate.Max(enumerable, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (item, _) =>
         {
-            var tr = table.Body.AddAndGetElement("tr");
+            var tr = table.Body.AddAndGetRow();
 
             htmlSerializer.SerializeWithinTableRow(tr, item, elementType, serializationScope);
 
             if (!tr.Children.Any()) table.Body.RemoveChild(tr);
         });
 
-        string headerRowText = GetHeaderRowText(
-            enumerable,
-            type,
-            enumerationResult.ItemsProcessed,
-            enumerationResult.CollectionLengthExceedsMax);
+        string headerRowText = GetHeaderRowText(enumerable, type);
 
         if (HtmlSerializer.GetTypeCategory(elementType) == TypeCategory.SingleObject)
         {
@@ -97,22 +93,22 @@ public class CollectionHtmlConverter : HtmlConverter
                 .SetTitle(type.GetReadableName(true))
                 .AddAndGetElement("th")
                 .SetAttribute("colspan", properties.Length.ToString())
-                .AddEscapedText(headerRowText);
+                .AddEscapedText(headerRowText)
+                .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
         }
         else
         {
-            table.Head.AddHeading(headerRowText);
+            table.Head
+                .AddAndGetHeading(headerRowText)
+                .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
+
             table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
         }
 
         return (table, enumerationResult.ItemsProcessed);
     }
 
-    protected string GetHeaderRowText(
-        IEnumerable collection,
-        Type collectionType,
-        int collectionLength,
-        bool collectionHasMoreElementsThanMax)
+    protected string GetHeaderRowText(IEnumerable collection, Type collectionType)
     {
         string headerRowText = "";
 
@@ -180,7 +176,7 @@ public class CollectionHtmlConverter : HtmlConverter
             }
         }
 
-        headerRowText += $"{collectionTypeName} ({(collectionHasMoreElementsThanMax ? "First " : "")}{collectionLength} items)";
+        headerRowText += collectionTypeName;
 
         return headerRowText;
     }

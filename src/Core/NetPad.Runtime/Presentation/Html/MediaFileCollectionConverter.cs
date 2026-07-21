@@ -30,20 +30,19 @@ public class MediaFileCollectionConverter : CollectionHtmlConverter
 
         var enumerationResult = Enumerate.Max(enumerable, htmlSerializer.SerializerOptions.MaxCollectionSerializeLength, (item, _) =>
         {
-            var tr = table.Body.AddAndGetElement("tr");
+            var tr = table.Body.AddAndGetRow();
 
             htmlSerializer.SerializeWithinTableRow(tr, item, item?.GetType() ?? typeof(MediaFile), serializationScope);
 
             if (!tr.Children.Any()) table.Body.RemoveChild(tr);
         });
 
-        string headerRowText = GetHeaderRowText(
-            enumerable,
-            type,
-            enumerationResult.ItemsProcessed,
-            enumerationResult.CollectionLengthExceedsMax);
+        string headerRowText = GetHeaderRowText(enumerable, type);
 
-        table.Head.AddHeading(headerRowText);
+        table.Head
+            .AddAndGetHeading(headerRowText)
+            .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
+
         table.Head.ChildElements.Single().AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader);
 
         return (table, enumerationResult.ItemsProcessed);

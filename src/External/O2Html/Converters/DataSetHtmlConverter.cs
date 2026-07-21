@@ -24,27 +24,29 @@ public class DataSetHtmlConverter : HtmlConverter
         {
             var tr = table.Body.AddAndGetRow();
 
-            tr.AddAndGetElement("th").AddText((ix + 1).ToString());
+            tr.AddAndGetElement("th")
+                .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName)
+                .AddText((ix + 1).ToString());
 
-            tr.AddAndGetElement("td").AddChild(htmlSerializer.Serialize(dataTable, typeof(DataTable), serializationScope));
+            htmlSerializer.AddAndGetValueCell(tr, dataTable)
+                .AddChild(htmlSerializer.Serialize(dataTable, typeof(DataTable), serializationScope));
         });
 
-        string headerRowText = (!string.IsNullOrWhiteSpace(dataSet.DataSetName) ? dataSet.DataSetName : "DataSet") +
-                               $" ({(enumerationResult.CollectionLengthExceedsMax ? "First " : "")}{enumerationResult.ItemsProcessed} tables)";
+        string headerRowText = !string.IsNullOrWhiteSpace(dataSet.DataSetName) ? dataSet.DataSetName : "DataSet";
 
         table.Head
             .AddAndGetRow()
             .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
             .AddAndGetElement("th").SetAttribute("colspan", "2")
-            .AddEscapedText(headerRowText);
+            .AddEscapedText(headerRowText)
+            .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "tables", enumerationResult.CollectionLengthExceedsMax);
 
         return table;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    public override void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
     {
-        tr.AddAndGetElement("td")
-            .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
+        htmlSerializer.AddAndGetValueCell(tr, obj)
             .AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }
