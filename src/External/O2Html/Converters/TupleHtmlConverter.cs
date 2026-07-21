@@ -1,6 +1,8 @@
 #if NETSTANDARD2_1 || NETCOREAPP3_0_OR_GREATER
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using O2Html.Common;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -20,41 +22,44 @@ public class TupleHtmlConverter : HtmlConverter
 
         var table = new Table();
 
-        int serializedItemCount = 0;
-        for (int iItem = 0; iItem < tuple.Length; iItem++)
-        {
-            if (iItem + 1 == htmlSerializer.SerializerOptions.MaxCollectionSerializeLength)
+        var enumerationResult = Enumerate.Max(
+            Items(tuple),
+            htmlSerializer.SerializerOptions.MaxCollectionSerializeLength,
+            (item, ix) =>
             {
-                break;
-            }
+                var tr = table.Body.AddAndGetRow();
 
-            var tr = table.Body.AddAndGetRow();
+                tr.AddAndGetElement("th")
+                    .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyName)
+                    .AddText($"Item{ix + 1}");
 
-            tr.AddAndGetElement("th").AddText($"Item{iItem + 1}");
+                var itemType = item?.GetType() ?? typeof(object);
 
-            var item = tuple[iItem];
-            var itemType = item == null ? typeof(object) : item.GetType();
-
-            tr.AddAndGetElement("td").AddChild(htmlSerializer.Serialize(item, itemType, serializationScope));
-            ++serializedItemCount;
-        }
-
-        string headerRowText = type.GetReadableName() +
-                               $" ({(tuple.Length > htmlSerializer.SerializerOptions.MaxCollectionSerializeLength ? "First " : "")}{serializedItemCount} items)";
+                htmlSerializer.AddAndGetValueCell(tr, item)
+                    .AddChild(htmlSerializer.Serialize(item, itemType, serializationScope));
+            });
 
         table.Head
             .AddAndGetRow()
             .AddClass(htmlSerializer.SerializerOptions.CssClasses.TableInfoHeader)
             .AddAndGetElement("th").SetAttribute("colspan", "2")
-            .AddText(headerRowText);
+            .AddText(type.GetReadableName())
+            .AddItemCount(htmlSerializer, enumerationResult.ItemsProcessed, "items", enumerationResult.CollectionLengthExceedsMax);
 
         return table;
     }
 
-    public override void WriteHtmlWithinTableRow<T>(Element tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    private static IEnumerable<object?> Items(ITuple tuple)
     {
-        tr.AddAndGetElement("td")
-            .AddClass(htmlSerializer.SerializerOptions.CssClasses.PropertyValue)
+        for (int i = 0; i < tuple.Length; i++)
+        {
+            yield return tuple[i];
+        }
+    }
+
+    public override void WriteHtmlWithinTableRow<T>(TableRow tr, T obj, Type type, SerializationScope serializationScope, HtmlSerializer htmlSerializer)
+    {
+        htmlSerializer.AddAndGetValueCell(tr, obj)
             .AddChild(WriteHtml(obj, type, serializationScope, htmlSerializer));
     }
 }

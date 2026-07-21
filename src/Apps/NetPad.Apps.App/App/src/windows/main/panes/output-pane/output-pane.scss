@@ -17,6 +17,10 @@ output-pane {
         }
     }
 
+    .dump-container {
+        min-height: 100%;
+    }
+
     .dump-container-wrapper {
         padding: $wrapper-padding-y 12px;
         overflow-x: auto;
@@ -283,17 +287,15 @@ output-pane {
                 color: var(--text-3);
             }
 
-            // Sticky sits on the cells, not the row: a sticky row is not positioned at all while
-            // the table separates its borders. The override beats the inline `position: relative`
-            // that column resizing puts on every heading, and still anchors the resize handle.
+            // Make column headers sticky so they scroll.
             .table-data-header > th {
                 position: sticky !important;
                 // Pinned flush with the scrollport so rows never show through the gutter above it.
                 top: -$wrapper-padding-y;
                 z-index: 1;
                 background: var(--editor);
-                // A cell that detaches from the table loses its bottom border; an inset shadow is
-                // painted by the cell itself and survives.
+                // A cell that detaches from the table loses its bottom border, an inset shadow is
+                // added instead.
                 border-bottom: 0;
                 box-shadow: inset 0 -1px 0 var(--line-soft);
             }
@@ -304,9 +306,6 @@ output-pane {
                 color: var(--text);
             }
 
-            // Banding is a step from the card surface toward the panel color, which moves in the
-            // right direction on a dark and a light palette alike — the control surface does not,
-            // being pure white on a light one.
             tbody > tr:nth-child(odd) > td,
             tbody > tr:nth-child(odd) > th.property-name {
                 background: color-mix(in srgb, var(--bg1) 75%, transparent);
@@ -324,9 +323,10 @@ output-pane {
                 color: var(--text-2);
             }
 
+            // Right align a number column
             &.columnar {
-                td.numeric,
-                th.numeric {
+                td.numeric-column,
+                th.numeric-column {
                     text-align: right;
                 }
             }
@@ -335,9 +335,6 @@ output-pane {
             td.boolean-false {
                 font-family: var(--font-mono);
                 font-size: 11px;
-                // The serializer writes .NET's "True"/"False"; the C# literals are what a reader
-                // of this output expects to see.
-                text-transform: lowercase;
             }
 
             td.boolean-true {
@@ -378,8 +375,6 @@ output-pane {
             }
         }
 
-        // The card clips its own corners: `overflow: hidden` would make it the scroll container
-        // and strand the sticky column headers inside it.
         .group.has-table > table {
             > thead > .table-info-header > th {
                 border-radius: $card-inner-radius $card-inner-radius 0 0;
@@ -404,9 +399,5 @@ output-pane {
             border-bottom-left-radius: $card-inner-radius;
             border-bottom-right-radius: $card-inner-radius;
         }
-    }
-
-    .dump-container {
-        min-height: 100%;
     }
 }

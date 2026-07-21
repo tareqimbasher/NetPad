@@ -1,15 +1,7 @@
 import {WithDisposables} from "@common";
 import {ResizableTable} from "@application/tables/resizable-table";
 
-/** What a table cell's rendered text represents. */
-type CellKind = "numeric" | "boolean-true" | "boolean-false" | "null" | "other";
-
 export class ResultControls extends WithDisposables {
-    // O2Html renders a collection's header as "<type> (N items)", or "(First N items)"
-    // when the collection was truncated.
-    private static readonly itemCountPattern = /\s*\((?:First\s)?\d+\sitems\)\s*$/;
-    private static readonly numericPattern = /^[-+]?\d+(?:\.\d+)?$/;
-
     constructor(private readonly resultsElement: HTMLElement) {
         super();
     }
@@ -57,8 +49,6 @@ export class ResultControls extends WithDisposables {
                 const caret = document.createElement("i");
                 collapseTarget.prepend(caret);
                 caret.classList.add("caret-up-icon", "me-2");
-
-                this.extractItemCount(collapseTarget);
             }
 
             const resizableTable = new ResizableTable(table);
@@ -84,43 +74,18 @@ export class ResultControls extends WithDisposables {
     }
 
     /**
-     * Splits the item count out of a table's header text so the header can render it as a chip
-     * beside the type name instead of as parenthesised text.
-     */
-    private extractItemCount(header: Element) {
-        const textNode = Array.from(header.childNodes)
-            .reverse()
-            .find(n => n.nodeType === Node.TEXT_NODE && !!n.textContent?.trim()) as Text | undefined;
-
-        const text = textNode?.textContent;
-        if (!textNode || !text) return;
-
-        const match = ResultControls.itemCountPattern.exec(text);
-        if (!match) return;
-
-        const count = document.createElement("span");
-        count.classList.add("item-count");
-        count.textContent = match[0].trim().slice(1, -1);
-
-        textNode.textContent = text.slice(0, match.index);
-        textNode.after(count);
-    }
-
-    /**
-     * Tags value cells with what they hold, so numbers can be set in mono and aligned as a column
-     * and booleans can carry the true/false colors. The serializer emits every value as text, so
-     * the only signal available here is the rendered string.
-     *
-     * Numbers align right only in tables whose rows are items of a collection — in a table whose
-     * rows are one object's properties there is no column to align them against.
+     * Decides which columns of a table hold nothing but numbers, and marks every cell in them so
+     * they can align right.
      */
     private classifyValues(table: HTMLTableElement) {
         if (table.tBodies.length === 0) return;
 
         const isCollection = !!table.querySelector(":scope > thead > tr.table-data-header");
-        if (isCollection) table.classList.add("columnar");
+        if (isCollection) {
+            table.classList.add("columnar");
+        }
 
-        // A column is numeric only if every value in it is; nulls and blanks abstain.
+        // A column is numeric only if every value in it is.
         const numericColumns = new Map<number, boolean>();
 
         for (const row of Array.from(table.querySelectorAll(":scope > tbody > tr"))) {
@@ -135,19 +100,13 @@ export class ResultControls extends WithDisposables {
                     cell.style.maxWidth = "30vw";
                 }
 
-                const kind = ResultControls.getCellKind(cell);
+                // If a cell contains null or is empty, don't make it affect the result of
+                // the column being a numeric column otherwise a single nullable int value
+                // for example will result in the whole column being considered not-numeric
+                if (!isCollection || ResultControls.containsNullOrIsEmpty(cell)) continue;
 
-                if (kind === "boolean-true" || kind === "boolean-false") {
-                    cell.classList.add(kind);
-                }
-
-                if (kind === "null" || (kind === "other" && !cell.textContent?.trim())) continue;
-
-                if (!isCollection) {
-                    if (kind === "numeric") cell.classList.add("numeric");
-                } else {
-                    numericColumns.set(index, kind === "numeric" && numericColumns.get(index) !== false);
-                }
+                const stillNumeric = numericColumns.get(index) ?? true;
+                numericColumns.set(index, stillNumeric && cell.classList.contains("numeric"));
             }
         }
 
@@ -157,27 +116,20 @@ export class ResultControls extends WithDisposables {
             if (!numeric) continue;
 
             for (const row of Array.from(table.querySelectorAll(":scope > tbody > tr"))) {
-                row.children[index]?.classList.add("numeric");
+                row.children[index]?.classList.add("numeric-column");
             }
 
             table.querySelector(":scope > thead > tr.table-data-header")
-                ?.children[index]?.classList.add("numeric");
+                ?.children[index]?.classList.add("numeric-column");
         }
     }
 
-    private static getCellKind(cell: HTMLTableCellElement): CellKind {
-        if (cell.childElementCount > 0) {
-            return cell.children.length === 1 && cell.children[0].classList.contains("null")
-                ? "null"
-                : "other";
+    private static containsNullOrIsEmpty(cell: HTMLTableCellElement): boolean {
+        if (cell.childElementCount === 0) {
+            return !cell.textContent?.trim();
         }
 
-        const text = (cell.textContent ?? "").trim();
-
-        if (text === "True") return "boolean-true";
-        if (text === "False") return "boolean-false";
-
-        return ResultControls.numericPattern.test(text) ? "numeric" : "other";
+        return cell.children.length === 1 && cell.children[0].classList.contains("null");
     }
 
     public expand(table: HTMLTableElement) {

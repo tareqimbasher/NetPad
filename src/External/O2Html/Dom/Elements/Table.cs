@@ -8,9 +8,9 @@ public abstract class ElementWithTableRows : Element
     {
     }
 
-    public Element AddAndGetRow()
+    public TableRow AddAndGetRow()
     {
-        return this.AddAndGetElement("tr");
+        return this.AddAndGetChild(new TableRow());
     }
 }
 
@@ -57,4 +57,11 @@ public class Table : Element
     public THead Head { get; }
 
     public TBody Body { get; }
+}
+
+public class TableRow : Element
+{
+    public TableRow() : base("tr")
+    {
+    }
 }

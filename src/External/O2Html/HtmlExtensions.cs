@@ -1,3 +1,4 @@
+using System;
 using O2Html.Dom;
 using O2Html.Dom.Elements;
 
@@ -216,5 +217,83 @@ public static class HtmlExtensions
     {
         element.ClassList.Remove(className);
         return element;
+    }
+
+    /// <summary>
+    /// Adds a "td" element that holds a value to a table row ("tr") and returns it, tagged with the
+    /// CSS classes describing what kind of value it holds. Converters that emit their own cells
+    /// should create them with this, so that every value cell is described the same way.
+    /// </summary>
+    /// <param name="serializer"></param>
+    /// <param name="tr">The table row to add the cell to.</param>
+    /// <param name="value">The value the cell will hold. A null carries no kind classes; there is
+    /// no value to describe.</param>
+    public static Element AddAndGetValueCell<T>(this HtmlSerializer serializer, TableRow tr, T? value)
+    {
+        var cssClasses = serializer.SerializerOptions.CssClasses;
+
+        var td = tr.AddAndGetElement("td").AddClass(cssClasses.PropertyValue);
+
+        if (value == null)
+        {
+            return td;
+        }
+
+        switch (HtmlSerializer.GetValueKind(value.GetType()))
+        {
+            case ValueKind.Numeric:
+                td.AddClass(cssClasses.Numeric);
+                if (IsNegative(value)) td.AddClass(cssClasses.Negative);
+                break;
+            case ValueKind.Boolean:
+                td.AddClass(value is true ? cssClasses.BooleanTrue : cssClasses.BooleanFalse);
+                break;
+            case ValueKind.Enum:
+                td.AddClass(cssClasses.Enum);
+                break;
+            case ValueKind.Temporal:
+                td.AddClass(cssClasses.Temporal);
+                break;
+        }
+
+        return td;
+    }
+
+    /// <summary>
+    /// Adds the number of items a table is showing to its info header and returns the header.
+    /// </summary>
+    /// <param name="header">The info header element to add the count to.</param>
+    /// <param name="serializer"></param>
+    /// <param name="count">The number of items shown.</param>
+    /// <param name="noun">What is being counted, in the plural. ie. "items", "rows".</param>
+    /// <param name="truncated">Whether the collection held more items than are being shown.</param>
+    public static TElement AddItemCount<TElement>(
+        this TElement header,
+        HtmlSerializer serializer,
+        int count,
+        string noun,
+        bool truncated) where TElement : Element
+    {
+        header.AddAndGetElement("span")
+            .AddClass(serializer.SerializerOptions.CssClasses.ItemCount)
+            .AddEscapedText($"{(truncated ? "First " : string.Empty)}{count} {noun}");
+
+        return header;
+    }
+
+    private static bool IsNegative<T>(T value)
+    {
+        return value switch
+        {
+            sbyte v => v < 0,
+            short v => v < 0,
+            int v => v < 0,
+            long v => v < 0,
+            float v => v < 0,
+            double v => v < 0,
+            decimal v => v < 0,
+            IntPtr v => v.ToInt64() < 0,
+            _ => false
+        };
     }
 }

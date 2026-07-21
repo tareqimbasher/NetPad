@@ -20,8 +20,27 @@ public sealed class HtmlSerializer
     private static readonly HtmlSerializerOptions _defaultHtmlSerializerOptions = new();
     private static readonly ConcurrentDictionary<Type, HtmlConverter?> _typeConverterCache = new();
     private static readonly ConcurrentDictionary<Type, TypeCategory> _typeCategoryCache = new();
+    private static readonly ConcurrentDictionary<Type, ValueKind> _valueKindCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _typePropertyCache = new();
     private static readonly ConcurrentDictionary<Type, Type?> _collectionElementTypeCache = new();
+
+    private static readonly HashSet<Type> _numericTypes = new()
+    {
+        typeof(byte), typeof(sbyte),
+        typeof(short), typeof(ushort),
+        typeof(int), typeof(uint),
+        typeof(long), typeof(ulong),
+        typeof(float), typeof(double), typeof(decimal),
+        typeof(IntPtr), typeof(UIntPtr),
+    };
+
+    private static readonly HashSet<Type> _temporalTypes = new()
+    {
+        typeof(DateTime), typeof(DateTimeOffset), typeof(TimeSpan),
+#if NET6_0_OR_GREATER
+        typeof(DateOnly), typeof(TimeOnly),
+#endif
+    };
 
     // First converter in list that can convert type will be selected.
     private static readonly HtmlConverter[] _defaultHtmlConverters = new HtmlConverter[]
@@ -109,12 +128,11 @@ public sealed class HtmlSerializer
         return converter.WriteHtml(obj, type, serializationScope, this);
     }
 
-    public void SerializeWithinTableRow<T>(Element tr, T? obj, Type type, SerializationScope? serializationScope = null)
+    public void SerializeWithinTableRow<T>(TableRow tr, T? obj, Type type, SerializationScope? serializationScope = null)
     {
         if (obj == null)
         {
-            tr.AddAndGetElement("td")
-                .AddClass(SerializerOptions.CssClasses.PropertyValue)
+            this.AddAndGetValueCell(tr, obj)
                 .AddAndGetNull().AddClass(SerializerOptions.CssClasses.Null);
 
             return;
@@ -154,6 +172,41 @@ public sealed class HtmlSerializer
 
         _typeCategoryCache.TryAdd(type, category);
         return category;
+    }
+
+    internal static ValueKind GetValueKind(Type type)
+    {
+        if (_valueKindCache.TryGetValue(type, out var kind))
+        {
+            return kind;
+        }
+
+        var valueType = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (valueType.IsEnum)
+        {
+            // Check before Numeric
+            kind = ValueKind.Enum;
+        }
+        else if (valueType == typeof(bool))
+        {
+            kind = ValueKind.Boolean;
+        }
+        else if (_numericTypes.Contains(valueType))
+        {
+            kind = ValueKind.Numeric;
+        }
+        else if (_temporalTypes.Contains(valueType))
+        {
+            kind = ValueKind.Temporal;
+        }
+        else
+        {
+            kind = ValueKind.Text;
+        }
+
+        _valueKindCache.TryAdd(type, kind);
+        return kind;
     }
 
     internal HtmlConverter? GetConverter(Type type)
